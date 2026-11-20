@@ -622,6 +622,26 @@ export const sfx = {
       },
     };
   },
+  /** #2190: the outdoor ambient bed — TWO looping noises: Höje å's babble (band-pass) and the far city hum (low-pass), built once;
+   *  `set({ river: { gain, hz, q }, city: { gain, hz } }, tc)` eases them (a few times a second). Null before audio. */
+  ambientBed() {
+    if (!ctx) return null;
+    const mk = (type, hz, q, off) => {
+      const src = ctx.createBufferSource(); src.buffer = noiseBuf; src.loop = true;
+      const f = ctx.createBiquadFilter(); f.type = type; f.frequency.value = hz; f.Q.value = q;
+      const g = ctx.createGain(); g.gain.value = 0;
+      src.connect(f).connect(g).connect(master); src.start(0, off);
+      return { f, g };
+    };
+    const river = mk('bandpass', 900, 0.6, Math.random()), city = mk('lowpass', 200, 0.7, 1 + Math.random() * 0.9);
+    const ease = (prm, v, tc) => prm.setTargetAtTime(v, ctx.currentTime, tc);
+    return {
+      set(p, tc = 0.8) {
+        ease(river.g.gain, p.river.gain, tc); ease(river.f.frequency, p.river.hz, tc); ease(river.f.Q, p.river.q, tc);
+        ease(city.g.gain, p.city.gain, tc); ease(city.f.frequency, p.city.hz, tc);
+      },
+    };
+  },
   /** #2178: one bird call (birdsong.js songPhrase / gullCall) at `pos`: ONE oscillator through ONE band-pass and an envelope, its pitch and loudness
    *  scheduled per note. Takes one of BIRD_SONG.maxVoices slots for the call's length; false when muted, not started or all slots are busy. */
   birdCall(call, pos, level = 1) {

@@ -620,6 +620,19 @@ wind) and a band-pass (summer: broad high rustle near trees; winter: narrow, res
 (gain and low-pass; its slow LFO gust stays). Tests: `tools/windsoundtest.mjs` (pure, node), `tools/windsoundbrowser.cjs` (real graph in an
 OfflineAudioContext: built once, params update). Parameter table: docs/verification/2177/README.md. #2101/#2117 sway and wind are untouched.
 
+## Ambient bed: Höje å and the distant city (#2190)
+
+`src/ambientbed.js` (pure, config-only; `AMBIENT_BED` in config.js, all *guesses* by ear) drives `sfx.ambientBed()` (audio.js; built once at the first
+update after audio starts): TWO looping noises sharing `noiseBuf`, a band-pass babble (`riverBabbleParams`: gain falls with the square of the
+remaining share from `river.full` 6 m to `river.range` 70 m from the `riverPath` centreline, `distToPolyline`; duller far away) and a low-pass hum of
+Malmövägen / Lund (`cityHumParams` from `trafficLevel(hour)`: night floor, day base, rush swells at ~08 and ~17). main.js updates both in the wind
+bed's `WIND_SOUND.every` block (4 Hz, `AMBIENT_BED.ease` smoothing, no per-frame work, no new nodes after build). Indoors model: ONE, here (`indoor`: own
+gain and low-pass ceiling, using the wind bed's indoors test: not outdoors / below / core / playroom); the beds are listener-attached, so #2181
+occlusion is deliberately not applied (no double attenuation). Wind, birds and occlusion are untouched; underwater dulling goes through the master (#1949).
+Not modelled: stones/rapids hot spots, closed vs open windows, rain/wind masking. Tests: `tools/ambientbedtest.mjs` (pure, node),
+`tools/ambientbedbrowser.cjs` (real audio.js graph in an OfflineAudioContext: 2 sources / 2 filters built once, RMS by distance and hour). Evidence:
+[docs/verification/2190/](../verification/2190/README.md). Public downstream: the public walkthrough has no audio engine, so no port applies for now.
+
 ## Blinking and living gaze (#2011)
 
 Every avatar blinks (random 2-6 s apart, one in five twice) and looks at the nearest other player within `AVATAR_GAZE.range` m, the one talking first (`avatar.talking`, our own mirror image counts at the camera). Local only: nothing is sent, no new network field, mesh or draw call. The eye parts stay in the shared geometry: the iris and pupil have their own face part (`FACE_PART.iris`, 26) next to the eyeball and lids (`eye`), and the avatars' vertex shader (`faceShape` in `src/avatar.js`) squeezes both about the eye's centre by `uBlink` and moves the iris/pupil by `uGaze`, clamped inside the almond so the lids cover the rest. `Avatar.updateEyes` (called from `update`) adds the head's share to the `turn` / `pitch` it poses: `solveGaze` in `src/avatargaze.js` takes `headShare` of the angle, at most `maxYaw` / `maxPitch`; the eyes the remainder up to `eye` m; a target more than `cone` rad off the head, a kiss, a BIO reaction, swimming or a wall climb leave the head alone. Small saccades run at rest. `Avatar.eyesHidden` (Spider-Man suit, sunglasses, diving mask): nothing blinks or looks. `Ghosts.updateGazes` picks the target every `retarget` s (`chooseGazeTarget`) and `Avatar.lookAt` takes it. Tunables `AVATAR_BLINK` / `AVATAR_GAZE` (*guess*, by eye). Checks: `node --test tools/avatargazetest.mjs` (blink timing, clamps, hidden eyes) and `tools/browsertest.sh node tools/avatargazetest.cjs SITE docs/verification/2011` on `tools/avatargaze.html` (frames and `joints.json`).

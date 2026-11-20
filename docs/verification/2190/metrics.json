@@ -1,0 +1,383 @@
+{
+ "rows": [
+  {
+   "kind": "river",
+   "where": "at river",
+   "indoors": false,
+   "dist": 0,
+   "label": "river: at river",
+   "rms": 0.017219031234316444,
+   "centroid": 4289.056984794058,
+   "srcBuilt": 2,
+   "filtersBuilt": 2,
+   "extra": 0,
+   "river": {
+    "gain": 0.1,
+    "hz": 1500,
+    "q": 0.6
+   },
+   "city": {
+    "gain": 0,
+    "hz": 200
+   }
+  },
+  {
+   "kind": "river",
+   "where": "25 m from river",
+   "indoors": false,
+   "dist": 20.55890393712409,
+   "label": "river: 25 m from river",
+   "rms": 0.012369605820049506,
+   "centroid": 4128.030084468873,
+   "srcBuilt": 2,
+   "filtersBuilt": 2,
+   "extra": 0,
+   "river": {
+    "gain": 0.07539421148752912,
+    "hz": 1368.2984019767,
+    "q": 0.6
+   },
+   "city": {
+    "gain": 0,
+    "hz": 200
+   }
+  },
+  {
+   "kind": "river",
+   "where": "50 m from river",
+   "indoors": false,
+   "dist": 41.11780787424818,
+   "label": "river: 50 m from river",
+   "rms": 0.0025241851251955076,
+   "centroid": 3413.5853361281283,
+   "srcBuilt": 2,
+   "filtersBuilt": 2,
+   "extra": 0,
+   "river": {
+    "gain": 0.01824636192722862,
+    "hz": 927.1576047225265,
+    "q": 0.6
+   },
+   "city": {
+    "gain": 0,
+    "hz": 200
+   }
+  },
+  {
+   "kind": "river",
+   "where": "far (150 m)",
+   "indoors": false,
+   "dist": 118.42331189423811,
+   "label": "river: far (150 m)",
+   "rms": 0,
+   "centroid": null,
+   "srcBuilt": 2,
+   "filtersBuilt": 2,
+   "extra": 0,
+   "river": {
+    "gain": 0,
+    "hz": 500,
+    "q": 0.6
+   },
+   "city": {
+    "gain": 0,
+    "hz": 200
+   }
+  },
+  {
+   "kind": "river",
+   "where": "at river",
+   "indoors": true,
+   "dist": 0,
+   "label": "river: at river (indoors)",
+   "rms": 0.0010935964147889927,
+   "centroid": 2202.8926353484853,
+   "srcBuilt": 2,
+   "filtersBuilt": 2,
+   "extra": 0,
+   "river": {
+    "gain": 0.012,
+    "hz": 380,
+    "q": 0.6
+   },
+   "city": {
+    "gain": 0,
+    "hz": 200
+   }
+  },
+  {
+   "kind": "river",
+   "where": "25 m from river",
+   "indoors": true,
+   "dist": 20.55890393712409,
+   "label": "river: 25 m from river (indoors)",
+   "rms": 0.000824508371063219,
+   "centroid": 2202.8926343523426,
+   "srcBuilt": 2,
+   "filtersBuilt": 2,
+   "extra": 0,
+   "river": {
+    "gain": 0.009047305378503494,
+    "hz": 380,
+    "q": 0.6
+   },
+   "city": {
+    "gain": 0,
+    "hz": 200
+   }
+  },
+  {
+   "kind": "river",
+   "where": "50 m from river",
+   "indoors": true,
+   "dist": 41.11780787424818,
+   "label": "river: 50 m from river (indoors)",
+   "rms": 0.00019954155108733372,
+   "centroid": 2202.8926372723013,
+   "srcBuilt": 2,
+   "filtersBuilt": 2,
+   "extra": 0,
+   "river": {
+    "gain": 0.0021895634312674344,
+    "hz": 380,
+    "q": 0.6
+   },
+   "city": {
+    "gain": 0,
+    "hz": 200
+   }
+  },
+  {
+   "kind": "river",
+   "where": "far (150 m)",
+   "indoors": true,
+   "dist": 118.42331189423811,
+   "label": "river: far (150 m) (indoors)",
+   "rms": 0,
+   "centroid": null,
+   "srcBuilt": 2,
+   "filtersBuilt": 2,
+   "extra": 0,
+   "river": {
+    "gain": 0,
+    "hz": 380,
+    "q": 0.6
+   },
+   "city": {
+    "gain": 0,
+    "hz": 200
+   }
+  },
+  {
+   "kind": "city",
+   "when": "03:00 night",
+   "hour": 3,
+   "indoors": false,
+   "label": "city: 03:00 night",
+   "rms": 0.0003535213142624728,
+   "centroid": 154.83254612562837,
+   "srcBuilt": 2,
+   "filtersBuilt": 2,
+   "extra": 0,
+   "river": {
+    "gain": 0,
+    "hz": 500,
+    "q": 0.6
+   },
+   "city": {
+    "gain": 0.007000000000000001,
+    "hz": 158
+   }
+  },
+  {
+   "kind": "city",
+   "when": "03:00 night",
+   "hour": 3,
+   "indoors": true,
+   "label": "city: 03:00 night (indoors)",
+   "rms": 0.00010336880324842705,
+   "centroid": 146.92910626752453,
+   "srcBuilt": 2,
+   "filtersBuilt": 2,
+   "extra": 0,
+   "river": {
+    "gain": 0,
+    "hz": 500,
+    "q": 0.6
+   },
+   "city": {
+    "gain": 0.0021000000000000003,
+    "hz": 150
+   }
+  },
+  {
+   "kind": "city",
+   "when": "12:00 midday",
+   "hour": 12,
+   "indoors": false,
+   "label": "city: 12:00 midday",
+   "rms": 0.002135511646583045,
+   "centroid": 225.42548960994256,
+   "srcBuilt": 2,
+   "filtersBuilt": 2,
+   "extra": 0,
+   "river": {
+    "gain": 0,
+    "hz": 500,
+    "q": 0.6
+   },
+   "city": {
+    "gain": 0.03501429191025372,
+    "hz": 230.0367506263667
+   }
+  },
+  {
+   "kind": "city",
+   "when": "12:00 midday",
+   "hour": 12,
+   "indoors": true,
+   "label": "city: 12:00 midday (indoors)",
+   "rms": 0.0005170550875889328,
+   "centroid": 146.9291065034901,
+   "srcBuilt": 2,
+   "filtersBuilt": 2,
+   "extra": 0,
+   "river": {
+    "gain": 0,
+    "hz": 500,
+    "q": 0.6
+   },
+   "city": {
+    "gain": 0.010504287573076117,
+    "hz": 150
+   }
+  },
+  {
+   "kind": "city",
+   "when": "08:00 rush",
+   "hour": 8,
+   "indoors": false,
+   "label": "city: 08:00 rush",
+   "rms": 0.005032400503280843,
+   "centroid": 311.3123883899689,
+   "srcBuilt": 2,
+   "filtersBuilt": 2,
+   "extra": 0,
+   "river": {
+    "gain": 0,
+    "hz": 500,
+    "q": 0.6
+   },
+   "city": {
+    "gain": 0.07,
+    "hz": 320
+   }
+  },
+  {
+   "kind": "city",
+   "when": "08:00 rush",
+   "hour": 8,
+   "indoors": true,
+   "label": "city: 08:00 rush (indoors)",
+   "rms": 0.0010336880561830164,
+   "centroid": 146.92910668302713,
+   "srcBuilt": 2,
+   "filtersBuilt": 2,
+   "extra": 0,
+   "river": {
+    "gain": 0,
+    "hz": 500,
+    "q": 0.6
+   },
+   "city": {
+    "gain": 0.021,
+    "hz": 150
+   }
+  },
+  {
+   "kind": "city",
+   "when": "17:00 rush",
+   "hour": 17,
+   "indoors": false,
+   "label": "city: 17:00 rush",
+   "rms": 0.004982730788809758,
+   "centroid": 309.9814564868946,
+   "srcBuilt": 2,
+   "filtersBuilt": 2,
+   "extra": 0,
+   "river": {
+    "gain": 0,
+    "hz": 500,
+    "q": 0.6
+   },
+   "city": {
+    "gain": 0.0694573752951893,
+    "hz": 318.60467933048676
+   }
+  },
+  {
+   "kind": "city",
+   "when": "17:00 rush",
+   "hour": 17,
+   "indoors": true,
+   "label": "city: 17:00 rush (indoors)",
+   "rms": 0.0010256751158891362,
+   "centroid": 146.9291065256045,
+   "srcBuilt": 2,
+   "filtersBuilt": 2,
+   "extra": 0,
+   "river": {
+    "gain": 0,
+    "hz": 500,
+    "q": 0.6
+   },
+   "city": {
+    "gain": 0.02083721258855679,
+    "hz": 150
+   }
+  },
+  {
+   "kind": "city",
+   "when": "22:00 evening",
+   "hour": 22,
+   "indoors": false,
+   "label": "city: 22:00 evening",
+   "rms": 0.0009163458765826133,
+   "centroid": 179.88864253029104,
+   "srcBuilt": 2,
+   "filtersBuilt": 2,
+   "extra": 0,
+   "river": {
+    "gain": 0,
+    "hz": 500,
+    "q": 0.6
+   },
+   "city": {
+    "gain": 0.016856318694994744,
+    "hz": 183.34481950141506
+   }
+  },
+  {
+   "kind": "city",
+   "when": "22:00 evening",
+   "hour": 22,
+   "indoors": true,
+   "label": "city: 22:00 evening (indoors)",
+   "rms": 0.00024891680217930645,
+   "centroid": 146.92910611334713,
+   "srcBuilt": 2,
+   "filtersBuilt": 2,
+   "extra": 0,
+   "river": {
+    "gain": 0,
+    "hz": 500,
+    "q": 0.6
+   },
+   "city": {
+    "gain": 0.005056895608498423,
+    "hz": 150
+   }
+  }
+ ],
+ "riverPoints": 32
+}

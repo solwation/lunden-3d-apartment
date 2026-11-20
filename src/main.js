@@ -84,9 +84,10 @@ import { setupTouch } from './touch.js';
 import { setupTouchLayout } from './touchlayout.js';
 import { watchForUpdates, BUILD } from './version.js';
 import { CatSpawner, VARIANTS, BREEDS, kittenName, MieleDaily } from './cat.js';
+import { riverBabbleParams, cityHumParams, distToPolyline } from './ambientbed.js'; // #2190
 import { initAudio, sfx, toggleMuted, isMuted, updateListener, setRoomZone, setAcousticWorld, updateOcclusion, setWindPower, audioParts } from './audio.js';
 import { windSoundParams, gustAt, windStrength, treeNearness } from './windsound.js'; // #2177: the wind's sound
-import { WIND_SOUND, SEASON, BIRD_SONG } from './config.js';
+import { WIND_SOUND, SEASON, BIRD_SONG, AMBIENT_BED } from './config.js';
 import { BirdSong } from './birdsong.js'; // #2178: bird song and gull calls by time of day, season and weather
 import { sunTimes } from './daycycle.js';
 import { reverbZone } from './roomreverb.js';
@@ -768,7 +769,7 @@ const laundry = new Laundry(life,world);
 const watering = new Watering(life,world,{sillPots,things,lights});
 const plantWind=new PlantWind(world,weather);scene.traverse(windShadow);
 const [windForce, windTime] = (params0.get('wind') ?? '').split(',').map((v) => (v === '' ? NaN : Number(v)));
-let windSoundT = 0, windBed = null; // #2177
+let windSoundT = 0, windBed = null, ambientBed = null; // #2177, #2190
 let birdSongT = 0; const birdSong = new BirdSong((c, p, l) => sfx.birdCall(c, p, l)), birdEye = { x: 0, y: 0, z: 0 }, gullTmp = new THREE.Vector3(), birdGulls = { n: 0, at: (i, o) => { birds.gullPoint(i, gullTmp); o.x = gullTmp.x; o.y = gullTmp.y; o.z = gullTmp.z; } }; // #2178
 const siteWind = new SiteWind(weather, { force: windForce, time: windTime }); // #2101: trees, shrubs and reeds sway; &wind=power[,seconds] pins it
 const tableSetting = new TableSetting(life,world);
@@ -4018,6 +4019,8 @@ function step(dt) {
     const indoors = !player.outdoors || player.below || player.inCore || player.inPlayroom;
     windBed?.set(windSoundParams({ speed, gust, leaves: SEASON.trees[day.month]?.[3] ?? 1, near: treeNearness(treeFeet, player.pos.x, player.pos.z), indoors }), WIND_SOUND.ease);
     setWindPower(windStrength(speed, gust));
+    ambientBed ??= sfx.ambientBed(); // #2190: Höje å babble by distance to the river, far city hum by the hour; the wind's own indoors test
+    ambientBed?.set({ river: riverBabbleParams({ dist: distToPolyline(riverPath, player.pos.x, player.pos.z), indoors }), city: cityHumParams({ hour: day.hour, indoors }) }, AMBIENT_BED.ease);
   }
   birdSongT += dt; // #2178: song and gull calls, scheduled a few times a second (a Poisson draw each; playing needs the audio started)
   if (birdSongT >= BIRD_SONG.every && audioParts() && !player.below) {

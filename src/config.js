@@ -2368,6 +2368,18 @@ export const WIND_SOUND = {
   window: { gain: [0.08, 0.3], hz: [300, 930], gust: 0.07, lfoHz: 520 / 4 },
 };
 
+// #2190: the outdoor ambient bed (src/ambientbed.js, sfx.ambientBed): Höje å babbling (`river`: band-pass Hz near [0] → far [1], Q, peak gain;
+// full within `full` m of the river centreline, nothing at `range` m) and the far hum of Malmövägen / Lund (`city`: low-pass Hz by traffic
+// level, peak gain; `night` / `day` = traffic level 0…1, `dayFrom` / `dayTo` = hour ramps, `rush` = [hour, width h] swells adding `rushBoost`).
+// `indoor` = the share heard through walls (gain ×, low-pass ceiling Hz), the bed's ONE indoor model. All *guesses* by ear (no recordings);
+// `every` s between updates, `ease` s smoothing.
+export const AMBIENT_BED = {
+  every: 0.25, ease: 0.8,
+  river: { full: 6, range: 70, hz: [500, 1500], q: 0.6, gain: 0.1 },
+  city: { night: 0.1, day: 0.5, dayFrom: [5, 7.5], dayTo: [20.5, 23], rush: [[8, 1.4], [16.8, 1.6]], rushBoost: 0.5, hz: [140, 320], gain: 0.07 },
+  indoor: { river: 0.12, hz: 380, city: 0.3, hzCity: 150 },
+};
+
 // #2178: bird song and gull calls (src/birdsong.js schedule + sfx.birdCall in audio.js). All numbers are our picks (*guess*) by ear and
 // by the Swedish song calendar (blackbird / chaffinch sing Mar–Jul, robin and great tit all year; dawn chorus Mar–Jul).
 // `every` s between schedule ticks; `range` m within which a songbird is heard (gulls `gullRange`, they carry farther); at most `maxVoices`
