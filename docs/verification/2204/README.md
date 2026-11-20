@@ -27,3 +27,7 @@ The phone assertion verifies the actual class's bounded phone branch in this des
 Public transfer: suitable neutral module/metadata, no avatar/personal/game/service dependency. Public `weather.js`/`windsim.js` are absent, so the separate port needs its own permitted temperature/wind provider (e.g. public season/sitewind), not the original's real-weather/service wiring. Conductor owns that port issue, publication/embedded images, release run, issue closure and checkout cleanup.
 
 Approximate phases: planning 2 min, implementation/fast checks 3 min, browser/setup/image review 9 min (including corrected setup and view retake), total about 14 min; one implementation worker, no helpers.
+
+Published implementation: `0638c8b1f6da01c372af58aac4178a2b5b6d0231`. [Deploy to GitHub Pages: success](https://github.com/solwation/lunden-3d-apartment/actions/runs/44756411291) · [Deploy the shared-world Worker: success](https://github.com/solwation/lunden-3d-apartment/actions/runs/44756411266).
+
+[Pinned embedded before/after images and completion](https://github.com/solwation/lunden-3d-apartment/issues/2204#issuecomment-7042439016). Neutral public port: https://github.com/solwation/kvarteret-lunden/issues/345. Before-images removed from current main after publication; historical links remain.
