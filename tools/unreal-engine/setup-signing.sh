@@ -3,7 +3,9 @@
 # Decision (user, 2026-11-20, approved by Svep IT): Lunden releases are signed with Svep's existing Azure Artifact
 # Signing certificate profile (the one booster-ai uses), only in GitHub Actions through OIDC; no key or secret is ever
 # stored on a build PC or in the repository (#2244 security boundary, #2268: no unsigned local binaries are run).
-# Run from WSL by someone who may create Entra app registrations and assign roles on the Artifact Signing account:
+# AGENTS NEVER RUN THIS (user, 2026-11-20): the Azure tenant holds customer accounts, so no agent signs in to, reads
+# or changes Azure. Svep IT runs it (or does the same steps by hand), from WSL, as someone who may create Entra app
+# registrations and assign roles on the Artifact Signing account:
 #   tools/unreal-engine/setup-signing.sh --dry-run   # only discovers and prints the plan; changes nothing
 #   tools/unreal-engine/setup-signing.sh             # asks before each change
 # Needs the Windows Azure CLI (winget install -e --id Microsoft.AzureCLI; then `az login` in Windows) and the WSL
