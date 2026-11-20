@@ -2760,7 +2760,7 @@ legs stand still). It eases back on landing.
 med elsparkcykel", kind `most` on the best jump in cm). Medals: `scooter-km` (first level 1 km), `scooter-jumps`, secret `scooter-tunes`.
 
 **Shared world (first slice).** Other players see a scooter rider as a standing figure moving along (`bk` is not sent for a scooter, so
-no bicycle is drawn under them); a ghost scooter prop and its pose are a follow-up issue.
+no bicycle is drawn under them); a ghost scooter prop and its pose are #2235.
 
 Tests: `node --test tools/scooter2229test.mjs` (caps, acceleration, braking, take-off, tuning progress, jump/slow-motion thresholds,
 chase camera, spots, catalogue). Real app: `tools/browsertest.sh node tools/scooter2229browser.cjs BASE OUT` (placement and mounting,
