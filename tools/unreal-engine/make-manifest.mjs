@@ -118,6 +118,7 @@ export async function scanArchive(directory) {
 }
 
 // Windows Authenticode with the stable publisher identity (#2277); returns the leaf that actually signed.
+// -ExecutionPolicy Bypass applies to this one process only: an unset local policy means Restricted (#2296).
 async function verifyWindowsPublisher(filename, digest, signer) {
   check(process.platform === 'win32', 'Verify the protected signed-launcher artifact with Windows Node.js and Authenticode.');
   const pwsh = path.join(process.env.ProgramFiles, 'PowerShell', '7', 'pwsh.exe');
@@ -125,7 +126,7 @@ async function verifyWindowsPublisher(filename, digest, signer) {
     ? pwsh : path.join(process.env.SystemRoot, 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe');
   let observed;
   try {
-    observed = JSON.parse(execFileSync(shell, ['-NoProfile', '-NonInteractive', '-File', signatureHelper,
+    observed = JSON.parse(execFileSync(shell, ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', signatureHelper,
       '-Path', filename, '-ExpectedFileSha256', digest, '-ExpectedSubject', signer.commonName,
       '-ExpectedOrganization', signer.organization, '-ExpectedRootSha256', signer.rootSha256,
       '-ExpectedIdentityKeyUsage', signer.identityKeyUsage],

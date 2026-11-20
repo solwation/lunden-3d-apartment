@@ -115,7 +115,7 @@ test('the native publisher check accepts a timestamped Windows fixture and rejec
       '(Get-Command dotnet.exe -CommandType Application | Select-Object -First 1).Source'],{encoding:'utf8'}).trim();
     const sha = hash(await readFile(file));
     // The identity helper itself reads the fixture's publisher; dotnet.exe has no Artifact Signing usage.
-    const observed = JSON.parse(execFileSync(shell,['-NoProfile','-NonInteractive','-File',
+    const observed = JSON.parse(execFileSync(shell,['-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',
       fileURLToPath(new URL('../get-signer-identity.ps1', import.meta.url)),'-Path',file,'-ExpectedFileSha256',sha],{encoding:'utf8'}));
     const fixture = { file, leaf:observed.leafSha256, signer:{ commonName:observed.subject, organization:observed.organization,
       rootSha256:observed.rootSha256, identityKeyUsage:'1.3.6.1.5.5.7.3.3' } };
