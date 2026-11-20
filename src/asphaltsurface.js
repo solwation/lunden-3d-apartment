@@ -78,12 +78,6 @@ export function asphaltMaterial() {
   streetWear(material, 'asphalt'); // #2103: tracks, cracks, edge cracks (the geometry carries roadFrame); before the wet patch
   wetGround(material, 'asphalt'); // #2099: darker, glossier, puddles in and after rain
   // registerSnow in the road's existing flat() caller still owns colour/map. Opt in only this new material's auxiliary channels.
-  registerSeasonal(month => {
-    const snow = SEASON.snowMonths.includes(month);
-    material.bumpMap = snow ? null : t.surface;
-    material.roughnessMap = snow ? null : t.surface;
-    material.roughness = snow ? A.snowRoughness : 1;
-    material.needsUpdate = true;
-  });
+  // #2176: the bump / roughness maps stay: the patchy snow step (snowground.js, via registerSnow) flattens the normal and sets the roughness where it lies
   return material;
 }

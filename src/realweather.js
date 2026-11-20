@@ -197,6 +197,16 @@ export class RealWeather {
       id: pick ? `real-${ymd(y, m, d)}-${pick.kind}-${this.episodeStart(rec, pick === A ? k0 : k1, pick.kind)}` : null };
   }
 
+  /** #2176: the raw values of one whole hour (0–23) of a date for the snow depth: { temp °C, snowCm, rainMm }, or null without data for it (a month not in memory, NaN). */
+  rawAt(y, m, d, hour) {
+    const a = this.months.get(monthKey(y, m));
+    if (!a) return null;
+    const rec = a.rec, k = (Math.min(d, daysIn(y, m)) - 1) * 24 + Math.min(23, Math.max(0, hour));
+    if (!(rec.t[k] === rec.t[k])) return null;
+    const snow = rec.s[k], c = rec.c[k], snowy = snow > 0.05 || (c >= 71 && c <= 77) || c === 85 || c === 86;
+    return { temp: rec.t[k], snowCm: snow, rainMm: snowy ? 0 : rec.p[k] }; // (precipitation in a snow hour is the melt water of the snow itself: not rain on it)
+  }
+
   /** The first hour (of the month's array) of the unbroken fall of `kind` that hour k belongs to (the id of one shower: it counts once). */
   episodeStart(rec, k, kind) {
     let s = k;

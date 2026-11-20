@@ -1,4 +1,5 @@
 // #1397: simple assumed winter rugs, fitted to the existing rigid pony barrel.
+import { snowLies } from './snowcover.js';
 import * as THREE from 'three';
 import { PADDOCK as P, SEASON } from './config.js';
 import { registerSeasonal } from './seasons.js';
@@ -35,7 +36,7 @@ export function ponyBlankets(body) {
   mesh.name = 'pony-winter-blankets'; mesh.raycast = () => {};
   mesh.userData.noDetail = true;
   mesh.visible = false;
-  registerSeasonal(month => { mesh.visible = SEASON.snowMonths.includes(month); });
+  registerSeasonal(month => { mesh.visible = snowLies(month); });
   body.add(mesh); // Parent visibility/frustum and all ancestor visibility remain authoritative.
   return mesh;
 }

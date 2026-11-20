@@ -1,4 +1,5 @@
 // #1316: where the paddock's ponies take shelter and when. No three.js: the places and the rain/snow rules are shared by paddock.js and the node test.
+import { snowLies } from './snowcover.js';
 import { PADDOCK as P, SEASON } from './config.js';
 import { insideFence, fenceLine, ringDist } from './paddockgeo.js';
 
@@ -17,7 +18,7 @@ export function shelterSpots(shelter, keep = () => true) {
 }
 
 /** Is the ground white in `month` (1-12)? Then the ponies occupy the field shelter. */
-export const snowCovered = (month) => SEASON.snowMonths.includes(month);
+export const snowCovered = (month) => snowLies(month);
 
 /** Rain with hysteresis: `wanted` turns on at PADDOCK.rain.on and off once the rain has been under `off` for `dry` s. `update(dt, rain)` returns +1 when a shower begins, -1 when it is over, else 0. */
 export class RainWatch {

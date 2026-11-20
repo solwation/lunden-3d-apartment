@@ -473,11 +473,11 @@ export function buildCourtyard() {
     pergola: wetSurface(snowCap(new THREE.MeshStandardMaterial({ color: 0xd8d0bf, roughness: 0.85 })), 'wood'),
     brick: new THREE.MeshStandardMaterial({ map: herringbone(), roughness: 0.9 }),
   };
-  registerSnow(mats.brick, SEASON.snow.paving);
+  registerSnow(mats.brick, SEASON.snow.paving, 'paving');
   wetGround(mats.paving, 'paving'); wetGround(mats.brick, 'paving'); // #2099: wet in and after rain (the gravel's own factory does it)
-  registerSnow(mats.paving, SEASON.snow.paving);
-  registerSnow(mats.gravel, SEASON.snow.ground);
-  registerSnow(mats.sand, SEASON.snow.ground);
+  registerSnow(mats.paving, SEASON.snow.paving, 'paving');
+  registerSnow(mats.gravel, SEASON.snow.ground, 'gravel');
+  registerSnow(mats.sand, SEASON.snow.ground, 'gravel');
   let metalBatch;
   for (const [k, list] of Object.entries(geos)) {
     if (!list.length) continue;

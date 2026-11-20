@@ -44,13 +44,6 @@ export function pavingMaterial(map, { snow = false } = {}) {
   const material = new THREE.MeshStandardMaterial({ map, bumpMap: packed, bumpScale: S.depth,
     roughnessMap: packed, roughness: 1 });
   if (snow) wetGround(material, 'paving'); // #2099: exposed paving gets wet in rain too; sheltered stays dry
-  if (snow) registerSeasonal(month => {
-    const covered = SEASON.snowMonths.includes(month);
-    // Existing registerSnow at the consumer still owns colour/map; sheltered portik never registers this hook.
-    material.bumpMap = covered ? null : packed;
-    material.roughnessMap = covered ? null : packed;
-    material.roughness = covered ? S.snowRoughness : 1;
-    material.needsUpdate = true;
-  });
+  // #2176: the bump / roughness maps stay: the patchy snow step (snowground.js, via registerSnow at the consumer) flattens the normal where snow lies
   return material;
 }

@@ -1,3 +1,4 @@
+import { snowLies } from './snowcover.js';
 import * as THREE from 'three';
 import { FOOTPRINTS as F, SEASON } from './config.js';
 import { registerSeasonal } from './seasons.js';
@@ -70,7 +71,7 @@ export class Footprints {
     this.mesh.raycast = () => {};
     this.mesh.userData.noDetail = true; // (our own distance rule, not the small-detail culler)
     scene.add(this.mesh);
-    registerSeasonal((month) => this.setSnow(SEASON.snowMonths.includes(month)));
+    registerSeasonal((month) => this.setSnow(snowLies(month)));
   }
 
   now() { return Date.now() / 1000 + this.skew; }

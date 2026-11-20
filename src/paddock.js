@@ -1,3 +1,4 @@
+import { snowLies } from './snowcover.js';
 import { modelURL } from './modelurl.js';
 import { discoverCreature } from './bestiaryevents.js';
 import { creature } from './bestiarymetadata.js';
@@ -610,7 +611,7 @@ export class Paddock {
     spots.forEach((t, i) => mesh.setMatrixAt(i, m.compose(v.set(t[0], ground(t[0], t[1]) + 0.02, t[1]), q.setFromAxisAngle(up, t[2]), sc.set(t[3], t[3], t[3]))));
     mesh.count = spots.length; mesh.name = 'paddock-grass'; mesh.raycast = () => {}; mesh.userData.noDetail = true; mesh.userData.warmDraw = true; mesh.visible = false;
     mesh.boundingSphere = this.mesh.boundingSphere.clone(); mesh.castShadow = false; mesh.receiveShadow = false;
-    registerSeasonal((month) => { this.snowy = SEASON.snowMonths.includes(month); });
+    registerSeasonal((month) => { this.snowy = snowLies(month); });
     this.grass = mesh; scene.add(mesh);
   }
   /** #1342: the mask survives reloads (localStorage, with its time stamp); the time away regrows it like time played. Returns whether a saved mask was used. */

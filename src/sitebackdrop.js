@@ -1,3 +1,4 @@
+import { snowLies } from './snowcover.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { SITE, SEASON, DECAL_OFFSET, PARKING_LOT, GLASS_PANES } from './config.js';
@@ -167,8 +168,8 @@ const parts={facade:[],roof:[],glass:[],access:[],...(brick||W.buildings.some(b=
  if(parts.karpBrick){mats.karpBrick=new THREE.MeshStandardMaterial({map:karpBrickTexture(),roughness:.95,side:THREE.DoubleSide});mats.karpGlass=karp.glass;mats.karpRoof=new THREE.MeshStandardMaterial({map:roofMap(),color:roofColor(W.karp.colors.roof),roughness:.9,side:THREE.DoubleSide});registerSnow(mats.karpRoof,SEASON.snow.roof);}
  if(parts.schoolBrick){const maps=schoolTextures();mats.schoolBrick=new THREE.MeshStandardMaterial({map:maps.brick,vertexColors:true,roughness:.95,side:THREE.DoubleSide});mats.schoolRoof=new THREE.MeshStandardMaterial({map:roofMap(),color:roofColor(0xffffff,SCHOOL_ROOF_LEVEL),vertexColors:true,roughness:.65,side:THREE.DoubleSide});registerSnow(mats.schoolRoof,SEASON.snow.roof);
   // #1679: snow-covered roofs stay white rather than taking the blue-grey roof tint (same toggle as busstop.js).
-  const roofMat=mats.schoolRoof;registerSeasonal(month=>{const colored=!SEASON.snowMonths.includes(month);if(roofMat.vertexColors!==colored){roofMat.vertexColors=colored;roofMat.needsUpdate=true;}});}
- registerSnow(mats.roof,SEASON.snow.roof);registerSnow(mats.access,SEASON.snow.paving);
+  const roofMat=mats.schoolRoof;registerSeasonal(month=>{const colored=!snowLies(month);if(roofMat.vertexColors!==colored){roofMat.vertexColors=colored;roofMat.needsUpdate=true;}});}
+ registerSnow(mats.roof,SEASON.snow.roof);registerSnow(mats.access,SEASON.snow.paving,'paving');
  // #2087: window panes vary calmly per pane (vertex colour); tinted frames/units in the brick glass batch keep their colour
  parts.glass=parts.glass.map(g=>brick&&(g.attributes.color||g.userData.tint!==undefined)?g:paneTints([g],W.glass,GLASS_PANES.far)[0]);
  for(const k of ['schoolGlass','karpGlass'])if(parts[k])parts[k]=paneTints(parts[k]); // neighborGlass() multiplies the colour

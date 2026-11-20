@@ -5,6 +5,7 @@
 // MeshStandardMaterial without the wet patch (#2118: it compiles to a program the scene already has); elsewhere the #2099 wet
 // patch makes it dark and glossy in rain with the street. Hidden in the snow months (under the snow). Placement is
 // deterministic from STREET_DRAINS and SITE (every place a *guess*).
+import { snowLies } from './snowcover.js';
 import * as THREE from 'three';
 import { SITE, STREET_DRAINS as D, STREET_WEAR, SEASON } from './config.js';
 import { samples, nearestS, onRoad } from './roads.js';
@@ -140,6 +141,6 @@ export function buildDrains(ground, yardGround = ground, lite = lowMemory) {
   const mesh = new THREE.Mesh(drainGeometry(drainPlacements(), ground, yardGround), drainMaterial(lite));
   mesh.name = 'street-drains';
   mesh.receiveShadow = true; mesh.castShadow = false;
-  registerSeasonal((month) => { mesh.visible = !SEASON.snowMonths.includes(month); });
+  registerSeasonal((month) => { mesh.visible = !snowLies(month); });
   return mesh;
 }

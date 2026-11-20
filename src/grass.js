@@ -1,3 +1,4 @@
+import { snowLies } from './snowcover.js';
 import * as THREE from 'three';
 import { GRASS as G, SEASON } from './config.js';
 import { registerSeasonal, registerSnow } from './seasons.js';
@@ -99,9 +100,9 @@ export function grassMaterial(color = G.summer, bed = null) {
   };
   material.customProgramCacheKey = () => (bed ? `grass-patches-688-bed-${bed.color}` : 'grass-patches-688');
   leafLitter(material, 'grass', bed ? '1.0 - grassBed' : ''); // #2105: fallen autumn leaves on the lawns (not on the river bed's mud)
-  registerSnow(material, SEASON.snow.ground); // seasons removes/reinstates the shared detail map under snow
+  registerSnow(material, SEASON.snow.ground, bed ? null : 'grass'); // #2176: the lawn keeps its detail map and gets the patchy snow step (the river bed's mud: the old whole-material switch)
   registerSeasonal((month) => {
-    snow.value = SEASON.snowMonths.includes(month) ? 1 : 0;
+    snow.value = bed && snowLies(month) ? 1 : 0; // #2176: the lawn's own patchy snow step (snowground.js) replaces this whole-lawn switch; only the river bed's mud keeps it
     if (!snow.value) material.color.copy(base).lerp(autumn, G.autumnMix[month] ?? 0);
   });
   return material;

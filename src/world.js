@@ -1200,9 +1200,9 @@ function* worldParts(plan) {
   outdoor.push(...life.segments);
   scene.add(buildEastLotCars(renderedTerrainY)); // the east campus car parks' cars (#1278; collision: farwalk.js)
   // snow in the winter months (seasons.js): the lawn, the hedges and the patio paving
-  registerSnow(M.grass, SEASON.snow.ground);
+  registerSnow(M.grass, SEASON.snow.ground, 'grass');
   registerSnow(M.hedge, SEASON.snow.hedge);
-  registerSnow(M.patio, SEASON.snow.paving);
+  registerSnow(M.patio, SEASON.snow.paving, 'paving');
   scene.add(surroundings);
   // the walkable block (#355): OUTDOOR's rectangle round Kv. Lunden; Hus L's row is a wall all round except our own
   // façades (the flat's walls take over there) and the portik through the stair core; the neighbours' screen walls and

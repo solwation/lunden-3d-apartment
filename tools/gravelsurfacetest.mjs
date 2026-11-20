@@ -34,7 +34,7 @@ test('material: colour divided by the map mean, shared textures, metre UVs, snow
   assert.equal(a.map, b.map); assert.equal(a.bumpMap, t.surface); assert.ok(a.vertexColors && !b.vertexColors); assert.ok(hasNativeVertexCompile(a));
   registerSnow(a, 0xeef3f7);
   for (const month of [6, 1, 7]) { applySeason(month); const w = month === 1;
-    assert.equal(a.map, w ? null : t.color); assert.equal(a.bumpMap, w ? null : t.surface); assert.equal(a.roughnessMap, w ? null : t.surface); assert.equal(a.roughness, 1);
+    assert.equal(a.map, w ? null : t.color); assert.equal(a.bumpMap, t.surface); assert.equal(a.roughnessMap, t.surface); assert.equal(a.roughness, 1); /* #2176: the maps stay; the patchy snow step flattens them where snow lies */
     assert.equal(a.color.getHex(), w ? 0xeef3f7 : gravelColor(0xcfc6b2).getHex()); }
   const sh = { fragmentShader: '#include <map_fragment>\n#include <color_fragment>' }; a.onBeforeCompile(sh);
   assert.match(sh.fragmentShader, /#ifdef USE_MAP\n#include <color_fragment>\n#endif/, 'vertex tints only with the map (plain snow in winter)');

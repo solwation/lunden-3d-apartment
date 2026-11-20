@@ -1609,7 +1609,7 @@ export const GRASS = {
   // khaki 0x94845b was mixed in at 55 % for ALL of September, so early-autumn lawns were already straw (~103,104,60) while the
   // far land (summer mean) stayed green. Greener summer base; `autumnMix` by month (0 = none): September barely turns, the
   // browning arrives in October/November (*guess* by eye from the Google 3D references, docs/references/google-3d-2026-10-29).
-  summer: 0x609548, autumn: 0x94845b, autumnMix: { 9: 0.12, 10: 0.5, 11: 0.6 },
+  summer: 0x609548, autumn: 0x94845b, autumnMix: { 9: 0.12, 10: 0.5, 11: 0.6, 12: 0.7, 1: 0.8, 2: 0.7 }, // #2176: Dec–Feb: the lawn that shows between the patches of snow (or on a snow-free mild winter day) is dull brown-green (*guess*)
   detailRange: [190, 244], detailNoise: 24, strawTint: 0.94, bladeTint: 0.91, strokeWidth: 0.7,
   patchScale: 0.45, patchStrength: 0.10, patchWarmth: 0.035, patchFrequencies: [0.73, 0.87, 0.31],
   // #2086: inside the detail map (one 1.6 m tile), soft drier / lusher patches and small tussocks so a lawn in walk view is
@@ -2054,6 +2054,22 @@ export const SEASON = {
   },
   blossomMonths: [4, 5], // some trees flower white/pink
   snow: { ground: 0xeef3f7, roof: 0xf4f7fa, hedge: 0xdfe8ec, paving: 0xe6ebee },
+};
+
+// Snow cover (#2176, src/snowcover.js, src/snowground.js): a depth (cm) that builds with the real hourly snowfall and melts above
+// zero (src/realweather.js rawAt), shared as `snowCover` 0…1 by every reader that used to ask `SEASON.snowMonths` (without real data for
+// the hour the calendar months stay in charge: 1 in the snow months, else 0). `full`: depth that covers everything (cm); `max`: depth cap;
+// `melt`: cm of depth per degree-hour above 0 °C; `rain`: extra cm per mm of rain per degree on snow; `spin`: hours of history read at a
+// start or after a jump; `lies` / `gone`: the binary readers (squirrels hidden, footprints, drains, roofs …) turn snow on above `lies` and
+// off below `gone` (hysteresis). `hold`: the cover a surface needs before it is white at all (asphalt first, grass last), `noise`: how much
+// the world-xz noise spreads that, `shelter`: how much lower it is under crowns and against north facades (the texel's 0…1), `ridge`: where the
+// ploughed kerb ridge lies (m from the road edge, over `half`); `ridgeColor`: dirty grey. Plough ridge placement and all numbers are *guess*.
+export const SNOW_COVER = {
+  full: 4, max: 40, melt: 0.12, rain: 0.1, spin: 336, lies: 0.3, gone: 0.2, ease: 4,
+  hold: { asphalt: 0.62, paving: 0.48, gravel: 0.4, grass: 0.3 }, noise: 0.5, shelter: 0.3,
+  scale: [3.2, 0.9], up: [0.6, 0.9], color: 0xeef3f7, rough: 0.9,
+  ridge: { inner: -0.25, outer: 0.7, hold: 0.1, color: 0x8f9296, mix: 0.7 },
+  shelterMap: { size: 256, extent: 150, treeReach: 1.15, northBand: 3.2, centre: [-40, -30] },
 };
 
 // Footprints in the snow (#1773, src/footprinttrail.js, src/footprints.js, cloudflare/trails.js). In the snow months players (shoe

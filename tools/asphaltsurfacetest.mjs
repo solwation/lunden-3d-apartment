@@ -22,7 +22,7 @@ test('metre UVs share phase across geometry without touching positions/normals/i
 test('existing snow colour/map boundary also hides new relief/roughness and restores the same maps in summer',()=>{
  const m=asphaltMaterial(),t=asphaltTextures();registerSnow(m,0xd9dfe4);
  const unrelated=new THREE.MeshStandardMaterial({color:0x765432,roughness:.4});registerSnow(unrelated,0xffffff);
- for(const month of[6,1,7,12,6]){applySeason(month);const winter=[1,12].includes(month);assert.equal(m.map,winter?null:t.color);assert.equal(m.bumpMap,winter?null:t.surface);assert.equal(m.roughnessMap,winter?null:t.surface);assert.equal(m.roughness,winter?.7:1);assert.equal(m.color.getHex(),winter?0xd9dfe4:0xffffff);assert.equal(unrelated.roughness,.4);assert.equal(unrelated.bumpMap,null);}
+ for(const month of[6,1,7,12,6]){applySeason(month);const winter=[1,12].includes(month);assert.equal(m.map,winter?null:t.color);assert.equal(m.bumpMap,t.surface);assert.equal(m.roughnessMap,t.surface);assert.equal(m.roughness,1);/* #2176: the maps stay; the patchy snow step (snowground.js) flattens them where snow lies */assert.equal(m.color.getHex(),winter?0xd9dfe4:0xffffff);assert.equal(unrelated.roughness,.4);assert.equal(unrelated.bumpMap,null);}
  assert.ok(hasNativeVertexCompile(m),'fragment tone patch leaves native vertices and culling intact');
  const sh={fragmentShader:'#include <map_fragment>'};m.onBeforeCompile(sh);assert.match(sh.fragmentShader,/#ifdef USE_MAP[\s\S]*asphaltTone[\s\S]*#endif/,'broad tone is absent with winter colour map');
 });

@@ -1,3 +1,4 @@
+import { snowLies } from './snowcover.js';
 import { SQUIRRELS as C, SEASON, SQUIRREL_LIFE as LIFE } from './config.js';
 import { seasonLife } from './squirrellife.js';
 import { SQUIRREL_CLIMB as K } from './config.js';
@@ -17,7 +18,7 @@ import { limbAt, limbFor, perchF, climbRoute, crownRoute, pathOf, pathAt, climbP
 // up) runs along limbs / round the trunk within a crown, and a leap goes only between branch points at most SQUIRREL_CLIMB.hop m apart
 // (`t.hops[j]`, from linkTrees). Trees without a frame (a test's own, the far woodland) keep the old crown-surface perches and climb.
 
-export const winterMonth = (month) => SEASON.snowMonths.includes(month);
+export const winterMonth = (month) => snowLies(month);
 const R = C.roam;
 const between = ([a, b], r) => a + (b - a) * r();
 const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));

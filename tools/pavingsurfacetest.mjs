@@ -36,8 +36,8 @@ test('existing snow removes exposed auxiliary maps and restores cache; sheltered
   const unrelated = new THREE.MeshStandardMaterial({ roughness: .43 }); registerSnow(unrelated, 0xffffff);
   for (const month of [6, 1, 7, 12, 6]) {
     applySeason(month); const snow = SEASON.snowMonths.includes(month);
-    assert.equal(m.map, snow ? null : map); assert.equal(m.bumpMap, snow ? null : packed);
-    assert.equal(m.roughnessMap, snow ? null : packed); assert.equal(m.roughness, snow ? .95 : 1);
+    assert.equal(m.map, snow ? null : map); assert.equal(m.bumpMap, packed); // #2176: the maps stay; the patchy snow step (snowground.js) flattens them where snow lies
+    assert.equal(m.roughnessMap, packed); assert.equal(m.roughness, 1);
     assert.equal(m.color.getHex(), snow ? SEASON.snow.paving : 0xffffff);
     assert.equal(sheltered.map, shelteredMap); assert.equal(sheltered.bumpMap, packed);
     assert.equal(sheltered.roughnessMap, packed); assert.equal(sheltered.roughness, 1);

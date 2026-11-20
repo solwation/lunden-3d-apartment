@@ -1,3 +1,4 @@
+import { snowLies } from './snowcover.js';
 import { discoverCreature } from './bestiaryevents.js';
 import { catEntryId } from './bestiary.js';
 import { creature } from './bestiarymetadata.js';
@@ -87,7 +88,7 @@ export class OutdoorCats {
       available:(c,active)=>!this.socialHidden&&this.isOut(c)&&c.alpha>.9&&c.h<.05&&!c.at?.surface&&!c.fish&&c!==this.bound&&Math.hypot(c.x-camera.position.x,c.z-camera.position.z)>C.take+C.nuzzle.viewerGap&&(active?c.st==='social':c.st==='route'&& !['climb','chase','sleep','crouch','pounce'].includes(c.activity)),
       seen:c=>this.socialVisible(c),shape:c=>c.nuzzleShape,
       burst:p=>{this.socialHearts??=new Hearts(scene,C.nuzzle.hearts,C.nuzzle.heartScale);this.socialHearts.burst({...p.point,y:p.point.y+C.nuzzle.heartLift});}});
-    registerSeasonal((month) => { this.winter = SEASON.snowMonths.includes(month); });
+    registerSeasonal((month) => { this.winter = snowLies(month); });
   }
 
   socialVisible(c){

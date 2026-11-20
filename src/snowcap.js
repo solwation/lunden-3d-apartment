@@ -8,15 +8,17 @@
 // Phones (lowMemory): only materials that already carry their own compile step (no new program for a plain material).
 import * as THREE from 'three';
 import { SNOW_CAP as C, SEASON } from './config.js';
+import { snowState } from './snowcover.js';
 import { registerSeasonal } from './seasons.js';
 import { rememberFragmentCompile } from './vertexcompile.js';
 import { lowMemory } from './lowmemory.js';
 
 /** The shared switch: 1 in the snow months, else 0 (every capped material's shader reads this one object). */
 export const snowCapUniform = { value: 0 };
-export const snowCapOn = (month) => (SEASON.snowMonths.includes(month) ? 1 : 0);
+// #2176: thin snow already settles on narrow upward faces: the switch follows the shared cover (0…1: sills catch snow before the ground is white); the calendar until the cover driver runs
+export const snowCapOn = (month) => (snowState.driven ? Math.min(1, snowState.cover * 4) : SEASON.snowMonths.includes(month) ? 1 : 0);
 let hooked = false;
-const hook = () => { if (!hooked) { hooked = true; registerSeasonal((month) => { snowCapUniform.value = snowCapOn(month); }); } };
+const hook = () => { if (!hooked) { hooked = true; registerSeasonal((month) => { snowCapUniform.value = snowCapOn(month); }); } }; // (main.js sets it every frame from the cover too)
 
 const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 const fract = (x) => x - Math.floor(x);

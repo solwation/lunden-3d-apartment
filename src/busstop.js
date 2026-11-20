@@ -1,3 +1,4 @@
+import { snowLies } from './snowcover.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { railMetal } from './railmetal.js'; // #2089: the steel parts only (wood/bin stay by saturation)
@@ -77,8 +78,7 @@ export function buildBusStop(ground) {
   const tac = B.tactile, [ts] = toLocal(35.59, 192.31); // the tactile_paving node 2000527695
   const plat = [busStopStripGeometry(ground, 0, len, 0, B.width, B.lift, C.paving), busStopStripGeometry(ground, Math.max(0, ts - tac.len / 2), Math.min(len, ts + tac.len / 2), tac.from, tac.from + tac.w, B.lift + 0.004, tac.color)];
   for (let a = 0; a < len; a += 3) { const l = Math.min(3, len - a), [kx, kz] = busStopPoint(a + l / 2, B.kerbW / 2); plat.push(box(B.kerbW, B.kerbH, l + 0.01, a + l / 2, B.kerbW / 2, ground(kx, kz), C.kerb)); } // 3 m stones, each level on the ground under its middle
-  const platMat = new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.92 }); registerSnow(platMat, SEASON.snow.paving);
-  registerSeasonal((month) => { const colored = !SEASON.snowMonths.includes(month); if (platMat.vertexColors !== colored) { platMat.vertexColors = colored; platMat.needsUpdate = true; } });
+  const platMat = new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.92 }); registerSnow(platMat, SEASON.snow.paving, 'paving');
   const platMesh = new THREE.Mesh(mergeGeometries(plat), platMat); platMesh.name = 'bus-stop-platform'; platMesh.receiveShadow = true; group.add(platMesh);
   // furniture
   const [cs, ct] = toLocal(...Sh.at), y0 = ground(...Sh.at) + B.lift, f = [];

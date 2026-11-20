@@ -100,12 +100,6 @@ export function gravelMaterial(hex, { vertexColors = false, name = 'gravel' } = 
   rememberFragmentCompile(material.onBeforeCompile);
   material.customProgramCacheKey = () => 'gravel-surface-2096';
   wetGround(material, 'gravel'); // #2099: wet in and after rain
-  registerSeasonal((month) => {
-    const snow = SEASON.snowMonths.includes(month);
-    material.bumpMap = snow ? null : t.surface;
-    material.roughnessMap = snow ? null : t.surface;
-    material.roughness = snow ? G.snowRoughness : 1;
-    material.needsUpdate = true;
-  });
+  // #2176: the bump / roughness maps stay: the patchy snow step (snowground.js, via registerSnow) flattens the normal and sets the roughness where it lies
   return material;
 }

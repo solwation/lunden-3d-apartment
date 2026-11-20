@@ -232,9 +232,9 @@ export function buildStreetLife({ entrances = [] } = {}) {
   const placeMat = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.85, color: 0xfdfcf8 });
   const pave = new THREE.Mesh(paved(L.yard, 0.012), paveMat), place = new THREE.Mesh(paved(L.bikePlace, 0.016), placeMat);
   pave.receiveShadow = place.receiveShadow = true;
-  registerSnow(paveMat, SEASON.snow.paving); registerSnow(placeMat, SEASON.snow.paving);
+  registerSnow(paveMat, SEASON.snow.paving, 'paving'); registerSnow(placeMat, SEASON.snow.paving, 'paving');
   const lawnMat = grassMaterial(0x5f8a3e);
-  registerSnow(lawnMat, SEASON.snow.ground);
+  registerSnow(lawnMat, SEASON.snow.ground, 'grass');
   const lawn = new THREE.Mesh(merge(L.lawns.map(([x0, x1, z0, z1]) => grassUV(flat(x0, x1, z0, z1, 0.02)))), lawnMat); lawn.receiveShadow = true;
   group.add(pave, place, lawn);
   // the low green strip along Hus L's entrances (#260): a concrete edge, grass, clipped boxwood
@@ -283,7 +283,7 @@ export function buildStreetLife({ entrances = [] } = {}) {
   registerBicycleYardEdges(curbs);
   if (curbs.length) {
     const curbMat = new THREE.MeshStandardMaterial({ color: E.color, roughness: 0.85 });
-    registerSnow(curbMat, SEASON.snow.paving);
+    registerSnow(curbMat, SEASON.snow.paving, 'paving');
     const cm = new THREE.Mesh(merge(curbs), curbMat);
     cm.name = 'concreteEdges'; cm.receiveShadow = true;
     group.add(cm);

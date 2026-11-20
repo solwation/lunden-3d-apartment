@@ -1,3 +1,4 @@
+import { snowLies } from './snowcover.js';
 import * as THREE from 'three';
 import { riverSurface } from './riversurface.js';
 import { waterYAt } from './riverbridge.js';
@@ -278,6 +279,6 @@ export function buildEdgeBackdrop(ground) {
     mats.push(houses.material);
   }
   registerSnow(land.material, SEASON.snow.ground);
-  registerSeasonal((month) => { const colored = !SEASON.snowMonths.includes(month); for (const m of mats) if (m.vertexColors !== colored) { m.vertexColors = colored; m.needsUpdate = true; } }); // snow months: all white like the rest of the backdrop (#1676)
+  registerSeasonal((month) => { const colored = !snowLies(month); for (const m of mats) if (m.vertexColors !== colored) { m.vertexColors = colored; m.needsUpdate = true; } }); // snow months: all white like the rest of the backdrop (#1676)
   return group;
 }

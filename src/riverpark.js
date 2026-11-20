@@ -1,3 +1,4 @@
+import { snowLies } from './snowcover.js';
 import {onWestBuilding,onWestAccess,onEastBuilding,onEastAccess} from './sitebackdrop.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -211,7 +212,7 @@ export function buildRiverPark(ground, terrain=ground) {
   // #1235: asphalt (shared walking/cycling) and gravel paths are two merged meshes, one per surface material; both follow the rendered terrain.
   for(const kind of ['asphalt','gravel']) {
     const strips=P.paths.filter(p=>p.surface===kind).map(p=>pathStrip(p,w=>-w/2,w=>w/2,kind==='asphalt'?.03:.025,terrain,c=>c.some(([x,z])=>z<64||x<-270||x>SITE.backgroundGround.x1-10||z>260)||(c.every(([x,z])=>onRoad(x,z,-.05))&&!c.some(([x,z])=>deckAt(x,z)!==null)),undefined,vehicleTrim(null,(x,z)=>deckAt(x,z)!==null))); // #1351: exact carriageway-edge clipping; retain the paths under bridge decks
-    const mat=kind==='gravel'?gravelMaterial(P.surfaces[kind].color,{name:'park-gravel'}):wetGround(new THREE.MeshStandardMaterial({color:P.surfaces[kind].color,roughness:.9}),'asphalt');registerSnow(mat,SEASON.snow.paving); // #2096: the shared gravel map, mean colour kept
+    const mat=kind==='gravel'?gravelMaterial(P.surfaces[kind].color,{name:'park-gravel'}):wetGround(new THREE.MeshStandardMaterial({color:P.surfaces[kind].color,roughness:.9}),'asphalt');registerSnow(mat,SEASON.snow.paving,kind==='gravel'?'gravel':'asphalt'); // #2096: the shared gravel map, mean colour kept
     if(kind==='gravel')strips.push(surfaceMesh(rampTriangles(true,.03))); // #1337: the ramps' gravel top joins the gravel batch (no extra draw call)
     const merged=mergeGeometries(strips);if(kind==='gravel')gravelUV(merged);const mesh=new THREE.Mesh(merged,mat);mesh.name=kind==='asphalt'?'park-paths-asphalt':'park-paths';mesh.receiveShadow=true;group.add(mesh);
   }
@@ -250,7 +251,7 @@ export function buildRiverPark(ground, terrain=ground) {
   }
   const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));geo.setAttribute('siteWindBend',new THREE.Float32BufferAttribute(bend,1));geo.computeVertexNormals();
   const shoreMat=patchSiteWind(new THREE.MeshStandardMaterial({color:0x6e8342,roughness:1,side:THREE.DoubleSide}),'bend'); // #2101: the tips bend in the wind
-  registerSeasonal(month=>shoreMat.color.setHex(SEASON.snowMonths.includes(month)?0xaba590:month>=9?0x8f8350:0x6e8342));
+  registerSeasonal(month=>shoreMat.color.setHex(snowLies(month)?0xaba590:month>=9?0x8f8350:0x6e8342));
   const shore=new THREE.Mesh(geo,shoreMat);shore.name='park-shore-growth';shore.receiveShadow=true;siteWindBounds(shore);group.add(shore);
   group.userData.paths=P.paths;return group;
 }

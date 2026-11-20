@@ -4,6 +4,7 @@
 // denser under the crowns and along the roads' kerbs, more towards late autumn, none in summer, spring or the snow months.
 // Out of season (amount 0) every added branch is skipped. No new draws, lights or passes; one R8 texture (baked lazily on the
 // first autumn month) and a few uniforms.
+import { snowLies } from './snowcover.js';
 import * as THREE from 'three';
 import { LEAF_LITTER as L, SEASON, WALK } from './config.js';
 import { registerSeasonal } from './seasons.js';
@@ -22,7 +23,7 @@ export const litterUniforms = {
 };
 
 /** How much of the full litter lies in `month` (1…12): 0 in summer, spring and the snow months, growing through the autumn. */
-export const litterAmount = (month, P = L) => (SEASON.snowMonths.includes(month) ? 0 : P.months[month] ?? 0);
+export const litterAmount = (month, P = L) => (snowLies(month) ? 0 : P.months[month] ?? 0);
 
 /** The month's [fresh, old] leaf tones (sRGB hex), or null out of season. */
 export const litterColors = (month, P = L) => (litterAmount(month, P) > 0 ? P.colors[month] ?? null : null);

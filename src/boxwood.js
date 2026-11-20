@@ -1,3 +1,4 @@
+import { snowLies } from './snowcover.js';
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -43,6 +44,6 @@ export function boxwood(spec) {
   const combine = list => {const mesh=new THREE.Mesh(mergeGeometries(list.map(m=>{m.updateMatrix();return m.geometry.applyMatrix4(m.matrix)})),list[0].material);mesh.castShadow=mesh.receiveShadow=true;return mesh};
   const bodies=group.children.filter(m=>!caps.includes(m));
   const body=combine(bodies),snow=combine(caps);snow.visible=false;group.clear();group.add(body,snow);
-  registerSeasonal(month=>{snow.visible=SEASON.snowMonths.includes(month)});
+  registerSeasonal(month=>{snow.visible=snowLies(month)});
   return group;
 }

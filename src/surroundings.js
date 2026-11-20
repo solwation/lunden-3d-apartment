@@ -1922,9 +1922,9 @@ export function buildSurroundings(opts) {
 export function* surroundingsParts({ grass, husL = null }) {
   const group = new THREE.Group();
   const historicBrick=brickTexture(),glassMaterial=neighborGlass(),roomGlass=interiorGlass(glassMaterial.clone()); // #2180: the loggia/entrance glass of Hus A–C gets a fake room; the backdrops keep the plain material
-  const flat = (geos, color, snow) => {
+  const flat = (geos, color, snow, cls = null) => {
     const mat = color.isMaterial ? color : new THREE.MeshStandardMaterial({ color, roughness: 1 });
-    if (snow) registerSnow(mat, snow);
+    if (snow) registerSnow(mat, snow, cls); // #2176: cls = a ground class: patchy snow instead of one white colour
     const mesh = new THREE.Mesh(mergeGeometries(geos), mat);
     mesh.receiveShadow = true;
     group.add(mesh);
@@ -1934,7 +1934,7 @@ export function* surroundingsParts({ grass, husL = null }) {
   // street side north of Hus L is world.js's ground); retaining walls, railings and the garage door
   const southeastCells = lowMemory ? null : [];
   // #1945: the terrain has a grass material of its own (the same look and seasons as `grass`) that also paints the river bed under the water as mud
-  const terrain = flat([bedMud(grassUV(terrainGeometry(southeastCells))), bedMud(parkRampFill(renderedTerrainY))], grassMaterial(undefined, MUSSELS.bed), SEASON.snow.ground);
+  const terrain = flat([bedMud(grassUV(terrainGeometry(southeastCells))), bedMud(parkRampFill(renderedTerrainY))], grassMaterial(undefined, MUSSELS.bed), SEASON.snow.ground, 'grass');
   terrain.name = 'site-terrain';
   if (southeastCells) {
     group.add(...terrainCellGroups(terrain, southeastCells));
@@ -1982,12 +1982,12 @@ export function* surroundingsParts({ grass, husL = null }) {
   const roadGround = (x, z) => Math.max(groundY(x, z), renderedTerrainY(x, z)); roadGround.grid = () => renderedTerrainY.grid();
   const asphalt = [...S.roads, { x0: gd.drive, x1: gd.x + 0.05, z0: gd.z0 - 0.5, z1: gd.z1 + 0.5 }].flatMap((r) => r.path ? [addRoadFrame(pathStrip(r, (w) => -w / 2, (w) => w / 2, 0.012, roadGround), r)]
     : (r.fillets ? r.fillets.map((f) => filletGeometry(f, 0.012, groundY)) : [groundStrip(r.x0, r.x1, r.z0, r.z1, 0.012)]).map((g) => addRoadFrame(g, null))); // #2103: lanes per own road only
-  flat(asphalt.map(asphaltUV), asphaltMaterial(), 0xd9dfe4).name = 'site-asphalt'; // ploughed, a little grey; damp (#128)
+  flat(asphalt.map(asphaltUV), asphaltMaterial(), 0xd9dfe4, 'asphalt').name = 'site-asphalt'; // ploughed, a little grey; damp (#128)
   // pavements along the roads (left out where they would lie on another road's asphalt: a junction's mouth)
   const pavementClip=(road)=>road.name==='Sankt Lars väg'?c=>roadBridgeSpan(c.reduce((s,p)=>s+p[0],0)/4,c.reduce((s,p)=>s+p[1],0)/4)||c.every(([x,z])=>onRoad(x,z,-.05,road)):true;
   const walks = S.roads.flatMap((r) => (r.walks || []).map((k) => k.side > 0
     ? pathStrip(r, (w) => w / 2, (w) => w / 2 + k.w, 0.008, roadGround, pavementClip(r), undefined, vehicleTrim()) : pathStrip(r, (w) => -w / 2 - k.w, (w) => -w / 2, 0.008, roadGround, pavementClip(r), undefined, vehicleTrim())));
-  const sitePaving = flat([...[...S.paving, ...S.basementPaving].map((r) => groundStrip(r.x0, r.x1, r.z0, r.z1, 0.008)), ...walks, ...facadeWalkGeometries(roadGround)], COLORS.paving, SEASON.snow.paving);
+  const sitePaving = flat([...[...S.paving, ...S.basementPaving].map((r) => groundStrip(r.x0, r.x1, r.z0, r.z1, 0.008)), ...walks, ...facadeWalkGeometries(roadGround)], COLORS.paving, SEASON.snow.paving, 'paving');
   wetGround(sitePaving.material, 'paving'); // #2099
   sitePaving.name = 'site-paving';
   yield 0.15;

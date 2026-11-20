@@ -871,6 +871,25 @@ tools/weathertest.html headless test (#674 too: simTemp, RealWeather against a m
 
 ## Recent implementation notes
 
+### Snow cover from the real weather (#2176)
+
+`SEASON.snowMonths` is now only the fallback. `src/snowcover.js` holds the pure model (`snowStep`: depth cm + hourly snowfall,
+`SNOW_COVER.melt` cm per degree-hour above 0 °C, minus `SNOW_COVER.rain` cm per mm of rain per degree on snow; `coverOf` = depth / `full`)
+and the `SnowCover` driver (main.js, after `weather.update`, before `groundWet.update`): it integrates the real hourly series
+(`RealWeather.rawAt`: temp, snowfall, rain; `spin` hours of history re-read at a start, a jump or when a month arrives) and writes
+the shared `snowState` (`cover` 0…1, `lies` = binary with the `lies` / `gone` hysteresis, `source` real | calendar | forced) and
+`snowUniform`. Without real data for the hour, or with forced weather, `cover` is the calendar's 0 / 1 (the old behaviour);
+`&snow=0…1` pins it. Binary readers (squirrels, ponies, footprints, drains, roofs, hedges, cats, leaf litter, backdrops) call
+`snowLies(month)`; `applySeason` re-runs the seasonal hooks when the month or that reading changes. `wetground.js` fades the film
+out as the cover grows, `snowcap.js` (#2123) takes `min(1, 4 × cover)` (sills catch snow first).
+`src/snowground.js` (`registerSnow(mat, hex, cls)` with a ground class asphalt | paving | gravel | grass) chains one fragment step
+onto the ground materials: the spot is white when the cover exceeds its hold (`snowHold`: class base, ± world-xz noise, lower under
+crowns and against north facades = R channel of one 512 px shelter texture built once by `buildSnowShelter` from the trees, the
+`weather.boxes` and `roadFrameAt`, lower and dirty grey `ridge.color` along the road edges = G channel: the plough ridges, placement
+*guess*). The ground keeps its texture and bump (the step flattens the normal where snow lies). Phones (`lowMemory`): noise only, no
+texture lookup. No draw, light or pass; one extra sampler on the patched materials. Test: `node tools/snowcovertest.mjs`; fixture
+`tools/fixtures/openmeteo-snow-2176.json` (hand-made Jan 2026: snowfall 2 Jan, thaw from 9 Jan), used with `&weatherapi=`.
+
 ### Footprints in the snow (#1773)
 
 In the snow months (`SEASON.snowMonths`, i.e. while the ground is white; snowfall in another month leaves none) players leave shoe

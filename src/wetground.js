@@ -8,6 +8,7 @@ import { WET_GROUND as W, RAIN_RIPPLES as RR, SEASON } from './config.js';
 import { rememberFragmentCompile } from './vertexcompile.js';
 import { leafLitter } from './leaflitter.js';
 import { lowMemory } from './lowmemory.js';
+import { snowState, calendarCover } from './snowcover.js';
 
 /** The uniforms every patched material shares: uGroundWet = (film, puddles, rain on it #2119), the sky's horizon / zenith colours,
  * uWetTime = the drop rings' clock (s, wraps at RAIN_RIPPLES.wrap). */
@@ -83,10 +84,11 @@ export class GroundWetness {
     else Object.assign(this, wetStep(this, { falling: wetting(this.weather.rain, this.weather.kind), daylight: this.day.daylight ?? 0,
       overcast: this.weather.overcast ?? 0, temp: this.weather.temp ?? 10 }, dh, this.P));
     this.t = now;
-    const snow = SEASON.snowMonths.includes(this.day.month); // the snow months' ground is snow (registerSnow): dry
-    this.ripple = rippleStep(this.ripple, this.weather.rain ?? 0, this.weather.kind, this.puddles && !snow && this.wet > 0, dt);
+    // #2176: snow-covered ground is dry (the snow step, snowground.js, whitens it); the shared cover (calendar without real data) fades the film out
+    const cover = snowState.driven ? snowState.cover : calendarCover(this.day.month), bare = 1 - Math.min(1, Math.max(0, (cover - 0.08) / 0.32)), snow = bare <= 0;
+    this.ripple = rippleStep(this.ripple, this.weather.rain ?? 0, this.weather.kind, this.puddles && bare > 0.5 && this.wet > 0, dt);
     if (dt > 0) wetUniforms.uWetTime.value = this.time = (this.time + dt) % RR.wrap;
-    wetUniforms.uGroundWet.value.set(snow ? 0 : this.wet, snow || !this.puddles ? 0 : this.pool, this.ripple);
+    wetUniforms.uGroundWet.value.set(snow ? 0 : this.wet * bare, snow || !this.puddles ? 0 : this.pool * bare, this.ripple);
     return wetUniforms.uGroundWet.value;
   }
 }
