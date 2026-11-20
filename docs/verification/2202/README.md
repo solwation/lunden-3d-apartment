@@ -51,3 +51,7 @@ Public transfer is limited to the neutral visual schedule/rest behaviour if appl
 the public ambient-animal exception excludes duck audio, feeding/rewards and personal/game/service code.
 
 Rerun reason: initial image review found raised necks and an unhelpful fixed baseline camera. The final pose lowers/translates the existing neck joint back toward the wing; affected after-only browser checks and the node checks were repeated, without a broader sweep.
+
+Published implementation: `a5983bfa86849660315b1f2bbcfd1f5a9226463c`. [Deploy the shared-world Worker: success](https://github.com/solwation/lunden-3d-apartment/actions/runs/44756013430) · [Deploy to GitHub Pages: success](https://github.com/solwation/lunden-3d-apartment/actions/runs/44756013693).
+
+[Pinned embedded before/after images and completion](https://github.com/solwation/lunden-3d-apartment/issues/2202#issuecomment-7042381735). Neutral public port: https://github.com/solwation/kvarteret-lunden/issues/344. Before-image removed from current main after publication; historical links remain.
