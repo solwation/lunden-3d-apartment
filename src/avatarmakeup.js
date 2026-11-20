@@ -52,10 +52,19 @@ export function applyMakeupLook(u, look) {
 }
 /** Declarations for both stages. */
 export const makeupDecl = () => 'uniform vec2 uMake; uniform vec4 uBlush; // #2170 (src/avatarmakeup.js)';
-/** Fragment: blush on the face's skin (inside skinShading's face branch, `q` the head-frame position and `skinArea` already made `blushA`) */
+/** The blush's weight (0 … 1) at head-frame point (x, y, z): two Gaussian apples under the outer eyes, mirrored in x, in front of the face plane `z`.
+ * The shader's `blushA` is this same formula. */
+export function blushWeight(x, y, z) {
+  const A = M.blush.area;
+  if (z < A.z) return 0;
+  return Math.exp(-(((Math.abs(x) - A.at[0]) / A.r[0]) ** 2) - ((y - A.at[1]) / A.r[1]) ** 2);
+}
+/** Fragment: blush on the face's skin (inside skinShading's face branch, `q` the head-frame position; defines `blushA`) */
 export const blushGLSL = () => {
   const [a, b, c] = M.blush.mul;
-  return `if (uBlush.a > 0.0) { vec3 bl = diffuseColor.rgb * vec3(${a.toFixed(3)}, ${b.toFixed(3)}, ${c.toFixed(3)}) + uBlush.rgb * ${M.blush.tint.toFixed(3)}; diffuseColor.rgb = mix(diffuseColor.rgb, bl, clamp(blushA * uBlush.a, 0.0, 1.0)); }`;
+  const A = M.blush.area, f = (v) => v.toFixed(5);
+  return `float blushA = exp(-pow((abs(q.x) - ${f(A.at[0])}) / ${f(A.r[0])}, 2.0) - pow((q.y - ${f(A.at[1])}) / ${f(A.r[1])}, 2.0)) * step(${f(A.z)}, q.z);
+    if (uBlush.a > 0.0) { vec3 bl = diffuseColor.rgb * vec3(${a.toFixed(3)}, ${b.toFixed(3)}, ${c.toFixed(3)}) + uBlush.rgb * ${M.blush.tint.toFixed(3)}; diffuseColor.rgb = mix(diffuseColor.rgb, bl, clamp(blushA * uBlush.a, 0.0, 1.0)); }`;
 };
 /** Fragment: mascara darkens the lashes (region 9 of the eye part). */
 export const mascaraGLSL = (eyePart) => `if (uMake.y > 0.0 && floor(vSurface.x + 0.5) == 9.0 && abs(vSurface.y - ${eyePart.toFixed(1)}) < 0.5) diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.012), uMake.y);`;

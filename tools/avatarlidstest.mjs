@@ -5,7 +5,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { avatarModelGeometry } from '../src/avatar.js';
 import { avatarLook, AVATAR_LIDS as L, AVATAR_FACE as FACE, AVATAR_SURFACE as SURFACE } from '../src/config.js';
-import { irisDisc, pupilDisc, lidSurface, lashes, lashHairs, lidBlink, scleraZ, edgeY } from '../src/avatarlids.js';
+import { irisDisc, pupilDisc, lidSurface, lashes, lashHairs, lidBlink, scleraZ, edgeY, lidThick } from '../src/avatarlids.js';
 
 const flat = () => 0; // a flat head surface at the eyeball's centre (the real one: avatar.js headFront)
 const tris = (g) => (g.index ? g.index.count : g.attributes.position.count) / 3;
@@ -50,7 +50,8 @@ test('#2045 / #2170 the lashes root in the margin and curl away from it, both ro
     const g = lashes(side, upper), p = g.attributes.position, Z = upper ? L.lash : L.lash.lower, sgn = upper ? 1 : -1;
     assert.equal(tris(g), Z.count * 6, 'six triangles per hair');
     for (const h of lashHairs(side, upper)) {
-      assert.ok(sgn * (h.root[1] - edgeY(h.root[0], upper)) > 0, 'rooted just outside the margin');
+      assert.ok(Math.abs(h.root[1] - edgeY(h.root[0], upper)) <= 0.0005, 'rooted on the lid margin, within 0.5 mm of it');
+      assert.ok(Math.abs(h.root[2] - (scleraZ(h.root[0]) + lidThick(h.root[0], upper))) <= 0.0005, 'and at its front');
       assert.ok(sgn * (h.mid[1] - h.root[1]) > 0 && h.mid[2] > h.root[2], 'away from the lid and forward');
       if (upper) assert.ok(h.tip[1] > h.mid[1], 'on up');
       assert.ok(Math.abs(h.tip[1] - h.mid[1]) >= Math.abs(h.mid[1] - h.root[1]) * (upper ? 1 : -1) * 0 && h.len < Z.length * Z.outer[1] * (1 + L.lash.jitter) * 1.0001 && h.len > 0, 'length within bounds');

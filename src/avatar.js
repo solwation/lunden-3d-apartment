@@ -43,7 +43,7 @@ import { genderFaceGLSL } from './avatarfacegender.js'; // #2142
 import { hairlineAt, hairlineShell, hairlineAvoid, hairlineUniforms, applyHairlineLook, hairlineFDecl, hairlineColor } from './avatarhairline.js'; // #2050
 import { refineNose, noseHeight, noseVertexGLSL, noseFragmentGLSL, noseKey, NOSE_SKIN, noseUniforms, applyNoseLook, noseFormDecl, noseNormalGLSL } from './avatarnose.js'; // #2048: the nose (#2049: its shape variants)
 import { glossUniforms, applyGlossLook, glossVertex, glossFragment, glossKey } from './avatarhairgloss.js'; // #2052: gloss along the strands
-import { beardCutOf, AVATAR_MAKEUP as MAKEUP } from './config.js'; // #2166, #2170
+import { beardCutOf } from './config.js'; // #2166
 import { beardShell, moustacheShell, beardCore, skinProbe, beardUniforms, applyBeardLook, beardFDecl, beardColor, beardRoughness, beardKey } from './avatarbeard.js'; // #2051
 import { AVATAR_SHORT_HAIR as SHORT } from './config.js'; // #2055
 import { AVATAR_OUTERWEAR } from './config.js';
@@ -1130,7 +1130,6 @@ function skinShading() {
           float ear = ${SK.ear[2].toFixed(3)} * smoothstep(${SK.ear[0].toFixed(3)}, ${SK.ear[1].toFixed(3)}, abs(q.x)) * (1.0 - smoothstep(0.0, 0.03, q.z));
           tone *= mix(vec3(1.0), uSkBlush, clamp(cheek + noseTip + lipRim + ear * 0.5, 0.0, 1.0));
           tone *= mix(vec3(1.0), ${v3(SK.socket)}, clamp(socket, 0.0, 1.0));
-          ${skinArea('blushA', MAKEUP.blush.area)}
           ${blushGLSL()} // #2170
           tone *= mix(vec3(1.0), ${v3(SK.underTint)}, clamp(under + ear * 0.4, 0.0, 1.0));
         } else if (skinRole == 4.0) tone = ${v3(SK.hand)};

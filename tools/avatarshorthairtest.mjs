@@ -13,7 +13,7 @@ import { shortHairTriangles, shortJag, shortHairDrop, bunParts, shortHairFDecl, 
 import * as THREE from 'three';
 
 // the head's triangles (face parts 1 … 29, flyaways left out) at the base b622b587, per style
-const before = { 0: 8916 + 320, 2: 9276 + 320 }; // (+ 320 for #2170's lash rows: 432 triangles in place of 112)
+const before = { 0: 8916 + 464, 2: 9276 + 464 }; // (+ 464 for #2170's lash rows: 576 triangles in place of 112)
 const headTris = (style) => {
   const g = avatarModelGeometry({ ...avatarLook('2055-' + style), style, facial: 0, gender: style % 2 }), a = g.attributes;
   let head = 0, hair = 0;

@@ -4,9 +4,10 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { avatarLook, encodeAvatarLook, decodeAvatarLook, makeupOf, makeupCode, makeupFromCode, AVATAR_MAKEUP as M, AVATAR_FACE as FACE, AVATAR_LOOK_EXT_MAX } from '../src/config.js';
-import { lipColour, linerWeight, linerShade, applyMakeupLook, makeupUniforms } from '../src/avatarmakeup.js';
+import { lipColour, blushWeight, linerWeight, linerShade, applyMakeupLook, makeupUniforms } from '../src/avatarmakeup.js';
 import { edgeY } from '../src/avatarlids.js';
 import { avatarModelGeometry } from '../src/avatar.js';
+import { farLookAttributes } from '../src/ghostfar.js';
 
 const ext = (code) => code.replace(/^\d+/, '');
 
@@ -97,4 +98,27 @@ test('#2170 geometry: lipstick recolours the lips only; liner darkens lid-margin
   }
   assert(lipDiff > 20 && otherLip === 0, `lips ${lipDiff}, elsewhere ${otherLip}`);
   assert(lidDark > 20 && lidOther === 0, `lid ${lidDark}, elsewhere ${lidOther}`);
+});
+
+test('#2170 blush: two apples on the cheekbones under the outer eyes; nothing on the nose midline, the bridge or the mouth corners', () => {
+  const A = M.blush.area, [cx, cy] = A.at, z = A.z + 0.01;
+  for (const sx of [-1, 1]) assert.equal(blushWeight(sx * cx, cy, z), 1, 'peak on the cheekbone, both sides');
+  for (let y = 0; y <= 0.14; y += 0.005) assert(blushWeight(0, y, z) < 0.02, `nose midline at y ${y}`);
+  assert(blushWeight(0.012, 0.095, z) < 0.02, 'the nose bridge');
+  assert(blushWeight(0.03, 0.042, z) < 0.05, 'the mouth corner');
+  assert(blushWeight(0.052, 0.113, z) < 0.05, 'under the brow / eye it has faded');
+  assert.equal(blushWeight(cx, cy, A.z - 0.01), 0, 'not behind the face plane');
+  for (let i = 0; i < 300; i++) { const w = blushWeight((Math.random() * 2 - 1) * 0.12, Math.random() * 0.2, 0.1); assert(w >= 0 && w <= 1); }
+  // mirrored
+  assert.equal(blushWeight(-0.04, 0.06, z), blushWeight(0.04, 0.06, z));
+});
+
+test('#2170 round trip with the other packed tags: legs 4 (dress) + makeup + shoes/socks + beard cut + necklace + hat/age, and the far figure reads the legs', () => {
+  const lk = { ...avatarLook('2170'), legs: 4, lipstick: 3, eyeMakeup: 3, blush: 2, shoeModel: 2, socks: 1, facial: 0, beardCut: 1, necklace: 3, hat: 2, age: 2, glasses: 2, earrings: 1, phones: 1 };
+  const back = decodeAvatarLook(encodeAvatarLook(lk));
+  assert.deepEqual([back.legs, back.lipstick, back.eyeMakeup, back.blush], [4, 3, 3, 2]);
+  assert.deepEqual([back.shoeModel, back.socks, back.beardCut, back.necklace, back.hat, back.age, back.glasses, back.earrings, back.phones], [2, 1, 1, 3, 2, 2, 2, 1, 1]);
+  assert.equal(farLookAttributes(back)[3], 4, 'the far figure still gets the dress');
+  for (const legs of [0, 1, 2, 3, 4]) assert.equal(farLookAttributes(decodeAvatarLook(encodeAvatarLook({ ...lk, legs })))[3], legs);
+  assert(encodeAvatarLook(lk).replace(/^\d+/, '').length <= AVATAR_LOOK_EXT_MAX);
 });

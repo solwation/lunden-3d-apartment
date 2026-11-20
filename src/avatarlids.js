@@ -84,7 +84,7 @@ export function lidSurface(skin) {
       const crease = fold * Math.exp(-(((s - C.at) / C.width) ** 2));
       if (j > 0) z = Math.max(z - C.depth * crease, skin(x, y) + lift * 0.5);
       position.push(x, y, z);
-      shade.push(j === 0 ? sh[1] : 1 - (1 - C.shade) * crease);
+      shade.push(j === 0 ? sh[1] : j === 1 && L.shade.line ? sh[1] + (1 - sh[1]) * L.shade.line : 1 - (1 - C.shade) * crease); // (#2170: the lash line's dark reaches the second row)
     });
   }
   for (let i = 0; i < n; i++) for (let j = 0; j < rows.length; j++) {
@@ -106,8 +106,8 @@ export function lidSurface(skin) {
 
 /** A lash root's [y, z] at x on the upper or lower margin (the shader collapses a lash onto it). */
 export const lashBase = (x, upper = true) => (upper
-  ? [edgeY(x, true) + 0.00005, scleraZ(x) + lidThick(x, true) - 0.00008]
-  : [edgeY(x, false) - 0.00005, scleraZ(x) + lidThick(x, false) - 0.00008]);
+  ? [edgeY(x, true) - L.lash.root, scleraZ(x) + lidThick(x, true) - 0.00008]
+  : [edgeY(x, false) + L.lash.root, scleraZ(x) + lidThick(x, false) - 0.00008]);
 
 /** The hairs of one lash row (#2170): `count` hairs along the span, each a flat blade (its width along x) in the plane of its curved
  * path: the root's two points in the margin's edge, a mid ring, a pointed tip. Returns [{x, len, p: [root, mid, tip] as [x, y, z]}].
@@ -135,7 +135,7 @@ export const upperLashes = (side) => lashes(side, true);
 /** One lash row of one eye as a mesh (region `brow`, the brows' colour darkened by the part's shade): per hair a double-sided blade
  * (two roots, two mid points, a tip; 6 triangles), vertices not shared between its sides so each takes its own normal. */
 export function lashes(side, upper = true) {
-  const A = L.lash, w = A.width / 2, position = [], index = [];
+  const A = L.lash, w = (upper ? A.width : A.lower.width) / 2, position = [], index = [];
   for (const h of lashHairs(side, upper)) {
     const k = position.length / 3, wm = w * A.mid;
     for (let copy = 0; copy < 2; copy++) { // front side, then back side (opposite winding)
@@ -159,7 +159,7 @@ export function lidBlink(warp) {
             float yU = ${f(K.upper)} * le, yL = -${f(K.lower)} * le, yC = -${f(B.close * K.lower)} * le, lb = uBlink;
             if (abs(region - 9.0) < 0.5) { // the lashes: drawn only while long enough on screen; they fold down as the lid shuts
               bool lw = lq.y < 0.0; // (the lower row's hairs lie under the opening's middle line, the upper row's over it)
-              float yB = (lw ? -${f(K.lower)} * le - 0.00005 : yU + 0.00005), zB = ${f(zs)} * (${f(K.scleraBase)} + ${f(K.scleraRound)} * le) + (lw ? ${f(D.thick[1])} : ${f(D.thick[0])}) * (${f(D.corner)} + ${f(1 - D.corner)} * sqrt(le)) - 0.00008;
+              float yB = (lw ? -${f(K.lower)} * le + ${f(A.root)} : yU - ${f(A.root)}), zB = ${f(zs)} * (${f(K.scleraBase)} + ${f(K.scleraRound)} * le) + (lw ? ${f(D.thick[1])} : ${f(D.thick[0])}) * (${f(D.corner)} + ${f(1 - D.corner)} * sqrt(le)) - 0.00008;
               float lDep = max(-(modelViewMatrix * vec4(faceAnchor, 1.0)).z, 0.01);
               float lPx = ${f(A.length)} * uEye.x * abs(projectionMatrix[1][1]) * max(uFly.x, 1.0) / (2.0 * lDep);
               float lKeep = uFly.y > 0.5 ? smoothstep(${f(aa[0])}, ${f(aa[1])}, lPx) : smoothstep(${f(na[0])}, ${f(na[1])}, lPx);

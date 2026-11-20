@@ -7622,15 +7622,15 @@ export const AVATAR_LIDS = {
   lid: { cols: 24, outer: [0.0175, 0.0105, 0.0085], rows: [0, 0.07, 0.25, 0.45, 0.6, 0.78, 1], inset: 0.0003, tuck: 0.0004,
     thick: [0.0011, 0.0008], corner: 0.35, round: 0.0004, fall: [2, 2], normal: [0, 0, 0, 0.1, 0.25, 0.4, 0.7, 1] },
   crease: { at: 0.6, width: 0.13, depth: 0.0007, shade: 0.84 },
-  shade: { upper: [0.74, 0.5], lower: [0.8, 0.8] },
+  shade: { upper: [0.74, 0.38], lower: [0.8, 0.62], line: 0.45 }, // (#2170: a darker lash line under the lashes' roots)
   blink: { close: 0.35, fold: 0.0032, foldLower: 0.0025, push: 0.002 },
-  // #2170: the lashes are separate curved hairs now (src/avatarlids.js `lashes`): `count` along the span (inner, outer: fractions of the opening's half
+  // #2170: the lashes are separate curved hairs now (src/avatarlids.js `lashes`): `root` m the roots sit inside the margin's edge (on the lid line, no skin between them), `count` along the span (inner, outer: fractions of the opening's half
   // width, x towards the temple), `length` m at the middle of the opening (x 0.4 ... 1 with its height, x `outer` [inner end, temple end]), `jitter` the
   // hairs' length variation, `angle` [root, curl] degrees from straight forward towards up (lower lashes: down), `width` m at the root (the
   // mid keeps `mid` x of it, the tip a point), `splay` m sideways per m of length at the temple end, `flip` how far a shut lid turns them over,
   // `down` how much a shut lid folds the lower ones up, `px` when they are drawn (old / new lash line). All *guess* by eye on the mirror preview.
-  lash: { count: 22, length: 0.0075, outer: [0.7, 1.3], jitter: 0.16, angle: [28, 52], width: 0.0004, mid: 0.7, splay: 0.35, span: [0.85, 0.95], shade: 0.3, flip: 1.7, down: 0.9, px: [[0.35, 0.7], [0.8, 1.6]],
-    lower: { count: 14, length: 0.0045, outer: [0.6, 1.2], angle: [-38, 30], span: [0.45, 0.85], shade: 0.4 } },
+  lash: { count: 30, length: 0.0075, outer: [0.7, 1.3], jitter: 0.16, angle: [28, 52], width: 0.0003, root: 0.0002, mid: 0.7, splay: 0.35, span: [0.85, 0.95], shade: 0.3, flip: 1.7, down: 0.9, px: [[0.35, 0.7], [0.8, 1.6]],
+    lower: { count: 18, length: 0.0042, outer: [0.6, 1.2], angle: [-38, 30], width: 0.0002, span: [0.45, 0.88], shade: 0.4 } },
 };
 // #2170 makeup: lip colour, eye makeup and blush as customizer choices (the look's `lipstick`, `eyeMakeup`, `blush`, each 0 = none = today's look). The three
 // are one code (lip + lips x (eye + eyes x blush), 0 ... 59) in the legs tag `p`'s tens (the legs in the units, 0 ... 4): a missing tag = no makeup; an older client
@@ -7639,12 +7639,12 @@ export const AVATAR_LIDS = {
 //  - `eyes`: 1 mascara (the lashes `lash` x longer and `dark` of the way to black, shader only), 2 eyeliner (the lid margin's vertex colours to `colour` x
 //    skin: full inside `upper` [full, none] m above the upper opening edge, `lowerK` x of it under the lower, a wing past the outer corner of `wing` m rising
 //    `rise` per m, fading in from `inner` of the opening's half width), 3 both.
-//  - `blush`: the cheeks' soft area (the skinArea format, head bone's frame) x `strength` (shader only: the skin's colour x `mul` plus `colour` x `tint`).
+//  - `blush`: the cheeks' two oval apples (head bone's frame: centre `at` x, y under the outer eyes, Gaussian radii `r`, in front of `z`; nothing across the nose or at the mouth corners) x `strength` (shader only: the skin's colour x `mul` plus `colour` x `tint`).
 export const AVATAR_MAKEUP = { tag: 'p', pack: 10,
   lips: { names: ['Ingen', 'Rosa', 'Röd', 'Vinröd', 'Nude'], colours: [0, 0xc4506c, 0xa3152a, 0x62183a, 0xb07a6c], mix: 0.85 },
   eyes: { names: ['Inget', 'Mascara', 'Eyeliner', 'Mascara & eyeliner'], lash: 1.4, dark: 0.92,
     liner: { colour: 0.08, upper: [0.0014, 0.0034], lowerK: 0.65, lower: [0.0004, 0.0016], wing: 0.0075, rise: 0.35, inner: 0.35 } },
-  blush: { names: ['Inget', 'Lätt', 'Tydlig'], strength: [0, 0.4, 0.8], area: [0.05, 0.068, 0.055, 0.034, 1, 1.2], colour: 0xd0506c, mul: [1.2, 0.68, 0.76], tint: 0.16 } };
+  blush: { names: ['Inget', 'Lätt', 'Tydlig'], strength: [0, 0.6, 1], area: { at: [0.052, 0.07], r: [0.021, 0.017], z: 0.05 }, colour: 0xd0506c, mul: [1.2, 0.68, 0.76], tint: 0.16 } };
 const mkPick = (v, n) => (Number.isInteger(v) && v > 0 && v < n ? v : 0);
 /** The look's makeup choices, each an integer in range (0 = none, also for any missing or unknown value). */
 export function makeupOf(look) {
