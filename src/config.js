@@ -10445,6 +10445,21 @@ export const AVATAR_CLOTH = {
   pants: { jeans: [0.0066, 76, 0.00016, 3], trousers: [0.0056, 88, 0.00008, 4] },
   weave: [[0.0017, 0.0015, 0.04], [0.0055, 0.0042, 0.05], [0.006, 0.009, 0.03], [0.0035, 0.0035, 0.1], [0.002, 0.002, 0.04]],
 };
+/** #2165: each fabric's own finish and the jeans' wear (src/avatarfabric.js), in the avatar's one fragment shader. All *guesses* by eye
+ * (tools/avatarfabric2165.html). `kinds[weave kind]` = [roughness, sheen strength, sheen whiteness 0 … 1] (kinds as AVATAR_CLOTH: 0 jersey cotton,
+ * 1 knit, 2 fleece, 3 denim, 4 fine twill; every garment had roughness 0.92 and no sheen before). The sheen lobe is (1 − N·V)^`power` × `gain` ×
+ * strength on the light the lights summed (`ambient` weights the indirect part; albedo floor `minAlbedo`). `wear` (jeans only), strengths 0 … 1 in
+ * the order summed: `base` an even fade × mottle, `knee` / `thigh` the fronts (`kneeW` / `thighW` m half-widths, `thighY` m up from the knee),
+ * `whisker` lines at the lap (`lapY`, `lapW`, `whiskRate` rad/m), `comb` honeycombs behind the knee (`combW`, `combRate`), `seam` pale out- and
+ * inseams (`seamW` m, `legR` m leg radius), `hem` a worn hem (`hemAt` m above the hem, `hemW`). Worn cloth: `desat` / `lift` / `add` fade the
+ * colour (desaturate, multiply, add) and `rough` adds roughness. */
+export const AVATAR_FABRIC = {
+  kinds: [[0.86, 0.5, 0.45], [0.97, 1.0, 0.55], [1.0, 1.15, 0.65], [0.82, 0.12, 0.3], [0.7, 0.35, 0.35]],
+  power: 2.2, gain: 3.0, ambient: 0.6, minAlbedo: 0.05,
+  wear: { base: 0.2, knee: 0.8, thigh: 0.6, whisker: 0.55, comb: 0.5, seam: 0.55, hem: 0.55,
+    kneeW: 0.07, thighY: 0.2, thighW: 0.1, lapY: 0.3, lapW: 0.06, whiskRate: 380, combW: 0.05, combRate: 330, seamW: 0.006, legR: 0.065, hemAt: 0.012, hemW: 0.012,
+    desat: 0.45, lift: 1.7, add: 0.1, rough: 0.12 },
+};
 /** #2107: the garments' sewn details (src/avatarseam.js), drawn as relief and a little shade in the cloth block of the avatar's one fragment
  * shader. All *guesses* by eye (tools/avatarseam2107.html), not measured; lengths in bind-pose metres (y up from the floor, the figure facing
  * +z, +x its left). `line`: a sewn seam: `groove` half-width / `depth` of the stitched-down line and its `dark` shade, the seam allowance's

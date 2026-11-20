@@ -1,0 +1,87 @@
+{
+  "baseline": "be173bd4",
+  "source": "be173bd489b871cd5367e48ae718609b35b954fd",
+  "before": {
+    "shots": {
+      "sun-group": {
+        "calls": 4,
+        "tris": 64460,
+        "textures": 4,
+        "programs": 1
+      },
+      "jeans-knee": {
+        "calls": 2,
+        "tris": 32152,
+        "textures": 4,
+        "programs": 1
+      },
+      "jeans-thigh": {
+        "calls": 3,
+        "tris": 48384,
+        "textures": 4,
+        "programs": 1
+      },
+      "knit-torso": {
+        "calls": 3,
+        "tris": 48384,
+        "textures": 4,
+        "programs": 1
+      },
+      "fleece-torso": {
+        "calls": 4,
+        "tris": 64460,
+        "textures": 4,
+        "programs": 1
+      },
+      "cotton-torso": {
+        "calls": 2,
+        "tris": 32152,
+        "textures": 4,
+        "programs": 1
+      }
+    },
+    "ms": 836.4
+  },
+  "after": {
+    "shots": {
+      "sun-group": {
+        "calls": 4,
+        "tris": 64460,
+        "textures": 4,
+        "programs": 1
+      },
+      "jeans-knee": {
+        "calls": 2,
+        "tris": 32152,
+        "textures": 4,
+        "programs": 1
+      },
+      "jeans-thigh": {
+        "calls": 3,
+        "tris": 48384,
+        "textures": 4,
+        "programs": 1
+      },
+      "knit-torso": {
+        "calls": 3,
+        "tris": 48384,
+        "textures": 4,
+        "programs": 1
+      },
+      "fleece-torso": {
+        "calls": 4,
+        "tris": 64460,
+        "textures": 4,
+        "programs": 1
+      },
+      "cotton-torso": {
+        "calls": 2,
+        "tris": 32152,
+        "textures": 4,
+        "programs": 1
+      }
+    },
+    "ms": 996.9
+  },
+  "errors": []
+}

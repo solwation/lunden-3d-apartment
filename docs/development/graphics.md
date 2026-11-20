@@ -1777,6 +1777,16 @@ only at look set-up. `seamAt` mirrors the shader's placement for `tools/avatarse
 before/after views ([images](../verification/2107/)). Limits: the landmarks are the standard skeleton's (like #2034), the armhole oval
 approximates #2001's 12-vertex hole, and the waistband is covered by the hoodie's long hem.
 
+`src/avatarfabric.js` (#2165; tunables `AVATAR_FABRIC`, all *guess*; program key suffix `-fabric2165`) gives each weave kind of #2034 its own
+roughness and a cheap sheen lobe instead of the shared cloth roughness 0.92 (jersey 0.86, knit 0.97, fleece 1.0, denim 0.82, fine twill 0.7): the
+roughness shifts inside the cloth block (wet cloth still wins), and `fabricLight` (spliced after `lights_fragment_end`) adds a `(1 - N.V)^power` fuzz
+term built from the light the lights already summed (direct + ambient diffuse over the albedo, tinted towards white), strongest on knit and fleece,
+barely on denim. The jeans (kind 3) are also faded and worn (`fabricWear`: knee and thigh fronts, whiskers at the lap, honeycombs behind the
+knees, pale out- and inseams, worn hem; thin lines prefiltered by the pixel footprint). One shader program, no texture, attribute, uniform, draw
+or network field. `wearAt` mirrors the shader for `node --test tools/avatarfabrictest.mjs`; `tools/avatarfabric2165browser.cjs` (component page
+`tools/avatarfabric2165.html`, before = the base revision's `src/avatar.js`, `avatarcloth.js`, `config.js`) takes the sun-lit group, close-ups
+and the mirror preview. [Images](../verification/2165/).
+
 ### Optional skin variation: freckles, birthmarks, uneven tone (#2111)
 
 `src/avatarskinvar.js` (tunables `AVATAR_SKIN_VARIATION`, all *guess*; program key suffix `-skinvar2111`) adds an optional, discreet

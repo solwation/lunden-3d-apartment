@@ -9,6 +9,7 @@
 import { Vector4 } from 'three';
 import { AVATAR_CLOTH as C, AVATAR_SURFACE as SURFACE } from './config.js';
 import { bindAt } from './olof.js';
+import { fabricDecl, fabricVars, fabricShade } from './avatarfabric.js'; // #2165: per-fabric roughness / sheen, the jeans' wear
 import { seamUniforms, setSeamLook, seamDecl, SEAM_DETAIL } from './avatarseam.js'; // #2107: seams, ribs, hems, pockets
 
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
@@ -163,13 +164,15 @@ vec3 clothBump(vec3 sx, vec3 sy, vec3 n, vec2 dH, float face) {
   float det = dot(sx, r1) * face;
   return normalize(abs(det) * n - sign(det) * (dH.x * r1 + dH.y * r2));
 }
-${seamDecl()}`;
+${seamDecl()}
+${fabricDecl()}`;
 }
 
 /** Fragment body (after normal_fragment_maps: \`normal\`, \`faceDirection\` exist; diffuseColor is read by the lights later). */
 export function clothNormal() {
   const S = bindAt('shoulderL'), K = bindAt('kneeL');
-  return `{ // #2034 cloth folds and weave
+  return `${fabricVars()}
+  { // #2034 cloth folds and weave
     float cRegion = floor(vSurface.x + 0.5), cTorso = floor(vSuitRole + 0.5) == 1.0 ? 1.0 : 0.0;
     float cOn = (cRegion == 1.0 || cRegion == 2.0) && vBare < 0.5 && uSuit < 0.5 ? 1.0 : 0.0;
     vec3 cdx = dFdx(vSuitAt), cdy = dFdy(vSuitAt), csx = dFdx(-vViewPosition), csy = dFdy(-vViewPosition);
@@ -186,6 +189,7 @@ export function clothNormal() {
       vec3 wv = clothWeave(vSuitAt, cdx, cdy, g.w, g.z, centre, radius, cfp);
       normal = clothBump(csx, csy, normal, cdH + wv.xy, faceDirection);
       diffuseColor.rgb *= (1.0 - ${f(C.cavity)} * clamp(-${SEAM_DETAIL.on ? '(cFold - cSeam.x)' : 'cFold'} / max(g.x, 0.00001), 0.0, 1.5)) * (1.0 + wv.z * step(0.000001, g.z))${SEAM_DETAIL.on ? ' * clamp(1.0 + cSeam.y, 0.5, 1.5)' : ''};
+      ${fabricShade()}
     }
   }`;
 }
