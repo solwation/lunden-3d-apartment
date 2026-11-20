@@ -7752,8 +7752,11 @@ export const AVATAR_SKIRT = {
   rings: [[0.08, 0.19, 0.134], [0.22, 0.205, 0.152], [0.38, 0.219, 0.165], [0.55, 0.232, 0.178], [0.72, 0.244, 0.19], [0.87, 0.253, 0.199], [1, 0.26, 0.205]],
   hem: { skirt: -0.39, dress: -0.45 }, sides: 32,
   ramp: { start: 0.03, front: -0.035, back: -0.2 }, split: 0.07,
-  drape: { waist: [0.185, 0.14], hem: [0.17, 0.1] },
+  drape: { waist: [0.185, 0.14], hem: [0.17, 0.1], backLift: 0.12, backMargin: 0.02, backBoost: 4 },
   lining: [2, 0.62], sway: 2.2,
+  // Seated back hem: the drape target's back half (z < 0) is lifted by `backLift` m (at the hem) and slimmed to the thigh's own half-depth + `backMargin` m, and its
+  // drape follows the thigh's swing `backBoost` times faster (a seated thigh reads only ~0.25), so the back hem rests on the seat. Sag: a fully flexed thigh (#2034's swing `from` … `to`: a squat, a chair seat, the pedal's top) shortens the lower rows (`rowFrom` … `rowTo` m below the hip joint) by up to `drop` m (lifted in the bind pose), so on a squat the hem rides up and bunches on the lap instead of ringing the knees.
+  sag: { drop: 0.15, from: 0.6, to: 0.95, rowFrom: 0.25, rowTo: 0.4 },
 };
 // #2147: the outer layer (look fields `outer` 0 none / 1 jacket / 2 coat and `outerMode` 0 automatic / 1 always). It shares the top's tag `m`
 // (`cut` + 3 × (`outer` + 3 × `outerMode`)), so an older client, which reads only m0-m2, skips it and shows the base top (T-shirt unless the

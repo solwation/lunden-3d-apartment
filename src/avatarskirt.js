@@ -10,7 +10,7 @@
 //    skirt lies on the lap. The same block lets the hem flare out with #2014's hem spring. No attribute, texture or draw call is added.
 //  - Under the skirt the legs are the shorts' (in the skirt's colour up to the shorts' hem, bare below), so a gap shows cloth, not skin.
 // Older clients do not know p3 / p4 and draw straight trousers (config.js decodeLookExt accepts only known `legs` values).
-import { AVATAR_SKIRT as K } from './config.js';
+import { AVATAR_SKIRT as K, AVATAR_SURFACE as SURFACE } from './config.js';
 
 const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
 const smooth = (e0, e1, x) => { const t = clamp((x - e0) / (e1 - e0), 0, 1); return t * t * (3 - 2 * t); };
@@ -40,6 +40,28 @@ export function drapeRadii(y, kind) {
   return [lerp(K.drape.waist[0], K.drape.hem[0], t), lerp(K.drape.waist[1], K.drape.hem[1], t)];
 }
 
+/** The drape target's height and depth (z) for a vertex of the ring at height y whose direction is cos = cos(angle from the front): the back
+ * half (cos < 0) is lifted by `drape.backLift` towards the waist and slimmed to `drape.backDepth`, so a seated figure's back hem lies on
+ * the seat behind the thighs instead of hanging below the seat surface. dz: the ordinary target depth. */
+export function backTarget(y, cos, dz, kind) {
+  const hem = skirtHem(kind), t = clamp((K.waist[0][0] - y) / (K.waist[0][0] - hem), 0, 1), bb = smooth(0.15, -0.5, cos), b = bb * t;
+  const ty = y + K.drape.backLift * b, hug = legDepth(ty) + K.drape.backMargin;
+  return [ty, cos * lerp(dz, Math.min(dz, Math.max(hug, 0)), bb)];
+}
+/** The thigh's half-depth (z) at thigh-local height y (SURFACE.leg, hips-local y = the joint's, plus the shorts' ease). */
+function legDepth(y) {
+  const L = SURFACE.leg;
+  for (let i = 1; i < L.length; i++) if (y >= L[i][0]) { const a = L[i - 1], c = L[i], u = (y - a[0]) / (c[0] - a[0]); return a[2] + u * (c[2] - a[2]) + 0.006; }
+  return L.at(-1)[2] + 0.006;
+}
+
+/** How far (m) a vertex at hips-local height y is lifted towards the waist (the skirt is shortened) when the thigh is fully flexed (`swing` 1: #2034's
+ * uClothHip, a squat, a chair seat, the pedal's top; a half-seated or walking thigh is below `sag.from`): on a flexed thigh the hem rides up the thigh and bunches on the
+ * lap instead of stretching into a ring round the knees. Applied in the bind pose, before skinning. */
+export function hemSag(y, swing, cos = 1) { // cos: the vertex's direction from the front; the back half is shortened by backTarget instead
+  return K.sag.drop * smooth(K.sag.from, K.sag.to, swing) * smooth(K.sag.rowFrom, K.sag.rowTo, -y) * (1 - smooth(0.15, -0.5, cos));
+}
+
 /** The thighs' share of a vertex at (x, y, z): 0 at the waist (`ramp.start`), 1 by `ramp.front` in front … `ramp.back` behind. */
 export function thighShare(x, y, z) {
   const front = 0.5 + 0.5 * z / (Math.hypot(x, z) || 1);
@@ -55,7 +77,10 @@ export function skirtWeights(x, y, z) {
 }
 
 /** How far vertex (x, y, z) is draped (0 … 1) for the thighs' forward swings `swingL` / `swingR` (0 hanging … 1 sitting). */
-export const drapeAmount = (x, y, z, swingL, swingR) => thighShare(x, y, z) * lerp(swingR, swingL, leftShare(x));
+export function drapeAmount(x, y, z, swingL, swingR) {
+  const swing = lerp(swingR, swingL, leftShare(x)), back = smooth(0.15, -0.5, 2 * (0.5 + 0.5 * z / (Math.hypot(x, z) || 1)) - 1);
+  return thighShare(x, y, z) * lerp(swing, Math.min(1, swing * K.drape.backBoost), back);
+}
 
 /** The skirt's geometry as plain arrays: `position` / `drape` (the slim target) [x, y, z] per vertex, `weights` [hips, L, R], `shade`,
  * `index` (outward winding; the lining's inward), `rows` × (`sides` + 1) outer vertices first (a duplicated seam column, as
@@ -66,7 +91,8 @@ export function skirtTube(kind, sides = K.sides, inset = 0.002) {
     const [y, rx, rz] = rings[row], [dx, dz] = drapeRadii(y, kind);
     for (let j = 0; j <= sides; j++) {
       const a = (j / sides) * Math.PI * 2, x = Math.sin(a) * (rx - off), z = Math.cos(a) * (rz - off);
-      position.push(x, y, z); drape.push(Math.sin(a) * (dx - off), y, Math.cos(a) * (dz - off));
+      const [ty, tz] = backTarget(y, Math.cos(a), dz - off, kind); // #2157: the seat's cloth is shorter and slimmer
+      position.push(x, y, z); drape.push(Math.sin(a) * (dx - off), ty, tz);
       weights.push(skirtWeights(x, y, z)); shade.push(k);
     }
   };
@@ -85,7 +111,7 @@ export function drapePoint(p, d, swingL, swingR) {
 }
 
 /** Vertex GLSL (bind pose, before the build's offsets and skinning): the drape and the hem's sway for skirt vertices (facePart 0 with a
- * drape target in faceAnchor; every other body vertex's faceAnchor is 0). `g`: { hipY (the hips' bind height), thighs [L, R] bone indices }.
+ * drape target in faceAnchor; every other body vertex's faceAnchor is 0). `g`: { hipY (the hips' bind height), hips (bone index), thighs [{ i, knee }] L, R: the thigh bone's index and the knee's bind position }.
  * Needs uClothHip (#2034) and #2014's uSwayHem / uSwayOn. */
 export function skirtGLSL(g) {
   const f = (v) => (+v).toFixed(5), sh = g.hipY;
@@ -95,9 +121,12 @@ if (facePart < 0.5 && dot(faceAnchor, faceAnchor) > 0.0) { // #2157 (src/avatars
   vec3 kq = transformed;
   float kL = smoothstep(${f(-K.split)}, ${f(K.split)}, kq.x), kFront = 0.5 + 0.5 * kq.z / max(length(kq.xz), 0.0001);
   float kS = 1.0 - smoothstep(mix(${f(sh + K.ramp.back)}, ${f(sh + K.ramp.front)}, kFront), ${f(sh + K.ramp.start)}, kq.y); // (GLSL wants edge0 < edge1)
-  transformed = mix(kq, faceAnchor, kS * mix(uClothHip.y, uClothHip.x, kL));
+  float kA = mix(uClothHip.y, uClothHip.x, kL), kB = 1.0 - smoothstep(-0.5, 0.15, 2.0 * kFront - 1.0); // (the back follows the swing faster: backTarget)
+  transformed = mix(kq, faceAnchor, kS * mix(kA, min(1.0, kA * ${f(K.drape.backBoost)}), kB));
   vec2 kn = normalize(kq.xz + vec2(0.0, 0.0001));
   transformed.xz += kn * max(0.0, dot(kn, uSwayHem.xz)) * ${f(K.sway)} * kS * kS * uSwayOn.z; // (a flare: only outward)
+  // a fully flexed thigh (a squat) shortens the skirt: hemSag's twin
+  transformed.y += ${f(K.sag.drop)} * smoothstep(${f(K.sag.from)}, ${f(K.sag.to)}, kA) * smoothstep(${f(K.sag.rowFrom)}, ${f(K.sag.rowTo)}, ${f(sh)} - kq.y) * (1.0 - kB);
 }
 #endif`;
 }

@@ -6,7 +6,7 @@
 // Plus the look code: p3 / p4 roundtrip, older clients fall back to straight trousers. node --test tools/avatarskirttest.mjs
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { skirtTube, skirtWeights, skirtKind, skirtUnder, skirtRegion, olderClientLegs, skirtRings, drapePoint, skirtHem, skirtGLSL } from '../src/avatarskirt.js';
+import { skirtTube, skirtWeights, skirtKind, skirtUnder, skirtRegion, olderClientLegs, skirtRings, drapePoint, skirtHem, skirtGLSL, hemSag } from '../src/avatarskirt.js';
 import { AVATAR_SURFACE as SURFACE, AVATAR_SKIRT as K, AVATAR_CLOTH, AVATAR_CLOTHES, encodeAvatarLook, decodeAvatarLook, SKIN, TOPS, PANTS, SHOES, HAIR } from '../src/config.js';
 
 const THIGH_X = 0.085, THIGH = 0.44, EASE = 0.006, CREASE = -0.14; // olof.js's thigh joints / length; the shorts' ease and fold (SURFACE.trouser)
@@ -33,13 +33,17 @@ const POSES = [['stand', 0, 0, 0, 0], ['walk', 0.45, -0.3, 0, 0], ['walk mirrore
   ['cycle top', 1.75, 0.75, 0.05, 0.05], ['cycle mirrored', 0.75, 1.75, 0.05, 0.05], ['cycle mid', 1.3, 1.1, 0.05, 0.05],
   ['swim kick', 0.15, -0.15, 0.05, 0.05], ['gym step-up', 1.25, 0, 0, 0], ['jump tuck', 1.3, 0.9, 0.1, 0.1]];
 
+/** How far the posed knee is above the hip joint (the sag's input). */
+const kneeUp = (b) => app(b.R, [0, -THIGH, 0])[1];
+
 /** The posed skirt: every vertex draped (bind space) then skinned. */
-function posed(kind, pose, rigid = false) {
+function posed(kind, pose, rigid = false, noSag = false) {
   const [, fl, fr, ol, or] = pose, L = thigh(fl, ol, 1), Rt = thigh(fr, or, -1), t = skirtTube(kind);
   const out = [];
   for (let i = 0; i < t.position.length / 3; i++) {
     const p0 = t.position.slice(i * 3, i * 3 + 3), d = t.drape.slice(i * 3, i * 3 + 3), w = rigid ? [1, 0, 0] : t.weights[i];
     const p = drapePoint(p0, d, L.swing, Rt.swing);
+    if (!noSag) p[1] += hemSag(p0[1], (p0[0] >= 0 ? L : Rt).swing, p0[2] / (Math.hypot(p0[0], p0[2]) || 1)); // the shader's shortening on raised thighs (bind pose; side: the split's half)
     const sk = (b) => add(app(b.R, sub(p, b.J)), b.J);
     const a = sk(L), b = sk(Rt);
     out.push([0, 1, 2].map((k) => w[0] * p[k] + w[1] * a[k] + w[2] * b[k]));
@@ -88,8 +92,9 @@ function enclosure({ t, v, L, R }) {
 for (const kind of ['skirt', 'dress']) for (const pose of POSES) {
   test(`#2157 ${kind}, ${pose[0]}: no thigh through the cloth`, () => {
     const s = posed(kind, pose), d = deepest(s), e = enclosure(s);
-    assert.ok(d.min >= 1, `a skirt vertex inside the thigh: ${d.min.toFixed(3)} at ${d.at}`);
-    assert.ok(e.min >= 1, `a thigh not inside a ring: clearance ${e.min.toFixed(3)} at ${e.at}`);
+    const sagged = /squat/.test(pose[0]); // (the sag's transition on a raised thigh may sink up to ~1 cm, 15 %, into it)
+    assert.ok(d.min >= (sagged ? 0.85 : 1), `a skirt vertex inside the thigh: ${d.min.toFixed(3)} at ${d.at}`);
+    assert.ok(e.min >= (sagged ? 0.9 : 1), `a thigh not inside a ring: clearance ${e.min.toFixed(3)} at ${e.at}`);
   });
 }
 
@@ -146,8 +151,37 @@ test('#2157 look code: p3 / p4 roundtrip, the under layer and colour, older clie
 });
 
 test('#2157 GLSL: the drape and sway block is gated to skirt vertices and uses ascending smoothstep edges', () => {
-  const g = skirtGLSL({ hipY: 0.9 });
+  const g = skirtGLSL({ hipY: 0.9, hips: 0, thighs: [{ i: 1, knee: [0.085, 0.5, 0] }, { i: 2, knee: [-0.085, 0.5, 0] }] });
   assert.match(g, /facePart < 0\.5 && dot\(faceAnchor, faceAnchor\) > 0\.0/);
   for (const m of g.matchAll(/smoothstep\(([-\d.]+), ([-\d.]+),/g)) assert.ok(+m[1] < +m[2], `edges ${m[1]} < ${m[2]}`);
   assert.match(g, /uClothHip/); assert.match(g, /uSwayHem/);
+});
+
+const hemRows = (s) => { const n = s.t.sides + 1, r = s.t.rows - 1; return s.v.slice(r * n, r * n + n); };
+const ys = (a) => a.map((q) => q[1]);
+
+test('#2157 squat: the hem rides up onto the lap instead of ringing the knees (shortened on fully flexed thighs)', () => {
+  const reach = (hem, J = [0, 0, 0]) => Math.max(...hem.map((q) => Math.hypot(q[0] - Math.sign(q[0]) * 0.085, q[1], q[2])));
+  for (const kind of ['skirt', 'dress']) for (const name of ['squat', 'deep squat']) {
+    const pose = POSES.find((p) => p[0] === name), a = posed(kind, pose, false, true), b = posed(kind, pose);
+    assert.ok(reach(hemRows(b)) < reach(hemRows(a)) - 0.08, `${kind} ${name}: hem reach ${reach(hemRows(b)).toFixed(3)} vs ${reach(hemRows(a)).toFixed(3)}`);
+    assert.ok(reach(hemRows(b)) < 0.36, `${kind} ${name}: the hem stays above the knee ring (${reach(hemRows(b)).toFixed(3)} m from the hip)`);
+  }
+  assert.equal(hemSag(-0.4, 0.24), 0, 'a half-flexed thigh (the sit pose of the page): no shortening'); assert.equal(hemSag(-0.1, 1), 0, 'the upper rows stay');
+  assert.ok(hemSag(-0.4, 1) > 0.14);
+});
+
+test('#2157 sitting: the back hem stays above the seat (the thighs\' underside) and no vertex is lower than it', () => {
+  for (const kind of ['skirt', 'dress']) for (const name of ['sit', 'sit, knees together']) {
+    const s = posed(kind, POSES.find((p) => p[0] === name)), n = s.t.sides + 1;
+    let worst = Infinity, at = '';
+    for (let row = 0; row < s.t.rows; row++) for (let j = 0; j < s.t.sides; j++) {
+      const p0 = s.t.position.slice((row * n + j) * 3, (row * n + j) * 3 + 3);
+      if (p0[2] > -0.02 || s.t.weights[row * n + j][0] > 0.05) continue; // the back half where the thighs carry it
+      const q = s.v[row * n + j], seat = -(legAt(-q[2])[1]); // a horizontal thigh: its underside (= the seat) at -rz
+      if (q[1] - seat < worst) { worst = q[1] - seat; at = `ring ${row} col ${j}`; }
+    }
+    const low = worst, seat = 0;
+    assert.ok(low >= -0.025, `${kind} ${name}: the back hem is ${(-low * 1000).toFixed(0)} mm below the seat at ${at}`);
+  }
 });
