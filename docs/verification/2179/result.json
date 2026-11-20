@@ -1,0 +1,77 @@
+{
+  "errors": [],
+  "scenes": {
+    "day": {
+      "living-patio": {
+        "windows": 1,
+        "opacity": 0.1,
+        "intensity": 1,
+        "mode": "live",
+        "zone": "L:0:Vardagsrum",
+        "after": {
+          "calls": 352,
+          "tris": 892615,
+          "programs": 255
+        },
+        "before": {
+          "calls": 352,
+          "tris": 892615,
+          "programs": 256
+        }
+      },
+      "living-grazing": {
+        "windows": 1,
+        "opacity": 0.1,
+        "intensity": 1,
+        "mode": "live",
+        "zone": "L:0:Vardagsrum",
+        "after": {
+          "calls": 295,
+          "tris": 788875,
+          "programs": 262
+        },
+        "before": {
+          "calls": 295,
+          "tris": 788875,
+          "programs": 262
+        }
+      }
+    },
+    "evening": {
+      "living-patio": {
+        "windows": 1,
+        "opacity": 0.34,
+        "intensity": 3,
+        "mode": "live",
+        "zone": "L:0:Vardagsrum",
+        "after": {
+          "calls": 359,
+          "tris": 967507,
+          "programs": 269
+        },
+        "before": {
+          "calls": 359,
+          "tris": 967507,
+          "programs": 270
+        }
+      },
+      "living-grazing": {
+        "windows": 1,
+        "opacity": 0.34,
+        "intensity": 3,
+        "mode": "live",
+        "zone": "L:0:Vardagsrum",
+        "after": {
+          "calls": 309,
+          "tris": 868251,
+          "programs": 275
+        },
+        "before": {
+          "calls": 309,
+          "tris": 868251,
+          "programs": 275
+        }
+      }
+    }
+  }
+}

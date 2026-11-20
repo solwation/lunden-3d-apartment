@@ -10921,7 +10921,12 @@ export const GRAVEL_SURFACE = {
 export const ROOM_PROBE = {
   size: 64, far: 18, near: 0.05, height: 1.3, facesPerFrame: 1, keep: 6, settle: 0.6, check: 0.25,
   bands: [0.06, 0.3, 0.7], margin: 0.03, minLevel: 1, paintedNight: 0.3,
-  k: { chrome: 1, steel: 0.8, steelDark: 0.6, handle: 0.6, glass: 0.6, black: 0.5, porcelain: 0.25, appliance: 0.2, tile: 0.12, floorTile: 0.06 },
+  // #2179 `window`: the glazing (M.glass) mirrors the room in the evening. `opacity`: the glass' alpha by day / at night with the
+  // visitor's room lit (a mirror needs a body to reflect on; *guess*, by eye), `gain`: its env-map strength ×, `unlit`: the share of
+  // that rise that stays when nothing is lit (the room is dark: little to mirror), `edge`: daylight (the probe's sky value) where
+  // the night begins to show [0 = full, 1 = none] — below `edge[0]` it is night, above `edge[1]` day.
+  window: { opacity: [0.1, 0.34], gain: 3, unlit: 0.3, edge: [0.06, 0.4] },
+  k: { chrome: 1, steel: 0.8, steelDark: 0.6, handle: 0.6, glass: 0.6, window: 1, black: 0.5, porcelain: 0.25, appliance: 0.2, tile: 0.12, floorTile: 0.06 },
 };
 // #2099: wet ground during and after rain (src/wetground.js). One shared state (`wet` = the surface film, `pool` = the puddles,
 // both 0…1) integrated on the game clock from what falls (rain or melting hail; snow and the snow months keep it dry): rain

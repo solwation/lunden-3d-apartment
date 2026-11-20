@@ -132,7 +132,7 @@ import { WallClock, ClockPanel } from './wallclock.js';
 import { TimeSync } from './timesync.js'; // #1774
 import { Patio, buildStringLights } from './patio.js';
 import { updateReflections, reflectors, mirrorTarget } from './reflections.js';
-import { RoomProbe, probeZone, daylightBand } from './roomprobe.js';
+import { RoomProbe, probeZone, daylightBand, windowReflect } from './roomprobe.js';
 import { ROOM_PROBE } from './config.js';
 import { WarmUp } from './warmup.js';
 import { loadingStep, loadingYield } from './loadingstep.js';
@@ -4279,6 +4279,10 @@ function frame(raw) {
     const sky = day.daylight * (1 - 0.6 * weather.overcast), u = player.outdoors || player.inCore || player.below || player.inPlayroom ? undefined : player.unit;
     const zone = u === undefined ? null : u ? probeZone(player.pos, player.unitLevel, null, u) : probeZone(player.pos, player.aloft ? -1 : player.level, probeHome);
     roomProbe.update(dt, zone, probeSignature(sky, dt), sky, warm.done && !renderer.shadowMap.needsUpdate);
+    // #2179: the window glass mirrors the lit room in the evening: more body and env-map strength, no extra pass
+    const [, wl, wn] = zone?.key.match(/^L:(-?\d+):(.*)$/) ?? [];
+    const wr = windowReflect(sky, !zone ? null : wl === undefined ? true : lights.roomLit(+wl, wn));
+    for (const m of roomProbe.mats.keys()) if (m.userData.roomProbe === 'window') { m.opacity = wr.opacity; roomProbe.setBoost(m, wr.scale); }
   }
   hitch.phase('update');
   if (hitch.enabled) Object.assign(hitch.frameInfo, { shadow: renderer.shadowMap.needsUpdate, mirror: mirror ? (reflectors().find((m) => m.r.visible)?.name || 'yes') + (mirrorSkip ? ' (held)' : '') : '', quality: quality.level,

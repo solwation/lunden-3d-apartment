@@ -64,6 +64,7 @@ const M = {
   frame: mat(COLORS.frame, { roughness: 0.5 }),
   glass: new THREE.MeshPhysicalMaterial({
     color: COLORS.glass, transparent: true, opacity: 0.1, roughness: 0.02, metalness: 0, depthWrite: false,
+    userData: { roomProbe: 'window' }, // #2179: mirrors the lit room in the evening (roomprobe.js windowReflect)
   }),
   door: mat(COLORS.door, { roughness: 0.6 }),
   rail: mat(COLORS.rail, { roughness: 0.4, metalness: 0.3 }),

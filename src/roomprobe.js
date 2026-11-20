@@ -59,6 +59,15 @@ export function zoneCenter(regions, name, inside = () => true) {
   return best && inside(best.x, best.z) ? { x: best.x, z: best.z } : null;
 }
 
+/** The window glass' evening mirror (#2179): `daylight` = the probe's sky value (0 night … 1 day), `lit` = true / false for the
+ * visitor's room, null when no room is around (outdoors: the glass stays as it is). → { opacity, scale }: the glass' alpha
+ * and the env-map strength × (the shader's Fresnel term makes it strongest at a grazing angle by itself). */
+export function windowReflect(daylight, lit, W = R.window) {
+  const [e0, e1] = W.edge, t = Math.min(1, Math.max(0, (daylight - e0) / (e1 - e0)));
+  const night = lit === null ? 0 : (1 - t * t * (3 - 2 * t)) * (lit ? 1 : W.unlit);
+  return { opacity: W.opacity[0] + (W.opacity[1] - W.opacity[0]) * night, scale: 1 + (W.gain - 1) * night };
+}
+
 /** paintedScale: the painted room's strength by daylight (0 … 1), so it does not shine at night. */
 export const paintedScale = (daylight, night = R.paintedNight) => night + (1 - night) * Math.min(1, Math.max(0, daylight));
 
@@ -137,6 +146,7 @@ export class RoomProbe {
   constructor(renderer, scene, camera, { lowMemory = false, off = false, hide = () => [] } = {}) {
     Object.assign(this, { renderer, scene, camera, lowMemory, off, hide });
     this.mats = new Map(); // material → its k (ROOM_PROBE.k[class])
+    this.boost = new Map(); // material → an extra strength × (setBoost)
     this.plan = new ProbePlan({ mode: off ? 'off' : 'painted' });
     this.maps = new Map(); // zone key → PMREM render target
     this.face = -1; this.zone = null; this.daylight = 1; this.painted = -1;
@@ -168,9 +178,16 @@ export class RoomProbe {
   }
 
   assign(m) {
-    const t = this.texture, k = this.mats.get(m);
+    // phones capture once (by day): the windows keep the painted room, which follows the night (#2179)
+    const t = this.mode === 'once' && m.userData.roomProbe === 'window' ? roomEnv() : this.texture, k = this.mats.get(m) * (this.boost.get(m) ?? 1);
     if (m.envMap !== t) m.envMap = t;
     m.envMapIntensity = t === envTex ? k * paintedScale(this.daylight) : k;
+  }
+
+  /** Scale one material's strength (the window glass by night, #2179). */
+  setBoost(m, f) {
+    if (!this.mats.has(m) || Math.abs((this.boost.get(m) ?? 1) - f) < 0.01) return;
+    this.boost.set(m, f); this.assign(m);
   }
 
   showAll() { this.painted = this.daylight; for (const m of this.mats.keys()) this.assign(m); }

@@ -1909,6 +1909,12 @@ pendants, the toaster and the fruit bowl used the painted `roomEnv()`, #307), so
 - **Strength.** `ROOM_PROBE.k` per class (*guess*, by eye): chrome 1, steel 0.8 … porcelain 0.25, tiles 0.12, floor tiles 0.06
   (#271). three scales the env map's diffuse irradiance by the same factor, so a higher value on tiles/porcelain lightens them
   overall rather than adding gloss; that is why they stay low.
+- **Windows at night (#2179).** L1007's glazing (`M.glass`, class `window`, tagged in `world.js`) gets the room's env map too.
+  `windowReflect(daylight, lit)` raises the glass' opacity (0.1 by day → 0.34) and its env-map strength (× up to 3) as the probe's
+  sky value falls below `ROOM_PROBE.window.edge`, fully when the visitor's room is lit and to `unlit` (0.3) when it is dark; outdoors
+  nothing changes. The frame loop applies it each frame (no extra pass); phones (probe `once`) keep the painted room, which follows the
+  night. The 64 px probe makes it a soft sheen of the lit room rather than a sharp mirror. `tools/windowmirror2179browser.cjs` captures
+  before | after pairs (living room towards the patio door, day and evening).
 
 Tagged: interior.js (chrome, steel, dishwasher, handles/brass, hob glass, glassDark, porcelain, white appliances, splash and
 wall tiles, wet-room floor), standardinterior.js (the visited flats' same classes), toilet.js, hood.js, fridge.js, ovens.js,

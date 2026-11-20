@@ -3,7 +3,7 @@
 // probe stands. Pure helpers of src/roomprobe.js (no GPU).   node --test tools/roomprobetest.mjs
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { probeMode, daylightBand, zoneCenter, paintedScale, ProbePlan, probeZone } from '../src/roomprobe.js';
+import { probeMode, windowReflect, daylightBand, zoneCenter, paintedScale, ProbePlan, probeZone } from '../src/roomprobe.js';
 import { ROOM_PROBE as R } from '../src/config.js';
 
 test('quality level → mode: painted below minLevel, live on desktop, once on phones, off with &noprobe', () => {
@@ -113,4 +113,16 @@ test('a zone: the room centre when it is in the room, else the visitor\'s spot; 
   assert.equal(probeZone({ x: 0.5, z: 5 }, 1, home), null, 'no map for that level');
   const unit = { id: 'L1004', ox: 10, oz: 0, roomMaps: [map], levels: [{ floor: 3 }] };
   assert.deepEqual(probeZone({ x: 15, z: 5 }, 0, null, unit), { key: 'L1004:0:Kök', x: 12, y: 3 + R.height, z: 3 }, 'a visited flat: its own coordinates');
+});
+
+test('window mirror (#2179): clear by day, a body and a stronger env map on a lit evening, weaker unlit, untouched outdoors', () => {
+  const W = R.window, day = windowReflect(1, true), lit = windowReflect(0, true), dark = windowReflect(0, false), out = windowReflect(0, null);
+  assert.deepEqual(day, { opacity: W.opacity[0], scale: 1 });
+  assert.ok(Math.abs(lit.opacity - W.opacity[1]) < 1e-9 && Math.abs(lit.scale - W.gain) < 1e-9);
+  assert.ok(dark.opacity > day.opacity && dark.opacity < lit.opacity && dark.scale > 1 && dark.scale < lit.scale);
+  assert.deepEqual(out, day, 'seen from outside: unchanged');
+  let prev = Infinity;
+  for (let d = 0; d <= 1.0001; d += 0.05) { const w = windowReflect(d, true); assert.ok(w.opacity <= prev + 1e-12, 'monotone with daylight'); prev = w.opacity; }
+  assert.equal(windowReflect(W.edge[1], true).opacity, W.opacity[0], 'day from the upper edge');
+  assert.ok(R.k.window > 0 && R.k.window <= 1);
 });
