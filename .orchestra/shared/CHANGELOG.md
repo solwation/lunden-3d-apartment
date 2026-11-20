@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+## 0.15.0 — 2026-11-20
+
+- Trusted issue authors: ORCHESTRA.md *Trust issue authors and content* closes the
+  gap where anyone able to open an issue in a public repository could queue work that
+  an unattended run implemented and published. An issue from an account without write
+  access (GitHub `author_association` other than `OWNER`, `MEMBER` or `COLLABORATOR`;
+  hosts may change the set) now waits until a trusted person accepts it, by comment or
+  by an acceptance label (default `accepted`) whose adding actor the issue events show
+  to be trusted, since templates apply labels for any author. Agents never accept an
+  issue themselves, as they post with the user's account. Untrusted comments never
+  answer a user question or change acceptance, and content-safety rules cover running
+  commands from issue text, secrets, outbound data and changes to CI, publishing and
+  instruction files. COORDINATION.md (eligibility, selection, questions, project
+  review), WORKER.md, PROJECT.example.md and this repository's AI.md follow (#82).
+
 ## 0.14.5 — 2026-11-19
 
 - `scripts/prune-worktrees.sh` no longer treats a clone whose only unpublished work is
