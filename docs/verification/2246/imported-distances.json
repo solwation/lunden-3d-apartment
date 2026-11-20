@@ -1,0 +1,235 @@
+{
+  "engine": "5.8.4-58902052+++UE5+Release-5.8",
+  "level": "/Game/Lunden/Generated/l1007/Level_l1007",
+  "levelSHA256": "051f78771ae67d787a14e9df99e14095d5ef718cad0148150cecac19f726720a",
+  "importSource": {
+    "path": "l1007.glb",
+    "sha256": "90901e8483135808338cc419c317f337489011782cdfe9817bba4f94639cb2cb",
+    "sourceCommit": "3b4b65fef429a04ff712a1f65a0443d7f29d3a0c",
+    "sourceDirty": true,
+    "sourceHash": "7c9e9cf6f748ba70fd55cb35caa6a0f0a39914f39cb7a65320ab5a5932be8390"
+  },
+  "surfaces": {
+    "living_west": {
+      "actor": "wall_l0_x10_z635_y150",
+      "mesh": "/Game/Lunden/Generated/l1007/StaticMeshes/wall_l0_x10_z635_y150.wall_l0_x10_z635_y150",
+      "minCm": [
+        0.17999999225139618,
+        46.48999786376953,
+        -8.526512829121202e-14
+      ],
+      "maxCm": [
+        20.18000030517578,
+        1223.3699951171875,
+        300
+      ]
+    },
+    "living_east": {
+      "actor": "wall_l0_x565_z635_y150",
+      "mesh": "/Game/Lunden/Generated/l1007/StaticMeshes/wall_l0_x565_z635_y150.wall_l0_x565_z635_y150",
+      "minCm": [
+        555.1199951171875,
+        46.48999786376953,
+        -8.526512829121202e-14
+      ],
+      "maxCm": [
+        575.1199951171875,
+        1223.3699951171875,
+        300
+      ]
+    },
+    "entrance_floor": {
+      "actor": "mesh_l0_x288_z635_y0",
+      "mesh": "/Game/Lunden/Generated/l1007/StaticMeshes/mesh_l0_x288_z635_y0.mesh_l0_x288_z635_y0",
+      "minCm": [
+        0.00001087188684323337,
+        -0.00001792907642084174,
+        0.20000000298023224
+      ],
+      "maxCm": [
+        575.2999877929688,
+        1269.9000244140625,
+        0.20000000298023224
+      ]
+    },
+    "entrance_ceiling": {
+      "actor": "mesh_l0_x288_z1015_y300",
+      "mesh": "/Game/Lunden/Generated/l1007/StaticMeshes/mesh_l0_x288_z1015_y300.mesh_l0_x288_z1015_y300",
+      "minCm": [
+        0.00001087188684323337,
+        760.9199829101562,
+        299.79998779296875
+      ],
+      "maxCm": [
+        575.2999877929688,
+        1269.9000244140625,
+        299.79998779296875
+      ]
+    },
+    "upper_floor": {
+      "actor": "mesh_l1_x288_z1015_y325",
+      "mesh": "/Game/Lunden/Generated/l1007/StaticMeshes/mesh_l1_x288_z1015_y325.mesh_l1_x288_z1015_y325",
+      "minCm": [
+        0.00001087188684323337,
+        760.9199829101562,
+        325.20001220703125
+      ],
+      "maxCm": [
+        575.2999877929688,
+        1269.9000244140625,
+        325.20001220703125
+      ]
+    },
+    "upper_ceiling": {
+      "actor": "mesh_l1_x288_z635_y605",
+      "mesh": "/Game/Lunden/Generated/l1007/StaticMeshes/mesh_l1_x288_z635_y605.mesh_l1_x288_z635_y605",
+      "minCm": [
+        0.00001087188684323337,
+        -0.00001792907642084174,
+        604.7999877929688
+      ],
+      "maxCm": [
+        575.2999877929688,
+        1269.9000244140625,
+        604.7999877929688
+      ]
+    },
+    "stair_landing": {
+      "actor": "mesh_l1_x193_z665_y325",
+      "mesh": "/Game/Lunden/Generated/l1007/StaticMeshes/mesh_l1_x193_z665_y325.mesh_l1_x193_z665_y325",
+      "minCm": [
+        0.000005245208740234375,
+        569.9400024414062,
+        325.20001220703125
+      ],
+      "maxCm": [
+        386,
+        760.9199829101562,
+        325.20001220703125
+      ]
+    },
+    "stair_last_tread": {
+      "actor": "mesh_l0_x399_z618_y292",
+      "mesh": "/Game/Lunden/Generated/l1007/StaticMeshes/mesh_l0_x399_z618_y292.mesh_l0_x399_z618_y292",
+      "minCm": [
+        386,
+        577,
+        279.6875
+      ],
+      "maxCm": [
+        412.1666564941406,
+        660,
+        304.6875
+      ]
+    },
+    "door_north_jamb": {
+      "actor": "wall_l0_x210_z419_y150",
+      "mesh": "/Game/Lunden/Generated/l1007/StaticMeshes/wall_l0_x210_z419_y150.wall_l0_x210_z419_y150",
+      "minCm": [
+        205.66000366210938,
+        314.4700012207031,
+        -2.842170943040401e-14
+      ],
+      "maxCm": [
+        215.1599884033203,
+        524.4400024414062,
+        300
+      ]
+    },
+    "door_south_jamb": {
+      "actor": "wall_l0_x210_z688_y150",
+      "mesh": "/Game/Lunden/Generated/l1007/StaticMeshes/wall_l0_x210_z688_y150.wall_l0_x210_z688_y150",
+      "minCm": [
+        205.66000366210938,
+        615.4299926757812,
+        -5.684341886080802e-14
+      ],
+      "maxCm": [
+        215.1599884033203,
+        760.4199829101562,
+        300
+      ]
+    }
+  },
+  "toleranceCm": 1,
+  "checks": [
+    {
+      "name": "living room clear width",
+      "reference": "plan.json floor 0, inside faces of walls 3 and 4 at Vardagsrum",
+      "axis": "X",
+      "endpoints": [
+        "living_west.maxCm",
+        "living_east.minCm"
+      ],
+      "expectedCm": 534.9399999999999,
+      "measuredCm": 534.9399948120117,
+      "errorCm": -0.000005187988222132844,
+      "pass": true
+    },
+    {
+      "name": "entrance floor clear height",
+      "reference": "config.js LEVELS[0].ceiling",
+      "axis": "Z",
+      "endpoints": [
+        "entrance_floor.maxCm",
+        "entrance_ceiling.minCm"
+      ],
+      "expectedCm": 300,
+      "measuredCm": 299.5999877899885,
+      "errorCm": -0.40001221001148224,
+      "pass": true
+    },
+    {
+      "name": "upper floor clear height",
+      "reference": "config.js LEVELS[1].ceiling",
+      "axis": "Z",
+      "endpoints": [
+        "upper_floor.maxCm",
+        "upper_ceiling.minCm"
+      ],
+      "expectedCm": 280,
+      "measuredCm": 279.5999755859375,
+      "errorCm": -0.4000244140625,
+      "pass": true
+    },
+    {
+      "name": "total stair rise",
+      "reference": "config.js LEVELS[1].floor minus LEVELS[0].floor",
+      "axis": "Z",
+      "endpoints": [
+        "entrance_floor.maxCm",
+        "stair_landing.maxCm"
+      ],
+      "expectedCm": 325,
+      "measuredCm": 325.000012204051,
+      "errorCm": 0.00001220405101776123,
+      "pass": true
+    },
+    {
+      "name": "interior door structural opening",
+      "reference": "plan.json floor 0, door 3 hinge to wall endpoint",
+      "axis": "Y",
+      "endpoints": [
+        "door_north_jamb.maxCm",
+        "door_south_jamb.minCm"
+      ],
+      "expectedCm": 90.99000000000004,
+      "measuredCm": 90.989990234375,
+      "errorCm": -0.000009765625037516656,
+      "pass": true
+    },
+    {
+      "name": "last tread to upper landing",
+      "reference": "config.js floor rise divided by (STAIR.treads count plus landing)",
+      "axis": "Z",
+      "endpoints": [
+        "stair_last_tread.maxCm",
+        "stair_landing.maxCm"
+      ],
+      "expectedCm": 20.3125,
+      "measuredCm": 20.51251220703125,
+      "errorCm": 0.20001220703125,
+      "pass": true
+    }
+  ]
+}
