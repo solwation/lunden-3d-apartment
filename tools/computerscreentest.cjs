@@ -30,7 +30,7 @@ const [game,worker,out]=process.argv.slice(2),log=(s,v)=>console.log('PASS',s,v?
    if(id==='pc-home')await p.mouse.move(screen.x,screen.y);else await p.touchscreen.tap(screen.x,screen.y);
    assert.notEqual(await p.evaluate(()=>__app.computerHub.angle),screen.before);
    await p.evaluate(()=>{__app.testMode.setFull(true);__app.step(0);__app.testMode.draw();});
-   await p.screenshot({path:`${out}/${id}.png`,timeout:240000}); // #2259: SwiftShader font wait exceeds the 30 s defaultawait p.evaluate(()=>__app.testMode.setFull(false));
+   await p.screenshot({path:`${out}/${id}.png`,timeout:240000});/* #2259: SwiftShader font wait exceeds the 30 s default */await p.evaluate(()=>__app.testMode.setFull(false));
    if(id==='pc-home')await p.keyboard.press('Escape');else await p.locator(`#computer-${id} [data-cinema=close]`).tap();await p.waitForFunction(()=>!__app.computerHub.open);
    {const after=await p.evaluate(()=>__app.camera.position.toArray());assert(after.every((v,i)=>Math.abs(v-initial.camera[i])<1e-3),`${id} camera ${JSON.stringify(initial.camera)} -> ${JSON.stringify(after)}`);}
    log(`physical game, native steering, frozen avatar and Escape restore: ${id}`);
