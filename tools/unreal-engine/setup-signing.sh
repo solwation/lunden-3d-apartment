@@ -15,13 +15,13 @@
 # GitHub CLI (gh, signed in with admin rights on the repository). No secret is created: GitHub signs in through a
 # federated credential (OIDC) bound to the tag-restricted environment `signing`.
 # Override discovery with SIGNING_ACCOUNT_ID=/subscriptions/.../codeSigningAccounts/<name> and
-# SIGNING_PROFILE=<profile name>; APP_NAME sets the app registration's name; TAG_PATTERN the release tags (default app-v*).
+# SIGNING_PROFILE=<profile name>; APP_NAME sets the app registration's name; TAG_PATTERN the release tags (default v*).
 set -euo pipefail
 
 REPO=solwation/lunden-3d-apartment
 ENVIRONMENT=signing
 APP_NAME="${APP_NAME:-lunden-github-signing}"
-TAG_PATTERN="${TAG_PATTERN:-app-v*}"
+TAG_PATTERN="${TAG_PATTERN:-v*}"
 SUBJECT="repo:$REPO:environment:$ENVIRONMENT"
 DRY=0
 [ "${1:-}" = --dry-run ] && DRY=1

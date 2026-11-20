@@ -5,9 +5,9 @@ import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 export function releaseInputs(tag, fingerprint, pem) {
-  const version = /^app-v((?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*))$/.exec(tag)?.[1];
+  const version = /^v((?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*))$/.exec(tag)?.[1];
   if (!version || version.split('.').some(part => +part > 65534))
-    throw new Error('Expected an app-vMAJOR.MINOR.PATCH tag with Windows version components 0–65534.');
+    throw new Error('Expected an vMAJOR.MINOR.PATCH tag with Windows version components 0–65534.');
   if (!/^[\da-f]{64}$/i.test(fingerprint ?? ''))
     throw new Error('LUNDEN_SIGNER_SHA256 must be the verified SHA-256 fingerprint of the booster-ai signing certificate.');
   if (typeof pem !== 'string' || !/^-----BEGIN PUBLIC KEY-----\r?\n[A-Za-z0-9+/=\r\n]+\r?\n-----END PUBLIC KEY-----$/.test(pem.trim()))

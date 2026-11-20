@@ -2,6 +2,7 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)][string]$Launcher,
+    [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$ExpectedPublisher,
     [Parameter(Mandatory)][ValidatePattern('^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$')][string]$Version,
     [Parameter(Mandatory)][ValidatePattern('^[a-fA-F0-9]{64}$')][string]$SignerSha256,
     [Parameter(Mandatory)][ValidatePattern('^[a-fA-F0-9]{64}$')][string]$ManifestKeySha256,
@@ -12,6 +13,10 @@ $ErrorActionPreference = 'Stop'
 function Assert-SignedLauncher([string]$Path, [string]$ExpectedHash) {
     $fingerprint = & (Join-Path $PSScriptRoot 'get-signer-fingerprint.ps1') -Path $Path -ExpectedFileSha256 $ExpectedHash
     if ($fingerprint -ne $SignerSha256) { throw 'The launcher was signed with a different certificate.' }
+    $cert = (Get-AuthenticodeSignature -LiteralPath $Path).SignerCertificate
+    if ($cert.GetNameInfo([Security.Cryptography.X509Certificates.X509NameType]::SimpleName, $false) -cne $ExpectedPublisher) {
+        throw 'The signer does not match the configured publisher name.'
+    }
 }
 $sdkBin = Join-Path ${env:ProgramFiles(x86)} 'Windows Kits\10\bin'
 $signTool = Get-ChildItem -LiteralPath $sdkBin -Directory | Where-Object { $_.Name -match '^\d+(\.\d+){3}$' } |
@@ -39,7 +44,7 @@ try {
     }
     $utf8 = New-Object Text.UTF8Encoding($false)
     [IO.File]::WriteAllText((Join-Path $temp 'SHA256SUMS'), (($lines -join "`n") + "`n"), $utf8)
-    $record = [ordered]@{ tag = "app-v$Version"; commit = $Commit; signerCertificateSha256 = $SignerSha256.ToUpperInvariant()
+    $record = [ordered]@{ tag = "v$Version"; commit = $Commit; signerCertificateSha256 = $SignerSha256.ToUpperInvariant()
         manifestPublicKeySha256 = $ManifestKeySha256.ToLowerInvariant(); launcherSha256 = $digest }
     [IO.File]::WriteAllText((Join-Path $temp 'launcher-build.json'), ($record | ConvertTo-Json), $utf8)
     [IO.Directory]::Move($temp, $final)

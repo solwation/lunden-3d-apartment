@@ -2,7 +2,7 @@ name: Build and sign the Windows launcher
 
 on:
   push:
-    tags: ['app-v*']
+    tags: ['v*']
 
 permissions:
   contents: read
@@ -66,7 +66,6 @@ jobs:
     environment: signing
     permissions:
       contents: read
-      id-token: write
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
@@ -79,6 +78,7 @@ jobs:
           SIGNING_ENDPOINT: ${{ vars.SIGNING_ENDPOINT }}
           SIGNING_ACCOUNT: ${{ vars.SIGNING_ACCOUNT }}
           SIGNING_PROFILE: ${{ vars.SIGNING_PROFILE }}
+          SIGNING_EXPECTED_SUBJECT: ${{ vars.SIGNING_EXPECTED_SUBJECT }}
           LUNDEN_SIGNER_SHA256: ${{ vars.LUNDEN_SIGNER_SHA256 }}
           LUNDEN_MANIFEST_PUBLIC_KEY: ${{ vars.LUNDEN_MANIFEST_PUBLIC_KEY }}
           EXPECTED_BUILD_TRUST: ${{ needs.build.outputs.trust }}
@@ -86,7 +86,7 @@ jobs:
           BUILD_COMMIT: ${{ needs.build.outputs.commit }}
         run: |
           if ($env:SIGNING_ENABLED -cne 'true') { throw 'Enable the approved signing profile before using a release tag.' }
-          foreach ($name in 'SIGNING_ENDPOINT','SIGNING_ACCOUNT','SIGNING_PROFILE') {
+          foreach ($name in 'SIGNING_ENDPOINT','SIGNING_ACCOUNT','SIGNING_PROFILE','SIGNING_EXPECTED_SUBJECT') {
             if ([string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($name))) { throw "Missing $name." }
           }
           if ($env:BUILD_ARTIFACT -notmatch '^[1-9][0-9]*$' -or $env:BUILD_COMMIT -ne (git rev-parse HEAD)) {
@@ -112,15 +112,12 @@ jobs:
       - name: Test packaging with temporary copies of an already signed Windows fixture
         shell: pwsh
         run: ./tools/unreal-engine/tests/signed-launcher-package-test.ps1
-      - name: Sign in to Azure using GitHub OIDC
-        uses: azure/login@7184910d9eb2b1c5e48f7073824a90609bb9b6d6 # v2
-        with:
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          allow-no-subscriptions: true
       - name: Sign and timestamp only the verified launcher
         uses: azure/artifact-signing-action@c7ab2a863ab5f9a846ddb8265964877ef296ee82 # v2
         with:
+          azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
           endpoint: ${{ vars.SIGNING_ENDPOINT }}
           signing-account-name: ${{ vars.SIGNING_ACCOUNT }}
           certificate-profile-name: ${{ vars.SIGNING_PROFILE }}
@@ -134,11 +131,12 @@ jobs:
         env:
           VERSION: ${{ steps.inputs.outputs.version }}
           PIN: ${{ vars.LUNDEN_SIGNER_SHA256 }}
+          PUBLISHER: ${{ vars.SIGNING_EXPECTED_SUBJECT }}
           PUBLIC_KEY_HASH: ${{ steps.inputs.outputs.manifest-key-sha256 }}
           BUILD_COMMIT: ${{ needs.build.outputs.commit }}
         run: |
           ./tools/unreal-engine/package-signed-launcher.ps1 -Launcher "$env:RUNNER_TEMP/unsigned/Lunden.exe" `
-            -Version $env:VERSION -SignerSha256 $env:PIN -ManifestKeySha256 $env:PUBLIC_KEY_HASH `
+            -Version $env:VERSION -SignerSha256 $env:PIN -ExpectedPublisher $env:PUBLISHER -ManifestKeySha256 $env:PUBLIC_KEY_HASH `
             -Commit $env:BUILD_COMMIT -OutputDirectory "$env:RUNNER_TEMP/signed"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:

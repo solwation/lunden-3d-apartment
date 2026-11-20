@@ -612,27 +612,26 @@ rotation policy compatible with the launcher's certificate check.
 
 ### Signing launcher artifacts (#2250)
 
-A tag named `app-vMAJOR.MINOR.PATCH` triggers `.github/workflows/release.yml`. An unprivileged
+A tag named `vMAJOR.MINOR.PATCH` triggers `.github/workflows/release.yml`. An unprivileged
 Linux job validates the public inputs, runs the tests and builds the Win64 single-file launcher.
 It checks the bundled managed assembly's version, signer pin and embedded manifest key. The signing
 job on a GitHub-hosted Windows runner downloads the exact artifact ID from that job and checks
 its SHA-256 and Windows file version. It uses the protected `signing` environment.
 
 Olof approved **the same Azure Artifact Signing account and certificate profile as booster-ai**.
-The Azure owner must authorize this repository's GitHub OIDC identity for the
-*Artifact Signing Certificate Profile Signer* role on that profile. Configure the environment's
-actual OIDC subject (for the name-based GitHub format,
-`repo:solwation/lunden-3d-apartment:environment:signing`), issuer
-`https://token.actions.githubusercontent.com` and audience `api://AzureADTokenExchange`.
-The owner can preview configuration from WSL with `tools/unreal-engine/setup-signing.sh --dry-run`.
-Restrict `signing` to tags matching `app-v*` (replace any inherited booster-ai `v*` rule).
-Restrict creation and modification of those tags to the release maintainers. [GitHub OIDC subject reference](https://docs.github.com/en/actions/reference/security/oidc)
+Lunden reuses booster-ai's existing client-secret login. The protected GitHub
+environment `signing` restricts deployment to tags matching `v*` and contains
+the existing profile settings. The owner supplies the three environment secrets
+from their authorized source. No changes to the Azure tenant are required.
+The optional `setup-signing.sh` is for Svep IT if the organization later migrates
+to OIDC; agents must not query or change the tenant.
+
 
 | Scope | Required settings |
 | --- | --- |
 | Repository variables available to the build | `LUNDEN_MANIFEST_PUBLIC_KEY` (only the PEM-encoded SPKI public ECDSA P-256 key for #2248) and `LUNDEN_SIGNER_SHA256` (64 hex characters, SHA-256 of the approved signer's leaf certificate DER). |
-| Protected `signing` environment | Set `SIGNING_ENABLED=true` (environment or repository) and the approved `SIGNING_ENDPOINT`, `SIGNING_ACCOUNT` and `SIGNING_PROFILE`. If public key or fingerprint are also set here, they must exactly match the build inputs. |
-| Environment secrets for OIDC login | `AZURE_TENANT_ID` and `AZURE_CLIENT_ID`. Authentication uses GitHub's OIDC token. |
+| Protected `signing` environment | Set `SIGNING_ENABLED=true` (environment or repository) and `SIGNING_EXPECTED_SUBJECT=Svep Design Center AB` alongside the approved `SIGNING_ENDPOINT`, `SIGNING_ACCOUNT` and `SIGNING_PROFILE`. If public key or fingerprint are also set here, they must exactly match the build inputs. |
+| Protected environment secrets | `AZURE_TENANT_ID`, `AZURE_CLIENT_ID` and `AZURE_CLIENT_SECRET` are passed only to the signing action. |
 
 Obtain the expected certificate fingerprint from a verified, timestamped official booster-ai release.
 Azure certificates are short-lived. Compare the expected leaf with the actual signature on every

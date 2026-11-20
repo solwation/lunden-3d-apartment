@@ -18,6 +18,7 @@ try {
     finally { $sha.Dispose() }
     $out = Join-Path $root 'out'
     $argsForPack = @{ Launcher = $exe; Version = '0.4.2'; SignerSha256 = $pin; ManifestKeySha256 = ('ab' * 32)
+        ExpectedPublisher = $signature.SignerCertificate.GetNameInfo([Security.Cryptography.X509Certificates.X509NameType]::SimpleName, $false)
         Commit = ('a' * 40); OutputDirectory = $out }
     & $pack @argsForPack
     $hash = (Get-FileHash -LiteralPath $exe -Algorithm SHA256).Hash.ToLowerInvariant()
@@ -26,11 +27,13 @@ try {
     if ($sums.Count -ne 2 -or $sums[0] -cne "$hash  Lunden.exe" -or $sums[1] -cne "$hash  Lunden-Setup-0.4.2-win-x64.exe" -or
         (Get-FileHash -LiteralPath $setup -Algorithm SHA256).Hash -ne $hash) { throw 'Wrong post-signing file hashes.' }
     $record = Get-Content -Raw -LiteralPath (Join-Path $out 'launcher-build.json') | ConvertFrom-Json
-    if ($record.signerCertificateSha256 -ne $pin -or $record.launcherSha256 -ne $hash -or $record.tag -cne 'app-v0.4.2') {
+    if ($record.signerCertificateSha256 -ne $pin -or $record.launcherSha256 -ne $hash -or $record.tag -cne 'v0.4.2') {
         throw 'Wrong signed artifact provenance.'
     }
     Write-Output 'PASS signed launcher, identical setup copy and post-signing checksums'
-    foreach ($case in 'publisher', 'altered', 'unsigned') {
+    foreach ($case in 'subject', 'publisher', 'altered', 'unsigned') {
+        $argsForPack.ExpectedPublisher = $signature.SignerCertificate.GetNameInfo([Security.Cryptography.X509Certificates.X509NameType]::SimpleName, $false)
+        if ($case -eq 'subject') { $argsForPack.ExpectedPublisher = 'Different publisher' }
         $argsForPack.SignerSha256 = $pin
         $argsForPack.OutputDirectory = Join-Path $root $case
         if ($case -eq 'publisher') { $argsForPack.SignerSha256 = '0' * 64 }
