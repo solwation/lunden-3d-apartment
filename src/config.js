@@ -5012,6 +5012,20 @@ export const REST = {
   reach: { sit: 1.7, lie: 0.8 }, // how far from the eye you can reach things while sitting (leaning forward) / lying (#184, #472)
 };
 
+// #2158: a seated figure's legs follow the real floor under its seat (src/seatlegs.js; the root and hips stay at
+// REST.avatarSeat). Angles in rad as [thigh pitch down from level, shin tilt forward from upright]; metres before avatar
+// scaling. `base` reproduces olof.js seatedPose's feet on the nominal floor (measured from its IK: thigh 9° down, shin 8°
+// forward); the other poses and every distance are *guesses*, tuned by eye on the sofa, cinema chair, gaming chair and car.
+export const SEAT_LEGS = {
+  ankle: 0.05, hipZ: 0.07, // the ankle over the floor and the hips' forward offset (as seatedPose)
+  base: [0.155, 0.134],
+  low: [-0.45, 0.9], // a low seat at its limit: knees up, shins forward (the car)
+  reach: [0.3, 0], // a high seat at its limit with the feet still down: thighs over the front edge, shins upright, toes reaching
+  dangle: [0.1, 0.3], band: 0.1, // beyond reach the legs relax into hanging over `band` m more drop: feet off the floor
+  pump: [0.75, -0.5], pumpSpeed: 1.1, pumpMax: 2.5, pumpEase: 6, // a swing (#1818): shin tilt added at full forward / backward speed (m/s); faster = a vehicle, no pump
+  probe: 0.35, reread: 0.4, // the floor is read this far in front of the root, once per seat (again only after the root moved `reread` m)
+};
+
 // Touch controls' scale (#1087): the walking stick and the right-thumb buttons follow the screen's short side
 // (CSS px, landscape height on a phone) so a small phone, a large phone and a tablet all get thumb-sized controls.
 // The fractions and clamps are layout choices tuned by eye at 844×390, 667×375 and 1180×820 (*guess*, no physical

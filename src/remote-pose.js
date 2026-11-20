@@ -21,10 +21,11 @@ export function restState(rest, code, seed) {
 }
 
 /** Reuse the existing skeleton/IK; standing is restored by the ordinary Avatar.update each frame. */
-export function applyRestPose(avatar, pose, look = [0, 0], react = null) { // react: { kind, age } of a BIO reaction (#1639), seated only
+export function applyRestPose(avatar, pose, look = [0, 0], react = null, feet = null) { // react: { kind, age } of a BIO reaction (#1639), seated only; feet: #2158 seatlegs.js's on the real floor
   const gaze = { turn: Math.max(-REST.sit.yaw, Math.min(REST.sit.yaw, look[0])), head: Math.max(REST.sit.pitch[0], Math.min(REST.sit.pitch[1], look[1])) };
   if (pose === 1) {
     const p = seatedPose(REST.avatarSeat), r = react && reactionPose(react.kind, react.age, p.hip);
+    if (feet) p.feet = feet; // #2158: the legs follow the real seat height (the hips stay)
     if (r) poseOlof(avatar, { ...p, hip: [p.hip[0] + r.dy, p.hip[1]], lean: p.lean + r.lean, hands: p.hands.map((h, i) => mixHand(h, r.hands[i], r.amt)), ...gaze, head: gaze.head + r.head });
     else poseOlof(avatar, { ...p, ...gaze });
   }

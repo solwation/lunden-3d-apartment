@@ -6,12 +6,13 @@ import {gymPoseWire} from './gymposewire.js';
 import {applyGymBodyPose} from './gymbodypose.js';
 import { playerLocalStorage as localStorage } from './playerprofiles.js';
 import { applyRestPose } from './remote-pose.js';
+import { seatedLegs, localFloor, seatPump } from './seatlegs.js'; // #2158
 import { poseOlof } from './olof.js';
 import { pumpWire } from './gympump.js';
 import { updateFace } from './avatarface.js'; // #2031
 import { updateBreath, BreathPuffs } from './avatarbreath.js'; // #2037
 import * as THREE from 'three';
-import { FALL, SELF_STAND, TOAST, SOUNDS, KISS, HUG, REACT } from './config.js';
+import { FALL, SELF_STAND, TOAST, SOUNDS, KISS, HUG, REACT, REST, SEAT_LEGS } from './config.js';
 import { chooseGazeTarget } from './avatargaze.js';
 import { AVATAR_GAZE } from './config.js';
 import { makesSteps, strideFor } from './spatialsound.js';
@@ -370,6 +371,24 @@ export class Ghost { // (exported for tools/ghostprops.html)
     if (this.root.visible) this.animate(t, d, v.x, v.z);
   }
 
+  /** #2158: the seated feet on the real floor under the seat (src/seatlegs.js). The floor is read once per seat, a little in front
+   * of the root (`seatFloor`: a vehicle's cabin floor, else the walkable `ground`), and again only after the root moved
+   * SEAT_LEGS.reread m (a moving car); the root and hips stay where restState put them. `dt` < 0: not seated (forget the seat).
+   * On a swing the shins pump with its forward speed (vx, vz, m/s); never in a vehicle. */
+  seatFeet(dt, vx = 0, vz = 0) {
+    if (dt < 0) { this.seatAt = null; this.seatPumpK = 0; return null; }
+    const rp = this.root.position, k = this.avatar.object.scale.y || 1, yaw = this.root.rotation.y, sx = -Math.sin(yaw), sz = -Math.cos(yaw);
+    let at = this.seatAt;
+    if (!at || Math.hypot(rp.x - at.x, rp.z - at.z) > SEAT_LEGS.reread) {
+      const px = rp.x + sx * SEAT_LEGS.probe * k, pz = rp.z + sz * SEAT_LEGS.probe * k, py = rp.y + SEAT_LEGS.ankle * k;
+      const v = this.seatFloor?.(px, pz, py) ?? null, y = v ?? this.ground?.(px, pz, py);
+      at = this.seatAt = { x: rp.x, z: rp.z, y: Number.isFinite(y) ? y : NaN, vehicle: v !== null };
+    }
+    const pump = at.vehicle ? 0 : seatPump(vx * sx + vz * sz, Math.hypot(vx, vz));
+    this.seatPumpK = (this.seatPumpK ?? 0) + (pump - (this.seatPumpK ?? 0)) * Math.min(1, dt * SEAT_LEGS.pumpEase);
+    return (this.seatLegs = seatedLegs(REST.avatarSeat, localFloor(at.y, rp.y, k, REST.avatarSeat), this.seatPumpK, this.seatLegs ?? undefined)).feet;
+  }
+
   /** The avatar's pose: the gait follows the ground speed (vx, vz) m/s; the body turns towards where it goes, the head to
    * where it looks; a weapon is held out in the right hand and the prop sits in it. `d`: distance to the eye (far away: not
    * posed). `this.hands` (optional { L, R }, see armTarget in avatar.js) overrides an arm: the surface for a wave (#673). */
@@ -484,7 +503,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
     updateFace(this.avatar, dt, { wave: this.waveT > 0, hug: hugged, kiss: kissed, react: react ? REACT.kinds[react.kind]?.id : null, gym: this.gx ? 0.6 + 0.4 * Math.sin(Math.PI * this.gx[1]) : 0, run: this.avatar.gt?.run ?? 0 }); // #2031: the face follows what the figure does
     updateBreath(this.avatar, dt, { run: this.avatar.gt?.run ?? 0, gym: this.gx ? 1 : 0 }, this.self ? null : this); // #2037: the face's run / gym signal: flush, sweat, breath in the cold
     if (wet) sink(this.avatar.swimAmt, this.avatar.swimLine, this.avatar.diveAmt); // (blending in from standing on the bed)
-    applyRestPose(this.avatar, this.pose, this.look, react);
+    applyRestPose(this.avatar, this.pose, this.look, react, this.pose === 1 && !this.gx ? this.seatFeet(dt, vx, vz) : this.seatFeet(-1));
     applyGymBodyPose(this.avatar,this.gx,this.look);
     if (this.bikeMesh) this.poseBike(dt, Math.hypot(vx, vz), turn, this.vy ?? 0);
     const poseKey = this.gx || this.bikeMesh || air || wet || amount ? -1 : this.pose || 0;
@@ -560,7 +579,7 @@ function avatarWire(code) {
 export class Ghosts {
   /** scene; url: the Worker ('' = off); name(): our name; state(): { p: [x, y, z] feet, r: yaw, c?: actual crouched boolean }; active(): playing (not the
    * start screen); weapon(): the key (COMBAT.weapons) of what we hold or ''; score(): displayed points (defaults to stats.totalScore); onHit / onHurt: the room's word on a hit (#667). */
-  constructor({ scene, camera, url, name = () => '', state, active = () => true, weapon = () => '', score = totalScore, onHit = () => {}, onHurt = () => {}, mirrored = () => true, swim = null, ground = null }) {
+  constructor({ scene, camera, url, name = () => '', state, active = () => true, weapon = () => '', score = totalScore, onHit = () => {}, onHurt = () => {}, mirrored = () => true, swim = null, ground = null, seatFloor = null }) {
     swimProbe = swim ?? swimProbe; // #1943
     Object.assign(this, { scene, camera, name, state, active, weapon, score, onHit, onHurt, mirrored, mine: null, myGhost: null, rules: null, ws: null, me: null, others: new Map(), sent: null, prev: null,
       lastSent: 0, lastBeat: 0, outbox: [], shots: 0, dropped: 0, greetAt: -1e9, greetsSeen: 0, lastMove: -Infinity, retryAt: 0, backoff: 0, openedAt: 0, connects: 0, messages: 0, resends: 0, resent: null, stateAt: 0 });
@@ -577,6 +596,7 @@ export class Ghosts {
     this.light = new AvatarLight(); // #2017: main.js sets zone / env / lights
     this.breath = new BreathPuffs(this.group, this.light).share(); // #2037: all avatars' breath puffs, one draw call
     this.shadows = new AvatarShadows(this.group); this.ground = ground; this.shadows.ground = ground; // #2010: ground(x, z, feetY) = the walkable height
+    this.seatFloor = seatFloor; // #2158: seatFloor(x, z, y) = a vehicle cabin's floor there (world y), else null
     // a hidden outline avatar so that the warm-up compiles the others' program with the scene's (#705): nothing to compile when the first one turns up
     this.sample = new Avatar('warm');
     this.sample.object.visible = false;
@@ -690,7 +710,7 @@ export class Ghosts {
     let g = this.others.get(id);
     if (!g && this.others.size < G.max) {
       const look = av ? decodeAvatarLook(av, id) : null;
-      g = new Ghost(this.group, id, name, false, look); g.ground = this.ground; // #2015: the feet follow the stairs / slope
+      g = new Ghost(this.group, id, name, false, look); g.ground = this.ground; g.seatFloor = this.seatFloor; // #2015: the feet follow the stairs / slope; #2158 a seat's floor
       g.onAvatar = (av) => (this.far ??= new GhostFar(this.group)).adopt(av); g.onAvatar(g.avatar); // #1966: its body fades into the shared far figure
       if (av) g.avatarCode = av;
       this.others.set(id, g);
@@ -1022,7 +1042,7 @@ export class Ghosts {
   selfGhost() {
     const n = this.name() || '';
     const key = `${n}:${this.avatarCode}`;
-    if (!this.myGhost || this.myGhost.key !== key) { this.myGhost?.dispose(); this.myGhost = new Ghost(this.group, 'me', n, true, this.myLook); this.myGhost.ground = this.ground; this.myGhost.key = key; }
+    if (!this.myGhost || this.myGhost.key !== key) { this.myGhost?.dispose(); this.myGhost = new Ghost(this.group, 'me', n, true, this.myLook); this.myGhost.ground = this.ground; this.myGhost.seatFloor = this.seatFloor; this.myGhost.key = key; }
     this.myGhost.pump = pumpWire(this.mine?.bp); this.myGhost.avatar.setPump(this.myGhost.pump);
     return this.myGhost;
   }

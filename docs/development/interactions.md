@@ -2423,6 +2423,24 @@ its posture offset and adds the same pitch. Head-only changes use the existing m
 Scoped check: `tools/seatedlooktest.cjs BASE LOCAL_WORKER OUT`, two browser clients using the
 actual main.js state callback; proof in `docs/validation/issue-1504/`.
 
+### Seated legs on the real floor (#2158)
+
+`restState` still roots every seated figure `REST.avatarSeat` (0.45 m, scaled) under the seat's surface, so the hips stay
+on the cushion (#1150; the head boxes and pick capsule are unchanged). The legs no longer assume that nominal floor:
+`Ghost.seatFeet` (others, the mirror image and the own first-person seated body) reads the floor once per seat,
+`SEAT_LEGS.probe` in front of the root — `Ghosts({ seatFloor })` first (main.js: `Car.cabinFloorAt`, our car's cabin floor,
+which the walkable ground does not know), else the ordinary `ground` — and again only after the root moved
+`SEAT_LEGS.reread` m (a moving car). `src/seatlegs.js` `seatedLegs(seat, floor, pump)` turns that floor into ankle targets
+for the existing IK: low seats (sofa/cinema chairs/car) raise the knees and put the feet forward on the floor, slightly high
+ones (gaming chair) stretch the toes down, and beyond `SEAT_LEGS.reach` + `band` the legs hang free (`dangle`). On a
+swing (#1818) the shins pump with the seat's forward speed (`seatPump`; never at vehicle speed or on a cabin floor).
+`applyRestPose(…, feet)` takes them for pose 1 only; long sit (#1237), lying and Santa's own legs (#1499) are unchanged.
+No wire field, mesh, draw call or texture; the cost is one floor query per seat and a 16-step bisection per posed seated
+figure per frame. Tunables: `SEAT_LEGS` in `src/config.js` (*guesses* except `base`, which reproduces `seatedPose`).
+Checks: `node --test tools/seatlegs2158test.mjs`; `tools/browsertest.sh node tools/seatlegs2158browser.cjs GAME OUT`
+(another player on the clubhouse sofa, a cinema chair, the gaming chair and our car's passenger seat, before/after;
+ankle-over-floor numbers in `browser.json`). Images in `docs/verification/2158/`.
+
 Headwear opacity (#1513): selected caps/knit/brimmed hats and the hairstyle beanie have
 inward-facing lining and closed lower rims; cuffs also close at the top. Hair compression
 is bounded by the analytic skull ellipsoid plus `AVATAR_HAT.hairGap`, preserving exposed

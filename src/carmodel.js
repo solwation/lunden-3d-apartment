@@ -324,8 +324,12 @@ function buildMeganeFromGLB(gltf, paint) {
     { x: -0.02, y: 0.54, z: 0.37, name: 'passagerarsätet' }
   ];
 
-  return { group, parts: {}, doors, seats, screen, steering, materials: mats, wheels };
+  return { group, parts: {}, doors, seats, screen, steering, cabin: meganeCabin(), materials: mats, wheels };
 }
+
+/** #2158: the cabin floor (car frame): between the rear door's rear edge and the front door's front edge, its top 0.315 m up
+ * (the procedural floor slab above; the GLB's interior floor measures the same), where a seated passenger's feet rest. */
+function meganeCabin(S = MEGANE) { const [x1, , x0] = S.doors; return { x0, x1, hw: (S.W - 0.2) / 2, floor: 0.29 + 0.025 }; }
 
 function buildParkedFromGLB(gltf, paint) {
   const parts = {};
@@ -356,7 +360,7 @@ function buildParkedFromGLB(gltf, paint) {
 
 /**
  * Build a car. Returns { group, parts (closed body: per-material geometries, no group), doors: [{ pivot, side, front }],
- * seats: [{ x, y, z, name }], screen (the OpenR sheet, our car), materials }.
+ * seats: [{ x, y, z, name }], screen (the OpenR sheet, our car), cabin (#2158: { x0, x1, hw, floor } its floor, our car), materials }.
  * opts: { doors: true → hinged doors + interior (our car), paint: hex }.
  */
 export function buildCar(S = MEGANE, { doors: withDoors = false, paint = 0xf2f2ee, lite = false } = {}) {
@@ -429,7 +433,7 @@ export function buildProceduralCar(S = MEGANE, { doors: withDoors = false, paint
   for (const x of [wx, -wx]) for (const s of [-1, 1]) wheels.push({ x, s, z: s * (hw * planK(S, x) - 0.12) });
   // ---- doors (our car) or the closed sides' handles (parked cars)
   const doors = [], seats = [];
-  let screen = null, steering = null; // the OpenR sheet and the steering wheel (our car)
+  let screen = null, steering = null, cabin = null; // the OpenR sheet and the steering wheel (our car); #2158 its cabin floor
   const mats = {
     paint: new THREE.MeshStandardMaterial({ color: paint, roughness: 0.22, metalness: 0.35 }),
     black: new THREE.MeshStandardMaterial({ color: 0x0c0d0f, roughness: 0.25, metalness: 0.2 }),
@@ -485,6 +489,7 @@ export function buildProceduralCar(S = MEGANE, { doors: withDoors = false, paint
     // front seats and the rear bench
     const I = new Parts();
     I.add('plastic', rbox(xA - xC - 0.05, 0.05, W - 0.2, (xA + xC) / 2, 0.29, 0, 0.01));
+    cabin = meganeCabin(S);
     I.add('plastic', rbox(0.38, 0.26, W - 0.14, 0.73, 0.84, 0, 0.06), rbox(0.3, 0.05, W - 0.16, 0.9, 0.96, 0, 0.02));
     I.add('plastic', rbox(0.75, 0.28, 0.22, 0.12, 0.45, 0, 0.05)); // centre console
     // #2146: the wheel (rim + hub) is its own small mesh (one extra draw, the car only) so it can turn about its column with the path's curvature
@@ -523,7 +528,7 @@ export function buildProceduralCar(S = MEGANE, { doors: withDoors = false, paint
     t.castShadow = true; o.add(t, r); group.add(o);
     return o;
   });
-  return { group, parts, doors, seats, screen, steering, materials: mats, wheels: wheelObjs };
+  return { group, parts, doors, seats, screen, steering, cabin, materials: mats, wheels: wheelObjs };
 }
 
 /** After mirroring a geometry (scale z −1) its triangles wind the wrong way: swap two corners of each. */

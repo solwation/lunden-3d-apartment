@@ -87,6 +87,7 @@ function learnerSign() {
   return sign;
 }
 
+const cabinV = new THREE.Vector3();
 const DOOR_NAMES = { '1,-1': 'förardörren', '1,1': 'passagerardörren', '0,-1': 'bakdörren', '0,1': 'bakdörren' };
 
 export class Car {
@@ -104,6 +105,7 @@ export class Car {
     }
     this.learnerSign = learnerSign(); g.add(this.learnerSign);
     this.wheels = m.wheels;
+    this.cabin = m.cabin; // #2158: the cabin floor a seated passenger's feet rest on (cabinFloorAt)
     this.steering = m.steering; // #2146: the steering wheel turns with the path's curvature
     this.drive = { steer: 0, accel: 0, lat: 0, reversing: false }; // #2146: what the driver feels (olof.js): wheel angle (rad, + left), forward / sideways acceleration (m/s²)
     // the doors: E on one opens / closes it while the car is parked
@@ -159,6 +161,16 @@ export class Car {
     this.ground = () => 0; // the road's height under (x, z) (main.js: the terrain, the garage's floor)
     this.driverTaken = () => false; // main.js: Olof at the wheel (#663), the driving seat is not free
     this.garage = null;    // the garage (#358, main.js): its door opens for the car
+  }
+
+  /** #2158: the world height of the cabin floor under world (x, z) near height y, or null outside the shown cabin (ghosts.js seatFeet). */
+  cabinFloorAt(x, z, y) {
+    const c = this.cabin;
+    if (!c || !this.object.visible) return null;
+    this.object.updateMatrixWorld();
+    const p = this.object.worldToLocal(cabinV.set(x, y, z));
+    if (p.x < c.x0 || p.x > c.x1 || Math.abs(p.z) > c.hw || Math.abs(p.y - c.floor) > 0.8) return null;
+    return this.object.localToWorld(p.setY(c.floor)).y;
   }
 
   /** The rest spot of seat `s` (world): eye over the cushion, looking forward along the car. */
