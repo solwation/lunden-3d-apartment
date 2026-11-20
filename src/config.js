@@ -11154,3 +11154,17 @@ export const VEHICLE_SHADOW = {
 export const SHOWER_MOIST = { mistRise: 18, wetRise: 10, mistClear: 150, wetDry: 260, door: 2.5, vent: 0.3, doorRise: 0.35,
   fogColor: [0.80, 0.84, 0.86], fogMax: 0.9, streak: 0.55, streakSoft: 0.18, columns: 38, wallDark: 0.5, floorDark: 0.55, wetRough: 0.08,
   zoneNear: 1.6, zoneFar: 4.2, roomMargin: 0.15, height: 3, steamRate: 14, steamAlpha: 1, steamScale: 9, steamLife: 2.6, steamRange: 8, steamSource: 0.25 };
+// Valley mist (#2187, src/valleymist.js): WMO fog (45/48) and calm, cool, dry mornings pull the fog in and lay a few low veils over Höje å.
+// All numbers are artistic *guesses* (no measurements). `fog`: the fog's far/near distance (m) at full density (the far distance falls
+// exponentially from the day's value, so half density ~ 230 m of the usual 650 m); `fogOvercast` the cloud cover a forced fog has, `colour` (linear) the mist tint, mixed in by `tint` x
+// density in daylight. Morning mist (no code needed): `calm` = wind m/s over which it thins (full below `calm[0]`, gone at `calm[1]`),
+// `warm` = °C over which it thins, `sun` = sun height (y) over which it burns off, `max` its strongest density, `chance` the share of
+// days that have it by month (Jan…Dec; seeded per date). `ease` = s the density takes to follow its target. `veil`: the low cards over
+// the river: spacing (m) along the water per quality level (0 = none; phones use `phoneSpacing`), size [along, across] m, height over
+// the water (the valley floor lies ~4 m over the water line: groundY sampled along the river, so the veils float 0.6-2.6 m over the flats), drawn only within `range` m of the river, `alpha` at full density, `drift` m of slow sway.
+export const VALLEY_MIST = {
+  fog: { far: 80, near: 6 }, fogOvercast: 0.6, colour: [0.74, 0.79, 0.84], tint: 0.55,
+  calm: [1.5, 4.5], warm: [10, 17], sun: [0.04, 0.32], max: 0.62, ease: 20, windFog: [6, 11],
+  chance: [0.3, 0.3, 0.35, 0.45, 0.5, 0.35, 0.3, 0.4, 0.65, 0.7, 0.55, 0.35],
+  veil: { spacing: [0, 150, 95, 60], phoneSpacing: 220, size: [[70, 110], [26, 44]], lift: [4.6, 6.6], range: 420, alpha: 0.85, drift: 7, minLevel: 1 },
+};

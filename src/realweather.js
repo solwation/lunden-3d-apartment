@@ -79,7 +79,7 @@ export function hourState(rec, k) {
     if (storm) rain = Math.max(rain, 0.9);
   }
   const overcast = kind ? Math.min(1, rain * 1.3) : R.cloud[c] ?? 0;
-  return { temp, rain, kind, storm: storm && !!kind, overcast };
+  return { temp, rain, kind, storm: storm && !!kind, overcast, fog: !kind && (c === 45 || c === 48) ? 1 : 0 }; // (#2187: fog codes)
 }
 
 /** Source of the real weather for the Weather class. `fetchFn` / `storage` / `now` are injectable for tests. */

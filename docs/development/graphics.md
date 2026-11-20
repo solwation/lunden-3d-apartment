@@ -741,6 +741,12 @@ src/aerialhaze.js      aerial perspective (#2100, `HAZE`, artistic *guesses*): p
                        `tools/aerialhazetest.mjs`, [before/after](../verification/2100/README.md).
                        #2124: the haze also carries the sky's tight low-sun halo (`fogHazeHalo`, (s^6)^8 from the same pow), so the contract
                        "full fog towards the sun = the sky there" includes the halo.
+src/valleymist.js      valley mist (#2187, `VALLEY_MIST`, artistic *guesses*): `mistDensity` (pure) = a fog weather code (WMO 45/48 from realweather `hourState().fog`, or `&weather=fog`; lasts all day, wind only thins it) or a calm (< 1.5–4.5 m/s), cool (< 10–17 °C), dry, not-overcast
+                       morning that burns off as the sun rises (sun y 0.04–0.32), on a seeded share of days per month (`chance`; autumn most). `Weather.updateMist` eases it into `day.mist` (20 s; `weather.mistOff` = off for tests); DayCycle then pulls
+                       the fog in with `mistFog` (far falls exponentially 650 m → 80 m at density 1, near 45 → 6 m; ~190 m at 0.6) and tints it towards a pale mist grey in daylight; #2100's haze curve and colours ride on top unchanged.
+                       `ValleyVeils`: 4–14 large soft horizontal alpha cards (one merged mesh, one draw call, no depth write, no extra program-specific shader) lying 1–3 m over Höje å along `driftRiver()`'s path, swaying slowly,
+                       drawn only within `veil.range` of the river and while the density is above 0.03; quality knob `valleyVeils` (spacing per level: none / 150 / 95 / 60 m; phones 220 m). The water material is not touched. `node --test src/valleymist.test.mjs`;
+                       browser before/after `tools/valleymist2187browser.cjs`, [images](../verification/2187/).
 src/daycycle.js        dawn / dusk colour depth (#2124, `SKY_DUSK`, artistic *guesses*; `duskSkyState(sunY, oc, off)` is pure): while the sun is
                        low the sky blends towards a pink (sun side) → violet (away) layer above the horizon (zero on the horizon row itself, so
                        fog and haze match unchanged), the zenith deepens, a tight bright halo (pow 48) circles the sun and the sky clouds get

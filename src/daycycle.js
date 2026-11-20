@@ -1,6 +1,7 @@
 import * as THREE from 'three';
-import { DAY, WEATHER, GARAGE, LIGHTING, SKYLAYER, CLOUD_SHADOW, SKY_DUSK } from './config.js';
+import { VALLEY_MIST, DAY, WEATHER, GARAGE, LIGHTING, SKYLAYER, CLOUD_SHADOW, SKY_DUSK } from './config.js';
 import { hazeState, applyHaze } from './aerialhaze.js';
+import { mistFog } from './valleymist.js';
 import { cloudShadowState, applyCloudShadows, cloudDrift, stepCloudDrift, cloudShadowUniforms, skyCloudState, CLOUD_NOISE_GLSL } from './cloudshadow.js';
 
 // Day and night: a whole day passes in DAY.minutes real minutes (24 × 60 = real time, #1145: the clock follows the
@@ -188,7 +189,7 @@ const deckFrag = /* glsl */`
 const DAY_ZENITH = new THREE.Color(0x4f8fd0), DAY_HORIZON = new THREE.Color(0xcfe0ec);
 const NIGHT_ZENITH = new THREE.Color(0x04070f), NIGHT_HORIZON = new THREE.Color(0x10182a);
 const DUSK_HORIZON = new THREE.Color(0xe8a070), GLOW = new THREE.Color(0xff8a3c);
-const OVERCAST = new THREE.Color(0x8d969f), FLASH = new THREE.Color(0xdfe4ff), tmpC = new THREE.Color();
+const OVERCAST = new THREE.Color(0x8d969f), FLASH = new THREE.Color(0xdfe4ff), tmpC = new THREE.Color(), mistOut = { near: 0, far: 0 };
 const SUN_LOW = new THREE.Color(0xffb070), SUN_HIGH = new THREE.Color(0xfff1dc), MOON = new THREE.Color(0x9fb4ff);
 
 /** Dawn / dusk colour depth (#2124, SKY_DUSK; pure, for tests too): sky-shader colours (linear) for the sun height `sunY`, overcast
@@ -213,7 +214,7 @@ export function duskSkyState(sunY, oc = 0, off = 0, out = null) {
 export class DayCycle {
   /** lights: { sun, hemi, ambient, fill } from main.js; clouds: canvas texture with alpha; renderer (optional): its exposure follows the sky (#1073). */
   constructor({ scene, camera, lights, clouds, startHour, month, date = 15, year = new Date().getFullYear(), renderer = null }) {
-    Object.assign(this, { scene, camera, lights, renderer, hour: startHour, month, date, year, paused: false, spool: 0, overcast: 0, flash: 0, dim: 0, under: 0, lit: 0 }); // overcast, flash: weather.js (#248); dim: the blinds (#273)
+    Object.assign(this, { scene, camera, lights, renderer, hour: startHour, month, date, year, paused: false, spool: 0, overcast: 0, mist: 0, flash: 0, dim: 0, under: 0, lit: 0 }); // overcast, flash: weather.js (#248); dim: the blinds (#273)
     this.fogFar = scene.fog.far; this.fogNear = scene.fog.near;
     this.base = { hemi: 0, ambient: 0, fill: 0, sun: 0, exposure: 1 }; // LIGHTING.sky blended overcast → clear each update (#1073)
     this.uniforms = {
@@ -320,13 +321,19 @@ export class DayCycle {
     u.uHorizon.value.lerp(tmpC.copy(OVERCAST).multiplyScalar(0.2 + 0.8 * day), oc * 0.7);
     this.scene.fog.color.copy(u.uHorizon.value).lerp(FLASH, Math.min(1, flash * 0.5));
     this.scene.fog.far = this.fogFar + (WEATHER.fogFar - this.fogFar) * oc;
+    // valley mist (#2187): fog code / calm cool morning: the fog closes in (exponentially, 650 m → ~80 m) and turns a paler mist grey in daylight
+    const mist = this.mist * (1 - above);
+    if (mist > 0.001) {
+      mistFog(this.fogNear, this.scene.fog.far, mist, mistOut); this.scene.fog.far = mistOut.far;
+      this.scene.fog.color.lerp(tmpC.setRGB(...VALLEY_MIST.colour).multiplyScalar(0.12 + 0.88 * day), mist * VALLEY_MIST.tint * (1 - Math.min(1, flash)));
+    }
     u.uCloudCol.value.setRGB(0.93, 0.94, 0.96).lerp(tmpC.setRGB(0.6, 0.63, 0.67), this.overcast * 0.8).multiplyScalar(0.1 + 0.9 * day);
     u.uWhite.value = inside;
     if (inside > 0) {
       this.scene.fog.color.lerp(u.uCloudCol.value, inside);
       this.scene.fog.near = this.fogNear + (L.near - this.fogNear) * inside;
       this.scene.fog.far += (L.far - this.scene.fog.far) * inside;
-    } else this.scene.fog.near = this.fogNear;
+    } else this.scene.fog.near = mist > 0.001 ? mistOut.near : this.fogNear;
     // aerial perspective (#2100): haze colour per view ray and weather; off inside the deck and while lightning flashes
     const haze = hazeState({ sunDir: this.sunDir, horizon: u.uHorizon.value, glow: u.uGlow.value, glowAmt: u.uGlowAmt.value, day, oc, off: Math.max(inside, Math.min(1, flash * 0.5)), halo: dusk.halo }, this.haze);
     this.haze = haze; applyHaze(haze); u.uScatter.value.copy(haze.scatter);

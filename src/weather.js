@@ -1,9 +1,10 @@
 import * as THREE from 'three';
-import { WEATHER as W, UNIT_TOP, CAR } from './config.js';
+import { WEATHER as W, VALLEY_MIST as VM, UNIT_TOP, CAR } from './config.js';
 import { groundY } from './surroundings.js';
 import { occluders } from './greet.js';
 import { sfx, audioParts } from './audio.js';
 import { simWind, fallSlant } from './windsim.js';
+import { mistDensity } from './valleymist.js';
 
 // Weather (#248, #249): rain in spring and autumn (a little in summer), thunderstorms in late summer, snow in the
 // winter, short hail showers in spring and at the start of some thunderstorms. Every date gets a
@@ -197,6 +198,7 @@ export class Weather {
     if (f === 'clear') s = { rain: 0, storm: false, overcast: 0, kind: null, id: null };
     else if (f === 'rain' || f === 'snow' || f === 'hail') s = { rain: 0.8, storm: false, overcast: 1, kind: f, id: `forced-${f}` };
     else if (f === 'storm') s = { rain: 1, storm: true, overcast: 1, kind: 'rain', id: 'forced-storm' };
+    else if (f === 'fog') s = { rain: 0, storm: false, overcast: VM.fogOvercast, kind: null, id: null, fog: 1 }; // #2187: WMO 45/48
     else {
       const real = this.real?.at(d.year, d.month, d.date, d.hour); // real data for this hour (realweather.js), else the draw
       if (real) { s = real; source = 'real'; } else {
@@ -222,6 +224,7 @@ export class Weather {
   fallAt(year, month, date, hour) {
     const f = this.force;
     if (f === 'clear') return { rain: 0, kind: null };
+    if (f === 'fog') return { rain: 0, kind: null };
     if (f) return { rain: f === 'storm' ? 1 : 0.8, kind: f === 'storm' ? 'rain' : f };
     return this.real?.at(year, month, date, hour) ?? rainAt(year, month, date, hour);
   }
@@ -243,6 +246,14 @@ export class Weather {
       wind: { x: mix(a.wind.x, s.wind.x), z: mix(a.wind.z, s.wind.z) } }; // (#2117: the wind as a vector: it turns and grows smoothly)
   }
 
+  /** #2187: the valley mist's density follows its target (fog code, or a calm cool dry morning) slowly; DayCycle pulls the fog in by it. */
+  updateMist(dt, s) {
+    const d = this.day, w = s.wind ? Math.hypot(s.wind.x, s.wind.z) : 3;
+    const target = this.mistOff ? 0 : mistDensity({ fog: s.fog || 0, temp: s.temp, wind: w, rain: s.rain, overcast: s.overcast, sunY: d.sunDir?.y ?? 1, morning: d.hour < 12, date: d });
+    const k = this.mistT === undefined || this.force ? 1 : Math.min(1, dt / VM.ease); // (forced weather and the first frame: at once)
+    this.mistT = target; d.mist = (d.mist ?? 0) + (target - (d.mist ?? 0)) * k;
+  }
+
   /** `inside`: the visitor is in the flat (muffled); `moved`: metres walked this frame (#249: out in it, it counts);
    * `cabin`: sitting in our car (#664), how far its doors stand open 0…1 (`cabinMix`), else null. */
   // Enclosed off-map rooms have no outdoor view; keep climate/audio but draw no precipitation.
@@ -251,6 +262,7 @@ export class Weather {
     const s = this.ease(this.state(), dt);
     if (s.kind !== this.kind) this.seeded = null; // another kind: start the particles afresh
     Object.assign(this, { rain: s.rain, storm: s.storm, overcast: s.overcast, kind: s.kind, id: s.id, temp: s.temp, wind: s.wind });
+    this.updateMist(dt, s);
     this.day.overcast = this.overcast * (this.kind === 'snow' ? 0.7 : 1); // snow clouds are lighter
     this.day.wind = this.wind; // #2117: the cloud shadows drift with it (DayCycle)
     const sl = fallSlant(this.wind); this.slant.x = sl.x; this.slant.z = sl.z; this.drift.x = sl.dx; this.drift.z = sl.dz;

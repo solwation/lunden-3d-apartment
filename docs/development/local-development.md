@@ -27,7 +27,7 @@ URL parameters (debugging / screenshots):
 - `&newyear` — start at 23:59:45 on 31 December: the TVs count down to midnight, flutes on the coffee table (#1199; `&freeze` holds it).
 - `&jetpack` — the jetpack on your back (outdoors, #359).
 - `&spidersuit` — the Spider-Man suit on (#597; climbing outdoors only).
-- `&weather=rain|storm|snow|hail|clear` — force the weather (#248, #249).
+- `&weather=rain|storm|snow|hail|clear|fog` — force the weather (#248, #249; `fog` = WMO 45/48, the valley mist #2187).
 - `&noflora` — no stones, weed or water lilies in Höje å (#1956).
 - `&noprobe` — no room reflections in chrome, steel, porcelain and tiles indoors (#2151, `src/roomprobe.js`): the old look, for A/B.
 - `&nodrift` — no drifting flecks on Höje å and no specks under its surface (#1952).
