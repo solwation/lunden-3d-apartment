@@ -21,3 +21,7 @@ The first fixture used a lazy test page and let animation/culling continue betwe
 This verifies the real application consumers/rendering and quality branch in Chromium/SwiftShader, not physical phone/Iris640/FPS performance. No house geometry/layout changed. Neutral wall/ceiling material code can transfer to the public app's shared painted shells, under its own issue and consumers; no personal furnishings, characters, gameplay or Cloudflare is part of that transfer.
 
 One conductor performed implementation and subsequent review roles sequentially while other workers ran independent issues. Approximate phases:3min read/plan,5min implementation/component checks,9min browser/setup correction/images,2min review/docs.
+
+Published implementation: `2e3e2ec5b63a295d26565fe84695038475eecbc7`. [Deploy the shared-world Worker: success](https://github.com/solwation/lunden-3d-apartment/actions/runs/44757526137) · [Deploy to GitHub Pages: success](https://github.com/solwation/lunden-3d-apartment/actions/runs/44757526050).
+
+[Pinned embedded before/after images and completion](https://github.com/solwation/lunden-3d-apartment/issues/2205#issuecomment-7042593845). Neutral public port: https://github.com/solwation/kvarteret-lunden/issues/346. Before-images removed from current main after publication; historical links remain.
