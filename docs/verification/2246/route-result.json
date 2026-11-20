@@ -1,0 +1,251 @@
+{
+  "engine": "5.8.4-58902052+++UE5+Release-5.8",
+  "map": "/Game/Lunden/Maps/Pilot_L1007",
+  "checkpoints": [
+    {
+      "label": "START",
+      "capsuleCm": [
+        287.5,
+        -1200.0,
+        94.9
+      ]
+    },
+    {
+      "label": "approach entrance",
+      "capsuleCm": [
+        139.4,
+        -142.88,
+        94.9
+      ]
+    },
+    {
+      "label": "open entrance",
+      "capsuleCm": [
+        139.4,
+        -142.88,
+        94.9
+      ],
+      "doorYaw": -90.0
+    },
+    {
+      "label": "through entrance",
+      "capsuleCm": [
+        140.98,
+        96.97,
+        94.9
+      ]
+    },
+    {
+      "label": "blocked by hall wall",
+      "capsuleCm": [
+        183.56,
+        98.52,
+        94.65
+      ]
+    },
+    {
+      "label": "entrance hall",
+      "capsuleCm": [
+        143.21,
+        221.32,
+        94.65
+      ]
+    },
+    {
+      "label": "towards kitchen",
+      "capsuleCm": [
+        261.09,
+        249.08,
+        94.65
+      ]
+    },
+    {
+      "label": "hallway",
+      "capsuleCm": [
+        269.9,
+        502.13,
+        94.65
+      ]
+    },
+    {
+      "label": "stair foot",
+      "capsuleCm": [
+        300.47,
+        706.44,
+        94.65
+      ]
+    },
+    {
+      "label": "ascending 1",
+      "capsuleCm": [
+        456.17,
+        713.05,
+        194.53
+      ]
+    },
+    {
+      "label": "ascending 2",
+      "capsuleCm": [
+        485.04,
+        709.89,
+        228.78
+      ]
+    },
+    {
+      "label": "ascending 3",
+      "capsuleCm": [
+        505.17,
+        692.85,
+        254.8
+      ]
+    },
+    {
+      "label": "ascending 4",
+      "capsuleCm": [
+        518.29,
+        665.4,
+        283.37
+      ]
+    },
+    {
+      "label": "ascending 5",
+      "capsuleCm": [
+        506.89,
+        635.72,
+        316.12
+      ]
+    },
+    {
+      "label": "ascending 6",
+      "capsuleCm": [
+        477.52,
+        617.71,
+        354.2
+      ]
+    },
+    {
+      "label": "ascending 7",
+      "capsuleCm": [
+        449.73,
+        614.87,
+        375.6
+      ]
+    },
+    {
+      "label": "upper landing",
+      "capsuleCm": [
+        349.73,
+        615.97,
+        419.62
+      ]
+    },
+    {
+      "label": "descending 1",
+      "capsuleCm": [
+        452.18,
+        614.99,
+        374.12
+      ]
+    },
+    {
+      "label": "descending 2",
+      "capsuleCm": [
+        478.38,
+        618.04,
+        353.78
+      ]
+    },
+    {
+      "label": "descending 3",
+      "capsuleCm": [
+        507.5,
+        636.31,
+        315.82
+      ]
+    },
+    {
+      "label": "descending 4",
+      "capsuleCm": [
+        518.08,
+        666.22,
+        281.41
+      ]
+    },
+    {
+      "label": "descending 5",
+      "capsuleCm": [
+        504.73,
+        693.56,
+        254.63
+      ]
+    },
+    {
+      "label": "descending 6",
+      "capsuleCm": [
+        482.96,
+        710.82,
+        226.0
+      ]
+    },
+    {
+      "label": "descending 7",
+      "capsuleCm": [
+        454.01,
+        713.08,
+        193.61
+      ]
+    },
+    {
+      "label": "downstairs",
+      "capsuleCm": [
+        285.81,
+        714.97,
+        94.65
+      ]
+    },
+    {
+      "label": "living room",
+      "capsuleCm": [
+        262.47,
+        897.36,
+        94.65
+      ]
+    },
+    {
+      "label": "approach patio",
+      "capsuleCm": [
+        148.54,
+        1151.57,
+        94.65
+      ]
+    },
+    {
+      "label": "open patio",
+      "capsuleCm": [
+        148.54,
+        1151.57,
+        94.65
+      ],
+      "doorYaw": 90.0
+    },
+    {
+      "label": "patio",
+      "capsuleCm": [
+        147.02,
+        1417.13,
+        94.65
+      ]
+    }
+  ],
+  "automation": {
+    "test": "Editor.Python.Lunden.test_pilot_route",
+    "result": "Success",
+    "warnings": 0,
+    "errors": 0
+  },
+  "sha256": {
+    "Maps/Pilot_L1007.umap": "ab7e28a0565b82dfbfaad2e4e88b97d87a67b088ec240722d468c9574c97dbcd",
+    "Generated/PilotDoors/Level_l1007_doors.umap": "334a73f481cdd999e57eb0d6a62ff52ac53301c44dc8f01ba74c7c47b0eb15f1",
+    "Generated/l1007-uteplats/Level_l1007-uteplats.umap": "3f65093d8539f726e852a5cfaef925542d3b4f50eabaafbb255e4ae4976d285a"
+  }
+}

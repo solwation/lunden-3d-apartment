@@ -45,6 +45,6 @@ can rebuild the assets in a clean scratch project using the editor's
 present, run it again with `-script="<generator path> --link-door-controller"`
 to bind the GameMode to the pilot door controller.
 
-This test measures the character on controlled collision geometry. The imported
-pilot's complete staircase, entrance route and patio require their own traversal
-check in the assembled map.
+The [full traversal](route.md) exercises the production character on the actual
+streamed apartment and patio with both doors, the hall wall and the complete
+staircase.
