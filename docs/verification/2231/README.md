@@ -168,7 +168,8 @@ kunde inte verifieras.
 `browser.json` och `browser.txt` binder miljö och mätningar. `prototype.png` är en
 öppnad och granskad helsidbild **960×948** i native proportion; canvasens riktiga
 256×240-bild visas proportionellt med pixelkant. Ingen före-bild är meningsfull för
-en helt ny fristående testsida. Root publicerar/bäddar in den före stängning.
+en helt ny fristående testsida. Resultatbilden är publicerad och inbäddad i [leveranskommentaren](https://github.com/solwation/lunden-3d-apartment/issues/2231#issuecomment-7044460965) före stängning.
+Integrerad som `5077429a7be1962cd781524925eefb0045555e5c`; [Pages-bygget är grönt](https://github.com/solwation/lunden-3d-apartment/actions/runs/44770526172).
 
 ## Föreslagna barnärenden – bara text, efter vägval
 
