@@ -288,7 +288,11 @@ Binary Unreal assets cannot be merged. Rules for agents and people working in pa
   lock, so an unlocked edit fails early instead of conflicting later.
 - **One file per actor (OFPA):** create levels with World Partition (external actors on), so each placed actor is
   its own small `.uasset` under `__ExternalActors__/` and two owners of different actors in one level rarely
-  collide. The level file itself still has one owner. (No level exists yet; #2246 creates the first.)
+  collide. The level file itself still has one owner. Separate zone sub-levels are also suitable when each has a single owner.
+- Keep shareable gameplay rules, network validation and persistence in C++ where practical. Use thin
+  Blueprints to connect components, assets and presentation. Import shared values into DataAssets or
+  DataTables from #2245 rather than maintaining another hand-edited copy of the web measurements.
+  The [porting drafts](unreal-inventory.md#draft-porting-issues-after-the-pilot) identify each write area.
 - `Content/Lunden/Generated/` is written only by the #2245 importer; hand edits there are lost on the next import.
 - Different tools folders can be worked on in parallel (`tools/unreal-engine/export*`, `tools/unreal-engine/package*`,
   `unreal/Launcher/`; #2242).
