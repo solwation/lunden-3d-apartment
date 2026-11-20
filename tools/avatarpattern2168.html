@@ -1,0 +1,63 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Avatar pattern 2168</title><link rel="icon" href="data:,">
+<script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  } }
+</script>
+<script>performance.__real = performance.now.bind(performance); { let a = 2168; Math.random = () => { a = (a * 1664525 + 1013904223) >>> 0; return a / 4294967296; }; }</script>
+<style>html,body{margin:0;background:#9db4c8}canvas{display:block}</style></head>
+<body><script type="module">
+// #2168 component page, driven by tools/avatarfabric2168browser.cjs: four figures in low sun (T-shirt cotton + jeans, sweater knit + jeans,
+// hoodie fleece + jeans, T-shirt + fine twill trousers), group views, jeans / torso close-ups and the mirror preview (src/avatarpreview.js).
+import * as THREE from 'three';
+import { Avatar } from '../src/avatar.js';
+import { AvatarPreview } from '../src/avatarpreview.js';
+import { decodeAvatarLook, avatarEyeHeight } from '../src/config.js';
+const code = '210000100c5e8o2w0l8j0n0b0r8t8y8';
+const W = 960, H = 600, renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1); renderer.setSize(W, H); document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x9db4c8);
+scene.add(new THREE.HemisphereLight(0xcfe0f2, 0x6f6a5c, 0.9)); // the sky and the ground's bounce
+const sun = new THREE.DirectionalLight(0xfff0d8, 3.2); sun.position.set(-2.4, 1.7, 2.2); scene.add(sun); // a low sun from the front left
+const looks = [{ cut: 0, sleeves: 1, legs: 0, top: 0x2f6db5, pants: 0x3f5274, pattern: 1 }, { cut: 0, sleeves: 1, legs: 0, top: 0xb5372f, pants: 0x3f5274, pattern: 2 },
+  { cut: 0, sleeves: 0, legs: 0, top: 0x3a3f4a, pants: 0x3f5274, pattern: 3 }, { cut: 2, sleeves: 1, legs: 0, top: 0x3c8a4e, pants: 0x3f5274, pattern: 4 }];
+const mk = (o) => ({ ...decodeAvatarLook(code, 'fabric'), tall: 1, build: 1, style: 0, ...o });
+const avatars = looks.map((o, i) => {
+  const a = new Avatar(mk(o)); a.baseY = 1.62 - avatarEyeHeight(a.look); a.object.position.set((i - 1.5) * 0.8, a.baseY, 0); scene.add(a.object); return a;
+});
+const cam = new THREE.PerspectiveCamera(30, W / H, 0.02, 60);
+const pose = (walk) => { for (const a of avatars) for (let k = 0; k < (walk ? 37 : 90); k++) a.update(1 / 60, { speed: walk ? 1.4 : 0 }); scene.updateMatrixWorld(true); };
+const draw = () => { renderer.info.reset(); renderer.render(scene, cam); return { calls: renderer.info.render.calls, tris: renderer.info.render.triangles, textures: renderer.info.memory.textures, programs: renderer.info.programs.length }; };
+const frame = (a) => a.mesh.getWorldQuaternion(new THREE.Quaternion());
+window.__group = (walk, yaw = 0.55) => { // the figures turned a little towards the sun
+  pose(walk); for (const a of avatars) a.object.rotation.y = yaw; scene.updateMatrixWorld(true);
+  cam.fov = 24; cam.updateProjectionMatrix(); const t = new THREE.Vector3(0, 0.9, 0); cam.position.set(0, 1.4, 4.6); cam.lookAt(t); return draw();
+};
+const world = (a, bone, off = [0, 0, 0]) => a.bones[bone].localToWorld(new THREE.Vector3(...off));
+const CLOSE = { torso: ['torso', [0, 0.18, 0.05], [0.45, 0.15, 1], 0.8, 30], sleeve: ['elbowL', [0, 0.0, 0], [1, 0.15, 0.6], 0.7, 30] };
+window.__close = (k, name, bend = 0) => {
+  pose(false); const a = avatars[k], [bone, off, dir, dist, fov] = CLOSE[name], p = world(a, bone, off);
+  a.object.rotation.y = 0; scene.updateMatrixWorld(true);
+  cam.fov = fov; cam.updateProjectionMatrix(); cam.position.copy(p).addScaledVector(new THREE.Vector3(...dir).normalize().applyQuaternion(frame(a)), dist); cam.lookAt(p); return draw();
+};
+// the four garments side by side as the mirror shows them (src/avatarpreview.js: 220 × 310 at the game's capped ratio), as one canvas
+window.__preview = () => {
+  const sheet = document.createElement('canvas'), pv = new AvatarPreview(document.createElement('canvas')), px = 330, py = 465;
+  sheet.width = px * 4; sheet.height = py;
+  looks.forEach((o, i) => { pv.draw(mk(o), { yaw: 0.4 }); sheet.getContext('2d').drawImage(pv.canvas, i * px, 0, px, py); });
+  pv.dispose(); renderer.domElement.style.display = 'none'; document.body.appendChild(sheet); sheet.id = 'sheet'; return sheet.width;
+};
+// walking, one arm up and one back: the pattern rides with the bind pose (bones set after the update, skinned on the render)
+window.__posed = (up = -2.3) => {
+  pose(true); for (const a of avatars) { a.object.rotation.y = 0.35; a.bones.shoulderL.rotation.z = up; a.bones.elbowL.rotation.x = -0.5; a.bones.shoulderR.rotation.x = 0.7; }
+  scene.updateMatrixWorld(true); cam.fov = 24; cam.updateProjectionMatrix(); const t = new THREE.Vector3(0, 1.0, 0); cam.position.set(0, 1.5, 4.6); cam.lookAt(t); return draw();
+};
+window.__showMain = () => { renderer.domElement.style.display = 'block'; document.getElementById('sheet')?.remove(); };
+window.__time = (n = 20) => {
+  const gl = renderer.getContext(), px = new Uint8Array(4); window.__group(false); renderer.render(scene, cam); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px);
+  const t0 = performance.__real(); for (let i = 0; i < n; i++) renderer.render(scene, cam); gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px); return +((performance.__real() - t0) / n).toFixed(1);
+};
+window.__ready = true;
+</script></body></html>

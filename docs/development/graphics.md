@@ -1819,6 +1819,13 @@ or network field. `wearAt` mirrors the shader for `node --test tools/avatarfabri
 `tools/avatarfabric2165.html`, before = the base revision's `src/avatar.js`, `avatarcloth.js`, `config.js`) takes the sun-lit group, close-ups
 and the mirror preview. [Images](../verification/2165/).
 
+`src/avatarpattern.js` (#2168; tunables `AVATAR_PATTERN` in `config.js`, all *guess*; program key suffix `-pattern2168`) gives the top a procedural pattern in the same cloth
+block, a function of the bind-pose position only (so it follows skinning, seams and folds, never a texture, mesh or draw): 1 striped (horizontal bands by bind height), 2 checked (bands plus
+whole columns round the part's axis, darker at crossings), 3 marl (two slanted sine lattices of light and dark flecks over a greyed base), 4 two-tone (sleeves in the second colour). The second
+colour is derived from the top's own colour (`altOf`: darker on a light top, creamy on a dark one). Look field `pattern`; wire: tag `m` above the cut / outer value (`m` = cut + 3 × (outer + 3 × mode) +
+18 × pattern); an older client skips it and shows the plain T-shirt in the seed colour. No pattern under a worn jacket / coat; customizer: the `pattern` button group beside the top model. One vec4
+uniform (`uClothPat`). `patternAt` mirrors the GLSL for `node --test tools/avatarpatterntest.mjs`; `tools/avatarpattern2168browser.cjs` (page `tools/avatarpattern2168.html`) takes before/after. [Images](../verification/2168/).
+
 ### Optional skin variation: freckles, birthmarks, uneven tone (#2111)
 
 `src/avatarskinvar.js` (tunables `AVATAR_SKIN_VARIATION`, all *guess*; program key suffix `-skinvar2111`) adds an optional, discreet

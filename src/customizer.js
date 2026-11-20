@@ -2,7 +2,7 @@ import { playerLocalStorage as localStorage } from './playerprofiles.js';
 import { BUILD } from './version.js';
 import { wornLook, outerColour } from './avataroutwear.js'; // #2147
 import { skirtKind } from './avatarskirt.js'; // #2157
-import { SKIN, SKIN_TONES, HAIR, TOPS, PANTS, SHOES, AVATAR_HEIGHT, encodeAvatarLook, decodeAvatarLook, avatarLook, avatarHeightCm, EYES, AVATAR_SHAPE, avatarShape, AVATAR_BUILD, avatarBuildStep, avatarBuildWidth, AVATAR_GLASSES, AVATAR_HAT, AVATAR_PHONES, AVATAR_NECKLACE, AVATAR_EARRINGS, AVATAR_RING, AVATAR_WRIST, wristValue, AVATAR_CLOTHES, AVATAR_OUTERWEAR, outerValue, AVATAR_NOSE_FORMS, noseFormOf, AVATAR_SKIN_VARIATION, skinVarOf, AVATAR_AGE, ageStepOf, beardCutOf, beardChoiceOf, setBeardChoice, AVATAR_SHOES, shoeModelOf, socksOf, AVATAR_MAKEUP, makeupOf } from './config.js';
+import { SKIN, SKIN_TONES, HAIR, TOPS, PANTS, SHOES, AVATAR_HEIGHT, encodeAvatarLook, decodeAvatarLook, avatarLook, avatarHeightCm, EYES, AVATAR_SHAPE, avatarShape, AVATAR_BUILD, avatarBuildStep, avatarBuildWidth, AVATAR_GLASSES, AVATAR_HAT, AVATAR_PHONES, AVATAR_NECKLACE, AVATAR_EARRINGS, AVATAR_RING, AVATAR_WRIST, wristValue, AVATAR_CLOTHES, AVATAR_OUTERWEAR, AVATAR_PATTERN, patternOf, outerValue, AVATAR_NOSE_FORMS, noseFormOf, AVATAR_SKIN_VARIATION, skinVarOf, AVATAR_AGE, ageStepOf, beardCutOf, beardChoiceOf, setBeardChoice, AVATAR_SHOES, shoeModelOf, socksOf, AVATAR_MAKEUP, makeupOf } from './config.js';
 
 // #1220: the brows' colours (config.js HAIR, the hair swatches' names) and a first choice that follows the hair
 const BROW_NAMES = ['Mörkbruna', 'Bruna', 'Ljusbruna', 'Guldbruna', 'Blonda', 'Grå', 'Röda', 'Svarta'];
@@ -536,6 +536,7 @@ function updateActiveSwatches() {
     { type: 'style', value: currentLook.style },
     { type: 'legs', value: Number(currentLook.legs) || 0 }, // #1244
     { type: 'cut', value: Number(currentLook.cut) || 0 },
+    { type: 'pattern', value: patternOf(currentLook) }, // #2168
     { type: 'outer', value: outerValue(currentLook.outer) }, // #2147
     { type: 'outerMode', value: currentLook.outerMode === 1 ? 1 : 0 },
     { type: 'hair', value: currentLook.hair, list: HAIR },
@@ -820,6 +821,9 @@ function initCustomizerDOM() {
       applyAndRefresh();
     } else if (type === 'cut' && AVATAR_CLOTHES.cut.names[idx] !== undefined) {
       currentLook.cut = idx;
+      applyAndRefresh();
+    } else if (type === 'pattern' && AVATAR_PATTERN.names[idx] !== undefined) { // #2168
+      currentLook.pattern = idx;
       applyAndRefresh();
     } else if (type === 'outer' && AVATAR_OUTERWEAR.names[idx] !== undefined) { // #2147
       currentLook.outer = idx;

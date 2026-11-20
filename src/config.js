@@ -7888,6 +7888,28 @@ export const AVATAR_SHOES = {
   leather: { size: [0.098, 0.15, 0.272], toeTaper: 0.3, throat: { x: 0.017, z: [-0.01, 0.07], shade: 0.55, lift: 0.0007 }, cap: { z: 0.12, width: 0.003, shade: 0.8 } },
   sandal: { foot: [0.088, 0.12, 0.27], straps: [[0.032, 0.016], [0.125, 0.016]], thick: 0.0035, ankle: [0.0475, 0.0505, 0.016, -0.016] },
 };
+
+// #2168: fabric patterns on the top (look field `pattern`: 0 plain, 1 striped, 2 checked, 3 marl, 4 two-tone sleeves), procedural in the bind pose
+// (src/avatarpattern.js, no texture). It shares the top's tag `m` above the cut / outer-layer value: `m` = (cut + 3 × (outer + 3 × mode)) + `pack` ×
+// pattern, so an older client (which reads only m0-m17) skips the value and shows the plain top in the seed's colour; a missing pattern is the plain
+// colour as before. The second colour is derived from the top's own colour (`alt`: a darker tone of a light top, a creamy lighter one of a dark top),
+// so no colour field is needed. All numbers *guess*, tuned by eye on the mirror preview. `period` m between stripes / lines, `duty` the band's share
+// of the period, `cross` the darkening where two check bands cross, `strength` how far a band reaches the second colour; marl: `freq` rad/m of the two
+// noise octaves, `light` / `dark` the share of light / dark flecks, `desat` the heathered base's pull towards grey; `fade` [from, to]: the pattern
+// dissolves into its mean when a pixel spans that share of the period; `radius` the part's axis radius for whole columns round it (as the weave).
+export const AVATAR_PATTERN = {
+  tag: 'm', pack: 18, names: ['Enfärgad', 'Randig', 'Rutig', 'Melerad', 'Tvåfärgad'],
+  stripe: { period: 0.038, duty: 0.5, strength: 1 },
+  check: { period: 0.06, duty: 0.3, strength: 0.62, cross: 0.28 },
+  marl: { freq: [78, 173], light: 0.62, dark: 0.26, desat: 0.4, edge: [0.0, 0.8] },
+  alt: { split: 0.2, darker: 0.42, light: [0.8, 0.78, 0.7], lightMix: 0.7, marl: 0.45 },
+  fade: [0.35, 0.8], radius: { torso: 0.15, sleeve: 0.045 },
+};
+/** The look's top pattern (#2168): an integer 1 … names.length − 1, 0 (plain) for a missing or invalid value. */
+export function patternOf(look) {
+  const v = look?.pattern;
+  return Number.isInteger(v) && v > 0 && v < AVATAR_PATTERN.names.length ? v : 0;
+}
 // #2157: the A-line skirt (`legs` 3, in the trousers' colour) and the simple dress (`legs` 4: the skirt in the top's colour under the chosen
 // top, read as one garment with a waist seam). They are new values of the trousers' tag `p` (p3 / p4): an older client only accepts
 // p0-p2, skips the value and shows straight trousers. Geometry (src/avatarskirt.js, hips-local bind metres: y 0 = the hip joints' height,
@@ -7972,7 +7994,8 @@ function encodeLookExt(look) {
   const legsV = look.legs > 0 && look.legs < AVATAR_CLOTHES.legs.names.length ? look.legs : 0, mkV = makeupCode(look);
   if (legsV || mkV) out += `${AVATAR_CLOTHES.legs.tag}${legsV + AVATAR_MAKEUP.pack * mkV}`; // #1244; #2170: the makeup code in the tens
   const cutV = look.cut > 0 && look.cut < AVATAR_CLOTHES.cut.names.length ? look.cut : 0, ow = outerValue(look.outer), om = ow && look.outerMode === 1 ? 1 : 0; // #2147
-  if (cutV || ow) out += `${AVATAR_CLOTHES.cut.tag}${cutV + 3 * (ow + 3 * om)}`;
+  const pat = patternOf(look); // #2168: the pattern above the cut / outer value
+  if (cutV || ow || pat) out += `${AVATAR_CLOTHES.cut.tag}${cutV + 3 * (ow + 3 * om) + AVATAR_PATTERN.pack * pat}`;
   return out;
 }
 /** The look's shoe model (#2169): 0 trainer (also for any missing or unknown value), 1 boot, 2 leather shoe, 3 sandal. */
@@ -8045,8 +8068,9 @@ function decodeLookExt(ext, lk) {
       continue;
     }
     if (tag === AVATAR_CLOTHES.cut.tag) { // #2147: the top in the units, the outer layer in the threes, its mode above
-      const c = v % 3, w = Math.floor(v / 3) % 3, m = Math.floor(v / 9);
-      if (m <= 1 && (w > 0 || !m)) { lk.cut = c; if (w) { lk.outer = w; lk.outerMode = m; } }
+      const pv = Math.floor(v / AVATAR_PATTERN.pack), b = v % AVATAR_PATTERN.pack; // #2168: the pattern above the 18 cut / outer values
+      const c = b % 3, w = Math.floor(b / 3) % 3, m = Math.floor(b / 9);
+      if (pv < AVATAR_PATTERN.names.length && m <= 1 && (w > 0 || !m)) { lk.cut = c; if (w) { lk.outer = w; lk.outerMode = m; } if (pv) lk.pattern = pv; }
       continue;
     }
     // #1173: wire-only seeded scale; explicit chosen cm always take precedence.

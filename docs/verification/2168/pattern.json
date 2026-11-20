@@ -1,0 +1,75 @@
+{
+  "baseline": "d7f1335a",
+  "source": "d7f1335ab3536cf3396280aa8cb6074fd7ac20f7",
+  "before": {
+    "shots": {
+      "sun-group": {
+        "calls": 4,
+        "tris": 64460,
+        "textures": 4,
+        "programs": 1
+      },
+      "posed-walk": {
+        "calls": 4,
+        "tris": 64460,
+        "textures": 4,
+        "programs": 1
+      },
+      "torso-close": {
+        "calls": 3,
+        "tris": 48228,
+        "textures": 4,
+        "programs": 1
+      },
+      "marl-close": {
+        "calls": 4,
+        "tris": 64460,
+        "textures": 4,
+        "programs": 1
+      },
+      "sleeve-close": {
+        "calls": 3,
+        "tris": 48228,
+        "textures": 4,
+        "programs": 1
+      }
+    },
+    "ms": 885.7
+  },
+  "after": {
+    "shots": {
+      "sun-group": {
+        "calls": 4,
+        "tris": 64460,
+        "textures": 4,
+        "programs": 1
+      },
+      "posed-walk": {
+        "calls": 4,
+        "tris": 64460,
+        "textures": 4,
+        "programs": 1
+      },
+      "torso-close": {
+        "calls": 3,
+        "tris": 48228,
+        "textures": 4,
+        "programs": 1
+      },
+      "marl-close": {
+        "calls": 4,
+        "tris": 64460,
+        "textures": 4,
+        "programs": 1
+      },
+      "sleeve-close": {
+        "calls": 3,
+        "tris": 48228,
+        "textures": 4,
+        "programs": 1
+      }
+    },
+    "ms": 857.9
+  },
+  "errors": []
+}

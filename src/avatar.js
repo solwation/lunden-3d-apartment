@@ -21,6 +21,7 @@ import { lipColour, linerWeight, linerShade, makeupUniforms, applyMakeupLook, ma
 import { lampUniforms, LAMP_FDECL, lampGlsl } from './avatarlight.js'; // #2039: the street lamps' light
 import { SelfShadow, selfShadowUniforms, SELF_VDECL, SELF_VCODE, SELF_FDECL, selfLightsChunk, selfShadowKey } from './avatarselfshadow.js'; // #2143: the sun's self-shadow
 import { fabricKey, fabricLight } from './avatarfabric.js'; // #2165
+import { patternKey } from './avatarpattern.js'; // #2168
 import { clothUniforms, clothDecl, clothNormal, installCloth } from './avatarcloth.js'; // #2034
 import { newSway, stepSway, SWAY_DECL, swayGLSL } from './avatarsway.js'; // #2014
 import { skirtKind, skirtUnder, skirtRegion, skirtTube, skirtGLSL, SKIRT_VDECL } from './avatarskirt.js'; // #2157
@@ -1450,7 +1451,7 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
     const gloss = { head: bindAt('head'), region: REGION, part: FACE_PART }; // #2052
     sh.vertexShader = glossVertex(sh.vertexShader, gloss); sh.fragmentShader = curlGloss(glossFragment(sh.fragmentShader, gloss)); // (#2054: the curls turn its strands)
   };
-  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light' + '-armfix2022' + skinKey() + '-expr2031' + '-eyes2064' + '-exert2037' + flyKey() + '-cloth2034' + '-skirt2157' + '-brow2046' + sculptKey() + '-hairline2050' + noseKey() + glossKey() + beardKey() + '-curls2054' + shortHairKey() + handKey() + seamKey() + chestKey() + skinVarKey() + ageKey() + toneKey() + selfShadowKey() + buildKey() + fabricKey() + makeupKey() + envKey() + phoneKey(); // #2217, #2173, #2170, #2108, #2111, #2107; #2032, #2031, #2033, #2037, #2040, #2034, #2050, #2048, #2052, #2051
+  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light' + '-armfix2022' + skinKey() + '-expr2031' + '-eyes2064' + '-exert2037' + flyKey() + '-cloth2034' + '-skirt2157' + '-brow2046' + sculptKey() + '-hairline2050' + noseKey() + glossKey() + beardKey() + '-curls2054' + shortHairKey() + handKey() + seamKey() + chestKey() + skinVarKey() + ageKey() + toneKey() + selfShadowKey() + buildKey() + fabricKey() + makeupKey() + envKey() + phoneKey() + patternKey(); // #2168, #2217, #2173, #2170, #2108, #2111, #2107; #2032, #2031, #2033, #2037, #2040, #2034, #2050, #2048, #2052, #2051
   installSelfView(m); // #2080: the own camera hides head/hair; mirrors and peers keep the full figure
   return m;
 }
