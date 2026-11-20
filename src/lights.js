@@ -9,6 +9,7 @@ import { Pendant } from './pendants.js';
 import { ShadePools } from './shadepools.js';
 import { roomEnv } from './roomprobe.js';
 import { IndoorHalos, shadeEmission } from './indoorhalo.js';
+import { spillColour } from './screenspill.js';
 
 // Room lights: a switch by every room's door (E) turns the room's lamps on and off — a ceiling
 // lamp per room (spots / globe / LED strips where interior.js built those) — and floor lamps
@@ -193,6 +194,37 @@ export class Switch {
 /** A small lamp gives light only while it is there: not hidden with the furniture (F; its own flag is ignored, pick
  * helpers are invisible) nor by the Christmas tree's season layer (#571, `seasonHidden` on it or a parent). */
 const shown = (f) => { for (let p = f.spec.object; p; p = p.parent) if (p.userData.seasonHidden || (p !== f.spec.object && !p.visible)) return false; return true; };
+
+/** #2199: a TV that is on as a lamp-wash entry (no real light): at the glass, its lobe along the screen's normal, its colour the picture's average. */
+class ScreenSpill {
+  constructor(tv) {
+    const C = L.screenSpill;
+    this.tv = tv; this.stamp = -1; this.recolored = false; this.seen = '';
+    this.lamp = { pos: new THREE.Vector3(), color: new THREE.Color(0), intensity: 1, range: C.range, level: 0, shade: C.shade, axis: new THREE.Vector3(0, 0, 1) };
+    this.place();
+  }
+  get on() { return this.tv.isOpen || this.tv.videoActive; }
+  /** Seat the lamp in front of the screen (it follows a moved TV); true when it moved. */
+  place() {
+    const m = this.tv.mesh, p = new THREE.Vector3(), n = new THREE.Vector3(0, 0, 1);
+    m.updateWorldMatrix(true, false);
+    m.getWorldPosition(p); n.transformDirection(m.matrixWorld);
+    p.addScaledVector(n, L.screenSpill.lift);
+    const key = `${p.x.toFixed(2)},${p.y.toFixed(2)},${p.z.toFixed(2)},${n.x.toFixed(2)},${n.z.toFixed(2)}`;
+    if (key === this.seen) return false;
+    this.seen = key; this.lamp.pos.copy(p); this.lamp.axis.copy(n); this.lamp.level = p.y > LEVELS[0].floor + 1.6 ? 1 : 0;
+    return true;
+  }
+  /** The picture's colour changed since the last call (≤ 10 a second): the lamp's colour × intensity again. */
+  refresh() {
+    const sp = this.tv.spill;
+    if (!sp || sp.stamp === this.stamp) return false;
+    this.stamp = sp.stamp;
+    this.lamp.color.setRGB(...spillColour(sp.rgb)); // (linear)
+    this.recolored = true;
+    return true;
+  }
+}
 
 class FloorLamp {
   constructor(spec) {
@@ -422,11 +454,13 @@ export class Lights {
       this.addSwitch(room(m.level, m.room), m.x, LEVELS[m.level].floor + L.switchHeight, m.z, m.normal, scene);
     }
     this.floorLamps = world.lamps.map((spec) => new FloorLamp(spec));
+    this.screens = (world.furnitureTargets ?? []).filter((t) => t.kind === 'tv' && t.mesh && t.spill).map((t) => new ScreenSpill(t));
     // every lamp's light in the materials' own shaders, wherever the visitor is (#276); the ceiling lamps too (#295); it
     // cross-fades with the lamp's pool light, so a lit lamp lights its room the same from near and far (#294)
     this.wash = buildLampWashes(scene, world, [
       ...this.floorLamps.flatMap((f) => f.room.lamps.map((lamp) => ({ owner: f, lamp, k: f.spec.wash ?? 1 }))), // every pool anchor (the bench light has several)
       ...[...this.rooms.values()].flatMap((R) => R.lamps.map((lamp) => ({ owner: R, lamp, k: 1 }))),
+      ...this.screens.map((owner) => ({ owner, lamp: owner.lamp, k: 1 })), // #2199: every TV's coloured spill
     ]);
     this.wash.lamps = this.wash.entries.map((e) => e.owner); // (tests)
     this.shadePools = new ShadePools(this.wash.entries, (level) => LEVELS[level].floor, ceilingAt); // (#2191: the shaded lamps' floor / ceiling pools)
@@ -752,6 +786,9 @@ export class Lights {
       l.distance = lamp.range;
     });
     // the washes: how far on each lamp is (k) and how much of it its pool light shows now (the wash shows the rest)
+    const moved = new Set();
+    for (const sc of this.screens) { if (sc.on && sc.place()) moved.add(sc.lamp); sc.refresh(); }
+    if (moved.size) this.wash.relocate(moved);
     this.wash.entries.forEach(({ owner, lamp }, i) => {
       if (owner.recolored) this.wash.recolor(i);
       let f = 0;
@@ -762,6 +799,7 @@ export class Lights {
       this.halos.set(i, on);
     });
     for (const f of this.floorLamps) f.recolored = false;
+    for (const sc of this.screens) sc.recolored = false;
     this.wash.commit();
     this.shadePools.commit();
     this.halos.commit();

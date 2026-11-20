@@ -10,6 +10,7 @@ import { MusicLoop } from './music.js';
 import { buildShelfDressing } from './shelves.js';
 import { MUSIC, STAND_ON, CONTACT_SHADOW, REST, STRING_SHELF } from './config.js';
 import { buildContactShadows } from './contactshadow.js';
+import { averageRgb, easeRgb } from './screenspill.js';
 import * as THREE from 'three';
 import { woodMaterial } from './woodgrain.js';
 import { freeCanvasAfterUpload } from './lowmemory.js';
@@ -2158,8 +2159,24 @@ function tv(item) {
   let on = false, acc = 0, supplied = true;
   const target = new THREE.Color();
   const shine = ([hh, ss, ll]) => target.setHSL(hh, ss, ll);
+  // #2199: the picture's average colour, sampled `every` s from a tiny copy and eased: the coloured spill the room's lamp wash (lights.js) throws (no light)
+  const SP = LIGHTING.screenSpill, spill = { rgb: [0, 0, 0], stamp: 0 };
+  let spAcc = 0, spCtx = null;
+  const sampleSpill = (dt) => {
+    spAcc += dt;
+    if (spAcc < SP.every) return;
+    const step = spAcc; spAcc = 0;
+    try {
+      const src = interact.videoActive ? interact.videoMaterial?.map?.image : scr.canvas;
+      if (!src) return;
+      if (!spCtx) { const c = document.createElement('canvas'); [c.width, c.height] = SP.sample; spCtx = c.getContext('2d', { willReadFrequently: true }); spCtx.imageSmoothingQuality = 'high'; }
+      spCtx.drawImage(src, 0, 0, SP.sample[0], SP.sample[1]);
+      spill.rgb = easeRgb(spill.rgb, averageRgb(spCtx.getImageData(0, 0, SP.sample[0], SP.sample[1]).data), step);
+      spill.stamp++;
+    } catch { /* a tainted or unready video frame: keep the last colour */ }
+  };
   const interact = {
-    name: item.name ?? 'tv:n', kind: 'tv', pickable: g, screen: scr, mesh: screen, mediaId: item.mediaId, room: item.room,
+    spill, name: item.name ?? 'tv:n', kind: 'tv', pickable: g, screen: scr, mesh: screen, mediaId: item.mediaId, room: item.room,
     video(active) { interact.videoActive=active;screen.material=active?interact.videoMaterial:(on?screenMat:offMat);led.material.color.setHex(!supplied?0x1a0a0a:active||on?0xf4f4f4:0xff2a2a); },
     get isOpen() { return on; },
     get verb() { return 'välja film på'; },
@@ -2167,7 +2184,7 @@ function tv(item) {
       on = !on;
       if(!interact.videoActive)screen.material = on ? screenMat : offMat;
       led.material.color.setHex(on ? 0xf4f4f4 : 0xff2a2a);
-      if (on) { scr.tune(); shine(scr.draw(0)); glowMat.color.copy(target); } else glowMat.color.setHex(0x000000);
+      if (on) { scr.tune(); shine(scr.draw(0)); glowMat.color.copy(target); spill.rgb = [0, 0, 0]; spill.stamp++; } else { glowMat.color.setHex(0x000000); spill.rgb = [0, 0, 0]; spill.stamp++; }
       return on;
     },
     /** The remote's channel button (#101): the next programme, through snow. */
@@ -2175,7 +2192,9 @@ function tv(item) {
     /** The mains (#604): in a power cut even the standby LED goes dark (main.js switches it off first). */
     mains(v) { supplied=v;led.material.color.setHex(!v ? 0x1a0a0a : on||interact.videoActive ? 0xf4f4f4 : 0xff2a2a); },
     update(dt) {
-      if (!on||interact.videoActive) return;
+      if (!on&&!interact.videoActive) return;
+      sampleSpill(dt);
+      if (interact.videoActive) return;
       acc += dt;
       if (acc < 1 / item.fps) return;
       shine(scr.draw(acc));

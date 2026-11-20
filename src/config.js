@@ -6384,6 +6384,11 @@ export const LIGHTING = {
     cone: { inner: 0.85, outer: 0.4, leak: 0.04, up: 0.3, boost: 2.0, pool: { floor: [0.9, 0.14] } },
     reading: { inner: 0.95, outer: 0.7, leak: 0.02, up: 0, boost: 2.6 },
   },
+  // #2199 (src/screenspill.js): a TV that is on throws its picture's colour into the room as a lamp-wash entry (no light): a lobe along the
+  // screen's normal (`shade`, the wash's profile), `range` m, `gain` = colour intensity, `lift` m out from the glass, the colour = the picture's
+  // average (sampled `every` s, <= 10 recolours a second), eased with time constant `tau` s so a flicker reads as a flicker; `floor` = the
+  // least chroma share kept so a dark picture still tints a little. All *guesses* by eye.
+  screenSpill: { range: 5, gain: 3.2, lift: 0.18, every: 0.1, tau: 0.22, floor: 0.35, sample: [16, 9], shade: { inner: 0.8, outer: 0.05, leak: 0.0, up: 0, boost: 1 } },
   wetRooms: ['Badrum', 'WC/dusch'],       // spots in the soffit instead of a ceiling lamp
   pendants: [
     // over the dining table (SKANSNAS.table): the family's three copper pendants (#307, docs/kopparlampor-koksbord.jpg).
@@ -8394,6 +8399,9 @@ export const PLAYROOM = { x: -1500, z: -1500, w: 18, d: 10.4, ceiling: 2.7, // c
     neon: { // ceiling runs round SPEL (colours 0xRRGGBB) and the two wall signs (atlas cells in the strip below the poster cells)
       run: { y: 2.52, h: .035, d: .03, colors: { north: 0x59f3ff, east: 0xff59cc, west: 0xa670ff, south: 0xff59cc } },
       signs: { spel: { x: 6, y: 1.9, w: 1.6, h: .53, wall: 'spelN' }, spelpa: { x: 6, y: 2.255, w: .87, h: .29, wall: 'spelS' } /* #2027: above the south passage, facing the desks */, biljard: { x: -.95, y: 1.85, w: 1.3, h: .43, wall: 'biljN' } } },
+    // #2199: SPEL's neon / LED spill (src/screenspill.js `clubGlowTerms`, a few static coloured terms in the clubhouse shader, no light): each term lights what is within
+    // `range` m inside SPEL; `inset` m in from its wall, `runY` the runs' height, `run` / `hex` / `sign` the strengths, `signColor` the GAME ON sign (*guesses* by eye).
+    spill: { range: 4.6, inset: .5, runY: 2.35, run: 1.5, hex: 2.2, sign: 1.8, signColor: 0xff59cc },
     // #2027: SPEL's hexagon acoustic/LED panels, LED line patterns and corner lamps (*guess*, own design; emissive vertex colours in the poster mesh, no light).
     // Pointy-top hexagons of circumradius `r` m with `gap` m between them, `depth` m thick; each cluster row is a string, `x` = dark acoustic panel, other letters
     // glow (p purple, k pink, t turquoise, o peach, b blue); rows alternate 3/4 cells so they interlock. `x`/`y` = the cluster's centre on its wall.

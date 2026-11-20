@@ -1,12 +1,17 @@
 import * as THREE from 'three';
 import { PLAYROOM as R } from './config.js';
 import { rememberFragmentCompile } from './vertexcompile.js';
+import { clubGlowTerms } from './screenspill.js';
 
 export const FINISH = { paint: 0, wood: 1, fabric: 2, metal: 3, floor: 4 };
 
 // #1574: per-room light levels shared by every clubhouse material, [BIO, BILJARD, SPEL, hall] (PLAYROOM.zones): the ceiling-lamp term and the ambient term of
 // each fragment are scaled by the room it is in. The Vector4s are live: set a component and every clubhouse surface follows next frame (no recompile).
 export const CLUB_ZONES = { lamp: new THREE.Vector4(...R.zones.lamp), ambient: new THREE.Vector4(...R.zones.ambient) };
+
+// #2199: SPEL's neon / LED spill: a few static coloured terms (screenspill.js), live uniforms: CLUB_GLOW.k scales them all (the power cut / disco may set it).
+const GLOW = clubGlowTerms();
+export const CLUB_GLOW = { k: { value: 1 } };
 
 // Linear vertex colours and a per-surface finish keep the room in one PBR batch.
 export function clubhouseSurface(geometry, hex, finish = FINISH.paint) {
@@ -32,6 +37,9 @@ export function clubhouseMaterial() {
     shader.uniforms.uClubLight = { value: new THREE.Color(C.lampColor).multiplyScalar(C.lampStrength) };
     shader.uniforms.uClubLayout = { value: new THREE.Vector4(R.clubhouse.side, R.clubhouse.front, R.d / 2, R.ceiling - C.lampDrop) };
     shader.uniforms.uClubFalloff = { value: C.lampFalloff };
+    shader.uniforms.uClubGlowP = { value: GLOW.map((g) => new THREE.Vector4(g.x, g.y, g.z, g.range)) };
+    shader.uniforms.uClubGlowC = { value: GLOW.map((g) => new THREE.Vector3(...g.rgb)) };
+    shader.uniforms.uClubGlowK = CLUB_GLOW.k;
     shader.uniforms.uClubZoneLamp = { value: CLUB_ZONES.lamp };
     shader.uniforms.uClubZoneAmbient = { value: CLUB_ZONES.ambient };
     shader.vertexShader = shader.vertexShader.replace('#include <common>', `#include <common>
@@ -48,6 +56,9 @@ export function clubhouseMaterial() {
       uniform vec4 uClubLayout;
       uniform float uClubFalloff;
       uniform vec4 uClubZoneLamp, uClubZoneAmbient;
+      uniform vec4 uClubGlowP[${GLOW.length}];
+      uniform vec3 uClubGlowC[${GLOW.length}];
+      uniform float uClubGlowK;
       float clubZone(vec4 z, vec3 p) { // BIO / BILJARD / SPEL (x), the hall south of the partition (w)
         return p.z > uClubLayout.y ? z.w : (p.x < -uClubLayout.x ? z.x : (p.x > uClubLayout.x ? z.z : z.y));
       }
@@ -101,6 +112,15 @@ export function clubhouseMaterial() {
       reflectedLight.indirectDiffuse *= clubZone(uClubZoneAmbient,vClubPosition);
       reflectedLight.directDiffuse += BRDF_Lambert(material.diffuseColor)*uClubLight*clubZone(uClubZoneLamp,vClubPosition)*
         clubLambert/(1.0+uClubFalloff*dot(clubDelta,clubDelta));
+      if (vClubPosition.x > uClubLayout.x && vClubPosition.z < uClubLayout.y) { // SPEL's neon and LED spill (#2199)
+        vec3 clubSpill = vec3(0.0);
+        for (int i = 0; i < ${GLOW.length}; i++) {
+          vec3 d = uClubGlowP[i].xyz - vClubPosition;
+          float q = clamp(1.0 - dot(d, d) / (uClubGlowP[i].w * uClubGlowP[i].w), 0.0, 1.0);
+          clubSpill += uClubGlowC[i] * (q * q * clamp(dot(clubWorldNormal, normalize(d)) * 0.8 + 0.2, 0.0, 1.0));
+        }
+        reflectedLight.directDiffuse += BRDF_Lambert(material.diffuseColor) * clubSpill * uClubGlowK;
+      }
       if(vClubFinish>1.5 && vClubFinish<2.5) {
         float clubGrazing = pow(1.0-max(dot(normal,normalize(vViewPosition)),0.0),3.0);
         reflectedLight.indirectDiffuse += material.diffuseColor*uClubLight*clubGrazing*${C.clothSheen};

@@ -871,6 +871,13 @@ src/lampshade.js       shaded lamps throw light up and down (#2191): a lamp carr
                        mesh, vertex colour = the lamp's on-ness, re-seated when a pendant moves. No new light or pass; +1 draw call; one more
                        `texelFetch` pair per lamp in the lit shaders. `tools/lampshade2191test.mjs`,
                        `tools/lampshade2191browser.cjs`, [before/after](../verification/2191/README.md).
+src/screenspill.js     coloured spill from screens and neon (#2199, `LIGHTING.screenSpill`, `PLAYROOM.posters.spill`, *guesses* by eye; no real light, no extra draw or pass).
+                       A TV that is on samples its picture's average colour (furniture.js: a 16 × 9 copy every 0.1 s, `averageRgb`, eased by `easeRgb`, so ≤ 10 recolours a second;
+                       the video frame while a film plays) into `interact.spill`; lights.js `ScreenSpill` turns each TV into one more lampwash entry (`spillColour`: brightness follows
+                       the picture's luminance, a chroma floor keeps dark pictures tinted, black = nothing; a lobe along the screen's normal via the `shade` profile; re-seated when the TV
+                       is moved). Off with the screen (and a power cut turns the TV off). SPEL's neon: `clubGlowTerms()` gives a few static coloured terms (the four ceiling runs, the two
+                       hexagon clusters, the GAME ON sign) that clubhousematerials.js adds to its lamp term inside SPEL only (`uClubGlowP/C`, `CLUB_GLOW.k` scales them).
+                       `tools/screenspill2199test.mjs`, `tools/screenspill2199browser.cjs`, [before/after](../verification/2199/README.md).
 src/mirror.js          the one mirror material (gradient + glints; hall and bathroom mirrors); the lit mirrors (Badrum LED, Hollywood, Klk) use `litMirrorMaterial` + `litEmissive` + `litReflect` (LIGHTING.mirror, #339)
 src/reflections.js     mirror images: a Reflector per mirror, only the nearest one in view (< 4 m) renders; `dim` scales a lit mirror's image (#339)
                        Our own avatar in the mirrors (#691): `setMirrorExtra({ before, after })` runs around each reflector pass (not on a held frame), ghosts.js
