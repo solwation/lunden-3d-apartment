@@ -19,6 +19,18 @@ const log=(s,v)=>console.log('PASS',s,v?JSON.stringify(v):'');
   assert.equal(await A.evaluate(()=>__app.tvMedia.switchTv(__app.tvMedia.sessions.get('lounge').target,'toggle')),true);
   await Promise.all([A,B].map(p=>wait(p,()=>__app.tvMedia.sessions.get('lounge').target.isOpen)));
   const on=await same();log('both clients see the TV switched on, same channel',on);await shot('1-on');
+  // #2262: age only the viewer's movement timestamp. Keep the real socket and run the normal
+  // Ghosts update. Changing channel must still reach the viewer on that same connection.
+  const ageViewer = p => p.evaluate(async () => {
+    const { GHOSTS } = await import('/src/config.js');
+    const g = __ghosts, socket = g.ws;
+    g.update(0);
+    g.lastMove = performance.now() - GHOSTS.idleMs - 1;
+    g.update(0);
+    return { watching: __app.tvMedia.watching, idle: performance.now() - g.lastMove >= GHOSTS.idleMs,
+      sameConnection: g.connected && g.ws === socket };
+  });
+  assert.deepEqual(await ageViewer(A), { watching: true, idle: true, sameConnection: true });
   // 2. Bo changes the channel (free again) and Anna follows.
   assert.equal(await B.evaluate(()=>__app.tvMedia.switchTv(__app.tvMedia.sessions.get('lounge').target,'channel')),true);
   await Promise.all([A,B].map(p=>wait(p,ch=>__app.tvMedia.sessions.get('lounge').target.screen.channel!==ch,on.ch)));
@@ -32,8 +44,10 @@ const log=(s,v)=>console.log('PASS',s,v?JSON.stringify(v):'');
   const viaButton=await same();log('while one client controls, the other cannot switch; the chooser button shares a new channel',viaButton);await shot('3-button');
   // 5. Off for both; a late joiner sees the shared off/on state at once.
   await wait(A,()=>!__app.tvMedia.sessions.get('lounge').player.state?.owner);
+  assert.deepEqual(await ageViewer(B), { watching: true, idle: true, sameConnection: true });
   assert.equal(await A.evaluate(()=>__app.tvMedia.switchTv(__app.tvMedia.sessions.get('lounge').target,'toggle')),true);
   await Promise.all([A,B].map(p=>wait(p,()=>!__app.tvMedia.sessions.get('lounge').target.isOpen)));log('both clients see the TV switched off',await same());await shot('4-off');
+  assert.equal(await B.evaluate(()=>__app.tvMedia.watching),false);
   assert.deepEqual(errors,[]);fs.writeFileSync(`${out}/result.json`,JSON.stringify({on,next,viaButton,errors},null,2));log('no page exceptions');
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;});
