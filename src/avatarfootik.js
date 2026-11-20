@@ -55,6 +55,9 @@ export function footGround(av, dt, gt, frame, floorY, sc, ground, enabled) {
         if (Number.isFinite(gToe) && gToe > g) gt0 = gToe;
       }
       if (Number.isFinite(gt0)) s.sm[i] = Number.isFinite(s.sm[i]) && s.weight > 0.01 ? smooth(s.sm[i], gt0, dt, av.gaitInfo?.contact[i] ? K.rateStance : K.rate) : gt0;
+      // #2208: a planted sole cannot lag BELOW a newly reached tread. The exponential filter leaves ~5.6 cm of an
+      // 18 cm rise after one 60 Hz frame (rateStance=70). Keep easing down/swinging, but bound support by the live ground.
+      if (av.gaitInfo?.contact[i] && Number.isFinite(g)) s.sm[i] = Math.max(s.sm[i], g);
       s.off[i] = Number.isFinite(s.sm[i]) ? clamp((s.sm[i] - floorY) / sc, -K.maxDrop, K.maxRise) * s.weight : 0;
       // the sole's slope: ground under the heel and the toe along the foot's own direction
       const c = Math.cos(frame[2]), sn = Math.sin(frame[2]), hz = -K.heel * sc, tz = K.toe * sc;

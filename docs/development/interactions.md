@@ -507,7 +507,9 @@ src/spidersuit.js      the Spider-Man suit (#597, SPIDER, all values *guess*): o
                        main.js into `Ghosts.ground`, also used by #2010's shadows; `Ghost.ground` carries it into `Avatar.update({ ground, floorY })`),
                        so own mirror image and other players alike; it is only an offset recomputed per frame, never fed back into the gait's or
                        `groundMotion`'s foot state. The world height under a foot is smoothed (a planted foot keeps its height when the root steps; a
-                       swinging foot rises onto the next tread and clears the riser by also reading the toe's ground), the sole is tilted by the
+                       swinging foot rises onto the next tread and clears the riser by also reading the toe's ground). #2208 bounds a contacting
+                       foot's filtered height by the live ground: no upward filter lag into a newly reached tread; swing and descent still ease.
+                       The sole is tilted by the
                        ground's slope (heel/toe samples; a step edge or a slope steeper than `edgeSlope` leaves it level) and the hips follow half the
                        feet's mean offset before the existing leg-reach clamp (now also applied when standing on uneven ground) lowers them to the
                        legs' reach; the two-bone leg IK is poseOlof's unchanged `ik`. The offset fades out when the root is more than

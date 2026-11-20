@@ -7,7 +7,8 @@ import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import { Avatar } from '../src/avatar.js';
 import { ik, THIGH, SHIN } from '../src/olof.js';
-import { slopePitch } from '../src/avatarfootik.js';
+import { footGround, slopePitch } from '../src/avatarfootik.js';
+import { avatarLook } from '../src/config.js';
 
 test('two-bone IK: reach, knee direction, unreachable clamp', () => {
   const upper = new THREE.Object3D(), lower = new THREE.Object3D(), foot = new THREE.Object3D();
@@ -37,8 +38,8 @@ const ramp = (k) => (x, z) => Math.max(0, -z * k);
 
 /** Walks an avatar `secs` along −z at `v` m/s on `ground` (the root follows the ground under it, as the player does).
  * Returns the worst |sole − ground| over stance frames (m), the lowest hips and the lowest sole over the ground. */
-export function run(ground, v, secs, { from = 0, back = false } = {}) {
-  const av = new Avatar('foot-ik-2015'), sc = av.object.scale.z || 1;
+export function run(ground, v, secs, { from = 0, back = false, build = null } = {}) {
+  const av = new Avatar(build === null ? 'foot-ik-2015' : { ...avatarLook('foot-ik-2015'), bodyBuild: build }), sc = av.object.scale.z || 1;
   let z = from, y = ground(0, z), worst = 0, n = 0, pen = 0, hipLo = Infinity, hipHi = -Infinity;
   const hip = new THREE.Vector3(), p = new THREE.Vector3(), seen = [0, 0];
   const dirv = back ? 1 : -1;
@@ -60,15 +61,33 @@ export function run(ground, v, secs, { from = 0, back = false } = {}) {
   return { worst, n, pen, hipLo, hipHi, seen };
 }
 
-test('stance feet stay on the treads going up and down a stair', () => {
+test('stance feet stay on the treads going up and down a stair for slim, medium and broad builds', () => {
   const g = stair(0.18, 0.28, 12);
-  const up = run(g, 0.9, 6, { from: 0 });
-  if (process.env.PRINT) console.log('stair up', up);
-  assert.ok(up.n > 20, 'stance frames seen');
-  assert.ok(up.worst < 0.05, `up: stance sole within 5 cm of the tread (${up.worst.toFixed(3)})`);
-  assert.ok(up.pen > -0.05, `up: no foot sinks into a tread (${up.pen.toFixed(3)})`);
-  const down = run(g, 0.9, 6, { from: -2.9, back: true });
-  assert.ok(down.worst < 0.05 && down.pen > -0.05, `down: contact ${down.worst.toFixed(3)} penetration ${down.pen.toFixed(3)}`);
+  for (const build of [0, 4, 8]) {
+    const up = run(g, 0.9, 6, { from: 0, build });
+    const down = run(g, 0.9, 6, { from: -2.9, back: true, build });
+    if (process.env.PRINT) console.log('stair build', build, { up, down });
+    assert.ok(up.n > 20 && down.n > 20, 'stance frames seen');
+    assert.ok(up.worst < 0.05, `build ${build} up: stance sole within 5 cm of the tread (${up.worst.toFixed(3)})`);
+    assert.ok(up.pen > -0.05, `build ${build} up: no foot sinks into a tread (${up.pen.toFixed(3)})`);
+    assert.ok(down.worst < 0.05 && down.pen > -0.05, `build ${build} down: contact ${down.worst.toFixed(3)} penetration ${down.pen.toFixed(3)}`);
+  }
+});
+
+test('replanting reaches a higher tread immediately; swing and descent still ease', () => {
+  const av = { gaitInfo: { contact: [false, false] } };
+  const tick = (height) => {
+    const gt = { feet: [[0, 0.05, 0], [0, 0.05, 0]], pitch: [0, 0] };
+    footGround(av, DT, gt, [0, 0, 0], 0, 1, () => height, true);
+    return gt.feet[0][1] - SOLE;
+  };
+  for (let i = 0; i < 90; i++) tick(0);
+  const swinging = tick(0.18);
+  assert.ok(swinging > 0 && swinging < 0.18, 'swing still rises gradually');
+  av.gaitInfo.contact = [true, true];
+  assert.ok(Math.abs(tick(0.18) - 0.18) < 1e-6, 'replanted sole reaches the tread in this frame');
+  const descending = tick(0);
+  assert.ok(descending > 0 && descending < 0.18, 'a lower support still eases down');
 });
 
 test('stance feet follow a slope', () => {

@@ -1,0 +1,36 @@
+[
+  {
+    "kind": "before",
+    "foot": [
+      4.3617359996774026,
+      0.8454406743005273,
+      7.24
+    ],
+    "sole": [
+      4.279329616378899,
+      0.7928556194687594,
+      7.24
+    ],
+    "ground": 0.8125,
+    "calls": 25,
+    "triangles": 17966,
+    "source": "production Avatar.update + buildStairs + stairHeight, isolated diagnostic lighting; frame109"
+  },
+  {
+    "kind": "after",
+    "foot": [
+      4.3617359996774026,
+      0.8650850521429982,
+      7.24
+    ],
+    "sole": [
+      4.279329616378899,
+      0.8124999973112303,
+      7.24
+    ],
+    "ground": 0.8125,
+    "calls": 25,
+    "triangles": 17966,
+    "source": "production Avatar.update + buildStairs + stairHeight, isolated diagnostic lighting; frame109"
+  }
+]

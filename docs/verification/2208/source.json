@@ -1,0 +1,16 @@
+{
+  "base": "f9658b5846490a7c8b1c9c9f4bb27712d8d3fd57",
+  "dateUTC": "2026-11-20",
+  "productionUnchangedDuringBrowser": true,
+  "sha256": {
+    "src/avatarfootik.js": "c44a8b3ac1e9e612a51c7a39720af3b7ee248c1e5bef3a5c779a1caed8c31215",
+    "tools/avatarfootiktest.mjs": "c3e98335e2953de44c355343c9e233092be9f7cf75fda837c60c6a3d5bda9393",
+    "tools/avatarfoot2208browser.cjs": "12cbf72c64800551ae19de13e7940c5f438d9c24c8aa02a66cda3c9580d084ab",
+    "index.html": "c6f4120cfd77e14347010641c4254fe13c5954931776a54b3ed165cc568a692b",
+    "src/avatar.js": "136be929c5688ba31763f639abca56f31f8b6c46b55bc1704d61912acbab6625",
+    "src/olof.js": "7e043c9d13dee86a638da8eb01699ce66a660f137fe62696c13c2670452ba01c",
+    "src/config.js": "9b53bb893777928d48831401d3c217042d901cc78d50513de444095c7be11961",
+    "tools/avatarfoot2208diagnose.mjs": "3ce6cd4d9f3244a993fcc9f7b8c9448cd9e0e504dc53c053699d843e3f6fa157"
+  },
+  "baselineHelperSHA256": "e66c0b55ad5ccebeda0872c301497ba6275e679eb4de9e9186ef8331710bbdb6"
+}

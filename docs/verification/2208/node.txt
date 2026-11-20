@@ -1,0 +1,160 @@
+TAP version 13
+# stair build 0 {
+#   up: {
+#     worst: 0.009000026545374129,
+#     n: 249,
+#     pen: -0.013680251859121473,
+#     hipLo: 0.6799094001100832,
+#     hipHi: 0.8805803587104362,
+#     seen: [ 133, 116 ]
+#   },
+#   down: {
+#     worst: 0.009106329637634358,
+#     n: 245,
+#     pen: -0.009000245156537634,
+#     hipLo: 0.663750041330935,
+#     hipHi: 0.8384306427345682,
+#     seen: [ 120, 125 ]
+#   }
+# }
+# stair build 4 {
+#   up: {
+#     worst: 0.009000026545374129,
+#     n: 249,
+#     pen: -0.01368025185912125,
+#     hipLo: 0.6799094001100832,
+#     hipHi: 0.8805803587104362,
+#     seen: [ 133, 116 ]
+#   },
+#   down: {
+#     worst: 0.009106329637634247,
+#     n: 245,
+#     pen: -0.009000245156537412,
+#     hipLo: 0.663750041330935,
+#     hipHi: 0.8384306427345682,
+#     seen: [ 120, 125 ]
+#   }
+# }
+# stair build 8 {
+#   up: {
+#     worst: 0.009000026545374129,
+#     n: 249,
+#     pen: -0.013680251859121029,
+#     hipLo: 0.6799094001100832,
+#     hipHi: 0.8805803587104362,
+#     seen: [ 133, 116 ]
+#   },
+#   down: {
+#     worst: 0.009106329637634025,
+#     n: 245,
+#     pen: -0.009000245156537634,
+#     hipLo: 0.663750041330935,
+#     hipHi: 0.8384306427345682,
+#     seen: [ 120, 125 ]
+#   }
+# }
+# Subtest: two-bone IK: reach, knee direction, unreachable clamp
+ok 1 - two-bone IK: reach, knee direction, unreachable clamp
+  ---
+  duration_ms: 2.168271
+  type: 'test'
+  ...
+# Subtest: slope pitch: a ramp tilts the sole, a step edge does not
+ok 2 - slope pitch: a ramp tilts the sole, a step edge does not
+  ---
+  duration_ms: 0.226597
+  type: 'test'
+  ...
+# Subtest: stance feet stay on the treads going up and down a stair for slim, medium and broad builds
+ok 3 - stance feet stay on the treads going up and down a stair for slim, medium and broad builds
+  ---
+  duration_ms: 422.50592
+  type: 'test'
+  ...
+# Subtest: replanting reaches a higher tread immediately; swing and descent still ease
+ok 4 - replanting reaches a higher tread immediately; swing and descent still ease
+  ---
+  duration_ms: 0.819789
+  type: 'test'
+  ...
+# Subtest: stance feet follow a slope
+ok 5 - stance feet follow a slope
+  ---
+  duration_ms: 18.970645
+  type: 'test'
+  ...
+# Subtest: level ground keeps the pose (no offset, no hip change)
+ok 6 - level ground keeps the pose (no offset, no hip change)
+  ---
+  duration_ms: 27.968524
+  type: 'test'
+  ...
+# Subtest: standing on two different steps: each foot on its own tread, hips lowered to the reach
+ok 7 - standing on two different steps: each foot on its own tread, hips lowered to the reach
+  ---
+  duration_ms: 141.285407
+  type: 'test'
+  ...
+# Subtest: stepping down: the hips are lowered to the legs' reach and both soles reach the lower floor
+ok 8 - stepping down: the hips are lowered to the legs' reach and both soles reach the lower floor
+  ---
+  duration_ms: 271.326493
+  type: 'test'
+  ...
+# Subtest: forward gait: plausible cadence, bounded stance slip, no penetration, contact flags agree with the soles
+ok 9 - forward gait: plausible cadence, bounded stance slip, no penetration, contact flags agree with the soles
+  ---
+  duration_ms: 384.738228
+  type: 'test'
+  ...
+# Subtest: walking and running differ and the stride grows with speed
+ok 10 - walking and running differ and the stride grows with speed
+  ---
+  duration_ms: 82.810186
+  type: 'test'
+  ...
+# Subtest: backward and sideways steps plant their feet too
+ok 11 - backward and sideways steps plant their feet too
+  ---
+  duration_ms: 244.818031
+  type: 'test'
+  ...
+# Subtest: side-steps (\#2006): planted feet at speed, the legs never pass through each other, no busier than the forward gait
+ok 12 - side-steps (\#2006): planted feet at speed, the legs never pass through each other, no busier than the forward gait
+  ---
+  duration_ms: 182.393176
+  type: 'test'
+  ...
+# Subtest: gaitInfo gives the contact phase: alternating feet, stance progress 0 … 1, a footfall at each touch-down
+ok 13 - gaitInfo gives the contact phase: alternating feet, stance progress 0 … 1, a footfall at each touch-down
+  ---
+  duration_ms: 101.104256
+  type: 'test'
+  ...
+# Subtest: standing, crouching and the other poses keep their old pose (no gait)
+ok 14 - standing, crouching and the other poses keep their old pose (no gait)
+  ---
+  duration_ms: 9.571673
+  type: 'test'
+  ...
+# Subtest: walking while crouched keeps the feet planted and the crouch hips
+ok 15 - walking while crouched keeps the feet planted and the crouch hips
+  ---
+  duration_ms: 292.834908
+  type: 'test'
+  ...
+# Subtest: explicit hand targets still win over the arm swing
+ok 16 - explicit hand targets still win over the arm swing
+  ---
+  duration_ms: 132.462632
+  type: 'test'
+  ...
+1..16
+# tests 16
+# suites 0
+# pass 16
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1887.253116

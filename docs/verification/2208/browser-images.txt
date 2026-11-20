@@ -1,0 +1,4 @@
+browsertest: no systemd user scope here, running without a memory ceiling
+{"house":"A","result":[]}
+CAPTURE {"kind":"before","frame":127,"actor":[-0.75,0.9375,43.845],"camera":[0.75,2.1375,43.644999999999996],"foot":[-0.64,0.9329221537274461,43.89189910888911],"projectedFoot":[-0.04379421256108207,-1.3288817415319027,0.9726005338898462],"near":0.02,"far":200,"actorVisible":true,"meshVisible":true,"draws":160}
+CAPTURE {"kind":"after","frame":127,"actor":[-0.75,0.9375,43.845],"camera":[0.75,2.1375,43.644999999999996],"foot":[-0.64,0.9913102581796729,43.89189910888912],"projectedFoot":[-0.04385254795212711,-1.2635569764513812,0.9725637704290896],"near":0.02,"far":200,"actorVisible":true,"meshVisible":true,"draws":180}
