@@ -4,8 +4,8 @@
 // The offsets are applied on top of the finished pose (olof.js poseOlof calls `fig.hitFx.apply`), so they move only the rendered bones:
 // the head boxes (#974, config.js) and the pick body follow the network state, and the camera never reads the bones.
 // The existing room events drive it with no new network field: `hit` on the shooter's client (the target's Ghost), `hurt` on the
-// target's client (our mirror image). Other onlookers get no hit event, so they see no flinch.
-import { AVATAR_HIT as H } from './config.js';
+// target's client (our mirror image). Other onlookers get no hit event; they flinch on the target's life drop instead (#2167, src/avatarknock.js).
+import { AVATAR_HIT as H, AVATAR_KNOCK } from './config.js';
 
 const TAU = Math.PI * 2;
 const W = H.hz * TAU, WD = W * Math.sqrt(1 - H.zeta * H.zeta), DECAY = H.zeta * W;
@@ -89,6 +89,7 @@ export function flinch(avatar, from, at, yaw, head) {
 
 /** The shooter's client (combat.js `hit`): the target's Ghost `g` flinches away from us at `from`. */
 export function flinchGhost(g, from, head) {
+  if (g?.obsKickAt && performance.now() - g.obsKickAt < AVATAR_KNOCK.dedupe * 1000) return; // #2167: the state's life drop already made this onlookers' flinch
   if (g?.avatar && g.root) flinch(g.avatar, from, g.root.position, g.root.rotation.y + g.avatar.object.rotation.y, head);
 }
 

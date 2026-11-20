@@ -1,0 +1,56 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Ghost knock</title><link rel="icon" href="data:,">
+<script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  } }
+</script>
+<style>html,body{margin:0;background:#bfc6cc}canvas{display:block}</style></head>
+<body><script type="module">
+// #2167 component page: real remote Ghosts seen from the side. B (unarmed) stands facing west; A (armed, Nerf) is the nearest armed player, to its west.
+// The room's states are fed through Ghost.push like the network does: B's lives drop 3 -> 2 (the onlookers' flinch), then a knockout (lives back at 3 and
+// a teleport far away) which the onlookers see as a collapse on the spot. `?off=1` sends no lives (the state before the issue: no reaction, B just vanishes).
+// __strip() returns one PNG of frames along that timeline. Driven by tools/ghostknocktest.cjs.
+import * as THREE from 'three';
+import { Ghost } from '../src/ghosts.js';
+import { nearestShooter } from '../src/avatarknock.js';
+import { HitFx } from '../src/avatarhit.js';
+const q = new URLSearchParams(location.search), off = q.has('off');
+const FW = 440, FH = 360, FRAMES = 6;
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(FW, FH); document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0xbfc6cc);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8a7f72, 1.6));
+const sun = new THREE.DirectionalLight(0xfff2e0, 2.2); sun.position.set(2, 4, 4); scene.add(sun);
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(40, 8), new THREE.MeshStandardMaterial({ color: 0x9a8f80 })); floor.rotation.x = -Math.PI / 2; scene.add(floor);
+const cam = new THREE.PerspectiveCamera(24, FW / FH, 0.05, 500);
+cam.position.set(0.5, 1.1, 6.5); cam.lookAt(0.5, 1.1, 0); cam.updateMatrixWorld();
+const A = new Ghost(scene, 1, 'A'), B = new Ghost(scene, 2, 'B');
+for (const g of [A, B]) if (g.tag) g.tag.visible = false;
+B.avatar.hitFx = new HitFx(() => T); // (the flinch runs on this page's virtual clock)
+B.shooterAt = (me, at) => nearestShooter(at, [A.root.position].filter(() => !!A.h));
+const state = (g, p, r, l, h) => g.push({ p, r, h, ...(off ? {} : { l }), look: [0, 0] }, T);
+let T = 1000;
+const frame = () => { for (const g of [A, B]) g.draw(T, cam.position); };
+const run = (secs) => { const end = T + secs * 1000; while (T < end) { T += 33; frame(); } };
+window.__strip = () => {
+  T = 1000;
+  state(A, [-3, 0, 0], -Math.PI / 2, 3, 'nerf'); state(B, [0, 0, 0], Math.PI / 2, 3, ''); run(1.2);   // A faces east, B faces west (towards A)
+  const out = document.createElement('canvas'); out.width = FW * FRAMES; out.height = FH; const c = out.getContext('2d');
+  const shot = (i, label) => { renderer.render(scene, cam); c.drawImage(renderer.domElement, i * FW, 0); c.fillStyle = '#10141a'; c.font = '20px sans-serif'; c.fillText(label, i * FW + 10, 26); };
+  const info = [];
+  shot(0, 'stands (lives 3)');
+  state(B, [0, 0, 0], Math.PI / 2, 2, ''); run(0.1); shot(1, 'lives 3 to 2: +0.1 s'); info.push(B.avatar.hitFx?.active ?? false);
+  run(1.0);
+  state(B, [150, 0, 0], Math.PI / 2, 3, ''); // knocked out: lives back at the maximum, teleported to the start
+  const k0 = T;
+  run(0.4); shot(2, 'knocked out +0.4 s'); info.push(B.root.position.x, Math.hypot(B.avatar.object.position.x, B.avatar.object.position.z));
+  run(0.3); shot(3, '+0.7 s');
+  run(0.5); shot(4, '+1.2 s'); window.__q = B.avatar.object.quaternion.toArray().map((v) => Math.round(v * 100) / 100).join(); info.push(Math.hypot(B.avatar.object.position.x, B.avatar.object.position.z));
+  run(0.4); shot(5, '+1.6 s'); info.push(Math.hypot(B.avatar.object.position.x, B.avatar.object.position.z), !!B.knock);
+  return { q: window.__q, png: out.toDataURL('image/png'), info, k0 };
+};
+window.__ghosts = { A, B, push: state, run, frame, T: () => T, setT: (t) => { T = t; } };
+window.__ready = true;
+</script></body></html>

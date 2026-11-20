@@ -43,6 +43,8 @@ import { GhostFar } from './ghostfar.js'; // #1966: far players as one draw call
 import { mouthPose, blendHand } from './avatarmouth.js'; // #2160
 import { cueArms, newCueArms, strokePull } from './avatarcue.js'; // #2162
 import { reachPose, toFigureFrame, REACH_TOTAL } from './avatarreach.js'; // #2161
+import { lifeEvent, nearestShooter, knockPose, KNOCK_TOTAL } from './avatarknock.js'; // #2167
+import { flinch, hitDir } from './avatarhit.js';
 import { stepBikeRide, bikeGrip, bikeSeat } from './bikeride.js';
 import { ghostProp, ghostJetpack, ghostBike, ghostItem } from './ghostprops.js'; // what an armed player holds: their weapon's own model (#667, #1126)
 
@@ -124,7 +126,7 @@ const SWING = 0.35; // s the saber's cut lasts
 // feet follow the river bed, under the surface (player.js `swimStep`), and nobody else stands there.
 let swimProbe = null;
 const gazePoint = new THREE.Vector3();
-const tmpV = new THREE.Vector3(), tmpW = new THREE.Vector3();
+const tmpV = new THREE.Vector3(), tmpW = new THREE.Vector3(), tmpQ = new THREE.Quaternion();
 const pickMat = new THREE.MeshBasicMaterial();
 
 export class Ghost { // (exported for tools/ghostprops.html)
@@ -212,6 +214,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
     }
     this.pump = pumpWire(bp); this.avatar.setPump(this.pump);
     this.score = badgeScore(score);
+    const prevLives = this.lives;
     this.lives = badgeLives(l); // never infer remote health from a client's default maximum
     this.setHeld(h);
     this.setItem(hi); // (#1297: an ordinary held thing, by category)
@@ -223,9 +226,26 @@ export class Ghost { // (exported for tools/ghostprops.html)
     // #2139 (src/ghostinterp.js): the arrival feeds the jitter buffer; a teleport (#1319: into / out of the children's room; a respawn:
     // an implausible speed or GHOSTS.jump m) appears there, no streak across the map; after a pause it walks off from where it stood
     const p3 = new THREE.Vector3(...p);
+    const had = this.snaps.length > 0;
     const ts = receive(this.play, this.snaps, p3, t, G.jump, PLAY, (last, at) => ({ t: at, p: last.p, r: last.r, c: last.c, pose: last.pose, look: last.look, bk: last.bk, dn: last.dn, am: last.am, gx:last.gx }));
+    this.noteLives(prevLives, had && this.snaps.length === 0, t); // #2167 (before the new place is pushed: the figure still stands where it was drawn)
     this.snaps.push({ t: ts, look, gx:gymPoseWire(gx), dn: dn === 1 || dn === 2 ? dn : 0, am: airMode(am), bk: this.bikeWire, p: p3, r, c: c === true ? 1 : 0, pose: pose >= 1 && pose <= 3 && Number.isInteger(pose) ? pose : 0 });
     if (this.snaps.length > 8) this.snaps.splice(0, this.snaps.length - 8);
+  }
+
+  /** #2167: onlookers see a flinch when the lives drop (away from the nearest armed player) and a collapse on the spot when the player is knocked out
+   * (the lives back up together with a teleport); `teleported`: the playback was reset by this state. The network place (head boxes, pick body) is the new one at once. */
+  noteLives(prev, teleported, t) {
+    const ev = lifeEvent(prev, this.lives, teleported);
+    if (!ev || !this.have || this.self) return;
+    const at = this.root.position, from = this.shooterAt?.(this, at) ?? null, yaw = this.root.rotation.y + this.avatar.object.rotation.y;
+    if (ev === 'hit') {
+      if (from) { flinch(this.avatar, from, at, yaw, false); this.obsKickAt = performance.now(); }
+      return;
+    }
+    const dir = from ? hitDir(from, at, yaw) : [0, -1]; // (no shooter near: it falls over backwards)
+    if (from) { flinch(this.avatar, from, at, yaw, false); this.obsKickAt = performance.now(); }
+    this.knock = { start: t, at: [at.x, at.y, at.z], yaw: this.root.rotation.y, objYaw: this.avatar.object.rotation.y, dir };
   }
 
   /** One cached sprite: lives only during the existing armed-vs-armed encounter (#1025). */
@@ -396,14 +416,19 @@ export class Ghost { // (exported for tools/ghostprops.html)
     this.look = [THREE.MathUtils.lerp(a.look[0], b.look[0], k), THREE.MathUtils.lerp(a.look[1], b.look[1], k)];
     this.bikeAt(a, b, k);
     const d = this.root.position.distanceTo(eye);
-    this.root.visible = d < G.far;
+    let kd = Infinity; // #2167: a knocked-out figure still falls where it stood (drawn displaced; its network place is already the new one)
+    if (this.knock) {
+      if (t - this.knock.start >= KNOCK_TOTAL * 1000) { this.knock = null; this.avatar.object.position.set(0, 0, 0); this.avatar.object.rotation.set(0, this.avatar.object.rotation.y, 0); }
+      else kd = Math.hypot(eye.x - this.knock.at[0], eye.y - this.knock.at[1], eye.z - this.knock.at[2]);
+    }
+    this.root.visible = d < G.far || kd < G.far;
     this.dEye = d; this.vh = Math.hypot(v.x, v.z); this.vy = v.y; // (#1302: what the footsteps derive from; #2139: the curve's velocity)
     if (this.tag) { // (#1296) beyond tagFar the tag grows with distance: constant size on screen, no pop-out
-      this.tag.visible = d < G.far;
+      this.tag.visible = d < G.far && !this.knock;
       const f = Math.max(1, d / G.tagFar);
       this.tag.scale.set(G.tagWidth * f, (this.tagH ?? G.tagHeight) * f, 1);
     }
-    if (this.root.visible) this.animate(t, d, v.x, v.z);
+    if (this.root.visible) this.animate(t, Math.min(d, kd), v.x, v.z);
   }
 
   /** #2158: the seated feet on the real floor under the seat (src/seatlegs.js). The floor is read once per seat, a little in front
@@ -477,6 +502,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
     }
     if (this.bikeMesh) { this.body = this.bikeYaw; this.speed = 0; } // (#1286: the body faces where the bike goes)
     const turn = THREE.MathUtils.clamp(wrap(gaze - this.body), -1.1, 1.1);
+    if (this.knockTilt) { this.avatar.object.rotation.x = 0; this.avatar.object.rotation.z = 0; this.knockTilt = false; } // #2167: the toppled quaternion rewrote the Euler angles last frame
     this.avatar.object.rotation.y = Math.PI + wrap(this.body - gaze);
     const sw = this.swingT > 0 ? Math.sin((1 - this.swingT / SWING) * Math.PI) : 0;
     if (this.swingT > 0) this.swingT = Math.max(0, this.swingT - dt);
@@ -526,6 +552,12 @@ export class Ghost { // (exported for tools/ghostprops.html)
         }
       }
     }
+    let knockCrouch = 0, kp = null;
+    if (this.knock) { // #2167: sinking, then toppling away from the shooter; the arms go slack (rest)
+      kp = knockPose((t - this.knock.start) / 1000, this.knock.dir, this.knockOut ??= { crouch: 0, lean: 0, head: 0, tilt: 0, axis: [0, 0], lift: 0 });
+      if (!kp) this.knock = null;
+      else { knockCrouch = kp.crouch; mouthHead += kp.head; mouthLean += kp.lean; hands.R = armTarget.rest(-1); hands.L = armTarget.rest(1); }
+    }
     const kiss = this.kiss;
     const age = kiss ? (t - kiss.start) / 1000 : -1, kissed = kissAmount(age);
     if (kiss && age >= KISS.duration) this.kiss = null;
@@ -560,7 +592,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
     const outdoors = wetEnv.outdoorAt(this);
     this.updateOuter(dt, outdoors); // #2147
     this.avatar.updateWeather(outdoors); // #2018
-    this.avatar.update(dt, { ground: this.ground, floorY: this.root.position.y, motionFrame, groundSpeed: groundEnabled && groundSpeed <= 8 ? groundSpeed : 0, groundEnabled, gaitDir, speed: this.speed * (1 - amount), turn: turn * (1 - amount), pitch: (this.look?.[1] ?? 0) * (1 - amount) - HUG.head * hugged + mouthHead, hands, crouch: wet ? 0 : Math.max(this.crouch ?? 0, reachCrouch), dance: !amount && !react ? this.dance || 0 : 0, react, kiss: kissed, kissReach: kiss?.reach ?? 1, kissLift: kiss?.lift ?? 0, air, airV, swim: !!wet && !amount, dive, jump: ji, fwd: groundEnabled && sp <= 8 ? vx * Math.sin(by) + vz * Math.cos(by) : 0 }); // #2159: the playback curve's forward speed (its change leans the body)
+    this.avatar.update(dt, { ground: this.ground, floorY: this.root.position.y, motionFrame, groundSpeed: groundEnabled && groundSpeed <= 8 ? groundSpeed : 0, groundEnabled, gaitDir, speed: this.speed * (1 - amount), turn: turn * (1 - amount), pitch: (this.look?.[1] ?? 0) * (1 - amount) - HUG.head * hugged + mouthHead, hands, crouch: wet ? 0 : Math.max(this.crouch ?? 0, reachCrouch, knockCrouch), dance: !amount && !react ? this.dance || 0 : 0, react, kiss: kissed, kissReach: kiss?.reach ?? 1, kissLift: kiss?.lift ?? 0, air, airV, swim: !!wet && !amount, dive, jump: ji, fwd: groundEnabled && sp <= 8 ? vx * Math.sin(by) + vz * Math.cos(by) : 0 }); // #2159: the playback curve's forward speed (its change leans the body)
     updateFace(this.avatar, dt, { wave: this.waveT > 0, hug: hugged, kiss: kissed, react: react ? REACT.kinds[react.kind]?.id : null, gym: this.gx ? 0.6 + 0.4 * Math.sin(Math.PI * this.gx[1]) : 0, run: this.avatar.gt?.run ?? 0 }); // #2031: the face follows what the figure does
     updateBreath(this.avatar, dt, { run: this.avatar.gt?.run ?? 0, gym: this.gx ? 1 : 0, sleep: sl.depth }, this.self ? null : this); // #2037: the face's run / gym signal: flush, sweat, breath in the cold
     if (wet) sink(this.avatar.swimAmt, this.avatar.swimLine, this.avatar.diveAmt); // (blending in from standing on the bed)
@@ -578,6 +610,13 @@ export class Ghost { // (exported for tools/ghostprops.html)
     if (cueLean && this.avatar.pendingPose && !amount && !air && !this.pose) this.avatar.pendingPose.lean += cueLean; // #2162
     poseOlof(this.avatar, this.avatar.pendingPose);
     if (sl.roll || this.sleepRolled) { applySleepRoll(this.avatar.object, sl.roll, REST.avatarLieHip); this.sleepRolled = !!sl.roll; } // #2163
+    if (kp && this.knock) { // #2167: where it fell (the old place, in the root's frame), with the heading it had, toppled about its feet
+      const o = this.avatar.object, rp = this.root.position, k = this.knock, pos = toFigureFrame(k.at, rp.x, rp.z, this.root.rotation.y, rp.y, this.knockLocal ??= [0, 0, 0]);
+      o.rotation.y = k.objYaw + k.yaw - this.root.rotation.y;
+      o.quaternion.multiply(tmpQ.setFromAxisAngle(tmpV.set(kp.axis[0], 0, kp.axis[1]), kp.tilt));
+      o.position.set(pos[0], pos[1] + kp.lift, pos[2]);
+      this.knockTilt = true;
+    }
     this.heldCat.update(this.avatar, this.root);
     if (this.tag) {
       const lift = ((this.tagH ?? G.tagHeight) - G.tagHeight) / 2; // #2007: the life row grows the badge upwards; name/score keep their place
@@ -774,6 +813,7 @@ export class Ghosts {
     if (!g && this.others.size < G.max) {
       const look = av ? decodeAvatarLook(av, id) : null;
       g = new Ghost(this.group, id, name, false, look); g.ground = this.ground; g.seatFloor = this.seatFloor; // #2015: the feet follow the stairs / slope; #2158 a seat's floor
+      g.shooterAt = (me, at) => this.shooterFor(me, at); // #2167
       g.onAvatar = (av) => (this.far ??= new GhostFar(this.group)).adopt(av); g.onAvatar(g.avatar); // #1966: its body fades into the shared far figure
       if (av) g.avatarCode = av;
       this.others.set(id, g);
@@ -782,6 +822,15 @@ export class Ghosts {
       g.setAvatarLook(decodeAvatarLook(av, id));
     }
     return g ?? null;
+  }
+
+  /** #2167: the nearest armed player to `at` other than `ghost` (the other figures and ourselves), as a world { x, z }, or null. */
+  shooterFor(ghost, at) {
+    const list = this.shooterList ??= [];
+    list.length = 0;
+    for (const g of this.others.values()) if (g !== ghost && g.h && g.have) list.push(g.root.position);
+    if (this.weapon()) list.push(this.camera.position);
+    return nearestShooter(at, list);
   }
 
   setMyLook(look) {

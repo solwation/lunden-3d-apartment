@@ -9072,6 +9072,12 @@ export const CUE_ARM = { shoulderY: 1.42, shoulderX: 0.2, bridgeS: 0.22, gripS: 
 // `bendTo` m (a thing on the floor); `handle` m = a door handle's height over the figure's floor; `sideX` m = how far to the side before the other hand is used.
 export const REACH = { handle: 1.0, up: 0.35, hold: 0.3, down: 0.4, arm: 0.74, range: 2.4, shoulder: 1.42, bendFrom: 0.95, bendTo: 0.1, crouch: 0.8, lean: 0.15, head: 0.5, sideX: 0.1 };
 
+// #2167: what onlookers see when a player's lives drop (a flinch, #2036) and when one is knocked out: the figure sinks into a squat over `sink` s,
+// then topples away from the shooter over `fall` s (an accelerating fall, the body lying `lift` m up from the floor) and lies until `total` s, then the
+// respawn teleport shows. Derived locally from the `l` lives in the state (a knockout = the lives jump back up together with a teleport). All *guess*,
+// tuned by eye. `range` m: the nearest armed player further away than this is not taken for the shooter; `head` rad the head drops, `lean` rad extra forward bend.
+export const AVATAR_KNOCK = { sink: 0.4, fall: 0.5, total: 1.4, topple: 1.45, lift: 0.14, range: 60, head: 0.5, lean: 0.35, dedupe: 0.3 };
+
 // #2153: room acoustics. One shared reverb send bus feeds two ConvolverNodes (crossfaded between zones) with procedural impulse
 // responses (decaying noise, no files). All values are *guess*: no acoustic measurements exist; chosen to be audible but modest.
 // rt60 = seconds to -60 dB; damp = [lowpass Hz at t=0, Hz at rt60] (the tail darkens); pre = pre-delay s; wet = send level into the
