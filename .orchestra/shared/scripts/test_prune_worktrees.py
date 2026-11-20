@@ -135,6 +135,32 @@ class PruneWorktreesTests(unittest.TestCase):
         self.assertFalse(path.exists())
         self.assertEqual(git("branch", "--list", "issue-5", cwd=self.main), "")
 
+    def test_clone_with_only_a_stash_is_kept_and_archived(self):
+        clone = self.root / "clone"
+        git("clone", "-q", str(self.tmp / "origin.git"), str(clone), cwd=self.tmp)
+        for n in (1, 2):
+            (clone / f"stashed{n}.txt").write_text(f"work {n}\n")
+            git("add", f"stashed{n}.txt", cwd=clone)
+            git("stash", "-q", cwd=clone)
+        self.assertEqual(git("status", "--porcelain", cwd=clone), "")
+        args = ("--min-age", "0")
+        rows, _ = self.run_script(*args)
+        self.assertEqual(rows["clone"][0], "unproven")
+        self.assertIn("2 stash entries", rows["clone"][1])
+        self.run_script(*args, "--apply")
+        self.assertTrue(clone.exists())
+        archive = self.tmp / "archive"
+        self.run_script(*args, "--apply", "--archive", str(archive))
+        self.assertFalse(clone.exists())
+        restored = self.tmp / "restored"
+        git("clone", "-q", str(self.tmp / "origin.git"), str(restored), cwd=self.tmp)
+        git("fetch", "-q", str(archive / "root__clone.bundle"),
+            "refs/orchestra-stash/*:refs/orchestra-stash/*", cwd=restored)
+        for n, ref in ((2, "refs/orchestra-stash/0"), (1, "refs/orchestra-stash/1")):
+            git("stash", "apply", "-q", ref, cwd=restored)
+            self.assertEqual((restored / f"stashed{n}.txt").read_text(), f"work {n}\n")
+            git("reset", "-q", "--hard", cwd=restored)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -13,9 +13,10 @@
 #               --min-age (a fresh worker checkout); or references an open issue
 #               (a number ending the branch name, or #N in unmerged commit subjects,
 #               looked up with gh): never removed
-#   unproven    uncommitted changes, or commits whose patch is not on main, with no
-#               open issue: removed with --apply only together with --archive DIR,
-#               which first writes DIR/<name>.bundle (all local refs beyond main)
+#   unproven    uncommitted changes, commits whose patch is not on main, or (in a
+#               clone) stash entries, with no open issue: removed with --apply only
+#               together with --archive DIR, which first writes DIR/<name>.bundle (all
+#               local refs beyond main, each stash entry as refs/orchestra-stash/<n>)
 #               and DIR/<name>.patch (tracked and untracked changes)
 #   protected   backs other worktrees or other clones' object stores (alternates), is
 #               listed with --protect, or could not be checked (no remote main, failed
@@ -127,9 +128,14 @@ for d in "${candidates[@]}"; do
   fi
   if [ -z "$class" ] && [ -z "$base" ]; then class=protected; note="${note:-no remote main}"; fi
 
-  dirty=0; ahead=0; new=0; issues=""
+  dirty=0; ahead=0; new=0; stashes=0; issues=""
   if [ -z "$class" ]; then
     dirty=$(git -C "$d" status --porcelain 2>/dev/null | wc -l)
+    # a clone's stash is lost with it; a worktree's lives in the shared git dir
+    if [ $kind = repo ]; then
+      stashes=$(git -C "$d" stash list 2>/dev/null | wc -l)
+      [ "$stashes" -gt 0 ] && note="${note:+$note; }$stashes stash entries"
+    fi
     # a clone owns every local branch; a worktree only its own HEAD
     refs=HEAD; [ $kind = repo ] && refs="$(git -C "$d" for-each-ref --format='%(refname)' refs/heads)$( [ "$branch" = "(detached)" ] && echo " HEAD")"
     for ref in $refs; do
@@ -145,7 +151,7 @@ for d in "${candidates[@]}"; do
       [ "$st" = open ] && open=1
     done
     if [ $open -eq 1 ]; then class=active
-    elif [ "$dirty" -eq 0 ] && [ "$new" -eq 0 ]; then class=integrated
+    elif [ "$dirty" -eq 0 ] && [ "$new" -eq 0 ] && [ "$stashes" -eq 0 ]; then class=integrated
     else class=unproven; fi
 
     # in use without evidence in git yet: a claim marker, or a fresh checkout
@@ -180,7 +186,12 @@ for d in "${candidates[@]}"; do
     stem="$archive/${parent}__${name}"
     ok=1
     refs=HEAD; [ $kind = repo ] && refs="$(git -C "$d" for-each-ref --format='%(refname)' refs/heads)$( [ "$branch" = "(detached)" ] && echo " HEAD")"
-    if [ "$ahead" -gt 0 ]; then
+    i=0
+    while [ "$i" -lt "$stashes" ]; do
+      git -C "$d" update-ref "refs/orchestra-stash/$i" "stash@{$i}" && refs="$refs refs/orchestra-stash/$i" || ok=0
+      i=$((i + 1))
+    done
+    if [ "$ahead" -gt 0 ] || [ "$stashes" -gt 0 ]; then
       git -C "$d" bundle create "$stem.bundle" $refs "^$base" >/dev/null 2>&1 || ok=0
     fi
     if [ "$dirty" -gt 0 ]; then
