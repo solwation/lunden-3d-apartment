@@ -1,0 +1,49 @@
+{
+  "picture": "174Z8ZZ8Z6|J00011121,3,0|S|31,0,1|r",
+  "drawCalls": {
+    "feed": "305,305,305,305,305,341",
+    "card": "305,305,305,305,305,305"
+  },
+  "textureDiff": 0,
+  "bandwidth": {
+    "seconds": 10,
+    "sentFrames": 35,
+    "sentBytes": 3581,
+    "allMessagesFromA": 35,
+    "receivedFrames": 35,
+    "receivedBytes": 4106,
+    "bytesPerSecond": 411,
+    "framesPerSecond": 3.5
+  },
+  "afterLeaving": {
+    "sentWhileAlone": 0
+  },
+  "computerFilm": [
+    {
+      "video": "aqz-KE-bpKQ",
+      "ready": true,
+      "iframe": true,
+      "position": 6
+    },
+    {
+      "video": "aqz-KE-bpKQ",
+      "ready": true,
+      "iframe": true,
+      "position": 6
+    }
+  ],
+  "tvFilm": [
+    {
+      "video": "aqz-KE-bpKQ",
+      "ready": true,
+      "iframe": true,
+      "position": 5
+    },
+    {
+      "video": "aqz-KE-bpKQ",
+      "ready": true,
+      "iframe": true,
+      "position": 5
+    }
+  ]
+}
