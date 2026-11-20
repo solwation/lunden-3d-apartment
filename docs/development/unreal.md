@@ -293,6 +293,12 @@ Binary Unreal assets cannot be merged. Rules for agents and people working in pa
 - Different tools folders can be worked on in parallel (`tools/unreal-engine/export*`, `tools/unreal-engine/package*`,
   `unreal/Launcher/`; #2242).
 
+## Pilot camera references (#2246)
+
+Use the [shared five-camera list](../../unreal/Lunden/Tests/views.json) when framing
+the L1007 pilot in Unreal. The [web reference images and capture instructions](../verification/2246/README.md)
+record the lighting, web-to-Unreal camera conversion and projection for each pair.
+
 ## Build location (decision #2244)
 
 **Decision (agent's recommendation, alternative 1; can be overturned in one sentence):** Unreal is built **locally

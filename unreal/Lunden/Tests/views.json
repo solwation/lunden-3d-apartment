@@ -1,0 +1,18 @@
+{
+  "viewport": { "width": 1440, "height": 810 },
+  "verticalFovDeg": 72,
+  "standingEyeHeightM": 1.62,
+  "date": { "year": 2026, "month": 6, "day": 21 },
+  "weather": "clear",
+  "lighting": {
+    "day": { "hour": 14, "lampsOn": false },
+    "evening": { "hour": 22, "lampsOn": true }
+  },
+  "views": [
+    { "id": "start", "subject": "L1007 street entrance from START", "x": 2.875, "z": -12, "feetY": 0, "yawDeg": 180, "pitchDeg": 8, "lighting": "day" },
+    { "id": "living-room", "subject": "Living room towards the patio", "x": 2.5, "z": 8.2, "feetY": 0, "yawDeg": 173, "pitchDeg": -4, "lighting": "day" },
+    { "id": "stairs", "subject": "Staircase from the entrance floor", "x": 2.15, "z": 7.38, "feetY": 0, "yawDeg": -83, "pitchDeg": 8, "lighting": "evening" },
+    { "id": "upper-floor", "subject": "Upper floor facing the south window, bed and desk", "x": 1.75, "z": 7.95, "feetY": 3.25, "yawDeg": 170, "pitchDeg": -3, "lighting": "evening" },
+    { "id": "patio", "subject": "South facade from the patio", "x": 2.3, "z": 16.1, "feetY": 0, "yawDeg": -8, "pitchDeg": 12, "lighting": "day" }
+  ]
+}
