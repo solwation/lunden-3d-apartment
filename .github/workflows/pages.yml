@@ -56,5 +56,13 @@ jobs:
         timeout-minutes: 2
         with:
           artifact-id: ${{ steps.upload.outputs.artifact_id }}
-      - id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Deploy the uploaded artifact to GitHub Pages
+        id: deployment
+        uses: actions/github-script@v8
+        env:
+          PAGES_ARTIFACT_ID: ${{ steps.upload.outputs.artifact_id }}
+        with:
+          retries: 0 # Repeating an ambiguous create request could publish twice.
+          script: |
+            const deploy = require('./.github/actions/wait-for-pages-artifact/deploy.cjs');
+            await deploy({github, context, core}, process.env.PAGES_ARTIFACT_ID);

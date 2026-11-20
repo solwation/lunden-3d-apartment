@@ -169,28 +169,33 @@ Use relative paths only.
 
 ## Pages artifact visibility (#2266)
 
-After upload, the Pages job waits for the exact `artifact_id` from that step. It
-uses the same job-scoped Actions Results list as `deploy-pages@v4`.
-[Run 44802874581](https://github.com/solwation/lunden-3d-apartment/actions/runs/44802874581)
-reported zero artifacts immediately after upload. Checking the run later via the public REST
-API can show the artifact even when deployment could not see it at the time.
-See the [deploy-pages lookup](https://github.com/actions/deploy-pages/blob/d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e/src/internal/api-client.js#L47-L100).
+The upload action returns `artifact_id`. The job checks that its Actions Results
+listing contains exactly one `github-pages` with that ID (up to 13 checks five
+seconds apart). It then sends the numeric ID, commit SHA and workflow OIDC token
+directly to the Pages deployments API. In
+[run 44805994088](https://github.com/solwation/lunden-3d-apartment/actions/runs/44805994088),
+the upload and first list agreed on ID 14662957175, but the second list in
+`deploy-pages@v4` returned zero 0.3 seconds later. Passing the verified ID
+removes that second lookup. [GitHub Pages deployment API](https://docs.github.com/en/rest/pages/pages#create-a-github-pages-deployment)
 
-A matching artifact proceeds immediately. An empty listing gets up to 13 checks
-five seconds apart, with a four-second network timeout per check. A persistent
-absence, duplicate name, mismatched ID or service error fails the wait step before
-deployment. Keep the run ID, upload ID and wait-step log when investigating.
-If publication needs another run, follow the fresh-run procedure below. To verify
-the wait offline, run `node --test .github/actions/wait-for-pages-artifact/index.test.cjs`.
+An explicit artifact-not-found rejection from Pages allows up to 13 creation
+checks five seconds apart. A permission error, invalid content or uncertain
+creation result stops the job. In particular, check the run before retrying
+after a lost response or HTTP 502. After acceptance the job polls the returned
+deployment ID for up to ten minutes. Only a `succeed` status publishes the
+environment URL. On workflow cancellation, timeout or repeated status-read
+failures the job requests cancellation of that pending deployment.
+
+Keep the run ID, upload ID, commit and Pages deployment ID when investigating.
+Run `node --test .github/actions/wait-for-pages-artifact/*.test.cjs` for the
+offline visibility, creation, status and cancellation checks.
 
 ## Pages recovery after duplicate artifacts (#2236)
 
-The original `pages.yml` has one `deploy` job containing both
-`actions/upload-pages-artifact@v3` and `actions/deploy-pages@v4`. After a transient
-Pages HTTP 502, rerunning that failed job can upload another `github-pages`
-artifact into the same run. If deployment then reports
-`Multiple artifacts named "github-pages"` / `Artifact count is 2`, another rerun
-of that run does not provide a separate artifact scope.
+The original `pages.yml` has one job for both upload and deployment. Rerunning
+it can upload another `github-pages` artifact into the same run. The preflight
+rejects multiple matching artifacts. Previous `deploy-pages@v4` runs reported
+`Multiple artifacts named "github-pages"` or `Artifact count is 2` in this case.
 
 Use a **new workflow run**, coordinated by the current integration/publishing
 owner. Keep the failed run ID and full `headSha`; check that remote `main` still

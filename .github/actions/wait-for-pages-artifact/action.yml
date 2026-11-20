@@ -1,5 +1,5 @@
 name: Wait for uploaded Pages artifact
-description: Wait until deploy-pages can list the artifact from this upload.
+description: Check artifact visibility and identity before submitting its ID to Pages.
 inputs:
   artifact-id:
     description: The artifact_id output of upload-pages-artifact.
