@@ -2426,11 +2426,15 @@ running round. Other visitors in the computer's room see the same Klossar pictur
 for Meteoriter, which #2240 removes, they keep the cheap "<namn> spelar …" card with the top list.
 
 NES (#2237, `src/nes.js`, NES in config): the picker's "Spel · NES" (server app id `nes`) runs the
-own MIT title *Fånga ljuset* in **jsnes 1.2.1** (Apache-2.0, vendored unmodified in `src/vendor/jsnes/`,
-ROM and its licence in `src/nesroms/`, provenance in their READMEs; the generator is
-`tools/retro2231/make_rom.py`). It is an `ARCADE` entry like Klossar: same toolbar, framing, capture and
+titles of the manifest `src/nestitles.js` in **jsnes 1.2.1** (Apache-2.0, vendored unmodified in
+`src/vendor/jsnes/`). The first title is the own MIT *Fånga ljuset* (`data/nes/lightcatch/`, generator
+`tools/retro2231/make_rom.py`). Manifest contract per entry: `id`, `title`, `rom` and `notice` (site-root
+paths under `data/nes/`), `sha256`, `bytes`, SPDX `license`, `source`, `credit`, Swedish `about` and
+`controls`; `node --test src/nes.test.mjs` checks every entry against its files, and the adapter refuses a
+ROM whose size or SHA-256 differs. With two or more entries the panel shows a title picker (per computer;
+switching frees the running instance); the "Om NES och licenser" list is built from the manifest. It is an `ARCADE` entry like Klossar: same toolbar, framing, capture and
 Esc/E/Startsida exits, only in the controlling client. Neither the engine (a classic `<script>` with the
-module's `?v=` cache buster) nor the ROM is fetched before Starta, both same-origin under `src/` (no CDN);
+module's `?v=` cache buster) nor the ROM is fetched before Starta, both same-origin (no CDN);
 a failed load shows the error and Starta retries. `NesGame` emulates whole 60 Hz frames from the hub's
 update with the fraction carried and at most NES.catchUp frames after a stall; the monitor's existing
 CanvasTexture is redrawn every NES.renderMs (256×240 letterboxed, pixel-sharp, no new mesh or WebGL

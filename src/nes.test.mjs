@@ -5,10 +5,13 @@ import test from 'node:test';import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';import { readFileSync } from 'node:fs';
 import { NesGame, NES_KEYS, NES_PAD, NES_BUTTONS, nesUrl, loadEngine } from './nes.js';
 import { NES } from './config.js';
+import { NES_TITLES, nesTitle } from './nestitles.js';
+import { createHash } from 'node:crypto';import { existsSync } from 'node:fs';
 
 const jsnes=createRequire(import.meta.url)('./vendor/jsnes/jsnes.js');
-const romBytes=readFileSync(new URL('./nesroms/lightcatch.nes',import.meta.url));
-const rom=()=>Promise.resolve(String.fromCharCode(...romBytes));
+const site=p=>new URL(`../${p}`,import.meta.url);
+const romBytes=new Uint8Array(readFileSync(site(NES_TITLES[0].rom)));
+const rom=()=>Promise.resolve(romBytes);
 const game=(o={})=>{const calls={engine:0,rom:[]};const g=new NesGame({engine:()=>{calls.engine++;return Promise.resolve(jsnes);},rom:u=>{calls.rom.push(u);return rom();},...o});return {g,calls};};
 const ms=1000/NES.hz;
 
@@ -24,10 +27,9 @@ test('documented keyboard mapping and the NES touch pad profile',()=>{
 test('lazy, same-origin load: nothing before start, the ROM path under src/, the cache buster carried over',async()=>{
  const {g,calls}=game();assert.equal(calls.engine,0);assert.deepEqual(calls.rom,[]);assert.equal(g.phase,'idle');
  const p=g.start();assert.equal(g.phase,'loading');await g.start();await p;
- assert.equal(calls.engine,1);assert.deepEqual(calls.rom,[NES.titles.lightcatch.rom]);assert.equal(g.phase,'running');
+ assert.equal(calls.engine,1);assert.deepEqual(calls.rom,[NES_TITLES[0].rom]);assert.equal(g.phase,'running');
  assert.equal(nesUrl(NES.engine,'https://x.example/app/src/nes.js?v=abc123'),'https://x.example/app/src/vendor/jsnes/jsnes.js?v=abc123');
- assert.equal(nesUrl(NES.titles.lightcatch.rom,'http://localhost:8521/src/nes.js'),'http://localhost:8521/src/nesroms/lightcatch.nes');
- assert.equal(romBytes.length,NES.titles.lightcatch.bytes);
+ assert.equal(nesUrl(`../${NES_TITLES[0].rom}`,'http://localhost:8521/src/nes.js?v=1'),'http://localhost:8521/data/nes/lightcatch/lightcatch.nes?v=1');
 });
 
 test('the browser loader adds one script, retries after a failed load',async()=>{
@@ -60,4 +62,22 @@ test('left while loading: no instance is built; a failed ROM shows an error and 
  const p=g.start();g.dispose();release();await p;assert.equal(g.nes,null);
  let fail=true;const h=new NesGame({engine:()=>Promise.resolve(jsnes),rom:()=>fail?Promise.reject(Error('Spelet kunde inte laddas. Försök igen.')):rom()});
  await h.start();assert.equal(h.phase,'error');assert.match(h.error,/Försök igen/);fail=false;await h.start();assert.equal(h.phase,'running');
+});
+
+test('the title manifest: every entry complete, its ROM and notice published under data/nes/, the hash and size right',()=>{
+ assert(NES_TITLES.length>=1);assert.equal(NES_TITLES[0].id,'lightcatch');assert.equal(new Set(NES_TITLES.map(t=>t.id)).size,NES_TITLES.length);
+ for(const t of NES_TITLES){
+  for(const k of ['id','title','rom','sha256','license','notice','source','credit','about','controls'])assert.equal(typeof t[k],'string',`${t.id}.${k}`);
+  assert.match(t.id,/^[a-z0-9-]+$/);assert.match(t.sha256,/^[0-9a-f]{64}$/);assert.match(t.rom,/^data\/nes\/.+\.nes$/);assert.match(t.notice,/^data\/nes\//);
+  const b=readFileSync(site(t.rom));assert.equal(b.length,t.bytes,t.id);assert.equal(createHash('sha256').update(b).digest('hex'),t.sha256,t.id);
+  assert.equal(b.subarray(0,4).toString('latin1'),'NES\x1a',`${t.id}: iNES header`);assert(existsSync(site(t.notice)),t.notice);
+  const g=new NesGame({title:t.id});assert.equal(g.info,t);
+ }
+ assert.equal(nesTitle('nope'),NES_TITLES[0],'an unknown id falls back to the first');
+});
+
+test('a ROM whose hash or size differs from the manifest is refused',async()=>{
+ const bad=new Uint8Array(romBytes);bad[100]^=1;
+ const {g}=game({rom:()=>Promise.resolve(bad)});await g.start();assert.equal(g.phase,'error');assert.equal(g.nes,null);assert.match(g.error,/stämmer inte/);
+ const {g:h}=game({rom:()=>Promise.resolve(romBytes.subarray(0,1000))});await h.start();assert.equal(h.phase,'error');
 });

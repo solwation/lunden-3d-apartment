@@ -1,4 +1,5 @@
 import { NES } from './config.js';
+import { nesTitle } from './nestitles.js';
 
 // #2237: the NES adapter on the computers. One NesGame per computer run (ComputerHub's ARCADE entry `nes`); it follows the
 // single-player game interface there (running / over / score / start / step / result) plus pause / resume / press / dispose.
@@ -33,20 +34,24 @@ export function loadEngine(url = nesUrl(NES.engine)) {
   }).catch(e => { engine = null; throw e; });
   return engine;
 }
-/** The ROM as jsnes wants it (a binary string). */
-export async function loadRom(url) {
-  const r = await fetch(url); if (!r.ok) throw Error('Spelet kunde inte laddas. Försök igen.');
-  const b = new Uint8Array(await r.arrayBuffer()); let s = '';
-  for (let i = 0; i < b.length; i += 8192) s += String.fromCharCode.apply(null, b.subarray(i, i + 8192));
-  return s;
+/** A manifest ROM path (site-root relative, src/nestitles.js) as bytes. */
+export async function loadRom(path) {
+  const r = await fetch(nesUrl(`../${path}`)); if (!r.ok) throw Error('Spelet kunde inte laddas. Försök igen.');
+  return new Uint8Array(await r.arrayBuffer());
 }
+/** Hex SHA-256, or null without WebCrypto (plain-http LAN pages): then the size check alone guards the file. */
+export async function sha256(bytes) {
+  const subtle = globalThis.crypto?.subtle; if (!subtle) return null;
+  return [...new Uint8Array(await subtle.digest('SHA-256', bytes))].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+const binary = b => { let s = ''; for (let i = 0; i < b.length; i += 8192) s += String.fromCharCode.apply(null, b.subarray(i, i + 8192)); return s; };
 
 const median = (v, q) => { if (!v.length) return 0; const s = [...v].sort((a, b) => a - b); return s[Math.min(s.length - 1, Math.floor(q * s.length))]; };
 
 export class NesGame {
-  /** `title` a NES.titles key; `engine()` → jsnes, `rom(url)` → binary string (both injectable for tests). */
-  constructor({ title = 'lightcatch', engine = loadEngine, rom = u => loadRom(nesUrl(u)), clock = () => performance.now() } = {}) {
-    this.title = title; this.info = NES.titles[title]; this.load = { engine, rom }; this.clock = clock;
+  /** `title` a manifest id (src/nestitles.js; unknown → the first); `engine()` → jsnes, `rom(path)` → Uint8Array (injectable for tests). */
+  constructor({ title, engine = loadEngine, rom = loadRom, clock = () => performance.now() } = {}) {
+    this.info = nesTitle(title); this.title = this.info.id; this.load = { engine, rom }; this.clock = clock;
     this.nes = null; this.running = false; this.paused = false; this.loading = false; this.over = false; this.disposed = false; this.error = '';
     this.score = 0; this.frames = 0; this.acc = 0; this.held = new Set(); this.emuTimes = []; this.drawTimes = []; this.pixels = null; this.fresh = false;
   }
@@ -59,10 +64,12 @@ export class NesGame {
     this.loading = true; this.error = '';
     try {
       const [jsnes, data] = await Promise.all([this.load.engine(), this.load.rom(this.info.rom)]);
+      const digest = data.length === this.info.bytes ? await sha256(data) : 'size';
+      if (digest !== null && digest !== this.info.sha256) throw Error('Spelfilen stämmer inte med listan och startas inte.');
       if (this.disposed) return; // left while loading: never build the instance
       const pixels = this.pixels = new Uint32Array(256 * 240);
       this.nes = new jsnes.NES({ emulateSound: false, onFrame: buf => { for (let i = 0; i < pixels.length; i++) pixels[i] = 0xff000000 | buf[i]; this.fresh = true; } });
-      this.nes.loadROM(data); this.frames = 0; this.acc = 0; this.running = true; this.paused = false;
+      this.nes.loadROM(binary(data)); this.frames = 0; this.acc = 0; this.running = true; this.paused = false;
     } catch (e) { this.nes = null; this.error = e?.message || 'NES-spelet kunde inte startas.'; }
     finally { this.loading = false; }
   }
@@ -110,11 +117,11 @@ export function drawNes(canvas, game, theme) {
   const drawn = game.blit(c, Math.floor((w - pw) / 2), Math.floor((h - ph) / 2), pw, ph);
   if (game.running && drawn) return;
   c.fillStyle = drawn ? 'rgba(5,9,18,.72)' : '#101622'; c.fillRect(0, 0, w, h); c.fillStyle = theme; c.fillRect(0, 0, w, h * .025);
-  c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = `bold ${h / 10}px system-ui`; c.fillText(game.info.name.toUpperCase(), w / 2, h * .3);
+  c.textAlign = 'center'; c.textBaseline = 'middle'; c.font = `bold ${h / 10}px system-ui`; c.fillText(game.info.title.toUpperCase(), w / 2, h * .3);
   c.fillStyle = '#e9f1ff'; c.font = `${h / 18}px system-ui`;
   const line = { loading: 'Laddar emulatorn …', paused: 'Pausad · mellanslag eller Starta fortsätter', error: game.error }[game.phase] ?? 'Starta med mellanslag eller knappen';
   c.fillText(line, w / 2, h * .48);
   c.fillStyle = '#9fb0c8'; c.font = `${h / 24}px system-ui`;
   c.fillText('Pilar/WASD styrkors · Z/K = B · X/J = A · Enter = Start · Skift = Select', w / 2, h * .62);
-  c.fillText(`NES-emulator jsnes 1.2.1 (Apache-2.0) · ${game.info.name} (${game.info.license}) · Ljud av`, w / 2, h * .9);
+  c.fillText(`NES-emulator jsnes 1.2.1 (Apache-2.0) · ${game.info.title} (${game.info.license}) · Ljud av`, w / 2, h * .9);
 }

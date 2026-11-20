@@ -347,7 +347,8 @@ src/screenshare.js     #2241: a computer game's picture for the onlookers: the K
                        per owner, staleMs) and frameDue (SCREEN_SHARE.hz pacing); src/screenwire.js the { t: 'scr' } check shared with the
                        Worker (RoomCinema.relay). Nothing stored. `node --test src/screenshare.test.mjs cloudflare/screenshare.test.mjs`
 src/nes.js             #2237: the computers' NES adapter (NesGame, key map, touch pad, drawNes). Loads src/vendor/jsnes/jsnes.js
-                       and src/nesroms/*.nes same-origin only on Starta; stores nothing (no saves, no ROM cache). `node --test src/nes.test.mjs`
+                       and the manifest's (src/nestitles.js) data/nes/**.nes same-origin only on Starta, SHA-256-checked; stores
+                       nothing (no saves, no ROM cache). `node --test src/nes.test.mjs`
 src/startuprecovery.js One bounded `lunden.startupFailure` sessionStorage record (#1065), also written by the dependency-free
                        index guard before imports. Name/message/stack/build/time plus the failed loading step and cause class (#1132) only, URL query/fragment values removed.
                        Enabled CrashLog consumes valid records no older than one hour once at next startup; no world or

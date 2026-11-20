@@ -37,7 +37,7 @@ const ID=mode==='phone'?'pc-lime':'pc-home';
   if(phone)await tap(`#computer-${ID} [data-arcade=start]`);else await p.keyboard.press('Space');
   await p.waitForFunction(id=>__app.computerHub.arcadeGame(__app.computerHub.sessions.get(id))?.phase==='running',ID,{timeout:30000});
   const origin=new URL(game).origin,after=requests.filter(r=>r.at>=started-50),foreign=after.filter(r=>!r.url.startsWith(origin)&&!r.url.startsWith(worker)&&!r.url.startsWith('data:')&&!r.url.startsWith('blob:'));
-  const loaded=nesReq().map(r=>r.url);assert.equal(loaded.length,2,JSON.stringify(loaded));assert(loaded.every(u=>u.startsWith(origin+'/src/')),JSON.stringify(loaded));
+  const loaded=nesReq().map(r=>r.url);assert.equal(loaded.length,2,JSON.stringify(loaded));assert(loaded.every(u=>u.startsWith(origin+'/src/vendor/jsnes/')||u.startsWith(origin+'/data/nes/')),JSON.stringify(loaded));
   assert.deepEqual(foreign.map(r=>r.url),[],'only same-origin (and the local Worker) after Starta');
   log('lazy same-origin load',{loaded,ms:Date.now()-started});
   await p.waitForTimeout(300);const before=(await g()).ram[0];

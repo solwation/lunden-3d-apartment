@@ -3,6 +3,7 @@ import { CinemaPlayer } from './cinemaplayer.js';
 import { CinemaSurface } from './cinemasurface.js';
 import { COMPUTER_MEDIA as C, SNAKE, GAME_BOARDS, SCREEN_SHARE, NES, computerViewer, nearComputer } from './config.js';
 import { NesGame, NES_KEYS, NES_PAD, drawNes } from './nes.js';
+import { NES_TITLES, nesTitle } from './nestitles.js';
 import { drawSnake, drawComputerMenu } from './snakeview.js';
 import { BlocksGame } from './blocks.js';
 import { MeteorsGame } from './meteors.js';
@@ -25,14 +26,25 @@ const ARCADE={
   // #2237: the NES adapter (src/nes.js): no top list (`board`), its own touch-pad profile and key map, redrawn at NES.renderMs,
   // the emulator loaded on Starta and freed on leaving (arcadeEnd → dispose), paused by P / a hidden tab / a lost window focus.
   // Onlookers see the "spelar" card: NES screen sharing (#2241 codec) is a follow-up.
-  nes:{title:'NES · Fånga ljuset',make:()=>new NesGame({title:'lightcatch'}),draw:drawNes,hold:true,renderMs:NES.renderMs,license:true,
-    about:'Styr den röda pricken till det gula ljuset. Ett litet eget NES-spel som körs i en emulator på datorn. Ljudet är av.',
-    help:'Pilar / WASD styrkors, Z / K = B, X / J = A, Enter = Start, Skift = Select. Mellanslag startar, P pausar, Esc / E lämnar datorn.',
+  // The titles come from the manifest src/nestitles.js (a picker in the panel when there are several; `s.nesTitle` per computer).
+  nes:{title:'NES',make:s=>new NesGame({title:s?.nesTitle}),draw:drawNes,hold:true,renderMs:NES.renderMs,license:true,titles:true,
+    about:'',help:'Pilar / WASD styrkors, Z / K = B, X / J = A, Enter = Start, Skift = Select. Mellanslag startar, P pausar, Esc / E lämnar datorn.',
     keys:NES_KEYS,pad:NES_PAD,
     status:(g,p)=>({loading:'Laddar emulatorn …',running:'Spelar NES.',paused:'Pausad. Fortsätt med knappen eller mellanslag.',error:g.error})[g.phase]??(p.owns?'Starta med knappen eller mellanslag.':p.state?.owner?`${p.state.name} spelar.`:'')},
 };
-// #2237: the licence notices shown in the computer (the full texts are published next to the files they cover).
-const NES_LICENSE='<details class="computer-license" hidden><summary>Om NES och licenser</summary><p>Emulatorn är <b>jsnes 1.2.1</b> (Ben Firshman med flera), oförändrad, under <a href="src/vendor/jsnes/LICENSE" target="_blank" rel="noopener">Apache License 2.0</a>. Spelet <b>Fånga ljuset</b> är gjort för Lunden och har <a href="src/nesroms/LICENSE" target="_blank" rel="noopener">MIT-licens</a>. Ingen Nintendo-kod, BIOS eller kommersiell ROM ingår. Allt laddas från den här sajten först när du startar, och ljudet är avstängt.</p></details>';
+// #2237: the NES title picker and the licence notices shown in the computer, built from the manifest (the full texts are
+// published next to the files they cover).
+function nesPanel(){
+  const picker=document.createElement('div');picker.className='cinema-row computer-nes-titles';picker.hidden=true;picker.setAttribute('aria-label','Välj NES-spel');
+  for(const t of NES_TITLES){const b=document.createElement('button');b.type='button';b.dataset.nesTitle=t.id;b.textContent=t.title;picker.append(b);}
+  const d=document.createElement('details');d.className='computer-license';d.hidden=true;
+  const sum=document.createElement('summary');sum.textContent='Om NES och licenser';const intro=document.createElement('p'),list=document.createElement('ul');
+  const link=(href,text)=>{const a=document.createElement('a');a.href=href;a.target='_blank';a.rel='noopener';a.textContent=text;return a;};
+  intro.append('Emulatorn är jsnes 1.2.1 (Ben Firshman med flera), oförändrad, under ',link('src/vendor/jsnes/LICENSE','Apache License 2.0'),
+    '. Ingen Nintendo-kod, BIOS eller kommersiell ROM ingår. Allt laddas från den här sajten först när du startar, och ljudet är avstängt.');
+  for(const t of NES_TITLES){const li=document.createElement('li');li.append(`${t.title}: ${t.credit}, `,link(t.notice,t.license),'.');list.append(li);}
+  d.append(sum,intro,list);return [picker,d];
+}
 const GAME_APPS=['snake',...Object.keys(ARCADE)];
 
 /** One app selector per physical computer; all game clients share one server arena. */
@@ -51,7 +63,7 @@ export class ComputerHub {
       const game=document.createElement('section');game.className='computer-game';game.hidden=true;
       game.innerHTML='<h3>Ormstriden</h3><p>Ät ljuspunkter och väx. Få de andra att krocka med din kropp och ät det som blir kvar. Vid huvudkrock vinner den större ormen. Undvik väggarna!</p><p class="computer-help">Piltangenter / WASD eller peka på skärmen. Esc / E lämnar datorn.</p><p class="computer-score" aria-live="polite"></p><div class="cinema-row"><button type="button" data-snake="join">Gå med i spelet</button><button type="button" data-angle="-1.5707963267948966" aria-label="Sväng upp">↑</button><button type="button" data-angle="3.141592653589793" aria-label="Sväng vänster">←</button><button type="button" data-angle="1.5707963267948966" aria-label="Sväng ner">↓</button><button type="button" data-angle="0" aria-label="Sväng höger">→</button></div><p class="computer-players"></p><h4 class="computer-top-title">Topplista</h4><ol class="computer-top"></ol>';
       const arcade=document.createElement('section');arcade.className='computer-game computer-arcade';arcade.hidden=true;
-      arcade.innerHTML='<h3></h3><p class="computer-about"></p><p class="computer-help"></p><p class="computer-score" aria-live="polite"></p><div class="cinema-row"><button type="button" data-arcade="start">Starta</button></div><h4 class="computer-top-title">Topplista</h4><ol class="computer-top"></ol>'+NES_LICENSE;
+      arcade.innerHTML='<h3></h3><p class="computer-about"></p><p class="computer-help"></p><p class="computer-score" aria-live="polite"></p><div class="cinema-row"><button type="button" data-arcade="start">Starta</button></div><h4 class="computer-top-title">Topplista</h4><ol class="computer-top"></ol>';arcade.querySelector('.computer-score').after(...nesPanel());
       const pad=arcade.querySelector('.cinema-row');
       for(const [app,def]of Object.entries(ARCADE))for(const [action,text,label]of def.pad){
         const b=document.createElement('button');b.type='button';b.dataset.pad=action;b.dataset.padApp=app;b.textContent=text;b.setAttribute('aria-label',label);b.hidden=true;pad.append(b);
@@ -80,6 +92,9 @@ export class ComputerHub {
       const receive=player.receive.bind(player);player.receive=m=>{receive(m);if(m.k==='no'&&session.pendingPower!==undefined)this.onNotice?.(player.status.textContent);session.pendingPower=undefined;this.syncPower(session);this.controls(session);if(m.k==='state'&&player.state?.app!=='youtube')player.status.textContent=player.owns?'Du styr datorn. Välj YouTube eller Spel.':player.state?.owner?`${player.state.name} använder datorn.`:'Datorn är ledig.';};
       session.join.addEventListener('click',()=>{if(player.owns){this.pendingScreen=info.id;this.send({k:'join',screen:info.id,pid:this.boards?.id()});session.joining=true;this.controls(session);session.join.focus();}});
       session.arcadeStart.addEventListener('click',()=>this.arcadeStart(session));
+      for(const b of arcade.querySelectorAll('[data-nes-title]'))b.addEventListener('click',()=>{ // #2237: another title frees the running one
+        if(!player.owns||player.state?.app!=='nes'||session.nesTitle===b.dataset.nesTitle&&session.run?.game.title===b.dataset.nesTitle)return;
+        session.nesTitle=b.dataset.nesTitle;this.arcadeEnd(session);session.run={app:'nes',game:ARCADE.nes.make(session),sent:true};session.lastApp=null;session.menuKey=null;this.controls(session);});
       for(const b of game.querySelectorAll('[data-angle]'))b.addEventListener('click',()=>{this.angle=Number(b.dataset.angle);session.join.focus();});
       const headings={ArrowRight:0,KeyD:0,ArrowDown:Math.PI/2,KeyS:Math.PI/2,ArrowLeft:Math.PI,KeyA:Math.PI,ArrowUp:-Math.PI/2,KeyW:-Math.PI/2};
       el.addEventListener('keydown',e=>{if(player.state?.app==='snake'&&e.code in headings){e.preventDefault();this.angle=headings[e.code];}});
@@ -205,15 +220,19 @@ export class ComputerHub {
   arcadeControls(s,app,entered){
     const def=ARCADE[app],p=s.player;s.arcade.hidden=!def;if(!def)return;
     if(entered){
-      s.arcadeTitle.textContent=def.title;s.arcade.querySelector('.computer-about').textContent=def.about;s.arcadeHelp.textContent=def.help;
+      const t=def.titles?nesTitle(s.nesTitle):null; // #2237: the chosen NES title's own name, description and button hint
+      s.arcadeTitle.textContent=t?`${def.title} · ${t.title}`:def.title;s.arcade.querySelector('.computer-about').textContent=t?t.about:def.about;s.arcadeHelp.textContent=t?`${t.controls} ${def.help}`:def.help;
+      const picker=s.arcade.querySelector('.computer-nes-titles');picker.hidden=!def.titles||NES_TITLES.length<2;
+      for(const b of picker.children)b.setAttribute('aria-pressed',String(b.dataset.nesTitle===nesTitle(s.nesTitle).id));
       for(const b of s.arcade.querySelectorAll('[data-pad]'))b.hidden=b.dataset.padApp!==app;
       s.arcadeTop.hidden=s.arcadeTopTitle.hidden=!def.board;s.arcade.querySelector('.computer-license').hidden=!def.license;s.arcade.classList.toggle('computer-nes',app==='nes');
       if(p.inside&&def.board)this.loadTop(s,def.board);
     }
-    if(p.owns&&s.run?.app!==app)s.run={app,game:def.make(),sent:true}; // the start screen with the top list
+    if(p.owns&&s.run?.app!==app)s.run={app,game:def.make(s),sent:true}; // the start screen with the top list
     const g=this.arcadeGame(s),running=!!g?.running&&p.owns;
     s.arcadeStart.disabled=!p.owns||running||!!g?.loading;s.arcadeStart.textContent=g?.paused?'Fortsätt':g?.over&&def.board?'Spela igen':'Starta';
     for(const b of s.arcade.querySelectorAll('[data-pad]'))b.disabled=!running;
+    for(const b of s.arcade.querySelectorAll('[data-nes-title]'))b.disabled=!p.owns||!!g?.loading;
     s.arcadeScore.textContent=def.status&&g?def.status(g,p):running?`${g.score} poäng`:g?.over?`Slut: ${g.score} poäng.`:p.owns?'Starta en omgång med knappen eller mellanslag.':p.state?.owner?`${p.state.name} spelar.`:'';
     s.shownScore=g?.score;
     if(def.board)this.renderTop(s.arcadeTop,s.arcadeTopTitle,def.board);
@@ -221,7 +240,7 @@ export class ComputerHub {
   arcadeStart(s){
     const app=s.player.state?.app,def=ARCADE[app],old=this.arcadeGame(s);if(!def||!s.player.owns||old?.running||old?.loading)return;
     if(old?.paused&&old.resume()){s.stepAt=performance.now();this.controls(s);return;} // #2237: a paused NES game goes on where it was
-    const run=s.run={app,game:def.make(),sent:false},started=run.game.start();s.stepAt=performance.now();this.controls(s);
+    const run=s.run={app,game:def.make(s),sent:false},started=run.game.start();s.stepAt=performance.now();this.controls(s);
     if(started?.then)started.then(()=>{if(s.run===run){s.stepAt=performance.now();s.menuKey=null;this.controls(s);}}); // (#2237: the lazy load)
   }
   /** Ends a running round (leaving, switching app, power off) and sends a finished round's result once. */
