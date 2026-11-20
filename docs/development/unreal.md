@@ -422,6 +422,28 @@ Run `node tools/unreal-engine/compare-cooks.mjs FIRST_PAKS SECOND_PAKS` against 
 archive's `Lunden/Content/Paks` directory. It streams each container and reports its
 relative name, size and SHA-256. [Full five-file comparison](../verification/2248/stock-cooks.json).
 
+#### Verify published package files before promoting a manifest
+
+After uploading immutable versioned assets, check the proposed manifest and its detached
+signature locally against the public P-256 SPKI key embedded in the launcher. Run from
+the repository root (Node.js 22 or later).
+
+```sh
+node tools/unreal-engine/verify-published.mjs --channel test \
+  --manifest lunden-manifest-test.json --signature lunden-manifest-test.json.sig \
+  --public-key manifest-public.pem
+```
+
+The verifier checks the signature over the exact manifest bytes, the
+[v1 schema](../../shared/schema/release-manifest.schema.json), Windows install paths,
+content ABI, launcher versions and the stock runtime inventory where applicable. It then
+streams one anonymous GET per unique asset URL (including the launcher), follows CDN
+redirects and checks the final byte count and SHA-256. Repeated URLs must agree on both.
+Only a successful exit authorizes the publishing workflow to proceed to its separate
+promotion step. Use `--channel stable` for the stable manifest. HTTP loopback is supported
+only on the test channel. Run the offline delivery fixture with
+`node --test tools/unreal-engine/tests/verify-published.test.mjs`.
+
 ## Phase B results (verified 2026-11-20)
 
 These results describe the original native project before the content-only conversion (#2268). The checks ran in `C:\Users\Olof\Documents\lunden-unreal-engine` (i9-10900K, RTX 3080, 32 GB).
