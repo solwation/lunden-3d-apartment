@@ -6151,10 +6151,17 @@ export const FLARE = {
 // (below: today's even global light; never on phones); `exposure` = extra tone-mapping exposure eased in indoors by day
 // while it is on (the eye adapts); `inset` = the region starts this far inside the glass plane (the outer reveal and the
 // façade keep the global light); `recast` = s between re-casts while a door moves; `near` = m within which the camera's
-// nearest flat is chosen from outdoors. Tuned by eye and mean luminance on before/after shots (docs/verification/2152); *guess*.
+// nearest flat is chosen from outdoors. Review round: `bounce` = the share of each window's light that is the room's own
+// bounce (lit floor, opposite walls): same fall-off, colour `warm`, hardly any facing (`bounceWrap`), so surfaces turned from
+// the glass (window wall, reveals, a soffit's face) keep their light; `tint` = the kept base irradiance's warm tint (eased in
+// with the base share), `skyWarm` = how far the sky term is pulled from the sky colour to `warm`; `well` = an upper storey's
+// stairwell opening as a bounce-only source, × the mean strength of the storey below's windows (light rising up the stairs):
+// a virtual opening `wellH` m high on each of its ±x edges.
+// Tuned by eye and mean luminance on before/after shots (docs/verification/2152); *guess*.
 export const WINDOW_LIGHT = {
-  max: 6, rays: 32, base: 0.45, fillCut: 0.6, gain: 4, spread: 2, wrap: 0.5, glassWrap: 0.3, minLevel: 1, exposure: 0.1,
+  max: 8, rays: 32, base: 0.6, fillCut: 0.6, gain: 2.2, spread: 2.3, wrap: 1, glassWrap: 0.3, minLevel: 1, exposure: 0.05,
   inset: 0.03, recast: 0.15, near: 25,
+  bounce: 0.6, bounceWrap: 2, warm: 0xfff2e6, tint: [1.02, 1.0, 0.96], skyWarm: 0.5, well: 0.35, wellH: 1.2,
 };
 
 // Room lights (src/lights.js). Intensities are candela-ish (three.js physical lights), tuned by

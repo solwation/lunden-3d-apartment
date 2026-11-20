@@ -1,5 +1,5 @@
 import * as THREE from 'three';
-import { WINDOW_LIGHT as WL, BLINDS, LEVELS } from './config.js';
+import { WINDOW_LIGHT as WL, BLINDS, LEVELS, STAIR } from './config.js';
 import { cast } from './lampwash.js';
 import { lowMemory } from './lowmemory.js';
 
@@ -18,8 +18,13 @@ import { lowMemory } from './lowmemory.js';
 // form factor with softened cosines), only inside its visibility polygon in plan: `rays` rays fanned over the room side from
 // just inside the inner façade face, stopped by the walls and the doors as they stand (re-cast while a door moves), the same
 // casting as the lamps' wash (lampwash.js). Its blinds / curtains dim it (BLINDS.dim, the curtains' own cut).
+// Review round (#2152): a share `bounce` of each window's light is the room's own bounce (the lit floor and opposite walls) —
+// warm (`warm`), with the same distance fall-off but hardly any facing (wrap `bounceWrap`), so the window wall, the reveals and
+// a soffit's face turned from the glass are not left flat grey; the kept base irradiance is tinted warm too (`tint`) and the
+// sky term pulled `skyWarm` of the way to the warm colour. An opening to the storey below (the stairwell, `hole`) is a "well"
+// source on the upper storey: all bounce, `well` × the mean of the lower windows' strength, a virtual opening on each ±x edge.
 
-const MAX = WL.max, RAYS = WL.rays;
+const MAX = WL.max, RAYS = WL.rays, WARM = new THREE.Color();
 const f = (v) => (Number.isInteger(v) ? v.toFixed(1) : String(v));
 
 /** Shared uniform values (typed arrays: shared by every material's program, not cloned). */
@@ -28,17 +33,19 @@ export const windowLightUniforms = {
   winBox: { value: new Float32Array(4) },      // the active flat's box x0, z0, x1, z1 (world)
   winY: { value: new Float32Array(4) },        // its y0, y1
   winSky: { value: new Float32Array(4) },      // the sky's radiance colour × strength
+  winWarm: { value: new Float32Array(4) },     // the bounce colour × strength (rgb), the base tint's r g b in winTint
+  winTint: { value: new Float32Array(4) },     // the kept base irradiance's warm tint (rgb)
   winFill: { value: new Float32Array(4) },     // the fill light's colour × intensity × fillCut (taken away inside)
   winFillDir: { value: new Float32Array(4) },  // towards the fill light (world, unit)
-  winSrc: { value: new Float32Array(MAX * 3 * 4) }, // per window: glass centre x y z, strength | inward normal x z, half width, half height | ray origin x z, y0, y1 of its level
+  winSrc: { value: new Float32Array(MAX * 4 * 4) }, // per window: glass centre x y z, strength | inward normal x z, half width, half height | ray origin x z, y0, y1 of its level | bounce share
   winVis: { value: new Float32Array(MAX * RAYS) },  // per window: the reach of each ray (m)
 };
 
 const PARS = /* glsl */`
 #define WL_MAX ${MAX}
 #define WL_RAYS ${RAYS}
-uniform vec4 winA, winBox, winY, winSky, winFill, winFillDir;
-uniform vec4 winSrc[ WL_MAX * 3 ];
+uniform vec4 winA, winBox, winY, winSky, winWarm, winTint, winFill, winFillDir;
+uniform vec4 winSrc[ WL_MAX * 4 ];
 uniform vec4 winVis[ WL_MAX * WL_RAYS / 4 ];
 float wlReach( int i, int k ) { int j = i * WL_RAYS + k; return winVis[ j / 4 ][ j % 4 ]; }
 vec3 windowLight( vec3 irr, vec3 viewPos, vec3 viewNormal ) { // #2152: the indirect irradiance inside the active flat
@@ -46,10 +53,11 @@ vec3 windowLight( vec3 irr, vec3 viewPos, vec3 viewNormal ) { // #2152: the indi
 	vec3 p = cameraPosition + viewPos * mat3( viewMatrix ); // world position
 	if ( p.x < winBox.x || p.x > winBox.z || p.z < winBox.y || p.z > winBox.w || p.y < winY.x || p.y > winY.y ) return irr;
 	vec3 n = viewNormal * mat3( viewMatrix );
-	float sky = 0.0;
+	float sky = 0.0, bounce = 0.0;
 	for ( int i = 0; i < WL_MAX; i ++ ) {
 		if ( float( i ) >= winA.z ) break;
-		vec4 a = winSrc[ i * 3 ], b = winSrc[ i * 3 + 1 ], c = winSrc[ i * 3 + 2 ];
+		vec4 a = winSrc[ i * 4 ], b = winSrc[ i * 4 + 1 ], c = winSrc[ i * 4 + 2 ];
+		float share = winSrc[ i * 4 + 3 ].x; // the bounce share (1: a stairwell well)
 		if ( a.w <= 0.0 || p.y < c.z || p.y > c.w ) continue; // drawn shut / the other level
 		vec2 N = b.xy, T = vec2( - N.y, N.x );
 		vec3 rel = p - a.xyz;
@@ -59,22 +67,26 @@ vec3 windowLight( vec3 irr, vec3 viewPos, vec3 viewNormal ) { // #2152: the indi
 		float r2 = max( dot( d, d ), 1e-4 );
 		vec3 l = d * inversesqrt( r2 );
 		float cosW = ( max( - dot( l.xz, N ), 0.0 ) + ${f(WL.glassWrap)} ) * ${f(1 / (1 + WL.glassWrap))};
-		float cosR = max( dot( n, l ) + ${f(WL.wrap)}, 0.0 ) * ${f(1 / (1 + WL.wrap))};
+		float nl = dot( n, l );
+		float cosR = max( nl + ${f(WL.wrap)}, 0.0 ) * ${f(1 / (1 + WL.wrap))};
 		float area = 4.0 * b.z * b.w;
-		float e = a.w * area * cosW * cosR / ( ${f(Math.PI / (WL.spread * WL.spread))} * r2 + area );
+		float e = a.w * area / ( ${f(Math.PI / (WL.spread * WL.spread))} * r2 + area );
 		if ( e < 1e-4 ) continue;
+		float eb = e * share * ( nl + ${f(WL.bounceWrap)} ) * ${f(1 / (1 + WL.bounceWrap))};
+		e *= ( 1.0 - share ) * cosW * cosR;
 		vec2 o = p.xz - c.xy;
 		float fo = dot( o, N );
 		if ( fo > 0.0 ) { // in the room: inside the visibility polygon (between two rays)?
 			float t = clamp( ( atan( dot( o, T ), fo ) * ${f(1 / Math.PI)} + 0.5 ) * ${f(RAYS - 1)}, 0.0, ${f(RAYS - 1)} );
 			int k = int( min( floor( t ), ${f(RAYS - 2)} ) );
 			float reach = mix( wlReach( i, k ), wlReach( i, k + 1 ), t - float( k ) );
-			e *= 1.0 - smoothstep( reach + 0.02, reach + 0.2, length( o ) );
+			float v = 1.0 - smoothstep( reach + 0.02, reach + 0.2, length( o ) );
+			e *= v; eb *= v;
 		}
-		sky += e;
+		sky += e; bounce += eb;
 	}
 	vec3 fill = winFill.rgb * max( dot( n, winFillDir.xyz ), 0.0 );
-	return max( irr * winA.x - fill + winSky.rgb * sky, vec3( 0.0 ) );
+	return max( irr * winA.x * winTint.rgb - fill + winSky.rgb * sky + winWarm.rgb * bounce, vec3( 0.0 ) );
 }
 `;
 const END = /* glsl */`#if defined( RE_IndirectDiffuse )
@@ -107,7 +119,7 @@ export function windowSources(openings, levels, ox = 0, oz = 0) {
       const nz = facade === 'north' ? 1 : -1; // into the room
       const x = ox + (w.x0 + w.x1) / 2;
       out.push({ level, facade, x, y: (w.y0 + w.y1) / 2, z: oz + w.glass, nx: 0, nz, hw: (w.x1 - w.x0) / 2, hh: (w.y1 - w.y0) / 2,
-        x0: ox + w.x0, x1: ox + w.x1, ox: x, oz: oz + w.inner + nz * 0.05, y0: levels[level].y0, y1: levels[level].y1, vis: new Float32Array(RAYS) });
+        x0: ox + w.x0, x1: ox + w.x1, ox: x, oz: oz + w.inner + nz * 0.05, y0: levels[level].y0, y1: levels[level].y1, share: WL.bounce, vis: new Float32Array(RAYS) });
     }
   });
   return out;
@@ -163,9 +175,10 @@ export function pickRegion(regions, x, y, z, near = WL.near) {
 
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 const smooth = (a, b, x) => { const t = clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
-/** One window's sky irradiance at world point p with world normal n, per unit of sky strength and the window's own strength:
- *  the shader's formula in JS (tests, docs). */
-export function windowIrradiance(src, p, n, strength = 1) {
+/** One window's irradiance (sky + bounce) at world point p with world normal n, per unit of sky strength and the window's own
+ *  strength: the shader's formula in JS (tests, docs). `parts` (optional) gets { sky, bounce }. */
+export function windowIrradiance(src, p, n, strength = 1, parts = null) {
+  if (parts) parts.sky = parts.bounce = 0;
   if (strength <= 0 || p.y < src.y0 || p.y > src.y1) return 0;
   const N = { x: src.nx, z: src.nz }, T = { x: -N.z, z: N.x };
   const rel = { x: p.x - src.x, y: p.y - src.y, z: p.z - src.z };
@@ -174,22 +187,37 @@ export function windowIrradiance(src, p, n, strength = 1) {
   const d = { x: T.x * sx - rel.x, y: sy - rel.y, z: T.z * sx - rel.z };
   const r2 = Math.max(d.x * d.x + d.y * d.y + d.z * d.z, 1e-4), r = Math.sqrt(r2), l = { x: d.x / r, y: d.y / r, z: d.z / r };
   const cosW = (Math.max(-(l.x * N.x + l.z * N.z), 0) + WL.glassWrap) / (1 + WL.glassWrap);
-  const cosR = Math.max(n.x * l.x + n.y * l.y + n.z * l.z + WL.wrap, 0) / (1 + WL.wrap);
-  const area = 4 * src.hw * src.hh;
-  let e = strength * area * cosW * cosR / ((Math.PI / (WL.spread * WL.spread)) * r2 + area);
+  const nl = n.x * l.x + n.y * l.y + n.z * l.z, cosR = Math.max(nl + WL.wrap, 0) / (1 + WL.wrap);
+  const area = 4 * src.hw * src.hh, share = src.share ?? WL.bounce;
+  let e = strength * area / ((Math.PI / (WL.spread * WL.spread)) * r2 + area);
+  let eb = e * share * (nl + WL.bounceWrap) / (1 + WL.bounceWrap);
+  e *= (1 - share) * cosW * cosR;
   const o = { x: p.x - src.ox, z: p.z - src.oz }, fo = o.x * N.x + o.z * N.z;
   if (fo > 0) {
     const R = src.vis.length, t = clamp((Math.atan2(o.x * T.x + o.z * T.z, fo) / Math.PI + 0.5) * (R - 1), 0, R - 1);
     const k = Math.floor(Math.min(t, R - 2)), reach = src.vis[k] + (src.vis[k + 1] - src.vis[k]) * (t - k);
-    e *= 1 - smooth(reach + 0.02, reach + 0.2, Math.hypot(o.x, o.z));
+    const v = 1 - smooth(reach + 0.02, reach + 0.2, Math.hypot(o.x, o.z));
+    e *= v; eb *= v;
   }
-  return e;
+  if (parts) { parts.sky = e; parts.bounce = eb; }
+  return e + eb;
+}
+
+/** The opening to the storey below (plan rect `hole`, the upper storey's floor at floorY) as two "well" sources lighting the
+ *  upper storey by bounce alone: like a window, a virtual vertical opening on its west (facing −x) and east (+x) edge, the
+ *  hole's depth along z and `wellH` m up from the floor, its rays fanned from just outside that edge (a point at the hole's
+ *  centre cast a hard shadow from the stairwell's own edge). */
+export function wellSources(hole, band, floorY, ox = 0, oz = 0) {
+  if (!hole) return [];
+  const z = oz + (hole.z0 + hole.z1) / 2, hw = (hole.z1 - hole.z0) / 2, hh = WL.wellH / 2;
+  return [[-1, hole.x0], [1, hole.x1]].map(([nx, edge]) => ({ level: 1, facade: 'well', well: true, share: 1, x: ox + edge, y: floorY + hh, z, nx, nz: 0, hw, hh,
+    x0: ox + hole.x0, x1: ox + hole.x1, ox: ox + edge + nx * 0.05, oz: z, y0: band.y0, y1: band.y1, vis: new Float32Array(RAYS) }));
 }
 
 /** The box a flat's window light stays in: its footprint between its windows' glass planes (`inset` inside them: the outer
  *  reveals and façades keep the global light), from under its lowest floor to over its top ceiling. */
 function flatBox(x0, x1, z0, z1, sources, bands) {
-  const north = sources.filter((s) => s.nz > 0).map((s) => s.z), south = sources.filter((s) => s.nz < 0).map((s) => s.z);
+  const north = sources.filter((s) => !s.well && s.nz > 0).map((s) => s.z), south = sources.filter((s) => !s.well && s.nz < 0).map((s) => s.z);
   return { x0, x1, z0: north.length ? Math.min(...north) + WL.inset : z0, z1: south.length ? Math.max(...south) - WL.inset : z1,
     y0: bands[0].y0, y1: bands.at(-1).y1 };
 }
@@ -200,7 +228,7 @@ const outline = (x0, z0, x1, z1) => [[x0, z0, x1, z0], [x1, z0, x1, z1], [x1, z1
  *  wardrobes' sliding fronts do not), its two storeys split 0.1 m under the upper floor. */
 export function homeRegion(world, L = LEVELS) {
   const split = L[1].floor - 0.1, bands = [{ y0: L[0].floor - 0.1, y1: split }, { y0: split, y1: L[1].floor + L[1].ceiling + 0.1 }];
-  const sources = windowSources(world.levels.map((l) => l.openings), bands);
+  const sources = [...windowSources(world.levels.map((l) => l.openings), bands), ...(world.levels.length > 1 ? wellSources(STAIR.hole, bands[1], L[1].floor) : [])];
   const { x: SX, z: SZ } = world.size, doors = world.doors.filter((d) => d.kind !== 'wardrobe');
   const levelOf = (d) => (d.object.position.y > L[0].floor + 1.6 ? 1 : 0);
   return { id: 'L1007', sources, box: flatBox(0, SX, 0, SZ, sources, bands), doors: () => doorKey(doors),
@@ -211,7 +239,7 @@ export function homeRegion(world, L = LEVELS) {
 export function visitRegion(unit) {
   const lv = unit.levels, split = lv.length > 1 ? lv[1].floor - 0.1 : lv[0].top;
   const bands = lv.map((l, i) => ({ y0: i ? split : l.floor - 0.1, y1: i < lv.length - 1 ? split : l.floor + l.ceiling + 0.1 }));
-  const sources = windowSources(unit.openings, bands, unit.ox, unit.oz), b = unit.box;
+  const sources = [...windowSources(unit.openings, bands, unit.ox, unit.oz), ...(lv.length > 1 ? wellSources(lv[1].hole, bands[1], lv[1].floor, unit.ox, unit.oz) : [])], b = unit.box;
   return { id: unit.id, sources, box: flatBox(b.x0, b.x1, b.z0, b.z1, sources, bands), doors: () => doorKey(unit.doors),
     segs: (l) => { const r = lv[l].rect; return [...unit.walls[l], ...unit.doorSegments(l), ...outline(unit.ox + r.x0, unit.oz + r.z0, unit.ox + r.x1, unit.oz + r.z1)]; } };
 }
@@ -253,20 +281,29 @@ export class WindowLight {
     this.recastIn -= dt;
     const key = r.doors?.() ?? 0;
     if (key !== r.doorKey && this.recastIn <= 0) { r.doorKey = key; this.recast(r); this.recastIn = WL.recast; }
+    // each window's strength: what its blinds / curtains let through; a well: `well` × the storey below's mean
+    let below = 0, nb = 0;
+    for (const s of r.sources) if (!s.well) { s.pass = windowPass(s, env.blinds, env.curtains); if (s.level === 0) { below += s.pass; nb++; } }
+    for (const s of r.sources) if (s.well) s.pass = WL.well * (nb ? below / nb : 0);
     const list = this.shown = pickWindows(r.sources, env.eye.x, env.eye.y, env.eye.z);
     const S = u.winSrc.value, V = u.winVis.value;
     list.forEach((s, i) => {
-      s.pass = windowPass(s, env.blinds, env.curtains);
-      S.set([s.x, s.y, s.z, s.pass], i * 12);
-      S.set([s.nx, s.nz, s.hw, s.hh], i * 12 + 4);
-      S.set([s.ox, s.oz, s.y0, s.y1], i * 12 + 8);
+      S.set([s.x, s.y, s.z, s.pass], i * 16);
+      S.set([s.nx, s.nz, s.hw, s.hh], i * 16 + 4);
+      S.set([s.ox, s.oz, s.y0, s.y1], i * 16 + 8);
+      S.set([s.share ?? WL.bounce, 0, 0, 0], i * 16 + 12);
       V.set(s.vis, i * RAYS);
     });
     A[0] = baseFactor(env.day); A[2] = list.length; A[3] = 1;
     const B = u.winBox.value, Y = u.winY.value;
     B[0] = r.box.x0; B[1] = r.box.z0; B[2] = r.box.x1; B[3] = r.box.z1; Y[0] = r.box.y0; Y[1] = r.box.y1;
-    const k = WL.gain * env.skyLight, K = u.winSky.value;
-    K[0] = env.sky.r * k; K[1] = env.sky.g * k; K[2] = env.sky.b * k;
+    const k = WL.gain * env.skyLight, K = u.winSky.value, M = u.winWarm.value, [tr, tg, tb] = WL.tint;
+    WARM.setHex(WL.warm);
+    K[0] = (env.sky.r + (WARM.r - env.sky.r) * WL.skyWarm) * k; K[1] = (env.sky.g + (WARM.g - env.sky.g) * WL.skyWarm) * k; K[2] = (env.sky.b + (WARM.b - env.sky.b) * WL.skyWarm) * k;
+    M[0] = WARM.r * k; M[1] = WARM.g * k; M[2] = WARM.b * k;
+    // the warm tint fades in with the base share (night: the global light as it was)
+    const T = u.winTint.value, w = (1 - A[0]) / (1 - WL.base);
+    T[0] = 1 + (tr - 1) * w; T[1] = 1 + (tg - 1) * w; T[2] = 1 + (tb - 1) * w;
     const F = u.winFill.value, D = u.winFillDir.value, fl = env.fill;
     if (fl) {
       const c = fl.intensity * WL.fillCut;

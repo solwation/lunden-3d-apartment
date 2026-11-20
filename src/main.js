@@ -4162,6 +4162,7 @@ function probeSignature(daylight, dt) {
   for (const R of lights.rooms.values()) lit += R.on ? '1' : '0';
   for (const f of lights.floorLamps) lit += f.room.on ? '1' : '0';
   for (const r of visitLights.rooms) lit += r.on ? '1' : '0';
+  lit += windowLight.enabled ? 'W' : 'w'; // #2152: the windows' sky light switched by the quality level: the probes see the room's new light
   return (probeLight.sig = `${probeLight.band}|${lit}`);
 }
 let mirrorFrame = 0;

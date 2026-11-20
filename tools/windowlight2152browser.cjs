@@ -7,13 +7,15 @@
 const kit = require('./testkit.cjs'), fs = require('node:fs'), path = require('node:path');
 const base = process.argv[2] || 'http://localhost:8224', out = process.argv[3] || '/tmp/wl2152';
 const VIEWS = [
-  { name: 'vardagsrum', at: [1.0, 7.75], to: [3.9, 11.6, 1.2], feet: 0 },
-  { name: 'hall-ovre', at: [2.35, 5.15], to: [2.35, 7.6, 3.9], feet: 3.25 },
-  { name: 'sovrum1', at: [3.2, 4.25], to: [3.85, 0.6, 4.6], feet: 3.25 },
+  { name: 'vardagsrum', at: [1.0, 7.75], to: [3.9, 11.6, 1.2], feet: 0, weather: ['klart', 'mulet'] },
+  { name: 'hall-ovre', at: [2.35, 5.15], to: [2.35, 7.6, 3.9], feet: 3.25, weather: ['klart', 'mulet'] },
+  { name: 'sovrum1', at: [3.2, 4.25], to: [3.85, 0.6, 4.6], feet: 3.25, weather: ['klart', 'mulet'] },
+  // #2151's kitchen-sink view: its room probe re-captures when the window light switches (probe signature), so the chrome sees it
+  { name: 'kok-diskho', at: [4.62, 2.55], to: [5.4, 1.95, 1.0], feet: -0.3, weather: ['klart'], steps: 40 },
 ];
-const WEATHER = [{ name: 'klart', oc: 0 }, { name: 'mulet', oc: 1 }];
+const WEATHER = { klart: 0, mulet: 1 };
 const ONLY = process.env.ONLY ? process.env.ONLY.split(',') : null;
-const W = 960, H = 600;
+const W = 768, H = 480, TW = 512, TH = 320; // (strips of two TW × TH halves: ≤ ~600 KB)
 
 (async () => {
   const browser = await kit.launch(), result = { views: [], perf: [], errors: [], shaderErrors: [] };
@@ -28,29 +30,30 @@ const W = 960, H = 600;
     await page.waitForFunction(() => window.__app?.renderer, null, { timeout: 900000, polling: 250 }); await kit.skipNameDialog(page);
     await page.evaluate(() => __app.testMode.setFull(true));
     if (process.env.TUNE) await page.evaluate(async (t) => { const C = await import('/src/config.js'); Object.assign(C.WINDOW_LIGHT, JSON.parse(t)); }, process.env.TUNE);
-    const frame = (on, oc) => page.evaluate(async ({ on, oc }) => { const A = __app;
+    const frame = (on, oc, steps = 6) => page.evaluate(async ({ on, oc, steps }) => { const A = __app;
       A.weather.state = () => ({ rain: 0, storm: false, overcast: oc, kind: null, id: null, temp: 18, source: 'forced' });
       A.windowLight.enabled = on; A.day.hour = 13; A.day.paused = true;
-      for (let i = 0; i < 6; i++) { await new Promise((r) => requestAnimationFrame(r)); A.step(0.05); A.testMode.draw(); }
+      for (let i = 0; i < steps; i++) { await new Promise((r) => requestAnimationFrame(r)); A.step(0.05); A.testMode.draw(); }
       return A.renderer.domElement.toDataURL('image/png'); // (in the same task as the draw: the drawing buffer is not preserved)
-    }, { on, oc });
+    }, { on, oc, steps });
     for (const v of VIEWS.filter((x) => !ONLY || ONLY.includes(x.name))) {
       await page.evaluate(({ at, to, feet }) => { const A = __app, p = A.player;
         const eye = feet + 1.62, yaw = Math.atan2(-(to[0] - at[0]), -(to[1] - at[1])), pitch = Math.atan2(to[2] - eye, Math.hypot(to[0] - at[0], to[1] - at[1]));
         p.spawn(at[0], at[1], yaw); p.pos.y = feet; p.eyeY = eye; A.camera.position.y = eye; A.camera.rotation.x = pitch; }, v);
-      for (const w of WEATHER) {
+      for (const w of v.weather.map((name) => ({ name, oc: WEATHER[name] }))) {
         const pics = {};
         for (const [phase, on] of [['fore', false], ['efter', true]]) {
-          await frame(on, w.oc);
+          await frame(on, w.oc, v.steps);
           pics[phase] = await frame(on, w.oc);
           const s = await page.evaluate(() => { const A = __app; return { active: A.windowLight.active, region: A.windowLight.region?.id ?? null, windows: A.windowLight.shown.length,
-            exposure: +A.renderer.toneMappingExposure.toFixed(3), calls: A.renderer.info.render.calls, programs: A.renderer.info.programs.length }; });
+            exposure: +A.renderer.toneMappingExposure.toFixed(3), calls: A.renderer.info.render.calls, programs: A.renderer.info.programs.length,
+            probe: A.roomProbe ? { mode: A.roomProbe.mode, zone: A.roomProbe.plan.current, captures: A.roomProbe.stats.captures } : null }; });
           result.views.push({ view: v.name, weather: w.name, phase, ...s });
         }
         // one strip: before | after at native aspect (each half 640 × 400), luminance per half and sample boxes
-        const stats = await page.evaluate(async ({ a, b, file }) => {
+        const stats = await page.evaluate(async ({ a, b, TW, TH }) => {
           const load = (src) => new Promise((r) => { const i = new Image(); i.onload = () => r(i); i.src = src; });
-          const [ia, ib] = await Promise.all([load(a), load(b)]), tw = 640, th = 400;
+          const [ia, ib] = await Promise.all([load(a), load(b)]), tw = TW, th = TH;
           const c = document.createElement('canvas'); c.width = tw * 2 + 4; c.height = th;
           const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, th);
           g.drawImage(ia, 0, 0, tw, th); g.drawImage(ib, tw + 4, 0, tw, th);
@@ -59,7 +62,7 @@ const W = 960, H = 600;
           g.font = 'bold 22px sans-serif'; g.fillStyle = 'rgba(0,0,0,.55)'; g.fillRect(8, 8, 92, 32); g.fillRect(tw + 12, 8, 92, 32);
           g.fillStyle = '#fff'; g.fillText('Före', 18, 32); g.fillText('Efter', tw + 22, 32);
           return { ...r, png: c.toDataURL('image/png') };
-        }, { a: pics.fore, b: pics.efter });
+        }, { a: pics.fore, b: pics.efter, TW, TH });
         const file = path.join(out, `${v.name}-${w.name}.png`);
         fs.writeFileSync(file, Buffer.from(stats.png.split(',')[1], 'base64'));
         result.views.push({ view: v.name, weather: w.name, file, lumBefore: stats.before, lumAfter: stats.after, kb: Math.round(fs.statSync(file).size / 1024) });

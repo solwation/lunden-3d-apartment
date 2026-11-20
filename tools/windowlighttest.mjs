@@ -4,7 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import * as T from 'three';
 import { WINDOW_LIGHT as WL, BLINDS } from '../src/config.js';
-import { installWindowLight, windowLightUniforms as U, windowSources, castWindow, windowIrradiance, windowPass, pickWindows, pickRegion,
+import { installWindowLight, windowLightUniforms as U, windowSources, wellSources, castWindow, windowIrradiance, windowPass, pickWindows, pickRegion,
   baseFactor, homeRegion, WindowLight } from '../src/windowlight.js';
 
 // A 6 m wide, 8 m deep one-storey flat: north window (glass z 0.1, inner face 0.4) at x 2…4, a wall at z 5 with a 0.9 m doorway
@@ -27,7 +27,7 @@ test('the lights chunks are patched once and every lit ShaderLib entry shares th
   const E = T.ShaderChunk.lights_fragment_end;
   assert.equal(E.split('windowLight( irradiance').length - 1, 1, 'one call');
   assert.ok(E.indexOf('windowLight(') < E.indexOf('RE_IndirectDiffuse( irradiance'), 'before the indirect diffuse is applied');
-  assert.match(T.ShaderChunk.lights_pars_begin, /uniform vec4 winSrc\[ WL_MAX \* 3 \];/);
+  assert.match(T.ShaderChunk.lights_pars_begin, /uniform vec4 winSrc\[ WL_MAX \* 4 \];/);
   for (const k of ['standard', 'physical', 'lambert', 'phong', 'toon']) {
     assert.equal(T.ShaderLib[k].uniforms.winSrc, U.winSrc, k);
     const c = T.UniformsUtils.clone(T.ShaderLib[k].uniforms);
@@ -69,6 +69,31 @@ test('fall-off: brighter by the window than deep in, the ceiling over the window
   assert.equal(windowIrradiance(n, { x: 3, y: 0, z: 1.2 }, UP, 0), 0, 'strength 0 (blind shut fully): none');
 });
 
+test('bounce: a surface turned away from the glass still gets light, warm and falling off with distance; none behind a wall', () => {
+  const [n] = sources(), parts = {};
+  const away = windowIrradiance(n, { x: 3, y: 1.5, z: 1.0 }, SOUTH, 1, parts);
+  assert.ok(away > 0 && parts.bounce > 0.8 * away, `facing away from the window: mostly bounce (${parts.bounce} of ${away})`);
+  const far = windowIrradiance(n, { x: 3, y: 1.5, z: 4.5 }, SOUTH);
+  assert.ok(away > 2 * far && far > 0, 'it falls off with the distance from the window');
+  const facing = windowIrradiance(n, { x: 3, y: 1.5, z: 1.0 }, NORTH, 1, parts);
+  assert.ok(facing > away && parts.sky > 0, 'facing the glass gets the sky term on top');
+  assert.equal(windowIrradiance(n, { x: 3, y: 1.5, z: 6 }, SOUTH), 0, 'behind the wall: no bounce either');
+});
+
+test('a stairwell opening lights the upper storey by bounce (light rising up the stairs)', () => {
+  const band = { y0: 2.9, y1: 5.6 }, wells = wellSources({ x0: 3, x1: 5, z0: 2, z1: 4 }, band, 3, 10, 0);
+  assert.equal(wells.length, 2);
+  assert.deepEqual(wells.map((w) => [w.nx, w.x, w.z, w.share, w.level]), [[-1, 13, 3, 1, 1], [1, 15, 3, 1, 1]], 'on its west / east edge, facing out');
+  assert.ok(Math.abs(wells[0].hw - 1) < 1e-9 && Math.abs(2 * wells[0].hh - WL.wellH) < 1e-9 && Math.abs(wells[0].y - (3 + WL.wellH / 2)) < 1e-9, 'the hole\'s depth, wellH up from the floor');
+  assert.ok(wells[0].ox < 13 && wells[1].ox > 15, 'its rays start just outside the edge');
+  for (const w of wells) castWindow(w, [[10, 0, 20, 0], [20, 0, 20, 8], [20, 8, 10, 8], [10, 8, 10, 0]]);
+  const parts = {}, hall = windowIrradiance(wells[0], { x: 11, y: 3, z: 3 }, UP, 1, parts);
+  assert.ok(hall > 0 && parts.sky === 0, 'the upper hall west of it: bounce only');
+  assert.ok(windowIrradiance(wells[1], { x: 18, y: 5, z: 3 }, DOWN) > 0, 'the east side (its ceiling) from the other fan');
+  assert.equal(windowIrradiance(wells[0], { x: 11, y: 1, z: 3 }, UP), 0, 'not the storey below');
+  assert.equal(wellSources(null, band, 3).length, 0);
+});
+
 test('blinds and curtains dim their own window only', () => {
   const [n, s] = sources();
   const blind = (o) => ({ level: 0, x0: 2, x1: 4, out: -1, cover: 1, dark: false, ...o });
@@ -106,11 +131,15 @@ test('WindowLight: on by day inside; off at the lowest quality, at night and far
   const A = U.winA.value, S = U.winSrc.value;
   assert.deepEqual([A[3], A[2]], [1, 2]);
   assert.ok(Math.abs(A[0] - WL.base) < 1e-6);
-  assert.ok(Math.abs(U.winSky.value[0] - WL.gain * 2) < 1e-6, 'sky = gain × the hemi sky intensity');
+  const warm = new T.Color(WL.warm);
+  assert.ok(Math.abs(U.winSky.value[0] - WL.gain * 2 * (1 + (warm.r - 1) * WL.skyWarm)) < 1e-5, 'sky = gain × the hemi sky intensity, pulled towards warm');
+  assert.ok(Math.abs(U.winWarm.value[2] - WL.gain * 2 * warm.b) < 1e-5 && U.winWarm.value[0] > U.winWarm.value[2], 'the bounce is warm');
+  assert.ok(Math.abs(U.winTint.value[2] - WL.tint[2]) < 1e-6, 'full day: the base tint');
   assert.ok(Math.abs(U.winFill.value[0] - 0.9 * WL.fillCut) < 1e-6 && Math.abs(Math.hypot(...U.winFillDir.value.slice(0, 3)) - 1) < 1e-6);
   wl.update(0.016, env({ blinds: [{ level: 0, x0: 2, x1: 4, out: -1, cover: 1, dark: true }] }));
   const north = wl.shown.findIndex((s) => s.nz > 0);
-  assert.ok(Math.abs(S[north * 12 + 3] - (1 - BLINDS.dim.dark)) < 1e-6, 'the drawn blind dims its window\'s strength');
+  assert.ok(Math.abs(S[north * 16 + 3] - (1 - BLINDS.dim.dark)) < 1e-6, 'the drawn blind dims its window\'s strength');
+  assert.ok(Math.abs(S[north * 16 + 12] - WL.bounce) < 1e-6, 'its bounce share');
   wl.enabled = false; wl.update(0.016, env());
   assert.equal(A[3], 0, 'lowest quality: off (the global light)');
   wl.enabled = true; wl.update(0.016, env({ day: 0 }));

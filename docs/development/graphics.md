@@ -768,11 +768,15 @@ src/windowlight.js     the windows' daylight indoors (#2152, `WINDOW_LIGHT`, *gu
                        storey bands: `homeRegion` / `visitRegion`; the flat the camera is in or nearest within `near` m) the hemi + ambient irradiance keeps
                        `base` of itself by day (`baseFactor`, 1 at night), the shadowless fill loses `fillCut`, and up to `max` nearest windows each add a soft
                        sky source: E = L·A·cosW·cosR / (π·(r/spread)² + A) from the nearest point on the glass, softened cosines (`wrap`, `glassWrap`),
-                       L = `gain` × `day.skyLight` (the hemi sky intensity × daylight × overcast) in the hemi sky colour. Only inside its visibility polygon
+                       L = `gain` × `day.skyLight` (the hemi sky intensity × daylight × overcast). Only inside its visibility polygon
                        (`rays` rays fanned over the room side from just inside the inner façade face, cast with lampwash.js `cast` against walls, doors as
                        they stand — re-cast at most every `recast` s while a door moves, so an open bedroom door lets light into the hall — and the outline).
                        Each window's strength is what its own blinds / curtains let through (`windowPass`: BLINDS.dim per tone × cover, the curtains'
-                       daylightCut; same level, façade and x overlap). The sun's patches are untouched. Exposure × (1 + `exposure`) eased in indoors by day
+                       daylightCut; same level, façade and x overlap). A share `bounce` of it is the room's own bounce: same fall-off, warm (`warm`),
+                       hardly any facing (`bounceWrap`), so the window wall, reveals and a soffit's face turned from the glass keep their light; the
+                       kept base is tinted warm (`tint`) and the sky term pulled `skyWarm` towards warm. An upper storey's stairwell opening is a
+                       bounce-only "well" source (`wellSources`, two ±x fans, `well` × the storey below's mean window strength): light rising up the
+                       stairs into the upper hall. The sun's patches are untouched. #2151's room probes re-capture when it switches (probe signature). Exposure × (1 + `exposure`) eased in indoors by day
                        while it lights a flat (`day.windowExposure`). Quality knob `windowLight`: off below `minLevel` (level 0 = the old even light).
                        world.js openings carry `glass` / `inner` z for it. `tools/windowlighttest.mjs`, `tools/windowlight2152browser.cjs`,
                        [before/after](../verification/2152/README.md).
