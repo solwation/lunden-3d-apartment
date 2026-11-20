@@ -23,3 +23,5 @@ Cost (same run, living room, 12 frames with gl.finish): draw calls 425, triangle
 off (a uniform toggle, no new program); quality 0: the light is off (398 calls, 279 programs). Frame time on SwiftShader
 (CPU-rendered, noisy: the two identical quality-0 runs measured 36.2 and 45.8 ms) quality 3 off 37.8 / on 50.3 ms — relative only,
 not a GPU measurement. No page or shader errors.
+
+Published result: [#2152 comment](https://github.com/solwation/lunden-3d-apartment/issues/2152#issuecomment-7032691352) (images pinned to `9d822d9a`). Delivered through `a6d111bb`: Pages run 44690877606 and Worker run 44690877664, both success.
