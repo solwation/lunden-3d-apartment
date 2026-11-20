@@ -952,6 +952,9 @@
     .computer-world-controls .computer-game { grid-column:1 / -1; }
     @media (max-height:450px) { .computer-world-controls .computer-help { display:none; } }
     .computer-world-controls .computer-game p { margin:4px 0; }
+    /* #2237: the NES adapter's licence notice and its eight-button touch pad */
+    .computer-license { font-size:13px; margin:4px 0; } .computer-license p { max-width:62ch; } .computer-license a { color:#9fd4ff; }
+    .computer-nes [data-pad-app=nes] { min-width:48px; }
     body:has(.computer-world-controls[open]) #touch-controls, body:has(.computer-world-controls[open]) #stick-hint, body:has(.computer-world-controls[open]) #crosshair, body:has(.computer-world-controls[open]) #action, body:has(.computer-world-controls[open]) #arm { visibility:hidden; }
     .computer-player .computer-movie form .cinema-row { display:flex; }
     .cinema-player::backdrop { background: rgba(0, 0, 0, .78); }

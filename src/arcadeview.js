@@ -73,7 +73,8 @@ export function drawMeteors(canvas,game,theme,top,me) {
 export function drawArcadeCard(canvas,title,owner,top,theme) {
   const c=canvas.getContext('2d'),w=canvas.width,h=canvas.height;
   c.fillStyle='#101622';c.fillRect(0,0,w,h);c.fillStyle=theme;c.fillRect(0,0,w,h*.025);
-  c.textAlign='center';c.textBaseline='middle';c.font=`bold ${h/10}px system-ui`;c.fillText(title.toUpperCase(),w*.3,h*.4);
-  c.fillStyle='#c0ccdd';c.font=`${h/18}px system-ui`;c.fillText(owner?`${owner} spelar …`:'Ledig',w*.3,h*.56);
-  drawTopList(c,w*.58,h*.08,w*.38,h*.84,top);
+  const cx=top?w*.3:w/2; // (#2237: a game without a top list, `top` null, is centred)
+  c.textAlign='center';c.textBaseline='middle';c.font=`bold ${h/10}px system-ui`;c.fillText(title.toUpperCase(),cx,h*.4);
+  c.fillStyle='#c0ccdd';c.font=`${h/18}px system-ui`;c.fillText(owner?`${owner} spelar …`:'Ledig',cx,h*.56);
+  if(top)drawTopList(c,w*.58,h*.08,w*.38,h*.84,top);
 }

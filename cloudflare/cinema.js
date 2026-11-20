@@ -1,7 +1,8 @@
 import { PLAYROOM, TV_MEDIA, COMPUTER_MEDIA, SCREEN_SHARE, nearComputer } from '../src/config.js';
 
-// #1577: blocks = Klossar, meteors = Meteoriter (single-player, run in the controlling client).
-const APPS=['menu','youtube','snake','blocks','meteors'];
+// #1577: blocks = Klossar, meteors = Meteoriter (single-player, run in the controlling client); #2237: nes = the NES adapter
+// (also run only in the controlling client; the room just stores the chosen app).
+const APPS=['menu','youtube','snake','blocks','meteors','nes'];
 
 export function cleanCinema(text) {
   let m;

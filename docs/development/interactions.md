@@ -2425,6 +2425,27 @@ starts a round, then hard-drops or fires. Leaving, switching app or powering off
 running round. Other visitors in the computer's room see the same Klossar picture (#2241, below);
 for Meteoriter, which #2240 removes, they keep the cheap "<namn> spelar …" card with the top list.
 
+NES (#2237, `src/nes.js`, NES in config): the picker's "Spel · NES" (server app id `nes`) runs the
+own MIT title *Fånga ljuset* in **jsnes 1.2.1** (Apache-2.0, vendored unmodified in `src/vendor/jsnes/`,
+ROM and its licence in `src/nesroms/`, provenance in their READMEs; the generator is
+`tools/retro2231/make_rom.py`). It is an `ARCADE` entry like Klossar: same toolbar, framing, capture and
+Esc/E/Startsida exits, only in the controlling client. Neither the engine (a classic `<script>` with the
+module's `?v=` cache buster) nor the ROM is fetched before Starta, both same-origin under `src/` (no CDN);
+a failed load shows the error and Starta retries. `NesGame` emulates whole 60 Hz frames from the hub's
+update with the fraction carried and at most NES.catchUp frames after a stall; the monitor's existing
+CanvasTexture is redrawn every NES.renderMs (256×240 letterboxed, pixel-sharp, no new mesh or WebGL
+context). Keys: arrows/WASD = D-pad, Z/K = B, X/J = A, Enter = Start (also when a toolbar button has focus
+while the game runs), Shift = Select; Space starts or resumes, P pauses/resumes. The touch profile is the
+entry's `pad` (`NES_PAD`: ◀ ▲ ▼ ▶ Select Start B A, held while pressed, released on pointerup/cancel/leave),
+so each adapter brings its own. A hidden tab, `blur` or `pagehide` pauses and lets go of held buttons;
+the player resumes (no fast-forward). Leaving, switching app, power off or lost control calls `dispose()`,
+which drops the emulator instance, ROM string and picture (the parsed engine script stays cached). Audio is
+off in this first delivery (`emulateSound:false`): `src/audio.js` has no PCM input yet, so a room-aware
+NES sound path is a follow-up. No top list (a later issue binds scores to RAM per ROM hash); the panel's
+"Om NES och licenser" and the monitor's start card carry the licence notices. Onlookers see the "<namn>
+spelar …" card: a #2241 NES codec is a follow-up. Tests: `node --test src/nes.test.mjs` (mapping, pad,
+lazy-load/retry contract, the real ROM moved by input, pause/resume/dispose) and `tools/nestest.cjs`.
+
 Onlookers (#2241, `src/screenshare.js`, wire check `src/screenwire.js`, SCREEN_SHARE in config, *guess*):
 while another (not away) player's last position is inside a computer's viewing zone (`computerViewer`,
 the same room/floor bounds the Worker uses), the controller's client encodes its running Klossar game

@@ -53,6 +53,7 @@ test('Ormstriden rows come from the server arena when a snake ends, keyed by the
   assert(!text.includes('player-anna-1')&&/^[0-9a-f]{16}$/.test(top[0].key),'#1585: a public row key and the look, never the UUID');
   // a client cannot post an Ormstriden score, and an invalid pid simply records nothing
   await send({t:'cinema',screen:'pc-home',k:'app',app:'blocks',q:q()});assert.equal(m.filter(x=>x.t==='cinema'&&x.k==='state').at(-1).s.app,'blocks');
+  await send({t:'cinema',screen:'pc-home',k:'app',app:'nes',q:q()});assert.equal(m.filter(x=>x.t==='cinema'&&x.k==='state').at(-1).s.app,'nes'); // #2237
  }finally{Date.now=real;}
 });
 

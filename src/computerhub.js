@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 import { CinemaPlayer } from './cinemaplayer.js';
 import { CinemaSurface } from './cinemasurface.js';
-import { COMPUTER_MEDIA as C, SNAKE, GAME_BOARDS, SCREEN_SHARE, computerViewer, nearComputer } from './config.js';
+import { COMPUTER_MEDIA as C, SNAKE, GAME_BOARDS, SCREEN_SHARE, NES, computerViewer, nearComputer } from './config.js';
+import { NesGame, NES_KEYS, NES_PAD, drawNes } from './nes.js';
 import { drawSnake, drawComputerMenu } from './snakeview.js';
 import { BlocksGame } from './blocks.js';
 import { MeteorsGame } from './meteors.js';
@@ -21,7 +22,17 @@ const ARCADE={
     help:'← → svänger, ↑ gasar och mellanslag skjuter. Esc / E lämnar datorn.',
     keys:{ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',ArrowUp:'thrust',KeyW:'thrust',Space:'fire'},
     pad:[['left','↺','Sväng vänster'],['thrust','▲','Gasa'],['right','↻','Sväng höger'],['fire','●','Skjut']]},
+  // #2237: the NES adapter (src/nes.js): no top list (`board`), its own touch-pad profile and key map, redrawn at NES.renderMs,
+  // the emulator loaded on Starta and freed on leaving (arcadeEnd → dispose), paused by P / a hidden tab / a lost window focus.
+  // Onlookers see the "spelar" card: NES screen sharing (#2241 codec) is a follow-up.
+  nes:{title:'NES · Fånga ljuset',make:()=>new NesGame({title:'lightcatch'}),draw:drawNes,hold:true,renderMs:NES.renderMs,license:true,
+    about:'Styr den röda pricken till det gula ljuset. Ett litet eget NES-spel som körs i en emulator på datorn. Ljudet är av.',
+    help:'Pilar / WASD styrkors, Z / K = B, X / J = A, Enter = Start, Skift = Select. Mellanslag startar, P pausar, Esc / E lämnar datorn.',
+    keys:NES_KEYS,pad:NES_PAD,
+    status:(g,p)=>({loading:'Laddar emulatorn …',running:'Spelar NES.',paused:'Pausad. Fortsätt med knappen eller mellanslag.',error:g.error})[g.phase]??(p.owns?'Starta med knappen eller mellanslag.':p.state?.owner?`${p.state.name} spelar.`:'')},
 };
+// #2237: the licence notices shown in the computer (the full texts are published next to the files they cover).
+const NES_LICENSE='<details class="computer-license" hidden><summary>Om NES och licenser</summary><p>Emulatorn är <b>jsnes 1.2.1</b> (Ben Firshman med flera), oförändrad, under <a href="src/vendor/jsnes/LICENSE" target="_blank" rel="noopener">Apache License 2.0</a>. Spelet <b>Fånga ljuset</b> är gjort för Lunden och har <a href="src/nesroms/LICENSE" target="_blank" rel="noopener">MIT-licens</a>. Ingen Nintendo-kod, BIOS eller kommersiell ROM ingår. Allt laddas från den här sajten först när du startar, och ljudet är avstängt.</p></details>';
 const GAME_APPS=['snake',...Object.keys(ARCADE)];
 
 /** One app selector per physical computer; all game clients share one server arena. */
@@ -40,7 +51,7 @@ export class ComputerHub {
       const game=document.createElement('section');game.className='computer-game';game.hidden=true;
       game.innerHTML='<h3>Ormstriden</h3><p>Ät ljuspunkter och väx. Få de andra att krocka med din kropp och ät det som blir kvar. Vid huvudkrock vinner den större ormen. Undvik väggarna!</p><p class="computer-help">Piltangenter / WASD eller peka på skärmen. Esc / E lämnar datorn.</p><p class="computer-score" aria-live="polite"></p><div class="cinema-row"><button type="button" data-snake="join">Gå med i spelet</button><button type="button" data-angle="-1.5707963267948966" aria-label="Sväng upp">↑</button><button type="button" data-angle="3.141592653589793" aria-label="Sväng vänster">←</button><button type="button" data-angle="1.5707963267948966" aria-label="Sväng ner">↓</button><button type="button" data-angle="0" aria-label="Sväng höger">→</button></div><p class="computer-players"></p><h4 class="computer-top-title">Topplista</h4><ol class="computer-top"></ol>';
       const arcade=document.createElement('section');arcade.className='computer-game computer-arcade';arcade.hidden=true;
-      arcade.innerHTML='<h3></h3><p class="computer-about"></p><p class="computer-help"></p><p class="computer-score" aria-live="polite"></p><div class="cinema-row"><button type="button" data-arcade="start">Starta</button></div><h4 class="computer-top-title">Topplista</h4><ol class="computer-top"></ol>';
+      arcade.innerHTML='<h3></h3><p class="computer-about"></p><p class="computer-help"></p><p class="computer-score" aria-live="polite"></p><div class="cinema-row"><button type="button" data-arcade="start">Starta</button></div><h4 class="computer-top-title">Topplista</h4><ol class="computer-top"></ol>'+NES_LICENSE;
       const pad=arcade.querySelector('.cinema-row');
       for(const [app,def]of Object.entries(ARCADE))for(const [action,text,label]of def.pad){
         const b=document.createElement('button');b.type='button';b.dataset.pad=action;b.dataset.padApp=app;b.textContent=text;b.setAttribute('aria-label',label);b.hidden=true;pad.append(b);
@@ -57,7 +68,7 @@ export class ComputerHub {
       player.surface=new CinemaSurface(canvas,target.mesh,`computer-world-${info.id}`);player.surface.poster=material;
       const session={info,target,player,poster,texture,material,nav,movie,game,arcade,arcadeTitle:arcade.querySelector('h3'),arcadeHelp:arcade.querySelector('.computer-help'),arcadeScore:arcade.querySelector('.computer-score'),arcadeStart:arcade.querySelector('[data-arcade=start]'),arcadeTop:arcade.querySelector('.computer-top'),arcadeTopTitle:arcade.querySelector('.computer-top-title'),snakeTop:game.querySelector('.computer-top'),snakeTopTitle:game.querySelector('.computer-top-title'),run:null,score:game.querySelector('.computer-score'),list:game.querySelector('.computer-players'),join:game.querySelector('[data-snake=join]'),available:false,feed:new ScreenFeed()};
       this.sessions.set(info.id,session);
-      for(const [app,label]of [['menu','Startsida'],['youtube','YouTube'],['snake','Spel · Ormstriden'],['blocks','Spel · Klossar'],['meteors','Spel · Meteoriter']]) {
+      for(const [app,label]of [['menu','Startsida'],['youtube','YouTube'],['snake','Spel · Ormstriden'],['blocks','Spel · Klossar'],['meteors','Spel · Meteoriter'],['nes','Spel · NES']]) {
         const button=document.createElement('button');button.type='button';button.dataset.app=app;button.textContent=label;nav.append(button);
         button.addEventListener('click',()=>{if(!player.owns)return;this.stopInput(session);player.command('app',{app});});
       }
@@ -83,7 +94,7 @@ export class ComputerHub {
         const i=buttons.indexOf(document.activeElement),next=(i+(e.shiftKey?-1:1)+buttons.length)%buttons.length;buttons[next]?.focus();return;
       }
       const arcade=ARCADE[s.player.state?.app];
-      if(e.target.closest?.('button')&&(e.code==='Enter'||e.code==='Space'&&!arcade))return;
+      if(e.target.closest?.('button')&&(e.code==='Enter'&&!(arcade?.keys[e.code]&&this.arcadeGame(s)?.running)||e.code==='Space'&&!arcade))return;
       e.preventDefault();e.stopImmediatePropagation();
       if(type==='keyup'){if(arcade)this.arcadeKey(s,e.code,false,false);return;}
       if(e.code==='Escape'||e.code==='KeyE'){s.player.close('Escape');return;}
@@ -91,6 +102,9 @@ export class ComputerHub {
       if(e.code in headings)this.angle=headings[e.code];
       if(e.code==='Space'&&!s.join.disabled)s.join.click();
     },true);
+    // #2237: a hidden tab or a lost window focus pauses a running NES game (resumed by the player, no fast-forward).
+    const pause=()=>{for(const s of this.sessions.values()){const g=this.arcadeGame(s);if(g?.pause?.())this.controls(s);}};
+    document.addEventListener('visibilitychange',()=>{if(document.hidden)pause();});for(const t of ['blur','pagehide'])window.addEventListener(t,pause);
     for(const type of ['pointerdown','pointermove','pointerup','pointercancel','touchstart','touchmove','touchend','mousedown','mouseup','click','contextmenu','wheel'])window.addEventListener(type,e=>{
       const s=this.worldSession;if(!s||s.player.el.contains(e.target))return;
       e.preventDefault();e.stopImmediatePropagation();
@@ -193,35 +207,41 @@ export class ComputerHub {
     if(entered){
       s.arcadeTitle.textContent=def.title;s.arcade.querySelector('.computer-about').textContent=def.about;s.arcadeHelp.textContent=def.help;
       for(const b of s.arcade.querySelectorAll('[data-pad]'))b.hidden=b.dataset.padApp!==app;
-      if(p.inside)this.loadTop(s,def.board);
+      s.arcadeTop.hidden=s.arcadeTopTitle.hidden=!def.board;s.arcade.querySelector('.computer-license').hidden=!def.license;s.arcade.classList.toggle('computer-nes',app==='nes');
+      if(p.inside&&def.board)this.loadTop(s,def.board);
     }
     if(p.owns&&s.run?.app!==app)s.run={app,game:def.make(),sent:true}; // the start screen with the top list
     const g=this.arcadeGame(s),running=!!g?.running&&p.owns;
-    s.arcadeStart.disabled=!p.owns||running;s.arcadeStart.textContent=g?.over?'Spela igen':'Starta';
+    s.arcadeStart.disabled=!p.owns||running||!!g?.loading;s.arcadeStart.textContent=g?.paused?'Fortsätt':g?.over&&def.board?'Spela igen':'Starta';
     for(const b of s.arcade.querySelectorAll('[data-pad]'))b.disabled=!running;
-    s.arcadeScore.textContent=running?`${g.score} poäng`:g?.over?`Slut: ${g.score} poäng.`:p.owns?'Starta en omgång med knappen eller mellanslag.':p.state?.owner?`${p.state.name} spelar.`:'';
+    s.arcadeScore.textContent=def.status&&g?def.status(g,p):running?`${g.score} poäng`:g?.over?`Slut: ${g.score} poäng.`:p.owns?'Starta en omgång med knappen eller mellanslag.':p.state?.owner?`${p.state.name} spelar.`:'';
     s.shownScore=g?.score;
-    this.renderTop(s.arcadeTop,s.arcadeTopTitle,def.board);
+    if(def.board)this.renderTop(s.arcadeTop,s.arcadeTopTitle,def.board);
   }
   arcadeStart(s){
-    const app=s.player.state?.app,def=ARCADE[app];if(!def||!s.player.owns||this.arcadeGame(s)?.running)return;
-    s.run={app,game:def.make(),sent:false};s.run.game.start();s.stepAt=performance.now();this.controls(s);
+    const app=s.player.state?.app,def=ARCADE[app],old=this.arcadeGame(s);if(!def||!s.player.owns||old?.running||old?.loading)return;
+    if(old?.paused&&old.resume()){s.stepAt=performance.now();this.controls(s);return;} // #2237: a paused NES game goes on where it was
+    const run=s.run={app,game:def.make(),sent:false},started=run.game.start();s.stepAt=performance.now();this.controls(s);
+    if(started?.then)started.then(()=>{if(s.run===run){s.stepAt=performance.now();s.menuKey=null;this.controls(s);}}); // (#2237: the lazy load)
   }
   /** Ends a running round (leaving, switching app, power off) and sends a finished round's result once. */
   arcadeEnd(s){
     const r=s.run;if(!r)return;const g=r.game;
+    if(g.dispose){if(!g.disposed){g.dispose();this.controls(s);}r.sent=true;return;} // #2237: leaving frees the emulator; no top list
     if(g.running){g.running=false;g.over=true;}
     if(r.sent||!g.over)return;r.sent=true;
     this.boards?.submit(ARCADE[r.app].board,g.result()).then(()=>this.controls(s));this.controls(s);
   }
   arcadeInput(s,action,down){
     const g=this.arcadeGame(s);if(!g?.running||!s.player.owns)return;
+    if(g.press){g.press(action,down);return;} // #2237: NES buttons are held
     if(g instanceof MeteorsGame){if(action in g.input)g.input[action]=down;return;}
     if(down)({left:()=>g.move(-1),right:()=>g.move(1),rotate:()=>g.rotate(1),soft:()=>g.down(true),hard:()=>g.hard()})[action]?.();
   }
   arcadeKey(s,code,down,repeat){
     const app=s.player.state?.app,def=ARCADE[app],g=this.arcadeGame(s);if(!def)return;
     if(code==='Space'&&down&&!g?.running){if(!repeat)this.arcadeStart(s);return;}
+    if(code==='KeyP'&&down&&!repeat&&g?.pause){if(!g.pause())this.arcadeStart(s);else this.controls(s);return;} // #2237
     const action=def.keys[code];if(!action||down&&repeat&&(action==='rotate'||action==='hard'))return;
     this.arcadeInput(s,action,down);
   }
@@ -280,7 +300,7 @@ export class ComputerHub {
       if(arcade&&inside&&p.owns&&s.target.isOpen)this.shareFrame(s,arcade,now); // #2241
       if(!inside&&s.feed.data)s.feed.clear(); // (an onlooker who leaves stops; the room stops sending too)
       if(!inside||!s.target.isOpen)continue;
-      if(now-(s.renderAt??0)>=SNAKE.renderMs){
+      if(now-(s.renderAt??0)>=(ARCADE[p.state?.app]?.renderMs??SNAKE.renderMs)){
         s.renderAt=now;const blend=Math.min(1,(now-(this.receivedAt??0))/SNAKE.inputMs);
         const def=ARCADE[p.state?.app];let live=false;
         if(p.state?.app==='snake'){
@@ -290,13 +310,13 @@ export class ComputerHub {
           // The player's own game is redrawn while it runs; start/end screens and others' "spelar" card only on change.
           // #2241: an onlooker draws the controller's newest snapshot with the same function, once per new snapshot and only while the
           // monitor is in view (phones at most lowMemoryHz); without a fresh one (none yet, or staleMs passed) the card.
-          const own=p.owns&&arcade,remote=!own&&s.feed.current(now,p.state.owner,p.state.app),key=own?`own:${p.state.app}:${arcade.over}:${this.boards?.version}`:`card:${p.state.app}:${p.state.name}:${this.boards?.version}`;
+          const own=p.owns&&arcade,remote=!own&&s.feed.current(now,p.state.owner,p.state.app),key=own?`own:${p.state.app}:${arcade.over}:${arcade.phase??''}:${this.boards?.version}`:`card:${p.state.app}:${p.state.name}:${this.boards?.version}`;
           live=!!(own&&arcade.running);
           if(remote){
             if(s.feedDrawn!==s.feed.version&&now-(s.feedAt??-Infinity)>=(this.lowMemory?1000/SCREEN_SHARE.lowMemoryHz:0)&&this.inView(s.target.mesh,camera,now)){
               def.draw(s.poster,SCREEN_CODECS[p.state.app].view(remote),s.info.color,this.boards?.top(def.board)??[],p.state.name);s.feedDrawn=s.feed.version;s.feedAt=now;s.menuKey=`feed:${s.feed.version}`;
             }
-          }else if(live||s.menuKey!==key){if(own)def.draw(s.poster,arcade,s.info.color,this.boards?.top(def.board)??[],this.boards?.name());else drawArcadeCard(s.poster,def.title,p.state.owner?p.state.name:'',this.boards?.top(def.board)??[],s.info.color);s.menuKey=key;}
+          }else if(live||s.menuKey!==key){if(own)def.draw(s.poster,arcade,s.info.color,this.boards?.top(def.board)??[],this.boards?.name());else drawArcadeCard(s.poster,def.title,p.state.owner?p.state.name:'',def.board?this.boards?.top(def.board)??[]:null,s.info.color);s.menuKey=key;}
         }else if(!p.state?.video&&s.menuKey!==`${p.state?.q}`){drawComputerMenu(s.poster,s.info,p.state?.app,p.state?.name);s.menuKey=`${p.state?.q}`;}
         if(p.state?.app==='snake'||live||s.drawnMenu!==s.menuKey){s.texture.needsUpdate=true;s.drawnMenu=s.menuKey;}
       }

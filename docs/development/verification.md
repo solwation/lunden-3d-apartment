@@ -314,6 +314,18 @@ identical once A's game is held still, B's main-scene draw calls equal its menu-
 steer, the bytes per second B receives over 10 s are printed, leaving the room stops both sending and drawing,
 and a film chosen by A on the computer and on the lounge TV is the same video for B. Side-by-side JPEGs.
 
+## NES on the computers (#2237)
+
+Scoped plan: `node --test src/nes.test.mjs` (key map and touch profile, nothing loaded before start,
+one engine script and a retry after a failure, the real `lightcatch.nes` in the vendored jsnes moved by
+input, pause freezing and releasing buttons, catch-up bound, dispose freeing, no instance when left while
+loading), `node --test cloudflare/cinema.test.mjs cloudflare/games.test.mjs` (the room accepts the `nes`
+app id) and one real-app run, `node tools/nestest.cjs GAME FRESH_LOCAL_WORKER OUT` through
+`tools/browsertest.sh` with `node cloudflare/dev.mjs PORT`: the picker on Speldatorn, no `jsnes`/ROM request
+before Starta and only same-origin requests after it, keyboard input changing the ROM's RAM, the monitor
+texture showing the NES picture, a hidden-tab pause, Esc freeing the instance, the in-game frame cost
+(`NesGame.stats()`), and the touch pad on a phone-sized touch page. Result images: `docs/verification/2237/`.
+
 ## Playhouse popcorn cart (#1567)
 
 `tools/popcorntest.html` covers the actual action button, cart collision, gradual

@@ -130,3 +130,8 @@ test('shared seek preserves play/pause, rejects stale/foreign writes and bounds 
  await act(env,a,'pause',{p:46});await act(env,a,'seek',{p:0});assert.equal(b.state().position,0);assert.equal(b.state().playing,false);
  await act(env,a,'seek',{p:R.cinemaSync.maxPosition});assert.equal(b.state().position,R.cinemaSync.maxPosition);assert.equal(b.state().playing,false);
 });
+
+test('#2237: a computer accepts the NES app id; unknown app ids and a TV are refused',()=>{
+ assert.deepEqual(cleanCinema(JSON.stringify({t:'cinema',screen:'pc-home',k:'app',app:'nes',q:3})),{k:'app',q:3,screen:'pc-home',app:'nes'});
+ for(const m of [{screen:'pc-home',app:'doom'},{screen:'pc-home',app:'NES'},{screen:'lounge',app:'nes'}])assert.equal(cleanCinema(JSON.stringify({t:'cinema',k:'app',q:3,...m})),null);
+});

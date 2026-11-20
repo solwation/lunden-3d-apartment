@@ -9669,6 +9669,14 @@ export const GAME_BOARDS = { top:10, maxRows:500, local:10, timeoutMs:6000, cach
   blocks: { piecesPerSecond:8, linesPerSecond:4 },
   // Ormstriden: computed by the server arena (cloudflare/snake.js); clamped like the others.
   games: { ormstriden:'Ormstriden', klossar:'Klossar', meteoriter:'Meteoriter' } };
+// #2237: the NES adapter on the computers (src/nes.js). `hz` is the NES's own NTSC frame rate (60.1 Hz, rounded as jsnes
+// steps whole frames); `catchUp` at most this many emulated frames per app frame after a stall (prototype #2231, no
+// fast-forward after a hidden tab); `renderMs` how often the monitor texture is redrawn while a game runs (our pick: half the
+// NES rate, against Klossar's SNAKE.renderMs 20 Hz; *guess*); `statSamples` the frame-cost ring for the in-game measurement.
+// `engine`/`rom` are same-origin paths relative to src/ (no CDN); jsnes 1.2.1 is vendored unmodified (src/vendor/jsnes/README.md).
+// Audio is off in the first delivery (emulateSound:false): a PCM path through src/audio.js is a separate follow-up.
+export const NES = { hz:60, catchUp:3, renderMs:33, statSamples:600, engine:'./vendor/jsnes/jsnes.js',
+  titles: { lightcatch: { name:'Fånga ljuset', rom:'./nesroms/lightcatch.nes', bytes:24592, license:'MIT' } } };
 
 // Original-only Christmas Eve gameplay tunables.
 export { SANTA } from './santaconfig.js';
