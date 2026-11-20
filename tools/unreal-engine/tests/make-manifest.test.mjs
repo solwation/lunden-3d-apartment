@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createHash, generateKeyPairSync, sign } from 'node:crypto';
-import { mkdtemp, readFile, rm, symlink, truncate, writeFile } from 'node:fs/promises';
+import { mkdtemp, readFile, realpath, rm, symlink, truncate, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
@@ -67,7 +67,7 @@ test('the protected artifact needs matching public trust, commit, final hashes a
   for (const name of names) await writeFile(path.join(root,name),text);
   await writeFile(path.join(root,'SHA256SUMS'),names.map(name => sha + '  ' + name).join('\n')+'\n');
   await writeFile(path.join(root,'launcher-build.json'),JSON.stringify(record));
-  const fixtureVerifier = async (file,digest,pin) => { assert.equal(file,path.join(root,names[0])); assert.equal(digest,sha); assert.equal(pin,inputs.signer); };
+  const fixtureVerifier = async (file,digest,pin) => { assert.equal(file,await realpath(path.join(root,names[0]))); assert.equal(digest,sha); assert.equal(pin,inputs.signer); };
   const valid = await inspectLauncher(root,inputs,commit,'app-v1.2.3',fixtureVerifier);
   assert.equal(valid.sha256,sha);
   assert.equal(valid.url,'https://github.com/solwation/lunden-3d-apartment/releases/download/app-v1.2.3/Lunden.exe');
