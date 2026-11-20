@@ -439,7 +439,7 @@ steg 0 till och med 25 år, sedan ett steg per 5 år (26–30 → 1, 31–35 →
 Behovet tas först genom att sänka sätet (högst `maxDrop`), resten genom att luta ryggstödet bakåt (högst `maxRecline`). Sedan glider
 sätet (högst `maxSlide` åt något håll) tills axel–ratt-avståndet är samma andel av armen som i 175 cm-posen. För 186 cm blir det
 8 cm lägre, 0,16 rad mer bakåtlutad och 3,5 cm framåt; huvudet nickar lika mycket framåt så att blicken är som förut. Värdena är *guess*.
-Spelare i passagerarsätet (vilopose, `src/remote-pose.js`) påverkas inte av detta. Test: `tools/olofroof2265test.mjs`. Mätning och
+Spelare i passagerarsätet (vilopose) får en egen anpassning, se "Seated under the car's roof (#2269)". Test: `tools/olofroof2265test.mjs`. Mätning och
 bilder: `tools/olofroof2265browser.cjs` ([bilder](../verification/2265/)). Personligt, förs inte till den publika versionen.
 
 Pilotsolglasögonen (#2234) finns i spegelns Tillbehör. De använder glasögontaggens lediga värde 4.
@@ -2602,6 +2602,27 @@ figure per frame. Tunables: `SEAT_LEGS` in `src/config.js` (*guesses* except `ba
 Checks: `node --test tools/seatlegs2158test.mjs`; `tools/browsertest.sh node tools/seatlegs2158browser.cjs GAME OUT`
 (another player on the clubhouse sofa, a cinema chair, the gaming chair and our car's passenger seat, before/after;
 ankle-over-floor numbers in `browser.json`). Images in `docs/verification/2158/`.
+
+### Seated under the car's roof (#2269)
+
+Our car's front seats (`Car.spot`, marked `closed`) sit 0.54 m up with the roof's inner surface only `REST.closed.roof` (0.871 m)
+above them, so the ordinary seated pose put a 175 cm crown 7.7 cm and a 186 cm crown 13.7 cm through the roof. As Olof's
+driving seat (#2265, `driverFit`), the pure `closedSeatFit(scale, head)` (`src/remote-pose.js`; `closedSeatFitLook(look)` for a
+look) keeps the crown (`s·(0.075 + NECK·cos lean + crown·head)` over the cushion) `headroom` under the roof: the hips sink first
+(at most `maxDrop`, the hands on the thighs with them, the knees bending for the lower seat), the rest reclines the torso (at most
+`maxRecline`) with the head pitched back by as much, so the gaze and the skull stay level. A recline that would take the head more
+than `back` (0.13 m) back puts it into the headrest (first #2269 run: a 200 cm head 0.39 m back), so the hips slide forward on the
+cushion instead (`slide`, at most `maxSlide`; feet and hands with them): a tall passenger slouches. Below ~155 cm nothing changes;
+175 cm: 8 cm lower, 0.21 rad more recline; 186 cm: 0.42 rad, 14 cm forward; 200 cm: 0.59 rad, 26 cm forward. Measured crown
+clearance to the GLB roof (browser): 175/186/200 cm 4.3 cm (was −7.7 / −13.7 / −21.3 cm). `restState` and the wire are unchanged: `Ghost.seatFeet`
+already knows a vehicle seat from `seatFloor` (our car's cabin floor), so the peers, the mirror image and the own seated body all
+take the fit from the figure's own look; `applyRestPose(…, feet, fit)` uses it for pose 1 only. The own first-person camera
+(`Rest.eyeAt`, `rest.closedFit` set by main.js `applyBody`) moves down and back with the fitted eyes. Sofas, chairs, benches,
+swings and every other open seat get no fit (no cabin floor, no `closed` spot); the parked street cars have no seats and the
+bunks have no sit spot (#2269 equivalents). Values are *guess*es like the driver's. Checks: `node tools/passengerroof2269test.mjs`
+(the crown for every height 100–200 cm, looking ahead/up/down; the camera; open seats untouched);
+`tools/browsertest.sh node tools/passengerroof2269browser.cjs GAME OUT` (a peer in the passenger seat per height, before/after,
+crown against a ray to the GLB roof; images and `browser.json` in `docs/verification/2269/`).
 
 Headwear opacity (#1513): selected caps/knit/brimmed hats and the hairstyle beanie have
 inward-facing lining and closed lower rims; cuffs also close at the top. Hair compression

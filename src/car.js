@@ -185,7 +185,7 @@ export class Car {
     this.object.updateMatrixWorld();
     const pos = new THREE.Vector3(s.x, s.y + REST.sitEye, s.z).applyMatrix4(this.object.matrixWorld);
     const yaw = this.object.rotation.y - Math.PI / 2; // the camera's yaw looking along local +x
-    return { kind: 'sit', pos, yaw, aimPos: null, car: true };
+    return { kind: 'sit', pos, yaw, aimPos: null, car: true, closed: true }; // closed (#2269): under the roof, REST.closed
   }
 
   /** E targets while parked: the doors, and the front seats whose door is open (`seated`: the target sat in now);

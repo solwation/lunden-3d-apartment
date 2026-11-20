@@ -5,7 +5,7 @@ import { transitionPose, copyPose } from './avatarmotion.js';
 import {gymPoseWire} from './gymposewire.js';
 import {applyGymBodyPose} from './gymbodypose.js';
 import { playerLocalStorage as localStorage } from './playerprofiles.js';
-import { applyRestPose } from './remote-pose.js';
+import { applyRestPose, closedSeatFitLook } from './remote-pose.js';
 import { newSleep, stepSleep, applySleepRoll } from './avatarsleep.js'; // #2163
 import { seatedLegs, localFloor, seatPump } from './seatlegs.js'; // #2158
 import { poseOlof } from './olof.js';
@@ -465,17 +465,22 @@ export class Ghost { // (exported for tools/ghostprops.html)
     if (!at || Math.hypot(rp.x - at.x, rp.z - at.z) > SEAT_LEGS.reread) {
       const px = rp.x + sx * SEAT_LEGS.probe * k, pz = rp.z + sz * SEAT_LEGS.probe * k, py = rp.y + SEAT_LEGS.ankle * k;
       const v = this.seatFloor?.(px, pz, py) ?? null, y = v ?? this.ground?.(px, pz, py);
-      at = this.seatAt = { x: rp.x, z: rp.z, y: Number.isFinite(y) ? y : NaN, vehicle: v !== null };
+      // #2269: a vehicle's cabin is under its roof (our car's front seats): the seat set for the figure's height (closedSeatFit)
+      at = this.seatAt = { x: rp.x, z: rp.z, y: Number.isFinite(y) ? y : NaN, vehicle: v !== null, fit: v !== null ? closedSeatFitLook(this.avatar.look) : null };
     }
     const pump = at.vehicle ? 0 : seatPump(vx * sx + vz * sz, Math.hypot(vx, vz));
     this.seatPumpK = (this.seatPumpK ?? 0) + (pump - (this.seatPumpK ?? 0)) * Math.min(1, dt * SEAT_LEGS.pumpEase);
-    return (this.seatLegs = seatedLegs(REST.avatarSeat, localFloor(at.y, rp.y, k, REST.avatarSeat), this.seatPumpK, this.seatLegs ?? undefined)).feet;
+    const seat = REST.avatarSeat - (at.fit?.hip ?? 0); // (the hips sunk into the cushion: the knees bend for the lower seat)
+    return (this.seatLegs = seatedLegs(seat, localFloor(at.y, rp.y, k, REST.avatarSeat), this.seatPumpK, this.seatLegs ?? undefined)).feet;
   }
+
+  /** #2269: the closedSeatFit of the current seat (null off a vehicle's seat; read after seatFeet). */
+  get seatFit() { return this.seatAt?.fit ?? null; }
 
   /** #2163: the collected pose of rest pose `n` (1 seated, 2 lying) for the get-down / get-up sequence; the pending pose stays as it was. */
   restKey(n) {
     const av = this.avatar, was = av.pendingPose;
-    applyRestPose(av, n, [0, 0], null, null);
+    applyRestPose(av, n, [0, 0], null, null, n === 1 ? this.seatFit : null); // #2269: the get-down / get-up keys in the car's fitted seat
     const p = copyPose({}, av.pendingPose); av.pendingPose = was; return p;
   }
 
@@ -628,7 +633,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
     updateFace(this.avatar, dt, { wave: this.waveT > 0, hug: hugged, kiss: kissed, react: react ? REACT.kinds[react.kind]?.id : null, gym: this.gx ? 0.6 + 0.4 * Math.sin(Math.PI * this.gx[1]) : 0, run: this.avatar.gt?.run ?? 0 }); // #2031: the face follows what the figure does
     updateBreath(this.avatar, dt, { run: this.avatar.gt?.run ?? 0, gym: this.gx ? 1 : 0, sleep: sl.depth }, this.self ? null : this); // #2037: the face's run / gym signal: flush, sweat, breath in the cold
     if (wet) sink(this.avatar.swimAmt, this.avatar.swimLine, this.avatar.diveAmt); // (blending in from standing on the bed)
-    applyRestPose(this.avatar, this.pose, this.look, react, this.pose === 1 && !this.gx ? this.seatFeet(dt, vx, vz) : this.seatFeet(-1));
+    applyRestPose(this.avatar, this.pose, this.look, react, this.pose === 1 && !this.gx ? this.seatFeet(dt, vx, vz) : this.seatFeet(-1), this.pose === 1 && !this.gx ? this.seatFit : null);
     applyGymBodyPose(this.avatar,this.gx,this.look);
     if (this.bikeMesh) { if (this.bikeMesh.userData.scooter) this.poseScooter(); else this.poseBike(dt, Math.hypot(vx, vz), turn, this.vy ?? 0); }
     const poseKey = this.gx || this.bikeMesh || air || wet || amount ? -1 : this.pose || 0;

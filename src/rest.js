@@ -49,7 +49,8 @@ export function chooseSpot(target, ray, catPos) {
 export class Rest {
   constructor(camera) {
     // scale (#1137): the standing eye height's share of the adult 1.62 m (main.js, the chosen avatar height)
-    Object.assign(this, { camera, spot: null, target: null, t: 0, from: null, standing: null, scale: 1 });
+    // closedFit (#2269): the seat under a low roof set for the avatar's height (remote-pose.js closedSeatFit, main.js); the eye follows its head
+    Object.assign(this, { camera, spot: null, target: null, t: 0, from: null, standing: null, scale: 1, closedFit: null });
   }
 
   /** The camera's place on `spot` (#1137): a seated eye REST.sitEye over the seat shrinks with a smaller body; lying
@@ -58,6 +59,8 @@ export class Rest {
     const p = spot.pos.clone();
     if (spot.gymPose) return p; // the apparatus solves the scaled support/grip frame
     if (spot.kind !== 'lie') p.y -= REST.sitEye * (1 - this.scale);
+    const f = spot.closed && spot.kind === 'sit' ? this.closedFit : null; // #2269: lowered and reclined under the car's roof
+    if (f) { p.y -= f.eyeDown; p.x += Math.sin(spot.yaw) * f.eyeBack; p.z += Math.cos(spot.yaw) * f.eyeBack; }
     return p;
   }
 

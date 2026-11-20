@@ -163,7 +163,7 @@ import { buildStores } from './stores.js';
 import { clearLocalHome, takeResetDone, takeResetHideMenu, RESET_HIDE_MENU } from './reset.js';
 import { Rest, chooseSpot } from './rest.js';
 import { SlideRide } from './slidemovement.js';
-import { restState } from './remote-pose.js';
+import { restState, closedSeatFitLook } from './remote-pose.js';
 import { Saber } from './saber.js';
 import { buildToys } from './toys.js';
 import { Remote } from './remote.js';
@@ -3865,7 +3865,7 @@ terminalInput.addEventListener('input', () => {
 window.__chat = chat;
 // #1136/#1137: the standing eye height and the body (crouch eye, headroom, radius) follow the chosen avatar height
 // (settleEye eases the camera there; Rest lowers a seated eye by the same share)
-const applyBody = (lk) => { const { scale, ...body } = avatarBody(lk); Object.assign(PLAYER, body); rest.scale = scale; };
+const applyBody = (lk) => { const { scale, ...body } = avatarBody(lk); Object.assign(PLAYER, body); rest.scale = scale; rest.closedFit = closedSeatFitLook(lk); }; // #2269: the car seat set for the height
 const setMyLook = (lk) => { ghosts.setMyLook(lk); applyBody(lk); handLook(lk); presenceAvatar = ghosts.avatarCode; leaderboard.renderAvatar(presenceAvatar); };
 presenceAvatar = ghosts.avatarCode;
 leaderboard.renderAvatar(presenceAvatar);

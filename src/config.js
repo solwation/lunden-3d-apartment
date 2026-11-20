@@ -5151,6 +5151,16 @@ export const REST = {
   sit: { yaw: 1.7, pitch: [-1.1, 0.8] },
   lie: { yaw: 1.3, pitch: [0.15, 1.45], startPitch: 1.45 }, // lying on your back, looking at the ceiling
   reach: { sit: 1.7, lie: 0.8 }, // how far from the eye you can reach things while sitting (leaning forward) / lying (#184, #472)
+  // #2269: a seat under a low roof (our car's front seats: car.spot marks them `closed`, and a figure whose seat's floor is the car's
+  // cabin, ghosts.js seatFeet). `roof` m: the roof's inner surface above the seat point (carmodel.js seats y 0.54; the GLB's roof
+  // measured 1.411 m straight over a seated passenger's crown, #2265/#2269 browser runs). The crown must stay `headroom` m under it:
+  // the hips sink first (at most `maxDrop` m into the cushion), the rest reclines the backrest (at most `maxRecline` rad more than the
+  // seated lean), the head pitched back level by the same (remote-pose.js closedSeatFit). `crown` m: the skull's top above the head bone
+  // in the seated pose (measured: 175 cm crown 1.488 m in the car = cushion + .075 + NECK·cos .1 + .236; as OLOF.car.fit.crown).
+  // A recline moving the head more than `back` m back would put it into the seat's headrest (the #2269 side views: a 200 cm head
+  // 0.39 m back sat inside it), so beyond that the hips slide forward on the cushion (at most `maxSlide` m): a tall passenger slouches.
+  // Distances after avatar scaling; *guess*es like the driver's (#2265), not measured on a real seat.
+  closed: { roof: 0.871, headroom: 0.03, crown: 0.236, maxDrop: 0.08, maxRecline: 0.7, back: 0.13, maxSlide: 0.3 },
 };
 
 // #2158: a seated figure's legs follow the real floor under its seat (src/seatlegs.js; the root and hips stay at
