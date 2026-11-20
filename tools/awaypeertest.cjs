@@ -1,4 +1,4 @@
-// #2216: away presence with two real Ghosts clients through a local Worker (LUNDEN_AWAY_MS=6000 node cloudflare/dev.mjs PORT):
+// #2216: away presence with two real Ghosts clients through a local Worker (LUNDEN_AWAY_MS=15000 node cloudflare/dev.mjs PORT):
 // A hides the tab (the socket closes at once); B still sees A's figure where it stood, marked away (looking down at the phone);
 // A comes back within the time under the same id with no notice and no second figure; hidden again for good, B gets
 // "Anna lämnade spelet" right after the (shortened) away time. Screenshots: B's view of the away figure, after the return, the notice.
