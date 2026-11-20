@@ -158,6 +158,57 @@ the cloud (`tools/resettest.html`, with `node cloudflare/dev.mjs`)
 between `src/` files in the form `from './x.js'` on one line so the stamp regex finds them.
 Use relative paths only.
 
+## Pages recovery after duplicate artifacts (#2236)
+
+The original `pages.yml` has one `deploy` job containing both
+`actions/upload-pages-artifact@v3` and `actions/deploy-pages@v4`. After a transient
+Pages HTTP 502, rerunning that failed job can upload another `github-pages`
+artifact into the same run. If deployment then reports
+`Multiple artifacts named "github-pages"` / `Artifact count is 2`, another rerun
+of that run does not provide a separate artifact scope.
+
+Use a **new workflow run**, coordinated by the current integration/publishing
+owner. Keep the failed run ID and full `headSha`; check that remote `main` still
+points to the intended revision and that the new run will not cancel another
+owner's active publication (`concurrency: pages`, `cancel-in-progress: true`).
+If `main` has advanced, coordinate the intended release instead of silently
+claiming to republish the old revision or reverting it.
+
+In Actions, select **Deploy to GitHub Pages → Run workflow → main**, rather than
+**Re-run failed jobs** on the old run. The equivalent CLI command is shown below;
+it starts a publication and is for the publishing owner, not a read-only check:
+
+```sh
+gh workflow run pages.yml --repo solwation/lunden-3d-apartment --ref main
+```
+
+Record the **new run ID** and verify its event is `workflow_dispatch` and its
+`headSha` is the intended full SHA. Inspect its upload and deploy steps to completion;
+a successful upload or queued deployment alone is not a successful publication.
+Artifact metadata is read-only at `repos/OWNER/REPO/actions/runs/RUN_ID/artifacts`
+(`gh api`): the new run should have one `github-pages` artifact. Preserve existing
+artifacts and other owners' runs; this recovery needs no deletion, workflow edit,
+product commit or change to the ordinary publication/closure checks.
+
+Observed on **2026-11-20 UTC**, revision
+`c2753825c674a0f5ad4b80a77f522b785b693a30`:
+[run 44771544197](https://github.com/solwation/lunden-3d-apartment/actions/runs/44771544197)
+attempt 1 failed creating the Pages deployment with HTTP 502; attempt 2 failed at
+artifact metadata with two matching artifacts. The separate
+[workflow_dispatch run 44772411503](https://github.com/solwation/lunden-3d-apartment/actions/runs/44772411503)
+used the same SHA, had one matching artifact and completed upload **and deployment**
+successfully at 16:21 UTC. This is evidence for that recovery, not a guarantee that
+every Pages failure has the same cause. GitHub documents the separate
+[manual-run operation](https://docs.github.com/en/actions/how-tos/manage-workflow-runs/manually-run-a-workflow).
+
+The public downstream's [pages.yml](https://github.com/solwation/kvarteret-lunden/blob/main/.github/workflows/pages.yml)
+also puts upload/deploy in one `publish` job
+and supports `workflow_dispatch` with the same concurrency group; its earlier
+steps run npm tests/build and upload `dist`, rather than the original's stamped
+`_site`. The recovery principle therefore also applies if that same symptom occurs
+there, but this incident does not demonstrate a public failure. No public workflow
+change or port is part of #2236.
+
 ## Recent implementation notes
 
 Startkontroll (#512): `tools/startuptest.html` har 20 kontroller av aktuell/ny version, samma innehåll efter dokumentationsändring, HTML som inte hunnit publiceras, blockerad lagring, loopskydd, offline/fel, tidsgräns och sena svar, samt appens/andra sidors serviceworker-scope. Webbläsarintegration verifierar fem startscenarier (ny, aktuell, offline versionskontroll, utdraget svar, halvpublicerad HTML), en enda scenimport, cachebustad navigation och bibehållna hem-/inställnings-/resume-data. `loadingtest` och `updatetest` passerar; `stamp.sh` cachebustar bootstrap och dess små beroenden innan `main.js?v=BUILD` importeras.
