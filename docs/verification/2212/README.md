@@ -9,4 +9,4 @@ Fix: the check now compares the current DayCycle with its deck shown vs hidden i
 and the deck must be culled at ground) and keeps the old-source comparison only for clear weather (max <= 1).
 
 Result: `ALL PASSED` (19 checks). Before: `FAIL ground views unchanged across clear/partial/overcast` (1 FAILED).
-before.jpg / after.jpg are the test's own fixture screenshots (old vs new clear-weather source above the deck).
+before.png / after.png are the test's own fixture screenshots (old vs new clear-weather source above the deck).
