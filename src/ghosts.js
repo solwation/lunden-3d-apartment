@@ -216,6 +216,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
   /** A state from the room at time t (ms). After a pause the last one is repeated just before it, so it walks off smoothly. */
   push({ p, r, h = '', hi = '', score = 0, l, c = false, sp = false, jp = 0, bk, pose = 0, look = [0, 0], av, ax, cat, dn, am, cq, fb, bp, gx, aw }, t) {
     this.away = aw === 1; // #2216: the player's tab is hidden (the room keeps them AWAY.ms); #2217's phone pose may read it
+    this.lastP = p; // #2241: the last position as sent (Ghosts.near)
     this.bob = Array.isArray(fb) && fb.length === 4 && fb.every(Number.isFinite) ? fb : null; // #1753: their fishing float [x, y, z, bite] (src/fishing.js draws it)
     this.cue = Array.isArray(cq) && cq.length === 3 && cq.every(Number.isFinite) ? cq : null; // #1637: [dx, dz, power] while aiming at the billiard table (src/billiards.js draws it)
     if (av && typeof ax === 'string') av += ax; // #1138: the face extension beside the digits
@@ -817,6 +818,7 @@ export class Ghosts {
     else if (m.t === 'snd') { const g = this.others.get(m.i); if (g && SOUNDS.kinds.includes(m.k)) { if (m.k === 'sip' || m.k === 'bite') g.startMouth(m.k); else this.onPlayerSound?.(m, g); } } // a sound event (#1302): the room sends it only from within PLAYERS.soundRange
     else if (m.t === 'cinema') this.onCinema?.(m);
     else if (m.t === 'snake') this.onSnake?.(m);
+    else if (m.t === 'scr') this.onScreen?.(m); // #2241: a computer game's picture from its controller (the room sends it only to that computer's viewers)
     else if (m.t === 'mus') this.onMusic?.(m); // the shared children's-room music (#1624, src/playroommusic.js): only sent to players inside the room
     else if (m.t === 'pc') this.onPicnic?.(m,false);
     else if (m.t === 'df') this.onSharedFish?.(m,false);
@@ -1157,6 +1159,17 @@ export class Ghosts {
     if (!this.connected) return false;
     this.outbox.push(msg); this.trimOutbox(); this.lastMove = performance.now(); this.sendShot(); return true;
   }
+
+  /** #2241: a computer game's picture { t: 'scr', screen, … } for the onlookers: only the newest per screen waits (a snapshot, the
+   * next replaces it), in the shared GHOSTS.hz budget; not activity. False when not connected. */
+  screen(msg) {
+    if (!this.connected) return false;
+    this.outbox = this.outbox.filter((m) => m.t !== 'scr' || m.screen !== msg.screen);
+    this.outbox.push(msg); this.trimOutbox(); this.sendShot(); return true;
+  }
+
+  /** #2241: does another (not away) player's last known feet position pass `test` ([x, y, z])? */
+  near(test) { for (const g of this.others.values()) if (!g.away && g.lastP && test(g.lastP)) return true; return false; }
 
   /** Coalesce headings in the existing shared 5 Hz budget; never grow a game-input queue. */
   snake(msg) {

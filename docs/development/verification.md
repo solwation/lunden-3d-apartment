@@ -300,6 +300,20 @@ then aborts `/games/**` and checks the local list keeps the round. In a sandbox 
 script serves three.js from `~/.cache/three-0.170.0`; full-frame screenshots take minutes under
 software WebGL. Result images: `docs/verification/1577/`.
 
+## Onlookers see computer screens (#2241)
+
+Scoped plan: `node --test src/screenshare.test.mjs` (the Klossar codec round-trips every step of 300 seeded
+rounds and the worst board within SCREEN_SHARE.maxFrame/maxBytes, the strict decoder, the wire checks, the
+onlooker feed's order/owner/staleness and the controller's pacing), `node --test cloudflare/screenshare.test.mjs`
+(the real PlayerRoom: only the owner, current app, powered computer and that computer's other room viewers;
+oversize/foreign frames dropped without closing; exactly SCREEN_SHARE.hz a second passes, faster frames are
+dropped without a strike; nothing stored) and one two-client run,
+`node tools/screensharetest.cjs GAME FRESH_LOCAL_WORKER OUT` through `tools/browsertest.sh` with a fresh
+`node cloudflare/dev.mjs PORT`: A plays Klossar on Speldatorn, B stands beside it; the encoded pictures must be
+identical once A's game is held still, B's main-scene draw calls equal its menu-screen count, B cannot start or
+steer, the bytes per second B receives over 10 s are printed, leaving the room stops both sending and drawing,
+and a film chosen by A on the computer and on the lounge TV is the same video for B. Side-by-side JPEGs.
+
 ## Playhouse popcorn cart (#1567)
 
 `tools/popcorntest.html` covers the actual action button, cart collision, gradual

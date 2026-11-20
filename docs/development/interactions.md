@@ -2395,8 +2395,30 @@ draw calls; idle/start/end screens upload only when they change). They use the s
 toolbar, screen framing, window input capture and Esc/E/Startsida exits as Ormstriden; the
 toolbar has Starta/Spela igen and 44px touch pads (Meteoriter's pads act while held). Space
 starts a round, then hard-drops or fires. Leaving, switching app or powering off ends a
-running round. Other visitors see a cheap "<namn> spelar …" card with the top list instead
-of a synced picture.
+running round. Other visitors in the computer's room see the same Klossar picture (#2241, below);
+for Meteoriter, which #2240 removes, they keep the cheap "<namn> spelar …" card with the top list.
+
+Onlookers (#2241, `src/screenshare.js`, wire check `src/screenwire.js`, SCREEN_SHARE in config, *guess*):
+while another (not away) player's last position is inside a computer's viewing zone (`computerViewer`,
+the same room/floor bounds the Worker uses), the controller's client encodes its running Klossar game
+(run-length board, falling piece, next, score/lines/level, running/over/idle; ≤ SCREEN_SHARE.maxFrame
+printable characters) and sends `{t:'scr'}` when the picture changes, at most SCREEN_SHARE.hz a second
+(lowMemoryHz on phones), an unchanged picture every keyMs, nothing while nobody watches. It waits in the
+existing 5 Hz socket budget as a replaceable snapshot (`Ghosts.screen`, outbox tier 0). The room relays it
+only from the current owner of that powered computer for its current app to that computer's other room
+viewers (`RoomCinema.relay`). The onlooker keeps the newest frame per owner (`ScreenFeed`), draws it with
+the same `drawBlocks` on its own monitor canvas only when a new frame arrived and the monitor is inside the
+camera frustum (phones at most lowMemoryHz), so no mesh, material or draw call is added; a short gap freezes
+the picture and after staleMs it falls back to the card. Leaving the room clears it. Onlookers can still only
+watch: the toolbar, pads and app buttons stay disabled until "Ta kontroll". The menu screen outlines the
+chosen app tile and says "<namn> väljer en film …" while the controller has YouTube open without a film;
+the search text and results stay in the controller's own dialog (not shared, by decision). Films (YouTube
+on computers, home TVs, BIO) were already shared through RoomCinema, Ormstriden through its server arena.
+NES hook (#2237): a new app adds a codec `{encode, decode, view}` to `SCREEN_CODECS`, its id to
+SCREEN_SHARE.apps and cinema.js `APPS`; its payload model (per-frame inputs with periodic state, or a small
+downscaled picture) must fit maxFrame/hz or get its own Worker budget first.
+Tests: `node --test src/screenshare.test.mjs cloudflare/screenshare.test.mjs` and the two-client
+`tools/screensharetest.cjs` ([verification](verification.md#onlookers-see-computer-screens-2241)).
 
 Top lists (#1577, `src/gameboards.js`, Worker `cloudflare/games.js`): each game's panel shows
 its top 10 (names from the #198 leaderboard profile, `Anonym` without a name, always text), and

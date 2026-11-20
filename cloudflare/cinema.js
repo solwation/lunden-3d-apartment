@@ -1,4 +1,4 @@
-import { PLAYROOM, TV_MEDIA, COMPUTER_MEDIA, nearComputer } from '../src/config.js';
+import { PLAYROOM, TV_MEDIA, COMPUTER_MEDIA, SCREEN_SHARE, nearComputer } from '../src/config.js';
 
 // #1577: blocks = Klossar, meteors = Meteoriter (single-player, run in the controlling client).
 const APPS=['menu','youtube','snake','blocks','meteors'];
@@ -52,6 +52,18 @@ export class RoomCinema {
       // Reconcile persisted ownership against the live sockets before a late join.
       this.trim();a[this.flag]=true;this.send(ws,this.message());
     } else if(!inside&&a[this.flag]===true) { a[this.flag]=false;this.trim(ws); }
+  }
+  /** #2241: one frame of the owner's single-player game (src/screenshare.js cleanScreenFrame) to this computer's other room viewers:
+   * only from the current owner of a powered computer, for its current app, at most SCREEN_SHARE.hz a second per connection (×0.8 for
+   * jitter; extra frames are dropped silently, the next one replaces them). Nothing is stored. */
+  relay(ws,a,m,now) {
+    const s=this.state;
+    if(!this.computer||a[this.flag]!==true||!s?.power||s.owner!==a.i||s.app!==m.app)return false;
+    if(now-(a.sf??-Infinity)<800/SCREEN_SHARE.hz)return false;
+    a.sf=now;
+    const out=JSON.stringify({t:'scr',screen:this.id,app:m.app,n:m.n,f:m.f,i:a.i});
+    for(const {ws:x} of this.occupants(ws))this.send(x,out);
+    return true;
   }
   refuse(ws,why) { this.send(ws,JSON.stringify({t:'cinema',...(this.id?{screen:this.id}:{}),k:'no',why}));if(why!=='away')this.send(ws,this.message()); }
   handle(ws,a,m,now) {

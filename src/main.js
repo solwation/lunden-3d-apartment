@@ -32,7 +32,7 @@ import { TVMedia } from './tvmedia.js';
 import { Santa } from './santa.js';
 import { ChristmasGifts } from './santagifts.js';
 import { SantaTV } from './santatv.js';
-import { SANTA, tvViewer } from './config.js';
+import { SANTA, tvViewer, computerViewer } from './config.js';
 import { cloudUrl } from './cloud.js';
 import { AdminReports } from './adminreports.js';
 import { ReportCapture } from './reportcapture.js';
@@ -1634,7 +1634,7 @@ const openVideoControls=()=>{reading=true;player.keys.clear();touch.analog.x=tou
 const tvMedia=new TVMedia({canvas,targets:world.furnitureTargets,template:document.getElementById('cinema-player'),onClose:closeVideoControls,onOpen:openVideoControls,endpoint:cloudUrl()?`${cloudUrl()}/youtube-search`:''});
 remote.onVideo=tv=>santaTV.active&&tv===santaTV.tv&&santaTV.activate()||tvMedia.show(tv);remote.onPower=tv=>tvMedia.power(tv);
 remote.onSeek=(tv,delta)=>{const ok=tvMedia.seek(tv,delta);if(!ok)badge('Någon annan styr TV:n just nu. Försök igen om en stund.',false);return ok;};
-const computerHub=new ComputerHub({onNotice:text=>badge(text,false),canvas,targets:[...world.furnitureTargets,...playroom.devices.computers.map(s=>s.target)],template:document.getElementById('cinema-player'),onClose:closeVideoControls,onOpen:openVideoControls,endpoint:cloudUrl()?`${cloudUrl()}/youtube-search`:'',boards:new GameBoards({url:cloudUrl(),id:()=>leaderboard.id,name:()=>leaderboard.name,look:()=>leaderboard.lookCode})}); // #1577: game top lists
+const computerHub=new ComputerHub({lowMemory,onNotice:text=>badge(text,false),canvas,targets:[...world.furnitureTargets,...playroom.devices.computers.map(s=>s.target)],template:document.getElementById('cinema-player'),onClose:closeVideoControls,onOpen:openVideoControls,endpoint:cloudUrl()?`${cloudUrl()}/youtube-search`:'',boards:new GameBoards({url:cloudUrl(),id:()=>leaderboard.id,name:()=>leaderboard.name,look:()=>leaderboard.lookCode})}); // #1577: game top lists
 playroom.devices.onComputerRequest=target=>computerHub.show(target);
 cinema.surface = new CinemaSurface(canvas, playroom.devices.tv.mesh);
 cinema.soundSource = playroom.devices.tv.mesh; cinema.soundSpeakers = playroom.cinemaSpeakers; // #1641
@@ -3654,8 +3654,9 @@ if (squirrels) { // #1686
 if (paddock) { paddock.net = { ready: () => ghosts.connected, send: (m) => ghosts.paddock(m) }; ghosts.onPaddock = (m) => paddock.onNet(m); } // #1644: the ponies and the grass shared with the players near the paddock
 cinema.net = { ready: () => ghosts.connected, send: m => ghosts.cinema(m), id: () => ghosts.me };
 tvMedia.connect(cinema.net);
-computerHub.connect({...cinema.net,snake:m=>ghosts.snake(m)});
+computerHub.connect({...cinema.net,snake:m=>ghosts.snake(m),screen:m=>ghosts.screen(m),watchers:id=>ghosts.near(p=>computerViewer(id,p))}); // #2241: screen pictures only while someone else is in the computer's room
 ghosts.onSnake=m=>computerHub.receiveSnake(m);
+ghosts.onScreen=m=>computerHub.receiveScreen(m);
 ghosts.onCinema = m => m.screen?(computerHub.receive(m)||tvMedia.receive(m)):cinema.receive(m);
 ghosts.keepConnected = () => (player.inPlayroom && !!cinema.state?.video)||tvMedia.watching||computerHub.watching||fishing.state !== 'idle'||clockPanel.open||calPanel.open||bouleSync.interest||!!football?.interest||!!sharedFish?.interest||!!picnicSync.interest||!!(heldItem()?.isSquirrelNut&&squirrels?.sync.dropVersion===2); // (#1753: an angler waiting for a bite stands still for minutes; the others keep seeing the float)
 // toasting (#1222): "Skåla" with a glass in the hand (right click / 🥂): a clink, the glass raised (things.js), a line and one small

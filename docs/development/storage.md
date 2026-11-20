@@ -141,6 +141,18 @@ still reconcile through the existing stored authority, and clients can rejoin.
 This server slice exposes no unfinished UI; the physical six-computer app and
 multiplayer controls are #1488. No public downstream counterpart.
 
+## Computer screen pictures for onlookers (#2241)
+
+`{t:'scr', screen, app, n, f}` carries a computer game's picture (`src/screenwire.js` checks it on both
+sides; codecs in `src/screenshare.js`). The client sends it only while another player is in that computer's
+viewing zone, ≤ SCREEN_SHARE.hz a second within the existing 5 Hz budget. `cloudflare/players.js` routes it
+to the computer's `RoomCinema.relay`: whole message ≤ SCREEN_SHARE.maxBytes (below PLAYERS.maxBytes), a
+known computer, an app in SCREEN_SHARE.apps, printable payload ≤ maxFrame; only the current owner of a
+powered computer for its current app; at most one per 800/hz ms per connection (faster frames are dropped
+silently, no strike; the general perSecond limit still applies); relayed with the sender id `i` only to that
+computer's other room viewers. Nothing is stored and only incoming messages are billed. Tests:
+`cloudflare/screenshare.test.mjs`. Original-only, no public import.
+
 ## Current shared head contract (#974, #893, #894, #979)
 
 Version 2 uses three shared logical head boxes from `PVP_HEAD_BOXES` in `src/config.js`:
@@ -331,6 +343,9 @@ src/gameboards.js      the computer games' top lists (#1577): GET/POST the Worke
                        written only when a row improves; Ormstriden rows come from PlayerRoom's server arena). Client scores
                        are bounded by GAME_BOARDS (*guess*) and the per-IP write limiter. Offline/error: localStorage
                        'lunden.gameBest.<game>' (this browser's ten best rounds). `node --test cloudflare/games.test.mjs`
+src/screenshare.js     #2241: a computer game's picture for the onlookers: the Klossar codec (encode/decode/view), ScreenFeed (newest frame
+                       per owner, staleMs) and frameDue (SCREEN_SHARE.hz pacing); src/screenwire.js the { t: 'scr' } check shared with the
+                       Worker (RoomCinema.relay). Nothing stored. `node --test src/screenshare.test.mjs cloudflare/screenshare.test.mjs`
 src/startuprecovery.js One bounded `lunden.startupFailure` sessionStorage record (#1065), also written by the dependency-free
                        index guard before imports. Name/message/stack/build/time plus the failed loading step and cause class (#1132) only, URL query/fragment values removed.
                        Enabled CrashLog consumes valid records no older than one hour once at next startup; no world or
@@ -377,7 +392,7 @@ src/ghosts.js          other players as ghosts with a name tag (#666), inert wit
                        squirrel/paddock leader's snapshots had starved it to ~1.3/s; #1777: an urgent message - shot, fall/consume, door 'dr',
                        river fish 'rf' - goes even from behind a snapshot), heartbeat 'p'. #1777: every outbox push trims through
                        src/outbox.js `trimOutbox` (node --test src/outbox.test.mjs): on overflow the oldest replaceable snapshot (sq 's'/'n',
-                       pk 's', pkg) goes first, then cosmetic events (a miss, rx, snd, c, g, then a hit), never fall/consume; the player's own
+                       pk 's', pkg, #2241's computer picture scr) goes first, then cosmetic events (a miss, rx, snd, c, g, then a hit), never fall/consume; the player's own
                        one-off actions (rf on/off/c/sc, dr, tm, sq t/p/f, pk pet, pool, mus, cinema, snake, gf) wait up to GHOSTS.outboxHard,
                        beyond that the oldest action goes and a catch request only last (before: the oldest non-fall/consume message went,
                        so squirrel/paddock snapshots pushed out fishing catch requests and the fish "slipped" after FISHING.wait.answer)

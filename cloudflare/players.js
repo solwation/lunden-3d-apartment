@@ -25,6 +25,7 @@ import { PLAYROOM, TOYS, SCORE, pvpHitPoints, PVP_RIFLE_HEAD as RH, rifleHeadCon
 
 import { freshTable, validSnapshot, cleanDirection, cleanPower, simulateStroke } from '../src/billiardsync.js';
 import { RoomCinema, cleanCinema } from './cinema.js';
+import { cleanScreenFrame } from '../src/screenwire.js'; // #2241
 import { RoomSnake, cleanSnake } from './snake.js';
 import { recordGame } from './games.js';
 import { RoomPaddock, cleanPaddock, PADDOCK_SYNC, GRASS_PREFIX } from './paddock.js';
@@ -666,6 +667,7 @@ export class PlayerRoom {
     const ch = plain.startsWith('{"t":"ch"') ? cleanChoreText(plain) : null; // #1976
     const li = plain.startsWith(LIFE_PREFIX) ? cleanLifeText(plain) : null, lx = plain.startsWith(PART_PREFIX) ? cleanPartText(plain) : null, lm = plain.startsWith(MESS_PREFIX) ? cleanMessText(plain) : null; // #1981, #1990
     const cv = plain.startsWith('{"t":"cv"') ? cleanConversation(plain) : null;
+    const scr = plain.startsWith('{"t":"scr"') ? cleanScreenFrame(plain) : null; // #2241: a computer game's picture for the onlookers
     const tm = plain.startsWith('{"t":"tm"') ? cleanTime(plain) : null; // #1774 (a malformed one is an ordinary, ignored state)
     const talk = cleanTalk(plain), hello = !talk && cleanGreet(plain), toast = !talk && !hello && cleanToast(plain), sound = !talk && !hello && !toast && cleanSound(plain), react = !talk && !hello && !toast && !sound && cleanReact(plain), pool = !talk && !hello && !toast && !sound && !react && cleanPool(plain), mus = !talk && !hello && !toast && !sound && !react && !pool && cleanMusic(plain), cinema = !talk && !hello && !toast && !sound && !react && !pool && !mus && cleanCinema(plain), snake = !talk && !hello && !toast && !sound && !react && !pool && !mus && !cinema && cleanSnake(plain), paddock = !talk && !hello && !toast && !sound && !react && !pool && !mus && !cinema && !snake && cleanPaddock(plain), sq = !talk && !hello && !toast && !sound && !react && !pool && !mus && !cinema && !snake && !paddock && cleanSquirrels(plain), rf = !talk && !hello && !toast && !sound && !react && !pool && !mus && !cinema && !snake && !paddock && !sq && cleanRiverFish(plain), shot = !talk && !hello && !toast && !sound && !react && !pool && !mus && !cinema && !snake && !paddock && !sq && !rf && cleanShot(plain);
     if (falling) {
@@ -754,6 +756,7 @@ export class PlayerRoom {
     else if (pool) this.poolMsg(ws, a, pool, now); // #1355
     else if (mus) this.musCmd(ws, a, mus, now); // #1624
     else if(cinema){const screen=cinema.screen?this.tvs.find(tv=>tv.id===cinema.screen):this.cinema;screen?.handle(ws,a,cinema,now);}
+    else if (scr) this.tvs.find((tv) => tv.id === scr.screen)?.relay(ws, a, scr, now); // #2241 (owner, app, viewers and rate checked there)
     else if(snake)this.snake.handle(ws,a,snake,now);
     else if (paddock) this.paddock.handle(ws, a, paddock, now); // #1644
     else if(pc)await this.picnic.handle(ws,a,pc,now);

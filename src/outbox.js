@@ -3,7 +3,7 @@
 //
 // Tiers, cheapest first; an overflow drops the OLDEST message of the cheapest tier present:
 //   0 'snapshot'  a leader's periodic snapshot that the next one replaces anyway: squirrel pose / nuts (sq 's' / 'n'), pony
-//                 snapshot (pk 's') and grass mask (pkg). Dropping one only delays the picture.
+//                 snapshot (pk 's'), grass mask (pkg) and a computer game's picture (scr, #2241). Dropping one only delays the picture.
 //   1 'cosmetic'  a one-off that only shows something: a shot that missed (a without `to`), reaction (rx), sound (snd), toast (c),
 //                 greeting (g, a kiss / hug included), then a shot that hit (a with `to`) last within the tier (#667: never a hit before a miss).
 //   2 'action'    everything else: the player's own outcome (river fish rf on / off / c / sc, door dr, game time tm, squirrel take /
@@ -17,7 +17,7 @@ const COSMETIC = new Set(['rx', 'snd', 'c', 'g']);
 /** The tier of outbox message `m` (0 snapshot, 1 cosmetic, 2 action, Infinity never dropped). */
 export function outboxTier(m) {
   if (NEVER.has(m.t)) return Infinity;
-  if ((m.t === 'sq' && (m.k === 's' || m.k === 'n')) || (m.t === 'pk' && m.k === 's') || m.t === 'pkg') return 0;
+  if ((m.t === 'sq' && (m.k === 's' || m.k === 'n')) || (m.t === 'pk' && m.k === 's') || m.t === 'pkg' || m.t === 'scr') return 0;
   if (m.t === 'a') return m.to ? 1.5 : 1;
   if (COSMETIC.has(m.t)) return 1;
   return 2;

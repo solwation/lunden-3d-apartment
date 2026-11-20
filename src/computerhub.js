@@ -1,14 +1,17 @@
 import * as THREE from 'three';
 import { CinemaPlayer } from './cinemaplayer.js';
 import { CinemaSurface } from './cinemasurface.js';
-import { COMPUTER_MEDIA as C, SNAKE, GAME_BOARDS, computerViewer, nearComputer } from './config.js';
+import { COMPUTER_MEDIA as C, SNAKE, GAME_BOARDS, SCREEN_SHARE, computerViewer, nearComputer } from './config.js';
 import { drawSnake, drawComputerMenu } from './snakeview.js';
 import { BlocksGame } from './blocks.js';
 import { MeteorsGame } from './meteors.js';
 import { drawBlocks, drawMeteors, drawArcadeCard } from './arcadeview.js';
 import { portraitThumb } from './playerportraits.js';
+import { SCREEN_CODECS, ScreenFeed, cleanScreenRelay, frameDue } from './screenshare.js';
 
 // #1577: single-player games run only in the controlling client while its panel is open; `board` names the top list.
+// #2241: the onlookers in the computer's room see the same picture when the app has a codec in src/screenshare.js (Klossar; not
+// Meteoriter, which #2240 removes): the controller sends compact snapshots, they draw them with the same `draw` on their monitor canvas.
 const ARCADE={
   blocks:{title:'Klossar',board:'klossar',make:()=>new BlocksGame(),draw:drawBlocks,about:'Vrid och flytta bitarna så att hela rader försvinner. Varje nivå går lite fortare.',
     help:'← → flyttar, ↑ vrider, ↓ släpper snabbare och mellanslag släpper ner. Esc / E lämnar datorn.',
@@ -23,7 +26,8 @@ const GAME_APPS=['snake',...Object.keys(ARCADE)];
 
 /** One app selector per physical computer; all game clients share one server arena. */
 export class ComputerHub {
-  constructor({canvas,targets,template,onClose,onOpen,endpoint,onNotice,boards=null}) {
+  constructor({canvas,targets,template,onClose,onOpen,endpoint,onNotice,boards=null,lowMemory=false}) {
+    this.lowMemory=lowMemory;this.frameSeq=Math.floor(Date.now()/250);this.frustum=new THREE.Frustum();this.viewProjection=new THREE.Matrix4();this.screenStats={sent:0,sentBytes:0,got:0,gotBytes:0}; // #2241 (frame numbers from the clock: a reloaded controller never falls behind its old ones at ≤ 4 a second)
     this.boards=boards;this.canvas=canvas;this.raycaster=new THREE.Raycaster();this.pointer=new THREE.Vector2();this.sessions=new Map();this.onOpen=onOpen;this.onNotice=onNotice;this.seq=0;this.angle=0;this.offMaterial=new THREE.MeshBasicMaterial({color:C.offColor,toneMapped:false});
     for(const target of targets.filter(t=>t.mediaId&&C.stations.some(s=>s.id===t.mediaId))) {
       const info=C.stations.find(s=>s.id===target.mediaId),el=template.cloneNode(true);
@@ -51,7 +55,7 @@ export class ComputerHub {
       const texture=new THREE.CanvasTexture(poster);texture.colorSpace=THREE.SRGBColorSpace;
       const material=new THREE.MeshBasicMaterial({map:texture,toneMapped:false});
       player.surface=new CinemaSurface(canvas,target.mesh,`computer-world-${info.id}`);player.surface.poster=material;
-      const session={info,target,player,poster,texture,material,nav,movie,game,arcade,arcadeTitle:arcade.querySelector('h3'),arcadeHelp:arcade.querySelector('.computer-help'),arcadeScore:arcade.querySelector('.computer-score'),arcadeStart:arcade.querySelector('[data-arcade=start]'),arcadeTop:arcade.querySelector('.computer-top'),arcadeTopTitle:arcade.querySelector('.computer-top-title'),snakeTop:game.querySelector('.computer-top'),snakeTopTitle:game.querySelector('.computer-top-title'),run:null,score:game.querySelector('.computer-score'),list:game.querySelector('.computer-players'),join:game.querySelector('[data-snake=join]'),available:false};
+      const session={info,target,player,poster,texture,material,nav,movie,game,arcade,arcadeTitle:arcade.querySelector('h3'),arcadeHelp:arcade.querySelector('.computer-help'),arcadeScore:arcade.querySelector('.computer-score'),arcadeStart:arcade.querySelector('[data-arcade=start]'),arcadeTop:arcade.querySelector('.computer-top'),arcadeTopTitle:arcade.querySelector('.computer-top-title'),snakeTop:game.querySelector('.computer-top'),snakeTopTitle:game.querySelector('.computer-top-title'),run:null,score:game.querySelector('.computer-score'),list:game.querySelector('.computer-players'),join:game.querySelector('[data-snake=join]'),available:false,feed:new ScreenFeed()};
       this.sessions.set(info.id,session);
       for(const [app,label]of [['menu','Startsida'],['youtube','YouTube'],['snake','Spel · Ormstriden'],['blocks','Spel · Klossar'],['meteors','Spel · Meteoriter']]) {
         const button=document.createElement('button');button.type='button';button.dataset.app=app;button.textContent=label;nav.append(button);
@@ -130,8 +134,32 @@ export class ComputerHub {
   connect(net){this.net=net;for(const [id,{player}]of this.sessions)player.net={ready:net.ready,id:net.id,send:m=>net.send({...m,screen:id})};}
   send(m){return this.net?.snake({t:'snake',...m});}
   get open(){return [...this.sessions.values()].some(s=>s.player.open);}
-  get watching(){return [...this.sessions.values()].some(s=>s.player.inside&&(s.player.open||s.player.state?.video));}
+  get watching(){const now=performance.now();return [...this.sessions.values()].some(s=>s.player.inside&&(s.player.open||s.player.state?.video||s.feed.current(now,s.player.state?.owner,s.player.state?.app)));} // (#2241: watching someone play counts)
   receive(m){const s=this.sessions.get(m.screen);if(!s)return false;s.player.receive(m);if(m.k==='state'&&s.player.inside&&this.arenaConnection!==this.net?.id()){this.arenaConnection=this.net?.id();this.send({k:'get'});}return true;}
+  /** #2241: a relayed picture of another player's game on one of our computers: only from its current owner and app, never while we control it. */
+  receiveScreen(m){
+    const c=cleanScreenRelay(m),s=c&&this.sessions.get(c.screen),p=s?.player;
+    if(!s||!p.inside||p.owns||p.state?.owner!==c.i||p.state?.app!==c.app||!s.feed.accept(c,performance.now()))return false;
+    this.screenStats.got++;this.screenStats.gotBytes+=JSON.stringify(m).length;return true;
+  }
+  /** #2241: the controller's side: while someone else is in this computer's room, a snapshot when the picture changed (≤ SCREEN_SHARE.hz,
+   * lowMemoryHz on phones) or every keyMs; nothing while nobody watches. Only the newest waits in the shared socket budget. */
+  shareFrame(s,game,now){
+    const app=s.player.state?.app,codec=SCREEN_CODECS[app];
+    if(!codec||!this.net?.screen||!this.net.ready())return;
+    if(!this.net.watchers?.(s.info.id)){s.shared=null;return;}
+    const hz=this.lowMemory?SCREEN_SHARE.lowMemoryHz:SCREEN_SHARE.hz;if(s.shared&&now-s.shared.at<1000/hz)return; // (no encoding between slots)
+    const f=codec.encode(game);
+    if(!frameDue(s.shared,f,now,hz))return;
+    const m={t:'scr',screen:s.info.id,app,n:++this.frameSeq,f};
+    if(this.net.screen(m)){s.shared={f,at:now};this.screenStats.sent++;this.screenStats.sentBytes+=JSON.stringify(m).length;}
+  }
+  /** #2241: is the monitor inside the camera's view (an onlooker's picture is only drawn then)? The frustum is built once per update. */
+  inView(mesh,camera,now){
+    if(!camera)return true;
+    if(this.frustumAt!==now){this.frustumAt=now;camera.updateMatrixWorld();this.viewProjection.multiplyMatrices(camera.projectionMatrix,camera.matrixWorldInverse);this.frustum.setFromProjectionMatrix(this.viewProjection);}
+    return this.frustum.intersectsObject(mesh);
+  }
   receiveSnake(m){
     if(m.k==='state') {this.previous=this.arena;this.arena=m.s;this.receivedAt=performance.now();const mine=this.arena?.snakes.find(s=>s.id===this.net?.id()&&s.alive&&s.screen===this.pendingScreen);if(mine){this.angle=mine.angle;this.pendingScreen=null;}const dead=!!this.arena?.snakes.some(s=>s.id===this.net?.id()&&!s.alive);if(dead&&!this.wasDead)setTimeout(()=>this.boards?.refresh('ormstriden',true).then(()=>{for(const s of this.sessions.values())this.controls(s);}),GAME_BOARDS.refreshMs);this.wasDead=dead;for(const s of this.sessions.values()){s.joining=false;this.controls(s);}}
     else if(m.k==='no')for(const s of this.sessions.values())if(s.player.open){s.joining=false;s.score.textContent=({wait:'Vänta ett ögonblick och försök igen.',away:'Gå närmare datorn.',owner:'Någon annan styr datorn.',join:'Gå med i spelet igen.',app:'Välj Spel först.'})[m.why]??'Spelet kunde inte nås.';}
@@ -249,6 +277,8 @@ export class ComputerHub {
       const arcade=this.arcadeGame(s);
       if(arcade?.running){if(inside&&p.open&&p.owns&&nearComputer(id,this.position))arcade.step(now-(s.stepAt??now));s.stepAt=now;if(p.open&&s.shownScore!==arcade.score){s.shownScore=arcade.score;s.arcadeScore.textContent=`${arcade.score} poäng`;}}
       if(s.run&&s.run.game.over&&!s.run.sent)this.arcadeEnd(s);
+      if(arcade&&inside&&p.owns&&s.target.isOpen)this.shareFrame(s,arcade,now); // #2241
+      if(!inside&&s.feed.data)s.feed.clear(); // (an onlooker who leaves stops; the room stops sending too)
       if(!inside||!s.target.isOpen)continue;
       if(now-(s.renderAt??0)>=SNAKE.renderMs){
         s.renderAt=now;const blend=Math.min(1,(now-(this.receivedAt??0))/SNAKE.inputMs);
@@ -258,9 +288,15 @@ export class ComputerHub {
           drawSnake(s.poster,this.arena,this.net?.id(),s.info.color,this.previous,blend,between?this.boards?.top('ormstriden'):null);
         }else if(def){
           // The player's own game is redrawn while it runs; start/end screens and others' "spelar" card only on change.
-          const own=p.owns&&arcade,key=own?`own:${p.state.app}:${arcade.over}:${this.boards?.version}`:`card:${p.state.app}:${p.state.name}:${this.boards?.version}`;
+          // #2241: an onlooker draws the controller's newest snapshot with the same function, once per new snapshot and only while the
+          // monitor is in view (phones at most lowMemoryHz); without a fresh one (none yet, or staleMs passed) the card.
+          const own=p.owns&&arcade,remote=!own&&s.feed.current(now,p.state.owner,p.state.app),key=own?`own:${p.state.app}:${arcade.over}:${this.boards?.version}`:`card:${p.state.app}:${p.state.name}:${this.boards?.version}`;
           live=!!(own&&arcade.running);
-          if(live||s.menuKey!==key){if(own)def.draw(s.poster,arcade,s.info.color,this.boards?.top(def.board)??[],this.boards?.name());else drawArcadeCard(s.poster,def.title,p.state.owner?p.state.name:'',this.boards?.top(def.board)??[],s.info.color);s.menuKey=key;}
+          if(remote){
+            if(s.feedDrawn!==s.feed.version&&now-(s.feedAt??-Infinity)>=(this.lowMemory?1000/SCREEN_SHARE.lowMemoryHz:0)&&this.inView(s.target.mesh,camera,now)){
+              def.draw(s.poster,SCREEN_CODECS[p.state.app].view(remote),s.info.color,this.boards?.top(def.board)??[],p.state.name);s.feedDrawn=s.feed.version;s.feedAt=now;s.menuKey=`feed:${s.feed.version}`;
+            }
+          }else if(live||s.menuKey!==key){if(own)def.draw(s.poster,arcade,s.info.color,this.boards?.top(def.board)??[],this.boards?.name());else drawArcadeCard(s.poster,def.title,p.state.owner?p.state.name:'',this.boards?.top(def.board)??[],s.info.color);s.menuKey=key;}
         }else if(!p.state?.video&&s.menuKey!==`${p.state?.q}`){drawComputerMenu(s.poster,s.info,p.state?.app,p.state?.name);s.menuKey=`${p.state?.q}`;}
         if(p.state?.app==='snake'||live||s.drawnMenu!==s.menuKey){s.texture.needsUpdate=true;s.drawnMenu=s.menuKey;}
       }

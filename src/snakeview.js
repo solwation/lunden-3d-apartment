@@ -31,6 +31,8 @@ export function drawSnake(canvas,state,me,theme,previous=null,blend=1,top=null) 
 export function drawComputerMenu(canvas,info,app,owner) {
   const c=canvas.getContext('2d'),w=canvas.width,h=canvas.height;c.fillStyle='#101622';c.fillRect(0,0,w,h);
   c.fillStyle=info.color;c.fillRect(0,0,w,h*.025);c.textAlign='center';c.font=`bold ${h/9}px system-ui`;c.fillText(info.name,w/2,h*.25);
-  for(const [title,x,color]of [['YouTube',.27,'#e96d77'],['Spel',.73,info.color]]){c.fillStyle='#253245';c.fillRect(w*(x-.2),h*.36,w*.4,h*.3);c.fillStyle=color;c.font=`bold ${h/9}px system-ui`;c.fillText(title,w*x,h*.55);}
-  c.fillStyle='#c0ccdd';c.font=`${h/18}px system-ui`;c.fillText(owner?`${owner} styr datorn`:'E / tryck på skärmen för att välja',w/2,h*.84);
+  // #2241: the chosen app's tile is outlined, so the controller and the onlookers see the same menu; while its controller has YouTube open without
+  // a film the line says a film is being chosen (never the search text, which stays in the controller's own dialog).
+  for(const [title,x,color,on]of [['YouTube',.27,'#e96d77',app==='youtube'],['Spel',.73,info.color,false]]){c.fillStyle='#253245';c.fillRect(w*(x-.2),h*.36,w*.4,h*.3);if(on){c.strokeStyle=color;c.lineWidth=Math.max(2,h/60);c.strokeRect(w*(x-.2),h*.36,w*.4,h*.3);}c.fillStyle=color;c.font=`bold ${h/9}px system-ui`;c.fillText(title,w*x,h*.55);}
+  c.fillStyle='#c0ccdd';c.font=`${h/18}px system-ui`;c.fillText(app==='youtube'&&owner?`${owner} väljer en film …`:owner?`${owner} styr datorn`:'E / tryck på skärmen för att välja',w/2,h*.84);
 }

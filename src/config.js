@@ -9628,6 +9628,14 @@ export const BLOCKS = { cols:10, rows:20, startMs:800, levelFactor:.85, minMs:80
 export const METEORS = { width:32, height:20, step:1/60, catchUp:.25, turn:4.2, thrust:10, drag:.5, maxSpeed:11,
   bulletSpeed:17, bulletLife:1.1, fireMs:230, maxBullets:5, shipRadius:.42, lives:3, invulnMs:2200, respawnMs:1200,
   sizes:[1.5,.85,.45], speeds:[1.8,3,4.4], points:[20,50,100], waveStart:3, waveSpeedUp:.08, spawnClearance:6, splitSpread:.6 };
+// #2241: onlookers see the controller's single-player game on the same monitor. The controller sends a compact snapshot
+// (src/screenshare.js) in the existing shared socket budget only while another player stands in that computer's viewing zone;
+// the Worker relays it to that screen's room viewers. `hz` snapshots per second (*guess*: the client's whole budget is
+// GHOSTS.hz 5, so one slot stays for its own state), `lowMemoryHz` on phones (sent and redrawn), `keyMs` an unchanged picture
+// is repeated this often for a late onlooker, `staleMs` without a snapshot the onlooker goes back to the "spelar" card (a short
+// break just freezes the picture). `maxFrame` characters of codec payload, `maxBytes` the whole message (below PLAYERS.maxBytes);
+// `apps` the codecs the Worker relays (Meteoriter is left out: #2240 removes it). All values are our picks (*guess*).
+export const SCREEN_SHARE = { hz: 4, lowMemoryHz: 2, keyMs: 2000, staleMs: 4000, maxFrame: 300, maxBytes: 420, apps: ['blocks'] };
 // #1577: global top lists for the three computer games (cloudflare/games.js, src/gameboards.js). One row per player id and
 // game (the best round). Single-player scores come from the client, so they are only bounded: a round lasts `minMs`..`maxMs`
 // and a score must fit what the rules can give in that time. All limits are our picks (*guess*).
