@@ -312,20 +312,66 @@ an open editor.
 
 ## Parallel work: levels and Blueprints
 
-Binary Unreal assets cannot be merged. Rules for agents and people working in parallel:
+Binary Unreal assets (`.umap`, `.uasset`) cannot be merged. These rules let the porting issues (#2247; the
+[issue table](unreal-inventory.md#porting-issues-release-1) names each one's write area) run at the same time.
+They apply together with the [hidden-window rule](#no-windows-on-the-users-desktop-user-2026-11-21): every step
+below runs headless.
 
-- **One owner per level/zone or Blueprint at a time**, recorded in the issue (#2247 assigns zones). Before editing a
-  `.umap`/`.uasset`, lock it: `git lfs lock <path>` (Windows Git); `git lfs locks` lists locks; unlock after the
-  push with `git lfs unlock <path>`. With `lockable`, Git LFS checks these files out **read-only** until you hold the
-  lock, so an unlocked edit fails early instead of conflicting later.
-- **One file per actor (OFPA):** create levels with World Partition (external actors on), so each placed actor is
-  its own small `.uasset` under `__ExternalActors__/` and two owners of different actors in one level rarely
-  collide. The level file itself still has one owner. Separate zone sub-levels are also suitable when each has a single owner.
-- Keep shareable gameplay rules, network validation and persistence in C++ where practical. Use thin
-  Blueprints to connect components, assets and presentation. Import shared values into DataAssets or
-  DataTables from #2245 rather than maintaining another hand-edited copy of the web measurements.
-  The [porting drafts](unreal-inventory.md#draft-porting-issues-after-the-pilot) identify each write area.
-- `Content/Lunden/Generated/` is written only by the #2245 importer; hand edits there are lost on the next import.
+**Ownership.**
+
+- **One owner per binary asset, level and content folder at a time**, named in the owning issue's "Ägarskap"
+  section. An issue writes only the `/Game/Lunden/<Area>/` folders, levels and builder scripts it names. It reads
+  other areas' assets and references them by path or actor tag, never by editing them. Ownership passes only by
+  explicit handover in both issues (for example from the pilot #2246 to the issue that takes over its assets).
+- **One owner per zone level.** The world is a persistent map, `/Game/Lunden/Maps/L_Lunden`, with one sub-level per
+  zone and area. The issue that owns the persistent map rebuilds it with its composition script from a text list of
+  sub-levels. Other issues add their own line to that list and never open the persistent map. Each sub-level
+  has exactly one owning issue. Generated zone levels (`/Game/Lunden/Generated/<zone>/Level_<zone>`) stay owned by
+  the importer, and an area that needs to change imported actors makes a derived sub-level through its own builder
+  under `Generated/<Area>/`, as the pilot's door builder does.
+- **One file per actor (OFPA) is optional, not the default.** The importer writes plain levels, and plain
+  sub-levels per zone are what the pilot verified. A hand-made sub-level that several issues will fill over time may
+  turn on external actors (`__ExternalActors__/`, one `.uasset` per actor) so that owners of different actors do not
+  collide. Its level file still has one owner. World Partition is not used, because a World Partition map cannot
+  hold streamed sub-levels. Decide again in its own issue if the outdoor world outgrows sub-levels.
+- **Seams instead of shared assets.** When another area must hook into an owned class (GameMode, PlayerController,
+  character, HUD, avatar, door), the owner exposes an extension point that is read from text. Examples are a JSON
+  list of component classes that its builder adds or Blueprint event dispatchers that others bind to at run time.
+  The other issue changes only that text or binds from its own assets.
+
+**Locking (Windows Git in the dedicated Unreal clone).**
+
+1. Check `git lfs locks` and the owning issue before touching a binary. Someone else's lock means stop; never use
+   `git lfs unlock --force` on another owner's lock without a handover recorded in both issues.
+2. `git lfs lock <path>` for every `.umap`/`.uasset` you will write, including assets a builder regenerates. With
+   `lockable`, an unlocked file is checked out read-only, so a builder that forgot the lock fails early.
+3. Commit and push, then `git lfs unlock <path>`. Do not keep a lock across a pause or a handover. Release it, or
+   hand it over explicitly.
+4. Text files (`tools/unreal-engine/**`, `Config/*.ini`, `Lunden.uproject`, `shared/`, `cloudflare/`, docs) are not
+   locked. Several issues may change them by ordinary rebase. Each issue lists the shared text files it touches and
+   keeps its change additive.
+
+**Blueprint/Python split in the content-only project (#2268).** The project has no C++ module and no plugin with
+its own binaries, so the editor and the packaged game load only Epic-signed code.
+
+- **Runtime logic is Blueprint**, using engine classes, components and Epic-shipped plugins that are enabled in
+  `Lunden.uproject`. Keep each Blueprint small and owned by one area: components and function libraries rather than
+  one large actor.
+- **Editor Python is the source of every hand-maintained asset.** Each area has a builder,
+  `tools/unreal-engine/python/build_<area>.py`, that creates or updates its Blueprints, graphs, input assets,
+  materials and sub-levels headless (as `build_pilot_player.py` and `build_pilot_doors.py` do). The committed `.uasset`
+  is the builder's output: review the script diff, regenerate with the lock, commit both. Agents never edit
+  assets in the editor GUI.
+- **Python never ships.** The packaged game runs Blueprints and assets only. Editor Python covers import, builders
+  and tests (`tools/unreal-engine/tests/test_<area>.py`, run through `PythonAutomationTest` in Play In Editor).
+- **Shared values come from data.** Read measurements, IDs and rules from the #2245 export (`measurements.json`,
+  actor tags) or from DataTables and DataAssets that a builder fills from it. Do not hand-copy web numbers into
+  graphs.
+- **A missing engine capability is a decision, not a workaround.** If a feature needs something no Epic-shipped
+  plugin exposes to Blueprint, such as a general WebSocket client, stop and ask the user on the issue
+  (`user-question`). Adding native code reopens #2268.
+- `Content/Lunden/Generated/` is written only by scripts: the #2245 importer and the derived-level builders, each in
+  its own `Generated/<folder>/`. Hand edits there are lost on the next run.
 - Different tools folders can be worked on in parallel (`tools/unreal-engine/export*`, `tools/unreal-engine/package*`,
   `unreal/Launcher/`; #2242).
 
