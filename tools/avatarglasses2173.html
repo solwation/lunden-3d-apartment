@@ -1,0 +1,52 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Avatar glasses and reflections</title><link rel="icon" href="data:,">
+<script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  } }
+</script>
+<style>html,body{margin:0;background:#bfc6cc}canvas{display:block}</style></head>
+<body><script type="module">
+// #2173 component page: close-ups of clear lenses (round / square), frames, earrings, chain and a ring + bracelet + watch, indoors (little sun, the room's
+// reflection) and outdoors (sky and sun). Driven by tools/avatarglasses2173test.cjs: window.__sheet('indoor' | 'outdoor'), __info().
+import * as THREE from 'three';
+import { Avatar } from '../src/avatar.js';
+import { avatarLook, avatarEyeHeight } from '../src/config.js';
+const C = 420, renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1); renderer.setSize(C * 2, C * 2); document.body.appendChild(renderer.domElement); renderer.setScissorTest(true);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0xbfc6cc);
+const hemi = new THREE.HemisphereLight(0xffffff, 0x8a7f72, 1.5), sun = new THREE.DirectionalLight(0xfff2e0, 2.4); sun.position.set(1.5, 3, 4); scene.add(hemi, sun);
+const looks = [
+  { style: 1, hair: 0x4a3322, glasses: 1, earrings: 2, necklace: 1, skin: 0xe0ae8a, gender: 1 },
+  { style: 0, hair: 0x20202a, glasses: 2, earrings: 3, skin: 0xc58c64 },
+  { style: 2, hair: 0xc9a24a, glasses: 0, earrings: 3, necklace: 4, ring: 4, metal: 0, bracelet: 2, watch: 1, skin: 0xe8bb9c, gender: 1 },
+];
+const avatars = looks.map((o, i) => {
+  const lk = { ...avatarLook('gl' + i), ...o, tall: 1, build: 1, top: [0x3d6b8f, 0x8f3d4f, 0x4f7a3d][i] };
+  const a = new Avatar(lk); a.object.position.set((i - 1) * 3, 0, 0); a.object.rotation.y = 0; scene.add(a.object); a.eyes && (a.eyes.blink.wait = 1e9);
+  for (let k = 0; k < 30; k++) a.update(1 / 60, {});
+  return a;
+});
+const wp = (a, b) => a.bones[b].getWorldPosition(new THREE.Vector3());
+const head = (a) => wp(a, 'head').add(new THREE.Vector3(0, 0.078, 0.02));
+const cam = new THREE.PerspectiveCamera(10, 1, 0.05, 50);
+const cell = (c, r) => { renderer.setViewport(c * C, (1 - r) * C, C, C); renderer.setScissor(c * C, (1 - r) * C, C, C); };
+const look = (target, yaw, dist, dy = 0) => { cam.position.set(target.x + Math.sin(yaw) * dist, target.y + dy, target.z + Math.cos(yaw) * dist); cam.lookAt(target); };
+window.__sheet = (env) => {
+  const out = env === 'outdoor';
+  hemi.intensity = out ? 1.5 : 0.9; sun.intensity = out ? 2.4 : 0.7;
+  const views = [[0, 0, () => look(head(avatars[0]), 0.55, 0.9)], [1, 0, () => look(head(avatars[1]), 0.3, 0.9)],
+    [0, 1, () => look(head(avatars[2]).add(new THREE.Vector3(0, -0.04, 0)), -1.25, 1.1)], [1, 1, () => look(wp(avatars[2], 'handL'), 1.2, 0.8, 0.12)]];
+  const idx = [0, 1, 2, 2]; let calls = 0;
+  views.forEach(([c, r, f], v) => {
+    avatars.forEach((a, i) => { a.object.visible = i === idx[v]; a.update(1 / 60, {}); a.material.userData.u.uBlink.value = 0; a.material.userData.u.uEyeLit.value.set(1, out ? 1 : 0, 0); });
+    cell(c, r); f(); renderer.render(scene, cam); calls = Math.max(calls, renderer.info.render.calls);
+  });
+  avatars.forEach((a) => { a.object.visible = true; });
+  return { calls };
+};
+window.__info = () => { const g = avatars[0].object; let tris = 0; g.traverse((o) => { if (o.isMesh || o.isSkinnedMesh) tris += (o.geometry.index ? o.geometry.index.count : o.geometry.attributes.position.count) / 3; });
+  return { tris, programs: renderer.info.programs.length }; };
+window.__ready = true;
+</script></body></html>

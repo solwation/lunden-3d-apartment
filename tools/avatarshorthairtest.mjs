@@ -7,6 +7,7 @@ import assert from 'node:assert/strict';
 import { avatarModelGeometry } from '../src/avatar.js';
 import { avatarLook, AVATAR_HAIR as HAIR, AVATAR_SHORT_HAIR as S, AVATAR_HAIR_GLOSS as G, AVATAR_SWAY as SW, AVATAR_HAIRLINE } from '../src/config.js';
 import { bindAt } from '../src/olof.js';
+import { glassesExtraTriangles } from '../src/avatarglasses.js'; // #2173
 import { isFlyaway } from '../src/avatarflyaway.js';
 import { hairAngles } from '../src/avatarhairline.js';
 import { shortHairTriangles, shortJag, shortHairDrop, bunParts, shortHairFDecl, shortHairColor } from '../src/avatarshorthair.js';
@@ -25,7 +26,7 @@ test('#2055 budget: ≤ +10 % head triangles for short hair and the bun, other s
   for (const style of [0, 2]) {
     const { g, head } = headTris(style), extra = shortHairTriangles(style);
     assert(extra > 0 && extra <= before[style] * 0.1, `style ${style}: +${extra} > ${before[style]}×0.1`);
-    assert(head - before[style] <= before[style] * 0.1 + 1, `style ${style}: head ${head} vs ${before[style]}`);
+    assert(head - glassesExtraTriangles() - before[style] <= before[style] * 0.1 + 1, `style ${style}: head ${head} vs ${before[style]}`);
     assert.equal(Object.keys(g.attributes).length, 17, 'no additional attributes');
     g.dispose();
   }

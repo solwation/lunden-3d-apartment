@@ -120,7 +120,7 @@ export function eyeWet(eye, iris) {
 /** Fragment, before the local light level: the glint. The wet ball's normal per fragment; each directional light (the sun, the fill)
  * gives a sharp highlight where it reflects towards the camera, the sky a broader one; the lower lid's tear line reflects them along a
  * thin band. Kept under the upper lid's shadow; the directional glint dims indoors and in shade (uEyeLit.y). */
-export function eyeGlint(eye, iris) {
+export function eyeGlint(eye, iris, extra = '') {
   const T = E.tear, L = E.lid;
   return `if (${eyePart(eye, iris)} && vBare < 0.5) { // #2033
       vec3 eN = normalize(-vViewPosition - vEyeC), eV = normalize(vViewPosition), eU = normalize(vEyeUp + vec3(0.0, 1e-5, 0.0));
@@ -147,6 +147,7 @@ export function eyeGlint(eye, iris) {
       { vec3 eL = hemisphereLights[0].direction, eH = normalize(eL + eV);
         eG += hemisphereLights[0].skyColor * (pow(max(dot(eN, eH), 0.0), ${f(E.skySharp)}) * ${f(E.sky)} + eTear * pow(max(dot(eT, eH), 0.0), ${f(T.sharp)}) * ${f(T.bright * 0.5)}); }
       #endif
+      ${extra}
       outgoingLight += eG * eLid * vEyeAt.z; // (a shut eye shows no glint in its hairline)
     }`;
 }

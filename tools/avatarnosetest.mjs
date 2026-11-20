@@ -10,6 +10,7 @@ import { contourRows } from '../src/avatarcontour.js';
 import { noseTriangles, noseForms, noseHeight, noseMask, noseFormOffset, noseFormWeights, noseSlideOffset, noseNormalTurn } from '../src/avatarnose.js';
 import { longHairTris } from '../src/avatarlonghair.js';
 import { AVATAR_HAIR } from '../src/config.js';
+import { glassesExtraTriangles } from '../src/avatarglasses.js'; // #2173
 import { shortHairTriangles } from '../src/avatarshorthair.js'; // #2055: the locks and wound bun (their own budget, avatarshorthairtest)
 
 // head-bone triangles (facePart 1 … 29) per variant before #2048 (37d922df, after the eyes #2045 and ears #2047)
@@ -25,6 +26,7 @@ test('#2048 budget: the finer nose grid stays within +10 % of the head triangles
     let head = 0, curl = 0; for (let i = 0; i < a.position.count; i += 3) { const f = a.facePart.getX(i); if (f > 0 && f < 30) head++; if (f === 7 && a.faceAnchor.getY(i) > 0.5 && a.faceAnchor.getZ(i) < 0.5) curl++; }
     head -= long2053(style) + shortHairTriangles(style); // (#2055: the locks and wound bun, their own budget)
     head -= 464; // #2170: the two lash rows of curved hairs (576 triangles) in place of the single wedge (112)
+    head -= glassesExtraTriangles(); // #2173
     head -= teethExtraTriangles(); // #2150: the mouth's teeth / tongue strips have their own budget (avatarteethtest)
     if (curl) head -= curl - 5040; // (#2054: the curl volumes in place of the #1377 tubes have their own budget, avatarcurlstest)
     assert.equal(head, tris + own, `${key}: ${head} head triangles = ${tris} + the nose's ${own}`);

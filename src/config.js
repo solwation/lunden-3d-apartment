@@ -7693,6 +7693,17 @@ export const AVATAR_HIT = { hz: 2.2, zeta: 0.3, fade: [0.7, 1.0], lag: 0.05, max
 // of the shared head geometry and collapse to a point in the vertex shader when not chosen (src/avatar.js), so no extra draw call.
 // #1325: kind 3 sunglasses (the square frames plus dark lenses, `lens`).
 export const AVATAR_GLASSES = { tag: 'g', names: ['Inga', 'Runda', 'Fyrkantiga', 'Solglasögon'], colour: 0x1c1c20, lens: 0x0e0f14 };
+// #2173: the avatar's reflections and glasses. Everything is *guess*, tuned by eye. `env`: the painted room (roomEnv, #307) sampled in the avatar's
+// own fragment shader (a shared texture, no per-avatar one) by metal (rings, bracelets, watch case, earrings, chains, pendants), the glasses' frames and
+// the wet eyeball, added before the local light level `uLight` so a dark room dims it; outdoors (the sun share uEyeLit.y) the hemisphere light's sky and
+// ground gradient plus a sun spot replace the room. `lod`: mip level (blur) per class. `k`: strength per class; `f0`: the frames' dielectric reflectance.
+// `lens`: the clear lenses of kinds 1 and 2 (alpha-to-coverage like the flyaways; kind 3 keeps its dark lens): coverage = `head` looking straight through,
+// `graze` at a glancing angle (Fresnel-like, power `power`) plus `glare` where the reflected room is bright; `tint` the glass's colour; `k` the reflection.
+// `frame`: [radial, tubular] segments of the round rim, the square (rounded rectangle, superellipse `n`) rim, the temples' sides.
+export const AVATAR_ENV = { lod: { metal: 1.0, frame: 1.4, eye: 1.2, lens: 1.4 }, k: { metal: 1.15, frame: 0.5, eye: 0.14, lens: 1.0 }, f0: 0.06,
+  outdoor: { sky: 0.5, sun: 1.1, sunPower: 70 },
+  lens: { head: 0.2, graze: 0.8, power: 2.5, glare: 0.55, tint: [0.78, 0.9, 1.0] },
+  frame: { round: [5, 24], square: [4, 32], n: 3.4, temple: 5 } };
 // #1325 (#1318): earrings, look field `earrings`: 0 none, 1 studs, 2 hoops, 3 drops (a stud with a chain and a pearl), 4 pearl studs. All 26 lowercase tags of the
 // look extension are taken, so earrings share the glasses' `g` tag: the value is `glasses + 10 * earrings` (`g1` round glasses as before, `g20` hoops, `g32` drops with
 // square glasses); absent when both are 0, so old codes are unchanged (an old client reads a combined value as no glasses). In the shared head geometry, collapsed in
@@ -7775,7 +7786,7 @@ export const AVATAR_HAND_DETAIL = {
   fade: [0.0004, 0.0009],
 };
 export const AVATAR_RING = { tag: 'i', metalTag: 'z', fingers: ['Tumme', 'Pekfinger', 'Långfinger', 'Ringfinger', 'Lillfinger'], sides: ['Vänster hand', 'Höger hand'], metals: ['Guld', 'Silver', 'Koppar', 'Svart titan'],
-  colours: [0xe0b83c, 0xd2d6db, 0xc2703d, 0x2b2d33], sink: 0.0004, tube: 0.0022, at: 0.5, thumbAt: 0.55, shine: 0.12 };
+  colours: [0xe0b83c, 0xd2d6db, 0xc2703d, 0x2b2d33], sink: 0.0004, tube: 0.0022, at: 0.5, thumbAt: 0.55, shine: 0.04 /* #2173: was 0.12, the emissive stand-in for the missing reflection */ };
 // #1334 (#1318, #1325): a bracelet and a wristwatch, look fields `bracelet` and `watch` (each 0 none, 1-3 the model on the left wrist, 4-6 the same on the right) in the metal
 // of the ring (`metal`). All lowercase tags are taken, so they share the metal's `z` tag: `z` = metal + 4 * (bracelet + 7 * watch), written when any is chosen (a ring-only
 // code is the old `z<metal>`, older clients ignore a `z` above 3, losing only the metal). Bracelets: thin band, braided, wide cuff. Watches: classic round (leather strap),

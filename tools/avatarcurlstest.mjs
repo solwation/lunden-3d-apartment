@@ -9,6 +9,7 @@ import { avatarLook, AVATAR_HAIR as HAIR } from '../src/config.js';
 import { bindAt } from '../src/olof.js';
 import { isFlyaway } from '../src/avatarflyaway.js';
 import { hairAngles, hairlineAt } from '../src/avatarhairline.js';
+import { glassesExtraTriangles } from '../src/avatarglasses.js'; // #2173
 import { curlScalp, curlReach, clumpTriangles } from '../src/avatarcurls.js';
 
 const isCurl = (a, i) => a.facePart.getX(i) === 7 && a.faceAnchor.getY(i) > 0.5 && a.faceAnchor.getZ(i) < 0.5;
@@ -17,7 +18,7 @@ const headTris = (a) => { let n = 0; for (let i = 0; i < a.position.count; i += 
 test('#2054 budget: curly head triangles within +10 % of the integrated #1377 tubes (14796), the other styles unchanged', () => {
   const before = [9840, 10900, 10332, 10208, 14796].map((v) => v + 464); // head-bone triangles per style at b622b587 (after #2048, #2050, #2052), + 464 for #2170's two lash rows (was 112 triangles, now 576); long (style 1) +800 for #2053's locks; short (0) +660 and bun (2) +816 for #2055's locks and wound bun
   for (let style = 0; style < 5; style++) {
-    const g = avatarModelGeometry({ ...avatarLook('nose'), style, facial: 0, gender: style % 2 }), head = headTris(g.attributes) - teethExtraTriangles(); // (#2150: the teeth strips are head triangles too)
+    const g = avatarModelGeometry({ ...avatarLook('nose'), style, facial: 0, gender: style % 2 }), head = headTris(g.attributes) - teethExtraTriangles() - glassesExtraTriangles(); // (#2150: the teeth strips are head triangles too)
     if (style === 4) assert.ok(head <= before[4] * 1.1, `curly: ${head} > ${before[4]} × 1.1`);
     else assert.equal(head, before[style], `style ${style} unchanged`);
     g.dispose();

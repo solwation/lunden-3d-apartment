@@ -37,6 +37,8 @@ import { seamKey } from './avatarseam.js'; // #2107: garment seams, ribs, hems a
 import { faceExprUniforms, faceExprShader } from './avatarface.js'; // #2031
 import { exertUniforms, exertShader } from './avatarbreath.js'; // #2037
 import { sculptShape, jawRise, sculptShader, sculptKey, sealLipEdge } from './avatarsculpt.js'; // #2044: sculpted face forms
+import { envUniforms, envDecl, envShade, eyeEnv, envKey, curveLens } from './avatarenv.js'; // #2173
+import { roundRim, squareRim, lensShape, bar } from './avatarglasses.js'; // #2173
 import { addFlyaways, flyUniforms, flyMaterial, flyKey, FLY_VDECL, FLY_FDECL, flyBind, flyProject, flyAlpha, flyLight } from './avatarflyaway.js'; // #2040
 import { browSurface, browSlide, browUniforms, applyBrowLook, browFDecl, browColor, browRoughness } from './avatarbrow.js'; // #2046
 import { genderFaceGLSL } from './avatarfacegender.js'; // #2142
@@ -88,7 +90,7 @@ const REGION = { skin: 0, top: 1, pants: 2, hair: 3, fixed: 4, lips: 6, iris: 7,
 // #1138: which face part a head-bone vertex belongs to (the `facePart` attribute; 0 = not on the head), see faceShape
 // #1165: hair (the scalp shell / curtain, lengthened below the crown), round and square glasses frames and the temples + bridge shared by both
 // #1241: cowlHide collapses protruding facial features (lips, brow ridge) under the Spider-Man mask
-const FACE_PART = { head: 1, neck: 2, eye: 3, nose: 4, ear: 5, brow: 6, hair: 7, rimRound: 8, rimSquare: 9, specs: 10, cowlHide: 11, hatDome: 12, peakFront: 13, peakBack: 14, knit: 15, hatCrown: 16, hatBrim: 17, phoneBand: 18, phoneCup: 19, phoneNeck: 20, studs: 21, hoops: 22, drops: 23, pearlStuds: 24, lens: 25, iris: 26, /* #2011: iris + pupil, moved by the gaze */ // #1325: earrings (head bone, follow the ear) and sunglass lenses
+const FACE_PART = { head: 1, neck: 2, eye: 3, nose: 4, ear: 5, brow: 6, hair: 7, rimRound: 8, rimSquare: 9, specs: 10, cowlHide: 11, hatDome: 12, peakFront: 13, peakBack: 14, knit: 15, hatCrown: 16, hatBrim: 17, phoneBand: 18, phoneCup: 19, phoneNeck: 20, studs: 21, hoops: 22, drops: 23, pearlStuds: 24, lens: 25, iris: 26, /* #2011: iris + pupil, moved by the gaze */ lensRound: 27, lensSquare: 28, /* #2173: clear lenses */ // #1325: earrings (head bone, follow the ear) and sunglass lenses
  
   chain: 30, pearls: 31, pendant: 32, goldChain: 33,
   finger: 100, /* #2016: 100 + side * 10 + finger * 2 + segment (src/avatargrip.js) */ ring: 40, braceletBase: 50, watchCase: 60, watchStrap: 70, watchDial: 80, watchFace: 90 }; // 50-55 #1334 bracelets, 60-95 watches (case / strap / dial / glass, + side * 3 + model - 1)
@@ -157,15 +159,17 @@ function parts(style, sleeves, gender = 0, facial = 0, legs = 0, cut = 0, shoe =
 function addGlasses(add, P) {
   const E = FACE.eye, z = FACE.accessoryFront, y = E.at[1], rx = 0.0225, hy = 0.0165, t = 0.0022, c = GLASSES.colour, at = [0, y, z];
   const mark = (id) => facePart(P, id, at);
-  const bar = (w, h, d, x, yy, zz) => new THREE.BoxGeometry(w, h, d).translate(x, yy, zz);
+  const V = (x, yy, zz) => new THREE.Vector3(x, yy, zz);
   for (const s of [-1, 1]) {
     const x = s * E.at[0];
-    add(new THREE.TorusGeometry(rx, t * 0.8, 4, 16).translate(x, y, z), 'fixed', 'head', [0, 0, 0], 1, c); mark(FACE_PART.rimRound);
-    for (const g of [bar(2 * rx + t, t, t, x, y + hy, z), bar(2 * rx + t, t, t, x, y - hy, z), bar(t, 2 * hy, t, x - rx, y, z), bar(t, 2 * hy, t, x + rx, y, z)]) { add(g, 'fixed', 'head', [0, 0, 0], 1, c); mark(FACE_PART.rimSquare); }
-    const a = new THREE.Vector3(s * (E.at[0] + rx), y + 0.004, z), b = new THREE.Vector3(s * 0.101, y + 0.001, 0.03), len = a.distanceTo(b);
-    add(new THREE.BoxGeometry(t, t * 1.3, len).rotateY(Math.atan2(b.x - a.x, b.z - a.z)).translate((a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2), 'fixed', 'head', [0, 0, 0], 1, c); mark(FACE_PART.specs);
+    add(roundRim(rx, t * 0.8).translate(x, y, z), 'fixed', 'head', [0, 0, 0], 1, c); mark(FACE_PART.rimRound); // #2173: rounder rims (were a 4-sided torus and boxes)
+    add(squareRim(rx, hy, t * 0.55).translate(x, y, z), 'fixed', 'head', [0, 0, 0], 1, c); mark(FACE_PART.rimSquare);
+    add(bar(V(s * (E.at[0] + rx), y + 0.004, z), V(s * 0.101, y + 0.001, 0.03), t * 0.6), 'fixed', 'head', [0, 0, 0], 1, c); mark(FACE_PART.specs);
+    for (const [kind, id] of [[1, FACE_PART.lensRound], [2, FACE_PART.lensSquare]]) { // clear lenses (alpha-to-coverage, src/avatarenv.js), a hair behind the rim's front
+      add(curveLens(lensShape(kind, rx, hy)).translate(x, y, z - 0.0004), 'fixed', 'head', [0, 0, 0], 1, 0xffffff); mark(id);
+    }
   }
-  add(bar(2 * (E.at[0] - rx) + t, t * 1.3, t, 0, y + 0.004, z), 'fixed', 'head', [0, 0, 0], 1, c); mark(FACE_PART.specs);
+  add(bar(V(-(E.at[0] - rx), y + 0.004, z), V(E.at[0] - rx, y + 0.004, z), t * 0.65), 'fixed', 'head', [0, 0, 0], 1, c); mark(FACE_PART.specs);
 }
 /** #1325 (#1318): earrings on the lobes (head bone frame, around the ear ellipsoid at [±0.1, H - 0.005, 0], radii 0.0154 / 0.028 / 0.02): gold studs, hoops through the lobe
  * (lying in the side plane), drops (a stud with a short chain and a pearl) and pearl studs. They collapse to the ear's centre unless chosen (uEarrings) and scale with the
@@ -1342,6 +1346,7 @@ function makeMaterial(rim, headProjection) {
   Object.assign(u, shortHairUniforms()); // #2055
   Object.assign(u, skinVarUniforms()); // #2111
   Object.assign(u, ageUniforms()); // #2155
+  Object.assign(u, envUniforms()); // #2173
   Object.assign(u, toneUniforms()); // #2156
   Object.assign(u, makeupUniforms()); // #2170
   const m = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: SURFACE.finish.cloth, metalness: 0, transparent: false, depthWrite: true });
@@ -1409,10 +1414,11 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
       .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>\n${skin.normal}\n${hand.normal}`) // #2032, #2106
       .replace('#include <lights_fragment_end>', `#include <lights_fragment_end>\n${fabricLight()}\n${skin.light}\n${noseFragmentGLSL(bindAt('head'), FACE_PART.head).light}\n${flyLight({ hair: REGION.hair, beard: REGION.beard })}`) // #2032, #2040
       .replace('#include <metalnessmap_fragment>', `#include <metalnessmap_fragment>\nmetalnessFactor = vRing * ${SURFACE.finish.metalness.toFixed(3)};`)
-      .replace('#include <bumpmap_pars_fragment>', '#include <bumpmap_pars_fragment>\n' + clothDecl()).replace('#include <normal_fragment_maps>', '#include <normal_fragment_maps>\n' + clothNormal() + curlNormal(bindAt('head'))) // #2034, #2054
+      .replace('#include <bumpmap_pars_fragment>', '#include <bumpmap_pars_fragment>\n' + clothDecl() + '\n' + envDecl()).replace('#include <normal_fragment_maps>', '#include <normal_fragment_maps>\n' + clothNormal() + curlNormal(bindAt('head'))) // #2034, #2054
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>\ntotalEmissiveRadiance += uRingColor * vRing * ${RING.shine.toFixed(3)};`)
       .replace('#include <opaque_fragment>', `float edge = pow(1.0 - clamp(abs(dot(normalize(normal), normalize(vViewPosition))), 0.0, 1.0), ${A.rimPower.toFixed(2)});
-      ${eyeGlint(FACE_PART.eye, FACE_PART.iris)}
+      ${eyeGlint(FACE_PART.eye, FACE_PART.iris, eyeEnv())}
+      ${envShade(FACE_PART)}
       outgoingLight *= uLight; // #2017: the local light level (src/avatarlight.js)
       ${lampGlsl()}
       outgoingLight = mix(outgoingLight, uRimColor, uOutline * edge);
@@ -1426,7 +1432,7 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
     const gloss = { head: bindAt('head'), region: REGION, part: FACE_PART }; // #2052
     sh.vertexShader = glossVertex(sh.vertexShader, gloss); sh.fragmentShader = curlGloss(glossFragment(sh.fragmentShader, gloss)); // (#2054: the curls turn its strands)
   };
-  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light' + '-armfix2022' + skinKey() + '-expr2031' + '-eyes2064' + '-exert2037' + flyKey() + '-cloth2034' + '-skirt2157' + '-brow2046' + sculptKey() + '-hairline2050' + noseKey() + glossKey() + beardKey() + '-curls2054' + shortHairKey() + handKey() + seamKey() + chestKey() + skinVarKey() + ageKey() + toneKey() + selfShadowKey() + buildKey() + fabricKey() + makeupKey(); // #2170, #2108, #2111, #2107; #2032, #2031, #2033, #2037, #2040, #2034, #2050, #2048, #2052, #2051
+  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light' + '-armfix2022' + skinKey() + '-expr2031' + '-eyes2064' + '-exert2037' + flyKey() + '-cloth2034' + '-skirt2157' + '-brow2046' + sculptKey() + '-hairline2050' + noseKey() + glossKey() + beardKey() + '-curls2054' + shortHairKey() + handKey() + seamKey() + chestKey() + skinVarKey() + ageKey() + toneKey() + selfShadowKey() + buildKey() + fabricKey() + makeupKey() + envKey(); // #2173, #2170, #2108, #2111, #2107; #2032, #2031, #2033, #2037, #2040, #2034, #2050, #2048, #2052, #2051
   installSelfView(m); // #2080: the own camera hides head/hair; mirrors and peers keep the full figure
   return m;
 }
@@ -1493,6 +1499,8 @@ function faceShape() {
         }
         else if (abs(facePart - ${P.rimRound}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * step(0.5, uGlasses) * step(uGlasses, 1.5);
         else if (abs(facePart - ${P.rimSquare}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * step(1.5, uGlasses);
+        else if (abs(facePart - ${P.lensRound}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * step(0.5, uGlasses) * step(uGlasses, 1.5); // #2173: the clear lenses
+        else if (abs(facePart - ${P.lensSquare}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * step(1.5, uGlasses) * step(uGlasses, 2.5);
         else if (abs(facePart - ${P.specs}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * step(0.5, uGlasses);
         else if (abs(facePart - ${P.lens}.0) < 0.5) transformed = faceAnchor + (transformed - faceAnchor) * step(2.5, uGlasses); // #1325: sunglasses' lenses
         else if (facePart > ${P.phoneNeck}.5 && facePart < ${P.lens}.5) { // #1325: earrings follow the ear's size; the chosen kind stays (1 studs, 2 hoops, 3 drops, 4 pearl studs)
