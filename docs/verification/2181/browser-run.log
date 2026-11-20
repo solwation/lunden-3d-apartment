@@ -1,0 +1,99 @@
+browsertest: waiting for a browser slot (2 max; another browser test is running or memory is short)
+OCC world loaded
+OCC door found true
+OCC graph start
+OCC oneShots done
+{
+ "door": {
+  "hinge": [
+   0.8547,
+   3.0497
+  ],
+  "rooms": [
+   "h0:Hall",
+   "h0:Tvätt"
+  ]
+ },
+ "listener": {
+  "x": 1.30665,
+  "y": 1.6,
+  "z": 1.2497
+ },
+ "source": {
+  "x": 1.30665,
+  "y": 1.1,
+  "z": 4.8497
+ },
+ "estimateOpen": {
+  "gain": 0.8709635899560807,
+  "hz": 9000,
+  "parts": [
+   "openDoor"
+  ]
+ },
+ "estimateClosed": {
+  "gain": 0.5011872336272722,
+  "hz": 2200,
+  "parts": [
+   "door"
+  ]
+ },
+ "estimateSameRoom": null,
+ "oneShot": {
+  "sameRoom": {
+   "lowpassFilters": [],
+   "rms": 0.00837,
+   "hfRatio": 0.0879
+  },
+  "closedDoor": {
+   "lowpassFilters": [
+    {
+     "type": "lowpass",
+     "hz": 2200
+    }
+   ],
+   "rms": 0.00161,
+   "hfRatio": 0.0767
+  },
+  "openDoor": {
+   "lowpassFilters": [
+    {
+     "type": "lowpass",
+     "hz": 9000
+    }
+   ],
+   "rms": 0.002631,
+   "hfRatio": 0.0848
+  }
+ },
+ "estimateSlab": {
+  "gain": 0.28183829312644537,
+  "hz": 1000,
+  "parts": [
+   "floor"
+  ]
+ },
+ "estimateFacade": {
+  "gain": 0.5011872336272722,
+  "hz": 2200,
+  "parts": [
+   "door"
+  ]
+ },
+ "loop": {
+  "closedCutoffHz": 2200,
+  "filtersAtStart": 3,
+  "cutoffAfterDoorOpened": 9000
+ }
+}
+PASS a real interior door with two different rooms was found
+PASS same room: no estimate and NO low-pass filter in the real graph
+PASS closed door: exactly one low-pass at the estimate cut-off
+PASS open door: much higher cut-off than closed
+PASS rendered level: same room > open door > closed door
+PASS rendered spectrum: closed door is duller than same room
+PASS slab and facade give an estimate
+PASS loop: cut-off eases up after the door opens
+PASS zero browser errors: 
+9 checks passed
+browsertest: peak 1516 MiB of 4G

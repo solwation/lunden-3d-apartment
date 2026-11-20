@@ -84,7 +84,7 @@ import { setupTouch } from './touch.js';
 import { setupTouchLayout } from './touchlayout.js';
 import { watchForUpdates, BUILD } from './version.js';
 import { CatSpawner, VARIANTS, BREEDS, kittenName, MieleDaily } from './cat.js';
-import { initAudio, sfx, toggleMuted, isMuted, updateListener, setRoomZone, setWindPower, audioParts } from './audio.js';
+import { initAudio, sfx, toggleMuted, isMuted, updateListener, setRoomZone, setAcousticWorld, updateOcclusion, setWindPower, audioParts } from './audio.js';
 import { windSoundParams, gustAt, windStrength, treeNearness } from './windsound.js'; // #2177: the wind's sound
 import { WIND_SOUND, SEASON, BIRD_SONG } from './config.js';
 import { BirdSong } from './birdsong.js'; // #2178: bird song and gull calls by time of day, season and weather
@@ -4241,6 +4241,7 @@ function frame(raw) {
   const mirrorSkip = renderer.shadowMap.needsUpdate || ++mirrorFrame % QUALITY.mirrorEvery[quality.level] !== 0;
   const mirror = viewDue && updateReflections(camera, player.aloft ? -1 : Math.max(0, player.level), QUALITY.mirror[quality.level] > 0 && !warm.blocksView, mirrorSkip);
   updateListener(camera);
+  setAcousticWorld(world); updateOcclusion(); // #2181: the world for the estimates; running loops re-estimate every OCCLUSION.loopEvery s
   if ((roomZoneClock += dt) > 0.25) { roomZoneClock = 0; setRoomZone(reverbZone(world, player.pos)); } // #2153: room acoustics follow the listener
   if (viewDue && !warm.blocksView && roomProbe.mode !== 'off') { // #2151: the room probe (at most a cube face, rarely)
     const sky = day.daylight * (1 - 0.6 * weather.overcast), u = player.outdoors || player.inCore || player.below || player.inPlayroom ? undefined : player.unit;

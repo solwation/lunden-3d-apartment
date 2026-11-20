@@ -4,14 +4,16 @@ import { synthFootstep } from './footsteps.js';
 // The AudioContext can only start after a user gesture — call initAudio() from a click.
 
 import { windowWindParams } from './windsound.js';
-import { SOUNDS, BIRD_SONG, KISS, PLAYROOM, SANTA, FOOTSTEPS, SQUIRRELS, SWIM } from './config.js';
+import { SOUNDS, OCCLUSION, BIRD_SONG, KISS, PLAYROOM, SANTA, FOOTSTEPS, SQUIRRELS, SWIM } from './config.js';
 import { distanceGain, VoiceCap } from './spatialsound.js';
 import { RoomReverb } from './roomreverb.js';
+import { occlusionFor } from './soundocclusion.js';
 import { lowMemory } from './lowmemory.js';
 
 let ctx = null, master = null, noiseBuf = null, reverb = null; // #2153: `reverb` = the shared room-acoustics send bus (effects only; music/TV connect to master directly and stay dry)
 const listenerAt = { x: 0, y: 0, z: 0 }, voices = new VoiceCap(SOUNDS.maxVoices); // (#1302: where we hear from; the cap on other players' sounds)
 let muted = false;
+let acousticWorld = null; // #2181: the world whose rooms, walls and doors dull obscured sounds (main.js setAcousticWorld)
 const birdVoices = new VoiceCap(BIRD_SONG.maxVoices); // #2178: at most two birds at once (songbirds and gulls together)
 const windows = new Set(); let windNow = 0.35; // #2177: the open windows' wind (sfx.wind) and the wind power they follow (setWindPower)
 
@@ -45,6 +47,34 @@ export function setWindPower(p) {
 /** #2153: the listener's acoustic zone ('soft' | 'bright' | 'concrete' | 'courtyard' | 'open'); cheap no-op when unchanged. */
 export function setRoomZone(zone) { reverb?.setZone(zone); }
 export const roomReverb = () => reverb;
+/** #2181: hand audio.js the world so effects and loops behind walls, slabs or closed doors are dulled. */
+export function setAcousticWorld(w) { acousticWorld = w; }
+const occluded = (pos) => (acousticWorld && pos && Number.isFinite(pos.x) ? occlusionFor(acousticWorld, listenerAt, pos) : null);
+const loops = new Set(); let loopNext = 0;
+/** Stop re-estimating a loop whose effect ended (call from its stop()). */
+const releaseLoop = (d) => { if (d?._occ) loops.delete(d._occ); };
+/** #2181: main.js calls this every frame; every OCCLUSION.loopEvery s it re-estimates the running loops (doors open/close, the listener moves). */
+export function updateOcclusion() {
+  if (!ctx || !loops.size || ctx.currentTime < loopNext) return;
+  loopNext = ctx.currentTime + OCCLUSION.loopEvery;
+  for (const L of loops) L.update();
+}
+/** #2181: for a loop with a fixed or slowly moving position: insert `input -> [low-pass + gain] -> dest` (the filter only exists once the
+ * source is obscured; a clear source is a plain gain-1 connection). `update(pos)` re-estimates (call every OCCLUSION.loopEvery s) and
+ * eases cut-off and gain; returns the estimate or null. */
+export function occludedLoop(pos, dest) {
+  const input = ctx.createGain(); let lp = null, gain = null; const state = { oc: null, input };
+  input.connect(dest);
+  state.update = (q) => {
+    const oc = occluded(q ?? pos), t = ctx.currentTime;
+    state.oc = oc;
+    if (oc && !lp) { lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.Q.value = 0.7; lp.frequency.value = 20000; gain = ctx.createGain(); input.disconnect(); input.connect(lp).connect(gain).connect(dest); }
+    if (lp) { lp.frequency.setTargetAtTime(oc ? oc.hz : 20000, t, OCCLUSION.ramp); gain.gain.setTargetAtTime(oc ? oc.gain : 1, t, OCCLUSION.ramp); }
+    return oc;
+  };
+  state.update(pos);
+  return state;
+}
 /** #1949: under water everything is heard dull: the master goes through one low-pass at `hz` while `on` (rewired only at the change, so
  * the ordinary path is untouched on land). Mute and volume stay the master's. */
 let muffle = null;
@@ -78,7 +108,7 @@ export function updateListener(camera) {
 }
 
 /** Output node for one effect: positional panner (if pos given) → master. */
-function out(pos, gain = 1, ref = 1.2) { // `ref`: m within which a positional sound plays at full loudness (#1780: the squirrels' chirp carries farther)
+function out(pos, gain = 1, ref = 1.2, loop = false) { // `ref`: m within which a positional sound plays at full loudness (#1780: the squirrels' chirp carries farther)
   const g = ctx.createGain();
   g.gain.value = gain;
   if (pos) {
@@ -88,7 +118,10 @@ function out(pos, gain = 1, ref = 1.2) { // `ref`: m within which a positional s
     p.refDistance = ref;
     p.rolloffFactor = 1.2;
     p.positionX.value = pos.x; p.positionY.value = pos.y; p.positionZ.value = pos.z;
-    g.connect(p).connect(master);
+    const oc = loop ? null : occluded(pos); // #2181: one estimate when the effect starts; only an obscured voice gets a low-pass
+    if (loop) { const L = occludedLoop(pos, p); g.connect(L.input); g._occ = L; loops.add(L); } // a loop re-estimates a few times a second (updateOcclusion)
+    else if (oc) { const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = oc.hz; lp.Q.value = 0.7; g.gain.value = gain * oc.gain; g.connect(lp).connect(p); } else g.connect(p);
+    p.connect(master);
     if (reverb) p.connect(reverb.input); // #2153: effects get the room (one send per effect, after the distance fade)
   } else {
     g.connect(master);
@@ -833,19 +866,19 @@ export const sfx = {
   },
   pcFan(pos) {
     if (!ready()) return null;
-    const t = ctx.currentTime, d = out(pos, 0.5);
+    const t = ctx.currentTime, d = out(pos, 0.5, 1.2, true);
     const src = ctx.createBufferSource();
     src.buffer = noiseBuf; src.loop = true;
     const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 600;
     const g = ctx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.08, t + 1);
     src.connect(lp).connect(g).connect(d);
     src.start(t, Math.random());
-    return { stop() { const t1 = ctx.currentTime; g.gain.cancelScheduledValues(t1); g.gain.setValueAtTime(g.gain.value, t1); g.gain.linearRampToValueAtTime(0, t1 + 0.4); src.stop(t1 + 0.5); } };
+    return { stop() { releaseLoop(d); const t1 = ctx.currentTime; g.gain.cancelScheduledValues(t1); g.gain.setValueAtTime(g.gain.value, t1); g.gain.linearRampToValueAtTime(0, t1 + 0.4); src.stop(t1 + 0.5); } };
   },
   /** The induction hob's faint hum while it is on (#158): a soft high whine over a little filtered noise. */
   hobHum(pos) {
     if (!ready()) return null;
-    const t = ctx.currentTime, d = out(pos, 0.4);
+    const t = ctx.currentTime, d = out(pos, 0.4, 1.2, true);
     const o = ctx.createOscillator(); o.type = 'sine'; o.frequency.value = 1180;
     const src = ctx.createBufferSource(); src.buffer = noiseBuf; src.loop = true;
     const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 3000; bp.Q.value = 2;
@@ -853,12 +886,12 @@ export const sfx = {
     const gn = ctx.createGain(); gn.gain.value = 0.6;
     o.connect(g); src.connect(bp).connect(gn).connect(g); g.connect(d);
     o.start(t); src.start(t, Math.random());
-    return { stop() { const t1 = ctx.currentTime; g.gain.cancelScheduledValues(t1); g.gain.setValueAtTime(g.gain.value, t1); g.gain.linearRampToValueAtTime(0, t1 + 0.3); o.stop(t1 + 0.35); src.stop(t1 + 0.35); } };
+    return { stop() { releaseLoop(d); const t1 = ctx.currentTime; g.gain.cancelScheduledValues(t1); g.gain.setValueAtTime(g.gain.value, t1); g.gain.linearRampToValueAtTime(0, t1 + 0.3); o.stop(t1 + 0.35); src.stop(t1 + 0.35); } };
   },
   /** The dishwasher running (#385) until stop(): a low motor hum and water swishing round in slow waves. */
   dishwasher(pos) {
     if (!ready()) return null;
-    const t = ctx.currentTime, d = out(pos, 0.6);
+    const t = ctx.currentTime, d = out(pos, 0.6, 1.2, true);
     const hum = ctx.createOscillator(); hum.type = 'sawtooth'; hum.frequency.value = 96;
     const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 260;
     const src = ctx.createBufferSource(); src.buffer = noiseBuf; src.loop = true;
@@ -871,7 +904,7 @@ export const sfx = {
     const g = ctx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(1, t + 1.2);
     hum.connect(lp).connect(hg).connect(g); src.connect(bp).connect(swish).connect(g); g.connect(d);
     hum.start(t); src.start(t, Math.random()); lfo.start(t);
-    return { stop() { const t1 = ctx.currentTime; g.gain.cancelScheduledValues(t1); g.gain.setValueAtTime(g.gain.value, t1); g.gain.linearRampToValueAtTime(0, t1 + 0.5); for (const n of [hum, src, lfo]) n.stop(t1 + 0.55); } };
+    return { stop() { releaseLoop(d); const t1 = ctx.currentTime; g.gain.cancelScheduledValues(t1); g.gain.setValueAtTime(g.gain.value, t1); g.gain.linearRampToValueAtTime(0, t1 + 0.5); for (const n of [hum, src, lfo]) n.stop(t1 + 0.55); } };
   },
   /** Fireworks (#1200): `kind` 'launch' (a rising whoosh), 'bang' (a thump and a crack) or 'crackle' (a bang then many small cracks); `delay` s. */
   firework(pos, kind, gain = 0.5, delay = 0) {
@@ -1007,12 +1040,12 @@ export const sfx = {
   /** The cooker hood's fan (#194): a low, steady whoosh until stopped. */
   fan(pos) {
     if (!ready()) return null;
-    const t = ctx.currentTime, d = out(pos, 0.6);
+    const t = ctx.currentTime, d = out(pos, 0.6, 1.2, true);
     const src = ctx.createBufferSource(); src.buffer = noiseBuf; src.loop = true;
     const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 700;
     const g = ctx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(0.18, t + 1.2);
     src.connect(lp).connect(g).connect(d); src.start(t, Math.random());
-    return { stop() { const t1 = ctx.currentTime; g.gain.cancelScheduledValues(t1); g.gain.setValueAtTime(g.gain.value, t1); g.gain.linearRampToValueAtTime(0, t1 + 0.8); src.stop(t1 + 0.85); } };
+    return { stop() { releaseLoop(d); const t1 = ctx.currentTime; g.gain.cancelScheduledValues(t1); g.gain.setValueAtTime(g.gain.value, t1); g.gain.linearRampToValueAtTime(0, t1 + 0.8); src.stop(t1 + 0.85); } };
   },
   /** Lighting the grill (#204): a whoomp as the fire catches. */
   ignite(pos) {

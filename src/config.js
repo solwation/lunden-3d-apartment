@@ -9304,6 +9304,21 @@ export const ROOM_REVERB = {
   seed: 2153,
 };
 
+// #2181: sound occlusion. One estimate per effect when it starts (and a few times a second for loops), from the room/zone cells,
+// the wall segments and the live door state (no per-frame rays, no per-source graph beyond ONE low-pass biquad on an obscured voice).
+// All values are *guess* (no acoustic measurements): db = level loss, hz = low-pass cut-off; losses add up to maxDb, the lowest hz wins.
+export const OCCLUSION = {
+  wall:     { db: 9,   hz: 1500 }, // through an interior wall or between cells (stairwell <-> flat, playroom, visited flat)
+  door:     { db: 6,   hz: 2200 }, // through a CLOSED door (a hollow door leaks more than a wall)
+  openDoor: { db: 1.2, hz: 9000 }, // through an open door: barely dulled
+  floor:    { db: 11,  hz: 1000 }, // through a slab (upstairs <-> downstairs, lift shaft/stairs)
+  facade:   { db: 10,  hz: 1700 }, // indoors <-> outdoors through the facade (an open entrance door counts as openDoor)
+  maxDb: 18, minHz: 700, floorGap: 2.3, // m of height difference that means another storey
+  doorClosedT: 0.2,     // a door is "closed" while its animation t is below this
+  loopEvery: 0.4,       // s between re-estimates of a running loop
+  ramp: 0.12,           // s time constant when a loop's filter/gain follow a door
+};
+
 // #1363: walking-route lamp placements and dimensions are visual guesses, not surveyed fittings.
 // Paths themselves retain their sourced OSM coordinates. Existing street head/glow/material batches are reused.
 export const PATH_LIGHTS = { height: 4.6, step: 18, edge: 0.65, pathClear: 0.25, treeClear: 1.2, fenceClear: 0.8,

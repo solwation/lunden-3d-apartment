@@ -1584,3 +1584,20 @@ per zone. Zones come from the listener's feet (`reverbZone`, sampled every 0.25 
 numbers are *guess* values in `config.js`. Tests: `tools/roomreverbtest.mjs` (zones, IR RT60/determinism, crossfade plan, phone mode) and
 `tools/roomreverbbrowser.cjs` (real `audio.js` in an OfflineAudioContext: graph, per-zone RT60 and tail energy, dry music path, phone
 mode, underwater; real-world zone coverage); measured values are saved in `docs/verification/2153/roomreverb.json`.
+
+## Sound occlusion (#2181)
+
+`src/soundocclusion.js` (pure) estimates how much a wall, slab, facade or closed door dulls a source: `cellOf` classifies a point (playroom,
+stairwell core, garage, visited flat, home room by `world.roomAt`, or outside); `occlusionFor(world, listener, source)` returns `null`
+when both are in the same cell or nothing is in between (so no filter is ever built), else `{ gain, hz, parts }`. Same storey in the
+home: crossing a `levels[].wallSegments` entry = `wall`, else a `world.doors` segment on the line (live `segment()`) = `door` when its
+animation `t < OCCLUSION.doorClosedT`, else `openDoor`; a height difference over `OCCLUSION.floorGap` between home/core = `floor`;
+indoors vs outdoors = `facade` (an open entrance door counts as `openDoor`); other cells = `wall`. Losses add (capped by `maxDb`), the
+lowest cut-off wins. All numbers are *guess* values in `config.js` `OCCLUSION`. No per-frame rays: `audio.js` `out()` asks once when a
+one-shot starts and inserts ONE lowpass biquad plus a gain only on an obscured voice. Loops (`pcFan`, `hobHum`, `dishwasher`, `fan`)
+pass `loop = true`: `occludedLoop` creates the filter lazily and `updateOcclusion()` (main.js, every `OCCLUSION.loopEvery` s) re-estimates
+and eases cut-off/gain (`OCCLUSION.ramp`), so a door opening or the listener walking is followed. The world is handed over by
+`setAcousticWorld`. Not covered (own models kept): Sonos speakers (#187 `behindWall`), playroom speakers (#1641), TV volume
+(YouTube iframe), the car's shut doors (#664), rain/thunder `inside` (weather.js), music files. Reverb zones (#2153) are
+unchanged; the wet send comes after the occluded voice. Tests: `tools/soundocclusiontest.mjs` (pure) and `tools/soundocclusionbrowser.cjs`
+(real app world and real audio graph); evidence: `docs/verification/2181/`.
