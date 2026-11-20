@@ -1,11 +1,11 @@
-// #1278: the parked cars of the east campus' car parks (stalls and lines: sitebackdrop.js, layout: parkinglayout.js). Four instanced
-// batches like the street car park's (paint, trim, glass, tyres: no new geometry or texture), tagged `carBatch` so the view LOD
+// #1278: the parked cars of the east campus' car parks (stalls and lines: sitebackdrop.js, layout: parkinglayout.js). Instanced
+// batches like the street car park's (paint, trim, glass, tyres per body type, #2201: no new texture), tagged `carBatch` so the view LOD
 // (viewlod.js, #1213/#1246) draws the far ones coarse. Each car sits on the ground under its footprint, turned to the slope.
 import * as THREE from 'three';
 import { SITE, PARKING_LOT as P } from './config.js';
 import { parkingLots } from './parkinglayout.js';
-import { carGeometry } from './streetlife.js';
-import { parkedCarMaterials } from './carfinish.js';
+import { parkedCarBatches } from './streetlife.js';
+import { carTypeFor } from './carvariants.js';
 import { buildVehicleShadow, itemsFromMatrices } from './vehicleshadow.js';
 import { lowMemory } from './lowmemory.js';
 
@@ -24,16 +24,9 @@ export function buildEastLotCars(ground) {
     mats.push(new THREE.Matrix4().compose(new THREE.Vector3(c.x, y + 0.02, c.z), q, new THREE.Vector3(1, 1, 1)));
     paint.push(colors[Math.floor(c.color * colors.length)]);
   }
-  const make = (geo, material, colored) => {
-    const m = new THREE.InstancedMesh(geo, material, mats.length);
-    mats.forEach((x, i) => { m.setMatrixAt(i, x); if (colored) m.setColorAt(i, new THREE.Color(paint[i])); });
-    m.castShadow = m.receiveShadow = true; m.userData.carBatch = 'eastlot';
-    return m;
-  };
-  const [body, trim, glass, tyres] = carGeometry();
-  const [paintMat, trimMat, glassMat, tyreMat] = parkedCarMaterials(); // #2097: the same finish as the street car park
-  group.add(make(body, paintMat, true), make(trim, trimMat), make(glass, glassMat), make(tyres, tyreMat));
-  const shadow = buildVehicleShadow(itemsFromMatrices(mats, 'car'), ground, { phone: lowMemory, name: 'east-lot-car-shadow' }); // #2185: contact shadows under every car
+  const types = cars.map((_, i) => carTypeFor(i, P.seed)); // #2201: body types by a hash of the car's index
+  group.add(...parkedCarBatches(mats, paint, types, 'eastlot')); // #2097: the same finish as the street car park; per body type three batches
+  const shadow = buildVehicleShadow(itemsFromMatrices(mats, 'car', types), ground, { phone: lowMemory, name: 'east-lot-car-shadow' }); // #2185: contact shadows under every car
   if (shadow.mesh) group.add(shadow.mesh);
   return group;
 }

@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { VEHICLE_SHADOW as K } from './config.js';
 import { poolGeometry } from './groundglow.js';
+import { carTypeSize } from './carvariants.js';
 
 // #2185: soft contact shadows under parked cars and bicycles. The sun's shadow map only covers ±14 m round its target,
 // so everything further out stood on the ground without touching it. One merged mesh per place (street car park + bike
@@ -9,15 +10,17 @@ import { poolGeometry } from './groundglow.js';
 // ground, one draw call. A vehicle that drives or is ridden away switches its own range off (`set`).
 
 /** Pure: the pools ({ x, z, ax, az, ra, rb, strength, rings, segs } ellipses, or `rect` + `soft`: a rounded rectangle; world metres) one vehicle darkens.
- * `item` = { x, z, ax, az (its nose direction, any length), kind: 'car' | 'bike' }; `phone` leaves out the wheel patches. */
+ * `item` = { x, z, ax, az (its nose direction, any length), kind: 'car' | 'bike', size?: carTypeSize() of its body type, #2201 }; `phone` leaves out the wheel patches. */
 export function vehicleFootprint(item, phone = false, C = K) {
   const l = Math.hypot(item.ax, item.az) || 1, ux = item.ax / l, uz = item.az / l, vx = -uz, vz = ux;
   const at = (a, b) => [item.x + ux * a + vx * b, item.z + uz * a + vz * b];
   const out = [];
   const pool = (a, b, half, strength, rings, segs) => { const [x, z] = at(a, b); out.push({ x, z, ax: ux, az: uz, ra: half[0], rb: half[1], strength, rings, segs }); };
   if (item.kind === 'bike') { pool(C.bike.x, 0, C.bike.half, C.bike.strength, C.bike.rings, C.bike.segs); return out; }
-  out.push({ rect: true, ...(([x, z]) => ({ x, z }))(at(C.car.x, 0)), ax: ux, az: uz, ra: C.car.half[0], rb: C.car.half[1], soft: C.car.soft, strength: C.car.strength });
-  if (!phone) for (const sx of [-1, 1]) for (const sz of [-1, 1]) pool(sx * C.tyre.x, sz * C.tyre.z, C.tyre.half, C.tyre.strength, C.tyre.rings, C.tyre.segs);
+  // #2201: a body type's own length / width / wheel offsets (the margins beyond the body stay the configured ones); no size = the base body
+  const z = item.size, hx = z ? z.hx - 2.17 : 0, cx = z ? z.cx : 0, hz = z ? z.hz - 0.92 : 0;
+  out.push({ rect: true, ...(([x, zz]) => ({ x, z: zz }))(at(C.car.x + cx, 0)), ax: ux, az: uz, ra: C.car.half[0] + hx, rb: C.car.half[1] + hz, soft: C.car.soft, strength: C.car.strength });
+  if (!phone) for (const sx of [-1, 1]) for (const sz of [-1, 1]) pool(sx * (z ? z.wx : C.tyre.x), sz * (z ? z.wz : C.tyre.z), C.tyre.half, C.tyre.strength, C.tyre.rings, C.tyre.segs);
   return out;
 }
 
@@ -89,6 +92,6 @@ export function buildVehicleShadow(items, ground, { phone = false, name = 'vehic
 }
 
 /** The vehicles an array of instance matrices stands for (street/east car parks, bikes): position and nose (local +x) from each matrix. */
-export function itemsFromMatrices(mats, kind) {
-  return mats.map((m) => { const e = m.elements; return { x: e[12], z: e[14], ax: e[0], az: e[2], kind }; });
+export function itemsFromMatrices(mats, kind, types = null) {
+  return mats.map((m, i) => { const e = m.elements; return { x: e[12], z: e[14], ax: e[0], az: e[2], kind, ...(types ? { size: carTypeSize(types[i]) } : {}) }; });
 }

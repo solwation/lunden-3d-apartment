@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { VIEW_LOD as C } from './config.js';
 import { carFarGeometry } from './streetlife.js';
+import { warpGeometry } from './carvariants.js';
 import { freezeShadowTiles } from './shadowtiles.js';
 import { farCarMaterial, trackCarFinish } from './carfinish.js';
 import { lodCamera, lodRange, lodMembership, patchDitherLod, lodDepthMaterial } from './lod.js';
@@ -11,13 +12,16 @@ import { lodCamera, lodRange, lodMembership, patchDitherLod, lodDepthMaterial } 
 // its near sources are distinct things, whereas these four sources are paint/trim/glass/tyres of the same things.
 const sets = [];
 const NOWHERE = new THREE.Sphere(new THREE.Vector3(0, -1e6, 0), 0); // (an emptied batch: culled, no zero-instance draw)
-let farGeometry = null, farMaterial = null, farFinish = null;
+const farGeometries = new Map(); // body type -> its coarse body (#2201: the base one warped like the near ones)
+let farMaterial = null, farFinish = null;
 
 /** One set of InstancedMeshes that share one matrix per car (same count and parent). Returns the coarse mesh. */
 export function addCarLod(batches, reach = C.carNear) {
   const first = batches[0], n = first.count, parent = first.parent;
   if (!n || !parent || batches.some((b) => b.count !== n || b.parent !== parent)) return null;
-  farGeometry ??= carFarGeometry();
+  const type = first.userData.carType ?? 'compact';
+  if (!farGeometries.has(type)) farGeometries.set(type, type === 'compact' ? carFarGeometry() : warpGeometry(carFarGeometry(), type));
+  const farGeometry = farGeometries.get(type);
   // #2097: outdoor sets (paint carrying carfinish.js's reflection) get a calm reflective far paint; the garage keeps its plain one
   const outdoor = batches.some((b) => b.material.userData.carReflection != null);
   const far = outdoor ? (farFinish ??= farCarMaterial()) : (farMaterial ??= new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.3, metalness: 0.3 }));
@@ -53,10 +57,10 @@ export function addSceneCarLods(root, reach = C.carNear) {
   const groups = new Map();
   root.traverse((o) => {
     if (!o.isInstancedMesh || !o.userData.carBatch) return;
-    const k = o.parent; let list = groups.get(k); if (!list) groups.set(k, list = []); list.push(o);
+    const k = o.parent, t = o.userData.carType ?? ''; let sub = groups.get(k); if (!sub) groups.set(k, sub = new Map()); let list = sub.get(t); if (!list) sub.set(t, list = []); list.push(o);
   });
   let made = 0;
-  for (const list of groups.values()) if (addCarLod(list, reach)) made++;
+  for (const sub of groups.values()) for (const list of sub.values()) if (addCarLod(list, reach)) made++; // (#2201: one set per body type)
   return made;
 }
 

@@ -1,0 +1,680 @@
+{
+ "base": "6965828e881fac294545142656fc672d0465230d",
+ "head": "6965828e881fac294545142656fc672d0465230d",
+ "phases": {
+  "before": {
+   "errors": [],
+   "views": {
+    "gata-trekvart-dag": {
+     "calls": 88,
+     "triangles": 526696,
+     "programs": 73,
+     "textures": 36,
+     "eye": [
+      -26,
+      1.6,
+      -8.5
+     ]
+    },
+    "gata-raden-dag": {
+     "calls": 246,
+     "triangles": 784417,
+     "programs": 123,
+     "textures": 71,
+     "eye": [
+      -13,
+      1.6,
+      -10.2
+     ]
+    },
+    "gata-fjarr-dag": {
+     "calls": 415,
+     "triangles": 966105,
+     "programs": 146,
+     "textures": 107,
+     "eye": [
+      -40,
+      7,
+      -84
+     ]
+    },
+    "ost-parkering-dag": {
+     "calls": 67,
+     "triangles": 521063,
+     "programs": 146,
+     "textures": 107,
+     "eye": [
+      56,
+      2.1,
+      -18
+     ]
+    },
+    "ost-rad-dag": {
+     "calls": 268,
+     "triangles": 830358,
+     "programs": 150,
+     "textures": 111,
+     "eye": [
+      38,
+      -1.4,
+      68
+     ]
+    }
+   },
+   "loadMs": 33090,
+   "cars": [
+    {
+     "set": "street",
+     "count": 19,
+     "rough": 0.2,
+     "metal": 0.12,
+     "env": true,
+     "envI": 0.55,
+     "rmap": false
+    },
+    {
+     "set": "street",
+     "count": 19,
+     "rough": 1,
+     "metal": 1,
+     "env": true,
+     "envI": 0.33,
+     "rmap": true
+    },
+    {
+     "set": "street",
+     "count": 19,
+     "rough": 0.05,
+     "metal": 0.55,
+     "env": false,
+     "envI": 1,
+     "rmap": false
+    },
+    {
+     "set": "street",
+     "count": 19,
+     "rough": 0.95,
+     "metal": 0,
+     "env": false,
+     "envI": 1,
+     "rmap": false
+    },
+    {
+     "set": "far",
+     "count": 0,
+     "rough": 0.4,
+     "metal": 0.1,
+     "env": true,
+     "envI": 0.33,
+     "rmap": false
+    },
+    {
+     "set": "eastlot",
+     "count": 0,
+     "rough": 0.2,
+     "metal": 0.12,
+     "env": true,
+     "envI": 0.55,
+     "rmap": false
+    },
+    {
+     "set": "eastlot",
+     "count": 0,
+     "rough": 1,
+     "metal": 1,
+     "env": true,
+     "envI": 0.33,
+     "rmap": true
+    },
+    {
+     "set": "eastlot",
+     "count": 0,
+     "rough": 0.05,
+     "metal": 0.55,
+     "env": false,
+     "envI": 1,
+     "rmap": false
+    },
+    {
+     "set": "eastlot",
+     "count": 0,
+     "rough": 0.95,
+     "metal": 0,
+     "env": false,
+     "envI": 1,
+     "rmap": false
+    },
+    {
+     "set": "far",
+     "count": 26,
+     "rough": 0.4,
+     "metal": 0.1,
+     "env": true,
+     "envI": 0.33,
+     "rmap": false
+    },
+    {
+     "set": "garage",
+     "count": 23,
+     "rough": 0.3,
+     "metal": 0.3,
+     "env": false,
+     "envI": 1,
+     "rmap": false
+    },
+    {
+     "set": "garage",
+     "count": 23,
+     "rough": 0.3,
+     "metal": 0.45,
+     "env": false,
+     "envI": 1,
+     "rmap": false
+    },
+    {
+     "set": "garage",
+     "count": 23,
+     "rough": 0.05,
+     "metal": 0.55,
+     "env": false,
+     "envI": 1,
+     "rmap": false
+    },
+    {
+     "set": "garage",
+     "count": 23,
+     "rough": 0.85,
+     "metal": 0,
+     "env": false,
+     "envI": 1,
+     "rmap": false
+    },
+    {
+     "set": "far",
+     "count": 2,
+     "rough": 0.3,
+     "metal": 0.3,
+     "env": false,
+     "envI": 1,
+     "rmap": false
+    }
+   ],
+   "invalid": [],
+   "ms": 114234
+  },
+  "after": {
+   "errors": [],
+   "views": {
+    "gata-trekvart-dag": {
+     "calls": 99,
+     "triangles": 526696,
+     "programs": 73,
+     "textures": 36,
+     "eye": [
+      -26,
+      1.6,
+      -8.5
+     ]
+    },
+    "gata-raden-dag": {
+     "calls": 257,
+     "triangles": 784417,
+     "programs": 123,
+     "textures": 71,
+     "eye": [
+      -13,
+      1.6,
+      -10.2
+     ]
+    },
+    "gata-fjarr-dag": {
+     "calls": 420,
+     "triangles": 966105,
+     "programs": 146,
+     "textures": 107,
+     "eye": [
+      -40,
+      7,
+      -84
+     ]
+    },
+    "ost-parkering-dag": {
+     "calls": 77,
+     "triangles": 521063,
+     "programs": 146,
+     "textures": 107,
+     "eye": [
+      56,
+      2.1,
+      -18
+     ]
+    },
+    "ost-rad-dag": {
+     "calls": 277,
+     "triangles": 830358,
+     "programs": 150,
+     "textures": 111,
+     "eye": [
+      38,
+      -1.4,
+      68
+     ]
+    }
+   },
+   "loadMs": 35297,
+   "cars": [
+    {
+     "set": "street",
+     "count": 6,
+     "rough": 0.2,
+     "metal": 0.12,
+     "env": true,
+     "envI": 0.55,
+     "rmap": false
+    },
+    {
+     "set": "street",
+     "count": 6,
+     "rough": 1,
+     "metal": 1,
+     "env": true,
+     "envI": 0.33,
+     "rmap": true
+    },
+    {
+     "set": "street",
+     "count": 6,
+     "rough": 0.05,
+     "metal": 0.55,
+     "env": false,
+     "envI": 1,
+     "rmap": false
+    },
+    {
+     "set": "street",
+     "count": 4,
+     "rough": 0.2,
+     "metal": 0.12,
+     "env": true,
+     "envI": 0.55,
+     "rmap": false
+    },
+    {
+     "set": "street",
+     "count": 4,
+     "rough": 1,
+     "metal": 1,
+     "env": true,
+     "envI": 0.33,
+     "rmap": true
+    },
+    {
+     "set": "street",
+     "count": 4,
+     "rough": 0.05,
+     "metal": 0.55,
+     "env": false,
+     "envI": 1,
+     "rmap": false
+    },
+    {
+     "set": "street",
+     "count": 5,
+     "rough": 0.2,
+     "metal": 0.12,
+     "env": true,
+     "envI": 0.55,
+     "rmap": false
+    },
+    {
+     "set": "street",
+     "count": 5,
+     "rough": 1,
+     "metal": 1,
+     "env": true,
+     "envI": 0.33,
+     "rmap": true
+    },
+    {
+     "set": "street",
+     "count": 5,
+     "rough": 0.05,
+     "metal": 0.55,
+     "env": false,
+     "envI": 1,
+     "rmap": false
+    },
+    {
+     "set": "street",
+     "count": 3,
+     "rough": 0.2,
+     "metal": 0.12,
+     "env": true,
+     "envI": 0.55,
+     "rmap": false
+    },
+    {
+     "set": "street",
+     "count": 3,
+     "rough": 1,
+     "metal": 1,
+     "env": true,
+     "envI": 0.33,
+     "rmap": true
+    },
+    {
+     "set": "street",
+     "count": 3,
+     "rough": 0.05,
+     "metal": 0.55,
+     "env": false,
+     "envI": 1,
+     "rmap": false
+    },
+    {
+     "set": "street",
+     "count": 1,
+     "rough": 0.2,
+     "metal": 0.12,
+     "env": true,
+     "envI": 0.55,
+     "rmap": false
+    },
+    {
+     "set": "street",
+     "count": 1,
+     "rough": 1,
+     "metal": 1,
+     "env": true,
+     "envI": 0.33,
+     "rmap": true
+    },
+    {
+     "set": "street",
+     "count": 1,
+     "rough": 0.05,
+     "metal": 0.55,
+     "env": false,
+     "envI": 1,
+     "rmap": false
+    },
+    {
+     "set": "far",
+     "count": 0,
+     "rough": 0.4,
+     "metal": 0.1,
+     "env": true,
+     "envI": 0.33,
+     "rmap": false
+    },
+    {
+     "set": "far",
+     "count": 0,
+     "rough": 0.4,
+     "metal": 0.1,
+     "env": true,
+     "envI": 0.33,
+     "rmap": false
+    },
+    {
+     "set": "far",
+     "count": 0,
+     "rough": 0.4,
+     "metal": 0.1,
+     "env": true,
+     "envI": 0.33,
+     "rmap": false
+    },
+    {
+     "set": "far",
+     "count": 0,
+     "rough": 0.4,
+     "metal": 0.1,
+     "env": true,
+     "envI": 0.33,
+     "rmap": false
+    },
+    {
+     "set": "far",
+     "count": 0,
+     "rough": 0.4,
+     "metal": 0.1,
+     "env": true,
+     "envI": 0.33,
+     "rmap": false
+    },
+    {
+     "set": "eastlot",
+     "count": 0,
+     "rough": 0.2,
+     "metal": 0.12,
+     "env": true,
+     "envI": 0.55,
+     "rmap": false
+    },
+    {
+     "set": "eastlot",
+     "count": 0,
+     "rough": 1,
+     "metal": 1,
+     "env": true,
+     "envI": 0.33,
+     "rmap": true
+    },
+    {
+     "set": "eastlot",
+     "count": 0,
+     "rough": 0.05,
+     "metal": 0.55,
+     "env": false,
+     "envI": 1,
+     "rmap": false
+    },
+    {
+     "set": "eastlot",
+     "count": 0,
+     "rough": 0.2,
+     "metal": 0.12,
+     "env": true,
+     "envI": 0.55,
+     "rmap": false
+    },
+    {
+     "set": "eastlot",
+     "count": 0,
+     "rough": 1,
+     "metal": 1,
+     "env": true,
+     "envI": 0.33,
+     "rmap": true
+    },
+    {
+     "set": "eastlot",
+     "count": 0,
+     "rough": 0.05,
+     "metal": 0.55,
+     "env": false,
+     "envI": 1,
+     "rmap": false
+    },
+    {
+     "set": "eastlot",
+     "count": 0,
+     "rough": 0.2,
+     "metal": 0.12,
+     "env": true,
+     "envI": 0.55,
+     "rmap": false
+    },
+    {
+     "set": "eastlot",
+     "count": 0,
+     "rough": 1,
+     "metal": 1,
+     "env": true,
+     "envI": 0.33,
+     "rmap": true
+    },
+    {
+     "set": "eastlot",
+     "count": 0,
+     "rough": 0.05,
+     "metal": 0.55,
+     "env": false,
+     "envI": 1,
+     "rmap": false
+    },
+    {
+     "set": "eastlot",
+     "count": 0,
+     "rough": 0.2,
+     "metal": 0.12,
+     "env": true,
+     "envI": 0.55,
+     "rmap": false
+    },
+    {
+     "set": "eastlot",
+     "count": 0,
+     "rough": 1,
+     "metal": 1,
+     "env": true,
+     "envI": 0.33,
+     "rmap": true
+    },
+    {
+     "set": "eastlot",
+     "count": 0,
+     "rough": 0.05,
+     "metal": 0.55,
+     "env": false,
+     "envI": 1,
+     "rmap": false
+    },
+    {
+     "set": "eastlot",
+     "count": 0,
+     "rough": 0.2,
+     "metal": 0.12,
+     "env": true,
+     "envI": 0.55,
+     "rmap": false
+    },
+    {
+     "set": "eastlot",
+     "count": 0,
+     "rough": 1,
+     "metal": 1,
+     "env": true,
+     "envI": 0.33,
+     "rmap": true
+    },
+    {
+     "set": "eastlot",
+     "count": 0,
+     "rough": 0.05,
+     "metal": 0.55,
+     "env": false,
+     "envI": 1,
+     "rmap": false
+    },
+    {
+     "set": "far",
+     "count": 9,
+     "rough": 0.4,
+     "metal": 0.1,
+     "env": true,
+     "envI": 0.33,
+     "rmap": false
+    },
+    {
+     "set": "far",
+     "count": 2,
+     "rough": 0.4,
+     "metal": 0.1,
+     "env": true,
+     "envI": 0.33,
+     "rmap": false
+    },
+    {
+     "set": "far",
+     "count": 9,
+     "rough": 0.4,
+     "metal": 0.1,
+     "env": true,
+     "envI": 0.33,
+     "rmap": false
+    },
+    {
+     "set": "far",
+     "count": 5,
+     "rough": 0.4,
+     "metal": 0.1,
+     "env": true,
+     "envI": 0.33,
+     "rmap": false
+    },
+    {
+     "set": "far",
+     "count": 1,
+     "rough": 0.4,
+     "metal": 0.1,
+     "env": true,
+     "envI": 0.33,
+     "rmap": false
+    },
+    {
+     "set": "garage",
+     "count": 23,
+     "rough": 0.3,
+     "metal": 0.3,
+     "env": false,
+     "envI": 1,
+     "rmap": false
+    },
+    {
+     "set": "garage",
+     "count": 23,
+     "rough": 0.3,
+     "metal": 0.45,
+     "env": false,
+     "envI": 1,
+     "rmap": false
+    },
+    {
+     "set": "garage",
+     "count": 23,
+     "rough": 0.05,
+     "metal": 0.55,
+     "env": false,
+     "envI": 1,
+     "rmap": false
+    },
+    {
+     "set": "garage",
+     "count": 23,
+     "rough": 0.85,
+     "metal": 0,
+     "env": false,
+     "envI": 1,
+     "rmap": false
+    },
+    {
+     "set": "far",
+     "count": 2,
+     "rough": 0.3,
+     "metal": 0.3,
+     "env": false,
+     "envI": 1,
+     "rmap": false
+    }
+   ],
+   "invalid": [],
+   "ms": 111161
+  }
+ },
+ "external": [
+  "https://lunden-l1007.olw.workers.dev/beer-shelf",
+  "https://lunden-l1007.olw.workers.dev/beer-shelf"
+ ]
+}

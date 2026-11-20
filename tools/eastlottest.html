@@ -40,12 +40,12 @@ check(tested>150&&miss===0,`asphalt covers the whole HepCat car park polygon (${
 lines.push(`INFO roads over the lot's aisles lie up to ${roadWorst.toFixed(3)} m over the terrain (the roads' own sampling: #1306, not asserted here)`);check(worst<.08&&worst>.005,`asphalt/lines/edge (road aisles excluded, #1310) lie 0.02-0.05 m over the rendered terrain (max ${worst.toFixed(3)} m)`);
 let steep=0;for(let x=Math.min(...xs);x<Math.max(...xs);x+=3)for(let z=Math.min(...zs);z<Math.max(...zs);z+=3)if(L.insidePoly(x,z,hep.polygon)){const g=(S.groundY(x+.3,z)-S.groundY(x-.3,z))/.6,h=(S.groundY(x,z+.3)-S.groundY(x,z-.3))/.6;if(Math.hypot(g,h)>C.WALK.maxSlope)steep++;}
 check(steep===0,'the lot is walkable ground (gradient under WALK.maxSlope everywhere)');
-// the cars: four instanced batches tagged for the car LOD, nothing else added
+// the cars: three instanced batches per body type (#2201) tagged for the car LOD, nothing else added
 const grp=A.scene.getObjectByName('east-lot-cars'),inst=grp.children.filter(m=>m.isInstancedMesh&&!m.userData.carLod);
-check(inst.length===4&&inst.every(m=>m.instanceMatrix.count===cars.length&&m.userData.carBatch==='eastlot'),`the cars are 4 instanced batches (${cars.length} instances) tagged for the view LOD`);
-const far=grp.children.find(m=>m.userData.carLod);check(far&&far.instanceMatrix.count===cars.length,'the view LOD gave them one coarse mesh for the far ones');
+const nT=new Set(inst.map(m=>m.userData.carType)).size;check(nT>=2&&inst.length===3*nT&&inst.filter(m=>m.geometry===inst[0].geometry||true).every(m=>m.userData.carBatch==='eastlot')&&['paint','trim','glass'].every((_,k)=>inst.filter((m,i)=>i%3===k).reduce((n,m)=>n+m.instanceMatrix.count,0)===cars.length),`the cars are ${nT} body types x 3 instanced batches (tyres in the trim) (${cars.length} instances) tagged for the view LOD`);
+const fars=grp.children.filter(m=>m.userData.carLod);check(fars.length===nT&&fars.reduce((n,m)=>n+m.instanceMatrix.count,0)===cars.length,'the view LOD gave them one coarse mesh per body type for the far ones');
 // #1310: the view LOD reorders the near batch, so check every drawn instance against the terrain under its own position
-let onG=0;{const m4=new T.Matrix4(),v=new T.Vector3();for(let i=0;i<inst[0].count;i++){inst[0].getMatrixAt(i,m4);v.setFromMatrixPosition(m4);onG=Math.max(onG,Math.abs(v.y-S.renderedTerrainY(v.x,v.z)));}}
+let onG=0;{const m4=new T.Matrix4(),v=new T.Vector3();for(const b of inst.filter((m,i)=>i%3===0))for(let i=0;i<b.count;i++){b.getMatrixAt(i,m4);v.setFromMatrixPosition(m4);onG=Math.max(onG,Math.abs(v.y-S.renderedTerrainY(v.x,v.z)));}}
 check(onG<.25,`a parked car stands on the sloping ground (worst ${onG.toFixed(2)} m off the terrain at a car's centre)`);
 const eastBackdrop=A.scene.getObjectByName('east-backdrop');const names=eastBackdrop.children.map(m=>m.name);
 check(names.filter(n=>n==='east-access').length===1,'the asphalt, stall lines and edge strip share the one existing east-access mesh (no new draw call)');

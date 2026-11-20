@@ -58,3 +58,12 @@ test('car body pool: dark to the sill/bumper line, untouched at the outer edge',
   assert.ok(inner < 0.05, 'under the body: near black ' + inner);
   assert.ok(outer < 1e-6, 'outer edge: nothing');
 });
+test('#2201: a body type sets its own pool length, width and wheel offsets', async () => {
+  const { carTypeSize } = await import('../src/carvariants.js');
+  const small = vehicleFootprint({ x: 0, z: 0, ax: 1, az: 0, kind: 'car', size: carTypeSize('small') });
+  const base = vehicleFootprint({ x: 0, z: 0, ax: 1, az: 0, kind: 'car' });
+  assert.ok(small[0].ra < base[0].ra - 0.3 && small[0].rb < base[0].rb, 'the small car casts a smaller pool');
+  assert.ok(Math.abs(small[1].x) < Math.abs(base[1].x), 'its wheels sit closer together');
+  const items = itemsFromMatrices([new THREE.Matrix4()], 'car', ['van']);
+  assert.ok(items[0].size.hx > 2 && items[0].size.hx <= 2.17);
+});

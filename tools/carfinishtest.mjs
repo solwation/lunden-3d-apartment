@@ -36,7 +36,7 @@ test('paint, trim and far materials: the shared outdoor reflection, calm roughne
 });
 
 test('the trim batch: every part reads its own texel; plastic matte, chrome/rims metallic; still four geometries', () => {
-  assert.deepEqual(TRIM_PARTS, ['black', 'roof', 'lens', 'led', 'blink', 'tail', 'chrome', 'rim']);
+  assert.deepEqual(TRIM_PARTS, ['black', 'roof', 'lens', 'led', 'blink', 'tail', 'chrome', 'rim', 'tyre']);
   const geos = carGeometry();
   assert.equal(geos.length, 4, '[paint, trim, glass, tyres]: no new batch');
   const trim = geos[1], uv = trim.attributes.uv, col = trim.attributes.color;

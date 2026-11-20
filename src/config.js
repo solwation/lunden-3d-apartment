@@ -11130,7 +11130,7 @@ export const CAR_LIGHTS = {
 
 export const CAR_FINISH = {
   paint: { roughness: 0.2, metalness: 0.12, diffuse: 0.74 }, reflectionDay: 0.55, reflectionNight: 0.04,
-  trim: { black: [0.72, 0], roof: [0.2, 0.05], lens: [0.12, 0.2], led: [0.3, 0], blink: [0.3, 0], tail: [0.3, 0], chrome: [0.25, 0.9], rim: [0.42, 0.75] },
+  trim: { black: [0.72, 0], roof: [0.2, 0.05], lens: [0.12, 0.2], led: [0.3, 0], blink: [0.3, 0], tail: [0.3, 0], chrome: [0.25, 0.9], rim: [0.42, 0.75], tyre: [0.95, 0] },
   trimReflection: 0.6, tyre: { roughness: 0.95 },
   far: { roughness: 0.4, metalness: 0.1, reflection: 0.6 },
 };
@@ -11258,6 +11258,20 @@ export const VEHICLE_SHADOW = {
   tyre: { x: 1.35, z: 0.8, half: [0.5, 0.3], strength: 1, rings: 3, segs: 10 }, // a distinct near-black contact patch under each wheel: axle offset x (both axles, +/-), track z (+/-), half sizes; on top of the body pool (reaches ~25 cm past the sill)
   bike: { x: -0.04, half: [1.15, 0.38], strength: 0.85, rings: 2, segs: 10 }, // a narrow strip along the two wheels (bikeGeometry: wheels at x -0.5 / 0.42)
   plateau: 0.55, // the wheel and bike pools stay at full strength out to this share of its radius (so the band beyond the body stays dark), then eases out to nothing at the rim
+};
+// #2201: body types of the parked cars (src/carvariants.js). Every type is the one low-poly parked body (models/car-parked.glb, 4.32 x 1.84 x
+// 1.52 m, wheelbase 2.69) warped at load: the wheel zones move rigidly (arches and wheels keep their shape), the lengths between them stretch.
+// All numbers *guess*, by eye from ordinary Swedish car parks (no inventory of the actual lot; generic shapes, no make or logo). `wb` wheelbase,
+// `front` / `rear` m from a wheel centre to the bumper end, `lift` m the body stands higher over its wheels, `ky` height scale above 0.5 m,
+// `kz` width scale, `ws` wheel scale, `nose` / `tail` m the high roof corners move back / the roof end is pushed back (a steeper
+// windscreen, an estate's or van's squarer end), `weight` share of the cars. `compact` is the unwarped body. The footprint (collision, #1278's
+// PARKING_LOT.car) stays 4.34 x 1.84: no type is longer or wider than that.
+export const CAR_VARIANTS = {
+  compact: { wb: 2.69, front: 0.815, rear: 0.815, lift: 0, ky: 1, kz: 1, ws: 1, nose: 0, tail: 0, weight: 0.3 },
+  small:   { wb: 2.3,  front: 0.6,   rear: 0.58,  lift: 0, ky: 0.88, kz: 0.9, ws: 0.9, nose: 0, tail: 0, weight: 0.2 },
+  estate:  { wb: 2.76, front: 0.78,  rear: 0.77,  lift: 0.01, ky: 1.04, kz: 1, ws: 1, nose: 0, tail: 0.75, weight: 0.2 },
+  suv:     { wb: 2.72, front: 0.8,   rear: 0.78,  lift: 0.15, ky: 1.16, kz: 1, ws: 1.17, nose: 0.1, tail: 0.2, weight: 0.18 },
+  van:     { wb: 2.8,  front: 0.7,   rear: 0.76,  lift: 0.1, ky: 1.6, kz: 0.99, ws: 1.05, nose: 0.55, tail: 0.7, weight: 0.12 },
 };
 // #2189: steam, a misted mirror and wet tiles after a shower (src/showermoisture.js). One moisture state per bathroom (L1007's two running
 // showers). All *guess*es by eye against an ordinary warm shower, not measured: seconds are real-time. `mistRise` / `wetRise` = time constants

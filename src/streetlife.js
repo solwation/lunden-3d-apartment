@@ -1,7 +1,7 @@
 import { modelURL } from './modelurl.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { SITE, SEASON, BICYCLE, BICYCLE_GRIP } from './config.js';
+import { SITE, SEASON, BICYCLE, BICYCLE_GRIP, CAR_VARIANTS } from './config.js';
 import { pavingTexture } from './patio.js';
 import { registerSnow } from './seasons.js';
 import { grassMaterial, grassUV } from './grass.js';
@@ -10,6 +10,7 @@ import { parkedCarMaterials, trimU } from './carfinish.js';
 import { groundY } from './surroundings.js';
 import { registerBicycleYardEdges } from './street.js';
 import { buildVehicleShadow, itemsFromMatrices } from './vehicleshadow.js';
+import { carTypeFor, warpGeometry } from './carvariants.js';
 import { boxwood } from './boxwood.js';
 import { onRoad, onWalk } from './roads.js';
 import { freeCanvasAfterUpload, lowMemory } from './lowmemory.js';
@@ -30,9 +31,12 @@ function rng(seed) { let s = seed; return () => ((s = (s * 16807) % 2147483647) 
 /** One parked car, facing +x (#251): the body from carmodel.js (lite), as [paint, trim (vertex colours: black, lights,
  * chrome, rims; a constant uv per part into carfinish.js's surface map, #2097), glass, tyres] geometries for instancing. */
 const TRIM = { black: 0x0c0d0f, roof: 0x0b0c0e, lens: 0x15181c, led: 0xdfe4ea, blink: 0xc87a10, tail: 0x8a0f12, chrome: 0xd9dde0, rim: 0x8e949a };
-export function carGeometry() {
-  const { parts } = buildCar(MEGANE, { lite: true });
-  const trim = Object.entries(TRIM).filter(([k]) => parts[k]).map(([k, hex]) => {
+const TYRE = 0x141517; // (the tyres' rubber: the batch's own material, or a trim part of the parked batches, #2201)
+export function carGeometry(type = 'compact', { tyresInTrim = false } = {}) {
+  const { parts: base } = buildCar(MEGANE, { lite: true });
+  // #2201: another body type = the same parts warped (src/carvariants.js); 'compact' is the original geometry, untouched
+  const parts = type === 'compact' ? base : Object.fromEntries(Object.entries(base).map(([k, g]) => [k, warpGeometry(g, type, { wheels: k === 'tyre' || k === 'rim' })]));
+  const trim = Object.entries(tyresInTrim ? { ...TRIM, tyre: TYRE } : TRIM).filter(([k]) => parts[k]).map(([k, hex]) => {
     const g = keep(parts[k]), c = new THREE.Color(hex), n = g.attributes.position.count, col = new Float32Array(n * 3);
     for (let i = 0; i < n; i++) col.set([c.r, c.g, c.b], i * 3);
     const uv = new Float32Array(n * 2), u = trimU(k); // #2097: one texel of the trim surface map per part (roughness/metalness)
@@ -41,7 +45,24 @@ export function carGeometry() {
     return g;
   });
   const bare = (g) => { g = keep(g); g.deleteAttribute('uv'); return g; };
-  return [bare(parts.paint), mergeGeometries(trim), bare(parts.glass), bare(parts.tyre)];
+  return [bare(parts.paint), mergeGeometries(trim), bare(parts.glass), tyresInTrim ? null : bare(parts.tyre)];
+}
+
+/** The parked cars as instanced batches (#2201): one set of three (paint, trim incl. tyres, glass) per body type that occurs, each
+ * tagged `carBatch` = `tag` and `carType` (the view LOD, viewlod.js, pairs them per type). `types[i]` is car i's type. */
+export function parkedCarBatches(mats, colors, types, tag, instance = instanced) {
+  const [paintMat, trimMat, glassMat] = parkedCarMaterials(); // #2097: clear-coat paint, matte plastic and rubber (the rubber now a trim part)
+  const out = [];
+  for (const type of Object.keys(CAR_VARIANTS)) {
+    const at = types.map((t, i) => (t === type ? i : -1)).filter((i) => i >= 0);
+    if (!at.length) continue;
+    const m = at.map((i) => mats[i]), c = colors && at.map((i) => colors[i]);
+    const [body, trim, glass] = carGeometry(type, { tyresInTrim: true }); // the tyres ride in the trim batch (rubber = a trim part): one draw call fewer per body type
+    for (const b of [instance(body, paintMat, m, c), instance(trim, trimMat, m), instance(glass, glassMat, m)]) {
+      b.userData.carBatch = tag; b.userData.carType = type; out.push(b);
+    }
+  }
+  return out;
 }
 
 /** The coarse parked car for the phone view beyond VIEW_LOD.carNear (#1213), facing +x like carGeometry: the side profile
@@ -218,11 +239,8 @@ export function buildStreetLife({ entrances = [] } = {}) {
     }
   }
   group.add(new THREE.Mesh(merge(lines), white));
-  const [body, trim, glass, carTyres] = carGeometry();
-  const [paintMat, trimMat, glassMat, tyreMat] = parkedCarMaterials(); // #2097: clear-coat paint, matte plastic and rubber
-  const carBatches = [instanced(body, paintMat, cars, carColors), instanced(trim, trimMat, cars), instanced(glass, glassMat, cars), instanced(carTyres, tyreMat, cars)];
-  for (const m of carBatches) m.userData.carBatch = 'street'; // (#1213: the phone view draws the far ones coarse, src/viewlod.js)
-  group.add(...carBatches);
+  const carTypes = cars.map((_, i) => carTypeFor(i, 2201)); // #2201: body types by a hash of the car's index (the stream R above is untouched)
+  group.add(...parkedCarBatches(cars, carColors, carTypes, 'street')); // (#1213: the phone view draws the far ones coarse, src/viewlod.js)
   // the bike yard NW of Hus L (#260): light stone paving, a lighter bike place, lawns
   const tex = pavingTexture(), tw = 2.4;
   tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
@@ -314,7 +332,7 @@ export function buildStreetLife({ entrances = [] } = {}) {
   for (const mesh of components) mesh.userData.moving = true; // culling follows changed batch bounds
   group.add(...components);
   // #2185: one contact-shadow decal for the street car park's cars and the yard's bikes (a ridden bike takes its strip off, see place())
-  const vShadow = buildVehicleShadow([...itemsFromMatrices(cars, 'car'), ...itemsFromMatrices(bikes, 'bike')], () => 0, { phone: lowMemory, name: 'street-vehicle-shadow' });
+  const vShadow = buildVehicleShadow([...itemsFromMatrices(cars, 'car', carTypes), ...itemsFromMatrices(bikes, 'bike')], () => 0, { phone: lowMemory, name: 'street-vehicle-shadow' });
   if (vShadow.mesh) group.add(vShadow.mesh);
   // #905: register only actual seeded models, in source order; keep all four shared batches.
   const pickGeometry = new THREE.BoxGeometry(1.7, 1.05, .6), pickMaterial = new THREE.MeshBasicMaterial({ visible: false, side: THREE.DoubleSide });
