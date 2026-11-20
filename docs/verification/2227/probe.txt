@@ -1,0 +1,3 @@
+PASS actual no-foes Combat.fire + Ghosts.sendShot: animal traffic does not cause a combat false alarm
+PASS negative control: actual Combat.fire Nerf t:a packet makes the same assertion fail
+ALL PASS 2 source-bound scenarios; B.hurts/seen and production source untouched

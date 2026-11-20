@@ -1,0 +1,4 @@
+Prior #2210 browser run on main base 962aa3f7; collected by sibling issue_2203, not a new #2227 browser run.
+FAIL +132s an unarmed player cannot be hit (no shot even sent)
+PASS +132s no hearts without a fight
+PASS +132s unarmed B is shown no shots

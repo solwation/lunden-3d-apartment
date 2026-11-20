@@ -60,8 +60,10 @@ async function until(fn, ms = 60000) { const t = Date.now(); for (;;) { const v 
     const bSeesA = await sees(B.page, (l) => l.some((g) => g.n === 'Olof' && g.h === 'nerf' && g.op === 1 && !g.solid));
     check(!!aSeesB && !!bSeesA, 'armed A and unarmed B see each other fully visible without combat eligibility (B sees A carry the blaster)', JSON.stringify(bSeesA));
     const fire = () => A.page.evaluate(() => { const b = window.__app.heldItem(); b.tick(1); window.__app.camera.rotation.set(0, -40 * Math.PI / 180, 0, 'YXZ'); window.__app.scene.updateMatrixWorld(true); b.cool = 0; window.__app.click(0); return window.__ghosts.pendingShot || window.__ghosts.shots; });
-    const aimed = await A.page.evaluate(() => { window.__app.heldItem().cool = 0; window.__app.click(0); return window.__ghosts.shots; });
+    // Ghosts.shots also counts animal/shared outbox traffic; only Combat.fired counts combat shots.
+    const firedBefore = await A.page.evaluate(() => { const before = window.__combat.fired; window.__app.heldItem().cool = 0; window.__app.click(0); return before; });
     await sleep(3000);
+    const aimed = await A.page.evaluate(before => window.__combat.fired - before, firedBefore);
     check(aimed === 0 && (await B.page.evaluate(() => window.__combat.hurts)) === 0, 'an unarmed player cannot be hit (no shot even sent)');
     check(await B.page.evaluate(() => document.getElementById('lives').hidden), 'no hearts without a fight');
     check(await B.page.evaluate(() => window.__combat.seen === 0), 'unarmed B is shown no shots');

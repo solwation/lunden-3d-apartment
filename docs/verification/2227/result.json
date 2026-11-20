@@ -1,0 +1,40 @@
+[
+  {
+    "case": "unarmed with unrelated animal snapshot",
+    "assertion": true,
+    "firedBefore": 7,
+    "firedAfter": 7,
+    "ghostShotsBefore": 12,
+    "ghostShotsAfter": 13,
+    "packets": [
+      {
+        "t": "sq",
+        "k": "s",
+        "animals": []
+      }
+    ]
+  },
+  {
+    "case": "negative control: actual combat fire during settle",
+    "assertion": false,
+    "firedBefore": 7,
+    "firedAfter": 8,
+    "packets": [
+      {
+        "t": "a",
+        "w": "nerf",
+        "o": [
+          0,
+          1.5,
+          0
+        ],
+        "d": [
+          0,
+          0,
+          -1
+        ],
+        "s": 10
+      }
+    ]
+  }
+]

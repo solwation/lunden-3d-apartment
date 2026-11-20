@@ -1,0 +1,6 @@
+{
+  "tools/combattest.cjs": "3883bfdae81efbc0aa9f6a53c7ab465768116392914a8d67be2f213e0ede8d53",
+  "src/combat.js": "9c2e3520e97e0111d59b2395d52a21314f6d0e867eb1aefbf92a0ec7d4831590",
+  "src/ghosts.js": "2ad62856430380566b799a8f9db702c0274e727b0beaa0320fa9cd62cec25e40",
+  "docs/verification/2227/probe.mjs": "7d90703bc838fb2d3071efaf0b343bedc541044d272f1dfdf80e50272976b29f"
+}
