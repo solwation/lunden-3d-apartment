@@ -1,0 +1,124 @@
+TAP version 13
+# Subtest: the patch lands on the floor inside the room, in the sun direction
+ok 1 - the patch lands on the floor inside the room, in the sun direction
+  ---
+  duration_ms: 0.893893
+  type: 'test'
+  ...
+# Subtest: no patch: sun behind the façade, below the horizon, no light, shut blinds
+ok 2 - no patch: sun behind the façade, below the horizon, no light, shut blinds
+  ---
+  duration_ms: 0.229598
+  type: 'test'
+  ...
+# Subtest: lower sun: a longer patch with more area; flux follows the glass cosine, the pass and the intensity
+ok 3 - lower sun: a longer patch with more area; flux follows the glass cosine, the pass and the intensity
+  ---
+  duration_ms: 0.209698
+  type: 'test'
+  ...
+# Subtest: a patch beyond the room reach is pulled in with less flux
+ok 4 - a patch beyond the room reach is pulled in with less flux
+  ---
+  duration_ms: 0.208098
+  type: 'test'
+  ...
+# Subtest: colour: the floor tints the sun; the wall nearest the patch and the ceiling get light, the floor itself and far walls hardly
+ok 5 - colour: the floor tints the sun; the wall nearest the patch and the ceiling get light, the floor itself and far walls hardly
+  ---
+  duration_ms: 0.262098
+  type: 'test'
+  ...
+# Subtest: WindowLight feeds the uniforms: patch and area per window, colour; nothing at night
+ok 6 - WindowLight feeds the uniforms: patch and area per window, colour; nothing at night
+  ---
+  duration_ms: 1.43139
+  type: 'test'
+  ...
+# Subtest: low sun and dust amounts: no night/high-noon/moonlight; bounded monotone by actual room dust and quality
+ok 7 - low sun and dust amounts: no night/high-noon/moonlight; bounded monotone by actual room dust and quality
+  ---
+  duration_ms: 0.992593
+  type: 'test'
+  ...
+# Subtest: rectangle prism follows -sun, excludes outside window, opposite sun, floor/storey and long range
+ok 8 - rectangle prism follows -sun, excludes outside window, opposite sun, floor/storey and long range
+  ---
+  duration_ms: 0.353297
+  type: 'test'
+  ...
+# Subtest: walls/closed door stop rays; own facade at its inner face does not; drawn blinds and curtains mask direct sun
+ok 9 - walls/closed door stop rays; own facade at its inner face does not; drawn blinds and curtains mask direct sun
+  ---
+  duration_ms: 0.248598
+  type: 'test'
+  ...
+# Subtest: actual batch stays bounded, every mote in prism, hidden when clean/cloudy/lowest/phone/outdoors
+ok 10 - actual batch stays bounded, every mote in prism, hidden when clean/cloudy/lowest/phone/outdoors
+  ---
+  duration_ms: 6.724352
+  type: 'test'
+  ...
+# Subtest: the lights chunks are patched once and every lit ShaderLib entry shares the window uniforms by reference
+ok 11 - the lights chunks are patched once and every lit ShaderLib entry shares the window uniforms by reference
+  ---
+  duration_ms: 2.026385
+  type: 'test'
+  ...
+# Subtest: window sources: glass centre, inward normal and size; a glazed entrance door is no window
+ok 12 - window sources: glass centre, inward normal and size; a glazed entrance door is no window
+  ---
+  duration_ms: 1.113092
+  type: 'test'
+  ...
+# Subtest: visibility: the rays stop at the walls and at a shut door; an open door lets the light through to the hall
+ok 13 - visibility: the rays stop at the walls and at a shut door; an open door lets the light through to the hall
+  ---
+  duration_ms: 3.800473
+  type: 'test'
+  ...
+# Subtest: fall-off: brighter by the window than deep in, the ceiling over the window lit, the other level and behind the glass not
+ok 14 - fall-off: brighter by the window than deep in, the ceiling over the window lit, the other level and behind the glass not
+  ---
+  duration_ms: 0.697195
+  type: 'test'
+  ...
+# Subtest: bounce: a surface turned away from the glass still gets light, warm and falling off with distance; none behind a wall
+ok 15 - bounce: a surface turned away from the glass still gets light, warm and falling off with distance; none behind a wall
+  ---
+  duration_ms: 0.417997
+  type: 'test'
+  ...
+# Subtest: a stairwell opening lights the upper storey by bounce (light rising up the stairs)
+ok 16 - a stairwell opening lights the upper storey by bounce (light rising up the stairs)
+  ---
+  duration_ms: 0.770695
+  type: 'test'
+  ...
+# Subtest: blinds and curtains dim their own window only
+ok 17 - blinds and curtains dim their own window only
+  ---
+  duration_ms: 0.743395
+  type: 'test'
+  ...
+# Subtest: the nearest windows and the flat the eye is in or nearest to
+ok 18 - the nearest windows and the flat the eye is in or nearest to
+  ---
+  duration_ms: 0.443196
+  type: 'test'
+  ...
+# Subtest: WindowLight: on by day inside; off at the lowest quality, at night and far away; blinds and door moves follow
+ok 19 - WindowLight: on by day inside; off at the lowest quality, at night and far away; blinds and door moves follow
+  ---
+  duration_ms: 2.310384
+  type: 'test'
+  ...
+1..19
+# tests 19
+# suites 0
+# pass 19
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 158.107271

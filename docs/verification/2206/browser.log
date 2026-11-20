@@ -1,0 +1,314 @@
+browsertest: no systemd user scope here, running without a memory ceiling
+app ready
+living before {"calls":330,"triangles":791234,"programs":126,"count":0,"beams":0,"visible":false,"sun":[0.9150418401167519,0.24757211419336445,0.31844383980472324],"sunIntensity":3,"region":"L1007","roomDust":8,"sources":[{"x":3.8524000000000003,"y":1.7000000000000002,"z":0.1,"nz":1,"room":"Kök / matplats","pass":0.9737234439060753},{"x":3.8464,"y":1.6,"z":12.598600000000001,"nz":-1,"room":"Vardagsrum","pass":1},{"x":1.79475,"y":4.825,"z":0.1,"nz":1,"room":"Sovrum 3","pass":1},{"x":3.8516000000000004,"y":4.725,"z":0.1,"nz":1,"room":"Sovrum 1","pass":1},{"x":1.4567999999999999,"y":4.800000000000001,"z":12.598600000000001,"nz":-1,"room":"Sovrum 4","pass":1},{"x":3.8466,"y":4.725,"z":12.598600000000001,"nz":-1,"room":"Sovrum 2","pass":1}],"transparentPixelBound":0,"overdrawBound":0,"onScreen":0}
+living after {"calls":331,"triangles":791466,"programs":127,"count":116,"beams":1,"visible":true,"sun":[0.9150418401167519,0.24757211419336445,0.31844383980472324],"sunIntensity":3,"region":"L1007","roomDust":8,"sources":[{"x":3.8524000000000003,"y":1.7000000000000002,"z":0.1,"nz":1,"room":"Kök / matplats","pass":0.9737234439060753},{"x":3.8464,"y":1.6,"z":12.598600000000001,"nz":-1,"room":"Vardagsrum","pass":1},{"x":1.79475,"y":4.825,"z":0.1,"nz":1,"room":"Sovrum 3","pass":1},{"x":3.8516000000000004,"y":4.725,"z":0.1,"nz":1,"room":"Sovrum 1","pass":1},{"x":1.4567999999999999,"y":4.800000000000001,"z":12.598600000000001,"nz":-1,"room":"Sovrum 4","pass":1},{"x":3.8466,"y":4.725,"z":12.598600000000001,"nz":-1,"room":"Sovrum 2","pass":1}],"transparentPixelBound":8203.653409456265,"overdrawBound":0.013352300471120222,"onScreen":110}
+window before {"calls":272,"triangles":700425,"programs":127,"count":0,"beams":1,"visible":false,"sun":[0.9150418401167519,0.24757211419336445,0.31844383980472324],"sunIntensity":3,"region":"L1007","roomDust":8,"sources":[{"x":3.8524000000000003,"y":1.7000000000000002,"z":0.1,"nz":1,"room":"Kök / matplats","pass":0.9737234439060753},{"x":3.8464,"y":1.6,"z":12.598600000000001,"nz":-1,"room":"Vardagsrum","pass":1},{"x":1.79475,"y":4.825,"z":0.1,"nz":1,"room":"Sovrum 3","pass":1},{"x":3.8516000000000004,"y":4.725,"z":0.1,"nz":1,"room":"Sovrum 1","pass":1},{"x":1.4567999999999999,"y":4.800000000000001,"z":12.598600000000001,"nz":-1,"room":"Sovrum 4","pass":1},{"x":3.8466,"y":4.725,"z":12.598600000000001,"nz":-1,"room":"Sovrum 2","pass":1}],"transparentPixelBound":0,"overdrawBound":0,"onScreen":0}
+window after {"calls":273,"triangles":700657,"programs":127,"count":116,"beams":1,"visible":true,"sun":[0.9150418401167519,0.24757211419336445,0.31844383980472324],"sunIntensity":3,"region":"L1007","roomDust":8,"sources":[{"x":3.8524000000000003,"y":1.7000000000000002,"z":0.1,"nz":1,"room":"Kök / matplats","pass":0.9737234439060753},{"x":3.8464,"y":1.6,"z":12.598600000000001,"nz":-1,"room":"Vardagsrum","pass":1},{"x":1.79475,"y":4.825,"z":0.1,"nz":1,"room":"Sovrum 3","pass":1},{"x":3.8516000000000004,"y":4.725,"z":0.1,"nz":1,"room":"Sovrum 1","pass":1},{"x":1.4567999999999999,"y":4.800000000000001,"z":12.598600000000001,"nz":-1,"room":"Sovrum 4","pass":1},{"x":3.8466,"y":4.725,"z":12.598600000000001,"nz":-1,"room":"Sovrum 2","pass":1}],"transparentPixelBound":33134.614205807404,"overdrawBound":0.05393003614226465,"onScreen":76}
+{
+  "views": {
+    "living": {
+      "before": {
+        "calls": 330,
+        "triangles": 791234,
+        "programs": 126,
+        "count": 0,
+        "beams": 0,
+        "visible": false,
+        "sun": [
+          0.9150418401167519,
+          0.24757211419336445,
+          0.31844383980472324
+        ],
+        "sunIntensity": 3,
+        "region": "L1007",
+        "roomDust": 8,
+        "sources": [
+          {
+            "x": 3.8524000000000003,
+            "y": 1.7000000000000002,
+            "z": 0.1,
+            "nz": 1,
+            "room": "Kök / matplats",
+            "pass": 0.9737234439060753
+          },
+          {
+            "x": 3.8464,
+            "y": 1.6,
+            "z": 12.598600000000001,
+            "nz": -1,
+            "room": "Vardagsrum",
+            "pass": 1
+          },
+          {
+            "x": 1.79475,
+            "y": 4.825,
+            "z": 0.1,
+            "nz": 1,
+            "room": "Sovrum 3",
+            "pass": 1
+          },
+          {
+            "x": 3.8516000000000004,
+            "y": 4.725,
+            "z": 0.1,
+            "nz": 1,
+            "room": "Sovrum 1",
+            "pass": 1
+          },
+          {
+            "x": 1.4567999999999999,
+            "y": 4.800000000000001,
+            "z": 12.598600000000001,
+            "nz": -1,
+            "room": "Sovrum 4",
+            "pass": 1
+          },
+          {
+            "x": 3.8466,
+            "y": 4.725,
+            "z": 12.598600000000001,
+            "nz": -1,
+            "room": "Sovrum 2",
+            "pass": 1
+          }
+        ],
+        "transparentPixelBound": 0,
+        "overdrawBound": 0,
+        "onScreen": 0
+      },
+      "after": {
+        "calls": 331,
+        "triangles": 791466,
+        "programs": 127,
+        "count": 116,
+        "beams": 1,
+        "visible": true,
+        "sun": [
+          0.9150418401167519,
+          0.24757211419336445,
+          0.31844383980472324
+        ],
+        "sunIntensity": 3,
+        "region": "L1007",
+        "roomDust": 8,
+        "sources": [
+          {
+            "x": 3.8524000000000003,
+            "y": 1.7000000000000002,
+            "z": 0.1,
+            "nz": 1,
+            "room": "Kök / matplats",
+            "pass": 0.9737234439060753
+          },
+          {
+            "x": 3.8464,
+            "y": 1.6,
+            "z": 12.598600000000001,
+            "nz": -1,
+            "room": "Vardagsrum",
+            "pass": 1
+          },
+          {
+            "x": 1.79475,
+            "y": 4.825,
+            "z": 0.1,
+            "nz": 1,
+            "room": "Sovrum 3",
+            "pass": 1
+          },
+          {
+            "x": 3.8516000000000004,
+            "y": 4.725,
+            "z": 0.1,
+            "nz": 1,
+            "room": "Sovrum 1",
+            "pass": 1
+          },
+          {
+            "x": 1.4567999999999999,
+            "y": 4.800000000000001,
+            "z": 12.598600000000001,
+            "nz": -1,
+            "room": "Sovrum 4",
+            "pass": 1
+          },
+          {
+            "x": 3.8466,
+            "y": 4.725,
+            "z": 12.598600000000001,
+            "nz": -1,
+            "room": "Sovrum 2",
+            "pass": 1
+          }
+        ],
+        "transparentPixelBound": 8203.653409456265,
+        "overdrawBound": 0.013352300471120222,
+        "onScreen": 110
+      }
+    },
+    "window": {
+      "before": {
+        "calls": 272,
+        "triangles": 700425,
+        "programs": 127,
+        "count": 0,
+        "beams": 1,
+        "visible": false,
+        "sun": [
+          0.9150418401167519,
+          0.24757211419336445,
+          0.31844383980472324
+        ],
+        "sunIntensity": 3,
+        "region": "L1007",
+        "roomDust": 8,
+        "sources": [
+          {
+            "x": 3.8524000000000003,
+            "y": 1.7000000000000002,
+            "z": 0.1,
+            "nz": 1,
+            "room": "Kök / matplats",
+            "pass": 0.9737234439060753
+          },
+          {
+            "x": 3.8464,
+            "y": 1.6,
+            "z": 12.598600000000001,
+            "nz": -1,
+            "room": "Vardagsrum",
+            "pass": 1
+          },
+          {
+            "x": 1.79475,
+            "y": 4.825,
+            "z": 0.1,
+            "nz": 1,
+            "room": "Sovrum 3",
+            "pass": 1
+          },
+          {
+            "x": 3.8516000000000004,
+            "y": 4.725,
+            "z": 0.1,
+            "nz": 1,
+            "room": "Sovrum 1",
+            "pass": 1
+          },
+          {
+            "x": 1.4567999999999999,
+            "y": 4.800000000000001,
+            "z": 12.598600000000001,
+            "nz": -1,
+            "room": "Sovrum 4",
+            "pass": 1
+          },
+          {
+            "x": 3.8466,
+            "y": 4.725,
+            "z": 12.598600000000001,
+            "nz": -1,
+            "room": "Sovrum 2",
+            "pass": 1
+          }
+        ],
+        "transparentPixelBound": 0,
+        "overdrawBound": 0,
+        "onScreen": 0
+      },
+      "after": {
+        "calls": 273,
+        "triangles": 700657,
+        "programs": 127,
+        "count": 116,
+        "beams": 1,
+        "visible": true,
+        "sun": [
+          0.9150418401167519,
+          0.24757211419336445,
+          0.31844383980472324
+        ],
+        "sunIntensity": 3,
+        "region": "L1007",
+        "roomDust": 8,
+        "sources": [
+          {
+            "x": 3.8524000000000003,
+            "y": 1.7000000000000002,
+            "z": 0.1,
+            "nz": 1,
+            "room": "Kök / matplats",
+            "pass": 0.9737234439060753
+          },
+          {
+            "x": 3.8464,
+            "y": 1.6,
+            "z": 12.598600000000001,
+            "nz": -1,
+            "room": "Vardagsrum",
+            "pass": 1
+          },
+          {
+            "x": 1.79475,
+            "y": 4.825,
+            "z": 0.1,
+            "nz": 1,
+            "room": "Sovrum 3",
+            "pass": 1
+          },
+          {
+            "x": 3.8516000000000004,
+            "y": 4.725,
+            "z": 0.1,
+            "nz": 1,
+            "room": "Sovrum 1",
+            "pass": 1
+          },
+          {
+            "x": 1.4567999999999999,
+            "y": 4.800000000000001,
+            "z": 12.598600000000001,
+            "nz": -1,
+            "room": "Sovrum 4",
+            "pass": 1
+          },
+          {
+            "x": 3.8466,
+            "y": 4.725,
+            "z": 12.598600000000001,
+            "nz": -1,
+            "room": "Sovrum 2",
+            "pass": 1
+          }
+        ],
+        "transparentPixelBound": 33134.614205807404,
+        "overdrawBound": 0.05393003614226465,
+        "onScreen": 76
+      }
+    }
+  },
+  "checks": {
+    "clean": true,
+    "cloud": true,
+    "night": true,
+    "amounts": true,
+    "drawn": true,
+    "open": true,
+    "lowest": true,
+    "restored": true,
+    "stable": true,
+    "dirtyCount": 116,
+    "lessDustCount": 13,
+    "resourcesBefore": [
+      127,
+      88,
+      1417
+    ],
+    "resourcesAfter": [
+      127,
+      88,
+      1417
+    ]
+  },
+  "errors": []
+}

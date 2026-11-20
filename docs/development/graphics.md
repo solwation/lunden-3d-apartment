@@ -771,6 +771,15 @@ src/cloudshadow.js     cloud shadows (#2102, `CLOUD_SHADOW`, artistic *guesses*)
                        shader's floor). The shared field has a low octave (clusters, gaps; cell 200 m); the sky adds two finer octaves that erode the edges and fade out towards the horizon, a wide soft edge, thickness shading (grey cores, bright thin rims) and one sun-ward sample for self-shadow. Dusk colours / lit edges (#2124) and the deck (#1251) are
                        untouched. One program (an uniform branch), no pass; `quality.register('skyClouds')` falls back to the old texture at level 0 and on phones. `tools/skycloudstest.mjs`,
                        `tools/skyclouds2154browser.cjs`, [evidence](../verification/2154/).
+src/sundust.js         low-sun indoor dust (#2206, `SUN_DUST`, all artistic guesses): one <=200-quad instanced batch, at most two very
+                       faint narrow streaks included. `inSunPrism` projects room points towards the sun onto the real window rectangle;
+                       the volume runs along -sunDir, clipped to the storey, flat box, inner reveal, walls/closed room doors, direct-ray
+                       blind/curtain masks. Current `WindowLight.region/shown` supplies real windows (never stair wells); settled Mess
+                       dust in that window's room/level sets the count (`roomDust`/`dustCount`), never crumbs or other rooms. Slow seeded
+                       samples update at 5 Hz, a uniform clock twinkles the subpixel dust; no texture/shadow sampler/light/render pass.
+                       `QUALITY.sunDust`: off at level 0, reduced counts below 3; lowMemory allocates none. `lowSunDust` excludes night,
+                       overhead sun and weak/cloud-cut sunlight. `tools/sundust2206test.mjs` and own real-room browser
+                       `tools/sundust2206browser.cjs`; [images, bounded overdraw and limits](../verification/2206/README.md).
 src/windowlight.js     the windows' daylight indoors (#2152, `WINDOW_LIGHT`, *guesses* tuned by eye/mean luminance): patches three's `lights_pars_begin` /
                        `lights_fragment_end` once at import like cloudshadow.js (no pass, texture or extra program; never installed on phones). Inside the
                        active flat's box (L1007, or a visitable flat from visitunit.js, each with its own box between its windows' glass planes and its own

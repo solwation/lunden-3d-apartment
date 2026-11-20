@@ -3701,6 +3701,7 @@ export const QUALITY = {
   mirror: [0, 256, 256, 512, 512], mirrorEvery: [1, 3, 2, 1, 1], // mirror image size (0 = none) and drawn every n-th frame; #1207: level 1 keeps a cheap image (256², every 3rd frame, no extra memory: the shared target is 256² already) so a device that stepped down once does not see empty mirrors; only the lowest level has none
   detail: [0.6, 0.75, 0.9, 1, 1],
   particles: [0.35, 0.6, 0.85, 1, 1],
+  sunDust: [0, 0.35, 0.65, 1, 1], // #2206: no indoor dust sprites at the lowest level
 };
 // #669 (phone, `sliced`): iPhone crash reports show ONE frame of 4.4-4.7 s (the heartbeat's lagMs) in the warm-up's
 // `compiling` phase right before WebGL context loss; ~110 programs of the mirror variants compile in one frame (SwiftShader:
@@ -6311,6 +6312,13 @@ export const WINDOW_LIGHT = {
   // gets some, `sunBeyond` = flux kept when the patch would land past the room's wall, `floor` = the parquet's sRGB colour (FINISH).
   sunGain: 8.0, sunClip: 0.7, sunMinHeight: 0.05, sunMaxArea: 12, sunWrap: 0.5, sunBeyond: 0.5, floor: [204, 180, 146],
 };
+
+// #2206: airborne dust in the actual windows' low-sun prisms (src/sundust.js). All *guesses*, artistic scale rather than
+// measured particle optics: <=200 quads incl <=2 narrow streaks, none on lowMemory/q0; no pass/texture/shadow sampler.
+// height = sun-y fade-in/full/fade-out/gone; fullDust = sum of settled dust amounts in the same room/level; m, s, pixels.
+export const SUN_DUST = { max: 200, beams: 2, height: [0.025, 0.1, 0.32, 0.48], fullSun: 2, fullDust: 8,
+  minFacing: 0.08, inset: 0.06, reach: 4, step: 0.2, radius: 0.003, pixels: [0.55, 1.15], alpha: 0.38,
+  drift: 0.16, color: 0xffe5b5, beamWidth: 0.045, beamLength: 2.5, beamAlpha: 0.018 };
 
 // Room lights (src/lights.js). Intensities are candela-ish (three.js physical lights), tuned by
 // eye at night. `pool` = point lights shared by the nearest lit lamps (keep small: Iris 640).
