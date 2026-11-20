@@ -3,6 +3,7 @@ import { freeCanvasAfterUpload } from './lowmemory.js';
 import { LEVELS, SOFFITS, CURTAIN_LIGHT as LIGHT, MATERIAL_LIBRARY } from './config.js';
 import { sfx } from './audio.js';
 import { materialChoices } from './materialcatalog.js';
+import { CurtainDraught } from './curtainwind.js'; // #2198
 
 const fabricMaps = new Map();
 function fabricMap(choice, tile) {
@@ -606,6 +607,7 @@ export class Curtain {
     this.built = -1;
     this.sound = 0;
     this.set(spec.initial ?? 0);
+    this.draught = new CurtainDraught(this, y1, y1 - y0); // #2198: billows in an open window's draught (cloth + shadow, uniforms only)
     // #997: only cloth panels join the library; rail, geometry and legacy blind ID stay intact.
     const original = this.mat, variants = new Map([['original', original]]);
     const surface = { id: 'textile', name: 'Gardinernas tyg', category: 'gardin', choice: 'original', original,
@@ -613,7 +615,7 @@ export class Curtain {
         const choice = materialChoices('gardin').find(c => c.id === id);
         if (!choice) return false;
         if (!variants.has(id)) {
-          const mat = original.clone(); mat.map = mat.emissiveMap = fabricMap(choice, spec.tile); variants.set(id, mat);
+          const mat = original.clone(); mat.map = mat.emissiveMap = fabricMap(choice, spec.tile); this.draught.patch(mat); variants.set(id, mat);
         }
         const mat = variants.get(id); mat.emissive.copy(this.mat.emissive);
         this.mat = mat; this.tex = mat.map; surface.choice = id;

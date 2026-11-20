@@ -11221,3 +11221,9 @@ export const VALLEY_MIST = {
   chance: [0.3, 0.3, 0.35, 0.45, 0.5, 0.35, 0.3, 0.4, 0.65, 0.7, 0.55, 0.35],
   veil: { spacing: [0, 150, 95, 60], phoneSpacing: 220, size: [[70, 110], [26, 44]], lift: [4.6, 6.6], range: 420, alpha: 0.85, drift: 7, minLevel: 1 },
 };
+
+// #2198: curtains billow in the draught of an open window / balcony door (src/curtainwind.js). `amp` m of hem swing into the room at
+// full strength (*guess*, a 2.4 m drop), `calm` = share of that already in a breeze (the rest scales with the site wind power), `suck` the
+// outward pull in a lull, `ripple` the fold shimmer, `freq` rad/s, `gustFreq` slow gust, `fullDrop` m of drop that gets the full swing
+// (the 0.5 m kitchen valance swings less), `reachZ` / `reachX` / `reachDoor` m: which openings feed a curtain (its rail z, glass x).
+export const CURTAIN_WIND = { amp: 0.42, calm: 0.3, suck: 0.12, ripple: 0.22, freq: 1.7, gustFreq: 0.45, fullDrop: 1.6, reachZ: 1.2, reachX: 0.6, reachDoor: 1.4 };

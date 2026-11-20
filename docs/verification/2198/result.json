@@ -1,0 +1,123 @@
+{
+  "views": [
+    {
+      "name": "bedroom1",
+      "curtain": 0,
+      "at": "5.25,2.3,62,-20,3.25",
+      "shots": {
+        "before": {
+          "file": "/tmp/cw2198/bedroom1-before.png",
+          "openings": 1,
+          "strength": 0,
+          "level": 1,
+          "calls": 301,
+          "triangles": 706494,
+          "programs": 106
+        },
+        "windy-a": {
+          "file": "/tmp/cw2198/bedroom1-windy-a.png",
+          "openings": 1,
+          "strength": 1,
+          "level": 1,
+          "calls": 301,
+          "triangles": 706494,
+          "programs": 106
+        },
+        "windy-b": {
+          "file": "/tmp/cw2198/bedroom1-windy-b.png",
+          "openings": 1,
+          "strength": 1,
+          "level": 1,
+          "calls": 301,
+          "triangles": 706494,
+          "programs": 106
+        },
+        "closed": {
+          "file": "/tmp/cw2198/bedroom1-closed.png",
+          "openings": 1,
+          "strength": 0,
+          "level": 1,
+          "calls": 301,
+          "triangles": 706494,
+          "programs": 239
+        }
+      },
+      "motion": {
+        "beforeVsWindy": {
+          "meanAbs": 20.73,
+          "changedPx": 897069
+        },
+        "windyAvsB": {
+          "meanAbs": 2.36,
+          "changedPx": 20081
+        },
+        "closedVsBefore": {
+          "meanAbs": 11.251,
+          "changedPx": 937168
+        }
+      }
+    },
+    {
+      "name": "kitchen",
+      "curtain": 4,
+      "at": "5.2,2.2,55,16,0",
+      "shots": {
+        "before": {
+          "file": "/tmp/cw2198/kitchen-before.png",
+          "openings": 1,
+          "strength": 0,
+          "level": 0,
+          "calls": 327,
+          "triangles": 677991,
+          "programs": 106
+        },
+        "windy-a": {
+          "file": "/tmp/cw2198/kitchen-windy-a.png",
+          "openings": 1,
+          "strength": 1,
+          "level": 0,
+          "calls": 327,
+          "triangles": 677991,
+          "programs": 106
+        },
+        "windy-b": {
+          "file": "/tmp/cw2198/kitchen-windy-b.png",
+          "openings": 1,
+          "strength": 1,
+          "level": 0,
+          "calls": 327,
+          "triangles": 677991,
+          "programs": 106
+        },
+        "closed": {
+          "file": "/tmp/cw2198/kitchen-closed.png",
+          "openings": 1,
+          "strength": 0,
+          "level": 0,
+          "calls": 327,
+          "triangles": 677991,
+          "programs": 240
+        }
+      },
+      "motion": {
+        "beforeVsWindy": {
+          "meanAbs": 0.511,
+          "changedPx": 20489
+        },
+        "windyAvsB": {
+          "meanAbs": 0.069,
+          "changedPx": 1173
+        },
+        "closedVsBefore": {
+          "meanAbs": 1.264,
+          "changedPx": 41448
+        }
+      }
+    }
+  ],
+  "errors": [],
+  "console": [
+    "Failed to load resource: the server responded with a status of 404 (File not found)",
+    "Failed to load resource: the server responded with a status of 404 (File not found)"
+  ]
+}
