@@ -1,7 +1,7 @@
 import { discoverCreature } from './bestiaryevents.js';
 import { creature } from './bestiarymetadata.js';
 import * as THREE from 'three';
-import { OLOF as O, OLOF_DRIVE as OD, defaultFaceLook } from './config.js';
+import { OLOF as O, OLOF_DRIVE as OD, defaultFaceLook, ageInYears, ageStepFromYears } from './config.js';
 import { Avatar } from './avatar.js';
 import { newBreath, stepBreath } from './avatarbreath.js'; // #2146: his breathing is the avatars' (rhythm, then avatarchest.js)
 import { chestBreath } from './avatarchest.js';
@@ -48,9 +48,9 @@ export function attachSkeleton(mesh) {
 }
 
 /** Olof's look (#1156): the Avatar look made from OLOF.look and his colours (the top is TOPS[10], his hoodie's colour). */
-export function olofLook() {
-  const C = O.colors;
-  return { ...defaultFaceLook(), ...O.look, skin: C.skin, hair: C.hair, beard: C.beard, top: C.hoodie, pants: C.jeans, shoes: C.shoe };
+export function olofLook(now = new Date()) {
+  const C = O.colors; // #2233: 186 cm (OLOF.look.height) and the age step from his birth date (OLOF.born) on the real local date `now`
+  return { ...defaultFaceLook(), ...O.look, age: ageStepFromYears(ageInYears(O.born, now)), skin: C.skin, hair: C.hair, beard: C.beard, top: C.hoodie, pants: C.jeans, shoes: C.shoe };
 }
 
 /** The figure: the Avatar in Olof's look, { object (put it where he is), mesh, bones, pick, material, head, avatar }. */

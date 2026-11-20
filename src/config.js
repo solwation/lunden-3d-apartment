@@ -2446,7 +2446,13 @@ export const OLOF = {
   // #1156: he is drawn with the players' avatar (src/avatar.js) in a fixed look made from his colours above: short hair
   // (style 0), long sleeves, a full beard with moustache (facial 3) in his grey `beard`, dark brown eyes (EYES[1]), the
   // standard 175 cm and an average build; the face sliders in the middle (defaultFaceLook).
-  look: { style: 0, sleeves: 1, gender: 0, facial: 3, build: 1, tall: 1, eyes: 0x3b2618 },
+  // #2233: 186 cm (`height`, whole cm as the mirror's slider) and his age from `born` (1983-01-06, [y, m, d]) as an AVATAR_AGE step (`ageMap`, below).
+  look: { style: 0, sleeves: 1, gender: 0, facial: 3, build: 1, tall: 1, height: 186, eyes: 0x3b2618 },
+  born: [1983, 1, 6],
+  // years -> AVATAR_AGE step (*guess*, the issue's example): step 0 up to and including `young` years, then one step per `perStep` years
+  // (26-30 -> 1, 31-35 -> 2, ...), capped at the last step. The date is the real local one (`new Date()` at session start / when the car's Olof is
+  // built): the game clock only simulates the time of day and a chosen month (URL `time` / `month`), not the year, so it cannot age him. Never sent anywhere.
+  ageMap: { young: 25, perStep: 5 },
   // at the wheel of our car (#599, src/olof.js OlofDriver): `at` [x, z] his hips in the car's frame (facing +x) (the driving seat's cushion, carmodel.js seats: x −0.04, z −0.37; seat top 0.54),
   // `floor` the foot well (carmodel.js: 0.29 + half its 0.05), `seat` the cushion's top above it, `wheel` [x, y, z] where his
   // hands hold it (carmodel.js: the wheel's centre 0.42, 0.93, −0.37, tilted 0.42 rad), `pedals` how far forward his feet are,
@@ -8163,6 +8169,16 @@ export function socksOf(look) {
 export function ageStepOf(look) {
   const v = look?.age;
   return Number.isInteger(v) && v > 0 && v < AVATAR_AGE.steps ? v : 0;
+}
+/** #2233: whole years completed on `now` for a birth date [y, m, d] (the birthday itself counts: 6 Jan 2027 is 44). */
+export function ageInYears(born, now = new Date()) {
+  const y = now.getFullYear() - born[0], m = now.getMonth() + 1 - born[1], d = now.getDate() - born[2];
+  return y - (m < 0 || (m === 0 && d < 0) ? 1 : 0);
+}
+/** #2233: years -> AVATAR_AGE step through OLOF.ageMap: 0 up to `young`, one more step per `perStep` years, capped at the last step. */
+export function ageStepFromYears(years, map = OLOF.ageMap) {
+  if (!(years > map.young)) return 0;
+  return Math.min(AVATAR_AGE.steps - 1, 1 + Math.floor((years - map.young - 1) / map.perStep));
 }
 /** The look's nose shape variant (#2049): 0 straight (also for any missing or unknown value), 1 convex, 2 upturned, 3 broad. */
 export function noseFormOf(look) {

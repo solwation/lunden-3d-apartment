@@ -422,6 +422,16 @@ Namnbyte under sessionen ändrar inget. På nätet (`encodeAvatarWireLook`) föl
 (närmaste palettfärg) och skäggets färg (finns inte i koden). Test: `tools/olofnametest.mjs`;
 före/efter: `tools/olofname2218browser.cjs` ([bilder](../verification/2218/)). Personligt innehåll, förs inte till den publika versionen.
 
+## Olofs längd och ålder (#2233)
+
+`olofLook()` ger längden 186 cm (`OLOF.look.height`, hela cm som speglens reglage) och ett åldersteg (`age`, `AVATAR_AGE`, #2155)
+som räknas fram från födelsedatumet `OLOF.born` (1983-01-06). Gäller bilens Olof (när han byggs) och namnspelare (varje sessionsstart,
+#2218); ingen ny trådformatsfält. Datumet är den verkliga lokala (`new Date()`), inte spelklockan: den simulerar bara klockslag och
+vald månad, inte år, så den kan inte åldra honom. Det lämnar aldrig webbläsaren. Omräkning år → steg (*guess*, `OLOF.ageMap`):
+steg 0 till och med 25 år, sedan ett steg per 5 år (26–30 → 1, 31–35 → 2 …), tak vid sista steget (71+); 43–45 år ger steg 4.
+`ageInYears` räknar hela år (födelsedagen räknas), `ageStepFromYears` mappar (båda i `src/config.js`). Test:
+`tools/olofage2233test.mjs`; bilder: `tools/olofage2233browser.cjs` ([bilder](../verification/2233/)). Personligt, förs inte till den publika versionen.
+
 ## Module and test map
 
 ```text
