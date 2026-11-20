@@ -207,7 +207,9 @@ and supports `workflow_dispatch` with the same concurrency group; its earlier
 steps run npm tests/build and upload `dist`, rather than the original's stamped
 `_site`. The recovery principle therefore also applies if that same symptom occurs
 there, but this incident does not demonstrate a public failure. No public workflow
-change or port is part of #2236.
+change is needed. The corresponding documentation-only transfer is tracked in
+[public #350](https://github.com/solwation/kvarteret-lunden/issues/350);
+[delivery evidence for #2236](https://github.com/solwation/lunden-3d-apartment/issues/2236#issuecomment-7044715697).
 
 ## Recent implementation notes
 
