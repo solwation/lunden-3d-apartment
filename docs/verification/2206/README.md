@@ -25,3 +25,5 @@ The browser wrapper used its shared slots but reports unavailable systemd memory
 ## Public applicability
 
 Inspected public `AGENTS.md`, `docs/upstream.md`, `src/main.js`, `world.js` and its config. Its actual app has fixed noon light (`world.windowLights.update(12, 0, true)`), no `WindowLight` indoor region/controller, no day-cycle `sunDir` and no life-simulation `Mess` dust state. This low-sun/dust-driven consumer therefore has no direct counterpart there. Do not import the original's life simulation or personal room furnishings to create one. The neutral prism/count helpers are reusable if a later public daylight feature supplies a justified neutral consumer; no active public port is necessary for this change.
+
+Published source `25bb8953ad6c3f8a229d4aa25afa45162dd01d58`; pinned before/after evidence in https://github.com/solwation/lunden-3d-apartment/issues/2206#issuecomment-7042720774. Pages and Worker deployments succeeded; before images removed only in the resolving commit.
