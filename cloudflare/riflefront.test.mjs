@@ -40,7 +40,7 @@ test('extra-front four fresh identities: actual Worker head2, body1 forgery, one
  for(let style=0;style<4;style++){
   const env=setup(),a=await connect(env),b=await connect(env),id=b.got[0].i,look=avatarLook(id);
   a.send({p:[0,0,-4],r:0,h:'rifle'});b.send({p:[0,0,0],r:0,h:'rifle'});await settle(env);now+=1000;
-  const state={p:[0,0,0],r:0},o=[0,1.62,-4],w=[.93,1,1.08][look.build],target=[-.068*w,(H.headY+.09)*look.tall,0],v=target.map((x,i)=>x-o[i]),len=Math.hypot(...v),d=v.map(x=>+ (x/len).toFixed(3)),unit=d.map(x=>x/Math.hypot(...d)),entry=rifleSkullEntry(id,state,o,d),hc=[1,...o.map((x,i)=>+(x+unit[i]*entry).toFixed(3))],shot={t:'a',w:'rifle',o,d,to:id,hc};
+  const state={p:[0,0,0],r:0},o=[0,1.62,-4],w=1,target=[-.068*w,(H.headY+.09)*look.tall,0],v=target.map((x,i)=>x-o[i]),len=Math.hypot(...v),d=v.map(x=>+ (x/len).toFixed(3)),unit=d.map(x=>x/Math.hypot(...d)),entry=rifleSkullEntry(id,state,o,d),hc=[1,...o.map((x,i)=>+(x+unit[i]*entry).toFixed(3))],shot={t:'a',w:'rifle',o,d,to:id,hc};
   assert.equal(rifleHeadFrontRegion(id,state,hc.slice(1),o,d),true);assert.equal(rifleHeadFrontRegion(id,state,hc.slice(1)),false);
   assert.equal(rifleHeadContact(id,state,shot,[0,0,-4],40,4),true);assert.ok(Buffer.byteLength(JSON.stringify(shot))<=PLAYERS.maxBytes);
   a.send(shot);await settle(env);let hit=a.got.filter(x=>x.t==='hit').at(-1);assert.equal(hit.head,true);assert.equal(hit.l,8);assert.equal(hit.award.points,5);
@@ -59,7 +59,7 @@ test('extra-front four fresh identities: actual Worker head2, body1 forgery, one
 test('front cell/ray/wire guards preserve all60 canonical appearances and maximum coordinates',()=>{
  const seen=new Set();for(let n=0;n<10000&&seen.size<60;n++){
   const id='front-'+n,look=avatarLook(id),key=[look.style,look.build,look.tall].join('/');if(seen.has(key))continue;seen.add(key);
-  const w=[.93,1,1.08][look.build];for(const shift of [[0,0,0],[4990,4980,4990],[-4990,-4980,-4990]]){
+  const w=1;for(const shift of [[0,0,0],[4990,4980,4990],[-4990,-4980,-4990]]){
    const state={p:shift,r:0},o=[shift[0],shift[1]+1.62,shift[2]-4],target=[shift[0]-.068*w,shift[1]+(H.headY+.09)*look.tall,shift[2]],v=target.map((x,i)=>x-o[i]),d=v.map(x=>+(x/Math.hypot(...v)).toFixed(3)),unit=d.map(x=>x/Math.hypot(...d)),entry=rifleSkullEntry(id,state,o,d),point=o.map((x,i)=>+(x+unit[i]*entry).toFixed(3)),shot={t:'a',w:'rifle',o,d,hc:[1,...point]};
    assert.equal(rifleHeadFrontRegion(id,state,point,o,d),true);assert.equal(rifleHeadContact(id,state,shot,[shift[0],shift[1],shift[2]-4],40,4),true);
    for(const badRay of [[0,1,0],[1,0,0],[0,0,-1],[0,0,0],[NaN,0,1]])assert.equal(rifleHeadFrontRegion(id,state,point,o,badRay),false);
@@ -70,7 +70,7 @@ test('front cell/ray/wire guards preserve all60 canonical appearances and maximu
 });
 
 function frontWire(id,state={p:[0,0,0],r:0},sample=-.068,vertical=.09,distance=-4) {
- const look=avatarLook(id),width=[.93,1,1.08][look.build],c=Math.cos(state.r),s=Math.sin(state.r),turn=([x,y,z])=>[c*x+s*z,y,-s*x+c*z],o=turn([0,1.62,distance]).map((v,i)=>+(v+state.p[i]).toFixed(2)),point=turn([sample*width,(H.headY+vertical)*look.tall,0]).map((v,i)=>v+state.p[i]),v=point.map((x,i)=>x-o[i]),d=v.map(x=>+(x/Math.hypot(...v)).toFixed(3)),unit=d.map(x=>x/Math.hypot(...d)),t=rifleSkullEntry(id,state,o,d);
+ const look=avatarLook(id),width=1,c=Math.cos(state.r),s=Math.sin(state.r),turn=([x,y,z])=>[c*x+s*z,y,-s*x+c*z],o=turn([0,1.62,distance]).map((v,i)=>+(v+state.p[i]).toFixed(2)),point=turn([sample*width,(H.headY+vertical)*look.tall,0]).map((v,i)=>v+state.p[i]),v=point.map((x,i)=>x-o[i]),d=v.map(x=>+(x/Math.hypot(...v)).toFixed(3)),unit=d.map(x=>x/Math.hypot(...d)),t=rifleSkullEntry(id,state,o,d);
  return {t:'a',w:'rifle',to:id,o,d,hc:[1,...o.map((x,i)=>+(x+unit[i]*t).toFixed(3))]};
 }
 async function historyFixture(initial=0,sample=-.068) {
