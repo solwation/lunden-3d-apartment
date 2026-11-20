@@ -6,13 +6,13 @@ Base `51ab09eedd75a06f2bd0ae648b0c82bc994d4aaf`. Original-only avatars/gameplay:
 
 The own body is visible before moving at spawn `(12.5, 0, 26.2)`, gaze −72°. Dynamic Ghost meshes now opt out of the static furnishing DetailCuller when created and when replaced after a look/outer-layer change. Existing Ghost visibility/LOD, camera/head/arm clipping, depth testing, mirror lifecycle and gameplay keep their existing owners.
 
-![Before: no own body at unchanged spawn](before/start.png)
+![Before: no own body at unchanged spawn](https://github.com/solwation/lunden-3d-apartment/blob/d65fb81ab5d556120a6b18c092d499bd5e7806c2/docs/verification/2211/before/start.png?raw=true)
 ![After: own body visible at the same spawn](after-start.png)
 ![Normal actual-app crouch with the final material](after-crouch.png)
 
 A second shared cause produced a bright garment contour: the fabric sheen term was strongest exactly on the silhouette, including from summed indirect light. It now falls back to zero at N·V=0 while retaining the broad soft sheen inside the garment. The existing exponent, gain, fabric-kind strengths, cloth roughness/wear, skin/hair/metal terms and all blending remain unchanged. This applies to our own view and other Ghost avatars through the shared material.
 
-![Before: shared fabric sheen makes a bright contour](before/fabric.png)
+![Before: shared fabric sheen makes a bright contour](https://github.com/solwation/lunden-3d-apartment/blob/d65fb81ab5d556120a6b18c092d499bd5e7806c2/docs/verification/2211/before/fabric.png?raw=true)
 ![After: broad fabric finish without the bright contour](after-fabric.png)
 
 The fabric pair is a component view of the **real Ghost/Avatar**, using the existing `tools/avatarhit.html` scene, same green remote look and sun/hemi as the #2215 image that exposed the contour. It is not a full-world app image. Both panels are native 800×640 and hold the exact same settled pose, geometry, camera and light. The before panel swaps only the old `fabricLight` GLSL into the final material. Both draw **2 calls / 18,048 triangles**, including the unchanged floor. All retained images were opened and inspected at their native aspect ratio.
@@ -39,3 +39,5 @@ The final runner uses the captured baseline GLSL in `fabric-diagnosis.json`. It 
 Cost: two static `noDetail` assignments at mesh creation/replacement; one additional scalar multiplication per fabric-lit fragment. No geometry, texture, attribute, uniform, program-per-look, audio allocation, draw call or network field is added. Static detail policy and Ghost far-LOD remain unchanged.
 
 Phase times (UTC): inherited root diagnosis before 15:04; worker diagnosis 15:04–15:09, visibility implementation/Node 15:09–15:11, actual material diagnosis 15:11–15:13, focused fabric cause/correction 15:14–15:18, final frozen component/app evidence 15:18–15:20, documentation/handoff 15:20–15:23. Integration/publishing owner: root conductor, session `olw-win10-gpt-6-20261120`. Worker commits only; root reviews/publishes embedded images and closes after release gates.
+
+Published combined source `d65fb81ab5d556120a6b18c092d499bd5e7806c2`; pinned evidence https://github.com/solwation/lunden-3d-apartment/issues/2211#issuecomment-7043359472. Pages run44762984377 succeeded before closure. No Worker source/config changed. Conductor reviewed the disjoint source changes; source-bound browser evidence is reused, with the exact #2227 predicate independently tested.

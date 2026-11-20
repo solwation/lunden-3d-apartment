@@ -101,3 +101,5 @@ continued, no broad suite or performance profile. Node checks took under 1 s.
 
 Local app/Worker ports 8431/8432 and the test browser are stopped before handoff.
 Root owns integration, image publication, acceptance with #2227, release and closure.
+
+Published combined source `d65fb81ab5d556120a6b18c092d499bd5e7806c2`; pinned evidence https://github.com/solwation/lunden-3d-apartment/issues/2210#issuecomment-7043359092. Pages run44762984377 succeeded before closure. No Worker source/config changed. Conductor reviewed the disjoint source changes; source-bound browser evidence is reused, with the exact #2227 predicate independently tested.

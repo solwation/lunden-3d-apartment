@@ -16,3 +16,5 @@ Limits: this is Node with real production prototypes, a recorded WebSocket send,
 No meaningful image exists for this internal test predicate; no visuals changed. Public downstream is not applicable: the public project excludes this original multiplayer combat gameplay/test. Root retains integration/publishing ownership; no push or closure by this worker. All local probe processes exit and no server/browser was started.
 
 Approximate phases: reading/coordination/plan 1 minute, small assertion change 1 minute, targeted module-fixture setup/checks/evidence 2 minutes, handoff 1 minute.
+
+Published combined source `d65fb81ab5d556120a6b18c092d499bd5e7806c2`; pinned evidence https://github.com/solwation/lunden-3d-apartment/issues/2227#issuecomment-7043359891. Pages run44762984377 succeeded before closure. No Worker source/config changed. Conductor reviewed the disjoint source changes; source-bound browser evidence is reused, with the exact #2227 predicate independently tested.
