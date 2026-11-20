@@ -500,9 +500,64 @@ obsolete uninstall requests. The shell tests use a fake registry and temporary S
 menu folders. A native Windows check saved and reopened a real `.lnk` in a temporary
 folder and confirmed its target, working directory and test-channel arguments. No
 production registry entry or Start menu shortcut was created. A clean Windows 11 pilot,
-VC++ runtime/prerequisite validation, timestamped signing, release workflow and public
+VC++ runtime/prerequisite validation, a real timestamped signing run and public
 download remain pending. The pilot also needs the chosen publisher identity and a
 rotation policy compatible with the launcher's certificate check.
+
+### Signing launcher artifacts (#2250)
+
+A tag named `app-vMAJOR.MINOR.PATCH` triggers `.github/workflows/release.yml`. An unprivileged
+Linux job validates the public inputs, runs the tests and builds the Win64 single-file launcher.
+It checks the bundled managed assembly's version, signer pin and embedded manifest key. The signing
+job on a GitHub-hosted Windows runner downloads the exact artifact ID from that job and checks
+its SHA-256 and Windows file version. It uses the protected `signing` environment.
+
+Olof approved **the same Azure Artifact Signing account and certificate profile as booster-ai**.
+The Azure owner must authorize this repository's GitHub OIDC identity for the
+*Artifact Signing Certificate Profile Signer* role on that profile. Configure the environment's
+actual OIDC subject (for the name-based GitHub format,
+`repo:solwation/lunden-3d-apartment:environment:signing`), issuer
+`https://token.actions.githubusercontent.com` and audience `api://AzureADTokenExchange`.
+The owner can preview configuration from WSL with `tools/unreal-engine/setup-signing.sh --dry-run`.
+Restrict `signing` to tags matching `app-v*` (replace any inherited booster-ai `v*` rule).
+Restrict creation and modification of those tags to the release maintainers. [GitHub OIDC subject reference](https://docs.github.com/en/actions/reference/security/oidc)
+
+| Scope | Required settings |
+| --- | --- |
+| Repository variables available to the build | `LUNDEN_MANIFEST_PUBLIC_KEY` (only the PEM-encoded SPKI public ECDSA P-256 key for #2248) and `LUNDEN_SIGNER_SHA256` (64 hex characters, SHA-256 of the approved signer's leaf certificate DER). |
+| Protected `signing` environment | Set `SIGNING_ENABLED=true` (environment or repository) and the approved `SIGNING_ENDPOINT`, `SIGNING_ACCOUNT` and `SIGNING_PROFILE`. If public key or fingerprint are also set here, they must exactly match the build inputs. |
+| Environment secrets for OIDC login | `AZURE_TENANT_ID` and `AZURE_CLIENT_ID`. Authentication uses GitHub's OIDC token. |
+
+Obtain the expected certificate fingerprint from a verified, timestamped official booster-ai release.
+Azure certificates are short-lived. Compare the expected leaf with the actual signature on every
+release. A different leaf fails packaging, including rotation within the same profile. Refreshing
+the build setting changes the trust of the newly built launcher; already installed launchers still
+pin the previous leaf. Coordinate that migration with #2249 before distributing a rotated build.
+
+Only the tagged `Lunden.exe` enters the signing action. It uses SHA-256 and an RFC 3161 timestamp.
+Packaging requires Windows Authenticode status `Valid`, an embedded signature, a timestamper, the exact
+leaf fingerprint and successful Windows SDK `signtool verify /pa /all /tw`. Then it copies the
+signed executable as `Lunden-Setup-<version>-win-x64.exe` and verifies that copy. The
+`signed-launcher-<tag>-<attempt>` Actions artifact contains the two byte-identical executables,
+`SHA256SUMS` of their final bytes and `launcher-build.json` with their source commit and public trust
+fingerprints. Disabled/missing signing configuration or a failed check prevents that artifact.
+The separately named unsigned build input expires after one day. The workflow has read-only
+repository permissions and creates no GitHub Release. [Azure signing action](https://github.com/Azure/artifact-signing-action)
+
+A completed UE Shipping archive and its reviewed inventory of project-owned and third-party program
+files are still needed to sign the game. Its independent manifest-signing and publication steps
+belong to #2248. The launcher artifact is available for a controlled signed pilot once the Azure
+owner and repository maintainers configure the inputs above. A public download also needs the
+verified game payload, signed channel manifest, clean Windows 11 install/update/remove test and
+preservation of real saves.
+
+Local verification for this workflow used `actionlint`, the release input tests and an actual
+Win64 self-contained publish with a temporary public key. The bundle inspection accepted its
+compiled inputs and rejected a different certificate pin. In PowerShell on Linux a simulated
+signature verifier exercised packaging and rejection of wrong-publisher, unsigned and altered
+inputs. Separately on Windows, SDK SignTool accepted an installed, timestamped Microsoft .NET
+binary and rejected an altered temporary copy. Local Windows policy blocked running the packaging
+script. The protected Windows job repeats the four packaging cases before it attempts Azure login.
 
 ## Shared data: web → Unreal (#2245)
 

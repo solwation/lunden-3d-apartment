@@ -12,6 +12,7 @@ on:
       - '**.md'
       - '.github/workflows/cloud.yml'
       - '.github/workflows/launcher-tests.yml'
+      - '.github/workflows/release.yml'
       # the Unreal version (#2243) is not part of the site: its project, build scripts and data-contract schemas
       # (#2245) never deploy Pages; the site's own files stay where they are
       - 'unreal/**'

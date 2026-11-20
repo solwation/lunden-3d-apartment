@@ -10,13 +10,13 @@
 # GitHub CLI (gh, signed in with admin rights on the repository). No secret is created: GitHub signs in through a
 # federated credential (OIDC) bound to the tag-restricted environment `signing`.
 # Override discovery with SIGNING_ACCOUNT_ID=/subscriptions/.../codeSigningAccounts/<name> and
-# SIGNING_PROFILE=<profile name>; APP_NAME sets the app registration's name; TAG_PATTERN the release tags (default v*).
+# SIGNING_PROFILE=<profile name>; APP_NAME sets the app registration's name; TAG_PATTERN the release tags (default app-v*).
 set -euo pipefail
 
 REPO=solwation/lunden-3d-apartment
 ENVIRONMENT=signing
 APP_NAME="${APP_NAME:-lunden-github-signing}"
-TAG_PATTERN="${TAG_PATTERN:-v*}"
+TAG_PATTERN="${TAG_PATTERN:-app-v*}"
 SUBJECT="repo:$REPO:environment:$ENVIRONMENT"
 DRY=0
 [ "${1:-}" = --dry-run ] && DRY=1
@@ -134,11 +134,17 @@ fi
 
 # 5. GitHub environment `signing`, deployable only from release tags, then its secrets/variables
 echo "GitHub ($REPO, environment $ENVIRONMENT, tags $TAG_PATTERN):"
-if gh api "repos/$REPO/environments/$ENVIRONMENT" >/dev/null 2>&1; then
-  echo "Environment $ENVIRONMENT exists."
+if existing_environment=$(gh api "repos/$REPO/environments/$ENVIRONMENT" 2>/dev/null); then
+  jq -e '.deployment_branch_policy | .custom_branch_policies == true and .protected_branches == false' <<<"$existing_environment" >/dev/null ||
+    die "enable custom deployment rules on the existing environment and restrict it to tags $TAG_PATTERN"
+  rules=$(gh api --paginate --slurp "repos/$REPO/environments/$ENVIRONMENT/deployment-branch-policies?per_page=100")
+  jq -e --arg pattern "$TAG_PATTERN" '[.[].branch_policies[]] | length == 1 and .[0].type == "tag" and .[0].name == $pattern' <<<"$rules" >/dev/null ||
+    die "restrict the existing environment to tag $TAG_PATTERN in GitHub before enabling signing"
 elif ask "create environment $ENVIRONMENT restricted to tags $TAG_PATTERN"; then
   gh api -X PUT "repos/$REPO/environments/$ENVIRONMENT" --input - >/dev/null <<<'{"deployment_branch_policy":{"protected_branches":false,"custom_branch_policies":true}}'
   gh api -X POST "repos/$REPO/environments/$ENVIRONMENT/deployment-branch-policies" -f name="$TAG_PATTERN" -f type=tag >/dev/null
+elif [ "$DRY" != 1 ]; then
+  die "the protected signing environment is required"
 fi
 if [ -n "${app_id:-}" ] && ask "set AZURE_TENANT_ID, AZURE_CLIENT_ID, SIGNING_ENDPOINT, SIGNING_ACCOUNT, SIGNING_PROFILE"; then
   gh secret set AZURE_TENANT_ID --env "$ENVIRONMENT" -R "$REPO" -b "$tenant"
@@ -150,4 +156,4 @@ fi
 if [ -n "$(gh api "repos/$REPO/contents/.github/workflows/release.yml" -q .name 2>/dev/null)" ] && ask "turn signing on (repository variable SIGNING_ENABLED=true)"; then
   gh variable set SIGNING_ENABLED -R "$REPO" -b true
 fi
-echo "Done. Signing applies once the release workflow (#2250) exists and SIGNING_ENABLED=true; role assignments can take a few minutes to apply."
+echo "Done. Verify protected release tags, the signing environment and both public launcher trust inputs before tagging. Role assignments can take a few minutes to apply."

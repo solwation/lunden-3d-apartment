@@ -1,0 +1,148 @@
+name: Build and sign the Windows launcher
+
+on:
+  push:
+    tags: ['app-v*']
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      artifact-id: ${{ steps.upload.outputs.artifact-id }}
+      trust: ${{ steps.inputs.outputs.trust }}
+      file-sha256: ${{ steps.binary.outputs.sha256 }}
+      commit: ${{ steps.binary.outputs.commit }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Validate the release tag and its public trust anchors
+        id: inputs
+        env:
+          LUNDEN_SIGNER_SHA256: ${{ vars.LUNDEN_SIGNER_SHA256 }}
+          LUNDEN_MANIFEST_PUBLIC_KEY: ${{ vars.LUNDEN_MANIFEST_PUBLIC_KEY }}
+        run: node tools/unreal-engine/launcher-release-inputs.mjs "$RUNNER_TEMP/trust"
+      - name: Test the launcher and the release inputs
+        run: |
+          node --test tools/unreal-engine/tests/launcher-release-inputs.test.mjs
+          dotnet test unreal/Launcher.Tests -c Release
+      - name: Cross-publish the launcher from this checked-out tag
+        id: binary
+        env:
+          VERSION: ${{ steps.inputs.outputs.version }}
+          PIN: ${{ vars.LUNDEN_SIGNER_SHA256 }}
+        run: |
+          dotnet publish unreal/Launcher -c Release -r win-x64 --self-contained true \
+            -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=false -p:Version="$VERSION" -p:LundenSignerSha256="$PIN" \
+            -p:LundenManifestKey="$RUNNER_TEMP/trust/manifest-public.pem" -o "$RUNNER_TEMP/unsigned"
+          echo "sha256=$(sha256sum "$RUNNER_TEMP/unsigned/Lunden.exe" | cut -d ' ' -f1)" >> "$GITHUB_OUTPUT"
+          echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - name: Inspect the actual bundle's embedded public key, publisher and version
+        env:
+          LUNDEN_RELEASE_VERSION: ${{ steps.inputs.outputs.version }}
+          LUNDEN_SIGNER_SHA256: ${{ vars.LUNDEN_SIGNER_SHA256 }}
+          LUNDEN_PUBLIC_PEM_PATH: ${{ runner.temp }}/trust/manifest-public.pem
+          LUNDEN_PUBLISHED_ASSEMBLY: ${{ github.workspace }}/unreal/Launcher/bin/Release/net10.0/win-x64/Lunden.dll
+          LUNDEN_PUBLISHED_LAUNCHER: ${{ runner.temp }}/unsigned/Lunden.exe
+        run: dotnet test unreal/Launcher.Tests -c Release --no-build --filter FullyQualifiedName~ReleaseBundleTests
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        id: upload
+        with:
+          name: unsigned-launcher-input-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/unsigned/Lunden.exe
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+
+  sign:
+    needs: build
+    runs-on: windows-latest
+    environment: signing
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+      - name: Check the protected profile and the build's public trust anchors
+        id: inputs
+        shell: pwsh
+        env:
+          SIGNING_ENABLED: ${{ vars.SIGNING_ENABLED }}
+          SIGNING_ENDPOINT: ${{ vars.SIGNING_ENDPOINT }}
+          SIGNING_ACCOUNT: ${{ vars.SIGNING_ACCOUNT }}
+          SIGNING_PROFILE: ${{ vars.SIGNING_PROFILE }}
+          LUNDEN_SIGNER_SHA256: ${{ vars.LUNDEN_SIGNER_SHA256 }}
+          LUNDEN_MANIFEST_PUBLIC_KEY: ${{ vars.LUNDEN_MANIFEST_PUBLIC_KEY }}
+          EXPECTED_BUILD_TRUST: ${{ needs.build.outputs.trust }}
+          BUILD_ARTIFACT: ${{ needs.build.outputs.artifact-id }}
+          BUILD_COMMIT: ${{ needs.build.outputs.commit }}
+        run: |
+          if ($env:SIGNING_ENABLED -cne 'true') { throw 'Enable the approved signing profile before using a release tag.' }
+          foreach ($name in 'SIGNING_ENDPOINT','SIGNING_ACCOUNT','SIGNING_PROFILE') {
+            if ([string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable($name))) { throw "Missing $name." }
+          }
+          if ($env:BUILD_ARTIFACT -notmatch '^[1-9][0-9]*$' -or $env:BUILD_COMMIT -ne (git rev-parse HEAD)) {
+            throw 'Missing build artifact or source revision mismatch.'
+          }
+          node tools/unreal-engine/launcher-release-inputs.mjs "$env:RUNNER_TEMP/trust"
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          artifact-ids: ${{ needs.build.outputs.artifact-id }}
+          merge-multiple: true
+          path: ${{ runner.temp }}/unsigned
+      - name: Verify the exact unsigned build input
+        shell: pwsh
+        env:
+          EXPECTED_FILE_HASH: ${{ needs.build.outputs.file-sha256 }}
+          VERSION: ${{ steps.inputs.outputs.version }}
+        run: |
+          $binary = Get-Item -LiteralPath "$env:RUNNER_TEMP/unsigned/Lunden.exe"
+          if ((Get-FileHash -Algorithm SHA256 -LiteralPath $binary.FullName).Hash -ne $env:EXPECTED_FILE_HASH -or
+              $binary.VersionInfo.FileVersion -ne "$env:VERSION.0") {
+            throw 'The unsigned launcher does not match the tagged build.'
+          }
+      - name: Test packaging with temporary copies of an already signed Windows fixture
+        shell: pwsh
+        run: ./tools/unreal-engine/tests/signed-launcher-package-test.ps1
+      - name: Sign in to Azure using GitHub OIDC
+        uses: azure/login@7184910d9eb2b1c5e48f7073824a90609bb9b6d6 # v2
+        with:
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          allow-no-subscriptions: true
+      - name: Sign and timestamp only the verified launcher
+        uses: azure/artifact-signing-action@c7ab2a863ab5f9a846ddb8265964877ef296ee82 # v2
+        with:
+          endpoint: ${{ vars.SIGNING_ENDPOINT }}
+          signing-account-name: ${{ vars.SIGNING_ACCOUNT }}
+          certificate-profile-name: ${{ vars.SIGNING_PROFILE }}
+          files: ${{ runner.temp }}\unsigned\Lunden.exe
+          exclude-environment-credential: true
+          file-digest: SHA256
+          timestamp-rfc3161: http://timestamp.acs.microsoft.com
+          timestamp-digest: SHA256
+      - name: Verify trust, package the setup copy and hash the signed bytes
+        shell: pwsh
+        env:
+          VERSION: ${{ steps.inputs.outputs.version }}
+          PIN: ${{ vars.LUNDEN_SIGNER_SHA256 }}
+          PUBLIC_KEY_HASH: ${{ steps.inputs.outputs.manifest-key-sha256 }}
+          BUILD_COMMIT: ${{ needs.build.outputs.commit }}
+        run: |
+          ./tools/unreal-engine/package-signed-launcher.ps1 -Launcher "$env:RUNNER_TEMP/unsigned/Lunden.exe" `
+            -Version $env:VERSION -SignerSha256 $env:PIN -ManifestKeySha256 $env:PUBLIC_KEY_HASH `
+            -Commit $env:BUILD_COMMIT -OutputDirectory "$env:RUNNER_TEMP/signed"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: signed-launcher-${{ github.ref_name }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/signed/
+          if-no-files-found: error
+          compression-level: 0
