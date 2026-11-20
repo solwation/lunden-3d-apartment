@@ -35,6 +35,7 @@ tools/ue/ue-env.ps1                environment report and check (read-only)
 tools/ue/ue-build-editor.ps1       builds LundenEditor with Build.bat
 tools/ue/ue-python.ps1             runs a Python script headless (UnrealEditor-Cmd -run=pythonscript)
 tools/ue/ue-test.ps1               runs Automation Tests headless and reads the exported report
+tools/ue/release.ps1               runs a clean Win64 Shipping build, archives it with build-info.json and keeps the log
 tools/ue/python/smoke_create_asset.py  phase-B smoke test: create, save, reload, delete a material asset
 tools/ue/lunden-unreal.vsconfig    Visual Studio 2022 component list for Unreal C++ development
 ```
@@ -140,10 +141,10 @@ default path. Logs go to `unreal/Lunden/Saved/Logs/<script>-<time>.log` and test
 Exit codes (all scripts): 0 ok, 1 command failed, 2 engine not found, 3 wrong engine version, 4 toolchain
 (VS/MSVC/SDK/.NET targeting pack) missing, 5 project files invalid, 6 checkout on a WSL/UNC path.
 When the environment is not usable the scripts run **nothing**: they print the problems and the exact command they
-would have run. They never install, delete or change anything outside `unreal/Lunden/Saved` (the smoke script
-creates and removes its own `/Game/Lunden/_Smoke` folder, which is also ignored by Git).
+would have run. The scripts listed in the table store their logs and reports under
+`unreal/Lunden/Saved`. The smoke script creates and removes its own ignored `/Game/Lunden/_Smoke` folder.
 
-Packaging (`ue-package.ps1`/`release.ps1`, `RunUAT.bat BuildCookRun`) is added by #2248 and #2244.
+For local Shipping archives, see [Build location](#build-location-decision-2244).
 
 ## Git LFS (Unreal only)
 
@@ -239,14 +240,44 @@ with scripts on the Windows development PC**; signing and publishing happen late
   The repository is public, and a self-hosted runner on a public repository can be made to run code from other
   people's pull requests (booster-ai avoids it for the same reason). A cloud GPU VM costs money per hour and is not
   justified now.
-- Security boundary: the build PC holds no signing keys or Azure secrets, only a `gh` login. The planned
-  `tools/ue/release.ps1` (#2244/#2248) builds from a clean work tree at an exact commit, writes `build-info.json`
-  (commit, engine version, time), and uploads **unsigned** files to a draft release/artifact; the Actions workflow
-  signs and publishes them.
-- Derived Data Cache: local, on a fast disk outside the repository (path documented when `release.ps1` lands); no
-  shared DDC is needed for a single builder.
+- Security boundary: keep all signing keys and Azure credentials off the build PC. The local step produces an unsigned
+  archive. A separate handoff to a draft release or artifact and signing/publication belong to #2248/#2250.
+- Derived Data Cache: use the local Zen DDC on a fast disk outside the checkout. The default on Windows is
+  `%LOCALAPPDATA%\UnrealEngine\Common\Zen\Data`. Set `UE-ZenDataPath` for a different local disk.
+  [Epic documents the Zen data location and overrides](https://dev.epicgames.com/documentation/en-us/unreal-engine/using-zen-storage-server-as-cooked-output-store-for-unreal-engine).
 - Another Windows PC can take over by following the install steps above, cloning the repository, running
   `git config lfs.fetchexclude ""` + `git lfs pull` and `ue-env.ps1`.
+
+### Building an unsigned archive
+
+Use Windows Git to check out the intended commit with all Unreal LFS objects. Verify
+`ue-env.ps1` on that checkout. From Windows PowerShell run
+
+```powershell
+.\tools\ue\release.ps1 -Version 0.1.0 -Content 12 -OutputRoot D:\LundenBuilds
+```
+
+`-Version` is the app version and `-Content` is its accompanying content version
+(nonnegative integer). The default output root is `%LOCALAPPDATA%\Lunden\Builds`.
+The script checks for staged, modified and untracked files before calling
+`RunUAT.bat BuildCookRun` for a Win64 Shipping cook, stage, IoStore package and
+archive. It checks HEAD and worktree cleanliness again after UAT. Each invocation
+creates a separate directory under the output root containing `BuildCookRun.log`,
+`stage/` and `archive/Windows/`. UAT can also use the engine's ordinary ignored
+intermediate files in the project.
+
+A completed archive contains the Shipping executable and `build-info.json` beside
+the packaged `Lunden/` folder. The metadata contains `appVersion`, `contentVersion`,
+the full Git `commit`, the actual `engineVersion`, the committed script blob ID
+(`releaseScriptBlob`) and completion time in UTC (`builtUtc`). A failed build
+can leave files and its log in its own build directory. Hand off only a completed
+archive. For #2248, build twice from one commit and compare the resulting program
+and container files across the two archives.
+
+Run `tools/ue/tests/release-test.ps1` with Windows PowerShell for a disposable
+Windows Git and simulated UAT check. The real cook, archived layout, container
+hash comparison and cross-cook compatibility need the installed 5.8.4 engine
+and pilot content (#2243/#2248).
 
 ## Phase B (needs the engine)
 
