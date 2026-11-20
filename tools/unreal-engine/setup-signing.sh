@@ -3,6 +3,9 @@
 # Decision (user, 2026-11-20, approved by Svep IT): Lunden releases are signed with Svep's existing Azure Artifact
 # Signing certificate profile (the one booster-ai uses), only in GitHub Actions through OIDC; no key or secret is ever
 # stored on a build PC or in the repository (#2244 security boundary, #2268: no unsigned local binaries are run).
+# NORMALLY NOT NEEDED (2026-11-20): Lunden reuses booster-ai's existing signing credentials (client secret, no Azure
+# change): the `signing` environment and its SIGNING_* variables are set; only the three AZURE_* secrets are copied
+# in by the user with `gh secret set --env signing`. This script is kept only for a future switch to OIDC.
 # AGENTS NEVER RUN THIS (user, 2026-11-20): the Azure tenant holds customer accounts, so no agent signs in to, reads
 # or changes Azure. Svep IT runs it (or does the same steps by hand), from WSL, as someone who may create Entra app
 # registrations and assign roles on the Artifact Signing account:
