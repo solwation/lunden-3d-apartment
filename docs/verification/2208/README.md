@@ -45,3 +45,5 @@ PLAYWRIGHT_MODULE=/path/to/playwright tools/browsertest.sh node tools/avatarfoot
 `source.json` pins source hashes. The host has no systemd user scope: the wrapper's shared browser slot is active, but its per-process memory ceiling is unavailable. Node verification is about 2 seconds; the bounded app/three-build/four-stair pass and image corrections take a few minutes. No performance benchmark is claimed; the production change adds one comparison per contacting foot and no render/audio resources.
 
 Rough phase times (UTC): policy/issue/diagnosis 14:47–14:49; implementation and Node 14:49–14:53; own real-app and bounded image diagnosis 14:53–15:03; documentation/checkpoint handoff 15:00–15:04. Integration owner: root conductor, session `olw-win10-gpt-6-20261120`; worker does not publish or close.
+
+Published source `f691c2db351a6a9363fd4688b03a8fc813a79708`; pinned inspected before/after: https://github.com/solwation/lunden-3d-apartment/issues/2208#issuecomment-7042939228. Pages deployment succeeded. No Worker source/config changed, so no Worker deployment was triggered. Before image removed only after publication.
