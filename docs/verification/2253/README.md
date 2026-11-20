@@ -47,3 +47,12 @@ Stopped after green checks, before ten minutes of verification.
 No public transfer: this original gameplay/statistics fixture has no consumer in
 the neutral downstream. Root conductor for `orkester: olw-win10-gpt-6-20261120`
 owns integration, publication, image comment and closure; worker does not push/close.
+
+## Delivery
+
+Integrated as `cf3068163b5da5c4879dd6a8305ec08ec30dabf4` with all frozen
+production/test hashes preserved. [Pages44780894704](https://github.com/solwation/lunden-3d-apartment/actions/runs/44780894704)
+is green on this exact source. [Completion](https://github.com/solwation/lunden-3d-apartment/issues/2253#issuecomment-7045803800)
+embeds the reviewed native component image before closure; its SHA-pinned
+GitHub Contents size/access was verified. Earlier failures in2251/2252 remain
+historical failed runs; only this final24-check statistics command is green.
