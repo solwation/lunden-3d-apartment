@@ -1,16 +1,18 @@
 import * as THREE from 'three';
 import { VALLEY_MIST, DAY, WEATHER, GARAGE, LIGHTING, SKYLAYER, CLOUD_SHADOW, SKY_DUSK } from './config.js';
 import { hazeState, applyHaze } from './aerialhaze.js';
+import { moonState } from './moon.js';
 import { mistFog } from './valleymist.js';
 import { cloudShadowState, applyCloudShadows, cloudDrift, stepCloudDrift, cloudShadowUniforms, skyCloudState, CLOUD_NOISE_GLSL } from './cloudshadow.js';
 
 // Day and night: a whole day passes in DAY.minutes real minutes (24 × 60 = real time, #1145: the clock follows the
 // visitor's own clock; the wall clock's spool / pause become an offset from it). The sun follows its real path
 // for the date at Kv. Lunden (rises north-east in summer, south-east in winter; the house is
-// turned, see DAY.planNorth); at night a full moon takes its place. Drives the sun light, the
+// turned, see DAY.planNorth); at night the moon takes its place with its real phase and orbit (#2194, moon.js). Drives the sun light, the
 // ambient light, fog and a shader sky with sunset glow, stars and the moon. The wall clock can
 // pause and spool the time (wallclock.js).
 
+const MR = DAY.moonRadius; // the moon disc's angular radius (rad), baked into the sky shader
 const smooth = (a, b, x) => THREE.MathUtils.smoothstep(x, a, b);
 const RAD = Math.PI / 180;
 
@@ -76,7 +78,7 @@ const skyVert = /* glsl */`
   }`;
 
 const skyFrag = /* glsl */`
-  uniform vec3 uSun, uMoon, uZenith, uHorizon, uGlow, uScatter;
+  uniform vec3 uSun, uMoon, uMoonPh, uZenith, uHorizon, uGlow, uScatter;
   uniform float uNight, uGlowAmt, uOvercast, uFlash, uWhite, uAbove;
   uniform vec3 uCloudCol;
   uniform sampler2D uClouds;
@@ -118,8 +120,23 @@ const skyFrag = /* glsl */`
     // sun and moon discs
     col = mix(col, vec3(1.0, 0.97, 0.88), smoothstep(0.9993, 0.9997, s) * step(-0.05, uSun.y));
     float m = max(dot(d, uMoon), 0.0);
-    col = mix(col, vec3(0.92, 0.94, 1.0), smoothstep(0.9994, 0.9997, m) * step(-0.05, uMoon.y) * (0.3 + 0.7 * uNight));
-    col += vec3(0.25, 0.28, 0.35) * pow(m, 400.0) * uNight;
+    // #2194 the moon's phase: shade the disc by a sphere lit from the sun's side. uMoonPh = (sin e, -cos e, lit fraction), e = elongation from the sun
+    // (0 new … pi full); the lit limb faces the sun's direction projected on the disc, the terminator is the sphere's own, soft.
+    if (m > ${Math.cos(MR * 1.6).toFixed(6)}) {
+      vec3 pd = d - uMoon * m, su = uSun - uMoon * dot(uSun, uMoon);
+      vec3 u = su / max(length(su), 1e-4), v = cross(uMoon, u);
+      vec2 xy = vec2(dot(pd, u), dot(pd, v)) / ${Math.sin(MR).toFixed(5)};
+      float rr = length(xy), z = sqrt(max(1.0 - rr * rr, 0.0));
+      float lit = smoothstep(-0.04, 0.08, xy.x * uMoonPh.x + z * uMoonPh.y);
+      vec3 e1 = normalize(cross(vec3(0.0, 1.0, 0.0), uMoon)); // upright frame for the maria, fixed on the disc
+      vec2 mp = vec2(dot(pd, e1), dot(pd, cross(uMoon, e1))) / ${Math.sin(MR).toFixed(5)};
+      float mare = 0.80 + 0.20 * smoothstep(-0.5, 0.6, sin(mp.x * 2.6 + 1.1) * sin(mp.y * 2.1 - 0.4) + 0.5 * sin(mp.x * 5.0 - mp.y * 3.5));
+      float disc = (1.0 - smoothstep(0.9, 1.0, rr)) * step(-0.05, uMoon.y);
+      vec3 surf = vec3(0.92, 0.94, 1.0) * mare * (0.85 + 0.15 * z);
+      col = mix(col, surf, disc * lit * (0.3 + 0.7 * uNight));
+      col = mix(col, vec3(0.92, 0.94, 1.0) * ${DAY.moonEarthshine.toFixed(3)}, disc * (1.0 - lit) * uNight * 0.9); // the unlit side: faint earthshine, in front of the stars
+    }
+    col += vec3(0.25, 0.28, 0.35) * pow(m, 400.0) * uNight * uMoonPh.z * uMoonPh.z; // the halo fades with the phase
     // stars
     vec3 q = floor(d * 260.0);
     float star = step(0.9975, hash(q)) * uNight * smoothstep(0.02, 0.2, d.y);
@@ -218,7 +235,7 @@ export class DayCycle {
     this.fogFar = scene.fog.far; this.fogNear = scene.fog.near;
     this.base = { hemi: 0, ambient: 0, fill: 0, sun: 0, exposure: 1 }; // LIGHTING.sky blended overcast → clear each update (#1073)
     this.uniforms = {
-      uSun: { value: new THREE.Vector3() }, uMoon: { value: new THREE.Vector3() },
+      uSun: { value: new THREE.Vector3() }, uMoon: { value: new THREE.Vector3() }, uMoonPh: { value: new THREE.Vector3(0, 1, 1) },
       uZenith: { value: new THREE.Color() }, uHorizon: { value: new THREE.Color() }, uGlow: { value: GLOW.clone() }, uScatter: { value: new THREE.Color(0, 0, 0) },
       uNight: { value: 0 }, uGlowAmt: { value: 0 }, uClouds: { value: clouds }, uOvercast: { value: 0 }, uFlash: { value: 0 }, uWhite: { value: 0 }, uAbove: { value: 0 }, uCloudCol: { value: new THREE.Color(0.9, 0.92, 0.95) },
       uPink: { value: new THREE.Color(0, 0, 0) }, uViolet: { value: new THREE.Color(0, 0, 0) }, uHalo: { value: new THREE.Color(0, 0, 0) }, uRim: { value: new THREE.Color(0, 0, 0) },
@@ -251,6 +268,7 @@ export class DayCycle {
     this.wind = null; this.cloudPos = { x: 0, z: 0, dx: 0, dz: 0 }; // #2117: weather.js sets `wind` ({ x, z } m/s downwind); the clouds drift along it
     this.sunDir = new THREE.Vector3();
     this.moonDir = new THREE.Vector3();
+    this.moon = { illum: 1, elong: Math.PI, phase: 0.5, waxing: true, alt: 0 }; // #2194: the moon's real state (moon.js), set by update()
     this.update(0);
   }
 
@@ -291,13 +309,15 @@ export class DayCycle {
     if (h >= 24 || h < 0) this.addDays(Math.floor(h / 24)); // midnight: the next / previous day (or more after a long sleep)
     this.hour = ((h % 24) + 24) % 24;
     sunDirection(this.hour, this.doy, this.sunDir);
-    // full moon: opposite the sun (12 h later, opposite declination)
-    skyDirection(solarHour(this.hour, this.doy) + 12, -declination(this.doy), this.moonDir);
+    // #2194: the moon's real position and phase for the game's date and clock (Swedish time -> UTC)
+    const moon = this.moon = moonState(Date.UTC(this.year, this.month - 1, Math.min(this.date, daysIn(this.year, this.month))) + (this.hour - (summerTime(this.doy) ? 2 : 1)) * 36e5, DAY.lat, DAY.lon);
+    skyDirection(moon.ha / 15 + 12, moon.dec * RAD, this.moonDir);
     const day = this.daylight, night = 1 - day;
     const low = 1 - smooth(0.0, 0.35, Math.abs(this.sunDir.y)); // sunrise/sunset band
     const u = this.uniforms;
     u.uSun.value.copy(this.sunDir);
     u.uMoon.value.copy(this.moonDir);
+    u.uMoonPh.value.set(Math.sin(moon.elong), -Math.cos(moon.elong), moon.illum);
     u.uNight.value = night;
     u.uGlowAmt.value = low * smooth(-0.15, 0.05, this.sunDir.y);
     u.uZenith.value.copy(NIGHT_ZENITH).lerp(DAY_ZENITH, day);
@@ -369,7 +389,7 @@ export class DayCycle {
     const useMoon = this.sunDir.y < -0.02;
     const dir = useMoon ? this.moonDir : this.sunDir;
     sun.position.copy(sun.target.position).addScaledVector(dir, 30);
-    sun.intensity = (useMoon ? DAY.moonlight * smooth(0.0, 0.2, this.moonDir.y) : this.base.sun * smooth(-0.02, 0.12, this.sunDir.y)) * (1 - WEATHER.sunCut * oc) * (1 - this.under); // (under the courtyard: none, #357)
+    sun.intensity = (useMoon ? DAY.moonlight * (DAY.moonFloor + (1 - DAY.moonFloor) * Math.pow(moon.illum, DAY.moonExp)) * smooth(0.0, 0.2, this.moonDir.y) : this.base.sun * smooth(-0.02, 0.12, this.sunDir.y)) * (1 - WEATHER.sunCut * oc) * (1 - this.under); // (under the courtyard: none, #357)
     if (useMoon) sun.color.copy(MOON);
     else sun.color.copy(SUN_LOW).lerp(SUN_HIGH, smooth(0.05, 0.4, this.sunDir.y));
     // the visitor's room's blinds (#273) take away a share of the daylight that reaches it (not the night's)

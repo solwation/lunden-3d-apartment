@@ -6194,6 +6194,11 @@ export const HANDWASH = { wash: 2.2, dry: 1.6, wetFor: 60, fade: 20, swing: 0.12
 export const DAY = {
   minutes: 24 * 60, startHour: 7, lat: 55.70, lon: 13.17, planNorth: 58, spool: 1.5,
   moonlight: 0.35, nightAmbient: 0.05,
+  // #2194: the moon follows the real phase and orbit (src/moon.js). `moonlight` is the FULL moon's strength; a phase scales it
+  // to `moonFloor` + (1 − moonFloor) × lit fraction^`moonExp` (a half moon is far dimmer than half of a full one; our picks, *guess*).
+  // `moonRadius` = the disc's angular radius (rad): the real moon is 0.0045, drawn ~9x larger so its phase reads from the window
+  // (the old disc was 0.030); `moonEarthshine` = the unlit side's brightness against the night sky (share of the lit side, *guess*).
+  moonFloor: 0.12, moonExp: 1.5, moonRadius: 0.04, moonEarthshine: 0.06,
 };
 
 // Analog wall clock (src/wallclock.js) on the kitchen side of the Tvätt/Badrum wall, centred on the
