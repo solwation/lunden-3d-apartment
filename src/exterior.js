@@ -24,6 +24,7 @@ import { roofMap, roofColor, roofUV } from './roofsurface.js';
 import { renderMaterial, renderUV, dirtPatch } from './rendersurface.js';
 import { shadeMoss } from './shademoss.js';
 import { snowCap } from './snowcap.js'; // #2123: snow on sills, cappings, copings, rails in the snow months
+import { wetSurface } from './wetsurface.js'; // #2175: rain wets facades, roofs, cars, benches
 
 // Brick: 250 × 65 mm + 10 mm joints → 0.26 m per brick, 0.075 m per course.
 const TILE_W = 1.04, TILE_H = 0.6; // one texture tile = 4 bricks × 8 courses
@@ -691,9 +692,9 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     group.add(mesh);
     return mesh;
   };
-  shadeMoss(add(bricks, snowCap(brickMat())), groundY, 'bump'); // #2122: moss low on the shaded north faces, greener in the joints
-  add(renders.map(renderUV), snowCap(renderMaterial({ color: H.render, roughness: 0.95 }))); // #2095: fine render grain + faint dirt (#2122: no moss: all ≥ 6 m over the street)
-  add(pilasters, snowCap(new THREE.MeshStandardMaterial({ color: COLORS.brick, roughness: 0.95 })));
+  shadeMoss(add(bricks, wetSurface(snowCap(brickMat()), 'brick')), groundY, 'bump'); // #2122: moss low on the shaded north faces, greener in the joints
+  add(renders.map(renderUV), wetSurface(snowCap(renderMaterial({ color: H.render, roughness: 0.95 })), 'render')); // #2095: fine render grain + faint dirt (#2122: no moss: all ≥ 6 m over the street)
+  add(pilasters, wetSurface(snowCap(new THREE.MeshStandardMaterial({ color: COLORS.brick, roughness: 0.95 })), 'brick'));
   add(solids, exteriorBackingMaterial(wall));
   add(frames, frame).name='neighborFrames';
   add(seals,new THREE.MeshStandardMaterial({color:O.gasketColor,roughness:O.gasketRoughness})).name='neighborSeals';
@@ -701,10 +702,10 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   const glassMaterial=neighborGlass();
   add(paneTints(glassGeo),glassMaterial,false).name='neighborGlass'; // #2087: calm per-pane variation
   group.userData.neighborOpenings=neighborOpenings;
-  const loftRailMesh = add(rails, snowCap(railMetal(new THREE.MeshStandardMaterial({ color: COLORS.balcony, metalness: 0.3 }))));
+  const loftRailMesh = add(rails, wetSurface(snowCap(railMetal(new THREE.MeshStandardMaterial({ color: COLORS.balcony, metalness: 0.3 }))), 'metal'));
   if (loftRailMesh) loftRailMesh.name = 'loftRails'; // #2089: matt metal
-  add([...fascia, ...capping, ...flashings], snowCap(new THREE.MeshStandardMaterial({ color: Lf.fascia, roughness: 0.4, metalness: 0.4 }))); // #2123: snow on the sill flashings, cappings, copings
-  const terraceRailMaterial = snowCap(railMetal(new THREE.MeshStandardMaterial({ color: Lf.door, metalness: 0.2 }))); // #2089; #2123 snow cap
+  add([...fascia, ...capping, ...flashings], wetSurface(snowCap(new THREE.MeshStandardMaterial({ color: Lf.fascia, roughness: 0.4, metalness: 0.4 })), 'metal')); // #2123: snow on the sill flashings, cappings, copings
+  const terraceRailMaterial = wetSurface(snowCap(railMetal(new THREE.MeshStandardMaterial({ color: Lf.door, metalness: 0.2 }))), 'metal'); // #2089; #2123 snow cap
   // Complete source terraces/gables get tighter native camera AND shadow frustums; phones retain their original batch.
   for (const parts of lowMemory ? [balc] : terraceRailBatches) {
     const railMesh = add(parts, terraceRailMaterial);
@@ -777,7 +778,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     portikMat.color.lerpColors(portikOff, portikLit, doorGlow);
   };
   const roofMat = new THREE.MeshStandardMaterial({ map: roofMap(), color: roofColor(0x4b5157), roughness: 0.9 }); // #2088: roofing-felt strips (flat: along x, *guess*)
-  registerSnow(roofMat, SEASON.snow.roof);
+  registerSnow(roofMat, SEASON.snow.roof); wetSurface(roofMat, 'roof'); // #2175: a glossy film on the felt in the rain
   add(roofs.map((g) => roofUV(g, 'felt')), roofMat);
   add(panels, solarPanelMaterial(), false);
   add(patios, mats.patio, false);

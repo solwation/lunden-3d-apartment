@@ -1,0 +1,43 @@
+{
+ "phase": "after",
+ "base": "a1e55c59",
+ "shots": [
+  {
+   "weather": "dry",
+   "view": "bil2",
+   "file": "docs/verification/2175/after-dry-bil2.png",
+   "calls": 65,
+   "triangles": 459294,
+   "programs": 61,
+   "rain": 0,
+   "level": 0
+  },
+  {
+   "weather": "dry",
+   "uGroundWet": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "weather": "rain",
+   "view": "bil2",
+   "file": "docs/verification/2175/after-rain-bil2.png",
+   "calls": 66,
+   "triangles": 459294,
+   "programs": 62,
+   "rain": 0.8,
+   "level": 0
+  },
+  {
+   "weather": "rain",
+   "uGroundWet": [
+    1,
+    0,
+    0
+   ]
+  }
+ ],
+ "errors": []
+}

@@ -1,0 +1,181 @@
+{
+ "phase": "before",
+ "base": "a1e55c59",
+ "shots": [
+  {
+   "weather": "dry",
+   "view": "fasad",
+   "file": "docs/verification/2175/before/before-dry-fasad.png",
+   "calls": 451,
+   "triangles": 881328,
+   "programs": 134,
+   "rain": 0,
+   "level": 0
+  },
+  {
+   "weather": "dry",
+   "view": "tak",
+   "file": "docs/verification/2175/before/before-dry-tak.png",
+   "calls": 388,
+   "triangles": 920802,
+   "programs": 141,
+   "rain": 0,
+   "level": 0
+  },
+  {
+   "weather": "dry",
+   "view": "bilar",
+   "file": "docs/verification/2175/before/before-dry-bilar.png",
+   "calls": 80,
+   "triangles": 431779,
+   "programs": 149,
+   "rain": 0,
+   "level": 0
+  },
+  {
+   "weather": "dry",
+   "view": "bank",
+   "file": "docs/verification/2175/before/before-dry-bank.png",
+   "calls": 133,
+   "triangles": 566898,
+   "programs": 154,
+   "rain": 0,
+   "level": 0
+  },
+  {
+   "weather": "dry",
+   "view": "husA",
+   "file": "docs/verification/2175/before/before-dry-husA.png",
+   "calls": 188,
+   "triangles": 608145,
+   "programs": 158,
+   "rain": 0,
+   "level": 0
+  },
+  {
+   "weather": "dry",
+   "uGroundWet": [
+    0,
+    0,
+    0
+   ]
+  },
+  {
+   "weather": "rain",
+   "view": "fasad",
+   "file": "docs/verification/2175/before/before-rain-fasad.png",
+   "calls": 452,
+   "triangles": 881328,
+   "programs": 135,
+   "rain": 0.8,
+   "level": 0
+  },
+  {
+   "weather": "rain",
+   "view": "tak",
+   "file": "docs/verification/2175/before/before-rain-tak.png",
+   "calls": 389,
+   "triangles": 922022,
+   "programs": 142,
+   "rain": 0.8,
+   "level": 0
+  },
+  {
+   "weather": "rain",
+   "view": "bilar",
+   "file": "docs/verification/2175/before/before-rain-bilar.png",
+   "calls": 81,
+   "triangles": 431779,
+   "programs": 150,
+   "rain": 0.8,
+   "level": 0
+  },
+  {
+   "weather": "rain",
+   "view": "bank",
+   "file": "docs/verification/2175/before/before-rain-bank.png",
+   "calls": 135,
+   "triangles": 567222,
+   "programs": 155,
+   "rain": 0.8,
+   "level": 0
+  },
+  {
+   "weather": "rain",
+   "view": "husA",
+   "file": "docs/verification/2175/before/before-rain-husA.png",
+   "calls": 189,
+   "triangles": 608145,
+   "programs": 159,
+   "rain": 0.8,
+   "level": 0
+  },
+  {
+   "weather": "rain",
+   "uGroundWet": [
+    1,
+    0,
+    0
+   ]
+  },
+  {
+   "weather": "afterrain",
+   "view": "fasad",
+   "file": "docs/verification/2175/before/before-afterrain-fasad.png",
+   "calls": 451,
+   "triangles": 881328,
+   "programs": 130,
+   "rain": 0,
+   "level": 0
+  },
+  {
+   "weather": "afterrain",
+   "view": "tak",
+   "file": "docs/verification/2175/before/before-afterrain-tak.png",
+   "calls": 388,
+   "triangles": 920802,
+   "programs": 140,
+   "rain": 0,
+   "level": 0
+  },
+  {
+   "weather": "afterrain",
+   "view": "bilar",
+   "file": "docs/verification/2175/before/before-afterrain-bilar.png",
+   "calls": 80,
+   "triangles": 431779,
+   "programs": 148,
+   "rain": 0,
+   "level": 0
+  },
+  {
+   "weather": "afterrain",
+   "view": "bank",
+   "file": "docs/verification/2175/before/before-afterrain-bank.png",
+   "calls": 133,
+   "triangles": 566898,
+   "programs": 153,
+   "rain": 0,
+   "level": 0
+  },
+  {
+   "weather": "afterrain",
+   "view": "husA",
+   "file": "docs/verification/2175/before/before-afterrain-husA.png",
+   "calls": 189,
+   "triangles": 607141,
+   "programs": 161,
+   "rain": 0,
+   "level": 0
+  },
+  {
+   "weather": "afterrain",
+   "uGroundWet": [
+    0.5466908062055874,
+    0,
+    0
+   ]
+  }
+ ],
+ "errors": []
+}

@@ -1611,6 +1611,20 @@ not capped. Phones (lowMemory) only cap materials that already have their own co
 for a plain material. No geometry, draw, texture, light, pass or per-frame work. All values `SNOW_CAP` *guesses*.
 Test: `node --test tools/snowcaptest.mjs`; browser: `tools/snowcap2123browser.cjs` ([before/after](../verification/2123/README.md)).
 
+## Wet facades, roofs, cars and benches (#2175)
+
+`src/wetsurface.js` chains one fragment step per material class (`WET_SURFACE.kinds`: brick, render, roof, car, wood, metal; key
+`|wetsurf2175-<kind>`) onto the outdoor materials after their own patches (snowCap, railMetal, benchWood, moss, render). It only reads
+the ground's wetness (`wetUniforms.uGroundWet.x`, 0 in the snow months), so walls dry as fast as the street. Damp darkens the albedo
+(wet × 1.6), the gloss comes as it soaks (roughness down by wet²) and a faint sky reflection (`uWetHorizon/uWetZenith`, Schlick) shows
+on the film; brick and render also get thin vertical run streaks on near-vertical faces (only once soaked), car paint beads of dropwise
+gloss. Wired in: Hus L brick, render, pilasters, roof felt, flashings and rails (exterior.js); the Å-husen A/B/C and the neighbours'
+brick, white render, rails, sheet metal and modern roofs, retaining walls (surroundings.js); courtyard and bus-stop benches
+(courtyard.js, busstop.js); the parked and far cars (carfinish.js). Dry skips the branch. Phones (lowMemory) like snowCap: only materials
+that already have a compile step (so no new program for a plain material): the plain car paint and roofs stay dry-looking there. No
+geometry, draw, texture, light, pass or per-frame work. All `WET_SURFACE` values *guesses*. Test: `node --test tools/wetsurfacetest.mjs`;
+browser: `tools/wetsurface2175browser.cjs` ([before/after](../verification/2175/README.md)).
+
 ## Painted screen-wall surface (#2075)
 
 `screenwall.js` retains #1786's `SCREEN_WALL` palette, board spacing, frame bands and seeded board tints. Its fine colour strokes now follow gently curved, occasionally forked fibres within each existing board. `screenwallsurface.js` supplies one shared 256×512 linear RGBA texture: red holds only shallow, smooth-edged joint height; green holds matte roughness (about .85 on boards/frame and .96 in joints). `SCREEN_WALL_SURFACE` parameters are visual assumptions, not surveyed construction detail. Relief is shading only (maximum joint difference about .595 mm), never displacement.

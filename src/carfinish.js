@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { CAR_FINISH as C } from './config.js';
 import { outdoorReflection } from './neighborglass.js';
+import { wetSurface } from './wetsurface.js'; // #2175: rain on the paint and trim
 
 // #2097: the parked cars' finish (street car park, streetlife.js; east car parks, eastlot.js; their far LOD, viewlod.js).
 // Plain MeshStandardMaterials — no onBeforeCompile of their own, so the lamp wash (#2090) and the LOD dither keep wrapping
@@ -43,8 +44,10 @@ const reflective = (m, k) => { m.envMap = environment(); m.userData.carReflectio
 export function parkedCarMaterials() {
   const paint = reflective(new THREE.MeshStandardMaterial({ color: new THREE.Color(C.paint.diffuse, C.paint.diffuse, C.paint.diffuse),
     roughness: C.paint.roughness, metalness: C.paint.metalness }), C.reflectionDay);
+  wetSurface(paint, 'car'); // #2175: darker, glossier paint with dropwise beads (desktop; a plain material stays plain on phones)
   const trim = reflective(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1, metalness: 1,
     roughnessMap: trimSurfaceMap(), metalnessMap: trimSurfaceMap() }), C.reflectionDay * C.trimReflection);
+  wetSurface(trim, 'metal');
   return [paint, trim,
     new THREE.MeshStandardMaterial({ color: 0x33495c, roughness: 0.05, metalness: 0.55 }), // glass: as before
     new THREE.MeshStandardMaterial({ color: 0x141517, roughness: C.tyre.roughness })];
@@ -52,8 +55,8 @@ export function parkedCarMaterials() {
 
 /** The coarse far car's material (viewlod.js): rougher, dimmer reflection — calm at a distance. */
 export function farCarMaterial() {
-  return reflective(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: C.far.roughness, metalness: C.far.metalness }),
-    C.reflectionDay * C.far.reflection);
+  return wetSurface(reflective(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: C.far.roughness, metalness: C.far.metalness }),
+    C.reflectionDay * C.far.reflection), 'car');
 }
 
 /** 0 day … 1 night: every tracked car material's reflection strength (cheap; skipped when unchanged). */

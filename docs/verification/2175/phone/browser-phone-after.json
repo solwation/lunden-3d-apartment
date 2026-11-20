@@ -1,0 +1,65 @@
+{
+ "phase": "phone-after",
+ "base": "a1e55c59",
+ "shots": [
+  {
+   "weather": "rain",
+   "view": "fasad",
+   "file": null,
+   "calls": 167,
+   "triangles": 631401,
+   "programs": 82,
+   "rain": 0.8,
+   "level": 0
+  },
+  {
+   "weather": "rain",
+   "view": "tak",
+   "file": null,
+   "calls": 108,
+   "triangles": 502920,
+   "programs": 89,
+   "rain": 0.8,
+   "level": 0
+  },
+  {
+   "weather": "rain",
+   "view": "bilar",
+   "file": null,
+   "calls": 81,
+   "triangles": 494381,
+   "programs": 89,
+   "rain": 0.8,
+   "level": 0
+  },
+  {
+   "weather": "rain",
+   "view": "bank",
+   "file": null,
+   "calls": 142,
+   "triangles": 670358,
+   "programs": 92,
+   "rain": 0.8,
+   "level": 0
+  },
+  {
+   "weather": "rain",
+   "view": "husA",
+   "file": null,
+   "calls": 154,
+   "triangles": 581803,
+   "programs": 94,
+   "rain": 0.8,
+   "level": 0
+  },
+  {
+   "weather": "rain",
+   "uGroundWet": [
+    1,
+    0,
+    0
+   ]
+  }
+ ],
+ "errors": []
+}

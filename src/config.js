@@ -10758,6 +10758,24 @@ export const RAIN_RIPPLES = {
   splash: { cell: 0.04, rate: 6, share: 0.05, tilt: 0.55, rough: 0.12, near: [3, 9] },
   kinds: { asphalt: 1, paving: 0.85, gravel: 0.5 },
 };
+// #2175: rain wets more than the ground (src/wetsurface.js). One fragment step per material class, driven by the ground's own wetness
+// (uGroundWet.x, 0…1: it builds up in the rain and dries in sun and warmth, 0 in the snow months): albedo × `dark` (damp darkens at
+// wet × 1.6), roughness down to `rough` by wet² (the gloss comes as it soaks), and on walls faint vertical run `streak`s (darker
+// lines, `streak` = strength; world-xz position along the wall × y stretched `stretch` m: tall thin noise, only on near-vertical faces,
+// `cols` streaks per metre). `drops` (car paint only) = share of the surface under bead-like dropwise gloss (`dropScale` m cells, roughness
+// → `dropRough` inside), `shine` = the sky's reflection added to the film (× wet², × Fresnel; reads uWetHorizon/uWetZenith). All *guess*.
+export const WET_SURFACE = {
+  streak: { cols: 3.2, stretch: 2.4, wall: [0.35, 0.1], wet: 0.45 },
+  drops: { scale: 0.045, rough: 0.12 },
+  kinds: {
+    brick: { dark: 0.6, rough: 0.5, streak: 0.4, shine: 0.14 },
+    render: { dark: 0.72, rough: 0.55, streak: 0.42, shine: 0.12 },
+    roof: { dark: 0.55, rough: 0.16, streak: 0, shine: 0.55 },
+    car: { dark: 0.72, rough: 0.1, streak: 0, shine: 0.3, drops: 0.4 },
+    wood: { dark: 0.68, rough: 0.5, streak: 0, shine: 0.1 },
+    metal: { dark: 0.75, rough: 0.25, streak: 0, shine: 0.25 },
+  },
+};
 // #2105: fallen autumn leaves on the outdoor ground (src/leaflitter.js): a fragment patch chained onto the lit ground materials
 // (lawns via grass.js, and every surface wetground.js patches: asphalt, paving, kerbs, gravel, road paint) draws small procedural
 // leaves in two jittered world-space grids, `cells` m apart, each leaf `len` (half-length, share of a cell) × `wide` (of its length).

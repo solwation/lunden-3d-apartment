@@ -74,7 +74,8 @@ test('car LOD clones follow the night; a lamp-washed, dithered clone gets each p
   for (const m of [...batches.map((b) => b.material), lo.material]) {
     const fs = compile(m);
     assert.equal(fs.split('vec3 lampWash(vec3').length - 1, 1, 'the wash exactly once (#2090)');
-    keys.add(m.customProgramCacheKey());
+    assert.ok(fs.split('uniform vec3 uSurfWet').length - 1 <= 1, 'the wet step at most once (#2175)');
+    keys.add(m.customProgramCacheKey().replace(/\|wetsurf2175-\w+/, '')); // (#2175: the wet class is its own key suffix)
   }
   assert.equal(keys.size, 2, 'near (washed + near dither) and far (washed + far dither) keep distinct program keys');
 });
