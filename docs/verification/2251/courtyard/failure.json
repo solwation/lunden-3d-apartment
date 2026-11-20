@@ -1,0 +1,7 @@
+{
+  "lines": [],
+  "failures": 0,
+  "errors": [],
+  "keepWarnings": [],
+  "error": "Error: page.evaluate: ReferenceError: roofPicnic is not defined\n    at eval (eval at window.focusBike (eval at evaluate (:290:30)), <anonymous>:10:8)\n    at eval (<anonymous>)\n    at window.focusBike (eval at evaluate (:290:30), <anonymous>:17:369)\n    at eval (eval at evaluate (:290:30), <anonymous>:17:385)\n    at async <anonymous>:316:30"
+}

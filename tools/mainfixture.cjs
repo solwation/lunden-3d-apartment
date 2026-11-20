@@ -39,4 +39,6 @@ async function installMainImports(page) {
 }
 // Call right after newPage() and before page.goto(); call installMainImports(page) after goto: defaults exist before any test setup runs (and again after reloads).
 async function installMainGlobals(page) { await page.addInitScript(initScript); }
-module.exports = { DEFAULTS, ELEMENTS, IMPORTS, installMainImports, initScript, installMainGlobals };
+// The gameplay keydown handler is the document keydown listener that is the one that opens with the `if (!locked || statsOpen) return;` gate; other keydown listeners come and go (#2222).
+function mainKeys(main){const gate=main.indexOf('if (!locked || statsOpen) return;\n  if (reading)'),a=main.lastIndexOf("document.addEventListener('keydown', (e) => {",gate),b=main.indexOf("window.addEventListener('blur'",gate);if(gate<0||a<0||b<0||main.indexOf('if (!locked || statsOpen) return;\n  if (reading)',gate+1)>=0)throw Error('gameplay keydown handler not found');return main.slice(a,b).trim();}
+module.exports = { mainKeys, DEFAULTS, ELEMENTS, IMPORTS, installMainImports, initScript, installMainGlobals };

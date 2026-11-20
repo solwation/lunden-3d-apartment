@@ -1,0 +1,40 @@
+TAP version 13
+# Subtest: actual current main extracts the complete keydown prefix and keyup, ending before blur
+ok 1 - actual current main extracts the complete keydown prefix and keyup, ending before blur
+  ---
+  duration_ms: 2.815591
+  type: 'test'
+  ...
+# Subtest: unrelated listeners before and after the gameplay block do not change its verbatim text
+ok 2 - unrelated listeners before and after the gameplay block do not change its verbatim text
+  ---
+  duration_ms: 0.1791
+  type: 'test'
+  ...
+# Subtest: prefix statements inserted before the gate remain part of the gameplay handler
+ok 3 - prefix statements inserted before the gate remain part of the gameplay handler
+  ---
+  duration_ms: 0.1225
+  type: 'test'
+  ...
+# Subtest: missing or duplicate gameplay gates fail closed
+ok 4 - missing or duplicate gameplay gates fail closed
+  ---
+  duration_ms: 0.464198
+  type: 'test'
+  ...
+# Subtest: missing listener or blur boundary fails closed
+ok 5 - missing listener or blur boundary fails closed
+  ---
+  duration_ms: 0.2049
+  type: 'test'
+  ...
+1..5
+# tests 5
+# suites 0
+# pass 5
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 53.356238

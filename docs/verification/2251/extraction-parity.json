@@ -1,0 +1,14 @@
+{
+  "base": "09c8b39b17738779df00a6164140c48de30c2fdc",
+  "currentExtractSha256": "5b00c863b266be709d7b4fe3a3bfeac4d8297f9d1af81622e95ad8f27bb8598c",
+  "previous2222ExtractSha256": "5b00c863b266be709d7b4fe3a3bfeac4d8297f9d1af81622e95ad8f27bb8598c",
+  "historicalBeforeSha256": "b941fa4a81d34a55d9633b806f3a2473441cbaf97dbf5a3f87f8904442c6fe22",
+  "historicalRevision": "b2efbc5",
+  "historicalAfterEqualsBefore": true,
+  "currentAfterEqualsBefore": true,
+  "assertions": {
+    "tools/bicycletest.cjs": "all execution/assertion code from let failures=0 is byte-identical",
+    "tools/statspaneltest.cjs": "all execution/assertion code from let failures=0 is byte-identical",
+    "tools/courtyardbicycletest.cjs": "all execution/assertion code from let failures=0 is byte-identical"
+  }
+}

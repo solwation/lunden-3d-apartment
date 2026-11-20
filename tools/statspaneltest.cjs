@@ -1,7 +1,7 @@
 // #886: original index UI and complete production input/panel blocks; actual pointer lock, no apartment/WebGL.
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),{execFileSync}=require('node:child_process');
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
-const {installMainGlobals,installMainImports}=require('./mainfixture.cjs');
+const {installMainGlobals,installMainImports,mainKeys}=require('./mainfixture.cjs');
 const game=process.argv[2]||'http://localhost:8876',out=process.argv[3]||'/tmp/lunden-statspanel',before=process.argv.includes('--before');
 const root=path.resolve(__dirname,'..'),read=p=>before?execFileSync('git',['show','b2efbc5:'+p],{cwd:root,encoding:'utf8'}):fs.readFileSync(path.join(root,p),'utf8');
 const source=read('src/main.js'),html=read('index.html');
@@ -11,7 +11,7 @@ const parts={active:span('const active =',';\n')+';',start:span('function startM
  lock:span("document.addEventListener('pointerlockchange', () => {\n  const wasLocked",'/**\n * A mouse click'),
  click:span('function click(button) {',"document.addEventListener('contextmenu'"),
  wheel:span(before?"document.addEventListener('wheel', (e) => { if (locked && !reading":"document.addEventListener('wheel', (e) => { if (locked && !statsOpen && !reading",'\n\n'),
- keyboard:span("document.addEventListener('keydown', (e) => {\n  if (!locked", "window.addEventListener('blur'"),
+ keyboard:before?span("document.addEventListener('keydown', (e) => {\n  if (!locked", "window.addEventListener('blur'"):mainKeys(source),
  stats:span('let mapPinned = false;','\nrenderStats(statsBody);\nsetInterval')};
 let failures=0;const lines=[];const check=(ok,label)=>{lines.push(`${ok?'PASS':'FAIL'} ${label}`);console.log(lines.at(-1));if(!ok)failures++;};
 (async()=>{fs.mkdirSync(out,{recursive:true});const browser=await chromium.launch({executablePath:process.env.CHROME_PATH||undefined,args:['--no-sandbox','--disable-gpu']});const errors=[];

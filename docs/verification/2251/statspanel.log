@@ -1,0 +1,5 @@
+browsertest: running in browser slot 2 of 2
+browsertest: no systemd user scope here, running without a memory ceiling
+PAGEERROR updateAppMenu is not defined
+page.waitForFunction: Timeout 5000ms exceeded.
+    at /home/devcontainers/wt/olw-win10-gpt-6-20261120-2251/tools/statspaneltest.cjs:39:55

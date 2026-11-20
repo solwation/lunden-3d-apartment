@@ -1,0 +1,47 @@
+{
+  "base": "09c8b39b17738779df00a6164140c48de30c2fdc",
+  "recordedUTC": "2026-11-20T16:57:19.089068+00:00",
+  "environment": "Linux Chromium, shared tools/browsertest.sh; no systemd user scope available; renderer-free native component fixtures",
+  "sha256": {
+    "tools/mainfixture.cjs": "c9681ba073eb286dc278695a3e30c928a4523374a6beb0737dd0e6514cdb8ea6",
+    "tools/mainfixturetest.cjs": "f9283dbfd5308417273f58494a04740fe5b9ba70701191ef576e16e884e48c29",
+    "tools/statspaneltest.cjs": "abb84138510458badcae088df515bfc0015615261c33a71e7b805c293ddc105b",
+    "tools/courtyardbicycletest.cjs": "87eef9c3d757af1c9d256f7c22dbb81fce7e04556ae82b732027fbfe84d6510c",
+    "tools/bicycletest.cjs": "97d3da065e4148a0cea3d36dce057190a06fd6da2ce77f40e1060b31b3da2941",
+    "src/main.js": "b4b869648fc0d124d7773675d676e2483646f549bfa89c04d1d6903739fb0057",
+    "index.html": "c6f4120cfd77e14347010641c4254fe13c5954931776a54b3ed165cc568a692b",
+    "src/player.js": "17dd85d527af5e8c54bb5c71efa0677d232aa4b2df10cff9c6790d6f5c781e18",
+    "src/statspanel.js": "aa8a20410ac3d86831be1c99924862f08a1dff261a321db77c9f232b76fdc9d7",
+    "src/touch.js": "dd50e6cbaa7de942e1bafa5dcd72f435c9d9bc98a9a7dfe8c7a964f12cc4dcf0",
+    "src/stats.js": "c104780d3068860631b06927b52364baee6fcbcb885cf1da74fe0fa763bb3508",
+    "src/courtyard.js": "5d842f03831a7478d3431f8815670e4a41aa2ecee8e4ce538e64e80e45fadd23",
+    "src/world.js": "f7f33d33a0bc26a61ead462e8b1e43f8f4a0a041e0eb4d171c4334a44540a2fb",
+    "src/keep.js": "b34912eb232efdf85257fd37c8a9fc8f3bc2e7e06a90a582e2beba2fb344274d",
+    "src/config.js": "43af8ca9b50c46cc2c53153cf7f4ef22147ad5b71b149a1dea96d60a3fca3412"
+  },
+  "commands": [
+    {
+      "command": "node --test tools/mainfixturetest.cjs",
+      "exit": 0,
+      "result": "5 PASS, 0 FAIL, 53.356238 ms"
+    },
+    {
+      "command": "tools/browsertest.sh node tools/statspaneltest.cjs http://localhost:8454 docs/verification/2251/statspanel",
+      "exit": 1,
+      "assertionsCompleted": 0,
+      "result": "PAGEERROR updateAppMenu is not defined; pointerlock wait timeout5000ms"
+    },
+    {
+      "command": "tools/browsertest.sh node tools/courtyardbicycletest.cjs http://localhost:8454 docs/verification/2251/courtyard",
+      "exit": 1,
+      "assertionsCompleted": 0,
+      "result": "page.evaluate ReferenceError roofPicnic is not defined during initial focus setup"
+    }
+  ],
+  "servedSourceBeforeBrowser": {
+    "src/main.js": "b4b869648fc0d124d7773675d676e2483646f549bfa89c04d1d6903739fb0057",
+    "tools/mainfixture.cjs": "c9681ba073eb286dc278695a3e30c928a4523374a6beb0737dd0e6514cdb8ea6"
+  },
+  "unchangedProduction": true,
+  "followup": "https://github.com/solwation/lunden-3d-apartment/issues/2252"
+}

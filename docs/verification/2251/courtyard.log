@@ -1,0 +1,9 @@
+browsertest: no systemd user scope here, running without a memory ceiling
+page.evaluate: ReferenceError: roofPicnic is not defined
+    at eval (eval at window.focusBike (eval at evaluate (:290:30)), <anonymous>:10:8)
+    at eval (<anonymous>)
+    at window.focusBike (eval at evaluate (:290:30), <anonymous>:17:369)
+    at eval (eval at evaluate (:290:30), <anonymous>:17:385)
+    at async <anonymous>:316:30
+    at setup (/home/devcontainers/wt/olw-win10-gpt-6-20261120-2251/tools/courtyardbicycletest.cjs:17:126)
+    at async /home/devcontainers/wt/olw-win10-gpt-6-20261120-2251/tools/courtyardbicycletest.cjs:43:2
