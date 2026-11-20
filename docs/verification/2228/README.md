@@ -74,3 +74,12 @@ Phase timing (approximate): diagnosis/policy/plan 2 min, test edit/source review
 pass within the scoped plan; no ten-minute reassessment or second run was needed.
 Local server 8433 is stopped before handoff. Root retains integration/publication
 ownership; no push/closure by this worker.
+
+## Publication
+
+Integrated unchanged as `4b2332f1ec8430160b744f4b96b5971202c35764`.
+[Pages run 44764504921](https://github.com/solwation/lunden-3d-apartment/actions/runs/44764504921)
+completed successfully. The conductor reviewed the combined diff and reused the
+source-bound checks; no verified test source changed during integration.
+[Completion comment](https://github.com/solwation/lunden-3d-apartment/issues/2228#issuecomment-7043581822)
+was published before the closing push, with concrete nonvisual evidence.
