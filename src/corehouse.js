@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { PLAYER, POWER, CORE as CL } from './config.js';
 import { box, panelX, panelZ, complement, labelTexture, makeDoor, buildFlatDoors, shade, Lift } from './core.js';
+import { registerRail } from './avatarstairs.js'; // #2172
 import { architectureEdges } from './architectureedges.js';
 
 // Hus A's, Hus B's and Hus C's stair cores (#637, #638, #639, #652; CORE_A / CORE_B / CORE_C in config, which list the sources and the assumptions): a walkable
@@ -199,6 +200,7 @@ export class CoreHouse {
       if (LN && k === 0) { // the −1 flight: solid treads in the east half from the foot north to the hole, a rail each side, the hole guarded on its west edge
         for (let i = 1; i < ST.risers; i++) draw(WL1, B.x1, yk, tread(i), LN.foot - i * LT, LN.foot - (i - 1) * LT, STAIR);
         const yl = (z) => yk + RISE * ((LN.foot - z) / LT + 0.5) + 0.9;
+        for (const xr of [B.x1 - 0.05, WL1 + 0.03]) registerRail([[xr, yl(LN.foot - 0.05), LN.foot - 0.05], [xr, yl(ZH), ZH]]); // #2172
         for (const xr of [B.x1 - 0.05, WL1 + 0.03]) for (let z = LN.foot - 0.05; z > ZH + 0.01; z -= 0.5) drawGeo(bar([xr, yl(z), z], [xr, yl(Math.max(ZH, z - 0.5)), Math.max(ZH, z - 0.5)], 0.02), RAIL);
         const g = Y[1] + 0.001, xg = WL1 + 0.02;
         draw(xg - 0.025, xg + 0.025, g + ST.guard - 0.04, g + ST.guard, ZH, ST.top + 0.02, RAIL); draw(xg - 0.02, xg + 0.02, g - 0.2, g + 0.06, ZH, ST.top + 0.02, RAIL);
@@ -223,10 +225,12 @@ export class CoreHouse {
         for (let m = i === 1 ? 0 : 1; m <= n; m++) { const x = ax + (bx - ax) * m / n, z = az + (bz - az) * m / n; pts.push([x, stairY(k, x, z) + 0.9, z]); }
       }
       for (let i = 1; i < pts.length; i++) drawGeo(bar(pts[i - 1], pts[i], 0.02), RAIL);
+      registerRail(pts); // #2172: the avatars' hand finds it
       // the stringer's two sides: a rail from the hall's edge to the stringer's end, balusters under it
       for (const [xr, f] of [[WL0 - 0.02, 1], [WL1 + 0.02, 2]]) {
         drawGeo(bar([xr, stairY(k, xr, ST.top + 0.01) + 0.9, ST.top + 0.01], [xr, stairY(k, xr, ZW) + 0.9, ZW], 0.025), RAIL);
         drawGeo(bar([xr, stairY(k, xr, ZW) + 0.9, ZW], [xr, stairY(k, xr, ZP - 0.01) + 0.9, ZP - 0.01], 0.025), RAIL);
+        registerRail([[xr, stairY(k, xr, ST.top + 0.01) + 0.9, ST.top + 0.01], [xr, stairY(k, xr, ZW) + 0.9, ZW], [xr, stairY(k, xr, ZP - 0.01) + 0.9, ZP - 0.01]]); // #2172
         const xs = f === 1 ? WL0 - 0.03 : WL1 + 0.01;
         for (let z = ST.top + 0.06; z < ZP - 0.02; z += 0.2) { const yy = stairY(k, xr, z); draw(xs, xs + 0.02, yy - 0.05, yy + 0.9, z - 0.01, z + 0.01, RAIL); }
       }

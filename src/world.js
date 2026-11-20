@@ -7,7 +7,8 @@ import {
   STAIR, COLORS, FENCE_HEIGHT, SITE, OUTDOOR, WALK, CABINET_FIXES, KLK, SEASON, FINISH, OPTIONS, EXTRA_WALLS, SLIDE_FLIP, ROOM_RENAMES, EXTRA_ROOMS, ROOM_DIVIDERS, CORE, PORTIK,
   STANDARD, VISIT_UNITS, L1201, HUS_L, storeyFloor, HUS_L_REVEAL, VENTS, TILED_ROOMS, LIGHTING, SMOKE_ALARM,
 } from './config.js';
-import { buildStairs, buildHandrails, stairHeight, stairUnderside } from './stairs.js';
+import { registerRail, thinRail } from './avatarstairs.js'; // #2172
+import { buildStairs, buildHandrails, handrailRuns, stairHeight, stairUnderside } from './stairs.js';
 import { klkFittings } from './closet.js';
 import { cleaningFittings } from './cleaning.js';
 import { Openable } from './openables.js';
@@ -898,6 +899,7 @@ function buildStructure(scene, lower, l1, W, D, M, opening) {
   l1.segments.push(...railSegs);
   // handrails: the wall side along the flights and round the winders, one per flight on the inner side (#419)
   for (const m of [...buildHandrails(M.rail).children]) scene.add(m);
+  for (const run of handrailRuns()) registerRail(thinRail(run.points)); // #2172: the avatars' hand
 }
 
 /** L1201's slab, roof zone, stair and railing (#573, L1201 in config): our stair type mapped onto its sheet's outline (the
@@ -992,6 +994,7 @@ function buildOwnStructure(group, lower, upper, l1, P, L, map) {
   // its outline, at its own wall faces (P.handrail), flight B's between its newels; no collision (inside the walls' clearance)
   map.handrail = { X: map.x, Z: map.z, Y: map.y, H: P.handrail, midZ, innerB: { from: cx, to: R.x } };
   for (const m of [...buildHandrails(SM.rail, map.handrail).children]) group.add(m);
+  for (const run of handrailRuns(map.handrail)) registerRail(thinRail(run.points)); // #2172 (the visited flat's stair)
 }
 
 /** A flat you can walk into (#574, #573, VISIT_UNITS): built in one synchronous call (tests, tools). */

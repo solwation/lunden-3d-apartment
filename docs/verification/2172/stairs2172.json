@@ -1,0 +1,150 @@
+[
+ {
+  "name": "house-L-stair",
+  "house": "lagenhetens trappa (Hus L, L1007)",
+  "rails": 47,
+  "before": {
+   "up": {
+    "lean": 0,
+    "hand": 0,
+    "stride": 1.103,
+    "lift": 0.322,
+    "n": 50
+   },
+   "down": {
+    "lean": 0,
+    "hand": 0,
+    "stride": 0.991,
+    "lift": 0.289,
+    "n": 57
+   }
+  },
+  "after": {
+   "up": {
+    "lean": 0.27,
+    "hand": 1,
+    "stride": 1.048,
+    "lift": 0.399,
+    "n": 50
+   },
+   "down": {
+    "lean": -0.13,
+    "hand": 1,
+    "stride": 0.78,
+    "lift": 0.356,
+    "n": 57
+   }
+  }
+ },
+ {
+  "name": "house-A-stair",
+  "house": "Hus A:s trapphus",
+  "rails": 47,
+  "before": {
+   "up": {
+    "lean": 0,
+    "hand": 0,
+    "stride": 1.103,
+    "lift": 0.33,
+    "n": 53
+   },
+   "down": {
+    "lean": 0,
+    "hand": 0,
+    "stride": 0.997,
+    "lift": 0.278,
+    "n": 60
+   }
+  },
+  "after": {
+   "up": {
+    "lean": 0.27,
+    "hand": 1,
+    "stride": 1.048,
+    "lift": 0.404,
+    "n": 53
+   },
+   "down": {
+    "lean": -0.13,
+    "hand": 1,
+    "stride": 0.797,
+    "lift": 0.343,
+    "n": 60
+   }
+  }
+ },
+ {
+  "name": "house-B-stair",
+  "house": "Hus B:s trapphus",
+  "rails": 47,
+  "before": {
+   "up": {
+    "lean": 0,
+    "hand": 0,
+    "stride": 1.103,
+    "lift": 0.329,
+    "n": 53
+   },
+   "down": {
+    "lean": 0,
+    "hand": 0,
+    "stride": 0.997,
+    "lift": 0.273,
+    "n": 60
+   }
+  },
+  "after": {
+   "up": {
+    "lean": 0.27,
+    "hand": 1,
+    "stride": 1.048,
+    "lift": 0.403,
+    "n": 53
+   },
+   "down": {
+    "lean": -0.13,
+    "hand": 1,
+    "stride": 0.755,
+    "lift": 0.325,
+    "n": 60
+   }
+  }
+ },
+ {
+  "name": "house-C-stair",
+  "house": "Hus C:s trapphus",
+  "rails": 47,
+  "before": {
+   "up": {
+    "lean": 0,
+    "hand": 0,
+    "stride": 1.103,
+    "lift": 0.329,
+    "n": 54
+   },
+   "down": {
+    "lean": 0,
+    "hand": 0,
+    "stride": 0.997,
+    "lift": 0.273,
+    "n": 60
+   }
+  },
+  "after": {
+   "up": {
+    "lean": 0.27,
+    "hand": 1,
+    "stride": 1.048,
+    "lift": 0.403,
+    "n": 54
+   },
+   "down": {
+    "lean": -0.13,
+    "hand": 1,
+    "stride": 0.782,
+    "lift": 0.374,
+    "n": 60
+   }
+  }
+ }
+]

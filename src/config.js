@@ -10914,3 +10914,19 @@ export const AVATAR_SLEEP = {
   eyes: { after: [10, 16], close: 2.5, open: 0.6 }, breath: 0.55, ramp: 6,
   turn: { first: [14, 30], wait: [30, 90], roll: 0.5, move: 2.2 },
 };
+
+/** #2172 (src/avatarstairs.js): the figure's stair gait, derived locally from the ground under its feet and the registered handrails (no network field).
+ * `probe`: m ahead of / behind the body the ground is read for the stair's slope (a stair's riser / tread is ~0.55 against a ramp's ~0.1);
+ * `slope`: the slope band (tan) over which the stair gait fades in (below: ordinary ground, a gentle ramp is untouched); `speed`: m/s band of the walking
+ * speed it fades in over; `tau`: s the slope is smoothed over. Up: `upLean` rad forward, `upLift` m (figure units) extra swing-foot clearance (the knee
+ * rises), `upShrink` the stride's length scale, `upHip` m the hips sink. Down: `downLean` rad backwards, `downShrink` shorter, more careful steps,
+ * `downHip` m the hips sink (bent knees), `downLift` a little extra clearance. The hand: `reach` m the rail may lie to the side of the body, `ahead` m in
+ * front of the hips the hand looks for the rail, `front` m the hand stays in front of the hips at most, `rate` 1/s: how fast the hand's target slides along the rail
+ * and the grip fades in / out, `height` [lo, hi] m the rail may lie over the root (a rail of another storey is never taken), `maxDist` m a rail point
+ * may lie from the figure's side for the grip to start. All *guess*, tuned by eye on stair sequences. */
+export const AVATAR_STAIRS = {
+  probe: 0.4, slope: [0.2, 0.4], speed: [0.25, 0.7], tau: 0.12,
+  upLean: 0.27, upLift: 0.09, upShrink: 0.95, upHip: 0.02,
+  downLean: 0.13, downLift: 0.015, downShrink: 0.74, downHip: 0.035,
+  reach: 0.62, ahead: 0.3, front: 0.4, rate: 10, height: [0.55, 1.25], maxDist: 0.6,
+};

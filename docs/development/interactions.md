@@ -497,6 +497,14 @@ src/spidersuit.js      the Spider-Man suit (#597, SPIDER, all values *guess*): o
                        stair walking height is a ramp line through the tread tops (`CoreHouse.stairY`, +-9 cm from the drawn treads, so soles sit within
                        that of them), not stepped; the gait does not choose where feet land, so a toe may overhang a riser.
                        [Results](../verification/2015/README.md).
+                       #2172: the stair gait (`src/avatarstairs.js`, `AVATAR_STAIRS`; no wire field). `Avatar.update` reads the ground slope along the heading
+                       (`ground` ahead / behind the body, `slopeAlong`; a stair's ~0.5 against a ramp's ~0.1) and `stepStair` gives, smoothed and scaled by the walking speed:
+                       a forward lean and a higher swing-foot clearance (knee lift) going up, shorter (`downShrink`, via walkGait's stride scale), slightly backward-leaning
+                       and bent-kneed steps going down. The hand: stair builders register their rail axes (`registerRail`: corehouse.js Hus A/B/C, core.js Hus L, stairs.js the flat's
+                       own stair and L1201's) and `railTarget` finds the rail point nearest to 0.3 m in front of the hips, within `reach` to the side and a height band over the
+                       root (never another storey's rail); the hand on that side (a held hand keeps its grip) is mixed to it and its target slides along the rail.
+                       Tests: `tools/avatarstairstest.mjs` (helpers), `tools/avatarstairs2172browser.cjs` (Ghost up/down A, B, C and the flat's stair, before/after;
+                       [images](../verification/2172/)).
                        #600: with it on fall.js never hurts (a soft landing). Space / the touch jump button (#jump-btn, directly right of 🧎 in the #1089 thumb-arc touch cluster;
                        on touch always, #636) is a *press* (`player.spaceDown` / `jumpPress`): standing it jumps at `jump` m/s (indoors
                        too, the ceiling stops it, `player.ceilingAt`); without the suit it is the low jump `PLAYER.jump`; on a wall it

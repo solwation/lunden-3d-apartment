@@ -1,5 +1,6 @@
 import { architectureEdges } from './architectureedges.js';
 import * as THREE from 'three';
+import { registerRail } from './avatarstairs.js'; // #2172
 import { freeCanvasAfterUpload } from './lowmemory.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { CORE as K, PORTIK, GARAGE, HUS_L, PLAYER, POWER, storeyFloor } from './config.js';
@@ -428,6 +429,7 @@ export class Core {
       const slen = Math.hypot(zLo - zHi, yHi - yLo), ang = Math.atan2(yHi - yLo, zLo - zHi), t = 0.26;
       geo.stair.push(bake(new THREE.BoxGeometry(XS - X0, t, slen).rotateX(ang).translate((X0 + XS) / 2, (yLo + yHi) / 2 - rise - (t / 2) / Math.cos(ang), (zLo + zHi) / 2), STAIR));
       const len = Math.hypot(zLo - zHi, yHi - yLo), mz = (zLo + zHi) / 2, my = (yLo + yHi) / 2 + 0.9;
+      for (const xr of [X0 + 0.05, XS - 0.03]) registerRail([[xr, yLo + 0.9, zLo], [xr, yHi + 0.9, zHi]]); // #2172: the avatars' hand
       for (const xr of [X0 + 0.05, XS - 0.03]) geo.rail.push(bake(new THREE.CylinderGeometry(xr > XS - 0.1 ? 0.025 : 0.02, xr > XS - 0.1 ? 0.025 : 0.02, len, 6).rotateX(Math.PI / 2).rotateX(ang).translate(xr, my, mz), RAIL));
       for (let z = zLo - 0.06; z > zHi + 0.03; z -= 0.125) { const y = ramp(k, z); geo.rail.push(bake(box(XS - 0.04, XS - 0.02, y - 0.05, y + 0.9, z - 0.01, z + 0.01), RAIL)); }
     }

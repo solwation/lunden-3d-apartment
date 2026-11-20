@@ -26,6 +26,8 @@ import { newSway, stepSway, SWAY_DECL, swayGLSL } from './avatarsway.js'; // #20
 import { skirtKind, skirtUnder, skirtRegion, skirtTube, skirtGLSL, SKIRT_VDECL } from './avatarskirt.js'; // #2157
 import { newWind, stepWind } from './avatarwind.js'; import { siteWind } from './sitewind.js'; // #2110: outdoor wind on the sway springs
 import { newLean, stepLean } from './avatarlean.js'; // #2109
+import { newStair, stepStair, slopeAlong, railTarget } from './avatarstairs.js'; // #2172
+import { AVATAR_STAIRS as STR } from './config.js';
 import { chestBreath, chestUniforms, CHEST_DECL, chestGLSL, chestKey } from './avatarchest.js'; // #2108: visible breathing
 import { bodyShape, buildUniforms, BUILD_DECL, buildGLSL, buildKey, applyBodyShape, spreadBones } from './avatarbuild.js'; // #2141: the build as body shape
 import { avatarSkinGLSL, skinKey } from './avatarskin.js'; // #2032
@@ -1647,7 +1649,7 @@ const smin = (a, b, k) => { const h = Math.max(k - Math.abs(a - b), 0) / k; retu
 // #2109: a figure posed without the lean (`noLean`, fixed-pose measurements), and the rendered root's world yaw when no motion frame is given (last frame's matrix)
 const NO_LEAN = { headYaw: 0, headPitch: 0, headRoll: 0, torsoYaw: 0, torsoRoll: 0, hipX: 0, hipRoll: 0, accel: 0, brace: 0 };
 const objectYaw = (o) => { const e = o.matrixWorld.elements; return Math.atan2(e[8], e[10]); };
-function walkGait(av, dt, speed, walking, dir, fx, fy, fz, c) {
+function walkGait(av, dt, speed, walking, dir, fx, fy, fz, c, stairShrink = 1, stairLift = 0) { // #2172: the stair gait's stride scale and extra clearance
   const G = GAIT, gt = av.gt ??= { feet: [[0, 0, 0], [0, 0, 0]], pitch: [0, 0], arm: [0, 0], hip: 0, sway: 0, run: 0 };
   const info = av.gaitInfo ??= { active: false, phase: 0, cycles: 0, contact: [false, false], stance: [-1, -1], swing: [-1, -1], speed: 0, stepHz: 0, strideLen: 0, duty: 0, run: 0, dir: [0, 1], footfalls: 0, lastFoot: -1, footfall: false };
   const gd = av.gaitDirV ??= [0, 1];
@@ -1661,13 +1663,13 @@ function walkGait(av, dt, speed, walking, dir, fx, fy, fz, c) {
   }
   const sc = av.object.scale.z || 1, g = av.gait ?? 0, r = walking || g > 0.001 ? THREE.MathUtils.smoothstep(speed, G.run[0], G.run[1]) : 0, ck = 1 - CR.step * c;
   const hz = lerpTab(G.speeds, G.stepHz, speed), beta = lerpTab(G.speeds, G.duty, speed);
-  const shrink = (1 - G.backShrink * Math.max(0, -gd[1]) - G.sideShrink * Math.abs(gd[0])) * ck; // the stride's own length scale
+  const shrink = (1 - G.backShrink * Math.max(0, -gd[1]) - G.sideShrink * Math.abs(gd[0])) * ck * stairShrink; // the stride's own length scale
   const rate = hz / (2 * shrink); // cycles per second: the leg cycle (a stride) is 2 v / stepHz long, shorter by `shrink`
   if (walking) { av.cycles = (av.cycles ?? 0) + dt * rate; av.phase = av.cycles * Math.PI * 2; }
   const cyc = av.cycles ?? 0, p = cyc - Math.floor(cyc), S = speed / (rate * sc), half = beta * S / 2; // S: stride in figure units
   const dz = gd[1], dx = gd[0], ps = Math.abs(dz) * Math.min(1, speed / 1.2) * (dz > 0 ? 1 : 0.4); // foot angle share (not sideways)
   const heel = lerpTab([0, 1], G.heel, r) * ps, toeOff = lerpTab([0, 1], G.toeOff, r) * ps;
-  const lift = (G.lift[0] + (G.lift[1] - G.lift[0]) * r) * Math.min(1, speed / 1.2) * (1 - 0.5 * c), peak = G.liftPeak[0] + (G.liftPeak[1] - G.liftPeak[0]) * r;
+  const lift = (G.lift[0] + (G.lift[1] - G.lift[0]) * r) * Math.min(1, speed / 1.2) * (1 - 0.5 * c) + stairLift, peak = G.liftPeak[0] + (G.liftPeak[1] - G.liftPeak[0]) * r;
   const sh = G.shoe, m = -S * (1 - beta) * 0.6;
   const ax = Math.abs(dx), reachX = (G.sideMax - G.sideWidth) / 2; // side-stepping (carioca): the feet share one narrow lane and cross, the swing foot passing in front of the planted one
   const fxe = fx + (G.sideWidth / 2 - fx) * ax, lat = Math.min(ax * half, reachX), kx = ax * half > 1e-4 ? lat / (ax * half) : 1; // the lateral travel kept within the ankles' reach from the hips
@@ -2131,14 +2133,22 @@ export class Avatar {
       this.cycles = Math.ceil(this.cycles ?? 0) + Math.max(0, lerpTab(GAIT.speeds, GAIT.duty, gaitSpeed) - MOTION.startStance * Math.min(1, this.object.scale.z));
       this.gaitStep = Math.floor(this.cycles * 2); // rephasing is not a landing; keep the public footfall counter unchanged
     }
-    const gt = walkGait(this, dt, gaitSpeed, walking, gaitDir, fx, F.y, fz, c); // #2003: explicit stance / swing phases
+    // #2172: the stair gait (lean, knee lift, shorter steps down, a hand on the rail) from the ground's slope along the heading under the figure
+    const sScale = this.object.scale.z || 1, stairOn = !!ground && !!motionFrame && Number.isFinite(floorY) && walking && !am && !jumpOn && !swim && !dance && !react && !kiss && c < MOTION.groundCrouch;
+    let slope = NaN;
+    if (stairOn) {
+      const sn = Math.sin(motionFrame[2]), cs = Math.cos(motionFrame[2]), d = STR.probe * sScale, y0 = floorY + 0.02;
+      slope = slopeAlong(ground(motionFrame[0] + sn * d, motionFrame[1] + cs * d, y0), ground(motionFrame[0] - sn * d, motionFrame[1] - cs * d, y0), STR.probe * sScale);
+    }
+    const stair = stepStair(this.stair ??= newStair(), dt, { slope, dir: (Number.isFinite(fwd) ? fwd : gaitDir ? gaitDir[1] : 1) < 0 ? -1 : 1, speed: groundSpeed, on: stairOn });
+    const gt = walkGait(this, dt, gaitSpeed, walking, gaitDir, fx, F.y, fz, c, stair.shrink, stair.lift * g); // #2003: explicit stance / swing phases
     groundMotion(this, dt, gt, motionFrame, walking, groundEnabled && !am && !jumpOn && !swim && !dance && !react && !kiss && c < MOTION.groundCrouch, fx, F.y, fz);
     const stepHip = footGround(this, dt, gt, motionFrame, floorY, this.object.scale.z || 1, ground, !!ground && groundEnabled && !am && !jumpOn && !swim && !dance && !react && !kiss && c < MOTION.groundCrouch); // #2015: feet onto the real steps / slope
     const ln = this.noLean ? NO_LEAN : stepLean(this.lean ??= newLean(), dt, { yaw: motionFrame ? motionFrame[2] : objectYaw(this.object), speed: walking ? groundSpeed * (1 - c) : 0, on: groundEnabled && !am && !jumpOn && !swim && !dance && !react && !kiss, bounce: gt.hip, sway: gt.sway, fwd: (Number.isFinite(fwd) ? fwd : groundSpeed * (gaitDir ? gaitDir[1] : 1)) * (1 - c) }); // #2109: head leads, torso follows, inward lean; #2159: leans into a start / stop
     const idle = groundEnabled && !walking && !am && !jumpOn && !swim && !dance && !react && !kiss ? (1 - g) * (1 - c) : 0;
     const iv = this.updateIdle(dt, idle > 0.5 && c < MOTION.groundCrouch, (1 - g) * (1 - c), !hands.L && !hands.R, turn, pitch); // #2035: weight shift, glances, arms
     const sway = flossSway + gt.sway + MOTION.idleSway * idle * Math.sin(this.time * Math.PI * 2 * MOTION.idleHz) + iv.hipX + ln.hipX;
-    let hipY = HIP - 0.02 - CR.hipDrop * c + (rp?.dy ?? 0) + kissLift * kiss - flossBob - gBob + breathe - gt.hip - AIR.climb.hipDrop * climbA + stepHip + iv.hipY - jp.dip - ACL.knee.drop * ln.brace; // (#2159: braking sinks the hips, the leg IK bends both knees)
+    let hipY = HIP - 0.02 - CR.hipDrop * c + (rp?.dy ?? 0) + kissLift * kiss - flossBob - gBob + breathe - gt.hip - AIR.climb.hipDrop * climbA + stepHip + iv.hipY - jp.dip - ACL.knee.drop * ln.brace - stair.hip * g; // (#2172: bent knees on stairs; #2159: braking sinks the hips, the leg IK bends both knees)
     const hipZ = CR.hipForward * c - ACL.knee.back * ln.brace, feet = gt.feet; // (#2159: and a little back, behind the planted feet)
     const stepIK = this.footIK?.active && (Math.abs(this.footIK.off[0]) > 0.004 || Math.abs(this.footIK.off[1]) > 0.004); // #2015: also standing on uneven ground
     if ((g > 0.001 || stepIK) && !c) { // the hips stay within the legs' reach of both ankles (a long stride sinks them, as a real runner's do)
@@ -2170,6 +2180,20 @@ export class Avatar {
       if (ln.brace > 0.001) { h.at[2] += ACL.arm.fwd * ln.brace; h.at[1] += ACL.arm.up * ln.brace; } // #2159: braking, the free arms go forward as a counterweight
       return h; };
     let handL = held(hands.L) ?? swung(1, armL), handR = held(hands.R) ?? swung(-1, armR);
+    { // #2172: a hand slides along the handrail on stairs when one is within reach (a held thing keeps its hand)
+      const rs = this.railHand ??= { w: 0, side: 1, at: [0, 0.9, 0.2], tgt: { side: 1, at: [0, 0, 0], world: [0, 0, 0] } }, stairAmt = stair.up + stair.down;
+      const tg = stairAmt > 0.05 ? railTarget(motionFrame, floorY, sScale, undefined, rs.tgt) : null;
+      if (tg && (tg.side > 0 ? !hands.L : !hands.R)) {
+        if (rs.w < 0.02 || rs.side !== tg.side) { rs.side = tg.side; if (rs.w < 0.02) for (let i = 0; i < 3; i++) rs.at[i] = tg.at[i]; }
+        const e = 1 - Math.exp(-STR.rate * dt); for (let i = 0; i < 3; i++) rs.at[i] += (tg.at[i] - rs.at[i]) * e;
+      }
+      const goal = tg && (tg.side > 0 ? !hands.L : !hands.R) ? Math.min(1, stairAmt * 1.5) : 0;
+      rs.w += (goal - rs.w) * (1 - Math.exp(-STR.rate * dt));
+      if (rs.w > 0.01) {
+        const rh = { at: [rs.at[0], rs.at[1], rs.at[2]], pole: [rs.side * 0.9, -0.5, -0.4] };
+        if (rs.side > 0) handL = mixHand(handL, rh, rs.w); else handR = mixHand(handR, rh, rs.w);
+      }
+    }
     if (fa > 0.001) { // #1622: the floss. Both straight arms swing across the hips one way while the hips go the other; the arms pass each other in depth.
       if (!hands.L) handL = mixHand(handL, flossArm(1, 1, flossSn, flossCs), fa);
       if (!hands.R) handR = mixHand(handR, flossArm(-1, -1, flossSn, flossCs), fa);
@@ -2213,7 +2237,7 @@ export class Avatar {
     let knee = c ? CR.knees.map((v, i) => KNEE_REST[i] + (v - KNEE_REST[i]) * c) : KNEE_REST;
     if (climbA > 0.001) knee = knee.map((v, i) => v + (AIR.climb.knees[i] - v) * climbA); // #1799: knees out on the wall
     const airLean = AIR.fly.lean * aa[0] + AIR.swing.lean * aa[1] + AIR.climb.lean * climbA;
-    poseOlof(this, { hip: [hipY, hipZ + KISS.forward * kiss * kissReach], lean: airLean - swimLean(st, dv) * sa + 0.03 * g - GAIT.runLean * rr + (rp?.lean ?? 0) + FL.lean * fa + GN.lean * ga + CR.lean * c - KISS.lean * kiss * kissReach + iv.lean + br.lean + jp.lean - ln.accel, head: Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch)) + SW.head * swimLean(st, dv) * sa + (rp?.head ?? 0) + 0.03 * Math.sin(this.time * 0.6) + KISS.head * kiss * kissReach + iv.head + ln.headPitch - br.lean + ACL.head * ln.accel, turn: turn + iv.turn + ln.headYaw - ln.torsoYaw, feet, hands: [handL, handR], can: null,
+    poseOlof(this, { hip: [hipY, hipZ + KISS.forward * kiss * kissReach], lean: airLean - swimLean(st, dv) * sa + 0.03 * g - GAIT.runLean * rr + (rp?.lean ?? 0) + FL.lean * fa + GN.lean * ga + CR.lean * c - KISS.lean * kiss * kissReach + iv.lean + br.lean + jp.lean - ln.accel - stair.lean * g, head: Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch)) + SW.head * swimLean(st, dv) * sa + (rp?.head ?? 0) + 0.03 * Math.sin(this.time * 0.6) + KISS.head * kiss * kissReach + iv.head + ln.headPitch - br.lean + ACL.head * ln.accel, turn: turn + iv.turn + ln.headYaw - ln.torsoYaw, feet, hands: [handL, handR], can: null,
       hipX: sway, hipRoll: iv.roll + ln.hipRoll, torsoRoll: iv.torsoRoll + ln.torsoRoll, torsoYaw: ln.torsoYaw, knee, flat: Math.max(c, g, motionFrame && groundEnabled && !am && !swim && !jumpOn ? 1 : 0), toes: F.turn * c, pitch: g > 0.001 || this.groundMotion || this.footIK?.active ? gt.pitch : null, footYaw: this.groundMotion ? gt.yaw : null });
   }
 
