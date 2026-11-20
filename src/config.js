@@ -5163,6 +5163,31 @@ export const REST = {
   closed: { roof: 0.871, headroom: 0.03, crown: 0.236, maxDrop: 0.08, maxRecline: 0.7, back: 0.13, maxSlide: 0.3 },
 };
 
+// #2269/#2273: the seated skeleton the fit works on (olof.js: the hip joints SEAT_SIT m over the cushion, NECK the head bone over
+// the torso, seatedPose's lean; tools/pvpseatfit2273test.mjs keeps them equal). Here, not in remote-pose.js, so that the Worker's
+// PVP boxes (rifleBoxPose) follow the same fit without the skeleton.
+const SEAT_SIT = 0.075, SEAT_NECK = 0.64, SEAT_LEAN = 0.1;
+const NO_SEAT_FIT = Object.freeze({ s: 1, drop: 0, hip: 0, recline: 0, slide: 0, fwd: 0, eyeDown: 0, eyeBack: 0 });
+
+/** #2269: the seated pose under a low roof (REST.closed: our car's front seats) for a figure of body scale `s` and head scale `head`
+ * (avatarProportions). As the driver's seat (olof.js driverFit, #2265): the crown, s·(SIT + NECK·cos lean + crown·head) over the
+ * cushion, must stay `headroom` under the roof; the hips sink first (`drop` m, `hip` the same in the pose's unscaled frame), the rest
+ * reclines (`recline` rad more lean; the head pitches back by as much, so the gaze and the skull stay level). A recline that would
+ * take the head more than `back` m back (into the headrest) slides the hips forward on the cushion instead (`slide` m, at most
+ * `maxSlide`; `fwd` the same unscaled): a tall passenger slouches. `eyeDown` / `eyeBack` m: how far the eyes (level with the head
+ * bone, which stays level) move down / back along the seat, for the first-person camera (rest.js). Pure; a figure that fits gets
+ * all zeros. Shared by the drawn pose (remote-pose.js) and the PVP boxes (rifleBoxPose, #2273). */
+export function closedSeatFit(s, head = 1, F = REST.closed) {
+  const SIT = SEAT_SIT, NECK = SEAT_NECK, LEAN = SEAT_LEAN;
+  const K = F.crown * head, room = F.roof - F.headroom, need = s * (SIT + NECK * Math.cos(LEAN) + K) - room;
+  if (!(need > 0)) return { ...NO_SEAT_FIT, s };
+  const drop = Math.min(F.maxDrop, need);
+  const c = ((room + drop) / s - SIT - K) / NECK; // cos of the lean that puts the crown at the top of the room
+  const recline = need <= F.maxDrop ? 0 : Math.min(F.maxRecline, Math.max(0, Math.acos(Math.max(-1, Math.min(1, c))) - LEAN));
+  const L = LEAN + recline, back = s * NECK * (Math.sin(L) - Math.sin(LEAN)), slide = Math.min(F.maxSlide, Math.max(0, back - F.back));
+  return { s, drop, hip: drop / s, recline, slide, fwd: slide / s, eyeDown: drop + s * NECK * (Math.cos(LEAN) - Math.cos(L)), eyeBack: back - slide };
+}
+
 // #2158: a seated figure's legs follow the real floor under its seat (src/seatlegs.js; the root and hips stay at
 // REST.avatarSeat). Angles in rad as [thigh pitch down from level, shin tilt forward from upright]; metres before avatar
 // scaling. `base` reproduces olof.js seatedPose's feet on the nominal floor (measured from its IK: thigh 9° down, shin 8°
@@ -9273,11 +9298,24 @@ function rifleBoxPose(seed, state) {
       halfWidth: b.halfWidth * head, back: b.back * head, front: b.front * head }));
   }
   const sitting = state.pose === 1 || state.pose === 3; // #1237: a long sit has the ordinary seated torso, only the legs differ
-  const yaw = state.r + Math.PI, lean = state.pose === 2 ? Math.PI / 2 - REST.avatarLieTilt : sitting ? .1 : PVP_HEAD_BOXES.crouchLean * crouch;
-  return { width, tall, boxes, yawCos: Math.cos(yaw), yawSin: Math.sin(yaw),
-    leanCos: Math.cos(lean), leanSin: Math.sin(lean), crouch,
-    hipY: state.pose === 2 ? REST.avatarLieHip : sitting ? REST.avatarSeat + .075 : PVP_HEAD_BOXES.hipY - PVP_HEAD_BOXES.hipDrop * crouch,
-    hipZ: sitting ? .07 : PVP_HEAD_BOXES.hipForward * crouch };
+  const yaw = state.r + Math.PI, lean = state.pose === 2 ? Math.PI / 2 - REST.avatarLieTilt : sitting ? SEAT_LEAN : PVP_HEAD_BOXES.crouchLean * crouch;
+  const hipY = state.pose === 2 ? REST.avatarLieHip : sitting ? REST.avatarSeat + SEAT_SIT : PVP_HEAD_BOXES.hipY - PVP_HEAD_BOXES.hipDrop * crouch,
+    hipZ = sitting ? .07 : PVP_HEAD_BOXES.hipForward * crouch;
+  const out = { width, tall, boxes, yawCos: Math.cos(yaw), yawSin: Math.sin(yaw), leanCos: Math.cos(lean), leanSin: Math.sin(lean), crouch, hipY, hipZ };
+  // #2273: in our car's front seats (`cs`, sent with pose 1 only) the drawn figure takes closedSeatFit from the same look (#2269):
+  // the hips sink by `hip` and slide forward by `fwd`, the torso reclines by `recline` and the head pitches back by as much, so the
+  // head keeps its seated tilt. The body capsule follows the hips and the reclined torso (`body`); the head boxes keep the seated
+  // tilt and move with the head bone (an equivalent hip under the seated lean: hip + NECK·(cos L − cos lean, −(sin L − sin lean))).
+  // Deterministic from the look code; any other seat (or an old client without `cs`) keeps the plain seated boxes.
+  if (state.pose === 1 && state.cs === 1) {
+    const fit = Number.isInteger(wire.height) ? closedSeatFit(tall, avatarProportions(wire.height).head) : closedSeatFit(tall, 1);
+    if (fit.hip || fit.recline || fit.fwd) {
+      const L = SEAT_LEAN + fit.recline, y = hipY - fit.hip, z = hipZ + fit.fwd;
+      out.body = { hipY: y, hipZ: z, leanCos: Math.cos(L), leanSin: Math.sin(L) };
+      out.hipY = y + SEAT_NECK * (Math.cos(L) - Math.cos(SEAT_LEAN)); out.hipZ = z - SEAT_NECK * (Math.sin(L) - Math.sin(SEAT_LEAN));
+    }
+  }
+  return out;
 }
 
 /** #1150: rigid rest frame for the existing generous capsule; no mesh/anatomical classification. */
@@ -9296,11 +9334,11 @@ export function restCombatFrame(seed, state, origin, direction) {
 /** Existing body capsule endpoints in world space, rotated only for actual rest. */
 export function playerBodySegment(seed, state) {
   if (!state.pose) return COMBAT.body.map(y => [state.p[0], state.p[1] + y, state.p[2]]);
-  const pose = rifleBoxPose(seed,state), H = PVP_HEAD_BOXES;
+  const pose = rifleBoxPose(seed,state), H = PVP_HEAD_BOXES, b = pose.body ?? pose; // #2273: the car seat's fitted hips and torso
   return COMBAT.body.map(y => {
     const dy = y - H.hipY * pose.tall;
-    const ly = pose.hipY * pose.tall + pose.leanCos * dy;
-    const lz = pose.hipZ * pose.width - pose.leanSin * dy;
+    const ly = b.hipY * pose.tall + b.leanCos * dy;
+    const lz = b.hipZ * pose.width - b.leanSin * dy;
     return [state.p[0] + pose.yawSin * lz, state.p[1] + ly, state.p[2] + pose.yawCos * lz];
   });
 }

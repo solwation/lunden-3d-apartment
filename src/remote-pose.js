@@ -1,5 +1,5 @@
-import { REST, decodeAvatarLook, avatarProportions, avatarHeightCm } from './config.js';
-import { poseOlof, seatedPose, NECK } from './olof.js';
+import { REST, decodeAvatarLook, avatarProportions, avatarHeightCm, closedSeatFit } from './config.js';
+import { poseOlof, seatedPose } from './olof.js';
 import { reactionPose, mixHand } from './reactpose.js';
 
 /** Actual rest spot, never the camera's eased position or the old standing location. */
@@ -17,29 +17,11 @@ export function restState(rest, code, seed) {
   const back = lie ? REST.avatarLieTorso * Math.cos(REST.avatarLieTilt) * tall : 0;
   // Keep the seat heading on the body; the camera supplies independent seated head angles.
   return { p: [spot.pos.x - Math.sin(spot.yaw) * back, root, spot.pos.z - Math.cos(spot.yaw) * back],
-    r: spot.yaw, ...(!lie ? { look: [Math.atan2(Math.sin(rest.camera.rotation.y - spot.yaw), Math.cos(rest.camera.rotation.y - spot.yaw)), rest.camera.rotation.x] } : {}), c: false, pose: lie ? 2 : spot.legsUp ? 3 : 1 }; // 3: legs stretched out on the furniture (#1237)
+    r: spot.yaw, ...(!lie ? { look: [Math.atan2(Math.sin(rest.camera.rotation.y - spot.yaw), Math.cos(rest.camera.rotation.y - spot.yaw)), rest.camera.rotation.x] } : {}), c: false, pose: lie ? 2 : spot.legsUp ? 3 : 1, ...(!lie && !spot.legsUp && spot.closed ? { cs: 1 } : {}) }; // 3: legs stretched out on the furniture (#1237); cs (#2273): a car front seat, the PVP boxes take its fit
 }
 
-const SIT = 0.075, LEAN = seatedPose(REST.avatarSeat).lean; // the hips above the cushion (before scaling) and the seated lean
-const NO_FIT = Object.freeze({ s: 1, drop: 0, hip: 0, recline: 0, slide: 0, fwd: 0, eyeDown: 0, eyeBack: 0 });
-
-/** #2269: the seated pose under a low roof (REST.closed: our car's front seats) for a figure of body scale `s` and head scale `head`
- * (avatarProportions). As the driver's seat (olof.js driverFit, #2265): the crown, s·(SIT + NECK·cos lean + crown·head) over the
- * cushion, must stay `headroom` under the roof; the hips sink first (`drop` m, `hip` the same in the pose's unscaled frame), the rest
- * reclines (`recline` rad more lean; the head pitches back by as much, so the gaze and the skull stay level). A recline that would
- * take the head more than `back` m back (into the headrest) slides the hips forward on the cushion instead (`slide` m, at most
- * `maxSlide`; `fwd` the same unscaled): a tall passenger slouches. `eyeDown` / `eyeBack` m: how far the eyes (level with the head
- * bone, which stays level) move down / back along the seat, for the first-person camera (rest.js). Pure; a figure that fits gets
- * all zeros. */
-export function closedSeatFit(s, head = 1, F = REST.closed) {
-  const K = F.crown * head, room = F.roof - F.headroom, need = s * (SIT + NECK * Math.cos(LEAN) + K) - room;
-  if (!(need > 0)) return { ...NO_FIT, s };
-  const drop = Math.min(F.maxDrop, need);
-  const c = ((room + drop) / s - SIT - K) / NECK; // cos of the lean that puts the crown at the top of the room
-  const recline = need <= F.maxDrop ? 0 : Math.min(F.maxRecline, Math.max(0, Math.acos(Math.max(-1, Math.min(1, c))) - LEAN));
-  const L = LEAN + recline, back = s * NECK * (Math.sin(L) - Math.sin(LEAN)), slide = Math.min(F.maxSlide, Math.max(0, back - F.back));
-  return { s, drop, hip: drop / s, recline, slide, fwd: slide / s, eyeDown: drop + s * NECK * (Math.cos(LEAN) - Math.cos(L)), eyeBack: back - slide };
-}
+// #2269/#2273: the pure seat fit lives in config.js so the Worker's PVP boxes (rifleBoxPose) follow the same seat.
+export { closedSeatFit };
 
 /** #2269: closedSeatFit for an avatar look (its chosen height, else the seed's `tall` with an adult head, as restState). */
 export function closedSeatFitLook(lk) {

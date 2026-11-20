@@ -2624,6 +2624,18 @@ bunks have no sit spot (#2269 equivalents). Values are *guess*es like the driver
 `tools/browsertest.sh node tools/passengerroof2269browser.cjs GAME OUT` (a peer in the passenger seat per height, before/after,
 crown against a ray to the GLB roof; images and `browser.json` in `docs/verification/2269/`).
 
+PVP boxes in the car seat (#2273): `closedSeatFit` now lives in `src/config.js` (re-exported by `src/remote-pose.js`; its skeleton
+constants `SEAT_SIT`/`SEAT_NECK`/`SEAT_LEAN` equal olof.js), so the shared `rifleBoxPose` (clients and Worker) takes the same fit from
+the look code. The Worker cannot see the car, so `restState` adds the wire flag `cs: 1` for a seated (pose 1) player on a `closed`
+spot; `cleanState` keeps only the literal `1` with pose 1, the ghost carries it per snapshot and every combat state passes it. With
+it the body capsule (`playerBodySegment`) uses the sunk, slid-forward hips and the reclined torso, and the three head boxes keep the
+seated tilt but move with the head bone (an equivalent hip, `hip + NECK·(cos L − cos 0.1, −(sin L − sin 0.1))`), so the head and the
+body hits land on the drawn figure. An old client without `cs` (and every open seat, lying, long sit, standing) keeps the plain seated
+boxes; the drawn fit is still there for it, so its boxes stay off (≤ 24 cm high, 13 cm in front of a 200 cm head), as before #2273.
+Check: `node --test tools/pvpseatfit2273test.mjs` (140/175/186/200 cm in both front seats on the posed skeleton: the boxes probed by
+rays sit on the drawn skull as on an open seat, ≤ 1 mm; the capsule axis through the head bone; open seats/other poses/invalid `cs`
+unchanged; Worker validation).
+
 Headwear opacity (#1513): selected caps/knit/brimmed hats and the hairstyle beanie have
 inward-facing lining and closed lower rims; cuffs also close at the top. Hair compression
 is bounded by the analytic skull ellipsoid plus `AVATAR_HAT.hairGap`, preserving exposed
