@@ -234,6 +234,7 @@ import { Nests } from './nest.js';
 import { LightModes } from './lightmodes.js';
 import { Weather } from './weather.js';
 import { RoofSteam } from './roofsteam.js'; // #2204: shared cold roof condensation
+import { paintDetail } from './paintsurface.js';
 import { GroundWetness, bindWetSky } from './wetground.js';
 import { LeafLitter } from './leaflitter.js';
 import { createRealWeather } from './realweather.js';
@@ -4173,6 +4174,7 @@ quality.register('windowLight', { // #2152: the windows' sky light indoors (belo
 quality.register('valleyVeils', { // #2187: the mist veils over the river (none at level 0, fewer on phones)
   apply: (l) => valleyVeils.setLevel(l), state: () => `${valleyVeils.cards.length} cards`, cost: 'a few large soft transparent cards over the river (one draw call, overdraw)' });
 quality.register('roofSteam', { apply: (l) => roofSteam.setLevel(l), state: () => `${roofSteam.count} puffs`, cost: 'one shared point batch near cold roof outlets' }); // #2204
+quality.register('paintSurface', { apply: (level) => { paintDetail.value = level > 0 ? 1 : 0; }, cost: 'one shared near-only paint height/roughness sample' }); // #2205
 quality.register('weather', { // rain streaks / snowflakes / hail drawn (#248)
   apply: (l) => { weather.particleScale = QUALITY.particles[l]; }, state: (l) => `particles ×${QUALITY.particles[l]}`, cost: 'particle updates + overdraw' });
 quality.register('puddles', { // #2099: the wet ground's puddles (the darker, glossier film stays at every level); never on phones

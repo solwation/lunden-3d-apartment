@@ -1,0 +1,46 @@
+TAP version 13
+# Subtest: deterministic shallow joints follow the existing 32-pixel board repeat and soften their edges
+ok 1 - deterministic shallow joints follow the existing 32-pixel board repeat and soften their edges
+  ---
+  duration_ms: 42.281192
+  type: 'test'
+  ...
+# Subtest: all post and horizontal-face UVs sample a constant cream-rail surface, with scalar maps shared
+ok 2 - all post and horizontal-face UVs sample a constant cream-rail surface, with scalar maps shared
+  ---
+  duration_ms: 41.131395
+  type: 'test'
+  ...
+# Subtest: fibre paths bend gently and stay bounded rather than making broad stripes
+ok 3 - fibre paths bend gently and stay bounded rather than making broad stripes
+  ---
+  duration_ms: 0.615398
+  type: 'test'
+  ...
+# Subtest: shallow joints follow 20x10 cm half-bond, including both texture edges
+ok 4 - shallow joints follow 20x10 cm half-bond, including both texture edges
+  ---
+  duration_ms: 22.780842
+  type: 'test'
+  ...
+# Subtest: relief never follows the colour, seed, mottling or per-tile shade
+ok 5 - relief never follows the colour, seed, mottling or per-tile shade
+  ---
+  duration_ms: 6.810082
+  type: 'test'
+  ...
+# Subtest: no-joint surfaces remain flat, repeat deterministically and keep their roughness
+ok 6 - no-joint surfaces remain flat, repeat deterministically and keep their roughness
+  ---
+  duration_ms: 7.81618
+  type: 'test'
+  ...
+1..6
+# tests 6
+# suites 0
+# pass 6
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 290.706159

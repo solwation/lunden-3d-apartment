@@ -47,14 +47,15 @@ import { buildStandardInterior, batchFronts } from './standardinterior.js';
 import { VisitUnit } from './visitunit.js';
 import { L1201_PLAN } from './l1201plan.js';
 import { parquetSurface } from './parquet.js';
+import { paintSurface } from './paintsurface.js';
 import { setCarFinishNight } from './carfinish.js'; // #2097: the parked cars' reflection dims at night
 
 const mat = (color, extra = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.85, ...extra });
 
 
 const M = {
-  wall: mat(COLORS.wall),
-  ceiling: mat(COLORS.ceiling),
+  wall: paintSurface(mat(COLORS.wall)),
+  ceiling: paintSurface(mat(COLORS.ceiling), true),
   floor: mat(0xffffff, { ...parquetSurface(FINISH.parquet), roughness: 0.7 }),
   tile: mat(COLORS.tile, { roughness: 0.4 }),
   cabinet: mat(COLORS.cabinet, { roughness: 0.5 }),

@@ -11270,3 +11270,7 @@ export const ROOF_STEAM = {
   points: 24, phonePoints: 12, minLevel: 1, lowLevelShare: 0.5,
   outletLift: 0.04, minLight: 0.11, color: [0.82, 0.85, 0.88],
 };
+
+// #2205: visual guesses for painted roller / spray relief, not surveyed finish data. Metres; one shared 128² packed map.
+export const PAINT_SURFACE = { size: 128, seed: 2205, roughGrain: 0.7, roughness: 0.14, fade: [1.5, 4.5],
+  wall: { tile: 0.08, depth: 0.00024 }, ceiling: { tile: 0.15, depth: 0.00045 } };

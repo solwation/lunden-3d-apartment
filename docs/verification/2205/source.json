@@ -1,0 +1,13 @@
+{
+  "base": "f472b8e187dc8ab8501cb4e5301089471393c276",
+  "sourceCheckpoint": "571735a639a939896c5c6b5a94ef94ffeba198eb",
+  "sha256": {
+    "src/paintsurface.js": "5edac8e7ac5e0645606650b03291eda35c9f3f6b253e732af7aa280a910cb9a6",
+    "src/world.js": "f7f33d33a0bc26a61ead462e8b1e43f8f4a0a041e0eb4d171c4334a44540a2fb",
+    "src/interior.js": "c2010aed344d1df11688d07e16301c273e051e5cc30a658e4ed8cbe2275491c4",
+    "src/main.js": "69b02e61ed47efbd73ab4bb009804ee41f03d12a218b6bedfefa5abf75a13377",
+    "src/config.js": "34e0d5552dab3af91e45b071a548b3b243e6a417afa426cdf54e258b2c066023",
+    "tools/paintsurfacetest.mjs": "d4f448eeb2013d592d8325b4fadcb62882a9a3ef5f4369a9c0739b5842933084",
+    "tools/paintsurface2205browser.cjs": "c215cb3c56c366bc0043be0d8f8522efdae01dba43c013ca39689f96d6710fcf"
+  }
+}

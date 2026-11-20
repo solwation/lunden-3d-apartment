@@ -3,6 +3,7 @@ import { tileTexture, tileMaterial } from './tilesurface.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { FINISH, TILED_ROOMS, KITCHEN as K, SKIRTING, LAUNDRY_SINK, LAUNDRY_CABINET, VANITY_BASIN, HAVBACK, LIGHTING, KITCHEN_SOCKETS, TAP_LEVER, LAUNDRY, SHOWER_FITTINGS, FLOOR_DRAIN, SHOWER_MOIST } from './config.js';
 import { wallCabinet } from './cabinets.js';
+import { paintSurface } from './paintsurface.js';
 import { Fridge } from './fridge.js';
 import { buildOvens } from './ovens.js';
 import { Hob } from './hob.js';
@@ -43,6 +44,7 @@ const M = {
   glassTint: new THREE.MeshStandardMaterial({ color: 0x9fb3bd, transparent: true, opacity: 0.32, roughness: 0.05, depthWrite: false, side: THREE.DoubleSide }), // washer / dryer porthole (#687)
   led: new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff2dc, emissiveIntensity: 1.2 }),
   white: std(0xf1f1ee, { roughness: 0.85 }),
+  paint: paintSurface(std(0xf1f1ee, { roughness: 0.85 })), // #2205: gypsum only; bottle caps/cabinet insides stay smooth
   carcass: std(0xf4f4f1, { roughness: 0.6 }), // cabinet insides (#103)
   dishwasher: std(0xb9bcc0, { roughness: 0.35, metalness: 0.5 }),
   bin: std(0x8a8d90, { roughness: 0.6 }), binGreen: std(0x4f8a4a, { roughness: 0.6 }), binBlue: std(0x3a6fb5, { roughness: 0.6 }),
@@ -745,7 +747,7 @@ function buildKitchen(B, group, floor, y0, yC, handled, taps, appliances) {
     washPlane(hob[1] - hob[0] + 2 * BL.spill, yHood - top, hoodWash, 0, -Math.PI / 2, eastWall - 0.008, (top + yHood) / 2, hz);
     const bp = hood.lampButton.getWorldPosition(new THREE.Vector3()); // the group sits at the origin
     mirrorLamps.push({ object: hood.lampButton, shade: hoodLamp, glows: [hoodWash], height: top + UL.hood.y - bp.y, offset: [eastWall - UL.hood.out - bp.x, hz - bp.z], level: K.level, name: 'lampan i köksfläkten', light: UL.hood.pool, auto: false }); // a work light: by hand only (#234)
-    EW.box(hob[0], hob[1], -wd, 0, yTop, yC, M.white); // Lokal gipsinklädnad ovan spiskåpa
+    EW.box(hob[0], hob[1], -wd, 0, yTop, yC, M.paint); // Lokal gipsinklädnad ovan spiskåpa
   }
   const fridgeX1 = fridges.length ? Math.max(...fridges.map((c) => c.x1)) : retX0;
   if (fridgeX1 < wallX) {

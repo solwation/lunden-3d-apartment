@@ -1,0 +1,28 @@
+TAP version 13
+# Subtest: Ek Chalk: original metre repeat, stagger, dimensions and deterministic bounded tints
+ok 1 - Ek Chalk: original metre repeat, stagger, dimensions and deterministic bounded tints
+  ---
+  duration_ms: 1.827599
+  type: 'test'
+  ...
+# Subtest: standard three-stave: original metre repeat, stagger, dimensions and deterministic bounded tints
+ok 2 - standard three-stave: original metre repeat, stagger, dimensions and deterministic bounded tints
+  ---
+  duration_ms: 1.123099
+  type: 'test'
+  ...
+# Subtest: fibre paths are finite, smoothly curved, deterministic and limited to a few millimetres
+ok 3 - fibre paths are finite, smoothly curved, deterministic and limited to a few millimetres
+  ---
+  duration_ms: 0.5442
+  type: 'test'
+  ...
+1..3
+# tests 3
+# suites 0
+# pass 3
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 138.454583

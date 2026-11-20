@@ -1,0 +1,51 @@
+{
+  "views": {
+    "window": {
+      "before": {
+        "calls": 186,
+        "triangles": 510467,
+        "programs": 218,
+        "paintedMaterials": 4,
+        "enabled": 0,
+        "daylight": 1
+      },
+      "after": {
+        "calls": 186,
+        "triangles": 510467,
+        "programs": 218,
+        "paintedMaterials": 4,
+        "enabled": 1,
+        "daylight": 1
+      }
+    },
+    "lamp": {
+      "before": {
+        "calls": 358,
+        "triangles": 1002903,
+        "programs": 255,
+        "paintedMaterials": 4,
+        "enabled": 0,
+        "daylight": 0.10818571623430687
+      },
+      "after": {
+        "calls": 358,
+        "triangles": 1002903,
+        "programs": 255,
+        "paintedMaterials": 4,
+        "enabled": 1,
+        "daylight": 0.10818571623430687
+      }
+    }
+  },
+  "checks": {
+    "lowestOff": true,
+    "qualityRestored": true,
+    "farOff": true,
+    "nearOn": true,
+    "textureBytes": 65536,
+    "wallDepth": 0.00024,
+    "ceilingDepth": 0.00045
+  },
+  "errors": [],
+  "completed": true
+}
