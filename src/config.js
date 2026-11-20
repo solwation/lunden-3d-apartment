@@ -4310,6 +4310,11 @@ export const JOIN_NOTICE = { graceMs: 45_000, batchMs: 1500, names: 3, anon: 'An
 // (a fresnel term of power `rimPower`, in the shader, no extra pass), a little emissive so it reads in the dark; armed and solid it
 // is lit normally (`emissiveSolid`). `walkSpeed` m/s: above it the legs walk; `poseFar` m: beyond it the pose is not updated;
 // `bodyTurn` rad: how far the head may turn from the body before the body follows. All by eye (*guess*).
+// #2164: the far figure (src/ghostfar.js) gets the near figure's silhouette cues per instance, all *guess* by eye: `hem` the height (m) where shorts end /
+// a skirt's hem hangs, `flare` the skirt's width factor at the hem, `sleeveCut` the height above which the sleeve covers the arm (short / long / none),
+// `female` the narrowing of the shoulders and widening of the hips, `swing` the gait in the vertex shader: leg / arm angle (rad) at `speedRef` m/s, the
+// largest speed factor, and the stride phase per metre walked (rad).
+export const GHOST_FAR = { hem: 0.55, flare: 1.9, sleeveCut: [1.2, 0.9, 9], female: { shoulder: 0.1, hip: 0.09, arm: 0.02 }, swing: { leg: 0.55, arm: 0.4, speedRef: 1.4, maxFactor: 1.5, perMetre: 5 } };
 export const AVATAR = { fill: 0.07, rim: 0.85, rimPower: 2.2, emissiveOutline: 0.28, emissiveSolid: 0.06, walkSpeed: 0.25, poseFar: 30, bodyTurn: 0.9 };
 // #1916 visual guesses in the unchanged humanoid bone frame (metres): continuous
 // elliptical ring surfaces [height, half-width, half-depth, centre-z]. Rings at

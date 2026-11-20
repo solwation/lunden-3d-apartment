@@ -1404,6 +1404,18 @@ crouches, hugs or wears the suit keeps the real figure at any distance (`farBody
 Measured with 24 stand-in players in one view (`tools/ghostlodtest.cjs`, SwiftShader, 1280 x 800): at 60 m 94 → 71 draw calls and
 645 908 → 363 288 triangles; at 10 m nothing changes; in the zone one call more. Not measured on an Iris 640 or a phone.
 
+Far figure's looks (#2164, `src/ghostfar.js`, tunables `GHOST_FAR`): the 268-triangle boxes became tapered lathe parts (legs, arms, hips, torso, neck,
+egg head, 680 triangles in the buffer, 516 – 572 of them showing: the five hair variants (cap, long sheet, bun, beanie, curly puff) are all in the
+geometry and the ones other than the instance's collapse to a point in the vertex shader). Per-instance attributes beside the five colours: `cFig`
+(`farLookAttributes(look)`: hair style, female, sleeves short / long / none, legs long / shorts / wide / skirt / dress) and `cDyn` (the near figure's
+`uLight` and `uLamp` read from its material each frame, gait amplitude and stride phase from the ghost's speed). The vertex shader flares a skirt,
+widens trousers, narrows a female figure's shoulders and swings legs and arms about hip and shoulder; the fragment shader picks sleeve / hem colours
+per pixel and applies `outgoingLight *= uLight` plus the street-lamp term of `src/avatarlight.js`, so the brightness no longer jumps at the LOD
+switch at night. Still ONE draw call and the #1966 dither. `tools/ghostfar2164.html` + `tools/ghostfar2164browser.cjs` (eight looks at 38 – 80 m through
+a telephoto lens, near vs far brightness; before/after in `docs/verification/2164/`): 8 far figures = 1 draw call, 2 146 → 5 442 submitted triangles;
+the shirt's mean luminance of far vs real figure at night went from +43 % (no lamp) / -14 % (lamp) to +1 – 2 %, by day from -19 % to +2 – 4 %.
+Not measured on an Iris 640 or a phone.
+
 Ghosts (#666, `src/ghosts.js`), avatars (#705, `src/avatar.js`): each other player costs two draw calls (one SkinnedMesh with vertex colours, one
 name tag sprite; an armed player one more for the prop, `src/ghostprops.js` (#1126): the weapon's own model baked to one vertex-coloured
 geometry shared by every ghost — rifle ≈ 0.3 k, lite blaster ≈ 0.4 k, saber 0.6 k + its blade (one more call), wand 0.1 k, bow 0.5 k triangles), no shadow pass, no extra pass for the outline (a fresnel term in the same Lambert material's shader, one program for
