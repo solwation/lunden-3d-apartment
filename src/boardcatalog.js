@@ -56,6 +56,14 @@ export const COUNTERS = {
   task_makeBed: { perMin: 3, start: 500 },
   // #1885: finished rounds of "Hitta alla utekatter" (src/outdoorcathunt.js): a round means walking the whole block (OUTDOOR_CATS.hunt)
   outdoorCatRounds: { perMin: 0, start: OUTDOOR_CATS.hunt.start, everyMin: OUTDOOR_CATS.hunt.everyMin },
+  // #2229: the e-scooters (src/scooters.js; *guess* limits). Metres: a tuned scooter's 90 km/h = 1500 m/min. Jumps: a kerb hop takes
+  // at least about a second. The best jump (cm) and top speed (km/h) are best values, not sums: one jump may add its whole height
+  // (a flight off a ledge stays under SCOOTER.jump.maxCm = 2000), the top speed is reached within a minute (90 + a downhill margin).
+  scooterMetres: { perMin: 1600, start: 200000 },
+  scooterJumps: { perMin: 60, start: 5000 },
+  scooterJumpCm: { perMin: 2000, start: 2000 },
+  scooterTopKmh: { perMin: 100, start: 100 },
+  scooterTunes: { perMin: 6, start: 200 }, // the hatch takes SCOOTER.tune.time 10 s
 };
 
 export const BOARD_LISTS = [
@@ -78,6 +86,7 @@ export const BOARD_LISTS = [
   { id: 'flest-vacuumed', kind: 'most', counter: 'vacuumed', title: 'Mest dammsugat', unit: 'm²' },
   { id: 'flest-steps', kind: 'most', counter: 'steps', title: 'Flest steg', unit: 'steg' },
   { id: 'flest-dribbles', kind: 'most', counter: 'dribbles', title: 'Flest basketstudsar', unit: 'studsar' },
+  { id: 'hogsta-scooterhopp', kind: 'most', counter: 'scooterJumpCm', title: 'Högsta hopp med elsparkcykel', unit: 'cm' }, // #2229
   { id: 'forst-catButts', kind: 'first', counter: 'catButts', title: 'Först att se en kattrumpa' },
   { id: 'forst-duckFeeds', kind: 'first', counter: 'duckFeeds', title: 'Först att mata en anka' },
   { id: 'forst-squirrelFeeds', kind: 'first', counter: 'squirrelFeeds', title: 'Först att mata en ekorre' },

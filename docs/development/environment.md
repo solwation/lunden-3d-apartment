@@ -1348,3 +1348,11 @@ One soft fogged point batch otherwise, no texture, light, shadow caster or extra
 The pure helpers and production batch are checked by `tools/roofsteamtest.mjs`;
 `tools/roofsteambrowser.cjs` captures matched effect-off/on real-app roof views and checks warm/range/quality/phone gates.
 [Verification and images](../verification/2204/README.md). The neutral module and metadata are suitable for a separate public port.
+
+## E-scooters on the pavements (#2229)
+
+Ryde-style rental e-scooters (generic teal, no logo) stand along Sankt Lars väg's two pavements round the block (`src/scooters.js`,
+`scootermotion.js scooterSpots`, `SCOOTER` in config.js, all *guess*): deterministic spots on the pavement (`onWalk` with a 0.35 m
+inset), clear of carriageways (`onVehicle` with 0.6 m), within 200 m of the block, at least 16 m apart; 22 of them (8 with `lowMemory`),
+along the road either way. One instanced draw call plus one shadow call; parked scooters are solid. Riding, tuning, jumps and statistics:
+[interactions](interactions.md#e-scooters-2229). Not for the public downstream (game mechanics).

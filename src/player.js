@@ -290,8 +290,8 @@ export class Player {
   /** Can the visitor stand at (x, z) on `level` (#314)? Clear of every segment by the radius + `margin`, inside no obstacle. */
   isFree(x, z, level = this.level, margin = 0.02, ignored = []) {
     if (this.inPlayroom) { const r = this.world.playroom; return r.contains(x, z) && !r.segments.some((sg) => !ignored.includes(sg) && segDist(x, z, sg) < PLAYER.radius + margin) && !r.footprints.some((q) => inPoly(q, x, z)); } // (#1319, furniture #1327)
-    if ((this.world.bicycleSegments?.(this.pos.y, PLAYER.headroom, PLAYER.hurdle) ?? []).some(s => segNear(x,z,s,PLAYER.radius + margin))
-      || (this.world.bicyclePolys?.(this.pos.y, PLAYER.headroom, PLAYER.hurdle) ?? []).some(p => inPoly(p,x,z))) return false;
+    if ((this.world.bicycleSegments?.(this.pos.y, PLAYER.headroom, PLAYER.hurdle, x, z) ?? []).some(s => segNear(x,z,s,PLAYER.radius + margin))
+      || (this.world.bicyclePolys?.(this.pos.y, PLAYER.headroom, PLAYER.hurdle, x, z) ?? []).some(p => inPoly(p,x,z))) return false;
     if (this.inCore) { const [a, b] = this.world.core.segments(this.pos.y); return this.world.core.covers(x, z) && ![...a, ...b].some((sg) => !ignored.includes(sg) && segDist(x, z, sg) < PLAYER.radius + margin); } // (#415)
     if (this.below) { // in the garage (#357): its walls, the förråd doors, the cars
       const g = this.world.garage;
@@ -629,7 +629,7 @@ export class Player {
     this.riding = { bike, speed: 0, groundVy: 0, lastStanding: standing, yaw: bike.yaw, pitch: this.bikeSupport(chosen,bike.yaw).pitch };
     bike.atSource = false; bike.pick.visible = false;
     this.pos.copy(chosen); this.vy = 0; this.crouch = this.crouched = this.kneel = false;
-    this.camera.rotation.set(BICYCLE.pitch, bike.yaw - Math.PI / 2, 0, 'YXZ');
+    this.camera.rotation.set(bike.cameraPitch ?? BICYCLE.pitch, bike.yaw - Math.PI / 2, 0, 'YXZ'); // (#2229: an e-scooter's rider stands: its own eye / pitch)
     this.keys.clear(); this.analog.x = this.analog.y = 0;
     this.bikePose(); stowBicycleHand(); return true;
     } finally { bike.selfQuery = false; if (this.riding?.bike !== bike) bike.ridden = false; }
@@ -669,12 +669,12 @@ export class Player {
   }
 
   bikePose() {
-    const r = this.riding, C = BICYCLE, pitch = r.pitch ?? 0;
+    const r = this.riding, b = r.bike, pitch = r.pitch ?? 0, back = b.cameraBack ?? BICYCLE.cameraBack;
     const ride = r.ride ??= newBikeRide();
-    r.bike.place(this.pos, r.yaw, pitch, ride); // #2148: the own bike's wheels, crank and fork turn too (ride.wheel / crank / steer)
-    this.eyeY = this.pos.y + C.eye;
-    this.camera.position.set(this.pos.x - Math.cos(r.yaw) * C.cameraBack, this.eyeY, this.pos.z + Math.sin(r.yaw) * C.cameraBack);
-    this.camera.rotation.set(BICYCLE.pitch + pitch, r.yaw - Math.PI / 2, ride.roll * BIKE_RIDE.cameraRoll, 'YXZ'); // (cameraRoll 0: off)
+    b.place(this.pos, r.yaw, pitch, ride); // #2148: the own bike's wheels, crank and fork turn too (ride.wheel / crank / steer)
+    this.eyeY = this.pos.y + (b.eye ?? BICYCLE.eye); // (#2229: an e-scooter's standing rider: its own eye, camera offset and pitch)
+    this.camera.position.set(this.pos.x - Math.cos(r.yaw) * back, this.eyeY, this.pos.z + Math.sin(r.yaw) * back);
+    this.camera.rotation.set((b.cameraPitch ?? BICYCLE.pitch) + pitch, r.yaw - Math.PI / 2, ride.roll * BIKE_RIDE.cameraRoll, 'YXZ'); // (cameraRoll 0: off)
   }
 
   /** #1304: the bicycle cannot climb ground steeper than `WALK.maxSlope` (it stops; riding down such a slope is allowed, so a bank still leads
@@ -712,10 +712,10 @@ export class Player {
     const fwd = (k.has('KeyW') || k.has('ArrowUp') ? 1 : 0) - (k.has('KeyS') || k.has('ArrowDown') ? 1 : 0) || this.analog.y;
     const desired = this.camera.rotation.y + Math.PI / 2 + side * C.turn * dt;
     const rawAngle = Math.atan2(Math.sin(desired - r.yaw), Math.cos(desired - r.yaw)), angle = Math.abs(rawAngle) < 1e-9 ? 0 : rawAngle;
-    const oldSpeed = r.speed ?? 0;
-    r.speed = bicycleSpeed(oldSpeed, fwd, r.pitch ?? 0, !!r.airborne, dt);
+    const oldSpeed = r.speed ?? 0, P = r.bike.motionProfile?.() ?? C; // #2229: an e-scooter's motor, cap and take-off (scootermotion.js)
+    r.speed = bicycleSpeed(oldSpeed, fwd, r.pitch ?? 0, !!r.airborne, dt, P);
     const travel = (oldSpeed + r.speed) * .5 * dt;
-    const n = Math.max(1, Math.ceil((Math.abs(travel) + Math.abs(angle) * (Math.max(-C.rear, C.front) + C.radius+C.height*Math.abs(Math.sin(r.pitch??0)))) / C.step));
+    const n = Math.max(1, Math.ceil((Math.abs(travel) + Math.abs(angle) * (Math.max(-C.rear, C.front) + C.radius+C.height*Math.abs(Math.sin(r.pitch??0)))) / (P.step ?? C.step))); // (#2229: a tuned scooter's coarser travel step)
     let previous=this.bikeSupport(this.pos,r.yaw), travelled = 0;
     for (let i = 0; i < n; i++) {
       const h=dt/n;
@@ -733,7 +733,7 @@ export class Player {
       if(!support)continue;
       const groundVy = (support.y - this.pos.y) / h;
       const launch = !r.airborne && !this.fall && !p.equals(this.pos)
-        ? bicycleTakeoff(r.speed, r.groundVy ?? 0, groundVy, h, this.pos.y + (r.groundVy ?? 0) * h - C.motion.gravity * h * h - support.y) : 0;
+        ? bicycleTakeoff(r.speed, r.groundVy ?? 0, groundVy, h, this.pos.y + (r.groundVy ?? 0) * h - C.motion.gravity * h * h - support.y, P.motion) : 0;
       const falling = !!this.fall || !!r.airborne || launch > 0 || this.pos.y-support.y>C.maxDrop;
       let vy=launch || this.vy, y=support.y;
       if(falling) { vy-=C.motion.gravity*h;y=Math.max(support.y,this.pos.y+vy*h); }
@@ -754,10 +754,10 @@ export class Player {
         const f=(this.fall??={top:this.pos.y,gap:0});f.top=Math.max(f.top,this.pos.y);f.gap=Math.max(f.gap,this.pos.y-support.y);
       }
       travelled += Math.hypot(p.x - this.pos.x, p.z - this.pos.z); // #2230: accepted moves only, before any river rescue
-      this.pos.set(p.x,y,p.z);previous=support;r.yaw=yaw;r.pitch=nextPitch;this.vy=airborne?vy:0;r.airborne=airborne;r.groundVy=airborne?0:groundVy;
+      this.pos.set(p.x,y,p.z);previous=support;r.yaw=yaw;r.pitch=nextPitch;this.vy=airborne?vy:0;r.airborne=airborne;r.groundVy=airborne?0:groundVy;r.clear=airborne?y-support.y:0; // (#2229: clear of the ground, the scooter's jumps)
       if(this.fall&&!r.airborne) {const f=this.fall;this.fall=null;this.vy=0;if(f.gap>0 && f.top>this.pos.y)this.onLand?.(f.top-this.pos.y,f.gap);if(this.riding!==r)return;}
     }
-    this.onCycleTravel?.(travelled, dt); // #2230: this bicycle path alone; no other riding mode
+    if (!r.bike.isScooter) this.onCycleTravel?.(travelled, dt); // #2230: this bicycle path alone; no other riding mode (#2229: an e-scooter counts its own metres in main.js scooterFrame)
     this.bikeSplash(); // #1304: into the river
     this.edgeNotice(WALK.bikeEdge); // #1719: the bicycle stops ~1 m short of the edge, so a wider margin than on foot
     this.camera.rotation.y = r.yaw - Math.PI / 2; this.sprinting = false; this.jumpPress = false; this.crouch = this.crouched = false;

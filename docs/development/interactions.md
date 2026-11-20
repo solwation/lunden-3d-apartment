@@ -2716,3 +2716,54 @@ the torso leaning back (no more 90 degree roll and bob). `main.js` gives `santa.
 `santa.viewer` (the camera); he looks at the TV, at the visitor during and 1.6 s after a greeting, and the laugh
 shakes the belly in the last 0.8 s of the greeting, matching the HO HO sound. `tools/santalifetest.mjs` covers the
 helpers and the real `Santa`; `tools/santalifeapp.cjs BASE OUT` captures the real-game images.
+
+## E-scooters (#2229)
+
+Ryde-style rental e-scooters (generic teal, no logo or text) stand on the pavements round the block. `src/scooters.js` builds them as one
+`InstancedMesh` (one draw call plus one shadow call; `frustumCulled` off because the instances are spread over the area) from a merged
+vertex-coloured model (deck, wheels, mudguard, stem, handlebar with grips, display, headlight and the **tuning hatch**: a dark plate with
+four screws on the front of the stem). `SCOOTER` in `src/config.js` holds every value, all *guess*. Placement (`scootermotion.js
+scooterSpots`, pure, deterministic): candidates every `SCOOTER.step` m along each road with `walks` (today Sankt Lars väg's two pavements),
+`inset` of the pavement width out from the kerb, kept when `roads.js onWalk(x, z, -0.35)` and not `onVehicle(x, z, 0.6)`, inside
+`SCOOTER.area` round the block, picked in a seeded order at least `spacing` apart: `count` 22, `lowMemoryCount` 8 on phones.
+
+**Riding reuses the bicycle.** Each scooter is a record in `world.bicycles` (`isScooter`): the same E / click / touch mount, joystick or
+WASD, support, hull, kerbs and crests, landing, splash, edge notice, dismount and touch buttons as the bicycles. `Player.bikeStep` takes
+the speed profile from `bike.motionProfile()` (`bikemotion.js bicycleSpeed(…, P)` and `bicycleTakeoff(…, M)` gained an optional profile;
+the bicycle's own is `BICYCLE`), `bikePose` the scooter's `eye` (standing on the deck), `cameraBack` and `cameraPitch`. The
+first-person hands are not drawn on a scooter (its handlebar is below the standing rider's view; the speed display is the HUD's). The contact and hull geometry stays `BICYCLE`'s. Untuned: motor to 20 km/h, hard cap 20 km/h also downhill;
+tuned: 90 km/h with a faster motor (`SCOOTER.tuned.motion.pedal` 6 against 2.2 m/s²). A scooter's launch speed is lower than the
+bicycle's so a 20 km/h scooter hops a kerb; `maxLift` caps the take-off. The tuned profile's travel substep is `step` .12 m (the
+bicycle's .05) so 90 km/h needs about as many substeps per frame as a bicycle at its top speed. Parked or left anywhere a scooter is solid (`footprint`). Not
+saved: a reload puts every scooter back on its spot, untuned (as the bicycles return to their racks). The bell (B) works as on a bicycle.
+
+**Tuning.** The screwdriver (`Screwdriver`, a Holdable, class in `POCKET`, held category `tool`) lies on the fuse box in the hall's EL/C
+cabinet beside the flashlight (`SCOOTER.screwdriver`). With it in the hand, a ray hit within `SCOOTER.hatch.aim` m of a scooter's hatch
+turns the focus into `scooterTune` (elsewhere on the scooter E still mounts it). Held E / the mouse button / the touch action button
+advances the progress only while the hatch stays aimed at (`scootermotion.js tuneStep`, `Tuner` in scooters.js); letting go pauses it.
+`SCOOTER.tune.time` 10 s in all (the fuse box's `POWER.repair` is 30 s); the prompt carries the same kind of progress bar as the fuse
+box. Done: `scooter.tuned`, `stats.scooterTunes`. The speed display is a HUD element (`#speedo`, one DOM element): km/h and "Max 20" /
+"Trimmad · max 90", shown only on a scooter.
+
+**Jumps, slow motion and the chase camera.** `Player.bikeStep` keeps `riding.clear` (m clear of the ground in flight). `main.js
+scooterFrame` (after the focus) counts a flight of at least `SCOOTER.jump.min` m on landing (`trackJump`), keeps the best in cm and
+the top speed in km/h (`stats.js recordBest`), adds metres ridden, and runs `slowMoStep`: once a flight gets `SCOOTER.jump.slowmo` m
+clear the slow motion latches until the landing; only the own physics dt (`player.update`) is scaled (to `jump.scale`), eased with the
+real frame time. The network send rate, the world and other players are untouched. `scooterChase` eases the camera to `chaseCamera`
+(behind and above, looking at the rider; the camera yaw stays the scooter's heading, which the bicycle steering reads), the render then
+hides the camera's children (first-person hands) and shows the self-ghost standing on the deck (state `sc`, local only, never sent; the
+legs stand still). It eases back on landing.
+
+**Statistics, medals, top list.** `lunden.stats` gains `scooterMetres`, `scooterJumps`, `scooterJumpCm` (best), `scooterTopKmh`
+(best), `scooterTunes`; all five are `/boards` counters in `src/boardcatalog.js COUNTERS` (Worker validation is the generic clamp:
+`perMin` / `start` sized for 90 km/h, one record jump up to `jump.maxCm`, the tune time). Top list `hogsta-scooterhopp` ("Högsta hopp
+med elsparkcykel", kind `most` on the best jump in cm). Medals: `scooter-km` (first level 1 km), `scooter-jumps`, secret `scooter-tunes`.
+
+**Shared world (first slice).** Other players see a scooter rider as a standing figure moving along (`bk` is not sent for a scooter, so
+no bicycle is drawn under them); a ghost scooter prop and its pose are a follow-up issue.
+
+Tests: `node --test tools/scooter2229test.mjs` (caps, acceleration, braking, take-off, tuning progress, jump/slow-motion thresholds,
+chase camera, spots, catalogue). Real app: `tools/browsertest.sh node tools/scooter2229browser.cjs BASE OUT` (placement and mounting,
+draw calls with / without the batch, the screwdriver from the cabinet and hold-to-tune incl. pause, untuned cap and tuned speed on Sankt
+Lars väg, kerb hop, a test-launched big flight with slow motion and the chase camera and its return; images in
+`docs/verification/2229/`).

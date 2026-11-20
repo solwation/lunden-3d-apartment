@@ -1310,8 +1310,9 @@ function* worldParts(plan) {
   return {
     object: scene,
     bicycles: [...life.bicycles, ...courtyard.bicycles],
-    bicyclePolys(feet, headroom, hurdle) { return this.bicycles.map(b => b.footprint(feet, headroom, hurdle)).filter(p => p.length); },
-    bicycleSegments(feet, headroom, hurdle) { return this.bicyclePolys(feet, headroom, hurdle).flatMap(p => p.map((a,i) => [...a,...p[(i+1)%p.length]])); },
+    // (#2229: an optional query point x, z skips bicycles / scooters more than 4 m away: the parked e-scooters are solid everywhere)
+    bicyclePolys(feet, headroom, hurdle, x, z) { return this.bicycles.filter(b => x === undefined || (Math.abs(b.position.x - x) < 4 && Math.abs(b.position.z - z) < 4)).map(b => b.footprint(feet, headroom, hurdle)).filter(p => p.length); },
+    bicycleSegments(feet, headroom, hurdle, x, z) { return this.bicyclePolys(feet, headroom, hurdle, x, z).flatMap(p => p.map((a,i) => [...a,...p[(i+1)%p.length]])); },
     edgeLines,
     hallWardrobes,
     wardrobes: laundryWardrobes, // reserved, usable shelf spaces (#552)

@@ -8798,6 +8798,33 @@ export const BICYCLE = {
   rear: -.54, front: .46, eye: 1.25, cameraBack: .14, pitch: -.25, maxRise: .12,
   maxDrop: .35, standDrop: .15, wheelRear: -.50, wheelFront: .42, wheelRadius: .35, contactSamples: 8, maxTilt: .65, frameClearance: .25, extract: 3, mountReach: 2.6, stand: [.9, 1.2, 1.5] };
 
+// #2229: Ryde-style rental e-scooters (src/scooters.js, src/scootermotion.js). Generic teal rental scooters, no logo; every value is a game
+// *guess*, not a surveyed scooter. They ride through the bicycle's Player path (support, hull, curbs, crests, landing): the contact/hull
+// geometry stays BICYCLE's (wheelbase -.50/.42), only the speed profile and the eye are the scooter's (`grip`: the model's handlebar). `untuned`/`tuned`: the
+// profiles for bikemotion.js bicycleSpeed (speed = the motor's target m/s, maxSpeed the hard cap: 20 km/h, tuned 90 km/h; pedal = the
+// motor's acceleration m/s²; drag low enough that 90 km/h is reachable) and bicycleTakeoff (launchSpeed lower than the bicycle's so a
+// 20 km/h scooter still hops a kerb, maxLift caps the take-off m/s). `tune`: the screwdriver at the hatch, held `time` s in all
+// (letting go pauses, like POWER.repair's 30 s but shorter). `jump`: a flight counts from `min` m clear of the ground; `slowmo` m clear
+// starts the local slow motion (`scale` × the own physics dt, eased at `ease`/s) with the chase camera (`chase`, m behind / up, the
+// rider's point looked at `look` m over the feet); `maxCm` caps a recorded jump. Placement: candidates every `step` m along the
+// pavements (`inset` of the pavement width from the kerb), only within `area` (a circle round the block), at least `spacing` apart,
+// `count` of them (`lowMemoryCount` on phones), one instanced draw call. `tuned.step`: the travel substep (BICYCLE.step .05) at 90 km/h, so a
+// frame needs about as many substeps as a bicycle at its 11 m/s (~4); still far below the 0.66 m a wall (radius .31 + margin) could be skipped by.
+export const SCOOTER = {
+  count: 22, lowMemoryCount: 8, area: { x: 15, z: 40, r: 200 }, spacing: 16, step: 7, inset: .62, lift: .008, seed: 2229,
+  deck: .14, eye: 1.72, cameraBack: .02, pitch: -.32,
+  grip: { x: .34, y: 1.02, z: .22, radius: .018, length: .09 },
+  hatch: { x: .392, y: .8, aim: .4 },
+  colors: { body: 0x16a88f, dark: 0x24292d, tyre: 0x161616, metal: 0x8f969c, hatch: 0x30363b, screen: 0x0d1f1a, light: 0xf3f0e4, rear: 0xb3221c },
+  untuned: { speed: 20 / 3.6, reverse: 1.5, motion: { ...BICYCLE.motion, pedal: 2.2, brake: 6, rolling: .2, coast: 1.2, drag: .002, maxSpeed: 20 / 3.6, launchSpeed: 3.5, maxLift: 4 } },
+  tuned: { speed: 90 / 3.6, reverse: 2, step: .12, motion: { ...BICYCLE.motion, pedal: 6, brake: 8, rolling: .2, coast: 1.2, drag: .002, maxSpeed: 90 / 3.6, launchSpeed: 3.5, maxLift: 5.5 } },
+  tune: { time: 10, tinker: .8 },
+  jump: { min: .12, slowmo: 1, scale: .3, ease: 6, maxCm: 2000 },
+  chase: { back: 4.2, up: 1.5, look: .9 },
+  // the screwdriver's home: on the fuse box's top in the hall's EL/C cabinet, beside the flashlight (TOYS.flashlight, #604)
+  screwdriver: { level: 0, x: .27, y: 1.768, z: .9, turn: .12, back: ['elskåpet', 'lägga tillbaka skruvmejseln i'], held: { x: .19, y: -.2, z: -.36 } },
+};
+
 let rifleNoseTriangles;
 export function rifleNoseProfile() {
   return rifleNoseTriangles ??= rifleSphereProfile(PVP_RIFLE_HEAD.nose);

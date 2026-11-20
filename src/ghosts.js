@@ -15,7 +15,7 @@ import { updateBreath, BreathPuffs } from './avatarbreath.js'; // #2037
 import * as THREE from 'three';
 import { CUE_ARM, FALL, SELF_STAND, TOAST, SOUNDS, KISS, HUG, REACT, REST, SEAT_LEGS } from './config.js';
 import { chooseGazeTarget } from './avatargaze.js';
-import { AVATAR_GAZE } from './config.js';
+import { AVATAR_GAZE, SCOOTER } from './config.js';
 import { makesSteps, strideFor } from './spatialsound.js';
 import { newPlayback, receive, playStep } from './ghostinterp.js'; // #2139
 import { GHOST_PLAYBACK as PLAY } from './config.js';
@@ -1178,7 +1178,7 @@ export class Ghosts {
       m.vx += ((far ? 0 : vx) - m.vx) * k; m.vz += ((far ? 0 : vz) - m.vz) * k;
       const vy = (s.p[1] - m.p.y) / dt; m.vy += ((far || Math.abs(vy) > 12 ? 0 : vy) - m.vy) * k; // (#1799: the climbing steps follow it)
     }
-    m.gx=s.gx; m.bp = s.bp; m.p.set(...s.p); m.r = s.r; m.h = s.h; m.hi = s.hi; m.c = s.c; m.pose = s.pose; m.look = s.look; m.sp = s.sp; m.jp = s.jp; m.dn = s.dn; m.am = s.am; m.bk = s.bk; m.cat = s.cat; m.t = t;
+    m.gx=s.gx; m.bp = s.bp; m.p.set(...s.p); m.r = s.r; m.h = s.h; m.hi = s.hi; m.c = s.c; m.pose = s.pose; m.look = s.look; m.sp = s.sp; m.jp = s.jp; m.dn = s.dn; m.am = s.am; m.bk = s.bk; m.sc = s.sc; m.cat = s.cat; m.t = t;
   }
 
   /** Our avatar for the mirrors: one per name (the look comes from it); shared by mirrors and the resting first-person view. */
@@ -1273,6 +1273,7 @@ export class Ghosts {
     g.air = m.am; g.vy = m.vy;
     g.react = this.myReact ?? null;
     g.root.position.copy(m.p);
+    if (m.sc) g.root.position.y += SCOOTER.deck; // #2229: standing on an e-scooter's deck (local only: `sc` is never sent)
     this.light.apply(g.avatar, g.lightSt ??= {}, m.p.x, m.p.y, m.p.z, performance.now()); // #2017
     g.root.rotation.y = m.r;
     g.bikeAt({ bk: m.bk }, { bk: m.bk }, 1);
@@ -1281,7 +1282,7 @@ export class Ghosts {
     g.crouch = now - last < 250 ? THREE.MathUtils.clamp(goal, (g.crouch ?? goal) - (now - last) / 1000 / AVATAR_CROUCH.time, (g.crouch ?? goal) + (now - last) / 1000 / AVATAR_CROUCH.time) : goal;
     g.root.visible = true;
     g.mirrorTyping(!!this.mirrorTyping?.(now), now);
-    g.animate(now, 0, m.vx, m.vz);
+    g.animate(now, 0, m.sc ? 0 : m.vx, m.sc ? 0 : m.vz); // (#2229: on a scooter the legs stand still)
   }
 
   /** One bounded self-damage request; never send client HP or replay it after a disconnect. */

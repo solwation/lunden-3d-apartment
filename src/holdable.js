@@ -57,7 +57,7 @@ export const heldItem = () => current;
 // and paper keep the old rule (one at a time; they cannot be swapped away, the hand must be emptied first). Saved across a reload by
 // keep.js's `inventory` part (#1959) through `inventoryContents` / `stowInto` / `freeHand` / `settleInventory` below.
 const POCKET = new Set(['Saber', 'Blaster', 'Wand', 'Flashlight', 'Bow', 'Harpoon', 'Binoculars', 'FishingRod', 'CaughtFish', 'SharkFin', 'Mussel', 'Nut', 'SprayCan', 'Basketball', 'Rifle',
-  'Glass', 'Bottle', 'BeerCan', 'Milk', 'PopcornTub', 'FriesBag', 'Chicken']); // #1960: drinks and a popcorn tub / fries bag (plain holdables); #1983: the whole chicken
+  'Glass', 'Bottle', 'BeerCan', 'Milk', 'PopcornTub', 'FriesBag', 'Chicken', 'Screwdriver']); // #2229: the screwdriver (scooters.js) // #1960: drinks and a popcorn tub / fries bag (plain holdables); #1983: the whole chicken
 // #1960: food and cups are plain objects or their own classes: carried by what they are. Chicken pieces (#1983: chicken.js keeps a list of them, so several can be carried) are carried by flag; the cat, drawings and paper are not.
 const POCKET_FLAGS = ['isCup', 'isFruit', 'isFish', 'isFries', 'isChickenPiece'];
 const pockets = Array(I.slots).fill(null), stacks = Array.from({ length: I.slots }, () => []);

@@ -16,7 +16,7 @@ export const cleanHeldCategory = (v) => (typeof v === 'string' && SET.has(v) ? v
 const BY_CLASS = {
   Cup: 'cup', Glass: 'cup', PicnicGlass: 'cup', PicnicBottle: 'bottle', Jug: 'bottle', Bottle: 'bottle', Milk: 'bottle', Beer: 'bottle', BeerCan: 'bottle',
   Book: 'book', HeldDrawing: 'paper', ToiletPaper: 'paper', Photo: 'paper',
-  Pan: 'pan', Cloth: 'tool', Vacuum: 'tool', Flashlight: 'flashlight', Remote: 'remote', Scoop: 'tool', Toaster: 'box',
+  Pan: 'pan', Cloth: 'tool', Vacuum: 'tool', Flashlight: 'flashlight', Screwdriver: 'tool', Remote: 'remote', Scoop: 'tool', Toaster: 'box',
   SillPot: 'plant', Nut: 'nut', Binoculars: 'binoculars', SprayCan: 'spray', ChristmasGift: 'gift', FishingRod: 'rod', CaughtFish: 'fish', SharkFin: 'sharkfin', Mussel: 'mussel', BilliardCue: 'cue', Fruit: 'food', FishFinger: 'fishfinger', FishPack: 'box', FriesBag: 'fries', FriesBunch: 'fries', PopcornTub: 'popcorn', Chicken: 'chicken', ChickenPiece: 'drumstick', Harpoon: 'harpoon',
 };
 /** #1963: a fruit by its kind (fruit.js `kind`); an apple is the generic red 'food'. */

@@ -24,6 +24,8 @@ const DEFAULTS = {
   remote: '{findTv:()=>null,seek(){},update(){}}', // #1653: the key handler / updateFocus compare heldItem() with the TV remote
   reactionCam: '{active:false}',           // #2222: the keydown excerpt stops the reaction camera on movement keys
   lightModes: '{page:"top",rows:()=>[],release(){},update(){}}',
+  scooters: '{tuner:{release(){},start(){},update(){},fraction:()=>0,holding:false},speedo:{show(){}}}', // #2229: the hold-to-tune releases with the fuse box's in the input excerpts
+  screwdriver: 'null',
 };
 // DOM elements main.js looks up at load: the init script runs before the DOM exists, so they resolve lazily (a test's own
 // assignment replaces the getter).

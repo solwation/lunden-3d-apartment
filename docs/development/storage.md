@@ -1942,3 +1942,10 @@ not in a multiplayer room (the take needs the room's answer). Not saved: mussels
 their own issues, the chicken and its pieces (#1983). #1961: `["l",id]` is a life instance (its record, with place `{at:"pocket"}`, is in the `life` part, which now loads *before* `inventory`; loading moves the instance into the hand (`LifeItem.adoptHand`) and `stowInto`s it). A new visit (`hand:false`) and an instance whose place did not come back (`Life.update` sweeps `pocket` instances nobody carries) go home like a held one. The part is written wherever the world is: "Ladda om", the update flow, the
 GL-restore reload and `lunden.playerWorld` on page hide, which is what brings the places back after a plain F5 (`tools/inventorykeeptest.cjs`
 checks both a new navigation and `page.reload()`).
+
+## E-scooter statistics (#2229)
+
+The per-profile `lunden.stats` record gains `scooterMetres` (fractional metres ridden, floored when exported), `scooterJumps`,
+`scooterJumpCm` and `scooterTopKmh` (best values, `stats.js recordBest`) and `scooterTunes`, all finite non-negative numbers with a
+legacy default 0 (repaired on load). All five sync as `/boards` counters (`src/boardcatalog.js COUNTERS`), so the Worker must be deployed
+with the client for them to be accepted. The scooters themselves (where they stand, which are tuned) are not saved: a reload resets them.

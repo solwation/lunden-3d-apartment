@@ -50,6 +50,8 @@ export const MEDALS = [
   { id: 'stairs', counter: 'stairs', icon: '🔼', name: 'Trappspringare', unit: 'trappturer', base: 100 },
   { id: 'jetpack', counter: 'flights', icon: '🚀', name: 'Jetpackpilot', unit: 'flygningar', base: 25 },
   { id: 'astronaut', counter: 'jetpackMetres', icon: '🧑‍🚀', name: 'Astronaut', unit: 'höjdmeter uppåt med jetpack', base: 100 }, // #1857: first level100 m is a gameplay guess
+  { id: 'scooter-km', counter: 'scooterMetres', icon: '🛴', name: 'Sparkcykelåkare', unit: 'meter med elsparkcykel', base: 1000 }, // #2229: first level 1 km (*guess*)
+  { id: 'scooter-jumps', counter: 'scooterJumps', icon: '🦘', name: 'Kanthoppare', unit: 'hopp med elsparkcykel', base: 25 }, // #2229 (*guess*)
   { id: 'dribbles', counter: 'dribbles', icon: '🏀', name: 'Basketstudsare', unit: 'studsar', base: 500 },
   { id: 'fish', counter: 'fishCaught', icon: '🎣', name: 'Fiskelycka', unit: 'fiskar fångade i Höje å', base: 5 }, // #1754 (*guess*: a catch takes minutes)
   { id: 'outdoorcats', counter: 'outdoorCatRounds', icon: '🐾', name: 'Kattspårare', unit: 'omgångar', base: 1, linear: true, bonus: OUTDOOR_CATS.hunt.bonus, hunt: true }, // #1885: one level per round of all outdoor cats found
@@ -65,6 +67,7 @@ export const MEDALS = [
   // secrets: "???" until the first level
   { id: 'falls', counter: 'falls', icon: '🩹', name: 'Klumpeduns', unit: 'fall', base: 10, secret: true },
   { id: 'burnt', counter: 'burnt', icon: '🔥', name: 'Brandchef', unit: 'brända fiskpinnar', base: 10, secret: true },
+  { id: 'scooter-tunes', counter: 'scooterTunes', icon: '🔧', name: 'Trimmare', unit: 'trimmade elsparkcyklar', base: 2, secret: true }, // #2229 (*guess*; base 1 rounds to non-growing steps)
   { id: 'hugs', counter: 'pingpingHugs', icon: '🫂', name: 'Pingpings bästis', unit: 'kramar', base: 10, secret: true },
 ];
 

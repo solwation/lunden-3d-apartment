@@ -16,7 +16,7 @@ const KEY = 'lunden.stats';
 
 const fresh = () => ({ love: 0, loveReceipts: [], pvpKills: 0, killReceipts: {}, cats: 0, rare: 0, byVariant: {}, petted: 0, ponyPets: 0, squirrelFeeds: 0, fishFeeds: 0, duckFeeds: 0, duckScore: 0, duckFeedDay: null, doors: 0, lids: 0, flushes: 0, taps: 0, fridge: 0, appliances: 0, cabinets: 0, beer: 0, coffee: 0, fish: 0, turbo: 0, shots: 0, fried: 0, burnt: 0, catFish: 0, chicken: 0, wine: 0, champagne: 0, whisky: 0, milk: 0, kask: 0, posted: 0, thrown: 0, lights: 0, sat: 0, lay: 0, steps: 0, metres: 0, stairs: 0, danceSeconds: 0, danceScore: 0, danceRewardDay: null, gymPump: null, jetpackMetres: 0, gymReps: 0, gymScore: 0, gymRewardDay: null, seconds: 0, visited: {}, secrets: 0, secretKinds: {}, catPhotos: 0, grill: 0, hood: 0, songs: 0, carMusic: 0, read: 0, car: 0, magic: 0, target: 0, baskets: 0, threes: 0, freeThrows: 0, twoPointers: 0, basketPoints: 0, footballGoals: 0, footballRecord: null,
   cycleMetres: 0, swimMetres: 0, diveSeconds: 0,
-  byBreed: {}, seen: {}, secretRare: {}, tv: 0, pc: 0, parasol: 0, clock: 0, calendar: 0, cooked: 0, brews: 0, drawn: 0, splashes: 0, cuts: 0, dribbles: 0, catButts: 0, shattered: 0, shatterRange: 0, pingpingHugs: 0, blinds: 0, curtains: 0, airfried: 0, clips: 0, penalties: {}, penaltyPoints: 0, kittens: 0, kittenPets: 0, petsByBreed: {}, hugsByBreed: {}, vacuumed: 0, tasks: 0, taskCounts: {}, taskRewardDays: {}, taskBonusDays: {}, taskBonusPoints: 0, taskDay: null, mieleDay: null, legacyTaskPoints: 0, pvpRangePoints: 0, medals: {}, medalsSeeded: false, medalPoints: 0, fishCaught: 0, fishBySpecies: {}, fishEaten: 0, outdoorCatRounds: 0, outdoorCatsFound: [] });
+  byBreed: {}, seen: {}, secretRare: {}, tv: 0, pc: 0, parasol: 0, clock: 0, calendar: 0, cooked: 0, brews: 0, drawn: 0, splashes: 0, cuts: 0, dribbles: 0, catButts: 0, shattered: 0, shatterRange: 0, pingpingHugs: 0, blinds: 0, curtains: 0, airfried: 0, clips: 0, penalties: {}, penaltyPoints: 0, kittens: 0, kittenPets: 0, petsByBreed: {}, hugsByBreed: {}, vacuumed: 0, tasks: 0, taskCounts: {}, taskRewardDays: {}, taskBonusDays: {}, taskBonusPoints: 0, taskDay: null, mieleDay: null, legacyTaskPoints: 0, pvpRangePoints: 0, medals: {}, medalsSeeded: false, medalPoints: 0, fishCaught: 0, fishBySpecies: {}, fishEaten: 0, outdoorCatRounds: 0, outdoorCatsFound: [], scooterMetres: 0, scooterJumps: 0, scooterJumpCm: 0, scooterTopKmh: 0, scooterTunes: 0 }); // #2229: the e-scooters
 
 
 function load() {
@@ -38,6 +38,7 @@ function load() {
     if (!Number.isSafeInteger(s.pvpKills) || s.pvpKills < 0) s.pvpKills = 0;
     for (const k of MOVEMENT_COUNTERS) if (!Number.isFinite(s[k]) || s[k] < 0) s[k] = 0;
     if (!Number.isFinite(s.jetpackMetres) || s.jetpackMetres < 0) s.jetpackMetres = 0;
+    for (const k of ['scooterMetres', 'scooterJumps', 'scooterJumpCm', 'scooterTopKmh', 'scooterTunes']) if (!Number.isFinite(s[k]) || s[k] < 0) s[k] = 0; // #2229
     huntState(s); // #1885
     return s;
   } catch {
@@ -55,6 +56,7 @@ const BADGES = {
   fridge: '🍗 Kylskåpet öppnat', appliances: '🍳 Ugn/mikro öppnad', cabinets: '🗄 Skåp öppnat', beer: '🍺 Klunk öl', coffee: '☕ Klunk kaffe', turbo: '⚡ Kaffeturbo!', fish: '🐟 Fiskpinne uppäten', fruit: '🍎 Frukt uppäten', fried: '🍳 Fiskpinne stekt', airfried: '🍟 Airfryern klar', toaster: '🍞 Brödrosten rostar', fries: '🍟 Pommes uppäten', sandwiches: '🥪 Du gjorde en macka!', hotdogs: '🌭 Korv med bröd!', friesCooked: '🍟 Pommes frites klara', friesBurnt: '🔥 Pommes brända', burnt: '🔥 Fiskpinne bränd', catFish: '🐈 Katten åt en fiskpinne', catFishFeeds: '🐈 Katten åt en rå fisk', catButts: '🍑 Kattens rumpa', chicken: '🍗 Kycklingbit uppäten', fishEaten: '🐟 Fisken är uppäten', fishCooked: '🔥 Fisken är klar', sharkFin: '🦈 En haj i Höje å! Hajfenan är din.', wine: '🍷 Klunk vin', champagne: '🥂 Klunk champagne', whisky: '🥃 Klunk whisky', milk: '🥛 Klunk mjölk', kask: '☕ Klunk kaffekask', lights: '💡 Lampa tänd', stairs: '🔼 Trapptur', gymReps: '💪 Träningsrepetition',
   love: '💕 Kärlek +100', pvpHits: '🎯 Träffade en spelare', greets: '👋 Hälsade på en spelare', olof: '👋 Vinkat till Olof', sat: '💺 Satt ner', lay: '🛏 Lagt sig', posted: '📌 Teckning uppsatt', thrown: '🗑 Teckning slängd',
   grilledChicken: '🍗 Kycklingen är grillad', catPhotos: '📸 Kattfoto', cooked: '🍗 Kycklingen är klar', brews: '☕ Kaffet är klart', tv: '📺 Tv på', pc: '🎮 Datorn på', parasol: '⛱ Parasollet', clock: '🕰 Väggklockan', calendar: '📅 Kattkalendern', grill: '🔥 Grillen tänd', hood: '🌀 Fläkten på', songs: '🎵 Musik på', carMusic: '🚗 Musik i bilen', read: '📖 Läste boken', pingpingHugs: '🐧 Kramat Pingping', mieleHugs: '💖 Kramat Miele', car: '🚗 Bilen kallad', magic: '✨ Trolleri', blinds: '🖼 Plisségardin', curtains: '🦓 Gardinerna', clips: '📱 Nytt klipp', nest: '🔊 Smart högtalare', roofs: '🏠 Uppe på taket', liftFloors: '🏢 Hissen', flights: '🚀 Jetpacken lyfter',
+  scooterJumps: '🛴 Hopp med elsparkcykeln', scooterTunes: '🔧 Elsparkcykeln är trimmad', // #2229
   kittens: '🐾 Kattunge!', washed: '🧽 Diskat', dishwasher: '🍽 Disken är klar', rubbishOut: '🗑 Soporna utburna', tasks: '📋 Uppdrag utfört!',
 };
 const STEP_BADGE = 100; // a badge every 100 steps
@@ -163,7 +165,7 @@ export function awardTarget(pts) {
 /** Count `n` of `key`; `id` names the thing (a door, a lamp …) for the bigger points the first time (SCORE.first).
  * The badge for those only shows the first time. */
 export function bump(key, n = 1, id = key) {
-  if (key === 'jetpackMetres' && (!Number.isFinite(n) || n <= 0)) return;
+  if ((key === 'jetpackMetres' || key === 'scooterMetres') && (!Number.isFinite(n) || n <= 0)) return; // (#2229: metres ridden, fractional)
   if (key === 'danceSeconds' && (!Number.isSafeInteger(n) || n <= 0)) return;
   if (key === 'gymReps' && (!Number.isSafeInteger(n) || n <= 0)) return;
   if (!addCount(stats, key, n)) return; // #1761: never turn a stored object into "[object Object]1"
@@ -185,6 +187,14 @@ export function bump(key, n = 1, id = key) {
 // #2230: movement has no per-frame score/badge; ordinary saving and medal checks observe it.
 export function recordMovement(kind, metres, dt, under = false) {
   if (creditMovement(stats, kind, metres, dt, under)) dirty = true;
+}
+
+/** #2229: a best value (the highest scooter jump in cm, the top speed in km/h): kept when `v` beats it; true when it did. */
+export function recordBest(key, v) {
+  v = Math.floor(Number(v));
+  if (!Number.isFinite(v) || v <= 0 || !Number.isFinite(stats[key] ?? 0) || v <= (stats[key] ?? 0)) return false;
+  stats[key] = v; dirty = true; renderScore();
+  return true;
 }
 
 /** #1754: a fish caught in Höje å: counted (the medal's `fishCaught`) and per species (FISHING.points, rarer = more). */
@@ -428,6 +438,8 @@ export function statRows() {
     ['🤿 Tid under ytan', fmtTime(stats.diveSeconds)],
     ['🧑‍🚀 Jetpack uppåt', `${Math.floor(stats.jetpackMetres)} höjdmeter`],
     ['🚀 Jetpackturer', `${stats.flights ?? 0}`], // take-offs (#359)
+    ...(stats.scooterMetres || stats.scooterTunes ? [['🛴 Elsparkcykel', `${(stats.scooterMetres / 1000).toFixed(1)} km`, // #2229
+      [`${stats.scooterJumps} hopp`, stats.scooterJumpCm ? `högsta ${stats.scooterJumpCm} cm` : '', stats.scooterTopKmh ? `max ${stats.scooterTopKmh} km/h` : '', stats.scooterTunes ? `${stats.scooterTunes} trimmade` : ''].filter(Boolean).join(' · ')]] : []),
     ['💺 Satt ner', `${stats.sat}`],
     ['🛏 Lagt sig', `${stats.lay}`],
     ...(stats.danceSeconds ? [['🕺 Danstid', `${stats.danceSeconds} sekunder`]] : []), // #1829
