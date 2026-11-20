@@ -1696,6 +1696,22 @@ that already have a compile step (so no new program for a plain material): the p
 geometry, draw, texture, light, pass or per-frame work. All `WET_SURFACE` values *guesses*. Test: `node --test tools/wetsurfacetest.mjs`;
 browser: `tools/wetsurface2175browser.cjs` ([before/after](../verification/2175/README.md)).
 
+## Hoar frost and snow on parked cars (#2195)
+
+`src/frost.js`: `frostCover()` (pure, `FROST` in `src/config.js`) turns temperature, clear sky, calm, no rain, no snow lying and the sun
+(`sunDir.y`) into one 0…1 cover; it melts as the sun climbs and builds up again after sunset. `FrostCover` (main.js, after
+`snowCover.update`) eases it into the shared `frostUniform`; `&frost=0…1` pins it. `frost(material, kind)` chains one fragment step
+(key `|frost2195-<kind>`; kinds grass, roof, car, glass, wood) after `normal_fragment_maps`: a whitish, finely grained film on up-facing
+faces (glass also on its sides), patchy by world-xz noise, and on lawns kept longest in the shade through the snow shelter texture
+(`uFrostShelter`, the same texture object as snowground.js, desktop only). Wired in: every lawn through `registerSnow(..., 'grass')`
+(seasons.js), roof felt (exterior.js, surroundings.js), courtyard and bus-stop benches, the parked and far cars' paint and glass
+(carfinish.js `weathered()`). Parked cars also get settled snow: carfinish.js chains `snowGround(m, 'car')` (hold 0.34, wider `upBy.car`
+so bonnets and windscreens whiten) on the paint and glass; it follows `snowCover`. Only the parked-car materials carry it, a driving
+car (traffic.js) has its own materials and stays clear. Phones (lowMemory): only materials that already have a compile step get it
+(the lawn does; plain car paint and roofs do not), so no new shader program. No geometry, draw, texture, light, pass or per-frame
+work beyond one float. All numbers *guess*; solar melt is the sun-elevation term plus shade, not a shadow lookup. Test:
+`node tools/frosttest.mjs`; browser: `tools/frost2195browser.cjs`.
+
 ## Painted screen-wall surface (#2075)
 
 `screenwall.js` retains #1786's `SCREEN_WALL` palette, board spacing, frame bands and seeded board tints. Its fine colour strokes now follow gently curved, occasionally forked fibres within each existing board. `screenwallsurface.js` supplies one shared 256×512 linear RGBA texture: red holds only shallow, smooth-edged joint height; green holds matte roughness (about .85 on boards/frame and .96 in joints). `SCREEN_WALL_SURFACE` parameters are visual assumptions, not surveyed construction detail. Relief is shading only (maximum joint difference about .595 mm), never displacement.

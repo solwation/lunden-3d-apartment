@@ -64,7 +64,7 @@ float snowGN(vec2 p) { vec2 i = floor(p), u = fract(p); u = u * u * (3.0 - 2.0 *
   return mix(mix(snowGH(i), snowGH(i + vec2(1.0, 0.0)), u.x), mix(snowGH(i + vec2(0.0, 1.0)), snowGH(i + vec2(1.0, 1.0)), u.x), u.y); }`;
   const body = /* glsl */ `
 if (uSnowCover > 0.0) {
-  float snowUp = smoothstep(${f(C.up[0])}, ${f(C.up[1])}, inverseTransformDirection(normal, viewMatrix).y);
+  float snowUp = smoothstep(${f((C.upBy?.[cls] ?? C.up)[0])}, ${f((C.upBy?.[cls] ?? C.up)[1])}, inverseTransformDirection(normal, viewMatrix).y);
   if (snowUp > 0.0) {
     vec3 snowW = transpose(mat3(viewMatrix)) * (-vViewPosition - viewMatrix[3].xyz);
     float snowNz = snowGN(snowW.xz / ${f(C.scale[0])}) * 0.6 + snowGN(snowW.xz / ${f(C.scale[1])} + 7.3) * 0.4;

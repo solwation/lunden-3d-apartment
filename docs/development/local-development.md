@@ -29,6 +29,7 @@ URL parameters (debugging / screenshots):
 - `&jetpack` — the jetpack on your back (outdoors, #359).
 - `&spidersuit` — the Spider-Man suit on (#597; climbing outdoors only).
 - `&weather=rain|storm|snow|hail|clear|fog` — force the weather (#248, #249; `fog` = WMO 45/48, the valley mist #2187).
+- `&frost=0–1` — pin the hoar frost cover (#2195; otherwise from temperature, clear calm sky, no snow, and the sun: melts after sunrise). `&temp=-4&weather=clear&time=7` gives a natural frost morning.
 - `&noflora` — no stones, weed or water lilies in Höje å (#1956).
 - `&noprobe` — no room reflections in chrome, steel, porcelain and tiles indoors (#2151, `src/roomprobe.js`): the old look, for A/B.
 - `&nodrift` — no drifting flecks on Höje å and no specks under its surface (#1952).

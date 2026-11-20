@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { SEASON } from './config.js';
 import { snowLies } from './snowcover.js';
 import { snowGround } from './snowground.js';
+import { frost } from './frost.js'; // #2195
 
 // Seasons by month (#73): tree crowns change colour (fresh green → deep green → autumn yellows and
 // reds → bare in winter, a few blossoming trees in spring), and in the snow months the ground, the
@@ -27,7 +28,7 @@ export function registerSeasonal(fn) { registry.hooks.push(fn); }
  * gravel, grass) it is not recoloured as a whole: it keeps its texture and gets the patchy snow step (snowground.js) instead. */
 export function registerSnow(mat, snowHex, cls = null) {
   if (!mat || registry.materials.some((m) => m.mat === mat)) return;
-  if (cls) { snowGround(mat, cls); registry.materials.push({ mat, patchy: true }); return; }
+  if (cls) { snowGround(mat, cls); if (cls === 'grass') frost(mat, 'grass'); registry.materials.push({ mat, patchy: true }); return; }
   registry.materials.push({ mat, snow: new THREE.Color(snowHex), base: mat.color.clone(), map: mat.map ?? null });
 }
 

@@ -26,6 +26,7 @@ import { roofMap, roofColor, roofUV } from './roofsurface.js';
 import { renderMaterial, renderUV, dirtPatch } from './rendersurface.js';
 import { shadeMoss } from './shademoss.js';
 import { snowCap } from './snowcap.js'; // #2123: snow on sills, cappings, copings, rails in the snow months
+import { frost } from './frost.js'; // #2195: hoar frost
 import { wetSurface } from './wetsurface.js'; // #2175: rain wets facades, roofs, cars, benches
 
 // Brick: 250 × 65 mm + 10 mm joints → 0.26 m per brick, 0.075 m per course.
@@ -781,7 +782,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
     portikMat.color.lerpColors(portikOff, portikLit, doorGlow);
   };
   const roofMat = new THREE.MeshStandardMaterial({ map: roofMap(), color: roofColor(0x4b5157), roughness: 0.9 }); // #2088: roofing-felt strips (flat: along x, *guess*)
-  registerSnow(roofMat, SEASON.snow.roof); wetSurface(roofMat, 'roof'); // #2175: a glossy film on the felt in the rain
+  registerSnow(roofMat, SEASON.snow.roof); wetSurface(roofMat, 'roof'); frost(roofMat, 'roof'); // #2195: hoar frost // #2175: a glossy film on the felt in the rain
   add(roofs.map((g) => roofUV(g, 'felt')), roofMat);
   add(panels, solarPanelMaterial(), false);
   add(patios, mats.patio, false);

@@ -75,7 +75,8 @@ test('car LOD clones follow the night; a lamp-washed, dithered clone gets each p
     const fs = compile(m);
     assert.equal(fs.split('vec3 lampWash(vec3').length - 1, 1, 'the wash exactly once (#2090)');
     assert.ok(fs.split('uniform vec3 uSurfWet').length - 1 <= 1, 'the wet step at most once (#2175)');
-    keys.add(m.customProgramCacheKey().replace(/\|wetsurf2175-\w+/, '')); // (#2175: the wet class is its own key suffix)
+    assert.ok(fs.split('uniform float uFrost;').length - 1 <= 1 && fs.split('uniform float uSnowCover;').length - 1 <= 1, 'frost and snow at most once (#2195)');
+    keys.add(m.customProgramCacheKey().replace(/\|(wetsurf2175|snow2176|frost2195)-\w+/g, '')); // (#2175, #2176, #2195: each class is its own key suffix)
   }
   assert.equal(keys.size, 2, 'near (washed + near dither) and far (washed + far dither) keep distinct program keys');
 });

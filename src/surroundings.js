@@ -40,6 +40,7 @@ import { roofMap, roofColor, roofUV } from './roofsurface.js';
 import { renderMaterial, renderUV, plainUV, dirtPatch } from './rendersurface.js';
 import { shadeMoss } from './shademoss.js';
 import { snowCap } from './snowcap.js'; // #2123
+import { frost } from './frost.js'; // #2195: hoar frost
 import { wetSurface } from './wetsurface.js'; // #2175
 import { schoolWallPlan } from './schoolwall.js';
 import {buildRiverBridges,deckAt,riverGround,riverDistance,roadBridgeSpan,bridgeRecords,riverAt,waterYAt} from './riverbridge.js';
@@ -2088,7 +2089,7 @@ export function* surroundingsParts({ grass, husL = null }) {
       wallRect(walk.walls, x - s2 / 2, x + s2 / 2, z - d2 / 2, z + d2 / 2, eave, vy);
     }
     return geos.map((g) => roofUV(g, 'felt')); // #2088: roofing-felt strips down each hip's fall line (shared roof map)
-  }), wetSurface(new THREE.MeshStandardMaterial({ map: roofMap(), color: roofColor(0x6d7175), roughness: 0.9, side: THREE.DoubleSide }), 'roof'), SEASON.snow.roof); // #2175
+  }), frost(wetSurface(new THREE.MeshStandardMaterial({ map: roofMap(), color: roofColor(0x6d7175), roughness: 0.9, side: THREE.DoubleSide }), 'roof'), 'roof'), SEASON.snow.roof); // #2175
   // details (#109, #146): a light grey metal edge round the flat roofs, grey downpipes at the corners and every ~12 m
   mesh(modern.map((b) => { // #348: as far out as the house's eaves, its top at the eave line
     const R = roofSpec(b), o = R.overhang, d = R.edge + 0.1;

@@ -4,6 +4,7 @@ import { GRASS as G, SEASON } from './config.js';
 import { registerSeasonal, registerSnow } from './seasons.js';
 import { applyGrassPatches, grassBlendGLSL, grassTufts, linearMean } from './grassdetail.js';
 import { leafLitter } from './leaflitter.js';
+import { frost } from './frost.js'; // #2195
 
 let texture;
 /** One shared small seamless detail map; neutral straw/leaf tones are tinted by each lawn's seasonal colour. */
@@ -101,6 +102,7 @@ export function grassMaterial(color = G.summer, bed = null) {
   material.customProgramCacheKey = () => (bed ? `grass-patches-688-bed-${bed.color}` : 'grass-patches-688');
   leafLitter(material, 'grass', bed ? '1.0 - grassBed' : ''); // #2105: fallen autumn leaves on the lawns (not on the river bed's mud)
   registerSnow(material, SEASON.snow.ground, bed ? null : 'grass'); // #2176: the lawn keeps its detail map and gets the patchy snow step (the river bed's mud: the old whole-material switch)
+  if (bed) frost(material, 'grass'); // #2195: the main terrain is this bed variant (whole-lawn snow switch): hoar frost on it too (the plain lawns get it through registerSnow)
   registerSeasonal((month) => {
     snow.value = bed && snowLies(month) ? 1 : 0; // #2176: the lawn's own patchy snow step (snowground.js) replaces this whole-lawn switch; only the river bed's mud keeps it
     if (!snow.value) material.color.copy(base).lerp(autumn, G.autumnMix[month] ?? 0);

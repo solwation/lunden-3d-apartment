@@ -20,6 +20,7 @@ import { bikeGeometry, bikeSpokeTexture, standGeometry } from './streetlife.js';
 import { bikeVertexParts, bikeVertexAt } from './bikeride.js';
 import { benchSlat, benchWood, padBenchSlats } from './benchwood.js';
 import { snowCap } from './snowcap.js'; // #2123
+import { frost } from './frost.js'; // #2195: hoar frost
 import { wetSurface } from './wetsurface.js'; // #2175: rain wets facades, roofs, cars, benches
 
 // The courtyard on the garage box (#80): stone walks, gravel round the playground (lawn elsewhere, #259), the Borggården's pergola
@@ -467,7 +468,7 @@ export function buildCourtyard() {
     paving: new THREE.MeshStandardMaterial({ map: paveTex, roughness: 0.95 }),
     gravel: gravelMaterial(GRAVEL_HEX, { vertexColors: true, name: 'courtyard-gravel' }), // #2096: stones, mean colour kept
     sand: new THREE.MeshStandardMaterial({ color: 0xe0cfa0, vertexColors: true, roughness: 1 }), // mottled (#681)
-    wood: wetSurface(snowCap(benchWood(new THREE.MeshStandardMaterial({ color: 0x8a6544, map: woodGrain(), vertexColors: true, roughness: 0.8 }))), 'wood'), // grain + a tone per board (#682); #2098: weathered bench slats
+    wood: frost(wetSurface(snowCap(benchWood(new THREE.MeshStandardMaterial({ color: 0x8a6544, map: woodGrain(), vertexColors: true, roughness: 0.8 }))), 'wood'), 'wood'), // grain + a tone per board (#682); #2098: weathered bench slats
     metal: wetSurface(snowCap(new THREE.MeshStandardMaterial({ color: 0x23262a, roughness: 0.5, metalness: 0.5 })), 'metal'), // #2123: snow caps in the snow months
     soil: new THREE.MeshStandardMaterial({ color: 0x3e2f24, roughness: 1 }),
     pergola: wetSurface(snowCap(new THREE.MeshStandardMaterial({ color: 0xd8d0bf, roughness: 0.85 })), 'wood'),

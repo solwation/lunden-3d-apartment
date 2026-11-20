@@ -2066,10 +2066,30 @@ export const SEASON = {
 // ploughed kerb ridge lies (m from the road edge, over `half`); `ridgeColor`: dirty grey. Plough ridge placement and all numbers are *guess*.
 export const SNOW_COVER = {
   full: 4, max: 40, melt: 0.12, rain: 0.1, spin: 336, lies: 0.3, gone: 0.2, ease: 4,
-  hold: { asphalt: 0.62, paving: 0.48, gravel: 0.4, grass: 0.3 }, noise: 0.5, shelter: 0.3,
-  scale: [3.2, 0.9], up: [0.6, 0.9], color: 0xeef3f7, rough: 0.9,
+  hold: { asphalt: 0.62, paving: 0.48, gravel: 0.4, grass: 0.3, car: 0.34 }, noise: 0.5, shelter: 0.3,
+  scale: [3.2, 0.9], up: [0.6, 0.9], upBy: { car: [0.3, 0.7] }, color: 0xeef3f7, rough: 0.9, // upBy (#2195): parked cars also whiten on the sloping windscreen and bonnet (*guess*)
   ridge: { inner: -0.25, outer: 0.7, hold: 0.1, color: 0x8f9296, mix: 0.7 },
   shelterMap: { size: 256, extent: 150, treeReach: 1.15, northBand: 3.2, centre: [-40, -30] },
+};
+
+// #2195: hoar frost on cold, clear, calm nights and mornings (src/frost.js). The cover 0…1 (frostCover) = the air temperature (full at
+// `temp[0]` °C and below, none at `temp[1]` and above) × clear sky (none at overcast `overcast[1]`, full below `overcast[0]`) × calm
+// (none at `wind[1]` m/s) × dry (rain) × no snow (snowCover above `snow[1]`) × the sun: it melts as the sun climbs (`sun`: sin of the
+// elevation, full below `sun[0]`, gone at `sun[1]`) and in the evening builds up again over `grow` of sun depression. The spot's own
+// threshold is `hold` spread by world-xz noise (`noise`) and lowered by `shelter` under crowns and against north facades (the snow
+// shelter texture, desktop only), so the shade keeps its frost longest. Per kind (a fragment step chained onto the existing
+// materials): `up` smoothstep on the world normal's y, `side` the share on vertical faces (glass), `strength` the whiteness, `rough`
+// the roughness it brings. `grain` m: the size of the crystal sparkle. All numbers *guess*; real frost physics is not modelled.
+export const FROST = {
+  temp: [-2.5, 1.5], overcast: [0.35, 0.85], wind: [3, 6.5], rain: 0.05, snow: [0.05, 0.3], sun: [-0.02, 0.1], grow: 0.3, ease: 3,
+  color: 0xe9f1f7, noise: 0.5, shelter: 0.35, scale: [2.6, 0.7], grain: 0.035,
+  kinds: {
+    grass: { up: [0.5, 0.85], side: 0, strength: 0.82, rough: 0.9, shelter: true },
+    roof: { up: [0.2, 0.6], side: 0, strength: 0.85, rough: 0.8, shelter: false },
+    car: { up: [0.25, 0.65], side: 0, strength: 0.78, rough: 0.7, shelter: false },
+    glass: { up: [0.2, 0.6], side: 0.45, strength: 0.75, rough: 0.6, shelter: false },
+    wood: { up: [0.5, 0.85], side: 0, strength: 0.7, rough: 0.8, shelter: false },
+  },
 };
 
 // Footprints in the snow (#1773, src/footprinttrail.js, src/footprints.js, cloudflare/trails.js). In the snow months players (shoe
