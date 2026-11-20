@@ -1,0 +1,105 @@
+{
+  "engine": "5.8.4-58902052+++UE5+Release-5.8",
+  "map": "/Game/Lunden/Maps/Pilot_L1007",
+  "taggedActors": {
+    "l1007": 954,
+    "l1007-uteplats": 14
+  },
+  "hiddenCollisionActors": 54,
+  "lighting": {
+    "day": {
+      "hour": 14,
+      "lampsOn": false,
+      "sunPitch": -56.386858252683616,
+      "sunYaw": -126.46670802879976
+    },
+    "evening": {
+      "hour": 22,
+      "lampsOn": true,
+      "sunPitch": 1.2975290578632654,
+      "sunYaw": -10.330686702355466
+    }
+  },
+  "cameras": [
+    {
+      "xyz": [
+        287.5,
+        -1200.0,
+        162.0
+      ],
+      "yaw": 89.99999999999999,
+      "pitch": 8.000000000000002,
+      "roll": -0.0,
+      "horizontalFov": 104.50486755371094,
+      "width": 1440,
+      "height": 810,
+      "id": "start",
+      "verticalFov": 72.00000305495765,
+      "lighting": "day"
+    },
+    {
+      "xyz": [
+        250.0,
+        819.9999999999999,
+        162.0
+      ],
+      "yaw": 97.00000000000006,
+      "pitch": -4.000000000000002,
+      "roll": -3.9854015897965574e-16,
+      "horizontalFov": 104.50486755371094,
+      "width": 1440,
+      "height": 810,
+      "id": "living-room",
+      "verticalFov": 72.00000305495765,
+      "lighting": "day"
+    },
+    {
+      "xyz": [
+        229.99999999999997,
+        1610.0000000000002,
+        162.0
+      ],
+      "yaw": -81.99999999999997,
+      "pitch": 12.000000000000007,
+      "roll": -8.129025412620414e-16,
+      "horizontalFov": 104.50486755371094,
+      "width": 1440,
+      "height": 810,
+      "id": "patio",
+      "verticalFov": 72.00000305495765,
+      "lighting": "day"
+    },
+    {
+      "xyz": [
+        215.0,
+        738.0,
+        162.0
+      ],
+      "yaw": -6.999999999999999,
+      "pitch": 8.000000000000002,
+      "roll": -1.0036911916390718e-16,
+      "horizontalFov": 104.50486755371094,
+      "width": 1440,
+      "height": 810,
+      "id": "stairs",
+      "verticalFov": 72.00000305495765,
+      "lighting": "evening"
+    },
+    {
+      "xyz": [
+        175.0,
+        795.0,
+        487.0
+      ],
+      "yaw": 99.99999999999999,
+      "pitch": -3.0000000000000004,
+      "roll": 1.99057468934487e-16,
+      "horizontalFov": 104.50486755371094,
+      "width": 1440,
+      "height": 810,
+      "id": "upper-floor",
+      "verticalFov": 72.00000305495765,
+      "lighting": "evening"
+    }
+  ]
+}

@@ -47,8 +47,65 @@ ANGLE Direct3D 11 on an NVIDIA GeForce RTX 3080. Each capture checks the actual
 desktop Ultra level (4), view direction, eye position, field of view, aspect
 ratio, frozen date and hour, weather, lights setting and live WebGL context.
 The JPEGs contain the WebGL scene at native desktop resolution. The imported
-dimensional comparisons are recorded below. Paired Unreal photos, interactions
-and the packaged performance test remain for the playable pilot.
+matching Unreal views and dimensional comparisons follow below.
+
+## Imported pilot in Unreal
+
+| Reference camera | Web, desktop Ultra | Unreal, imported pilot |
+| --- | --- | --- |
+| START, 14:00 | ![Web entrance](start.jpg) | ![Unreal entrance](unreal-start.jpg) |
+| Living room, 14:00 | ![Web living room](living-room.jpg) | ![Unreal living room](unreal-living-room.jpg) |
+| Staircase, 22:00 | ![Web staircase](stairs.jpg) | ![Unreal staircase](unreal-stairs.jpg) |
+| Upper floor, 22:00 | ![Web upper floor](upper-floor.jpg) | ![Unreal upper floor](unreal-upper-floor.jpg) |
+| Patio, 14:00 | ![Web patio](patio.jpg) | ![Unreal patio](unreal-patio.jpg) |
+
+UE 5.8.4 rendered these five views on the RTX 3080 using D3D12. The persistent
+`/Game/Lunden/Maps/Pilot_L1007` level references both generated zone levels.
+The editor found 954 tagged apartment actors and 14 tagged patio actors. The
+capture excludes 54 collision actors that are normally hidden during play. Each
+capture queried the actual camera transform, render-target dimensions and
+horizontal FOV. All five matched the foot position plus standing eye height,
+yaw, pitch, zero roll, 1440 × 810 aspect and 72° vertical FOV. See the
+[measured cameras and sun rotations](unreal-cameras.json).
+
+The sun follows the web's June 21 solar model for Lund. The daytime level uses
+SkyAtmosphere, directional sunlight and a project-generated diffuse sky cubemap.
+At 22:00 the sun is 1.30° below the horizon and 15 room lights use the positions
+and colours stored by the web export. The daylight and evening presets share the
+scene. The capture uses Lumen GI and reflections with a persistent view state
+and 24 frames per camera. It uses conventional shadows for these commandlet
+stills; the saved level retains the project's Virtual Shadow Map settings.
+
+The street, adjoining apartments and upper storeys outside L1007 are absent from
+the two pilot zones, which explains the isolated apartment at START. The patio
+faces and interior geometry align with the web, while the brick pattern, parquet,
+glass, fabrics and decorations still need material work. The editor reported
+73 Nanite warnings about imported translucent materials. The images document
+this visual stage. Door operation, traversal and packaged performance require
+separate runtime measurements.
+
+### Repeat or integrate the level
+
+Prepare the #2245 `l1007` and `l1007-uteplats` imports and their
+`unreal/Lunden/Import/measurements.json`. Git LFS on the Unreal machine supplies
+the persistent pilot map, sky cubemap and base materials. With the repository's
+pinned `three` dependency installed, generate the scene inputs from the repository root.
+
+```powershell
+node tools/unreal-engine/pilot-scene.mjs unreal/Lunden/Import/measurements.json C:/Temp/pilot-scene.json
+$ue = "C:/Program Files/Epic Games/UE_5.8/Engine/Binaries/Win64/UnrealEditor-Cmd.exe"
+$project = (Resolve-Path unreal/Lunden/Lunden.uproject).Path
+$script = (Resolve-Path tools/unreal-engine/python/capture_pilot.py).Path
+& $ue $project -run=pythonscript "-script=`"$script C:/Temp/pilot-scene.json C:/Temp/lunden-views`"" -AllowCommandletRendering -unattended -nosplash -nosound -NoP4
+```
+
+Use paths without spaces inside the commandlet's script argument. Omitting the
+output directory prepares the level without rendering images. The builder can
+recreate the map and cubemap in a fresh project, or preserve the actors in the
+existing map. If the pilot GameMode or derived door level have been generated,
+it links them into the persistent level. The source is in the
+[scene-input generator](../../../tools/unreal-engine/pilot-scene.mjs) and
+[pilot builder](../../../tools/unreal-engine/python/capture_pilot.py).
 
 ## Imported L1007 dimensions
 
@@ -57,7 +114,7 @@ Six distances from ten placed StaticMesh components in
 2026-11-20. The editor ran headlessly with NullRHI on a private copy of the generated
 zone using Epic Games’ Authenticode-verified UnrealEditor-Cmd 5.8.4 (0 errors,
 0 warnings). This checks the actual imported visual geometry before the playable
-pilot level, its collision, controls, paired pictures and packaged performance tests.
+pilot level, its collision, controls and packaged performance tests.
 
 | Distance | Independent web reference | Expected cm | Measured cm | Difference cm |
 |---|---|---:|---:|---:|

@@ -64,39 +64,50 @@ def capture(world, out_dir, name, view):
         light.point_light_component.set_attenuation_radius(1500.0)
     loc, look = unreal_point(pos), unreal_point(target)
     rot = unreal.MathLibrary.find_look_at_rotation(loc, look)
+    render_view(world, out_dir, name, loc, rot, WIDTH, HEIGHT, fov, EXPOSURE_BIAS[name], [])
+    if light:
+        light.destroy_actor()
+    for a in hidden:
+        a.get_component_by_class(unreal.StaticMeshComponent).set_visibility(True)
+    unreal.log(f"LUNDEN_SCREENSHOT {name}: {len(hidden)} actors hidden (collision boxes{', above the cut' if cut else ''})")
+
+
+def render_view(world, out_dir, name, loc, rot, width, height, fov, exposure_bias, excluded, lumen=False):
     cam = spawn(unreal.SceneCapture2D, loc, rot)
     comp = cam.capture_component2d
-    rt = unreal.RenderingLibrary.create_render_target2d(world, WIDTH, HEIGHT, unreal.TextureRenderTargetFormat.RTF_RGBA8_SRGB)
+    rt = unreal.RenderingLibrary.create_render_target2d(world, width, height, unreal.TextureRenderTargetFormat.RTF_RGBA8_SRGB)
+    for actor in excluded:
+        comp.hide_actor_components(actor)
     comp.set_editor_property("texture_target", rt)
     comp.set_editor_property("capture_source", unreal.SceneCaptureSource.SCS_FINAL_TONE_CURVE_HDR)
     comp.set_editor_property("fov_angle", float(fov))
     comp.set_editor_property("capture_every_frame", False)
+    comp.set_editor_property("always_persist_rendering_state", lumen)
     pp = comp.get_editor_property("post_process_settings")
     pp.set_editor_property("override_auto_exposure_method", True)
     pp.set_editor_property("auto_exposure_method", unreal.AutoExposureMethod.AEM_MANUAL)
     pp.set_editor_property("override_auto_exposure_apply_physical_camera_exposure", True)
     pp.set_editor_property("auto_exposure_apply_physical_camera_exposure", False)
     pp.set_editor_property("override_auto_exposure_bias", True)
-    pp.set_editor_property("auto_exposure_bias", EXPOSURE_BIAS[name])
-    # Lumen's surface cache needs many frames; a one-off capture shows it as large blocky tiles on sunlit walls
+    pp.set_editor_property("auto_exposure_bias", exposure_bias)
+    # The import overview uses fast direct light; the pilot retains a Lumen view state across captures.
     pp.set_editor_property("override_dynamic_global_illumination_method", True)
-    pp.set_editor_property("dynamic_global_illumination_method", unreal.DynamicGlobalIlluminationMethod.NONE)
+    pp.set_editor_property("dynamic_global_illumination_method", unreal.DynamicGlobalIlluminationMethod.LUMEN if lumen else unreal.DynamicGlobalIlluminationMethod.NONE)
     pp.set_editor_property("override_reflection_method", True)
-    pp.set_editor_property("reflection_method", unreal.ReflectionMethod.NONE)
+    pp.set_editor_property("reflection_method", unreal.ReflectionMethod.LUMEN if lumen else unreal.ReflectionMethod.NONE)
     comp.set_editor_property("post_process_settings", pp)
     comp.set_editor_property("post_process_blend_weight", 1.0)
     # meshes and material shaders compile asynchronously; a capture before they finish shows only the sky
     unreal.AutomationLibrary.finish_loading_before_screenshot()
-    for _ in range(4):  # a few captures so sky light and temporal effects settle
+    for _ in range(24 if lumen else 4):  # a few captures so sky light and temporal effects settle
         comp.capture_scene()
     unreal.RenderingLibrary.export_render_target(world, rt, out_dir, name + ".png")
     unreal.log(f"LUNDEN_SCREENSHOT {name}: {os.path.join(out_dir, name + '.png')}")
+    observed = {"xyz": list(cam.get_actor_location().to_tuple()), "yaw": cam.get_actor_rotation().yaw,
+                "pitch": cam.get_actor_rotation().pitch, "roll": cam.get_actor_rotation().roll,
+                "horizontalFov": comp.fov_angle, "width": rt.size_x, "height": rt.size_y}
     cam.destroy_actor()
-    if light:
-        light.destroy_actor()
-    for a in hidden:
-        a.get_component_by_class(unreal.StaticMeshComponent).set_visibility(True)
-    unreal.log(f"LUNDEN_SCREENSHOT {name}: {len(hidden)} actors hidden (collision boxes{', above the cut' if cut else ''})")
+    return observed
 
 
 def main(argv):
@@ -115,4 +126,5 @@ def main(argv):
     unreal.log("LUNDEN_SCREENSHOTS_OK")
 
 
-main([a for a in sys.argv[1:] if a])
+if __name__ == "__main__":
+    main([a for a in sys.argv[1:] if a])
