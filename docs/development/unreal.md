@@ -419,6 +419,43 @@ approved signed build or CI environment. The release-manifest generator, test-ch
 actual IoStore mounting, UE 5.8 user-data location, quick-crash threshold and real signed
 N-to-N+1/offline pilot remain to be verified with #2246, #2248 and #2250.
 
+### Per-user setup and removal (#2250)
+
+The self-contained launcher also handles setup. The distribution filename
+`Lunden-Setup-<version>-win-x64.exe` selects installation mode. It contains the launcher;
+the first game start downloads the verified packages described above.
+
+| Invocation | Effect |
+| --- | --- |
+| `Lunden.exe --dry-run-install` | Print the planned executable, Start menu shortcut, HKCU uninstall registration and save location. |
+| `Lunden.exe --install [--quiet]` | Install or repair the signed launcher for the current user. The installed and staged images must pass the configured publisher check. |
+| `Lunden.exe --uninstall [--quiet]` | Remove the launcher, downloaded packages, shortcut and Apps entry. Interactive removal asks about user data. Enter, quiet and redirected input keep it. |
+| `Lunden.exe --uninstall --dry-run-install --channel test` | Preview removal of the separate test installation. |
+
+Setup requires no elevation. The Start menu entry opens the installed executable, and
+Windows Settings invokes it with `--uninstall`. Stable and test have separate directories,
+shortcuts and HKCU entries. An interrupted registration restores the previous launcher
+and its registration. Uninstall leaves unrelated files in the installation directory,
+requires the install receipt, and checks for a running game. If an older pilot wrote
+project-local saves into a version, default removal moves them into the channel's
+`Recovered` folder before removing the package.
+
+When invoked from the installed executable, uninstall verifies a separate temporary
+copy, waits for that copy to acknowledge startup and then exits so Windows can release
+the executable. The temporary copy finishes removal and its calling shell cleans up.
+For automation that must wait until removal has completed, use the downloaded signed
+setup executable with `--uninstall --quiet`.
+
+The isolated .NET fixtures install, upgrade and remove both channels, inject failed
+registrations, check preservation and explicit deletion of fixture saves, and reject
+obsolete uninstall requests. The shell tests use a fake registry and temporary Start
+menu folders. A native Windows check saved and reopened a real `.lnk` in a temporary
+folder and confirmed its target, working directory and test-channel arguments. No
+production registry entry or Start menu shortcut was created. A clean Windows 11 pilot,
+VC++ runtime/prerequisite validation, timestamped signing, release workflow and public
+download remain pending. The pilot also needs the chosen publisher identity and a
+rotation policy compatible with the launcher's certificate check.
+
 ## Shared data: web → Unreal (#2245)
 
 The web and Unreal versions are built from the same sources; nothing is modelled twice. The contract — what is

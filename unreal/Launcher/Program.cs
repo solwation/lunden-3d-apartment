@@ -18,10 +18,14 @@ internal static class Program
             .Single(a => a.Key == "LundenSignerSha256").Value ?? "";
         try {
             if (SelfUpdate.IsHelper(args)) return SelfUpdate.Finish(args, signer);
+            string image = Environment.ProcessPath ?? throw new IOException("Startprogrammets sökväg saknas.");
+            if (args.FirstOrDefault() == UninstallHelper.Switch) return UninstallHelper.Finish(args, image, signer);
             if (args.Contains("--help")) {
                 Console.WriteLine("Lunden [--channel stable|test] [--manifest FIL/URL] [--dry-run] [--offline]");
+                Console.WriteLine("Lunden [--install | --uninstall | --dry-run-install] [--quiet] [--channel stable|test]");
                 return 0;
             }
+            if (SetupCommand.Parse(args, image) is { } setup) return setup.Run(image, signer, Current.ToString(3));
             var options = Options.Parse(args);
             using var key = ECDsa.Create();
             using var resource = assembly.GetManifestResourceStream("Lunden.ManifestKey.pem")
@@ -35,6 +39,7 @@ internal static class Program
             string userData = Path.Combine(local, name);
             using var http = new HttpClient {Timeout = TimeSpan.FromSeconds(20)};
             var store = new UpdateStore(root, http, path => Authenticode.Verify(path, signer));
+            using var maintenance = options.DryRun || !OperatingSystem.IsWindows() ? null : SetupLayout.Current(options.Channel).MaintenanceLock();
             using var lease = options.DryRun ? null : store.Lock();
             var state = store.Load(options.Channel);
             if (!options.Offline) {
@@ -129,7 +134,7 @@ internal static class Program
 
     static bool ExpectedFailure(Exception ex) => ex is IOException or InvalidDataException or UnauthorizedAccessException
         or CryptographicException or HttpRequestException or JsonException or OperationCanceledException
-        or FormatException or OverflowException or ArgumentException or InvalidOperationException or NotSupportedException or System.ComponentModel.Win32Exception;
+        or System.Security.SecurityException or TimeoutException or FormatException or OverflowException or ArgumentException or InvalidOperationException or NotSupportedException or System.ComponentModel.Win32Exception;
 
     static string SignatureSource(string source) {
         if (Uri.TryCreate(source, UriKind.Absolute, out var uri) && uri.Scheme is "https" or "http") {

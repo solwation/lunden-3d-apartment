@@ -87,7 +87,7 @@ internal static class SelfUpdate
         }
     }
 
-    static void WaitForParent(int pid, long ticks)
+    internal static void WaitForParent(int pid, long ticks)
     {
         Process parent;
         try { parent = Process.GetProcessById(pid); }
