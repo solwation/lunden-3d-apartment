@@ -590,6 +590,18 @@ the leader as `{ t: 'pk', k: 'pet', i }`; the room adds the patter's feet, and t
 Tests: `node --test cloudflare/paddock.test.mjs` and `node tools/paddockpeertest.cjs GAME WORKER OUT` (two real Ghosts + Paddock
 clients through `node cloudflare/dev.mjs PORT`, plus an offline one); `tools/paddocktest.cjs` for the solo paddock.
 
+## Wind sound outdoors (#2177)
+
+`src/windsound.js` (pure, config-only; `WIND_SOUND` in config.js, all *guesses* by ear) turns the weather's wind (#2117, `weather.wind` →
+`windPower`), a gust sweep (`gustAt`: two slow sines, deeper in strong wind), leaf cover (`SEASON.trees[month][3]`), nearness of the
+nearest tree (`treeNearness` over `treeFeet`, 14 m) and indoors into the settings of ONE looping noise through two filters
+(`sfx.windBed()`, audio.js; built once at the first update after audio starts): a low-pass body (whoosh; Q rises into a howl in strong
+wind) and a band-pass (summer: broad high rustle near trees; winter: narrow, resonant bare whistle). main.js updates them every
+`WIND_SOUND.every` s with `ease` s smoothing. Indoors (not outdoors / below / core / playroom) the gain is x0.18 and the low-pass capped at 420 Hz
+(the master's own muffle for water still applies). The open-window wind (`sfx.wind`) follows the same strength through `setWindPower`
+(gain and low-pass; its slow LFO gust stays). Tests: `tools/windsoundtest.mjs` (pure, node), `tools/windsoundbrowser.cjs` (real graph in an
+OfflineAudioContext: built once, params update). Parameter table: docs/verification/2177/README.md. #2101/#2117 sway and wind are untouched.
+
 ## Blinking and living gaze (#2011)
 
 Every avatar blinks (random 2-6 s apart, one in five twice) and looks at the nearest other player within `AVATAR_GAZE.range` m, the one talking first (`avatar.talking`, our own mirror image counts at the camera). Local only: nothing is sent, no new network field, mesh or draw call. The eye parts stay in the shared geometry: the iris and pupil have their own face part (`FACE_PART.iris`, 26) next to the eyeball and lids (`eye`), and the avatars' vertex shader (`faceShape` in `src/avatar.js`) squeezes both about the eye's centre by `uBlink` and moves the iris/pupil by `uGaze`, clamped inside the almond so the lids cover the rest. `Avatar.updateEyes` (called from `update`) adds the head's share to the `turn` / `pitch` it poses: `solveGaze` in `src/avatargaze.js` takes `headShare` of the angle, at most `maxYaw` / `maxPitch`; the eyes the remainder up to `eye` m; a target more than `cone` rad off the head, a kiss, a BIO reaction, swimming or a wall climb leave the head alone. Small saccades run at rest. `Avatar.eyesHidden` (Spider-Man suit, sunglasses, diving mask): nothing blinks or looks. `Ghosts.updateGazes` picks the target every `retarget` s (`chooseGazeTarget`) and `Avatar.lookAt` takes it. Tunables `AVATAR_BLINK` / `AVATAR_GAZE` (*guess*, by eye). Checks: `node --test tools/avatargazetest.mjs` (blink timing, clamps, hidden eyes) and `tools/browsertest.sh node tools/avatargazetest.cjs SITE docs/verification/2011` on `tools/avatargaze.html` (frames and `joints.json`).

@@ -3,6 +3,7 @@ import { synthFootstep } from './footsteps.js';
 // given a world position and is panned/attenuated relative to the camera.
 // The AudioContext can only start after a user gesture — call initAudio() from a click.
 
+import { windowWindParams } from './windsound.js';
 import { SOUNDS, KISS, PLAYROOM, SANTA, FOOTSTEPS, SQUIRRELS, SWIM } from './config.js';
 import { distanceGain, VoiceCap } from './spatialsound.js';
 import { RoomReverb } from './roomreverb.js';
@@ -11,6 +12,7 @@ import { lowMemory } from './lowmemory.js';
 let ctx = null, master = null, noiseBuf = null, reverb = null; // #2153: `reverb` = the shared room-acoustics send bus (effects only; music/TV connect to master directly and stay dry)
 const listenerAt = { x: 0, y: 0, z: 0 }, voices = new VoiceCap(SOUNDS.maxVoices); // (#1302: where we hear from; the cap on other players' sounds)
 let muted = false;
+const windows = new Set(); let windNow = 0.35; // #2177: the open windows' wind (sfx.wind) and the wind power they follow (setWindPower)
 
 export function initAudio() {
   if (ctx) { ctx.resume?.(); return; }
@@ -32,6 +34,13 @@ export function toggleMuted() {
   return muted;
 }
 export const isMuted = () => muted;
+/** #2177: the wind power 0…1 the open-window sounds follow (main.js a few times a second); eased, no new nodes. */
+export function setWindPower(p) {
+  windNow = p;
+  if (!ctx) return;
+  const w = windowWindParams(p), t = ctx.currentTime;
+  for (const v of windows) { v.g.gain.setTargetAtTime(w.gain, t, 0.8); v.lp.frequency.setTargetAtTime(w.lpHz, t, 0.8); }
+}
 /** #2153: the listener's acoustic zone ('soft' | 'bright' | 'concrete' | 'courtyard' | 'open'); cheap no-op when unchanged. */
 export function setRoomZone(zone) { reverb?.setZone(zone); }
 export const roomReverb = () => reverb;
@@ -505,18 +514,19 @@ export const sfx = {
     rush.start(t, Math.random()); rush.stop(t + 3);
     fill.start(t + 1.5, Math.random()); fill.stop(t + refill + 0.1);
   },
-  /** Wind through an open window until stop(): looping low noise, gusting slowly (an LFO on the filter and gain). */
+  /** Wind through an open window until stop(): looping low noise, gusting slowly (an LFO on the filter and gain); its level and
+   *  brightness follow the wind power (#2177: setWindPower). */
   wind(pos) {
     if (!ready()) return null;
-    const t = ctx.currentTime, d = out(pos, 0.6);
+    const t = ctx.currentTime, d = out(pos, 0.6), w0 = windowWindParams(windNow);
     const src = ctx.createBufferSource();
     src.buffer = noiseBuf;
     src.loop = true;
     const lp = ctx.createBiquadFilter();
-    lp.type = 'lowpass'; lp.frequency.value = 520; lp.Q.value = 0.8;
+    lp.type = 'lowpass'; lp.frequency.value = w0.lpHz; lp.Q.value = 0.8;
     const g = ctx.createGain();
     g.gain.setValueAtTime(0, t);
-    g.gain.linearRampToValueAtTime(0.16, t + 1.2);
+    g.gain.linearRampToValueAtTime(w0.gain, t + 1.2);
     const lfo = ctx.createOscillator(), depth = ctx.createGain(), gust = ctx.createGain();
     lfo.frequency.value = 0.13; depth.gain.value = 260; gust.gain.value = 0.07;
     lfo.connect(depth).connect(lp.frequency);
@@ -524,13 +534,36 @@ export const sfx = {
     src.connect(lp).connect(g).connect(d);
     src.start(t, Math.random());
     lfo.start(t);
+    const v = { g, lp };
+    windows.add(v);
     return {
       stop() {
+        windows.delete(v);
         const t1 = ctx.currentTime;
         g.gain.cancelScheduledValues(t1);
         g.gain.setValueAtTime(g.gain.value, t1);
         g.gain.linearRampToValueAtTime(0, t1 + 0.4);
         src.stop(t1 + 0.45); lfo.stop(t1 + 0.45);
+      },
+    };
+  },
+  /** #2177: the outdoor wind bed — ONE looping noise through a low-pass (whoosh / howl) and a band-pass (leaf rustle / bare whistle),
+   *  built once; `set({ gain, lpHz, lpQ, bandGain, bandHz, bandQ })` eases the parameters (a few times a second). Null before audio. */
+  windBed() {
+    if (!ctx) return null;
+    const src = ctx.createBufferSource();
+    src.buffer = noiseBuf; src.loop = true;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 200; lp.Q.value = 0.7;
+    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 2000; bp.Q.value = 1;
+    const gl = ctx.createGain(), gb = ctx.createGain(); gl.gain.value = 0; gb.gain.value = 0;
+    src.connect(lp).connect(gl).connect(master);
+    src.connect(bp).connect(gb).connect(master);
+    src.start(0, Math.random());
+    const ease = (prm, v, tc) => prm.setTargetAtTime(v, ctx.currentTime, tc);
+    return {
+      set(p, tc = 0.6) {
+        ease(gl.gain, p.gain, tc); ease(lp.frequency, p.lpHz, tc); ease(lp.Q, p.lpQ, tc);
+        ease(gb.gain, p.bandGain, tc); ease(bp.frequency, p.bandHz, tc); ease(bp.Q, p.bandQ, tc);
       },
     };
   },

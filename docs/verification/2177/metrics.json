@@ -1,0 +1,234 @@
+{
+ "rows": [
+  {
+   "season": "summer",
+   "where": "outdoor",
+   "cond": "calm",
+   "speed": 0.5,
+   "rms": 0.0012993531581173125,
+   "centroid": 209.30881009191924,
+   "srcBuilt": 1,
+   "filtersBuilt": 2,
+   "extraAfterSet": 0,
+   "p": {
+    "gain": 0.022780600717921106,
+    "lpHz": 214.30914174658767,
+    "lpQ": 0.7,
+    "bandGain": 0,
+    "bandHz": 3229.8340363013804,
+    "bandQ": 0.8
+   }
+  },
+  {
+   "season": "summer",
+   "where": "outdoor",
+   "cond": "breeze",
+   "speed": 4,
+   "rms": 0.009827289577111747,
+   "centroid": 5032.1392501336395,
+   "srcBuilt": 1,
+   "filtersBuilt": 2,
+   "extraAfterSet": 0,
+   "p": {
+    "gain": 0.07036472457640969,
+    "lpHz": 498.4878011496183,
+    "lpQ": 0.7,
+    "bandGain": 0.039615739339359274,
+    "bandHz": 3476.9459140431463,
+    "bandQ": 0.8
+   }
+  },
+  {
+   "season": "summer",
+   "where": "outdoor",
+   "cond": "gusty",
+   "speed": 9,
+   "rms": 0.03062823946607628,
+   "centroid": 2912.4625890482193,
+   "srcBuilt": 1,
+   "filtersBuilt": 2,
+   "extraAfterSet": 0,
+   "p": {
+    "gain": 0.1728904955853377,
+    "lpHz": 928.2684553953441,
+    "lpQ": 7,
+    "bandGain": 0.06566676388018175,
+    "bandHz": 3850.668222082908,
+    "bandQ": 0.8
+   }
+  },
+  {
+   "season": "summer",
+   "where": "outdoor",
+   "cond": "storm",
+   "speed": 18,
+   "rms": 0.04100526790181454,
+   "centroid": 2591.7342351583357,
+   "srcBuilt": 1,
+   "filtersBuilt": 2,
+   "extraAfterSet": 0,
+   "p": {
+    "gain": 0.22,
+    "lpHz": 1100,
+    "lpQ": 7,
+    "bandGain": 0.07500000000000001,
+    "bandHz": 4000,
+    "bandQ": 0.8
+   }
+  },
+  {
+   "season": "winter",
+   "where": "outdoor",
+   "cond": "calm",
+   "speed": 0.5,
+   "rms": 0.0011921934268324323,
+   "centroid": 219.04590595445612,
+   "srcBuilt": 1,
+   "filtersBuilt": 2,
+   "extraAfterSet": 0,
+   "p": {
+    "gain": 0.022780600717921106,
+    "lpHz": 214.30914174658767,
+    "lpQ": 0.7,
+    "bandGain": 0,
+    "bandHz": 3229.8340363013804,
+    "bandQ": 0.8
+   }
+  },
+  {
+   "season": "winter",
+   "where": "outdoor",
+   "cond": "breeze",
+   "speed": 4,
+   "rms": 0.005827144769582354,
+   "centroid": 532.0368031023762,
+   "srcBuilt": 1,
+   "filtersBuilt": 2,
+   "extraAfterSet": 0,
+   "p": {
+    "gain": 0.07036472457640969,
+    "lpHz": 498.4878011496183,
+    "lpQ": 0.7,
+    "bandGain": 0.010481685425779303,
+    "bandHz": 1484.655349575506,
+    "bandQ": 4.077094355323597
+   }
+  },
+  {
+   "season": "winter",
+   "where": "outdoor",
+   "cond": "gusty",
+   "speed": 9,
+   "rms": 0.029014791490213732,
+   "centroid": 955.9153356511646,
+   "srcBuilt": 1,
+   "filtersBuilt": 2,
+   "extraAfterSet": 0,
+   "p": {
+    "gain": 0.1728904955853377,
+    "lpHz": 928.2684553953441,
+    "lpQ": 7,
+    "bandGain": 0.0788001166562181,
+    "bandHz": 2138.669388645089,
+    "bandQ": 6.88001166562181
+   }
+  },
+  {
+   "season": "winter",
+   "where": "outdoor",
+   "cond": "storm",
+   "speed": 18,
+   "rms": 0.04021471969760463,
+   "centroid": 1090.7785944796083,
+   "srcBuilt": 1,
+   "filtersBuilt": 2,
+   "extraAfterSet": 0,
+   "p": {
+    "gain": 0.22,
+    "lpHz": 1100,
+    "lpQ": 7,
+    "bandGain": 0.09,
+    "bandHz": 2400,
+    "bandQ": 8
+   }
+  },
+  {
+   "season": "summer",
+   "where": "indoor",
+   "cond": "calm",
+   "speed": 0.5,
+   "rms": 0.0002145948109877984,
+   "centroid": 219.04590593902827,
+   "srcBuilt": 1,
+   "filtersBuilt": 2,
+   "extraAfterSet": 0,
+   "p": {
+    "gain": 0.004100508129225799,
+    "lpHz": 214.30914174658767,
+    "lpQ": 0.7,
+    "bandGain": 0,
+    "bandHz": 3229.8340363013804,
+    "bandQ": 0.8
+   }
+  },
+  {
+   "season": "summer",
+   "where": "indoor",
+   "cond": "breeze",
+   "speed": 4,
+   "rms": 0.0012318379550779312,
+   "centroid": 4008.541477473561,
+   "srcBuilt": 1,
+   "filtersBuilt": 2,
+   "extraAfterSet": 0,
+   "p": {
+    "gain": 0.012665650423753743,
+    "lpHz": 420,
+    "lpQ": 0.7,
+    "bandGain": 0.003961573933935927,
+    "bandHz": 3476.9459140431463,
+    "bandQ": 0.8
+   }
+  },
+  {
+   "season": "summer",
+   "where": "indoor",
+   "cond": "gusty",
+   "speed": 9,
+   "rms": 0.003694082058686944,
+   "centroid": 2431.1903226041936,
+   "srcBuilt": 1,
+   "filtersBuilt": 2,
+   "extraAfterSet": 0,
+   "p": {
+    "gain": 0.031120289205360786,
+    "lpHz": 420,
+    "lpQ": 7,
+    "bandGain": 0.006566676388018175,
+    "bandHz": 3850.668222082908,
+    "bandQ": 0.8
+   }
+  },
+  {
+   "season": "summer",
+   "where": "indoor",
+   "cond": "storm",
+   "speed": 18,
+   "rms": 0.004649922243839992,
+   "centroid": 2280.2995717526455,
+   "srcBuilt": 1,
+   "filtersBuilt": 2,
+   "extraAfterSet": 0,
+   "p": {
+    "gain": 0.039599999999999996,
+    "lpHz": 420,
+    "lpQ": 7,
+    "bandGain": 0.0075000000000000015,
+    "bandHz": 4000,
+    "bandQ": 0.8
+   }
+  }
+ ],
+ "windowOk": true,
+ "windowRms": 0.007395660060658876
+}

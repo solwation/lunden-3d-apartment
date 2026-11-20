@@ -83,7 +83,9 @@ import { setupTouch } from './touch.js';
 import { setupTouchLayout } from './touchlayout.js';
 import { watchForUpdates, BUILD } from './version.js';
 import { CatSpawner, VARIANTS, BREEDS, kittenName, MieleDaily } from './cat.js';
-import { initAudio, sfx, toggleMuted, isMuted, updateListener, setRoomZone } from './audio.js';
+import { initAudio, sfx, toggleMuted, isMuted, updateListener, setRoomZone, setWindPower, audioParts } from './audio.js';
+import { windSoundParams, gustAt, windStrength, treeNearness } from './windsound.js'; // #2177: the wind's sound
+import { WIND_SOUND, SEASON } from './config.js';
 import { reverbZone } from './roomreverb.js';
 let roomZoneClock = 0;
 import { stairHeight, stairUnderside } from './stairs.js';
@@ -757,6 +759,7 @@ const laundry = new Laundry(life,world);
 const watering = new Watering(life,world,{sillPots,things,lights});
 const plantWind=new PlantWind(world,weather);scene.traverse(windShadow);
 const [windForce, windTime] = (params0.get('wind') ?? '').split(',').map((v) => (v === '' ? NaN : Number(v)));
+let windSoundT = 0, windBed = null; // #2177
 const siteWind = new SiteWind(weather, { force: windForce, time: windTime }); // #2101: trees, shrubs and reeds sway; &wind=power[,seconds] pins it
 const tableSetting = new TableSetting(life,world);
 const hallCare = new HallCare(life,world);
@@ -3985,6 +3988,15 @@ function step(dt) {
   flare?.update(dt); // #1283: lens flare towards the sun
   plantWind.update(dt);
   siteWind.update(dt); // #2101: three uniforms, no per-instance work
+  windSoundT += dt; // #2177: the wind bed and the open windows follow the weather's wind a few times a second
+  if (windSoundT >= WIND_SOUND.every && audioParts()) {
+    windSoundT = 0;
+    const w = weather.wind, speed = w ? Math.hypot(w.x, w.z) : 0, t = performance.now() / 1000, pw = windStrength(speed, 0.5), gust = gustAt(t, pw);
+    windBed ??= sfx.windBed();
+    const indoors = !player.outdoors || player.below || player.inCore || player.inPlayroom;
+    windBed?.set(windSoundParams({ speed, gust, leaves: SEASON.trees[day.month]?.[3] ?? 1, near: treeNearness(treeFeet, player.pos.x, player.pos.z), indoors }), WIND_SOUND.ease);
+    setWindPower(windStrength(speed, gust));
+  }
   greet.update(dt); conversation.update(); // speech bubbles (#247)
   if (cat.visible && !cat.held && !cat.released) cat.followRug(); // #1009: idle floor support also follows material previews.
   outdoorCats?.update(dt, player.below || player.inCore || player.inPlayroom, weather.kind === 'snow' ? 0 : weather.rain); // #1767: before the cat, which one of them may have just become

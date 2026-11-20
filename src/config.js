@@ -2338,6 +2338,20 @@ export const WIND = {
   rain: 2, storm: 6, max: 24, power: { full: 13, gamma: 0.9, knee: 0.6, top: 0.8 }, still: 0.3,
 };
 
+// #2177: the outdoor wind sound (src/windsound.js): one looping noise through two filters, the parameters set `every` s. Levels are
+// *guesses* by ear (no reference recordings): `body` = the low whoosh (gain, low-pass Hz, Q — the Q rises into a howl above `howl`
+// of the wind power), `band` = rustle in summer leaves near trees (high band) or bare whistling in winter branches (narrow, resonant);
+// `near` = metres within which a tree counts (rustle/whistle fade out linearly), `gust` = the two slow sweeps (Hz) that make gusts
+// pass by (deeper the stronger the wind), `indoor` = how much of it gets through the walls (gain × and the low-pass ceiling),
+// `window` = the open window's wind (#2177: its gain and low-pass follow the power; the old fixed 0.16 / 520 Hz is power ≈ 0.35).
+export const WIND_SOUND = {
+  every: 0.25, ease: 0.6, near: 14, gust: { f1: 0.07, f2: 0.19, depth: 0.6 },
+  body: { gain: [0.02, 0.22], gamma: 1.3, hz: [180, 1100], q: [0.7, 7], howl: [0.45, 0.8] },
+  band: { rustle: { hz: [3200, 4000], q: 0.8, gain: 0.05 }, whistle: { hz: [1000, 2400], q: [2, 8], gain: 0.06 }, from: [0.2, 0.7] },
+  indoor: { gain: 0.18, hz: 420, band: 0.1 },
+  window: { gain: [0.08, 0.3], hz: [300, 930], gust: 0.07, lfoHz: 520 / 4 },
+};
+
 // Speech bubbles (#247, src/greet.js): Olof's lines and your own show for `bubble` s. The neighbours to greet were
 // removed in #670 (with their lines and `reach`).
 export const GREET = { bubble: 2.8 };
