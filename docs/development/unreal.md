@@ -331,7 +331,7 @@ Binary Unreal assets cannot be merged. Rules for agents and people working in pa
 
 Use the [shared five-camera list](../../unreal/Lunden/Tests/views.json) when framing
 the L1007 pilot in Unreal. The [web reference images and capture instructions](../verification/2246/README.md)
-record the lighting, web-to-Unreal camera conversion and projection for each pair.
+record the lighting, web-to-Unreal camera conversion and projection for each pair. The [packaged pilot measurements](../verification/2246/performance.md) cover both desktop resolutions with High and Epic settings.
 
 ## Build location (decision #2244)
 
