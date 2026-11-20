@@ -6,14 +6,14 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
-import { releaseInputs } from './launcher-release-inputs.mjs';
+import { readPublisherIdentity, releaseInputs } from './launcher-release-inputs.mjs';
 import { readVerifiedManifest, validateReleaseManifest } from './verify-published.mjs';
 
 const download = 'https://github.com/solwation/lunden-3d-apartment/releases/download/';
 const inventory = JSON.parse(await readFile(new URL('../../unreal/Launcher/Unreal-5.8.4-win64.json', import.meta.url), 'utf8'));
 const stockGame = 'Engine/Binaries/Win64/UnrealGame-Win64-Shipping.exe';
 const maxAsset = 2 ** 31;
-const signatureHelper = fileURLToPath(new URL('./get-signer-fingerprint.ps1', import.meta.url));
+const signatureHelper = fileURLToPath(new URL('./get-signer-identity.ps1', import.meta.url));
 const ignore = new Set(['build-info.json', 'Manifest_NonUFSFiles_Win64.txt', 'Manifest_UFSFiles_Win64.txt', 'Manifest_DebugFiles_Win64.txt']);
 const compare = (left, right) => left < right ? -1 : left > right ? 1 : 0;
 
@@ -117,14 +117,32 @@ export async function scanArchive(directory) {
   return files;
 }
 
-async function verifyWindowsPublisher(filename, digest, pin) {
+// Windows Authenticode with the stable publisher identity (#2277); returns the leaf that actually signed.
+async function verifyWindowsPublisher(filename, digest, signer) {
   check(process.platform === 'win32', 'Verify the protected signed-launcher artifact with Windows Node.js and Authenticode.');
   const pwsh = path.join(process.env.ProgramFiles, 'PowerShell', '7', 'pwsh.exe');
   const shell = await lstat(pwsh).then(stat => stat.isFile(), () => false)
     ? pwsh : path.join(process.env.SystemRoot, 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe');
-  const leaf = execFileSync(shell, ['-NoProfile', '-NonInteractive', '-File', signatureHelper,
-    '-Path', filename, '-ExpectedFileSha256', digest], { encoding: 'utf8' }).trim();
-  check(leaf.toLowerCase() === pin.toLowerCase(), 'Unexpected Windows Authenticode publisher leaf.');
+  let observed;
+  try {
+    observed = JSON.parse(execFileSync(shell, ['-NoProfile', '-NonInteractive', '-File', signatureHelper,
+      '-Path', filename, '-ExpectedFileSha256', digest, '-ExpectedSubject', signer.commonName,
+      '-ExpectedOrganization', signer.organization, '-ExpectedRootSha256', signer.rootSha256,
+      '-ExpectedIdentityKeyUsage', signer.identityKeyUsage],
+    { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }));
+  } catch (error) {
+    throw new Error('Unexpected Windows Authenticode publisher identity: ' + String(error.stderr || error.message).trim().split(/\r?\n/)[0]);
+  }
+  check(observed.subject === signer.commonName && observed.organization === signer.organization &&
+    observed.rootSha256 === signer.rootSha256 && observed.keyUsages.includes(signer.identityKeyUsage),
+  'Unexpected Windows Authenticode publisher identity.');
+  return { leafSha256: observed.leafSha256 };
+}
+
+// The protected record names the identity the launcher trusts and, for provenance only, the leaf.
+function sameIdentity(record, signer) {
+  return record !== null && typeof record === 'object' && ['commonName', 'organization', 'rootSha256', 'identityKeyUsage']
+    .every(field => record[field] === signer[field]);
 }
 
 export async function inspectLauncher(directory, inputs, commit, distributionTag, verifyPublisher = verifyWindowsPublisher) {
@@ -134,8 +152,8 @@ export async function inspectLauncher(directory, inputs, commit, distributionTag
   const names = ['Lunden.exe', 'Lunden-Setup-' + inputs.version + '-win-x64.exe'];
   const record = JSON.parse(await readSmall(path.join(root, 'launcher-build.json')));
   check(/^[a-f\d]{40}$/i.test(commit) && record.commit.toLowerCase() === commit.toLowerCase() &&
-    record.tag === 'v' + inputs.version && record.signerCertificateSha256.toUpperCase() === inputs.signer &&
-    record.manifestPublicKeySha256.toLowerCase() === inputs.keyDigest, 'Signed launcher build provenance does not match the approved tag, commit or public trust anchors.');
+    record.tag === 'v' + inputs.version && sameIdentity(record.signer, inputs.signer) &&
+    /^[\dA-F]{64}$/.test(record.signer.leafCertificateSha256) && record.manifestPublicKeySha256.toLowerCase() === inputs.keyDigest, 'Signed launcher build provenance does not match the approved tag, commit or public trust anchors.');
   const sums = (await readSmall(path.join(root, 'SHA256SUMS'))).toString().trimEnd().split(/\r?\n/);
   check(sums.length === names.length, 'Unexpected number of launcher checksums.');
   let output;
@@ -145,7 +163,8 @@ export async function inspectLauncher(directory, inputs, commit, distributionTag
       'Signed-launcher checksum or installer copy mismatch: ' + name);
     if (index === 0) output = { version: inputs.version, size, sha256, url: download + distributionTag + '/Lunden.exe' };
   }
-  await verifyPublisher(path.join(root, names[0]), output.sha256, inputs.signer);
+  const observed = await verifyPublisher(path.join(root, names[0]), output.sha256, inputs.signer);
+  check(observed?.leafSha256 === record.signer.leafCertificateSha256, 'The signing leaf differs from the protected build record.');
   return output;
 }
 
@@ -211,7 +230,7 @@ export function draft(files, launcher, settings, previous) {
 export async function generate(options) {
   const { archive, signedLauncher, publicKey, previous, out } = options;
   const key = (await readSmall(publicKey)).toString();
-  const trust = releaseInputs(options.launcherTag, options.signerSha256, key);
+  const trust = releaseInputs(options.launcherTag, readPublisherIdentity(), key);
   const archiveRoot = await regularRoot(archive), launcherRoot = await regularRoot(signedLauncher);
   const destination = path.resolve(out);
   const target = path.join(await regularRoot(path.dirname(destination)), path.basename(destination));
@@ -247,7 +266,7 @@ export async function generate(options) {
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
-  const required = ['archive', 'signed-launcher', 'out', 'public-key', 'signer-sha256', 'launcher-tag', 'launcher-commit', 'launcher-release-tag', 'archive-commit',
+  const required = ['archive', 'signed-launcher', 'out', 'public-key', 'launcher-tag', 'launcher-commit', 'launcher-release-tag', 'archive-commit',
     'tag', 'app-version', 'content-version', 'min-launcher', 'channel', 'published'];
   const { values } = parseArgs({ options: Object.fromEntries([...required, 'previous'].map(key => [key, { type: 'string' }])) });
   for (const key of required) check(values[key], 'Missing --' + key);

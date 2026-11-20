@@ -22,10 +22,10 @@ jobs:
       - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
         with:
           dotnet-version: 10.0.x
+      # The publisher identity is the reviewed unreal/Launcher/publisher-identity.json of this tag (#2277).
       - name: Validate the release tag and its public trust anchors
         id: inputs
         env:
-          LUNDEN_SIGNER_SHA256: ${{ vars.LUNDEN_SIGNER_SHA256 }}
           LUNDEN_MANIFEST_PUBLIC_KEY: ${{ vars.LUNDEN_MANIFEST_PUBLIC_KEY }}
         run: node tools/unreal-engine/launcher-release-inputs.mjs "$RUNNER_TEMP/trust"
       - name: Test the launcher and the release inputs
@@ -36,17 +36,15 @@ jobs:
         id: binary
         env:
           VERSION: ${{ steps.inputs.outputs.version }}
-          PIN: ${{ vars.LUNDEN_SIGNER_SHA256 }}
         run: |
           dotnet publish unreal/Launcher -c Release -r win-x64 --self-contained true \
-            -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=false -p:Version="$VERSION" -p:LundenSignerSha256="$PIN" \
+            -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=false -p:Version="$VERSION" \
             -p:LundenManifestKey="$RUNNER_TEMP/trust/manifest-public.pem" -o "$RUNNER_TEMP/unsigned"
           echo "sha256=$(sha256sum "$RUNNER_TEMP/unsigned/Lunden.exe" | cut -d ' ' -f1)" >> "$GITHUB_OUTPUT"
           echo "commit=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-      - name: Inspect the actual bundle's embedded public key, publisher and version
+      - name: Inspect the actual bundle's embedded public key, publisher identity and version
         env:
           LUNDEN_RELEASE_VERSION: ${{ steps.inputs.outputs.version }}
-          LUNDEN_SIGNER_SHA256: ${{ vars.LUNDEN_SIGNER_SHA256 }}
           LUNDEN_PUBLIC_PEM_PATH: ${{ runner.temp }}/trust/manifest-public.pem
           LUNDEN_PUBLISHED_ASSEMBLY: ${{ github.workspace }}/unreal/Launcher/bin/Release/net10.0/win-x64/Lunden.dll
           LUNDEN_PUBLISHED_LAUNCHER: ${{ runner.temp }}/unsigned/Lunden.exe
@@ -79,7 +77,6 @@ jobs:
           SIGNING_ACCOUNT: ${{ vars.SIGNING_ACCOUNT }}
           SIGNING_PROFILE: ${{ vars.SIGNING_PROFILE }}
           SIGNING_EXPECTED_SUBJECT: ${{ vars.SIGNING_EXPECTED_SUBJECT }}
-          LUNDEN_SIGNER_SHA256: ${{ vars.LUNDEN_SIGNER_SHA256 }}
           LUNDEN_MANIFEST_PUBLIC_KEY: ${{ vars.LUNDEN_MANIFEST_PUBLIC_KEY }}
           EXPECTED_BUILD_TRUST: ${{ needs.build.outputs.trust }}
           BUILD_ARTIFACT: ${{ needs.build.outputs.artifact-id }}
@@ -126,17 +123,17 @@ jobs:
           file-digest: SHA256
           timestamp-rfc3161: http://timestamp.acs.microsoft.com
           timestamp-digest: SHA256
+      # Any 72-hour Artifact Signing leaf of the compiled-in identity is accepted; none is pinned (#2277).
       - name: Verify trust, package the setup copy and hash the signed bytes
         shell: pwsh
         env:
           VERSION: ${{ steps.inputs.outputs.version }}
-          PIN: ${{ vars.LUNDEN_SIGNER_SHA256 }}
           PUBLISHER: ${{ vars.SIGNING_EXPECTED_SUBJECT }}
           PUBLIC_KEY_HASH: ${{ steps.inputs.outputs.manifest-key-sha256 }}
           BUILD_COMMIT: ${{ needs.build.outputs.commit }}
         run: |
           ./tools/unreal-engine/package-signed-launcher.ps1 -Launcher "$env:RUNNER_TEMP/unsigned/Lunden.exe" `
-            -Version $env:VERSION -SignerSha256 $env:PIN -ExpectedPublisher $env:PUBLISHER -ManifestKeySha256 $env:PUBLIC_KEY_HASH `
+            -Version $env:VERSION -ExpectedSubject $env:PUBLISHER -ManifestKeySha256 $env:PUBLIC_KEY_HASH `
             -Commit $env:BUILD_COMMIT -OutputDirectory "$env:RUNNER_TEMP/signed"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:

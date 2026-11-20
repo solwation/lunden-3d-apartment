@@ -14,9 +14,8 @@ internal static class Program
     static async Task<int> Main(string[] args)
     {
         var assembly = typeof(Program).Assembly;
-        string signer = assembly.GetCustomAttributes<AssemblyMetadataAttribute>()
-            .Single(a => a.Key == "LundenSignerSha256").Value ?? "";
         try {
+            var signer = SignerIdentity.Compiled;
             if (SelfUpdate.IsHelper(args)) return SelfUpdate.Finish(args, signer);
             string image = Environment.ProcessPath ?? throw new IOException("Startprogrammets sökväg saknas.");
             if (args.FirstOrDefault() == UninstallHelper.Switch) return UninstallHelper.Finish(args, image, signer);

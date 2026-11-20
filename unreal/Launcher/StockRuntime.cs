@@ -34,7 +34,7 @@ internal static class StockRuntime
             throw new InvalidDataException("Projektets pak-fil saknas.");
     }
 
-    internal static void Verify(string path, ReleaseFile file, bool stock, string lundenSigner)
+    internal static void Verify(string path, ReleaseFile file, bool stock, SignerIdentity lundenSigner)
     {
         // Keep these bytes in place across the hash and signature checks, including
         // files reused from an installed version or from a prior staging attempt.

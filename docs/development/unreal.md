@@ -576,9 +576,9 @@ These results describe the original native project before the content-only conve
 The .NET 10 console launcher in `unreal/Launcher/` uses the proposed v1 manifest in #2248.
 The signature is a sibling `.json.sig` file containing a 64-byte ECDSA P-256 signature
 (IEEE P1363, SHA-256) over the exact UTF-8 manifest bytes. The launcher embeds the **public**
-SPKI PEM and the expected Authenticode leaf certificate's SHA-256 fingerprint at build time.
+SPKI PEM and the publisher's stable signing identity (see [Publisher identity](#publisher-identity-2277)).
 The publisher hashes binaries after signing. The launcher and project-owned executables and DLLs
-must pass Windows Authenticode verification against the configured certificate. The stock engine
+must pass Windows Authenticode verification and match that identity. The stock engine
 uses the separate embedded inventory described below. Every downloaded file must match the size
 and SHA-256 in the signed manifest.
 
@@ -592,28 +592,85 @@ block unsigned test assemblies. The workflow only needs repository read access.
 
 ```sh
 dotnet publish unreal/Launcher -c Release -r win-x64 --self-contained true \
-  -p:PublishSingleFile=true -p:LundenManifestKey=/absolute/path/to/public.pem \
-  -p:LundenSignerSha256="$LUNDEN_SIGNER_SHA256" -o /path/to/build-output
+  -p:PublishSingleFile=true -p:LundenManifestKey=/absolute/path/to/public.pem -o /path/to/build-output
 ```
 
-For a release, derive `LUNDEN_SIGNER_SHA256` from the Windows installer and its entry
-in `SHA256SUMS` from the same tagged booster-ai release (the profile selected in #2250).
-On Windows the following prints the signing certificate's SHA-256 after verifying
-the file checksum, embedded Authenticode signature and timestamp.
+A build without the public manifest key supports `--help` and declines updates.
+
+### Publisher identity (#2277)
+
+Azure Artifact Signing issues a new **leaf certificate every 72 hours**, and Microsoft rotates the
+issuing CA as well. Pinning a leaf (the earlier `LUNDEN_SIGNER_SHA256`) would make every release
+signed after the next rotation fail its own packaging check, and installed launchers would reject
+the next update. The launcher therefore trusts the stable identity in the reviewed
+[`unreal/Launcher/publisher-identity.json`](../../unreal/Launcher/publisher-identity.json), compiled in
+as an embedded resource like the Unreal inventory. A file from the project is accepted only when:
+
+1. Windows `WinVerifyTrust` (Authenticode policy, revocation checked except for the root) returns success;
+2. the verified signature carries a timestamp countersignature (RFC 3161), which keeps it valid after the leaf expires;
+3. the leaf's subject has exactly one CN equal to `commonName` and exactly one O equal to `organization`;
+4. the leaf has the code-signing usage `1.3.6.1.5.5.7.3.3` and the certificate profile's durable identity usage `identityKeyUsage`;
+5. the chain Windows built ends at the self-signed root whose certificate SHA-256 is `rootSha256`.
+
+Intermediates are not pinned: they changed between two signings nine days apart. No leaf is pinned;
+the protected build record only documents which leaf signed (`signer.leafCertificateSha256`).
+`SignerIdentity.cs` implements the check, `Authenticode.cs` reads the chain and timestamp from the same
+successful `WinVerifyTrust` call. Reviewed vendor images (below) still pin their exact leaf, because
+their bytes, and therefore their signatures, never change.
+
+Observed public certificate data, read on 2026-11-21 from the embedded signatures of booster-ai's
+`BoosterAI-Setup-*-win-x64.exe` (same Artifact Signing account and profile as Lunden, #2250). The
+three files verified as `Valid` in Windows and were accepted by the launcher's `Authenticode.Verify`
+with the identity above; the two expired leaves remain valid through their timestamps.
+
+| Release | Leaf SHA-256 | Leaf validity (UTC) | Issuing CA |
+| --- | --- | --- | --- |
+| [v0.37.0](https://github.com/solwation/booster-ai/releases/tag/v0.37.0) | `2E11C3B36800FA93CA3EE62D96992381364BB246329178D1E4AB72E78EF70872` | 2026-11-10 04:28:42 → 11-13 04:28:42 | Microsoft ID Verified CS AOC CA 03 |
+| [v0.38.2](https://github.com/solwation/booster-ai/releases/tag/v0.38.2) | `BB4A7A9313A522A94CBEA314FAE4F1CF68D3E7D28A1ACDD22F321278155DFAEE` | 2026-11-15 04:26:37 → 11-18 04:26:37 | Microsoft ID Verified CS AOC CA 03 |
+| [v0.39.0](https://github.com/solwation/booster-ai/releases/tag/v0.39.0) | `A4B57A9FB4ECE5F088E2A8FE84871CF7958E5F33470DE45760222B0113A3AFE8` | 2026-11-19 04:29:09 → 11-22 04:29:09 | Microsoft ID Verified CS EOC CA 04 |
+
+Identical in all three:
+
+- Subject `CN=Svep Design Center AB, O=Svep Design Center AB, L=Lund, S=Skåne, C=SE`. The identity
+  pins CN and O; locality fields are not part of the check.
+- Leaf EKUs `1.3.6.1.4.1.311.97.1.0` (Artifact Signing public trust, shared by all customers),
+  `1.3.6.1.5.5.7.3.3` (code signing) and `1.3.6.1.4.1.311.97.113607477.134038250.983402513.388203704`,
+  the certificate profile's durable identity EKU. Microsoft's
+  [certificate management](https://learn.microsoft.com/azure/artifact-signing/concept-certificate-management)
+  documentation states that leaves are renewed daily and valid for 72 hours, that pinning a key or
+  thumbprint is not durable, and that every certificate issued from the same certificate profile
+  carries the same profile EKU for the profile's lifetime. A deleted and recreated profile gets a new one.
+- Intermediate *Microsoft ID Verified Code Signing PCA 2021* (SHA-256
+  `3D29798CC5D3F0644A7E0DC9CB1CADE523EA5EC83B335109B605BFEAA7D5F5C1`), below it the issuing CA shown above.
+  *AOC CA 03* has SHA-256 `ACAA07D57D4274B290D86C156AA0D6C5633E3CD92D43751E6A0F797C5B2DFF4D`,
+  *EOC CA 04* `BC309555FA42C563B8EEBFB7117695C6BAE89E4BA19C03CB721979A563A60929`.
+- Root *Microsoft Identity Verification Root Certificate Authority 2020*, SHA-256
+  `5367F20C7ADE0E2BCA790915056D086B720C33C1FA2A2661ACF787E3292E1270` (valid until 2045-04-16).
+  The same page notes that the Artifact Signing CAs are leaving the CCADB but remain on the Windows
+  Platform Trust List; the launcher relies only on Windows trust.
+- Timestamp by *Microsoft Public RSA Time Stamping Authority* (RFC 3161, `1.3.6.1.4.1.311.3.3.1`).
+
+The launcher tests keep these public chains in
+[`Fixtures/artifact-signing-chains.pem`](../../unreal/Launcher.Tests/Fixtures/artifact-signing-chains.pem)
+and check that both leaves match the identity, alongside generated chains for rejection cases (another
+CN or O, the same names under another root, a missing identity usage, a missing timestamp, a broken chain).
+To read the identity of a signed file on Windows (checksum, `Valid`, embedded signature and timestamp
+are required; add `-ExpectedSubject`, `-ExpectedOrganization`, `-ExpectedRootSha256` and
+`-ExpectedIdentityKeyUsage` to require one):
 
 ```powershell
-./tools/unreal-engine/get-signer-fingerprint.ps1 -Path ./BoosterAI-Setup-0.39.0-win-x64.exe -ExpectedFileSha256 8a3a68b5672163d45fce48bda7aa72047672dc43626c0f13ad4cfb33aae2c442
+./tools/unreal-engine/get-signer-identity.ps1 -Path ./BoosterAI-Setup-0.39.0-win-x64.exe -ExpectedFileSha256 8a3a68b5672163d45fce48bda7aa72047672dc43626c0f13ad4cfb33aae2c442
 ```
 
-The [v0.39.0 release](https://github.com/solwation/booster-ai/releases/tag/v0.39.0)
-verified on 2026-11-20 as **Svep Design Center AB** with a Microsoft timestamp.
-Its certificate SHA-256 was `A4B57A9FB4ECE5F088E2A8FE84871CF7958E5F33470DE45760222B0113A3AFE8`.
-That leaf expires on 2026-11-22 at 04:29:09 UTC. Use an approved current pin at
-publish time and verify the signed Lunden output against the pin embedded at build time.
-If the certificate has rotated, stop the release and review the replacement.
-Previously installed launchers trust the old leaf and require a separately verified
-transition or installer before they accept the replacement.
-A build without the public manifest key supports `--help` and declines updates.
+**Rotation.** A new leaf or a new Microsoft issuing CA within the same certificate profile needs no
+change and no migration. Changing the identity does: another or recreated certificate profile (new
+profile EKU), another subject name after a new identity validation, or another root.
+Update `publisher-identity.json` from a verified, timestamped signature of the new identity, release a
+launcher signed with the **old** identity that embeds the new one, raise `app.minLauncher` to it, and
+only then sign with the new identity. Installed launchers can only move to the new identity
+through such a transition release or a separately verified installer. No Lunden launcher had been
+released before this change (no `v*` tag or release existed on 2026-11-21), so no installed launcher
+pins a leaf.
 
 - Start-menu installation by #2250 places `Lunden.exe` in `%LOCALAPPDATA%\Programs\Lunden\`.
   `--channel test` uses a separate `Lunden-Test` installation and user directory and requests
@@ -649,7 +706,7 @@ Microsoft's `DirectML.dll` requires a trusted catalog installed on the target Wi
 bound file member and the pinned catalog signer. A missing, untrusted or different catalog
 prevents activation and preserves the prior installation. Every offline launch rechecks the signed
 manifest, inventory and actual installed bytes. The launcher's publisher pin continues to apply
-to project-owned images in `Lunden/`. An unknown engine executable or DLL rejects the stock update.
+to project-owned images in `Lunden/` through the stable publisher identity. An unknown engine executable or DLL rejects the stock update.
 
 For an engine update, validate the replacement vendor bytes and signatures independently, review
 the inventory and deliver it in a signed launcher first. Raise the manifest's `app.minLauncher`
@@ -711,14 +768,14 @@ menu folders. A native Windows check saved and reopened a real `.lnk` in a tempo
 folder and confirmed its target, working directory and test-channel arguments. No
 production registry entry or Start menu shortcut was created. A clean Windows 11 pilot,
 VC++ runtime/prerequisite validation, a real timestamped signing run and public
-download remain pending. The pilot also needs the chosen publisher identity and a
-rotation policy compatible with the launcher's certificate check.
+download remain pending. The publisher identity and its rotation policy are described under
+[Publisher identity](#publisher-identity-2277).
 
 ### Signing launcher artifacts (#2250)
 
 A tag named `vMAJOR.MINOR.PATCH` triggers `.github/workflows/release.yml`. An unprivileged
 Linux job validates the public inputs, runs the tests and builds the Win64 single-file launcher.
-It checks the bundled managed assembly's version, signer pin and embedded manifest key. The signing
+It checks the bundled managed assembly's version, embedded publisher identity and manifest key. The signing
 job on a GitHub-hosted Windows runner downloads the exact artifact ID from that job and checks
 its SHA-256 and Windows file version. It uses the protected `signing` environment.
 
@@ -733,23 +790,23 @@ to OIDC; agents must not query or change the tenant.
 
 | Scope | Required settings |
 | --- | --- |
-| Repository variables available to the build | `LUNDEN_MANIFEST_PUBLIC_KEY` (only the PEM-encoded SPKI public ECDSA P-256 key for #2248) and `LUNDEN_SIGNER_SHA256` (64 hex characters, SHA-256 of the approved signer's leaf certificate DER). |
-| Protected `signing` environment | Set `SIGNING_ENABLED=true` (environment or repository) and `SIGNING_EXPECTED_SUBJECT=Svep Design Center AB` alongside the approved `SIGNING_ENDPOINT`, `SIGNING_ACCOUNT` and `SIGNING_PROFILE`. If public key or fingerprint are also set here, they must exactly match the build inputs. |
+| Repository variables available to the build | `LUNDEN_MANIFEST_PUBLIC_KEY` (only the PEM-encoded SPKI public ECDSA P-256 key for #2248). The publisher identity is not a variable: it is the reviewed [`publisher-identity.json`](../../unreal/Launcher/publisher-identity.json) of the tagged commit. `LUNDEN_SIGNER_SHA256` is no longer read (#2277); delete it if it was ever set. |
+| Protected `signing` environment | Set `SIGNING_ENABLED=true` (environment or repository) and `SIGNING_EXPECTED_SUBJECT=Svep Design Center AB` alongside the approved `SIGNING_ENDPOINT`, `SIGNING_ACCOUNT` and `SIGNING_PROFILE`. `SIGNING_EXPECTED_SUBJECT` must equal the identity's `commonName`. If the public key is also set here, it must exactly match the build input. |
 | Protected environment secrets | `AZURE_TENANT_ID`, `AZURE_CLIENT_ID` and `AZURE_CLIENT_SECRET` are passed only to the signing action. |
 
-Obtain the expected certificate fingerprint from a verified, timestamped official booster-ai release.
-Azure certificates are short-lived. Compare the expected leaf with the actual signature on every
-release. A different leaf fails packaging, including rotation within the same profile. Refreshing
-the build setting changes the trust of the newly built launcher; already installed launchers still
-pin the previous leaf. Coordinate that migration with #2249 before distributing a rotated build.
+Both jobs derive the release trust (`trust` output) from the tag's version, the publisher identity
+file and the manifest key; the signing job refuses a mismatch. Azure certificates are short-lived, but
+every leaf of the profile carries the same identity, so leaf rotation needs no configuration change
+(see [Publisher identity](#publisher-identity-2277) for what does).
 
 Only the tagged `Lunden.exe` enters the signing action. It uses SHA-256 and an RFC 3161 timestamp.
-Packaging requires Windows Authenticode status `Valid`, an embedded signature, a timestamper, the exact
-leaf fingerprint and successful Windows SDK `signtool verify /pa /all /tw`. Then it copies the
+Packaging requires Windows Authenticode status `Valid`, an embedded signature, a timestamper, the publisher
+identity (CN, O, root SHA-256 and identity usage) and successful Windows SDK `signtool verify /pa /all /tw`. Then it copies the
 signed executable as `Lunden-Setup-<version>-win-x64.exe` and verifies that copy. The
 `signed-launcher-<tag>-<attempt>` Actions artifact contains the two byte-identical executables,
-`SHA256SUMS` of their final bytes and `launcher-build.json` with their source commit and public trust
-fingerprints. Disabled/missing signing configuration or a failed check prevents that artifact.
+`SHA256SUMS` of their final bytes and `launcher-build.json` with their source commit, the publisher
+identity (`signer`, including the leaf that actually signed) and the manifest key's SHA-256.
+Disabled/missing signing configuration or a failed check prevents that artifact.
 The separately named unsigned build input expires after one day. The workflow has read-only
 repository permissions and creates no GitHub Release. [Azure signing action](https://github.com/Azure/artifact-signing-action)
 

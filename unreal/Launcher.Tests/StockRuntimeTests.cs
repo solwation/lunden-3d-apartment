@@ -88,7 +88,7 @@ public sealed class StockRuntimeTests
     {
         var file = Stock().App.Files.Single(f => f.Path == DirectML);
         string temp = Path.GetTempFileName();
-        try { Assert.Throws<InvalidDataException>(() => StockRuntime.Verify(temp, file, true, new('0', 64))); }
+        try { Assert.Throws<InvalidDataException>(() => StockRuntime.Verify(temp, file, true, SignerIdentity.Compiled with { RootSha256 = new('0', 64) })); }
         finally { File.Delete(temp); }
     }
 

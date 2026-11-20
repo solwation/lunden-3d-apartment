@@ -26,7 +26,7 @@ internal sealed record SetupCommand(bool Uninstall, bool Quiet, bool DryRun, str
         return new(uninstall, quiet, dry, channel);
     }
 
-    internal int Run(string image, string signer, string version)
+    internal int Run(string image, SignerIdentity signer, string version)
     {
         var layout = OperatingSystem.IsWindows() ? SetupLayout.Current(Channel) :
             new SetupLayout("%LOCALAPPDATA%", @"%APPDATA%\Microsoft\Windows\Start Menu\Programs", Channel);
@@ -75,7 +75,7 @@ internal static class UninstallHelper
     const string Image = "Cleanup.exe";
     static string Work(string id) => Path.Combine(Path.GetTempPath(), "Lunden-Uninstall-" + id);
 
-    internal static void Start(SetupLayout layout, Setup setup, string signer, bool removeData)
+    internal static void Start(SetupLayout layout, Setup setup, SignerIdentity signer, bool removeData)
     {
         using var maintenance = layout.MaintenanceLock();
         using var updates = setup.LockUpdates();
@@ -117,7 +117,7 @@ internal static class UninstallHelper
         finally { wrapper?.Dispose(); }
     }
 
-    internal static int Finish(string[] args, string image, string signer)
+    internal static int Finish(string[] args, string image, SignerIdentity signer)
     {
         if (!OperatingSystem.IsWindows() || args.Length != 6 || !Guid.TryParseExact(args[1], "N", out _)
             || !int.TryParse(args[2], NumberStyles.None, CultureInfo.InvariantCulture, out int pid) || pid <= 0

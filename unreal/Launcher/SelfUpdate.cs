@@ -17,7 +17,7 @@ internal static class SelfUpdate
     // Called under the installation lock. The independently running helper acquires
     // that same lock after this process exits and Windows releases the image.
     internal static void Start(string installRoot, string stagedLauncher, string expectedSha256,
-        string expectedSigner, string[]? restartArgs = null)
+        SignerIdentity expectedSigner, string[]? restartArgs = null)
     {
         string target = Path.GetFullPath(Path.Combine(installRoot, Launcher));
         if (!OperatingSystem.IsWindows() || !target.Equals(Environment.ProcessPath, StringComparison.OrdinalIgnoreCase))
@@ -64,7 +64,7 @@ internal static class SelfUpdate
         return result;
     }
 
-    internal static int Finish(string[] args, string expectedSigner)
+    internal static int Finish(string[] args, SignerIdentity expectedSigner)
     {
         try
         {

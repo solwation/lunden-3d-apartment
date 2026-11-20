@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { createHash, generateKeyPairSync, sign } from 'node:crypto';
 import { mkdtemp, readFile, realpath, rm, symlink, truncate, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
+import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import test from 'node:test';
 import { draft, inspectLauncher, scanArchive } from '../make-manifest.mjs';
@@ -61,18 +62,23 @@ test('the protected artifact needs matching public trust, commit, final hashes a
   const root = await mkdtemp(path.join(tmpdir(),'manifest-launcher-'));
   t.after(() => rm(root, { recursive:true, force:true }));
   const text = 'fixture, not a signed launcher', sha = hash(text), commit = 'a'.repeat(40);
-  const inputs = { version:'1.0.0', signer:'AB'.repeat(32), keyDigest:hash('key') };
-  const record = { tag:'v1.0.0',commit,signerCertificateSha256:inputs.signer,manifestPublicKeySha256:inputs.keyDigest,launcherSha256:sha };
+  const signer = { commonName:'Test Publisher AB', organization:'Test Publisher AB', rootSha256:'AB'.repeat(32), identityKeyUsage:'1.3.6.1.4.1.311.97.1.2.3.4' };
+  const leaf = 'CD'.repeat(32), inputs = { version:'1.0.0', signer, keyDigest:hash('key') };
+  const record = { tag:'v1.0.0',commit,signer:{ ...signer, leafCertificateSha256:leaf },manifestPublicKeySha256:inputs.keyDigest,launcherSha256:sha };
   const names = ['Lunden.exe','Lunden-Setup-1.0.0-win-x64.exe'];
   for (const name of names) await writeFile(path.join(root,name),text);
   await writeFile(path.join(root,'SHA256SUMS'),names.map(name => sha + '  ' + name).join('\n')+'\n');
   await writeFile(path.join(root,'launcher-build.json'),JSON.stringify(record));
-  const fixtureVerifier = async (file,digest,pin) => { assert.equal(file,await realpath(path.join(root,names[0]))); assert.equal(digest,sha); assert.equal(pin,inputs.signer); };
+  // Artifact Signing rotates its leaf every 72 hours; the record only documents which one signed.
+  const fixtureVerifier = async (file,digest,identity) => { assert.equal(file,await realpath(path.join(root,names[0]))); assert.equal(digest,sha); assert.deepEqual(identity,signer); return { leafSha256:leaf }; };
   const valid = await inspectLauncher(root,inputs,commit,'app-v1.2.3',fixtureVerifier);
   assert.equal(valid.sha256,sha);
   assert.equal(valid.url,'https://github.com/solwation/lunden-3d-apartment/releases/download/app-v1.2.3/Lunden.exe');
   await assert.rejects(inspectLauncher(root,inputs,'b'.repeat(40),'app-v1.2.3',fixtureVerifier),/provenance/);
   await assert.rejects(inspectLauncher(root,inputs,commit,'app-v1.2.3',async () => { throw Error('untrusted signer'); }),/untrusted signer/);
+  await assert.rejects(inspectLauncher(root,inputs,commit,'app-v1.2.3',async () => ({ leafSha256:'EF'.repeat(32) })),/leaf differs/);
+  for (const field of ['commonName','organization','rootSha256','identityKeyUsage'])
+    await assert.rejects(inspectLauncher(root,{ ...inputs, signer:{ ...signer, [field]:'other' } },commit,'app-v1.2.3',fixtureVerifier),/provenance/);
   await writeFile(path.join(root,names[1]),'wrong bytes');
   await assert.rejects(inspectLauncher(root,inputs,commit,'app-v1.2.3',fixtureVerifier),/checksum/);
 });
@@ -98,28 +104,33 @@ test('archives reject unreviewed program files, unsafe Windows paths, links and 
   await assert.rejects(scanArchive(root),/missing vendor/);
 });
 
-test('the native publisher check accepts a timestamped Windows fixture and rejects a different pin',
+test('the native publisher check accepts a timestamped Windows fixture and rejects another identity',
   { skip: process.platform !== 'win32' }, async t => {
     const { execFileSync } = await import('node:child_process');
     const { copyFile } = await import('node:fs/promises');
     const root = await mkdtemp(path.join(tmpdir(),'signed-fixture-'));
     t.after(() => rm(root,{recursive:true,force:true}));
     const shell = path.join(process.env.ProgramFiles,'PowerShell','7','pwsh.exe');
-    const fixture = JSON.parse(execFileSync(shell,['-NoProfile','-NonInteractive','-Command',
-      "$f=(Get-Command dotnet.exe -CommandType Application | Select-Object -First 1).Source;" +
-      "$s=Get-AuthenticodeSignature -LiteralPath $f; if ($s.Status -ne 'Valid' -or !$s.TimeStamperCertificate) {throw 'Unavailable signed test fixture'};" +
-      "[pscustomobject]@{file=$f;pin=$s.SignerCertificate.GetCertHashString([Security.Cryptography.HashAlgorithmName]::SHA256)} | ConvertTo-Json -Compress"
-    ],{encoding:'utf8'}));
+    const file = execFileSync(shell,['-NoProfile','-NonInteractive','-Command',
+      '(Get-Command dotnet.exe -CommandType Application | Select-Object -First 1).Source'],{encoding:'utf8'}).trim();
+    const sha = hash(await readFile(file));
+    // The identity helper itself reads the fixture's publisher; dotnet.exe has no Artifact Signing usage.
+    const observed = JSON.parse(execFileSync(shell,['-NoProfile','-NonInteractive','-File',
+      fileURLToPath(new URL('../get-signer-identity.ps1', import.meta.url)),'-Path',file,'-ExpectedFileSha256',sha],{encoding:'utf8'}));
+    const fixture = { file, leaf:observed.leafSha256, signer:{ commonName:observed.subject, organization:observed.organization,
+      rootSha256:observed.rootSha256, identityKeyUsage:'1.3.6.1.5.5.7.3.3' } };
     const names = ['Lunden.exe','Lunden-Setup-0.3.2-win-x64.exe'];
-    const sha = hash(await readFile(fixture.file));
     for(const n of names) await copyFile(fixture.file,path.join(root,n));
     await writeFile(path.join(root,'SHA256SUMS'),names.map(n => sha+'  '+n).join('\n')+'\n');
-    const inputs = { version:'0.3.2',signer:fixture.pin,keyDigest:hash('test key') }, commit='1'.repeat(40);
-    const record = { tag:'v0.3.2',commit,signerCertificateSha256:inputs.signer,manifestPublicKeySha256:inputs.keyDigest,launcherSha256:sha };
+    const inputs = { version:'0.3.2',signer:fixture.signer,keyDigest:hash('test key') }, commit='1'.repeat(40);
+    const record = { tag:'v0.3.2',commit,signer:{ ...fixture.signer, leafCertificateSha256:fixture.leaf },manifestPublicKeySha256:inputs.keyDigest,launcherSha256:sha };
     async function saveRecord() { await writeFile(path.join(root,'launcher-build.json'),JSON.stringify(record)); }
     await saveRecord();
     assert.equal((await inspectLauncher(root,inputs,commit,'v0.3.2')).sha256,sha);
-    inputs.signer = record.signerCertificateSha256 = '0'.repeat(64);
-    await saveRecord();
-    await assert.rejects(inspectLauncher(root,inputs,commit,'v0.3.2'),/publisher leaf/);
+    for (const [field, value] of [['rootSha256','0'.repeat(64)],['commonName','Other Publisher'],['identityKeyUsage','1.3.6.1.4.1.311.97.1.0']]) {
+      inputs.signer = { ...fixture.signer, [field]:value };
+      record.signer = { ...inputs.signer, leafCertificateSha256:fixture.leaf };
+      await saveRecord();
+      await assert.rejects(inspectLauncher(root,inputs,commit,'v0.3.2'),/publisher identity/);
+    }
 });

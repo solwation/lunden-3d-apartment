@@ -2,16 +2,17 @@
 
 Run `make-manifest.mjs` on Windows with Node 22 or later. It needs the completed
 `archive/Windows` from `release.ps1`, the protected signing job's extracted
-`signed-launcher` artifact, its approved signing tag and source commit, the
-expected leaf certificate SHA-256, and the public P-256 key embedded in that
-launcher. Obtain the trust values from the approved release configuration.
+`signed-launcher` artifact, its approved signing tag and source commit, and the
+public P-256 key embedded in that launcher. The publisher identity comes from
+`unreal/Launcher/publisher-identity.json` in this checkout (#2277); it must equal
+the identity recorded in the artifact's `launcher-build.json`.
 The output directory must be new and outside both inputs.
 
 ```powershell
 node tools/unreal-engine/make-manifest.mjs `
   --archive D:\build\archive\Windows --archive-commit $archiveCommit `
   --signed-launcher D:\build\signed-launcher --launcher-tag v0.2.1 --launcher-commit $launcherCommit `
-  --launcher-release-tag v0.2.1 --public-key D:\build\manifest-public.pem --signer-sha256 $approvedLeaf `
+  --launcher-release-tag v0.2.1 --public-key D:\build\manifest-public.pem `
   --tag app-v0.4.0 --app-version 0.4.0 --min-launcher 0.2.1 --content-version 12 `
   --channel test --published 2026-11-20T22:00:00Z --out D:\build\draft-12
 ```
@@ -22,10 +23,12 @@ The signing tag `vM.m.p` must match the protected artifact's `launcher-build.jso
 `--launcher-release-tag` names the immutable public release that will contain
 `Lunden.exe`. An app distribution may use `vM.m.p` or `app-vM.m.p`. The values
 may identify different releases. The tool verifies both identical binaries against
-`SHA256SUMS`, the protected source commit and public trust fingerprints, and
-uses Windows to validate the embedded, timestamped signature against the expected
-leaf. It streams the archived game files and requires all 14 reviewed UE 5.8.4
-vendor images at their exact paths and hashes.
+`SHA256SUMS`, the protected source commit, publisher identity and manifest key,
+and uses Windows (`get-signer-identity.ps1`) to validate the embedded, timestamped
+signature against the publisher identity: CN, O, root certificate SHA-256 and
+certificate-profile identity usage. Artifact Signing replaces its leaf every 72 hours, so
+no leaf is pinned; the observed leaf must only equal the one the record names.
+It streams the archived game files and requires all 14 reviewed UE 5.8.4 vendor images at their exact paths and hashes.
 
 The output is `lunden-manifest-test.json` for test or `lunden-manifest.json` for
 stable, plus `upload-plan.json`. Each `uploads` entry maps one archive-relative

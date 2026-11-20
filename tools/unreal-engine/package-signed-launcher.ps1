@@ -1,22 +1,27 @@
-# Package only an embedded, timestamped signature from the publisher pinned in this launcher build.
+# Package only an embedded, timestamped signature from the stable publisher identity compiled into
+# this launcher build (#2277). Artifact Signing replaces its leaf certificate every 72 hours, so the
+# leaf is recorded for provenance but never pinned.
 [CmdletBinding()]
 param(
     [Parameter(Mandatory)][string]$Launcher,
-    [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$ExpectedPublisher,
+    [Parameter(Mandatory)][ValidateNotNullOrEmpty()][string]$ExpectedSubject,
     [Parameter(Mandatory)][ValidatePattern('^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$')][string]$Version,
-    [Parameter(Mandatory)][ValidatePattern('^[a-fA-F0-9]{64}$')][string]$SignerSha256,
     [Parameter(Mandatory)][ValidatePattern('^[a-fA-F0-9]{64}$')][string]$ManifestKeySha256,
     [Parameter(Mandatory)][ValidatePattern('^[a-fA-F0-9]{40}$')][string]$Commit,
-    [Parameter(Mandatory)][string]$OutputDirectory
+    [Parameter(Mandatory)][string]$OutputDirectory,
+    [string]$PublisherIdentity = (Join-Path $PSScriptRoot '../../unreal/Launcher/publisher-identity.json')
 )
 $ErrorActionPreference = 'Stop'
+$identity = [IO.File]::ReadAllText((Resolve-Path -LiteralPath $PublisherIdentity).Path) | ConvertFrom-Json
+$fields = @($identity.PSObject.Properties.Name)
+if (($fields -join ',') -cne 'commonName,organization,rootSha256,identityKeyUsage') { throw 'Unexpected publisher identity fields.' }
+# The protected profile's configured name must be the identity this launcher was built to trust.
+if ($ExpectedSubject -cne $identity.commonName) { throw 'The configured publisher name differs from the launcher publisher identity.' }
 function Assert-SignedLauncher([string]$Path, [string]$ExpectedHash) {
-    $fingerprint = & (Join-Path $PSScriptRoot 'get-signer-fingerprint.ps1') -Path $Path -ExpectedFileSha256 $ExpectedHash
-    if ($fingerprint -ne $SignerSha256) { throw 'The launcher was signed with a different certificate.' }
-    $cert = (Get-AuthenticodeSignature -LiteralPath $Path).SignerCertificate
-    if ($cert.GetNameInfo([Security.Cryptography.X509Certificates.X509NameType]::SimpleName, $false) -cne $ExpectedPublisher) {
-        throw 'The signer does not match the configured publisher name.'
-    }
+    $observed = & (Join-Path $PSScriptRoot 'get-signer-identity.ps1') -Path $Path -ExpectedFileSha256 $ExpectedHash `
+        -ExpectedSubject $identity.commonName -ExpectedOrganization $identity.organization `
+        -ExpectedRootSha256 $identity.rootSha256 -ExpectedIdentityKeyUsage $identity.identityKeyUsage
+    ($observed | ConvertFrom-Json).leafSha256
 }
 $sdkBin = Join-Path ${env:ProgramFiles(x86)} 'Windows Kits\10\bin'
 $signTool = Get-ChildItem -LiteralPath $sdkBin -Directory | Where-Object { $_.Name -match '^\d+(\.\d+){3}$' } |
@@ -25,7 +30,7 @@ $signTool = Get-ChildItem -LiteralPath $sdkBin -Directory | Where-Object { $_.Na
 if (-not $signTool) { throw 'Windows SDK x64 SignTool is required to package a signed launcher.' }
 $source = (Get-Item -LiteralPath $Launcher).FullName
 $digest = (Get-FileHash -Algorithm SHA256 -LiteralPath $source).Hash.ToLowerInvariant()
-Assert-SignedLauncher $source $digest
+$leaf = Assert-SignedLauncher $source $digest
 & $signTool verify /pa /all /tw $source
 if ($LASTEXITCODE -ne 0) { throw 'SignTool verification failed or reported a warning.' }
 # Keep the final artifact directory absent on errors; a previous artifact cannot be overwritten.
@@ -39,12 +44,14 @@ try {
     $lines = foreach ($name in $names) {
         $file = Join-Path $temp $name
         [IO.File]::Copy($source, $file)
-        Assert-SignedLauncher $file $digest
+        if ((Assert-SignedLauncher $file $digest) -ne $leaf) { throw 'The setup copy has a different signature.' }
         "$digest  $name"
     }
     $utf8 = New-Object Text.UTF8Encoding($false)
     [IO.File]::WriteAllText((Join-Path $temp 'SHA256SUMS'), (($lines -join "`n") + "`n"), $utf8)
-    $record = [ordered]@{ tag = "v$Version"; commit = $Commit; signerCertificateSha256 = $SignerSha256.ToUpperInvariant()
+    $signer = [ordered]@{ commonName = $identity.commonName; organization = $identity.organization
+        rootSha256 = $identity.rootSha256.ToUpperInvariant(); identityKeyUsage = $identity.identityKeyUsage; leafCertificateSha256 = $leaf }
+    $record = [ordered]@{ tag = "v$Version"; commit = $Commit; signer = $signer
         manifestPublicKeySha256 = $ManifestKeySha256.ToLowerInvariant(); launcherSha256 = $digest }
     [IO.File]::WriteAllText((Join-Path $temp 'launcher-build.json'), ($record | ConvertTo-Json), $utf8)
     [IO.Directory]::Move($temp, $final)

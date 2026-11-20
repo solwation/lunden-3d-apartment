@@ -11,6 +11,7 @@ internal static class CatalogSignature
     {
         if (!OperatingSystem.IsWindows())
             throw new PlatformNotSupportedException("Verifiering av Windows-katalogsignaturer kräver Windows.");
+        Authenticode.RequireSha256(expectedLeafSha256);
         string fullPath = Path.GetFullPath(path);
         using var file = File.Open(fullPath, FileMode.Open, FileAccess.Read, FileShare.Read);
         // Some installed Windows catalogs (including wd_mpextdeps.cat for DirectML) use
@@ -43,7 +44,7 @@ internal static class CatalogSignature
                     MemberTag = member, MemberPath = path, MemberFile = file.DangerousGetHandle(), Admin = admin
                 };
                 try {
-                    Authenticode.VerifyTrust(path, signer, CatalogChoice, subject);
+                    Authenticode.VerifyTrust(path, CatalogChoice, subject, (chain, _) => Authenticode.CheckLeaf(chain[0], signer, path));
                     return true;
                 } catch (InvalidDataException) {
                     // A member can occur in several catalogs with different signers.

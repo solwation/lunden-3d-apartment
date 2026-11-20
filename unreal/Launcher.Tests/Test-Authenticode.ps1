@@ -4,7 +4,8 @@ param([string]$SignedBinary = (Get-Command dotnet.exe -ErrorAction Stop).Source)
 $ErrorActionPreference = 'Stop'
 $source = Join-Path $PSScriptRoot '../Launcher/Authenticode.cs'
 $catalogSource = Join-Path $PSScriptRoot '../Launcher/CatalogSignature.cs'
-$getFingerprint = Join-Path $PSScriptRoot '../../tools/unreal-engine/get-signer-fingerprint.ps1'
+$identitySource = Join-Path $PSScriptRoot '../Launcher/SignerIdentity.cs'
+$getIdentity = Join-Path $PSScriptRoot '../../tools/unreal-engine/get-signer-identity.ps1'
 $temp = Join-Path ([IO.Path]::GetTempPath()) ('Lunden-Authenticode-' + [Guid]::NewGuid().ToString('N'))
 New-Item -Type Directory -Path $temp | Out-Null
 Push-Location $temp
@@ -19,16 +20,29 @@ try {
     finally { $sha.Dispose() }
 
     $fileHash = (Get-FileHash -LiteralPath signed.exe -Algorithm SHA256).Hash
-    if ((& $getFingerprint -Path signed.exe -ExpectedFileSha256 $fileHash) -ne $pin) {
-        throw 'Release fingerprint did not match the trusted signing certificate.'
+    $observed = & $getIdentity -Path signed.exe -ExpectedFileSha256 $fileHash | ConvertFrom-Json
+    if ($observed.leafSha256 -ne $pin -or $observed.subject -cne $signature.SignerCertificate.GetNameInfo('SimpleName', $false) -or
+        $observed.rootSha256 -notmatch '^[A-F0-9]{64}$' -or $observed.keyUsages -notcontains '1.3.6.1.5.5.7.3.3') {
+        throw 'The release identity helper did not report the trusted signing certificate.'
     }
-    try {
-        & $getFingerprint -Path signed.exe -ExpectedFileSha256 ('0' * 64)
-        throw 'Expected checksum rejection.'
-    } catch {
-        if ($_.Exception.Message -notmatch 'differs from the published SHA-256') { throw }
+    $expected = @{ ExpectedSubject = $observed.subject; ExpectedOrganization = $observed.organization
+        ExpectedRootSha256 = $observed.rootSha256; ExpectedIdentityKeyUsage = '1.3.6.1.5.5.7.3.3' }
+    [void](& $getIdentity -Path signed.exe -ExpectedFileSha256 $fileHash @expected)
+    foreach ($case in @(@{ ExpectedFileSha256 = ('0' * 64); Message = 'differs from the published SHA-256' },
+            @{ ExpectedSubject = 'Different publisher'; Message = 'expected publisher subject' },
+            @{ ExpectedOrganization = 'Different organization'; Message = 'expected publisher subject' },
+            @{ ExpectedRootSha256 = ('0' * 64); Message = 'expected root certificate' },
+            @{ ExpectedIdentityKeyUsage = '1.3.6.1.4.1.311.97.1.0'; Message = 'expected identity key usage' })) {
+        $attempt = $expected.Clone(); $attempt.ExpectedFileSha256 = $fileHash
+        foreach ($key in $case.Keys) { if ($key -ne 'Message') { $attempt[$key] = $case[$key] } }
+        try {
+            & $getIdentity -Path signed.exe @attempt
+            throw 'Expected identity rejection.'
+        } catch {
+            if ($_.Exception.Message -notmatch $case.Message) { throw }
+        }
     }
-    Write-Output 'PASS release fingerprint and checksum rejection'
+    Write-Output 'PASS release identity, checksum and identity mismatch rejection'
 
     # Use a file from the runner's own installed catalog. No SDK/vendor DLL is distributed.
     $os = [Environment]::SystemDirectory
@@ -50,12 +64,14 @@ try {
     if ($major -lt 9) { throw 'Install a .NET SDK version 9 or later to run this test.' }
     Copy-Item -LiteralPath $source -Destination Authenticode.cs
     Copy-Item -LiteralPath $catalogSource -Destination CatalogSignature.cs
+    Copy-Item -LiteralPath $identitySource -Destination SignerIdentity.cs
     Set-Content -LiteralPath Probe.csproj -Value @"
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net$major.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 </Project>
 "@
@@ -63,27 +79,39 @@ try {
 using Lunden.Launcher;
 
 var pin = args[0];
+// The fixture's stable identity: its subject names and root. A Microsoft product signature carries
+// no Artifact Signing identity usage, so the code-signing usage stands in for it here.
+var identity = new SignerIdentity(args[2], args[3], args[4], SignerIdentity.CodeSigning);
+Authenticode.Verify("signed.exe", identity);
+Console.WriteLine("PASS trusted embedded timestamped signature with expected publisher identity");
 Authenticode.Verify("signed.exe", pin.ToLowerInvariant());
-Console.WriteLine("PASS trusted embedded signature with expected publisher");
+Console.WriteLine("PASS trusted embedded signature with expected vendor leaf");
 
-void Reject(string file, string expected, string message)
+void Reject(string file, SignerIdentity expected, string message)
 {
     try { Authenticode.Verify(file, expected); }
     catch (InvalidDataException ex) when (ex.Message.Contains(message, StringComparison.Ordinal)) { return; }
     throw new Exception($"Unexpected verification outcome for {file}");
 }
 
-var wrong = (pin[0] == '0' ? "1" : "0") + pin[1..];
-Reject("signed.exe", wrong, "annan utgivare");
-Console.WriteLine("PASS trusted signature with wrong publisher rejected");
+Reject("signed.exe", identity with { CommonName = "Different publisher" }, "annan utgivare");
+Reject("signed.exe", identity with { Organization = "Different organization" }, "annan utgivare");
+Console.WriteLine("PASS trusted signature with wrong publisher name rejected");
+Reject("signed.exe", identity with { RootSha256 = new string('0', 64) }, "rotutfärdaren");
+Console.WriteLine("PASS trusted signature under another root rejected");
+Reject("signed.exe", identity with { IdentityKeyUsage = "1.3.6.1.4.1.311.97.1.0" }, "profilidentiteten");
+Console.WriteLine("PASS trusted signature without the identity usage rejected");
+try { Authenticode.Verify("signed.exe", (pin[0] == '0' ? "1" : "0") + pin[1..]); throw new Exception("Accepted wrong vendor leaf"); }
+catch (InvalidDataException ex) when (ex.Message.Contains("annan utgivare", StringComparison.Ordinal)) { }
+Console.WriteLine("PASS trusted signature with wrong vendor leaf rejected");
 
-Reject(typeof(Authenticode).Assembly.Location, pin, "Windows kunde inte verifiera");
+Reject(typeof(Authenticode).Assembly.Location, identity, "Windows kunde inte verifiera");
 Console.WriteLine("PASS unsigned managed PE rejected");
 
 var bytes = File.ReadAllBytes("signed.exe");
 bytes[0x40] ^= 1; // Covered DOS stub byte. Preserve the PE headers and signature table.
 File.WriteAllBytes("damaged.exe", bytes);
-Reject("damaged.exe", pin, "Windows kunde inte verifiera");
+Reject("damaged.exe", identity, "Windows kunde inte verifiera");
 Console.WriteLine("PASS altered signed PE rejected");
 
 var catalogPin = args[1];
@@ -109,11 +137,11 @@ File.WriteAllBytes("catalog-member.dll", bytes);
 RejectCatalog("catalog-member.dll", catalogPin);
 Console.WriteLine("PASS altered catalog member rejected");
 '@
-    dotnet run --project Probe.csproj -- $pin $catalogPin
+    dotnet run --project Probe.csproj -- $pin $catalogPin $observed.subject $observed.organization $observed.rootSha256
     if ($LASTEXITCODE -ne 0) { throw "Authenticode probe failed ($LASTEXITCODE)" }
     $damagedHash = (Get-FileHash -LiteralPath damaged.exe -Algorithm SHA256).Hash
     try {
-        & $getFingerprint -Path damaged.exe -ExpectedFileSha256 $damagedHash
+        & $getIdentity -Path damaged.exe -ExpectedFileSha256 $damagedHash
         throw 'Expected signature rejection.'
     } catch {
         if ($_.Exception.Message -notmatch 'Expected a valid, timestamped, embedded Authenticode signature') { throw }

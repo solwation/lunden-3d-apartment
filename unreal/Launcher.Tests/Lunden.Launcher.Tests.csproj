@@ -11,5 +11,7 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <ProjectReference Include="../Launcher/Lunden.Launcher.csproj" />
+    <None Include="Fixtures/**" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="../Launcher/publisher-identity.json" Link="publisher-identity.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>
