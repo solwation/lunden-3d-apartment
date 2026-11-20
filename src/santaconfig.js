@@ -43,6 +43,15 @@ export const SANTA = {
   sip: { every: 14, seconds: 3.2, arm: 1.9, inward: 0.5, glassRest: [-0.28, 0.31, 0.4], glassMouth: [-0.08, 0.78, 0.25], tilt: -0.8 },
   sleep: { x: 0.65, y: 0.23, z: 0.04, breathe: 0.008, text: [0.64, 0.22], textSeconds: 2.8, textRise: 0.4 },
   greetingSeconds: 2.5,
+  // #2171 living body: all visual guesses (radians, metres, seconds, Hz).
+  life: {
+    breath: { awake: { hz: 0.27, rest: 0.004, amp: 0.016 }, asleep: { hz: 0.2, rest: 0.005, amp: 0.03 } }, // belly out-displacement
+    head: { maxYaw: 1.05, maxPitch: 0.3, rate: 4.2, watchPause: 1.6, drift: 0.05 }, // rate: 1/s approach; watchPause: s he keeps looking at a visitor after the wave
+    sleep: { lean: 0.3, roll: -0.17, headDown: 0.3, sagDrop: 0.32, headRoll: -0.22, headYaw: 0.25, nodEvery: 11, nodSnap: 0.7 }, // lean into the sofa corner (roll toward +x)
+    laugh: { seconds: 0.8, hz: 7, bellyAmp: 0.03, bounce: 0.03 }, // matches SANTA.laugh.seconds and the HO HO sound
+    region: { neckLow: 0.6, neckHigh: 0.7, bellyLow: 0.1, bellyRamp: 0.1, bellyHigh: 0.52, bellyZ0: -0.02, bellyZ1: 0.16 },
+    pivot: [0, 0.62, 0.02] // neck pivot the head weights rotate about
+  },
   laugh: { seconds: 0.8, beats: 3, gap: 0.23, duration: 0.18, hz: 145, gain: 0.28 },
 };
 

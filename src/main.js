@@ -2867,6 +2867,10 @@ const santaTV = new SantaTV({ canvas, day, tv: world.furnitureTargets.find(t => 
   muted: () => isMuted() || !tvViewer('lounge', [player.pos.x, player.pos.y, player.pos.z]) });
 document.addEventListener('pointerdown', () => santaTV.activate(), { passive: true });
 document.addEventListener('keydown', () => santaTV.activate(), { passive: true });
+// #2171: he watches the lit living-room screen and turns his head to the visitor while greeted.
+const santaGaze = new THREE.Vector3(), santaTvTarget = santaTV.tv;
+santa.tv = () => santaTvTarget?.mesh && power.on && santaTvTarget.isOpen ? santaTvTarget.mesh.getWorldPosition(santaGaze) : null;
+santa.viewer = () => camera.position;
 let santaDelivery = null;
 santa.onInteract = () => {
   greet.say({ head: santa.head, s: 1 }, Math.random() < 0.5 ? 'HO HO HO' : 'God jul', { pitch: 0.65, rate: 0.85, voice: 3 }, SANTA.greetingSeconds);

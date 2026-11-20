@@ -2,7 +2,8 @@ import { modelURL } from './modelurl.js';
 import { discoverCreature } from './bestiaryevents.js';
 import { creature } from './bestiarymetadata.js';
 import * as THREE from 'three';
-import { santaBody, santaArm, santaLegGeometry } from './santasurface.js';
+import { santaBody, santaArm, santaLegGeometry, withRegions } from './santasurface.js';
+import { breathing, headYawToward, headPitchToward, approach, sleepPose, laughShake } from './santalife.js';
 import { SANTA as S, santaState } from './santaconfig.js';
 import { LANDSKRONA } from './config.js';
 
@@ -10,6 +11,7 @@ import { LANDSKRONA } from './config.js';
 // Static coloured parts are merged; the pose-specific legs, two arms, glass and sleep text stay separate.
 const material = () => new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.88 });
 
+const tmpV = new THREE.Vector3(), tmpM = new THREE.Matrix4(), tmpE = new THREE.Euler();
 let santaModelData = null;
 let santaModelLoading = null;
 
@@ -66,6 +68,27 @@ if (typeof window !== 'undefined') {
   loadSantaModel().catch(() => {});
 }
 
+// #2171: one vertex-shader patch on the existing body material. Head rotation about the neck and belly breathing/shaking
+// use the baked region weights (x head, y belly); no extra mesh, texture or draw call.
+function livingBodyMaterial(base) {
+  const mat = base.clone(), P = S.life.pivot;
+  const uniforms = { uHeadRot: { value: new THREE.Matrix3() }, uPivot: { value: new THREE.Vector3(...P) }, uBelly: { value: 0 }, uShake: { value: 0 } };
+  mat.userData.santa = uniforms;
+  mat.customProgramCacheKey = () => 'santa-living-body';
+  mat.onBeforeCompile = (shader) => {
+    Object.assign(shader.uniforms, uniforms);
+    shader.vertexShader = shader.vertexShader
+      .replace('void main() {', 'attribute vec2 region;\nuniform mat3 uHeadRot;\nuniform vec3 uPivot;\nuniform float uBelly;\nuniform float uShake;\nvoid main() {')
+      .replace('#include <beginnormal_vertex>', '#include <beginnormal_vertex>\nobjectNormal = normalize(mix(objectNormal, uHeadRot * objectNormal, region.x));')
+      .replace('#include <begin_vertex>', `#include <begin_vertex>
+transformed = mix(transformed, uHeadRot * (transformed - uPivot) + uPivot, region.x);
+vec2 radial = transformed.xz - vec2(0.0, 0.03);
+transformed.xz += normalize(radial + vec2(1e-5)) * uBelly * region.y;
+transformed.y += uShake * region.y;`);
+  };
+  return mat;
+}
+
 function figure() {
   const object = new THREE.Group(), mat = material();
   object.name = 'jultomten';
@@ -79,7 +102,8 @@ function figure() {
     santaModelData.scene.traverse((obj) => {
       if (obj.name === 'Santa_body' && !body) {
         body = new THREE.Mesh(obj.geometry.clone(), mat);
-        body.userData.cheeks = obj.userData?.cheeks ? JSON.parse(JSON.stringify(obj.userData.cheeks)) : [];
+        const g = body.geometry, baked = g.getAttribute('_region');
+        if (baked) { g.setAttribute('region', baked); g.deleteAttribute('_region'); } else if (!g.getAttribute('region')) withRegions(body);
       }
       if (obj.name === 'Santa_arm_left' && !leftArmMesh) leftArmMesh = obj.clone();
       if (obj.name === 'Santa_arm_right' && !rightArmMesh) rightArmMesh = obj.clone();
@@ -103,17 +127,19 @@ function figure() {
   }
 
   if (!body) body = santaBody(mat);
+  body.material = livingBodyMaterial(mat);
 
   body.geometry.getAttribute('color').setUsage(THREE.DynamicDrawUsage); // cheek colours change after upload, including on phones
   body.castShadow = body.receiveShadow = true;
-  object.add(body);
+  const torso = new THREE.Group(); // the upper body leans back in the sofa corner; the legs stay on the seat
+  torso.name = 'santa-torso'; object.add(torso); torso.add(body);
 
   const legs = new THREE.Mesh(new THREE.BufferGeometry(), mat); // actual seat dimensions below
   legs.castShadow = legs.receiveShadow = true;
   object.add(legs);
 
   const left = arm(mat, false), right = arm(mat, true);
-  object.add(left, right);
+  torso.add(left, right);
 
   const glass = glbGlass || new THREE.Group();
   glass.position.fromArray(S.sip.glassRest);
@@ -125,7 +151,7 @@ function figure() {
     const glogg = new THREE.Mesh(new THREE.CylinderGeometry(0.042, 0.038, 0.058, 12), new THREE.MeshStandardMaterial({ color: 0x631d27, roughness: 0.28 }));
     glogg.position.y = -0.013; glass.add(glogg);
   }
-  object.add(glass);
+  torso.add(glass);
 
   const pick = new THREE.Mesh(new THREE.BoxGeometry(0.85, 1.5, 0.9), new THREE.MeshBasicMaterial());
   pick.position.set(0, 0.35, 0.15); pick.visible = false; object.add(pick);
@@ -141,7 +167,7 @@ function figure() {
   }
   text.scale.set(...S.sleep.text, 1); text.visible = false;
 
-  return { object, body, legs, left, right, glass, pick, text, head: new THREE.Vector3(), sitLegsGeo, sleepLegsGeo };
+  return { object, torso, body, legs, left, right, glass, pick, text, head: new THREE.Vector3(), sitLegsGeo, sleepLegsGeo };
 }
 
 /** Complete collection-only sitting pose, with independently disposable GLB resources. */
@@ -162,14 +188,14 @@ export class Santa {
   /** `sofa`: existing rest target. Santa waits offscreen when the player already occupies a required spot.
    * `onStateChange(next, previous)` is also the hook for the living-room TV programme. */
   constructor({ scene, day, sofa, rest = null, onStateChange = null }) {
-    Object.assign(this, { day, sofa, rest, onStateChange, state: 'away', t: 0, greeting: 0, sips: 0, sipInProgress: false, visitKey: '' });
+    Object.assign(this, { day, sofa, rest, onStateChange, state: 'away', t: 0, greeting: 0, tv: null, viewer: null, pose: { yaw: 0, pitch: 0, roll: 0 }, lingers: 0, sips: 0, sipInProgress: false, visitKey: '' });
     this.fig = figure();
     this.object = this.fig.object;
     if (sofa) {
       const local = sofa.pickable.userData.rest.spots[Math.min(S.seatIndex, sofa.spots.length - 1)];
       this.legPoses = {
         sitting: this.fig.sitLegsGeo || santaLegGeometry(local, false),
-        sleeping: this.fig.sleepLegsGeo || santaLegGeometry(local, true)
+        sleeping: (this.fig.sitLegsGeo || santaLegGeometry(local, false)).clone() // #2171: he now sleeps sitting, leaned back
       };
       this.fig.legs.geometry.dispose(); this.fig.legs.geometry = this.legPoses.sitting;
     }
@@ -224,6 +250,34 @@ export class Santa {
     this.onInteract?.();
     return true;
   }
+  /** World point he looks at while awake: the visitor during and just after a greeting, otherwise the TV when it is on. */
+  lookTarget() {
+    if ((this.greeting > 0 || this.lingers > 0) && this.viewer) return this.viewer();
+    return this.tv ? this.tv() : null;
+  }
+  updateHead(dt, sp) {
+    const L = S.life, pose = this.pose, u = this.fig.body.material.userData.santa;
+    if (this.greeting > 0 && !this.sleeping) this.lingers = L.head.watchPause; else this.lingers = Math.max(0, this.lingers - dt);
+    let yaw = 0, pitch = 0, roll = 0;
+    if (sp) { yaw = sp.headYaw; pitch = sp.headPitch; roll = sp.headRoll; }
+    else {
+      const target = this.lookTarget();
+      if (target) {
+        this.object.updateWorldMatrix(true, true);
+        const local = this.fig.torso.worldToLocal(tmpV.copy(target));
+        yaw = headYawToward(local);
+        pitch = headPitchToward(local.y - 0.84, Math.hypot(local.x, local.z));
+      }
+      yaw += Math.sin(this.t * 0.37) * L.head.drift; // a living, never perfectly fixed gaze
+      pitch += Math.sin(this.t * 0.53 + 1) * L.head.drift * 0.5;
+    }
+    const rate = sp ? 1.2 : L.head.rate;
+    pose.yaw = approach(pose.yaw, yaw, dt, rate); pose.pitch = approach(pose.pitch, pitch, dt, rate); pose.roll = approach(pose.roll, roll, dt, 1.2);
+    const laughing = !this.sleeping && this.greeting > 0 && this.greeting <= L.laugh.seconds ? laughShake(L.laugh.seconds - this.greeting) : 0;
+    u.uHeadRot.value.setFromMatrix4(tmpM.makeRotationFromEuler(tmpE.set(pose.pitch, pose.yaw, pose.roll, 'YXZ')));
+    u.uBelly.value = breathing(this.t, this.sleeping, Math.abs(laughing));
+    u.uShake.value = laughing * L.laugh.bounce;
+  }
   update(dt) {
     let next = this.sofa ? santaState(this.day) : 'away';
     if (this.rest?.target === this.sofa) {
@@ -245,13 +299,12 @@ export class Santa {
     this.greeting = Math.max(0, this.greeting - dt);
     const local = this.sofa.pickable.userData.rest.spots[Math.min(S.seatIndex, this.sofa.spots.length - 1)];
     const sleep = S.sleep;
-    if (this.sleeping) {
-      this.object.position.set(sleep.x, local.y + sleep.y + Math.sin(this.t * 1.5) * sleep.breathe, sleep.z);
-      this.object.rotation.set(0, 0, Math.PI / 2);
-    } else {
-      this.object.position.set(local.x, local.y + 0.04, local.z);
-      this.object.rotation.set(0, Math.atan2(...(local.dir ?? [0, 1])), 0);
-    }
+    // Always upright on the seat; the sleeper shifts into the sofa corner and only the torso leans back.
+    const sp = this.sleeping ? sleepPose(this.t) : null;
+    this.object.position.set(this.sleeping ? sleep.x : local.x, local.y + 0.04, local.z);
+    this.object.rotation.set(0, Math.atan2(...(local.dir ?? [0, 1])), 0);
+    this.fig.torso.rotation.set(sp ? -sp.lean : 0, 0, sp ? sp.roll : 0);
+    this.updateHead(dt, sp);
     const phase = this.t % S.sip.every;
     if (this.sleeping || this.greeting) this.sipInProgress = false;
     else {
@@ -272,7 +325,7 @@ export class Santa {
     this.fig.left.rotation.x = this.greeting && !this.sleeping ? -2.35 : -0.6;
     this.fig.left.rotation.z = this.greeting && !this.sleeping ? Math.sin(this.t * 10) * 0.18 : 0;
     this.object.updateWorldMatrix(true, true);
-    this.head.set(0, 0.84, 0.02).applyMatrix4(this.object.matrixWorld);
+    this.head.set(0, 0.84, 0.02).applyMatrix4(this.fig.torso.matrixWorld);
     const rise = (this.t % S.sleep.textSeconds) / S.sleep.textSeconds;
     this.fig.text.position.copy(this.head); this.fig.text.position.y += 0.25 + rise * S.sleep.textRise;
     this.fig.text.material.opacity = Math.sin(Math.PI * rise);

@@ -3,6 +3,7 @@ import * as T from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { SANTA as S } from './santaconfig.js';
 import { LANDSKRONA } from './config.js';
+import { regionWeights } from './santalife.js';
 const A = S.surface, C = A.palette;
 function part(geo, color, at = [0,0,0], scale = [1,1,1], rot = [0,0,0], finish = '') {
   const g = geo.index ? geo.toNonIndexed() : geo;
@@ -67,7 +68,13 @@ export function santaBody(mat){
   const H=S.hat,hat=new T.ConeGeometry(H.radius,H.height,A.radial,A.hatTrim.heightSegments),p=hat.attributes.position;
   for(let i=0;i<p.count;i++){const t=(p.getY(i)/H.height+.5)**3;p.setXYZ(i,p.getX(i)+H.bend*t,p.getY(i)-H.drop*t,p.getZ(i))}hat.computeVertexNormals();
   parts.push(part(hat,C.red,[0,1.04,.01],undefined,undefined,'cloth'),ball(C.white,[0,.91,.02],A.hatTrim.brim),ball(C.white,[H.bend,1.04+H.height/2-H.drop,.01],A.hatTrim.tuft));
-  return merge(parts,mat);
+  return withRegions(merge(parts,mat));
+}
+// #2171: head/belly weights per vertex (x head, y belly), baked once; the GLB exporter writes them as _REGION.
+export function withRegions(mesh){
+  const p=mesh.geometry.attributes.position,w=new Float32Array(p.count*2);
+  for(let i=0;i<p.count;i++)w.set(regionWeights(p.getX(i),p.getY(i),p.getZ(i)),i*2);
+  mesh.geometry.setAttribute('region',new T.BufferAttribute(w,2));return mesh;
 }
 export function santaArm(mat,right){
   const parts=[loft(A.sleeve,C.red,{finish:'cloth',warp:(x,y,z,a)=>[x,z+A.cloth.wrinkle*Math.cos(y*A.cloth.sleeveY+a*A.cloth.sleeveWave)]}),ball(C.white,A.cuff.at,A.cuff.scale),loft(A.palm,C.skin,{radial:A.palmRadial})];
