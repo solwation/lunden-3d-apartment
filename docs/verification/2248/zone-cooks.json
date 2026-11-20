@@ -1,0 +1,108 @@
+{
+  "engine": "5.8.4-58902052",
+  "platform": "Win64 Shipping",
+  "fixtureCommit": "b0500347",
+  "elapsedSeconds": {
+    "A": 30.92,
+    "B": 55.45,
+    "C": 25.54
+  },
+  "sources": {
+    "A": {
+      "Config/DefaultEditor.ini": "92c9ac695787925f943a2c4e0f0829268b3fd2e1f4522f65d377eeb7f3e91860",
+      "Config/DefaultEngine.ini": "b7fd2c46830edb17e6516b5752d2cef96e08fa3b86d51463068c3095286c5cb3",
+      "Config/DefaultGame.ini": "d60824c5d59154e33595e31516a578d98c1190f202112f5b9bb3b8eb6d33cf46",
+      "Config/DefaultInput.ini": "e39fbc56095544d9eda8f4e15eb5e5bdb19d9608bd0b786e59595b7e2c95a0f7",
+      "Content/Maps/SpikeA/ZoneA.umap": "c1e7a2071d3255a5dcf07c6ab78d965876667b279e2ef26e5dbe46015a830b37",
+      "Content/Maps/SpikeB/ZoneB.umap": "baff5d70d98c8dec3dfe87d1aa60ab715e84f3fbf0ec91b50284808d9584ae04",
+      "Lunden.uproject": "3d28a6c854bbdc7a34f6caea19a8aceb391508d90d0dfb1e97dbfe999f236c7a"
+    },
+    "B": {
+      "Config/DefaultEditor.ini": "92c9ac695787925f943a2c4e0f0829268b3fd2e1f4522f65d377eeb7f3e91860",
+      "Config/DefaultEngine.ini": "b7fd2c46830edb17e6516b5752d2cef96e08fa3b86d51463068c3095286c5cb3",
+      "Config/DefaultGame.ini": "d60824c5d59154e33595e31516a578d98c1190f202112f5b9bb3b8eb6d33cf46",
+      "Config/DefaultInput.ini": "e39fbc56095544d9eda8f4e15eb5e5bdb19d9608bd0b786e59595b7e2c95a0f7",
+      "Content/Maps/SpikeA/ZoneA.umap": "c1e7a2071d3255a5dcf07c6ab78d965876667b279e2ef26e5dbe46015a830b37",
+      "Content/Maps/SpikeB/ZoneB.umap": "baff5d70d98c8dec3dfe87d1aa60ab715e84f3fbf0ec91b50284808d9584ae04",
+      "Lunden.uproject": "3d28a6c854bbdc7a34f6caea19a8aceb391508d90d0dfb1e97dbfe999f236c7a"
+    },
+    "C": {
+      "Config/DefaultEditor.ini": "92c9ac695787925f943a2c4e0f0829268b3fd2e1f4522f65d377eeb7f3e91860",
+      "Config/DefaultEngine.ini": "b7fd2c46830edb17e6516b5752d2cef96e08fa3b86d51463068c3095286c5cb3",
+      "Config/DefaultGame.ini": "d60824c5d59154e33595e31516a578d98c1190f202112f5b9bb3b8eb6d33cf46",
+      "Config/DefaultInput.ini": "e39fbc56095544d9eda8f4e15eb5e5bdb19d9608bd0b786e59595b7e2c95a0f7",
+      "Content/Maps/SpikeA/ZoneA.umap": "15b431d8b981644940dacf45bd51e7bccced907ed1ee1450a32e9d21bc9bb764",
+      "Content/Maps/SpikeB/ZoneB.umap": "baff5d70d98c8dec3dfe87d1aa60ab715e84f3fbf0ec91b50284808d9584ae04",
+      "Lunden.uproject": "3d28a6c854bbdc7a34f6caea19a8aceb391508d90d0dfb1e97dbfe999f236c7a"
+    }
+  },
+  "containers": {
+    "global.ucas": {
+      "bytes": 3330560,
+      "sha256A": "1700e127c3efecd81432687bd34b1959910c8e30a9d67d1004745067d8dfe43a",
+      "sha256B": "1700e127c3efecd81432687bd34b1959910c8e30a9d67d1004745067d8dfe43a",
+      "sha256C": "1700e127c3efecd81432687bd34b1959910c8e30a9d67d1004745067d8dfe43a"
+    },
+    "global.utoc": {
+      "bytes": 806,
+      "sha256A": "3ae6fb23238326c714b85c7c435385fb9a49a690e22b8790ce37fb1293ea420a",
+      "sha256B": "3ae6fb23238326c714b85c7c435385fb9a49a690e22b8790ce37fb1293ea420a",
+      "sha256C": "3ae6fb23238326c714b85c7c435385fb9a49a690e22b8790ce37fb1293ea420a"
+    },
+    "pakchunk0-Windows.pak": {
+      "bytes": 11222667,
+      "sha256A": "21bf1dad0bdb2d170bc41d4fc1d088473340e2d52bdc0bc0dd7b3c93dae3580a",
+      "sha256B": "21bf1dad0bdb2d170bc41d4fc1d088473340e2d52bdc0bc0dd7b3c93dae3580a",
+      "sha256C": "10b6fa99fc986b677b70a09988cc1052d09757eea337182aaa32dec6099eee6a"
+    },
+    "pakchunk0-Windows.ucas": {
+      "bytes": 200062112,
+      "sha256A": "f4d4d29d1166354b587dec1e1b50feb828cc2ec5b75f43df582afd5e1484ad63",
+      "sha256B": "f4d4d29d1166354b587dec1e1b50feb828cc2ec5b75f43df582afd5e1484ad63",
+      "sha256C": "f4d4d29d1166354b587dec1e1b50feb828cc2ec5b75f43df582afd5e1484ad63"
+    },
+    "pakchunk0-Windows.utoc": {
+      "bytes": 189344,
+      "sha256A": "0466eb8500943b2760338d7458dbab1c8ad4ea8c5245c2a7b7dd514c75f53156",
+      "sha256B": "0466eb8500943b2760338d7458dbab1c8ad4ea8c5245c2a7b7dd514c75f53156",
+      "sha256C": "0466eb8500943b2760338d7458dbab1c8ad4ea8c5245c2a7b7dd514c75f53156"
+    },
+    "pakchunk1-Windows.pak": {
+      "bytes": 339,
+      "sha256A": "c84145c3ebb27b0bf8d268eb155e1aebc6acb69779ce4c6299d33cab97418e3e",
+      "sha256B": "c84145c3ebb27b0bf8d268eb155e1aebc6acb69779ce4c6299d33cab97418e3e",
+      "sha256C": "c84145c3ebb27b0bf8d268eb155e1aebc6acb69779ce4c6299d33cab97418e3e"
+    },
+    "pakchunk1-Windows.ucas": {
+      "bytes": 1472,
+      "sha256A": "5af206926b032af0f99d48a6dd3d85b7ff205fbc70112cae6b5fa28f946ed082",
+      "sha256B": "5af206926b032af0f99d48a6dd3d85b7ff205fbc70112cae6b5fa28f946ed082",
+      "sha256C": "bf4b982bac61b77443285e0982ba0f8b0b733ba77584726e6e3a35ebf9f49b13"
+    },
+    "pakchunk1-Windows.utoc": {
+      "bytes": 392,
+      "sha256A": "c7cf03abbf3921f6799a9e9de8825869c3b8d100d37854167f135abffd236335",
+      "sha256B": "c7cf03abbf3921f6799a9e9de8825869c3b8d100d37854167f135abffd236335",
+      "sha256C": "3bdae075ac569232d4230f0c1935e9aab2c3900e5cdb7aa117c89874c0d84884"
+    },
+    "pakchunk2-Windows.pak": {
+      "bytes": 339,
+      "sha256A": "40ee1a42c2d41cc904f86bccfbbfaaae0a4ddf14c1aa2eb74b8d57079bbce6e4",
+      "sha256B": "40ee1a42c2d41cc904f86bccfbbfaaae0a4ddf14c1aa2eb74b8d57079bbce6e4",
+      "sha256C": "40ee1a42c2d41cc904f86bccfbbfaaae0a4ddf14c1aa2eb74b8d57079bbce6e4"
+    },
+    "pakchunk2-Windows.ucas": {
+      "bytes": 1456,
+      "sha256A": "9e9fdabf0f19bb5f2f05f92e89cfccf1a22f1b10346226141ff33b411af53266",
+      "sha256B": "9e9fdabf0f19bb5f2f05f92e89cfccf1a22f1b10346226141ff33b411af53266",
+      "sha256C": "9e9fdabf0f19bb5f2f05f92e89cfccf1a22f1b10346226141ff33b411af53266"
+    },
+    "pakchunk2-Windows.utoc": {
+      "bytes": 400,
+      "sha256A": "c2975afb72e70190bd47029aa76a845f1a64866cad8445c1b88ec368c9809290",
+      "sha256B": "c2975afb72e70190bd47029aa76a845f1a64866cad8445c1b88ec368c9809290",
+      "sha256C": "c2975afb72e70190bd47029aa76a845f1a64866cad8445c1b88ec368c9809290"
+    }
+  },
+  "unchangedRuntimeSha256": "e083ad2f827b2fbab8eb4e04d6d1d541be3d42d4883aaddf26bab3df62195953"
+}
