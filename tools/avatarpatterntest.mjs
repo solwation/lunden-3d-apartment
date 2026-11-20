@@ -59,10 +59,18 @@ test('pose stability: the pattern is a pure function of the bind position (no po
   assert.ok(!patternDecl().includes('uClothBend') && !patternShade().includes('uClothBend') && !patternShade().includes('uClothArm'), 'no pose uniform feeds the pattern');
 });
 
-test('marl varies both ways; two-tone colours the sleeves only; plain and the outer layer leave the colour alone', () => {
-  let w0 = 1, w1 = 0, k0 = 1;
-  for (let i = 0; i < 600; i++) { const r = patternAt(3, { x: (i % 30) * 0.011 - 0.15, y: 1 + Math.floor(i / 30) * 0.013, z: 0.12 }, 1); w0 = Math.min(w0, r.w); w1 = Math.max(w1, r.w); k0 = Math.min(k0, r.k); }
-  assert.ok(w0 < 0.02 && w1 > 0.4 && k0 < 0.85, `${w0} ${w1} ${k0}`);
+test('marl is a fine, zero-mean heather: periods under 1 cm in bind space, mean equals the base, averages out with distance', () => {
+  for (const [h, v] of P.marl.freq) assert.ok(2 * Math.PI / h < 0.01 && 2 * Math.PI / v < 0.01, `${h} ${v}`);
+  let sum = 0, lo = 0, hi = 0, N = 0, flip = 0, prev = 0;
+  for (let i = 0; i < 40000; i++) { const p = { x: Math.sin(i * 0.37) * 0.14 + (i % 17) * 0.0001, y: 0.9 + (i % 997) * 0.00053, z: 0.12 + (i % 31) * 0.0003 }, k = patternAt(3, p, 1).k - 1; sum += k; N++; lo = Math.min(lo, k); hi = Math.max(hi, k); if (Math.sign(k) !== Math.sign(prev)) flip++; prev = k; }
+  assert.ok(Math.abs(sum / N) < 0.03 * P.marl.contrast, `mean ${sum / N}`);
+  assert.ok(hi > 0.8 * P.marl.contrast && lo < -0.8 * P.marl.contrast && hi <= P.marl.contrast + 1e-9 && flip > N * 0.1, 'flecks of both signs, bounded contrast');
+  let far = 0; for (let i = 0; i < 2000; i++) far = Math.max(far, Math.abs(patternAt(3, { x: (i % 40) * 0.0037, y: 1 + i * 0.00071, z: 0.1 }, 1, 0.02).k - 1));
+  assert.ok(far < 0.01, `far ${far}`); // a 2 cm pixel sees the plain base
+  assert.equal(patternAt(3, torsoPt(1.2, 0), 1).w, 0);
+});
+
+test('two-tone colours the sleeves only; plain and the outer layer leave the colour alone', () => {
   assert.equal(patternAt(4, torsoPt(1.2, 0), 1).w, 0); assert.equal(patternAt(4, { x: S.x, y: 1.3, z: 0.04 }, 0).w, 1);
   assert.deepEqual(patternAt(0, torsoPt(1.2, 0), 1), { w: 0, k: 1 });
   assert.equal(effectivePattern({ pattern: 2, cut: 3 }), 0); assert.equal(effectivePattern({ pattern: 2, cut: 2 }), 2);
@@ -71,7 +79,7 @@ test('marl varies both ways; two-tone colours the sleeves only; plain and the ou
 test('the second colour contrasts: darker on light tops, lighter on dark ones', () => {
   const lum = (c) => 0.3 * c[0] + 0.55 * c[1] + 0.15 * c[2];
   const light = [0.7, 0.68, 0.6], dark = [0.02, 0.03, 0.06];
-  assert.ok(lum(altOf(light)) < 0.6 * lum(light) && lum(altOf(dark)) > 3 * lum(dark) && lum(altOf(dark, true)) > lum(dark));
+  assert.ok(lum(altOf(light)) < 0.6 * lum(light) && lum(altOf(dark)) > 3 * lum(dark));
 });
 
 test('GLSL strings are present and empty when off', () => {

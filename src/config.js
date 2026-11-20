@@ -7894,15 +7894,16 @@ export const AVATAR_SHOES = {
 // pattern, so an older client (which reads only m0-m17) skips the value and shows the plain top in the seed's colour; a missing pattern is the plain
 // colour as before. The second colour is derived from the top's own colour (`alt`: a darker tone of a light top, a creamy lighter one of a dark top),
 // so no colour field is needed. All numbers *guess*, tuned by eye on the mirror preview. `period` m between stripes / lines, `duty` the band's share
-// of the period, `cross` the darkening where two check bands cross, `strength` how far a band reaches the second colour; marl: `freq` rad/m of the two
-// noise octaves, `light` / `dark` the share of light / dark flecks, `desat` the heathered base's pull towards grey; `fade` [from, to]: the pattern
+// of the period, `cross` the darkening where two check bands cross, `strength` how far a band reaches the second colour; marl (fine heather): `freq` [horizontal, vertical] rad/m of two sine
+// lattices (periods 4-9 mm, a little taller than wide), `gain` the flecks' hardness, `contrast` their brightness swing ±, zero-mean so the average is the
+// base, `fade` [from, to] its own footprint fade (it averages to the base at a distance), `desat` the base's pull towards grey; `fade` [from, to]: the pattern
 // dissolves into its mean when a pixel spans that share of the period; `radius` the part's axis radius for whole columns round it (as the weave).
 export const AVATAR_PATTERN = {
   tag: 'm', pack: 18, names: ['Enfärgad', 'Randig', 'Rutig', 'Melerad', 'Tvåfärgad'],
   stripe: { period: 0.038, duty: 0.5, strength: 1 },
   check: { period: 0.06, duty: 0.3, strength: 0.62, cross: 0.28 },
-  marl: { freq: [78, 173], light: 0.62, dark: 0.26, desat: 0.4, edge: [0.0, 0.8] },
-  alt: { split: 0.2, darker: 0.42, light: [0.8, 0.78, 0.7], lightMix: 0.7, marl: 0.45 },
+  marl: { freq: [[1100, 700], [1450, 900]], gain: 1.7, contrast: 0.3, desat: 0.3, fade: [0.6, 1.3] },
+  alt: { split: 0.2, darker: 0.42, light: [0.8, 0.78, 0.7], lightMix: 0.7 },
   fade: [0.35, 0.8], radius: { torso: 0.15, sleeve: 0.045 },
 };
 /** The look's top pattern (#2168): an integer 1 … names.length − 1, 0 (plain) for a missing or invalid value. */

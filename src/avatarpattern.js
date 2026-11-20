@@ -23,10 +23,9 @@ export const effectivePattern = (lk) => ((lk?.cut | 0) > 2 ? 0 : patternOf(lk));
 /** Sets the pattern uniform from a look. */
 export function setPatternLook(u, lk) { if (u?.uClothPat) u.uClothPat.value.set(PATTERN.on ? effectivePattern(lk) : 0, 0, 0, 0); }
 
-/** The second colour of linear colour c [r, g, b]: a darker tone of a light top, a creamy lighter one of a dark top (marl: always a lighter tone). */
-export function altOf(c, marl = false) {
+/** The second colour of linear colour c [r, g, b]: a darker tone of a light top, a creamy lighter one of a dark top. */
+export function altOf(c) {
   const A = P.alt, l = 0.3 * c[0] + 0.55 * c[1] + 0.15 * c[2];
-  if (marl) return c.map((v) => v + (0.7 - v) * A.marl);
   return l > A.split ? c.map((v) => v * A.darker) : c.map((v, i) => v + (A.light[i] - v) * A.lightMix);
 }
 
@@ -34,6 +33,13 @@ export function altOf(c, marl = false) {
 const band = (x, duty, soft) => { const t0 = Math.cos(Math.PI * duty); return smooth(t0 - soft, t0 + soft, Math.cos(TAU * x)); };
 const softness = (fp, period) => clamp(0.06 + 1.2 * fp / period, 0, 0.8);
 const fadeOf = (fp, period) => 1 - smooth(P.fade[0], P.fade[1], fp / period);
+
+/** The marl's flecks at bind position p: -1 … 1, zero-mean (an odd function of two products of sines; horizontal directions mixed so no side streaks), faded by the footprint. */
+export function marlFleck(p, fp = 0) {
+  const M = P.marl, [[h0, v0], [h1, v1]] = M.freq;
+  const a = Math.sin(h0 * (0.8 * p.x + 0.6 * p.z) + 1.3) * Math.sin(v0 * p.y + 0.4), b = Math.sin(h1 * (0.6 * p.x - 0.8 * p.z) + 2.1) * Math.sin(v1 * p.y + 1.1);
+  return clamp(M.gain * (0.6 * a + 0.4 * b), -1, 1) * (1 - smooth(M.fade[0], M.fade[1], fp * Math.max(h1, v1) / TAU));
+}
 
 /** The pattern at bind position p {x, y, z} of the top (`torso`: 1 on the body, 0 on a sleeve; `fp` the pixel footprint in m): { w: the share of the
  * second colour, k: a brightness factor }. */
@@ -50,13 +56,7 @@ export function patternAt(pattern, p, torso = 1, fp = 0) {
     const w = Math.max(a, b);
     return { w: (mean + (w - mean) * fd) * T.strength, k: 1 - T.cross * a * b * fd };
   }
-  if (pattern === 3) {
-    const M = P.marl, F0 = M.freq[0], F1 = M.freq[1];
-    const a = Math.sin(F0 * (0.8 * p.x + 0.5 * p.y + 0.3 * p.z) + 1.3) * Math.sin(F0 * (-0.4 * p.x + 0.7 * p.y + 0.6 * p.z)); // (two slanted lattices, so no flake is stretched along an axis)
-    const b = Math.sin(F1 * (0.3 * p.x - 0.6 * p.y + 0.7 * p.z)) * Math.sin(F1 * (0.7 * p.x + 0.4 * p.y - 0.6 * p.z) + 2.1);
-    const n = 0.65 * a + 0.35 * b, fd = fadeOf(fp, TAU / F1);
-    return { w: smooth(M.edge[0], M.edge[1], n) * M.light * fd, k: 1 - M.dark * smooth(M.edge[0], M.edge[1], -n) * fd };
-  }
+  if (pattern === 3) return { w: 0, k: 1 + P.marl.contrast * marlFleck(p, fp) };
   if (pattern === 4) return { w: torso ? 0 : 1, k: 1 };
   return { w: 0, k: 1 };
 }
@@ -84,16 +84,14 @@ vec2 patternAt(float pat, vec3 p, float torso, float fp) {
     return vec2((mean + (max(a, b) - mean) * fd) * ${f(CK.strength)}, 1.0 - ${f(CK.cross)} * a * b * fd);
   }
   if (pat < 3.5) {
-    float a = sin(${f(M.freq[0])} * dot(p, vec3(0.8, 0.5, 0.3)) + 1.3) * sin(${f(M.freq[0])} * dot(p, vec3(-0.4, 0.7, 0.6)));
-    float b = sin(${f(M.freq[1])} * dot(p, vec3(0.3, -0.6, 0.7))) * sin(${f(M.freq[1])} * dot(p, vec3(0.7, 0.4, -0.6)) + 2.1);
-    float n = 0.65 * a + 0.35 * b, fd = patFade(fp, ${f(Math.PI * 2 / M.freq[1])});
-    return vec2(smoothstep(${f(M.edge[0])}, ${f(M.edge[1])}, n) * ${f(M.light)} * fd, 1.0 - ${f(M.dark)} * smoothstep(${f(M.edge[0])}, ${f(M.edge[1])}, -n) * fd);
+    float a = sin(${f(M.freq[0][0])} * (0.8 * p.x + 0.6 * p.z) + 1.3) * sin(${f(M.freq[0][1])} * p.y + 0.4), b = sin(${f(M.freq[1][0])} * (0.6 * p.x - 0.8 * p.z) + 2.1) * sin(${f(M.freq[1][1])} * p.y + 1.1);
+    float n = clamp(${f(M.gain)} * (0.6 * a + 0.4 * b), -1.0, 1.0) * (1.0 - smoothstep(${f(M.fade[0])}, ${f(M.fade[1])}, fp * ${f(Math.max(M.freq[1][0], M.freq[1][1]) / (Math.PI * 2))}));
+    return vec2(0.0, 1.0 + ${f(M.contrast)} * n);
   }
   return vec2(torso > 0.5 ? 0.0 : 1.0, 1.0);
 }
-vec3 patternAlt(vec3 c, float marl) {
+vec3 patternAlt(vec3 c) {
   float l = dot(c, vec3(0.3, 0.55, 0.15));
-  if (marl > 0.5) return c + (vec3(0.7) - c) * ${f(A.marl)};
   return l > ${f(A.split)} ? c * ${f(A.darker)} : mix(c, vec3(${f(A.light[0])}, ${f(A.light[1])}, ${f(A.light[2])}), ${f(A.lightMix)});
 }`;
 }
@@ -106,6 +104,6 @@ export function patternShade() {
         bool marl = abs(uClothPat.x - 3.0) < 0.5;
         vec3 pc = diffuseColor.rgb;
         if (marl) pc = mix(pc, vec3(dot(pc, vec3(0.3, 0.55, 0.15))), ${f(P.marl.desat)});
-        diffuseColor.rgb = mix(pc, patternAlt(pc, marl ? 1.0 : 0.0), pw.x) * pw.y;
+        diffuseColor.rgb = mix(pc, patternAlt(pc), pw.x) * pw.y;
       }`;
 }
