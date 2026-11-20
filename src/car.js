@@ -1,5 +1,7 @@
 import * as THREE from 'three';
 import { CAR as C, REST, SONOS, SITE, CAR_LIGHTS as CL } from './config.js';
+import { buildVehicleShadow } from './vehicleshadow.js';
+import { lowMemory } from './lowmemory.js';
 import { lampTargets, easeLamp, buildCarGlow, buildReverseLamps } from './carlights.js';
 import { along, nearestS } from './roads.js';
 import { buildCar, MEGANE, drawScreen, SCREEN_BUTTONS } from './carmodel.js';
@@ -100,6 +102,7 @@ export class Car {
     this.blinkMat = m.materials.blink;
     this.lamps = { head: 0, brake: 0, reverse: 0 }; this.decel = 0; // #2184: eased lamp levels; the last step's slowing (m/s²)
     this.glow = buildCarGlow(L); g.add(this.glow.mesh);
+    { const sh = buildVehicleShadow([{ x: 0, z: 0, ax: 1, az: 0, kind: 'car' }], () => 0, { phone: lowMemory, name: 'carShadow' }); if (sh.mesh) { sh.mesh.matrixAutoUpdate = true; g.add(sh.mesh); } } // #2185: its own contact shadow, moves with the car
     this.reverseLamps = buildReverseLamps(L); g.add(this.reverseLamps);
     this.screenMat = m.materials.screen;
     const plate = new THREE.MeshStandardMaterial({ map: plateTexture(C.plate), roughness: 0.5 });

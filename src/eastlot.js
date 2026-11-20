@@ -6,6 +6,8 @@ import { SITE, PARKING_LOT as P } from './config.js';
 import { parkingLots } from './parkinglayout.js';
 import { carGeometry } from './streetlife.js';
 import { parkedCarMaterials } from './carfinish.js';
+import { buildVehicleShadow, itemsFromMatrices } from './vehicleshadow.js';
+import { lowMemory } from './lowmemory.js';
 
 export function buildEastLotCars(ground) {
   const { cars } = parkingLots(), group = new THREE.Group(), colors = SITE.life.carColors;
@@ -31,5 +33,7 @@ export function buildEastLotCars(ground) {
   const [body, trim, glass, tyres] = carGeometry();
   const [paintMat, trimMat, glassMat, tyreMat] = parkedCarMaterials(); // #2097: the same finish as the street car park
   group.add(make(body, paintMat, true), make(trim, trimMat), make(glass, glassMat), make(tyres, tyreMat));
+  const shadow = buildVehicleShadow(itemsFromMatrices(mats, 'car'), ground, { phone: lowMemory, name: 'east-lot-car-shadow' }); // #2185: contact shadows under every car
+  if (shadow.mesh) group.add(shadow.mesh);
   return group;
 }

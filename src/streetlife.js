@@ -9,9 +9,10 @@ import { buildCar, MEGANE } from './carmodel.js';
 import { parkedCarMaterials, trimU } from './carfinish.js';
 import { groundY } from './surroundings.js';
 import { registerBicycleYardEdges } from './street.js';
+import { buildVehicleShadow, itemsFromMatrices } from './vehicleshadow.js';
 import { boxwood } from './boxwood.js';
 import { onRoad, onWalk } from './roads.js';
-import { freeCanvasAfterUpload } from './lowmemory.js';
+import { freeCanvasAfterUpload, lowMemory } from './lowmemory.js';
 
 // Life on the street (#113, SITE.life): the car park (one row along the hedge, #208, #260) with parked cars (instanced: a body with a
 // colour per car, trim, glass, tyres — four draw calls; the bodies from carmodel.js, #251), its white stall lines, the low green strip
@@ -312,6 +313,9 @@ export function buildStreetLife({ entrances = [] } = {}) {
     instanced(spokes, new THREE.MeshStandardMaterial({ color: 0xb4b9bd, alphaMap: bikeSpokeTexture(), alphaTest: 0.35, side: THREE.DoubleSide, metalness: 0.35, roughness: 0.5 }), bikes)];
   for (const mesh of components) mesh.userData.moving = true; // culling follows changed batch bounds
   group.add(...components);
+  // #2185: one contact-shadow decal for the street car park's cars and the yard's bikes (a ridden bike takes its strip off, see place())
+  const vShadow = buildVehicleShadow([...itemsFromMatrices(cars, 'car'), ...itemsFromMatrices(bikes, 'bike')], () => 0, { phone: lowMemory, name: 'street-vehicle-shadow' });
+  if (vShadow.mesh) group.add(vShadow.mesh);
   // #905: register only actual seeded models, in source order; keep all four shared batches.
   const pickGeometry = new THREE.BoxGeometry(1.7, 1.05, .6), pickMaterial = new THREE.MeshBasicMaterial({ visible: false, side: THREE.DoubleSide });
   const bicycles = bikeRecords.map(record => {
@@ -335,6 +339,7 @@ export function buildStreetLife({ entrances = [] } = {}) {
           mesh.computeBoundingSphere();
         }
         pick.position.copy(p); pick.position.y += .525; pick.rotation.y = yaw;
+        const o = original.elements; vShadow.set(cars.length + this.index, Math.abs(p.x - o[12]) + Math.abs(p.z - o[14]) < 0.05 && Math.abs(Math.cos(yaw) - o[0]) < 0.02); // #2185
       },
       footprint(feet, headroom, hurdle) {
         if (this.selfQuery || this.atSource || this.position.y - Math.abs(Math.sin(this.pitch ?? 0)) * (Math.max(-BICYCLE.rear,BICYCLE.front)+BICYCLE.radius) > feet + headroom || this.position.y + BICYCLE.height + Math.abs(Math.sin(this.pitch ?? 0)) * (Math.max(-BICYCLE.rear,BICYCLE.front)+BICYCLE.radius) <= feet - hurdle) return [];

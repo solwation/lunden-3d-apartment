@@ -11124,3 +11124,13 @@ export const AVATAR_STAIRS = {
   downLean: 0.13, downLift: 0.015, downShrink: 0.74, downHip: 0.035,
   reach: 0.62, ahead: 0.3, front: 0.4, rate: 10, height: [0.55, 1.25], maxDist: 0.6,
 };
+
+/** #2185: soft contact shadows under parked cars and bicycles (src/vehicleshadow.js): one merged multiply decal per place, the
+ * parked vehicles lie outside / beyond the sun's shadow box so they otherwise float. All sizes and strengths are appearance *guesses*. */
+export const VEHICLE_SHADOW = {
+  lift: 0.08, // m over the ground sample: over the asphalt (0.02-0.05, measured: a 4 cm lift was hidden by the car park's asphalt) and the stall lines (0.045); under the car body, hidden by it
+  car: { x: 0, half: [2.9, 1.4], strength: 0.95, rings: 5, segs: 16 }, // body pool in the car's frame (nose +x): centre x, half length / half width (m; the body is 4.34 x 1.84), darkest at the middle
+  tyre: { x: 1.35, z: 0.78, half: [0.85, 0.55], strength: 0.9, rings: 3, segs: 8 }, // one dark patch under each wheel: axle offset x (both axles, +/-), track z (+/-), half sizes; added on top of the body pool
+  bike: { x: -0.04, half: [1.15, 0.38], strength: 0.85, rings: 2, segs: 10 }, // a narrow strip along the two wheels (bikeGeometry: wheels at x -0.5 / 0.42)
+  plateau: 0.7, // the pool stays at full strength out to this share of its radius (so the band beyond the body stays dark), then eases out to nothing at the rim
+};
