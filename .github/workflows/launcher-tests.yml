@@ -1,0 +1,33 @@
+name: Windows launcher tests
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'unreal/Launcher/**'
+      - 'unreal/Launcher.Tests/**'
+      - '.github/workflows/launcher-tests.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            unreal/Launcher
+            unreal/Launcher.Tests
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+      - name: Run launcher tests on Windows
+        run: dotnet test unreal/Launcher.Tests/Lunden.Launcher.Tests.csproj --configuration Release --logger "console;verbosity=normal"
+      - name: Verify Windows Authenticode acceptance and rejection
+        shell: pwsh
+        run: ./unreal/Launcher.Tests/Test-Authenticode.ps1

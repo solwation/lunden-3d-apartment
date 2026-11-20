@@ -379,8 +379,15 @@ SPKI PEM and the expected Authenticode leaf certificate's SHA-256 fingerprint at
 The publisher must hash binaries after signing. Each executable and DLL must pass both the
 manifest check and Windows Authenticode verification for the configured certificate.
 
+The [Windows launcher tests](../../.github/workflows/launcher-tests.yml) run on a
+GitHub-hosted Windows runner when the launcher, its tests or the workflow changes
+on `main`. The workflow can also be started manually. It runs the .NET 10 xUnit
+suite, including Windows file locks and real Start-menu shortcut handling, and
+the four native Authenticode checks against temporary files. Run these tests
+through Actions on development hosts protected by Smart App Control, which can
+block unsigned test assemblies. The workflow only needs repository read access.
+
 ```sh
-dotnet test unreal/Launcher.Tests
 dotnet publish unreal/Launcher -c Release -r win-x64 --self-contained true \
   -p:PublishSingleFile=true -p:LundenManifestKey=/absolute/path/to/public.pem \
   -p:LundenSignerSha256="$LUNDEN_SIGNER_SHA256" -o /path/to/build-output
@@ -388,9 +395,6 @@ dotnet publish unreal/Launcher -c Release -r win-x64 --self-contained true \
 
 Set `LUNDEN_SIGNER_SHA256` to the 64 hexadecimal characters in the public certificate fingerprint. A checkout contains no release
 key or fingerprint. A build without the public key supports `--help` and declines updates.
-On Windows, run `unreal/Launcher.Tests/Test-Authenticode.ps1` with a .NET SDK for the four
-native certificate checks. It uses temporary copies of an already signed binary and leaves
-the certificate stores untouched.
 
 - Start-menu installation by #2250 places `Lunden.exe` in `%LOCALAPPDATA%\Programs\Lunden\`.
   `--channel test` uses a separate `Lunden-Test` installation and user directory and requests
