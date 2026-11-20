@@ -1,0 +1,25 @@
+[2m       - element is not visible[22m
+[2m     - retrying tap action[22m
+[2m       - waiting 500ms[22m
+
+    at /home/olof/wt/issue-2254/tools/olofcomputertest.cjs:36:41 {
+  log: [
+    "  - waiting for locator('#action')",
+    '    - locator resolved to <button id="action" class="touch-only hud-button">Sitt ner</button>',
+    '  - attempting tap action',
+    '    2 × waiting for element to be visible, enabled and stable',
+    '      - element is not visible',
+    '    - retrying tap action',
+    '    - waiting 20ms',
+    '    2 × waiting for element to be visible, enabled and stable',
+    '      - element is not visible',
+    '    - retrying tap action',
+    '      - waiting 100ms',
+    '    55 × waiting for element to be visible, enabled and stable',
+    '       - element is not visible',
+    '     - retrying tap action',
+    '       - waiting 500ms'
+  ],
+  name: 'TimeoutError'
+}
+browsertest: peak 2483 MiB of 4G

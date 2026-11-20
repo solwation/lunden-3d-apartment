@@ -1,0 +1,26 @@
+browsertest: running in browser slot 2 of 2
+PASS desktop: gaming chair/bunk seats still reach Speldatorn [{"seat":"våningssängen","pc":"pc-home"},{"seat":"gamingstolen","pc":"pc-home"}]
+PASS desktop: the secretary starts closed, nothing of the computer drawn {"flap":false,"door":false,"cavity":false,"box":false,"calls":11}
+PASS desktop: E/touch opens the writing flap; both monitors are inside {"cavity":true}
+PASS desktop (sekretar): off at start: screens black, RGB/LED unlit, no wall glow {"calls":21,"emit":0.06525140917003494,"glow":0,"screen":0,"n":4}
+PASS desktop: seated in the Batman chair, E/touch starts Olofs dator {"eye":[1.3699999999999999,4.485,9.2],"feet":[1.3699999999999999,3.25,10]}
+PASS desktop (sekretar): power on lights screens, RGB and LED; draw calls off ≤ on {"closed":11,"off":21,"on":22}
+PASS desktop: the app picker offers YouTube and Spel ["Startsida","YouTube","Spel · Ormstriden","Spel · Klossar","Spel · Meteoriter"]
+PASS desktop (sekretar): Stäng av datorn darkens screens, RGB and LED again {"calls":21,"emit":0.06525140917003494,"glow":0,"screen":0,"n":4}
+PASS desktop: Ormstriden runs on the actual monitor while still seated 
+PASS desktop: E/touch closes the flap again and opens the lower door; the computer box is inside 
+PASS desktop: leaving restores the seated view; standing up works [1.890175594356776,3.25,8.731579941681]
+PASS desktop: a layout saved with the old desk moved + corner shape applies to the secretary {"moved":0.05,"variant":false,"targets":["skrivklaffen","datorluckan","Olofs dator"]}
+PASS touch: gaming chair/bunk seats still reach Speldatorn [{"seat":"våningssängen","pc":"pc-home"},{"seat":"gamingstolen","pc":"pc-home"}]
+PASS touch: the secretary starts closed, nothing of the computer drawn {"flap":false,"door":false,"cavity":false,"box":false,"calls":11}
+PASS touch: E/touch opens the writing flap; both monitors are inside {"cavity":true}
+PASS touch (sekretar): off at start: screens black, RGB/LED unlit, no wall glow {"calls":21,"emit":0.06525140917003494,"glow":0,"screen":0,"n":4}
+PASS touch: seated in the Batman chair, E/touch starts Olofs dator {"eye":[1.3699999999999999,4.485,9.2],"feet":[1.3699999999999999,3.25,10]}
+PASS touch (sekretar): power on lights screens, RGB and LED; draw calls off ≤ on {"closed":11,"off":21,"on":22}
+PASS touch: the app picker offers YouTube and Spel ["Startsida","YouTube","Spel · Ormstriden","Spel · Klossar","Spel · Meteoriter"]
+PASS touch (sekretar): Stäng av datorn darkens screens, RGB and LED again {"calls":21,"emit":0.06525140917003494,"glow":0,"screen":0,"n":4}
+PASS touch: Ormstriden runs on the actual monitor while still seated 
+PASS touch: E/touch closes the flap again and opens the lower door; the computer box is inside 
+PASS touch: leaving restores the seated view; standing up works [1.890175594356776,3.25,8.731579941681]
+PASS no page errors 
+browsertest: peak 2448 MiB of 4G

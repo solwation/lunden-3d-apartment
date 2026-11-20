@@ -19,7 +19,8 @@ const [game,worker,out]=process.argv.slice(2),log=(s,v)=>console.log('PASS',s,v?
    await p.addInitScript(()=>{localStorage.setItem('lunden.name','Olof');sessionStorage.setItem('lunden.nameSkipped','1');});
    await p.goto(`${game}/?shot&test=lazy&time=12&freeze&cloud=${encodeURIComponent(worker)}`);
    await p.waitForFunction(()=>window.__app?.computerHub?.sessions.has('pc-olof')&&window.__ghosts?.connected,null,{timeout:120000});
-   if(mobile)await p.evaluate(()=>{__app.activeMode='touch';__app.touch.enabled=true;__app.showOverlay(false);document.body.classList.add('touch');});
+   // ?shot starts with the HUD hidden on purpose (clean screenshots) and showOverlay(false) returns early: unhide it for the tap pass (#2254)
+   if(mobile)await p.evaluate(()=>{__app.activeMode='touch';__app.touch.enabled=true;__app.showOverlay(false);document.getElementById('hud').hidden=false;document.body.classList.add('touch');});
    // Nearby seats still pick their own (nearest) PC.
    const seats=await p.evaluate(async()=>{const a=__app,T=await import('three'),out=[];
     for(const t of a.world.furnitureTargets)for(const s of t.spots??[])if(s.pc){let best=null,d0=3;for(const pc of a.world.furnitureTargets)if(pc.kind==='pc'){const d=pc.pickable.getWorldPosition(new T.Vector3()).distanceTo(s.pos);if(d<d0){d0=d;best=pc;}}out.push({seat:t.name,pc:best?.mediaId});}
