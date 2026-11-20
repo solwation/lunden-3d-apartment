@@ -40,6 +40,8 @@ import { LIFE_SYNC } from '../src/config.js';
 import { RoomChores, cleanChoreText } from './chores.js'; // #1976: who helped with which chore // #1974: loose things shared between the players
 import { RoomTarget, cleanTarget } from './target.js';
 import { RoomTrails } from './trails.js';
+import { AWAY } from '../src/config.js';
+import { AwayRoster, cleanAwayToken, awayState } from '../src/awaypresence.js'; // #2216
 export { GRAFFITI_SYNC };
 
 // Other players as ghosts (#666): one Durable Object room for everybody (`idFromName('world')`), WebSockets with the
@@ -94,6 +96,11 @@ export { GRAFFITI_SYNC };
 // No new timer, polling or per-frame messages. Legacy commands select the single transport; OFF releases either mode.
 // Room → client: { t: 'w', i: your id, ps: [{ i, n, p, r, h, score, l }], c: { lives, weapons } } on joining; { t: 'j', i, n, l } someone
 // joined; { t: 's', i, p, r, h, score, l } a state (l = server-owned remaining lives); { t: 'x', i } someone left; 'hit' / 'hurt' (#667). n = the name ('' = "Anonym").
+// Away (#2216, src/awaypresence.js): a client that connected with ?a=<per-tab token> and closes with CLOSE.away (tab hidden, start
+// screen, standing still) stays as { t: 's', …last state, aw: 1 } (also in the welcome's ps) for AWAY.ms; then { t: 'x', i, aw: 1 }
+// (aw: the grace already passed, announce now). Reconnecting with the same token and name within the time keeps the id: no 'j',
+// no 'x', the last state again without aw. The entries live in storage 'away'; the shared alarm fires at the next one due.
+// Old clients send no token: their closes are plain leaves; they ignore aw (the figure just stands still until the 'x').
 // Chat (#675, `cleanTalk` / `talk`): { t: 'm', m: text } → the others get { t: 'm', i, n, m } (a sender over the limits gets
 // { t: 'mx' }); "skriver…" (#676): { t: 'k', on } → the others get { t: 'k', i, on }. Nothing of it is stored.
 
@@ -151,7 +158,7 @@ export const COMBAT = {
 // `typingEveryMs`, a refresh of one still on no sooner than `typingRepeatMs`. Our picks (*guess*).
 export const CHAT = { max: 140, burst: 3, everyMs: 1000, perMinute: 12, roomPerMinute: 120, typingEveryMs: 500, typingRepeatMs: 5000 };
 
-export const CLOSE = { idle: 4000, cap: 4001, off: 4003, rate: 4008, full: 4029, big: 1009 };
+export const CLOSE = { idle: 4000, cap: 4001, off: 4003, rate: 4008, full: 4029, big: 1009, away: AWAY.code }; // away: #2216, sent by the client
 
 const month = (t = Date.now()) => new Date(t).toISOString().slice(0, 7);
 const r2 = (v) => Math.round(v * 100) / 100;
@@ -388,8 +395,10 @@ export class PlayerRoom {
     this.graffiti = new RoomGraffiti(() => this.open().map((ws) => ({ ws, a: att(ws) })), send); // #1724: the shared spray paint (memory only, no KV)
     this.trails = new RoomTrails(); // #1773: the recent paths for a late joiner's footprints (memory only, no KV)
     this.paddock = new RoomPaddock(() => this.open().map((ws) => ({ ws, a: att(ws) })), send); // #1644: the shared pony paddock (relay only)
+    this.awayMs = Number.isFinite(env?.AWAY_MS) && env.AWAY_MS > 0 ? env.AWAY_MS : AWAY.ms; // #2216 (AWAY_MS: tests / cloudflare/dev.mjs only)
+    this.away = new AwayRoster([], this.awayMs); this.awayDirty = false;
     this.snake=new RoomSnake(()=>this.open().map(ws=>({ws,a:att(ws)})),()=>this.tvs,send,row=>{if(env?.LUNDEN)this.gameWrites=this.gameWrites.then(()=>recordGame(env.LUNDEN,'ormstriden',row)).catch(()=>{});});
-    ctx.blockConcurrencyWhile?.(async () => { this.pool = (await ctx.storage.get('pool')) ?? null; this.mus = (await ctx.storage.get('mus')) ?? null;await this.cinema.load();for(const tv of this.tvs)await tv.load();await this.riverFish.load(); });
+    ctx.blockConcurrencyWhile?.(async () => { this.pool = (await ctx.storage.get('pool')) ?? null; this.mus = (await ctx.storage.get('mus')) ?? null; this.away = new AwayRoster((await ctx.storage.get('away')) ?? [], this.awayMs);await this.cinema.load();for(const tv of this.tvs)await tv.load();await this.riverFish.load(); });
     if (typeof WebSocketRequestResponsePair === 'function') ctx.setWebSocketAutoResponse(new WebSocketRequestResponsePair('p', 'q'));
   }
 
@@ -415,6 +424,7 @@ export class PlayerRoom {
 
   async scheduleRecovery() {
     const times = this.open().map(att).filter(a => a.l < COMBAT.lives && Number.isFinite(a.healAt)).map(a => a.healAt);
+    if (this.away.size) times.push(this.away.next()); // #2216: the next away player's leave is due
     const next = times.length ? Math.min(...times) : null;
     if (this.recoveryAlarm === undefined) this.recoveryAlarm = await this.ctx.storage.getAlarm();
     const current = this.recoveryAlarm;
@@ -452,6 +462,7 @@ export class PlayerRoom {
     const now = Date.now();
     this.sweep(now);
     for (const ws of this.open()) this.recoverLife(ws, att(ws), now);
+    await this.awayFlush();
     await this.scheduleRecovery();
   }
 
@@ -464,10 +475,23 @@ export class PlayerRoom {
     this.football.trim(ws,a);
     const cinemaSave=Promise.all([this.cinema.flush(),...this.tvs.map(tv=>tv.flush())]);this.ctx.waitUntil?.(cinemaSave);
   }
-  closeAll(code, reason) { for (const ws of this.open()) this.drop(ws, code, reason); }
+  closeAll(code, reason) { for (const ws of this.open()) this.drop(ws, code, reason); if (this.away.clear()) this.awaySave(); } // (#2216: nobody is left to see the away ones)
+
+  // --- #2216: away presence (src/awaypresence.js) ---
+  awaySave() { this.awayDirty = true; }
+  async awayFlush() { if (!this.awayDirty) return; this.awayDirty = false; if (this.away.size) await this.ctx.storage.put('away', this.away.list); else await this.ctx.storage.delete('away'); }
+  /** These away players' time is up (or they were pushed out): the others drop them and announce the leave at once (aw). */
+  awayGone(entries) { for (const e of entries) this.broadcast({ t: 'x', i: e.i, aw: 1 }); if (entries.length) this.awaySave(); }
+  /** The player of `a` closed with CLOSE.away: keep their last state for the others, marked away. */
+  goAway(ws, a, tok, now) {
+    this.awayGone(this.away.add(a, tok, now));
+    this.broadcast({ t: 's', i: a.i, ...awayState(a.s), l: a.l ?? COMBAT.lives, aw: 1 }, ws);
+    this.awaySave();
+  }
 
   /** Close sockets silent for longer than idleMs (a message or an auto-answered heartbeat counts). Runs on traffic only. */
   sweep(now = Date.now()) {
+    this.awayGone(this.away.due(now)); // #2216
     for (const ws of this.open()) {
       const hb = this.ctx.getWebSocketAutoResponseTimestamp?.(ws)?.getTime?.() ?? 0;
       if (now - Math.max(att(ws).t, hb) > PLAYERS.idleMs) this.drop(ws, CLOSE.idle, 'idle');
@@ -584,14 +608,20 @@ export class PlayerRoom {
     if (others.length >= PLAYERS.maxPlayers) return refuse(CLOSE.full, 'full');
     const [client, server] = Object.values(new WebSocketPair());
     this.ctx.acceptWebSocket(server);
-    const i = crypto.randomUUID().slice(0, 8), n = cleanName(url.searchParams.get('n'));
-    const attachment = { i, n, s: null, turned: false, rightFirstTurn: null, leftTinyTurn: null, leftStandingTurn: null, frontTurn: null, rearFirstTurn: null, l: COMBAT.lives, t: now, w: now, c: 0, k: 0, over: false, consumed: [] };
+    const n = cleanName(url.searchParams.get('n')), tok = cleanAwayToken(url.searchParams.get('a')); // #2216: the tab's away token (never relayed)
+    let back = tok ? this.away.take(tok, now) : null; // #2216: back within AWAY.ms: the same id, no join
+    if (back) this.awaySave();
+    if (back && back.n !== n) { this.awayGone([back]); back = null; } // (another name in the same tab: a new player; the old one leaves now)
+    const i = back?.i ?? crypto.randomUUID().slice(0, 8);
+    const attachment = { i, n, s: null, turned: false, rightFirstTurn: null, leftTinyTurn: null, leftStandingTurn: null, frontTurn: null, rearFirstTurn: null, l: back?.l ?? COMBAT.lives, t: now, w: now, c: 0, k: 0, over: false, consumed: [], ...(tok ? { tok } : {}), ...(Number.isFinite(back?.healAt) ? { healAt: back.healAt } : {}) };
     if (!others.length) { this.target.reset(); this.things.reset(); } // (#1974: nobody holds anything in an empty room; #1978: what lies stays)
     attachment.tgs = {...this.target.state};
     server.serializeAttachment(attachment);
-    send(server, JSON.stringify({ t: 'w', conversation: { v: 1 }, picnic:await this.picnic.welcome(), sharedFish:await this.sharedFish.welcome(),nutDrops:await this.squirrels.welcome(now),boule: this.boule.snapshot(), target: this.target.snapshot(), football:this.football.join(server,attachment,now), i, l: attachment.l, ps: others.map(att).map((a) => ({ i: a.i, n: a.n, ...(a.s ?? {}), l: a.l ?? COMBAT.lives })), c: { lives: COMBAT.lives, portionLife: COMBAT.portionLife, weapons: COMBAT.weapons }, ...(others.length ? this.doorsWelcome() : (this.doors.reset(), {})), ...this.thingsWelcome(await this.things.welcome(now)), ...(this.roomTime.welcome(now) ? { tm: this.roomTime.welcome(now) } : {}), trails: this.trails.snapshot(now) })); // (#1773: trails)
+    send(server, JSON.stringify({ t: 'w', conversation: { v: 1 }, picnic:await this.picnic.welcome(), sharedFish:await this.sharedFish.welcome(),nutDrops:await this.squirrels.welcome(now),boule: this.boule.snapshot(), target: this.target.snapshot(), football:this.football.join(server,attachment,now), i, l: attachment.l, ps: [...others.map(att).map((a) => ({ i: a.i, n: a.n, ...(a.s ?? {}), l: a.l ?? COMBAT.lives })), ...this.away.rows(COMBAT.lives)], c: { lives: COMBAT.lives, portionLife: COMBAT.portionLife, weapons: COMBAT.weapons }, ...(others.length ? this.doorsWelcome() : (this.doors.reset(), {})), ...this.thingsWelcome(await this.things.welcome(now)), ...(this.roomTime.welcome(now) ? { tm: this.roomTime.welcome(now) } : {}), trails: this.trails.snapshot(now) })); // (#1773: trails)
     await this.life.welcome(server, now); await this.life.partsWelcome(server); await this.life.messWelcome(server); // #1981, #1990: the room's kitchen, in pages; then the home's other state
-    this.broadcast({ t: 'j', i, n, l: COMBAT.lives }, server);
+    if (back) this.broadcast({ t: 's', i, ...(back.s ?? {}), l: attachment.l }, server); // #2216: still here (no aw), no join notice
+    else this.broadcast({ t: 'j', i, n, l: COMBAT.lives }, server);
+    if (this.awayDirty) { await this.awayFlush(); await this.scheduleRecovery(); }
     this.graffiti.join(server, others.map((ws) => ({ ws, a: att(ws) })), now); // #1724
     return new Response(null, { status: 101, webSocket: client });
   }
@@ -798,6 +828,7 @@ export class PlayerRoom {
     await this.cinema.flush();for(const tv of this.tvs)await tv.flush();
     if (lifeChanged) await this.scheduleRecovery();
     this.sweep(now);
+    if (this.awayDirty) { await this.awayFlush(); await this.scheduleRecovery(); } // #2216
     if (shot?.to || this.recoveryAlarm === undefined) await this.scheduleRecovery();
   }
 
@@ -870,13 +901,14 @@ export class PlayerRoom {
     await this.picnic.ready;await this.sharedFish.ready;await this.squirrels.ready;
     const b = await this.usage();
     b.req++; await this.save(); // counted as a whole request (conservative)
-    const a = att(ws);
+    const a = att(ws), tok = code === CLOSE.away && a?.s ? cleanAwayToken(a.tok) : ''; // #2216: away only on the client's own away close, with a token and a state to show
     try { ws.close(code === 1005 || code === 1006 ? 1000 : code, 'bye'); } catch { /* already closed */ }
-    if (a) this.broadcast({ t: 'x', i: a.i }, ws);
+    if (a) { if (tok) this.goAway(ws, a, tok, Date.now()); else this.broadcast({ t: 'x', i: a.i }, ws); }
     this.things.leave(a); this.life.leave(a); this.picnic.leave(a);this.sharedFish.leave(a);this.poolTrim(ws); this.paddock.trim(ws, a); this.squirrels.trim(ws, a); this.riverFish.trim(ws, a); this.trails.leave(a?.i); this.graffiti.trim(this.open().filter((x) => x !== ws).length); this.roomTime.trim(this.open().filter((x) => x !== ws).length); await this.picnic.flush();await this.squirrels.flush();await this.sharedFish.flush();await this.poolFlush();
     this.cinema.trim(ws);for(const tv of this.tvs)tv.trim(ws);this.snake.trim(ws);
     this.football.trim(ws,a);await this.cinema.flush();for(const tv of this.tvs)await tv.flush();
     await this.football.flush();
+    await this.awayFlush();
     await this.scheduleRecovery();
   }
 

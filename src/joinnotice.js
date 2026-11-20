@@ -24,10 +24,11 @@ export class JoinNotice {
     return true;
   }
 
-  /** Someone left (their connection closed): the notice waits for the grace period. */
-  left(name, look = '') {
+  /** Someone left (their connection closed): the notice waits for the grace period (`grace` ms; #2216: 0 when the room already
+   * kept them as away for AWAY.ms). */
+  left(name, look = '', grace = P.graceMs) {
     const k = JoinNotice.key(name, look);
-    if (!this.pending.has(k)) this.pending.set(k, { name, at: this.now() + P.graceMs });
+    if (!this.pending.has(k)) this.pending.set(k, { name, at: this.now() + grace });
   }
 
   /** Forget everything (our own connection closed: nobody's absence is known any more). */

@@ -4319,6 +4319,12 @@ export const GHOST_PLAYBACK = {
 // recognised by name), notices within `batchMs` become one line naming at most `names` players (then "och N till"). `anon` =
 // the name of a player without one. Our own picks (*guess*).
 export const JOIN_NOTICE = { graceMs: 45_000, batchMs: 1500, names: 3, anon: 'Anonym' };
+// #2216: away presence. A player whose tab is hidden (or who went to the start screen / stood still GHOSTS.idleMs) still closes
+// the socket at once (no background WebSocket, cost), but with close code `code`; the room (cloudflare/players.js, src/awaypresence.js)
+// keeps that player's last state as `aw: 1` for `ms`, then sends the leave. Back within `ms` with the same per-tab `tokenKey`
+// (sessionStorage, sent as ?a=, never relayed) and name, the player keeps the same id: no leave, no join, no duplicate figure.
+// `max` away entries at most (the room's PLAYERS.maxPlayers). `ms` ~2 minutes is the user's wish (*guess*).
+export const AWAY = { ms: 120_000, code: 4100, max: 30, tokenKey: 'lunden.mp.awayToken' };
 // The players' avatars (#705, src/avatar.js): a neutral human figure (Olof's skeleton, src/olof.js) in the ghosts' place and in our
 // own mirror image (#691). Without a weapon only an outline: alpha `fill` inside (very faint) rising to `rim` at the silhouette
 // (a fresnel term of power `rimPower`, in the shader, no extra pass), a little emissive so it reads in the dark; armed and solid it

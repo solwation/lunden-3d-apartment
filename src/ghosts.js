@@ -31,6 +31,8 @@ import { acquireBadge, releaseBadge, badgeScore, badgeLives } from './ghostbadge
 import { setMirrorExtra } from './reflections.js';
 import { GhostCat } from './ghostcat.js';
 import { JoinNotice } from './joinnotice.js';
+import { newAwayToken, cleanAwayToken } from './awaypresence.js'; // #2216
+import { AWAY } from './config.js';
 import { canKiss, kissAmount } from './kiss.js';
 import { canHug, hugAmount, playerChoices } from './hug.js';
 import { Hearts } from './pingping.js';
@@ -54,7 +56,8 @@ import { ghostProp, ghostJetpack, ghostBike, ghostItem } from './ghostprops.js';
 // everybody). Inert without the cloud (cloud.js `cloudUrl`), with GHOSTS.enabled false or ?mp=0. We send our feet and
 // heading at most GHOSTS.hz times a second and only when they changed, a heartbeat 'p' every GHOSTS.beatMs (answered by
 // the runtime, never billed), and disconnect when the tab is hidden, on the start screen, or after GHOSTS.idleMs standing
-// still. The room's cost cap (close 4001) keeps us off for the rest of the month (localStorage 'lunden.mp.capMonth').
+// still. #2216: that close says AWAY.code and the connection carries a per-tab token (?a=), so the room keeps our figure for
+// the others, marked away (`aw`, Ghost.away), for AWAY.ms and lets us back in under the same id; no socket stays open meanwhile. The room's cost cap (close 4001) keeps us off for the rest of the month (localStorage 'lunden.mp.capMonth').
 //
 // Each other player is one avatar (#705, src/avatar.js: a human figure, one skinned mesh = one draw call, shared geometry per
 // variant; an outline without a weapon, solid when both are armed; no shadow, depth-tested so walls and floors hide it) and one name tag sprite ("Anonym" without a name; the canvas
@@ -206,7 +209,8 @@ export class Ghost { // (exported for tools/ghostprops.html)
   }
 
   /** A state from the room at time t (ms). After a pause the last one is repeated just before it, so it walks off smoothly. */
-  push({ p, r, h = '', hi = '', score = 0, l, c = false, sp = false, jp = 0, bk, pose = 0, look = [0, 0], av, ax, cat, dn, am, cq, fb, bp, gx }, t) {
+  push({ p, r, h = '', hi = '', score = 0, l, c = false, sp = false, jp = 0, bk, pose = 0, look = [0, 0], av, ax, cat, dn, am, cq, fb, bp, gx, aw }, t) {
+    this.away = aw === 1; // #2216: the player's tab is hidden (the room keeps them AWAY.ms); #2217's phone pose may read it
     this.bob = Array.isArray(fb) && fb.length === 4 && fb.every(Number.isFinite) ? fb : null; // #1753: their fishing float [x, y, z, bite] (src/fishing.js draws it)
     this.cue = Array.isArray(cq) && cq.length === 3 && cq.every(Number.isFinite) ? cq : null; // #1637: [dx, dz, power] while aiming at the billiard table (src/billiards.js draws it)
     if (av && typeof ax === 'string') av += ax; // #1138: the face extension beside the digits
@@ -571,7 +575,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
     { // #2174: typing in the chat: the head tips down, the right hand holds a phone up in front of the chest (eases in / out; nothing else may own the body)
       const busy = showItem || !!this.mouth || !!this.reach || this.waveT > 0 || !!this.dance || !!this.cue || !!kp || !!this.heldCat.object;
       const ok = typeAllowed({ bike: !!this.bikeMesh, swim: !!wet, armed: !!this.h, air: !!this.air, gym: !!this.gx, lying: this.pose === 2, knock: !!this.knock, kiss: !!kissed, hug: !!hugged, busy });
-      this.typeW = typeStep(this.typeW ?? 0, !!this.typing && ok, dt);
+      this.typeW = typeStep(this.typeW ?? 0, (!!this.typing || !!this.away) && ok, dt); // (#2216: away looks down at the phone too)
       const tp = typePose(this.typeW, -1, this.typeOut ??= { w: 0, hand: { at: [0, 0, 0], pole: [0, 0, 0] }, head: 0, lean: 0 });
       if (tp) { hands.R = blendHand(hands.R ?? armTarget.rest(-1), tp.hand, tp.w); mouthHead += tp.head; mouthLean += tp.lean; }
     }
@@ -726,18 +730,29 @@ export class Ghosts {
   get connected() { return !!this.me && this.ws?.readyState === 1; }
 
   connect() {
-    const n = this.name() || '';
-    const ws = new WebSocket(`${this.url}${n ? `?n=${encodeURIComponent(n)}` : ''}`);
+    const n = this.name() || '', q = new URLSearchParams();
+    if (n) q.set('n', n);
+    q.set('a', this.awayToken); // #2216: the room knows us again when we come back within AWAY.ms (an old Worker ignores it)
+    const ws = new WebSocket(`${this.url}?${q}`);
     this.ws = ws; this.openedAt = performance.now(); this.connects++;
     ws.onmessage = (e) => { if (ws === this.ws) this.message(e.data); };
     ws.onclose = (e) => this.closed(ws, e.code);
   }
 
-  /** Our side closes (hidden, start screen, standing still): everyone's ghost goes too. */
+  /** #2216: this tab's away token (sessionStorage: kept over a reload of the same tab, not shared with other tabs). */
+  get awayToken() {
+    if (this.awayTok) return this.awayTok;
+    let t = '';
+    try { t = cleanAwayToken(sessionStorage.getItem(AWAY.tokenKey)); } catch { /* blocked */ }
+    if (!t) { t = newAwayToken(); try { sessionStorage.setItem(AWAY.tokenKey, t); } catch { /* this page load only */ } }
+    return (this.awayTok = t);
+  }
+
+  /** Our side closes (hidden, start screen, standing still): everyone's ghost goes for us; the others keep ours, away, for AWAY.ms (#2216). */
   disconnect() {
     const ws = this.ws;
     this.ws = null;
-    if (ws) { ws.onclose = null; ws.onmessage = null; try { ws.close(1000, 'bye'); } catch { /* not open yet */ } }
+    if (ws) { ws.onclose = null; ws.onmessage = null; try { ws.close(AWAY.code, 'away'); } catch { /* not open yet */ } }
     this.reset();
   }
 
@@ -777,7 +792,7 @@ export class Ghosts {
       for (const p of m.ps ?? []) { const g = this.add(p.i, p.n, p.av && typeof p.ax === 'string' ? p.av + p.ax : p.av); if (g && p.p) g.push(p, t); }
     } else if (m.t === 'j') { if (this.add(m.i, m.n, m.av)) this.notice.joined(m.n); }
     else if (m.t === 's') (this.others.get(m.i) ?? this.add(m.i, '', m.av && typeof m.ax === 'string' ? m.av + m.ax : m.av))?.push(m, t);
-    else if (m.t === 'x') { const g = this.others.get(m.i); if (g) this.notice.left(g.name === ANON ? '' : g.name); g?.dispose(); this.others.delete(m.i); }
+    else if (m.t === 'x') { const g = this.others.get(m.i); if (g) this.notice.left(g.name === ANON ? '' : g.name, '', m.aw === 1 ? 0 : undefined); g?.dispose(); this.others.delete(m.i); } // (#2216 aw: their away time already passed: announce now)
     else if (m.t === 'hit') this.onHit(m, this.others.get(m.to));
     else if (m.t === 'life') this.onLife?.(m);
     else if (m.t === 'fall') { if (m.id === this.pendingFall?.id) this.finishFall(m); }
@@ -1079,7 +1094,7 @@ export class Ghosts {
     return true;
   }
   /** #1990: are we the one who makes what only one player should make (dust)? The smallest connection id in the room. */
-  get first() { if (!this.connected || !this.me) return true; for (const i of this.others.keys()) if (String(i) < String(this.me)) return false; return true; }
+  get first() { if (!this.connected || !this.me) return true; for (const [i, g] of this.others) if (!g.away && String(i) < String(this.me)) return false; return true; } // (#2216: an away player leads nothing)
 
   /** #1975: a loose thing's take / put / home (src/thingsync.js) { t: 'th', i, k, n, p?, q? }: every one is kept, in order. False when not connected. */
   things(msg) {
@@ -1491,7 +1506,7 @@ export class Ghosts {
 
   /** For tests: what is shown. */
   list() {
-    return [...this.others.values()].map((g) => ({ id: g.id, name: g.name, score: g.score, lives: g.lives, lifeShown: g.badge.lives !== null, visible: g.root.visible, tag: g.tag.visible,
+    return [...this.others.values()].map((g) => ({ id: g.id, name: g.name, away: !!g.away, score: g.score, lives: g.lives, lifeShown: g.badge.lives !== null, visible: g.root.visible, tag: g.tag.visible,
       pos: g.root.position.toArray().map((v) => Math.round(v * 100) / 100), opacity: COMBAT.solid, outline: false, speed: Math.round(g.speed * 100) / 100, h: g.h, solid: g.solid }));
   }
 }

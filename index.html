@@ -1301,7 +1301,7 @@
         <p>Alla som spelar samtidigt i spelets enda flerspelarrum ser dig. Du väljer ingen grupp, och du kan inte välja bort det (annat än att spela utan moln, se längst ned).</p>
         <ul>
           <li>Att du är online: du räknas i besökarantalet och syns i listan ”Spelar just nu” på startskärmen.</li>
-          <li>Din avatar: en figur som rör sig i lägenheten och utomhus, med en skylt med ditt namn (eller ”Anonym”) och din poäng. De ser var du är, åt vilket håll du tittar, vilket vapen du håller och när du skriver i chatten.</li>
+          <li>Din avatar: en figur som rör sig i lägenheten och utomhus, med en skylt med ditt namn (eller ”Anonym”) och din poäng. De ser var du är, åt vilket håll du tittar, vilket vapen du håller och när du skriver i chatten. När du byter flik, går till startskärmen eller står still länge står avataren kvar där du var, markerad som borta, i ungefär två minuter innan den försvinner.</li>
           <li>Det du skriver i chatten, som pratbubbla och i chattkolumnen. Chatten sparas inte.</li>
           <li>Ditt namn och din poäng ligger på topplistan även när du inte är online.</li>
         </ul>
@@ -1319,7 +1319,7 @@
         <ul>
           <li>Namn (eller tomt, då visas ”Anonym”) och poäng till topplistan, med ett slumpmässigt spelar-id. Alla spelare syns för andra.</li>
           <li>Närvaro: att du är online, med namn och poäng, var 30:e sekund.</li>
-          <li>Flerspelarläget: var du står, åt vilket håll du tittar, vilket vapen du håller och det du skriver i chatten, så länge du spelar. Chatten sparas inte.</li>
+          <li>Flerspelarläget: var du står, åt vilket håll du tittar, vilket vapen du håller och det du skriver i chatten, så länge du spelar. Chatten sparas inte. Ett slumpat id för fliken (sessionStorage) gör att servern känner igen dig om du kommer tillbaka inom två minuter; din senaste position finns kvar hos servern så länge.</li>
           <li>Delade teckningar och möblering som du tejpar upp eller flyttar.</li>
           <li>Anonymiserade kraschrapporter: enhet, webbläsare, grafikläge och felmeddelanden, utan namn.</li>
           <li>Din IP-adress hanteras av Cloudflare när du ansluter, men spelet sparar den inte.</li>

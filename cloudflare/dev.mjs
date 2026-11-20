@@ -33,7 +33,7 @@ const reportStorage = { get: async k => structuredClone(reports.get(k)), put: as
 const boards = new Map(); // #1710: the alternative top lists (the DrawingRoom storage in production)
 const boardStorage = { get: async (k) => structuredClone(boards.get(k)), put: async (k, v) => boards.set(k, structuredClone(v)), delete: async (k) => boards.delete(k),
   list: async (o = {}) => new Map([...boards].filter(([k]) => k.startsWith(o.prefix ?? '')).map(([k, v]) => [k, structuredClone(v)])) };
-const env = { LUNDEN, layoutStorage, reportStorage, boardStorage, REPORT_SESSION_SECRET: process.env.LUNDEN_REPORT_SESSION_SECRET, ADMIN_TOKEN: process.argv[3] ?? 'testtoken', SHARK_TEST: process.env.LUNDEN_SHARK_TEST === '1' }; // (#1769: the shark's test schedule)
+const env = { LUNDEN, layoutStorage, reportStorage, boardStorage, REPORT_SESSION_SECRET: process.env.LUNDEN_REPORT_SESSION_SECRET, ADMIN_TOKEN: process.argv[3] ?? 'testtoken', SHARK_TEST: process.env.LUNDEN_SHARK_TEST === '1', ...(Number(process.env.LUNDEN_AWAY_MS) > 0 ? { AWAY_MS: Number(process.env.LUNDEN_AWAY_MS) } : {}) }; // (#1769: the shark's test schedule; #2216: a short away time for peer tests)
 env.PLAYERS = fakeNamespace(PlayerRoom, env); // the players' room (#666): ws://localhost:<port>/players
 
 http.createServer(async (req, res) => {

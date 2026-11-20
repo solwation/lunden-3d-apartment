@@ -88,7 +88,11 @@ Andra besökare syns som genomskinliga spöken med namnskylt (namnet från start
 **inte** via KV utan via en WebSocket till en Durable Object, `PlayerRoom` (`cloudflare/players.js`), en enda instans för
 alla (`idFromName('world')`) med Hibernation API. Klienten (`src/ghosts.js`) skickar sin position högst 5 gånger per sekund
 och bara när den ändrats; står man still går bara ett hjärtslag var tionde sekund, som Cloudflare besvarar automatiskt utan
-att väcka objektet. Klienten kopplar ner när fliken döljs, på startskärmen och efter 2 minuter utan rörelse.
+att väcka objektet. Klienten kopplar ner när fliken döljs, på startskärmen och efter 2 minuter utan rörelse. Sedan #2216 stänger klienten då med kod 4100 och har vid anslutningen skickat ett slumpat flik-id (`?a=`, sessionStorage);
+rummet visar då spelarens senaste läge som borta (`aw: 1`) i `AWAY.ms` (2 minuter) och skickar `x` först därefter, via det
+delade alarmet (ett debiterat anrop per borta-spelare) och lagringsnyckeln `away`. Kommer spelaren tillbaka i tid med samma
+flik-id och namn behålls id:t: ingen ny "kom in", ingen dubbelfigur. Ingen WebSocket hålls öppen under tiden. Gamla klienter
+(utan flik-id) lämnar som förut; en gammal Worker behandlar 4100 som en vanlig avstängning. Test: `node --test cloudflare/away.test.mjs`.
 
 **Vad det kostar** (Workers Paid, $5/månad – siffrorna är *enligt prislistan, verifiera* på
 cloudflare.com/plans/developer-platform; de kunde inte kontrolleras härifrån):

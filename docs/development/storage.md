@@ -397,6 +397,14 @@ src/ghosts.js          other players as ghosts with a name tag (#666), inert wit
                        #675: chat lines { t: 'm', m } (`talk`, a small talkbox sent first in the same 5 Hz budget; chatting keeps
                        the connection as moving does); the room's { t: 'm', i, n, m } / { t: 'mx' } go to `onTalk` (src/chat.js);
                        #676: the typing flag { t: 'k', on } the same way, the room's { t: 'k', i, on } to `onTalk` too
+                       #2216 away presence (`src/awaypresence.js`, AWAY in config.js): every voluntary disconnect (tab hidden, start
+                       screen, GHOSTS.idleMs still) closes with AWAY.code (4100); each connection carries the tab's token `?a=` (sessionStorage
+                       AWAY.tokenKey, never relayed). The room shows the last state as `aw: 1` (`Ghost.away`, read by #2217's phone pose; today
+                       the #2174 typing pose; `first` ignores away players) for AWAY.ms (2 min, *guess*), then `{ t: 'x', i, aw: 1 }` →
+                       JoinNotice announces at once (grace 0). Back within the time with the same token and name: the same id, no 'j'/'x'.
+                       Still no background socket. Tests: cloudflare/away.test.mjs, tools/awaypeertest.cjs (two clients, local dev worker
+                       with `LUNDEN_AWAY_MS`). **Deploy the Worker first**: an old Worker ignores `?a=` and treats 4100 as a plain leave
+                       (today's behaviour); an old client sends no token, so its closes stay plain leaves and it ignores `aw`.
 cloudflare/players.js  the PlayerRoom Durable Object (#666; binding PLAYERS, migration `player-room-v1`): one room 'world', hibernatable
                        sockets with attachments ({ i, n, s, rate window }), monthly billed-request counter 'bill:YYYY-MM' (requests +
                        messages/20, flushed every 100 messages) with the hard cap PLAYERS.monthlyCap, per-socket rate / size / idle limits,
@@ -407,7 +415,12 @@ cloudflare/players.js  the PlayerRoom Durable Object (#666; binding PLAYERS, mig
                        cleaned name, per socket a burst of 3 then 1/s and ≤ 12/min, the room ≤ 120/min, over that { t: 'mx' };
                        nothing stored, counted in the monthly cap like any message; #676 the typing flag { t: 'k', on } (a change
                        only: off always, on ≥ 0.5 s apart, a refresh ≥ 5 s; a line ends it); #719 `censor`: ROUGH words → ***
-                       in every line (cloudflare/chat.test.mjs). Tests: cloudflare/players.test.mjs
+                       in every line (cloudflare/chat.test.mjs). #2216: a close with CLOSE.away from a socket that has a token and a state
+                       keeps an entry { i, n, s (unarmed, `awayState`), l, healAt?, tok, until } in storage 'away' (`AwayRoster`, at most
+                       AWAY.max); the shared alarm fires at the next `until` (one billed request each); `sweep` expires due ones on traffic;
+                       the welcome's `ps` lists them with `aw: 1`; a reconnect with the token and the same name takes the entry back (same id,
+                       lives); another name in the same tab makes the old entry leave at once; `closeAll` (cap / brake) clears them.
+                       `env.AWAY_MS` (dev.mjs: `LUNDEN_AWAY_MS`) shortens the time for tests only. Tests: cloudflare/players.test.mjs
                        (runtime stand-ins cloudflare/devws.mjs, also used by dev.mjs for real ws://; its bridge drops a player on TCP end/half-close too, #1484: cloudflare/devws-bridge.test.mjs), tools/ghosttest.cjs (two pages), tools/resendtest.cjs (#1759: traffic standing / walking and a forced burst drop), tools/squirrelratetest.cjs (#1763: a walking squirrel leader's traffic by type and state gaps at the follower)
 cloudflare/crash.js    POST /crash, admin GET /crash and /crash/<id>, DELETE /admin/crash: size cap 16 kB, plain-data cleaning, per-IP hour
                        limit, one report per browser+signature+day, 400 reports in all, KV TTL 14 days (test: cloudflare/crash.test.mjs)
