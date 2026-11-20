@@ -41,6 +41,7 @@ import { AvatarShadows } from './avatarshadow.js'; // #2010: soft contact shadow
 import { GhostFar } from './ghostfar.js'; // #1966: far players as one draw call
 import { mouthPose, blendHand } from './avatarmouth.js'; // #2160
 import { cueArms, newCueArms, strokePull } from './avatarcue.js'; // #2162
+import { reachPose, toFigureFrame, REACH_TOTAL } from './avatarreach.js'; // #2161
 import { stepBikeRide, bikeGrip, bikeSeat } from './bikeride.js';
 import { ghostProp, ghostJetpack, ghostBike, ghostItem } from './ghostprops.js'; // what an armed player holds: their weapon's own model (#667, #1126)
 
@@ -351,6 +352,8 @@ export class Ghost { // (exported for tools/ghostprops.html)
 
   /** #2160: start a sip / bite / toast move now (`t` as animate's clock); unknown kinds are ignored by mouthPose. */
   startMouth(kind, t = performance.now()) { this.mouth = { kind, start: t }; }
+  /** #2161: reach for the world point `world` [x, y, z] (a door handle, a thing taken / put down) now; out of range it does nothing at animate time. */
+  startReach(world, t = performance.now()) { this.reach = { world: [world[0], world[1], world[2]], start: t }; }
 
   /** A wave (#673): the right arm up and waving for GHOSTS.wave s (armTarget.up, the surface #705 left for it). */
   wave() { this.waveT = G.wave; }
@@ -500,6 +503,21 @@ export class Ghost { // (exported for tools/ghostprops.html)
       if (!mp) this.mouth = null;
       else { hands.R = blendHand(hands.R ?? armTarget.rest(-1), mp.hand, mp.w); mouthHead = mp.head; mouthLean = mp.lean; }
     }
+    let reachCrouch = 0;
+    if (this.reach) { // #2161: a door handle / a thing: the free nearer wrist goes to it, the body bends for a low one (skipped when seated, riding or posed)
+      const ra = (t - this.reach.start) / 1000;
+      if (!(ra < REACH_TOTAL)) this.reach = null;
+      else if (!this.pose && !this.gx && !this.bikeMesh && !wet) {
+        const rp = reachPose(toFigureFrame(this.reach.world, this.root.position.x, this.root.position.z, this.root.rotation.y + this.avatar.object.rotation.y, this.root.position.y, this.reachLocal ??= [0, 0, 0]), ra, this.reachOut ??= { w: 0, side: -1, hand: { at: [0, 0, 0], pole: [0, 0, 0] }, crouch: 0, lean: 0, head: 0 });
+        if (rp) {
+          const near = rp.side < 0 ? 'R' : 'L', far = near === 'R' ? 'L' : 'R', key = !hands[near] ? near : !hands[far] ? far : null; // the nearer hand, else the other when it is busy
+          if (key) { const sd = key === 'R' ? -1 : 1, h = this.reachHand ??= { at: [0, 0, 0], pole: [0, 0, 0] }, f = sd === rp.side ? 1 : -1;
+            for (let i = 0; i < 3; i++) { h.at[i] = rp.hand.at[i]; h.pole[i] = rp.hand.pole[i]; } h.at[0] *= f; h.pole[0] *= f;
+            hands[key] = blendHand(armTarget.rest(sd), h, rp.w); }
+          reachCrouch = rp.crouch; mouthHead += rp.head; mouthLean += rp.lean;
+        }
+      }
+    }
     const kiss = this.kiss;
     const age = kiss ? (t - kiss.start) / 1000 : -1, kissed = kissAmount(age);
     if (kiss && age >= KISS.duration) this.kiss = null;
@@ -531,7 +549,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
     const outdoors = wetEnv.outdoorAt(this);
     this.updateOuter(dt, outdoors); // #2147
     this.avatar.updateWeather(outdoors); // #2018
-    this.avatar.update(dt, { ground: this.ground, floorY: this.root.position.y, motionFrame, groundSpeed: groundEnabled && groundSpeed <= 8 ? groundSpeed : 0, groundEnabled, gaitDir, speed: this.speed * (1 - amount), turn: turn * (1 - amount), pitch: (this.look?.[1] ?? 0) * (1 - amount) - HUG.head * hugged + mouthHead, hands, crouch: wet ? 0 : this.crouch ?? 0, dance: !amount && !react ? this.dance || 0 : 0, react, kiss: kissed, kissReach: kiss?.reach ?? 1, kissLift: kiss?.lift ?? 0, air, airV, swim: !!wet && !amount, dive, jump: ji, fwd: groundEnabled && sp <= 8 ? vx * Math.sin(by) + vz * Math.cos(by) : 0 }); // #2159: the playback curve's forward speed (its change leans the body)
+    this.avatar.update(dt, { ground: this.ground, floorY: this.root.position.y, motionFrame, groundSpeed: groundEnabled && groundSpeed <= 8 ? groundSpeed : 0, groundEnabled, gaitDir, speed: this.speed * (1 - amount), turn: turn * (1 - amount), pitch: (this.look?.[1] ?? 0) * (1 - amount) - HUG.head * hugged + mouthHead, hands, crouch: wet ? 0 : Math.max(this.crouch ?? 0, reachCrouch), dance: !amount && !react ? this.dance || 0 : 0, react, kiss: kissed, kissReach: kiss?.reach ?? 1, kissLift: kiss?.lift ?? 0, air, airV, swim: !!wet && !amount, dive, jump: ji, fwd: groundEnabled && sp <= 8 ? vx * Math.sin(by) + vz * Math.cos(by) : 0 }); // #2159: the playback curve's forward speed (its change leans the body)
     updateFace(this.avatar, dt, { wave: this.waveT > 0, hug: hugged, kiss: kissed, react: react ? REACT.kinds[react.kind]?.id : null, gym: this.gx ? 0.6 + 0.4 * Math.sin(Math.PI * this.gx[1]) : 0, run: this.avatar.gt?.run ?? 0 }); // #2031: the face follows what the figure does
     updateBreath(this.avatar, dt, { run: this.avatar.gt?.run ?? 0, gym: this.gx ? 1 : 0 }, this.self ? null : this); // #2037: the face's run / gym signal: flush, sweat, breath in the cold
     if (wet) sink(this.avatar.swimAmt, this.avatar.swimLine, this.avatar.diveAmt); // (blending in from standing on the bed)

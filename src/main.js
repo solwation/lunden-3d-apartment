@@ -19,7 +19,7 @@ import { growGymPump } from './stats.js';
 import { pumpSampler } from './gympump.js';
 import { saveStats } from './stats.js';
 import { playerLocalStorage as localStorage, playerSessionStorage as sessionStorage } from './playerprofiles.js';
-import { KISS, HUG, REACT, SCORE, SQUIRRELS } from './config.js';
+import { KISS, HUG, REACT, SCORE, SQUIRRELS, REACH } from './config.js';
 import { MATERIAL_CHOICES, materialChoices, materialChoice } from './materialcatalog.js';
 import { crashlog } from './crashlog.js'; // first: its heartbeat and error hooks start before the rest loads (#629; inert without the cloud)
 import { CinemaPlayer } from './cinemaplayer.js';
@@ -3407,6 +3407,7 @@ playroom.music.peers = () => ghosts.others.values(); // #1667: existing dn poses
   for (const [g, c] of [['L', core], ['A', coreA], ['B', coreB], ['C', coreC]]) c.doors.forEach((d, i) => doorSync.register(`${g}${i}`, d));
   garage.targets.filter((t) => t.kind === 'cabinet' && t.door).forEach((t, i) => doorSync.register(`g${i}`, t));
   if (garage.door) doorSync.register('q0', garage.door, { isOpen: () => garage.door.target > 0 });
+  doorSync.onRemote = (by, at) => { const g = ghosts.others.get(by); if (g && at) g.startReach([at[0], g.root.position.y + REACH.handle, at[2]]); }; // #2161: their figure reaches for the handle
   ghosts.onDoors = (m) => doorSync.receive(m);
 }
 // #1975 (part of #1964): the weapons and tools one player puts down are seen and can be taken by the others (src/thingshare.js; the
@@ -3526,6 +3527,7 @@ playroom.cueRack.away = (c) => { if (!thingShare.live) return false; const s = t
 // the fishing rod: its own "back under the bridge" timer (#1781) is left to whoever put it down
 thingShare.register('r0', fishing.rod);
 fishing.rodKept = () => { const s = thingShare.ledger.get('r0'); return thingShare.live && s.m === 'world' && s.by !== (ghosts.me ?? ''); };
+thingShare.onOther = (by, at) => { const g = ghosts.others.get(by); if (g && at) g.startReach(at); }; // #2161: their figure reaches for the thing
 ghosts.onThings = (m) => (m.welcome ? thingShare.welcome(m.welcome) : thingShare.receive(m));
 // #1981 (part of #1964): the life simulator's things (food, dishes, laundry, rubbish) are ONE kitchen for the room (src/lifeshare.js;
 // the room: cloudflare/life.js). Never in the `&life` developer scenario (it rebuilds the kitchen for itself).

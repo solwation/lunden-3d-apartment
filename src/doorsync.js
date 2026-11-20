@@ -31,7 +31,13 @@ export class DoorSync {
   /** One message from the room: a change { t: 'dr', i, o, at } or the welcome's list { t: 'dr', list: [[id, 1], …] }. */
   receive(m) {
     if (Array.isArray(m?.list)) { for (const [i, o] of m.list) this.apply(i, o, 0, true); return; }
-    this.apply(m?.i, m?.o, m?.at ?? 0, false);
+    const changed = this.apply(m?.i, m?.o, m?.at ?? 0, false);
+    if (changed && m.by) this.onRemote?.(m.by, this.where(m.i), m); // #2161: who did it and where its handle is (the others' figures reach for it)
+  }
+
+  /** #2161: a registered door's opening centre as [x, null, z] (the floor level is the viewer's: the caller adds the handle height), or null when unknown. */
+  where(id) {
+    try { const c = this.doors.get(id)?.door.opening?.().center; return c ? [c[0], null, c[1]] : null; } catch { return null; }
   }
 
   apply(id, o, at, quiet) {

@@ -9064,6 +9064,13 @@ export const MOUTH = {
 // forward stroke stays after the table sees the cue vanish.
 export const CUE_ARM = { shoulderY: 1.42, shoulderX: 0.2, bridgeS: 0.22, gripS: 0.8, reach: 0.78, comfort: 0.5, leanBase: 0.3, leanK: 0.55, leanMax: 0.85, ease: 7, shot: 0.05,
   poleL: [0.55, -0.7, -0.4], poleR: [-0.7, -0.4, -0.5] };
+// #2161: what others see when a player opens a door or takes / puts down a loose thing: the nearer wrist reaches to the handle / thing for
+// `up` s, holds `hold` s and returns over `down` s (the first-person reach is about 0.35 s too). All *guess*, tuned by eye. Derived locally from
+// the target's position (no wire field). `arm` m = how far the wrist gets from the shoulder, `range` m = the horizontal distance beyond which
+// nothing is reached (the event came from a player too far away to be at it), `shoulder` m = the figure frame's shoulder height. Below
+// `bendFrom` m the figure bends: `crouch` (share of a full squat) and `lean` rad forward and `head` rad looking down grow linearly down to
+// `bendTo` m (a thing on the floor); `handle` m = a door handle's height over the figure's floor; `sideX` m = how far to the side before the other hand is used.
+export const REACH = { handle: 1.0, up: 0.35, hold: 0.3, down: 0.4, arm: 0.74, range: 2.4, shoulder: 1.42, bendFrom: 0.95, bendTo: 0.1, crouch: 0.8, lean: 0.15, head: 0.5, sideX: 0.1 };
 
 // #2153: room acoustics. One shared reverb send bus feeds two ConvolverNodes (crossfaded between zones) with procedural impulse
 // responses (decaying noise, no files). All values are *guess*: no acoustic measurements exist; chosen to be audible but modest.

@@ -52,6 +52,7 @@ export class ThingShare {
   /** The room's word about a thing, applied to the real one. */
   apply(e, s, why) {
     const it = e.item, mine = s.by === this.me();
+    if (!mine && s.by && why === 'room' && (s.m === 'held' || s.m === 'world')) this.onOther?.(s.by, s.m === 'world' ? s.p : this.whereIs(it), s.m); // #2161: somebody else took / put it: where (their figure reaches for it)
     if (why === 'refused' && s.m === 'world' && this.mode(it) === 'world') return; // (a re-put of a standing thing was refused, e.g. from too far: what we see stays)
     if (s.m === 'held') {
       if (mine) return; // (our own take, echoed; or refused while we hold it anyway)
@@ -74,6 +75,8 @@ export class ThingShare {
       e.last = this.mode(it);
     }
   }
+  /** #2161: where a thing is now (world), or null. */
+  whereIs(it) { try { it.model.updateWorldMatrix?.(true, false); const p = it.model.getWorldPosition(new it.model.position.constructor()); return [p.x, p.y, p.z]; } catch { return null; } }
   /** Back to its own place (`opt.goHome` for things that are no Holdable). */
   goHome(e) { if (e.opt.goHome) e.opt.goHome(e.item); else e.item.goHome(); }
   /** The room's welcome: `list` = the things that are not at home. After it our own changes are sent. */
