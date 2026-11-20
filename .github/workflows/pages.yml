@@ -47,8 +47,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # tools/todo.py reads the open issues (#340)
       - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+      - id: upload
+        uses: actions/upload-pages-artifact@v3
         with:
           path: _site
+      - name: Wait for the uploaded Pages artifact
+        uses: ./.github/actions/wait-for-pages-artifact
+        timeout-minutes: 2
+        with:
+          artifact-id: ${{ steps.upload.outputs.artifact_id }}
       - id: deployment
         uses: actions/deploy-pages@v4

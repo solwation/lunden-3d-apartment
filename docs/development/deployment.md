@@ -167,6 +167,22 @@ the cloud (`tools/resettest.html`, with `node cloudflare/dev.mjs`)
 between `src/` files in the form `from './x.js'` on one line so the stamp regex finds them.
 Use relative paths only.
 
+## Pages artifact visibility (#2266)
+
+After upload, the Pages job waits for the exact `artifact_id` from that step. It
+uses the same job-scoped Actions Results list as `deploy-pages@v4`.
+[Run 44802874581](https://github.com/solwation/lunden-3d-apartment/actions/runs/44802874581)
+reported zero artifacts immediately after upload. Checking the run later via the public REST
+API can show the artifact even when deployment could not see it at the time.
+See the [deploy-pages lookup](https://github.com/actions/deploy-pages/blob/d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e/src/internal/api-client.js#L47-L100).
+
+A matching artifact proceeds immediately. An empty listing gets up to 13 checks
+five seconds apart, with a four-second network timeout per check. A persistent
+absence, duplicate name, mismatched ID or service error fails the wait step before
+deployment. Keep the run ID, upload ID and wait-step log when investigating.
+If publication needs another run, follow the fresh-run procedure below. To verify
+the wait offline, run `node --test .github/actions/wait-for-pages-artifact/index.test.cjs`.
+
 ## Pages recovery after duplicate artifacts (#2236)
 
 The original `pages.yml` has one `deploy` job containing both

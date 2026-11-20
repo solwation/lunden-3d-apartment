@@ -1,0 +1,9 @@
+name: Wait for uploaded Pages artifact
+description: Wait until deploy-pages can list the artifact from this upload.
+inputs:
+  artifact-id:
+    description: The artifact_id output of upload-pages-artifact.
+    required: true
+runs:
+  using: node24
+  main: index.cjs
