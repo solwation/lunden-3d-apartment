@@ -108,9 +108,7 @@ const [game,worker,out]=process.argv.slice(2),log=(s,v)=>console.log('PASS',s,v?
    const back=await p.evaluate(()=>__app.camera.position.toArray());
    assert(back.every((v,i)=>Math.abs(v-seated.eye[i])<1e-3),JSON.stringify({back,seated}));
 
-   await p.evaluate(()=>__app.standUp());await p.waitForFunction(()=>!__app.rest.active);
-   const stood=await p.evaluate(()=>__app.player.pos.toArray());log(`${tag}: leaving restores the seated view; standing up works`,stood);
-   // #2224: standing, E/touch closes the flap (the open flap is in the way of the low door) and opens the lower door: the computer box
+   // #2224: still seated, E/touch closes the flap (open, it is in the way of the low door) and opens the lower door: the computer box
    if(!mobile){await p.evaluate(()=>document.getElementById('game-canvas').requestPointerLock());await p.waitForFunction(()=>!!document.pointerLockElement);}
    await aimAt('skrivklaffen');await act();
    await p.waitForFunction(new Function(`const f=${front('skrivklaffen')},s=__app.computerHub.sessions.get('pc-olof').target;return !f.isOpen&&f.t<=0&&!s.pickable.visible;`),null,{timeout:20000});
@@ -118,6 +116,8 @@ const [game,worker,out]=process.argv.slice(2),log=(s,v)=>console.log('PASS',s,v?
    await p.waitForFunction(new Function(`const d=${front('datorluckan')};return d.isOpen&&d.t>=1&&d.contents.visible;`),null,{timeout:20000});
    log(`${tag}: E/touch closes the flap again and opens the lower door; the computer box is inside`);
    if(!mobile)await view('oppen-nederdel',[.35,1.0,1.45],[-.33,.36,-.05]);
+   await p.evaluate(()=>__app.standUp());await p.waitForFunction(()=>!__app.rest.active);
+   const stood=await p.evaluate(()=>__app.player.pos.toArray());log(`${tag}: leaving restores the seated view; standing up works`,stood);
    if(!mobile){ // #2224: a layout saved before (old desk id moved 5 cm, its stored corner shape) still applies to the secretary
     const legacy=await p.evaluate(async()=>{const a=__app,id='f-tillydesk-1-2.292-9.43-0-0',piece=a.rearrange.pieces.find(q=>q.id===id),o=piece.object,T=await import('three');
      const was=o.getWorldPosition(new T.Vector3()),q=o.getWorldQuaternion(new T.Quaternion()),st=a.rearrange.state;

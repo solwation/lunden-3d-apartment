@@ -9016,7 +9016,8 @@ again, and draw calls off ≤ on (the app plane). Since #2224 (Berdi secretary) 
 (cavity and computer box not drawn), opens the writing flap with E/touch from the Batman chair before
 using the computer, closes it and opens the lower door standing, and applies a layout with the old desk id
 moved 5 cm plus a stored `corner` shape. Desktop result images share desk-local views: `stangd`, `av-sekretar`,
-`pa-sekretar`, `oppen-nederdel`. `node --test tools/berditest.mjs` checks the pure secretary layout.
+`pa-sekretar`, `oppen-nederdel`. `node --test tools/berditest.mjs` checks the pure secretary layout. `computerpowertest`/`computerscreentest` open the
+secretary's flap before posing at `pc-olof` and stand 1.25 m from its monitor, clear of the open flap.
 `tools/tillydeskvarianttest.cjs` (#1569, #1596, corner desk shape) was retired with the desk in #2224.
 `node --test cloudflare/materialcatalog.test.mjs` still covers the whitelisted `variant` surface.
 
