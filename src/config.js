@@ -7047,7 +7047,7 @@ export const TILLY_DESK = {
     cubbyShelf: .40,           // y of the shelf between the two open cubby rows (guess)
     flapMax: 90, doorMax: 100, // degrees open (guess)
     handle: { size: [.12,.012,.018], flapY: .62, door: [.32,.012,.018] }, // black bar grips: flap grip from the hinge, door grip (guess)
-    color: 0xc4a172, inside: 0xb89664, // Sonoma oak, inside a shade darker (guess by eye from typical Sonoma melamine)
+    color: 0xcfb48d, inside: 0xc0a47c, // Sonoma oak, inside a shade darker (guess by eye from typical Sonoma melamine)
   },
   round: .006,
   // Devices inside, cabinet-local positions (guesses that fit the 1.068 m interior): both monitors on stands at the back

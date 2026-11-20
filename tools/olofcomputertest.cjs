@@ -40,7 +40,10 @@ const [game,worker,out]=process.argv.slice(2),log=(s,v)=>console.log('PASS',s,v?
    const aim=async()=>{await p.evaluate(()=>{const a=__app,m=a.computerHub.sessions.get('pc-olof').target.mesh;m.updateWorldMatrix(true,false);
     const c=m.getWorldPosition(new (a.camera.position.constructor)());a.camera.lookAt(c);a.camera.updateMatrixWorld(true);});
     await p.waitForFunction(()=>__app.focus().focused?.mediaId==='pc-olof',null,{timeout:20000});return 'pc-olof';};
-   await aim();
+   // #2224: the secretary is shut, so look at its closed writing flap instead (the monitors are behind it)
+   await p.evaluate(()=>{const a=__app,o=a.world.furnitureTargets.find(t=>t.name==='skrivklaffen').object,c=new (a.camera.position.constructor)();
+    o.updateWorldMatrix(true,true);o.children[0].getWorldPosition(c);a.camera.lookAt(c);a.camera.updateMatrixWorld(true);});
+   await p.waitForFunction(()=>__app.focus().focused?.name==='skrivklaffen',null,{timeout:20000});
    // The sit-down blend can still run on a loaded machine: capture the seated eye once it has settled.
    await p.waitForFunction(()=>{const e=__app.camera.position.toArray(),q=window.__eye;window.__eye=e;return q&&e.every((v,i)=>Math.abs(v-q[i])<1e-4);},null,{polling:500,timeout:20000});
    const seated=await p.evaluate(()=>({eye:__app.camera.position.toArray(),feet:__app.player.pos.toArray()}));
@@ -54,7 +57,7 @@ const [game,worker,out]=process.argv.slice(2),log=(s,v)=>console.log('PASS',s,v?
    const view=async(name,from=[.95,1.45,1.75],to=[-.05,.85,-.1])=>{await p.evaluate(async([from,to])=>{const a=__app,T=await import('three'),g=a.computerHub.sessions.get('pc-olof').target.pickable.parent;
      a.__keep=[a.camera.position.clone(),a.camera.quaternion.clone()];g.updateWorldMatrix(true,true);
      a.camera.position.copy(g.localToWorld(new T.Vector3(...from)));a.camera.lookAt(g.localToWorld(new T.Vector3(...to)));a.camera.updateMatrixWorld(true);
-     a.testMode.setFull(true);a.step(0);a.testMode.draw();},[from,to]);
+     a.testMode.setFull(true);a.testMode.draw();},[from,to]);
     await p.screenshot({path:`${out}/${name}.png`,timeout:240000});
     await p.evaluate(()=>{const a=__app;a.testMode.setFull(false);a.camera.position.copy(a.__keep[0]);a.camera.quaternion.copy(a.__keep[1]);a.camera.updateMatrixWorld(true);});};
    const shape='sekretar',act=async()=>{if(mobile)await p.locator('#action').tap();else await p.keyboard.press('KeyE');};
