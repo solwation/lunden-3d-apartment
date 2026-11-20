@@ -1,0 +1,103 @@
+{
+  "result": {
+    "ghostMesh": 12090,
+    "avatarMesh": 12090,
+    "ancestry": [
+      {
+        "id": 12090,
+        "name": "ghost:Anonym",
+        "type": "SkinnedMesh",
+        "visible": true,
+        "mask": 128
+      },
+      {
+        "id": 12089,
+        "name": "AvatarScene",
+        "type": "Group",
+        "visible": true,
+        "mask": 1
+      },
+      {
+        "id": 12088,
+        "name": "avatar",
+        "type": "Group",
+        "visible": true,
+        "mask": 1
+      },
+      {
+        "id": 12106,
+        "name": "",
+        "type": "Group",
+        "visible": true,
+        "mask": 1
+      },
+      {
+        "id": 12067,
+        "name": "ghosts",
+        "type": "Group",
+        "visible": true,
+        "mask": 1
+      },
+      {
+        "id": 23,
+        "name": "",
+        "type": "Scene",
+        "visible": true,
+        "mask": 1
+      }
+    ],
+    "children": [
+      {
+        "id": 12090,
+        "name": "ghost:Anonym",
+        "type": "SkinnedMesh",
+        "visible": true,
+        "mask": 128,
+        "isGhostMesh": true,
+        "isAvatarMesh": true
+      }
+    ],
+    "baselineDraws": 0,
+    "states": [
+      {
+        "mode": "fullSelf",
+        "draws": 0,
+        "visible": true,
+        "bs": null
+      },
+      {
+        "mode": "forceVisible",
+        "draws": 1,
+        "visible": true,
+        "bs": 0.8900619045604861
+      },
+      {
+        "mode": "noClip",
+        "draws": 2,
+        "visible": true,
+        "bs": 0.8900619045604861
+      },
+      {
+        "mode": "noColorCull",
+        "draws": 3,
+        "visible": true,
+        "bs": 0.8900619045604861
+      }
+    ],
+    "uniform": [
+      0,
+      0
+    ],
+    "material": {
+      "blending": 5,
+      "alphaToCoverage": true,
+      "opacity": 1
+    },
+    "pos": [
+      12.5,
+      0,
+      26.2
+    ]
+  },
+  "errors": []
+}

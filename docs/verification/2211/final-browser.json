@@ -1,0 +1,45 @@
+{
+  "fabric": [
+    {
+      "mode": "before",
+      "draws": 2,
+      "triangles": 18048,
+      "rigged": true,
+      "term": "if (fbSheen > 0.0) { // #2165\n    float fbV = 1.0 - clamp(dot(normalize(normal), normalize(vViewPosition)), 0.0, 1.0);\n    vec3 fbIn = (reflectedLight.directDiffuse + reflectedLight.indirectDiffuse * 0.60000) / max(diffuseColor.rgb, vec3(0.05000));\n    reflectedLight.directSpecular += fbIn * mix(diffuseColor.rgb, vec3(1.0), fbWhite) * (fbSheen * 3.00000 * pow(fbV, 2.20000) * (1.0 - fbV));\n  }"
+    },
+    {
+      "mode": "after",
+      "draws": 2,
+      "triangles": 18048,
+      "rigged": true,
+      "term": "if (fbSheen > 0.0) { // #2165\n    float fbV = 1.0 - clamp(dot(normalize(normal), normalize(vViewPosition)), 0.0, 1.0);\n    vec3 fbIn = (reflectedLight.directDiffuse + reflectedLight.indirectDiffuse * 0.60000) / max(diffuseColor.rgb, vec3(0.05000));\n    reflectedLight.directSpecular += fbIn * mix(diffuseColor.rgb, vec3(1.0), fbWhite) * (fbSheen * 3.00000 * pow(fbV, 2.20000) * (1.0 - fbV));\n  }"
+    }
+  ],
+  "start": {
+    "player": [
+      12.5,
+      0,
+      26.2
+    ],
+    "root": [
+      12.5,
+      0,
+      26
+    ],
+    "mask": 1,
+    "geometry": 53766,
+    "programs": 70,
+    "noDetail": true
+  },
+  "crouch": {
+    "player": [
+      12.5,
+      0,
+      26.2
+    ],
+    "crouched": true,
+    "bodyCrouch": 1,
+    "mask": 1
+  },
+  "errors": []
+}

@@ -1,0 +1,14 @@
+{
+  "normalBlend": {
+    "bbox": null,
+    "differentPixels": 0
+  },
+  "noCoverage": {
+    "bbox": null,
+    "differentPixels": 0
+  },
+  "noRim": {
+    "bbox": null,
+    "differentPixels": 0
+  }
+}

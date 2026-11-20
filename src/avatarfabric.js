@@ -4,7 +4,8 @@
 //  - roughness: the kind's value replaces the cloth finish (wet cloth, #2018, still wins: the shift fades with the wetness);
 //  - sheen: a fuzz / satin lobe, brighter where the surface turns away from the eye (1 - N·V)^pow, built from the light the lights already
 //    summed (direct + ambient diffuse divided by the albedo) so it follows every light and the sun with no light loop; its colour is the
-//    cloth's own tinted towards white by `white`. Knit and fleece get the strong halo of loose fibres, jersey a little, denim almost none.
+//    cloth's own tinted towards white by `white`. #2211 fades the lobe at the exact silhouette (N·V=0), so loose fibres read
+//    as a broad soft highlight rather than a white contour. Knit/fleece still have more sheen than jersey, denim almost none.
 // The jeans (kind 3) are also faded and worn: lighter and a little rougher over the front of the knees and thighs, whiskers at the lap and
 // honeycombs behind the knees (thin lines, prefiltered by the pixel footprint), pale seams (outseam, inseam) and a worn hem.
 // All over the bind-pose position (rides with skinning). Numbers: AVATAR_FABRIC in config.js (guesses). `FABRIC.on = false` (before a
@@ -91,6 +92,6 @@ export function fabricLight() {
   return `if (fbSheen > 0.0) { // #2165
     float fbV = 1.0 - clamp(dot(normalize(normal), normalize(vViewPosition)), 0.0, 1.0);
     vec3 fbIn = (reflectedLight.directDiffuse + reflectedLight.indirectDiffuse * ${f(FB.ambient)}) / max(diffuseColor.rgb, vec3(${f(FB.minAlbedo)}));
-    reflectedLight.directSpecular += fbIn * mix(diffuseColor.rgb, vec3(1.0), fbWhite) * (fbSheen * ${f(FB.gain)} * pow(fbV, ${f(FB.power)}));
+    reflectedLight.directSpecular += fbIn * mix(diffuseColor.rgb, vec3(1.0), fbWhite) * (fbSheen * ${f(FB.gain)} * pow(fbV, ${f(FB.power)}) * (1.0 - fbV));
   }`;
 }

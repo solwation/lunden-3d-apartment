@@ -146,6 +146,8 @@ export class Ghost { // (exported for tools/ghostprops.html)
     this.avatar.setPump(this.pump ?? 0);
     this.avatar.setSolid(true); // always solid (#1025)
     this.mesh = this.avatar.mesh;
+    // #2211: dynamic bodies are positioned after static detail collection; Ghosts already owns their visibility/LOD.
+    this.mesh.userData.noDetail = true;
     this.mesh.name = `ghost:${this.name}`;
     this.root = new THREE.Group();
     this.root.add(this.avatar.object);
@@ -192,6 +194,8 @@ export class Ghost { // (exported for tools/ghostprops.html)
     this.onAvatar?.(this.avatar); // #1966: the new body fades by distance too
     if (this.pack) { this.avatar.bones.torso.add(this.pack); }
     this.mesh = this.avatar.mesh;
+    // #2211: dynamic bodies are positioned after static detail collection; Ghosts already owns their visibility/LOD.
+    this.mesh.userData.noDetail = true;
     this.mesh.name = `ghost:${this.name}`;
     this.root.add(this.avatar.object);
     if (this.tag) {

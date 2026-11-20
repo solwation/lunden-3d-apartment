@@ -1,0 +1,46 @@
+{
+  "result": {
+    "pos": [
+      12.5,
+      0,
+      26.2
+    ],
+    "meshMask": 1,
+    "noDetail": true,
+    "frames": [
+      {
+        "mode": "baseline",
+        "outline": 0,
+        "mask": 1,
+        "blending": 5,
+        "alphaToCoverage": true,
+        "materialVisible": true
+      },
+      {
+        "mode": "normalBlend",
+        "outline": 0,
+        "mask": 1,
+        "blending": 1,
+        "alphaToCoverage": false,
+        "materialVisible": true
+      },
+      {
+        "mode": "noCoverage",
+        "outline": 0,
+        "mask": 1,
+        "blending": 5,
+        "alphaToCoverage": false,
+        "materialVisible": true
+      },
+      {
+        "mode": "noRim",
+        "outline": 0,
+        "mask": 1,
+        "blending": 5,
+        "alphaToCoverage": true,
+        "materialVisible": true
+      }
+    ]
+  },
+  "errors": []
+}

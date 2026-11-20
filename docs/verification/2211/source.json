@@ -1,0 +1,58 @@
+{
+  "base": "51ab09eedd75a06f2bd0ae648b0c82bc994d4aaf",
+  "sourceSHA256": {
+    "src/ghosts.js": "9c3ae7cbd0807294c7cbfe50bb89174824af72912a65f046002b86022f7c8935",
+    "src/avatar.js": "136be929c5688ba31763f639abca56f31f8b6c46b55bc1704d61912acbab6625",
+    "src/avatarflyaway.js": "64b44626d6967beac73b8ef943149843fc1aaa49bf901a7ac6101241318e4bb1",
+    "src/detail.js": "8a2a9f2687c93d366e8c3c3271da159281a099aa66f24388351e3eb375e8a84f",
+    "src/main.js": "c87bfb7b75eba916f6dfd2c615a8b0007985d33ae3f94e5a474bcd5f0ece045f"
+  },
+  "beforeStartSource": "root own actual app diagnosis, same issue/checkout/server, inspected by worker",
+  "beforeStartSHA256": "fbb16e58ef1eb9736bbee1df7b5ca97a834de4b8ee9935cf704e4d1588d22323",
+  "finalSource": {
+    "src/ghosts.js": {
+      "sha256": "9c3ae7cbd0807294c7cbfe50bb89174824af72912a65f046002b86022f7c8935",
+      "servedMatch": true
+    },
+    "src/avatarfabric.js": {
+      "sha256": "bdb6754519c06e555f4162d69caf0c7b9360d0f9824f79350d47c3c6b70fd614",
+      "servedMatch": true
+    },
+    "src/avatar.js": {
+      "sha256": "136be929c5688ba31763f639abca56f31f8b6c46b55bc1704d61912acbab6625",
+      "servedMatch": true
+    },
+    "src/avatarflyaway.js": {
+      "sha256": "64b44626d6967beac73b8ef943149843fc1aaa49bf901a7ac6101241318e4bb1",
+      "servedMatch": true
+    },
+    "src/detail.js": {
+      "sha256": "8a2a9f2687c93d366e8c3c3271da159281a099aa66f24388351e3eb375e8a84f",
+      "servedMatch": true
+    },
+    "src/main.js": {
+      "sha256": "c87bfb7b75eba916f6dfd2c615a8b0007985d33ae3f94e5a474bcd5f0ece045f",
+      "servedMatch": true
+    },
+    "src/avatarselfview.js": {
+      "sha256": "bd5927e325df82a163dc520a30a2bc4de65e0253f675ac6a09be5a05e83c1f9a",
+      "servedMatch": true
+    },
+    "src/config.js": {
+      "sha256": "bccfb10fb2099413dba8c86b326d3dc498b7d3270fa8670a5a60c6f7401d61cf",
+      "servedMatch": true
+    }
+  },
+  "productionFrozenDuringFinalBrowser": true,
+  "finalImages": {
+    "before/start.png": "fbb16e58ef1eb9736bbee1df7b5ca97a834de4b8ee9935cf704e4d1588d22323",
+    "after-start.png": "ea52eecc7ceb74c73a04374a2c34d26b3f5f2200f85d91056c132ecd296a53c3",
+    "after-crouch.png": "3df11747e4abc173579fcb6b657fbe5aa0ec31aa5d13aec65d0f17cf0c2c5ef3",
+    "before/fabric.png": "4cdb1e50cf4fdab5800d1b50162bbfaf1faf358509c6117e9dd8f56b15455d2b",
+    "after-fabric.png": "cc6292283b9da117e2007965e2e8fc72b4b328f5e5f0d1e8a68be8505efe97a3"
+  },
+  "verificationSHA256": {
+    "tools/self2211final.cjs": "b35033162061064d1cec52b882376a7a5af4f9ac71586198dee179bfc362f30d",
+    "tools/self2211test.mjs": "bcc47789940c3796d688a1d97572f25aecb605895ee9248c6e384a289f0986f8"
+  }
+}

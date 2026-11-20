@@ -1,0 +1,21 @@
+{
+  "roi": [
+    275,
+    200,
+    510,
+    460
+  ],
+  "definition": "cloth-dominated green pixels: G>R+3 and G>B+3; Rec.709 display luma in byte units",
+  "result": {
+    "before/fabric.png": {
+      "greenClothPixelsInFixedROI": 44760,
+      "lumaAbove190": 1613,
+      "maxLuma": 253.86079999999995
+    },
+    "after-fabric.png": {
+      "greenClothPixelsInFixedROI": 44883,
+      "lumaAbove190": 2,
+      "maxLuma": 190.8804
+    }
+  }
+}

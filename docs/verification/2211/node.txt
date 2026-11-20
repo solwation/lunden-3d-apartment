@@ -1,0 +1,76 @@
+TAP version 13
+# Subtest: every weave kind has its own finish; knit and fleece are the fuzziest, denim the least
+ok 1 - every weave kind has its own finish; knit and fleece are the fuzziest, denim the least
+  ---
+  duration_ms: 1.071692
+  type: 'test'
+  ...
+# Subtest: jeans wear: the front of the knee and thigh fade more than the back, the seams and hem are pale
+ok 2 - jeans wear: the front of the knee and thigh fade more than the back, the seams and hem are pale
+  ---
+  duration_ms: 0.586496
+  type: 'test'
+  ...
+# Subtest: wear stays within 0 … 1, honeycombs and whiskers fade out with the pixel footprint
+ok 3 - wear stays within 0 … 1, honeycombs and whiskers fade out with the pixel footprint
+  ---
+  duration_ms: 2.997479
+  type: 'test'
+  ...
+# Subtest: GLSL strings carry every kind and are empty when off
+ok 4 - GLSL strings carry every kind and are empty when off
+  ---
+  duration_ms: 0.440597
+  type: 'test'
+  ...
+# Subtest: only settled ordinary Rest while playing enables the own body
+ok 5 - only settled ordinary Rest while playing enables the own body
+  ---
+  duration_ms: 1.262691
+  type: 'test'
+  ...
+# Subtest: real transformed seats retain their anchor, three poses and chosen-height support despite independent gaze
+ok 6 - real transformed seats retain their anchor, three poses and chosen-height support despite independent gaze
+  ---
+  duration_ms: 5.45216
+  type: 'test'
+  ...
+# Subtest: mask composes with the established shader and defaults to complete remote/mirror appearance
+ok 7 - mask composes with the established shader and defaults to complete remote/mirror appearance
+  ---
+  duration_ms: 0.563796
+  type: 'test'
+  ...
+# Subtest: \#2145: the standing body shows only where it fits (stand, walk, crouch), never in vehicles, water, air, gym or seats
+ok 8 - \#2145: the standing body shows only where it fits (stand, walk, crouch), never in vehicles, water, air, gym or seats
+  ---
+  duration_ms: 0.238298
+  type: 'test'
+  ...
+# Subtest: \#2145: the standing body is rooted behind the eye along its heading
+ok 9 - \#2145: the standing body is rooted behind the eye along its heading
+  ---
+  duration_ms: 0.278098
+  type: 'test'
+  ...
+# Subtest: own body created before detail collection draws at spawn without a camera step, including a replacement look
+ok 10 - own body created before detail collection draws at spawn without a camera step, including a replacement look
+  ---
+  duration_ms: 484.673466
+  type: 'test'
+  ...
+# Subtest: ordinary static furnishing still keeps the existing stationary-eye culling policy
+ok 11 - ordinary static furnishing still keeps the existing stationary-eye culling policy
+  ---
+  duration_ms: 1.618188
+  type: 'test'
+  ...
+1..11
+# tests 11
+# suites 0
+# pass 11
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1071.236383

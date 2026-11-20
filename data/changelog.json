@@ -1,4 +1,5 @@
 [
+  {"id": 1732, "date": "2026-11-20", "text": "Den egna kroppen syns nu direkt när du tittar ned, och klädernas ljusa konturlinje är borta.", "group": "avatars", "issues": [2211]},
   {"id": 1731, "date": "2026-11-20", "text": "Kjolens och klänningens fåll bildar inte längre en tunn rem mellan knäna när figuren sitter på huk."},
   {"id": 1730, "date": "2026-11-20", "text": "Fryslappen sammanfattar nu förbättringar inom samma ämne och visar vilka ärenden de hör till.", "issues": [2226]},
   {"id": 1729, "date": "2026-11-20", "text": "Bilarna på parkeringarna är nu olika sorters bilar: småbil, kombi, SUV och skåpbil.", "issues": [2201]},
