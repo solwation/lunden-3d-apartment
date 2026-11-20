@@ -399,7 +399,7 @@ are separate tests.
 Two successful Windows Shipping cooks with Epic UE 5.8.4 (CL 58902052) used the same
 stock OpenWorld level and Lunden material fixture. The second started from a fresh
 project directory, with identical project descriptor, engine-version file, Config and
-Content bytes. The SHA-256 over the sorted source checksum listing was
+Content bytes. The SHA-256 over the sorted Config/Content file checksums followed by the descriptor and engine-version checksums was
 `66adea0af851e638608b0a082442ab04ed6ed9bcd00bdc4b7e03efcb92f1d889`.
 The source snapshot paired the 24d416d2 fixture with the content-only descriptor and
 test from 4e1e8a4b. Both runs used the host's existing derived-data cache. UAT elapsed
@@ -421,6 +421,13 @@ The measurements do not isolate the cause of the differences.
 Run `node tools/unreal-engine/compare-cooks.mjs FIRST_PAKS SECOND_PAKS` against each
 archive's `Lunden/Content/Paks` directory. It streams each container and reports its
 relative name, size and SHA-256. [Full five-file comparison](../verification/2248/stock-cooks.json).
+
+With two independently assigned zones in a fixed project directory, the two clean baseline
+cooks matched byte for byte across all 11 containers. Moving one actor in Zone A changed
+its chunk 1 UCAS and UTOC and chunk 0's PAK (the embedded `AssetRegistry.bin` changed).
+The other eight containers, including Zone B's entire chunk, remained identical. A client
+running the original signed stock executable displayed the moved actor after replacing
+those three files (11,224,531 bytes). [Two-zone experiment, images and all hashes](../verification/2248/zone-spike.md).
 
 #### Verify published package files before promoting a manifest
 
