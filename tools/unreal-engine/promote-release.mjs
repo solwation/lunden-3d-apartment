@@ -7,7 +7,7 @@ import { verifyPublishedBytes } from './verify-published.mjs';
 
 const repo = 'solwation/lunden-3d-apartment';
 const api = 'https://api.github.com/repos/' + repo + '/releases';
-const tags = /^(?:app-v(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)|content-(?:0|[1-9]\d*))$/;
+const tags = /^(?:(?:app-)?v(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)|content-(?:0|[1-9]\d*))$/;
 const channels = { stable: 'lunden-manifest.json', test: 'lunden-manifest-test.json' };
 
 async function metadata(endpoint, optional = false) {
@@ -35,7 +35,7 @@ function hasChannel(files, name) {
 
 async function snapshot(tag) {
   if (typeof tag !== 'string' || tag.length > 128 || !tags.test(tag) || tag !== tag.trim())
-    throw Error('Expected app-vMAJOR.MINOR.PATCH or content-N.');
+    throw Error('Expected app-vMAJOR.MINOR.PATCH, vMAJOR.MINOR.PATCH or content-N.');
   const [candidate, latest] = await Promise.all([metadata('/tags/' + tag), metadata('/latest', true)]);
   if (candidate.tag_name !== tag || !Number.isSafeInteger(candidate.id) || candidate.id <= 0 ||
       candidate.draft !== false || candidate.prerelease !== false || !candidate.published_at)

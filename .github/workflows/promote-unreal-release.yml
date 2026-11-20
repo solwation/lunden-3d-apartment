@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Published release tag (app-vMAJOR.MINOR.PATCH or content-N)'
+        description: 'Published release tag (vMAJOR.MINOR.PATCH, app-vMAJOR.MINOR.PATCH or content-N)'
         required: true
         type: string
 
