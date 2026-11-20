@@ -1,0 +1,51 @@
+browsertest: no systemd user scope here, running without a memory ceiling
+  … +0s loading three pages, one after another
+  … +128s pages loaded; waiting for A and B to see each other
+PASS +128s A and B connected and see each other — 0 s + 0 s; A: [{"n":"Anonym","h":"","solid":false,"op":1},{"n":"Tuva","h":"","solid":false,"op":1}] B: [{"n":"Olof","h":"","solid":false,"op":1},{"n":"Tuva","h":"","solid":false,"op":1}] A state: {"conn":true,"ws":1,"me":"93b47c8f","connects":1,"retryIn":-127893,"still":59,"backoff":0,"overlay":true}
+  … +128s A takes a blaster
+PASS +129s armed A and unarmed B see each other fully visible without combat eligibility (B sees A carry the blaster) — [{"n":"Olof","h":"nerf","solid":false,"op":1},{"n":"Tuva","h":"","solid":false,"op":1}]
+FAIL +132s an unarmed player cannot be hit (no shot even sent)
+PASS +132s no hearts without a fight
+PASS +132s unarmed B is shown no shots
+  … +132s B takes the saber, C a wand
+PASS +132s A sees B (saber) and C (wand) fully visible
+PASS +132s B sees A fully visible
+PASS +132s C sees both fully visible
+PASS +132s the hearts show during the fight (10/10)
+  … +132s A misses with a dart
+PASS +133s B sees A's missed dart start where A's did, same direction and speed — {"seenMiss":{"w":"nerf","o":[1.32,1.47,11.1],"d":[0.197,0.03,-0.98],"s":30,"from":"93b47c8f"},"a":{"from":[1.3241069330036086,1.4700000000000002,11.10010379628191],"d":[0.19674941020035758,0.029986509105671,-0.9799951422621782],"s":30.000000000000004}}
+PASS +133s a dart from the blasters' own pool flies on B's screen (drawn only) — {"visible":true,"pos":[1.32,1.47,11.1]}
+PASS +133s a miss hurts nobody; the other's dart is not B's own (not counted)
+  … +133s A throws the ball
+PASS +206s B sees A's ball thrown on its arc — {"w":"ball","o":[1.28,1.53,11.35],"d":[0.317,0.527,-0.788],"s":9.07,"from":"93b47c8f"}
+PASS +233s the ball is in view on B's screen (screenshot) — [{"pos":[1.71,2.1,10.28],"ndc":[0.44,0.77,0.884],"layer":1,"flying":true,"life":3.85}]
+  … +233s A shoots the bow
+PASS +234s the bow: A's arrow hits B, B sees it fly (same speed) and has a life less — {"bowShot":{"w":"bow","o":[1.22,1.46,11.54],"d":[0.625,-0.242,-0.742],"s":42,"to":"322ca55c","state":{"held":true,"conn":true,"weapon":"bow","foes":2,"shots":1,"aim":[2.5999999999999996,1,9.9]}},"seenArrow":{"w":"bow","o":[1.22,1.46,11.54],"d":[0.625,-0.242,-0.742],"s":42,"from":"93b47c8f"},"bowB":{"lives":9,"arrow":true}}
+  … +234s C's screenshot
+PASS +319s actual Nerf muzzle path prepared clear (setup only, warm-cache scenario) — {"target":"Anonym","elapsedMs":185,"o":[1.6199787070263205,1.4700000000000002,11.341168437404344],"d":[0.642498550362597,0.029986509105670998,-0.7656999556311969],"metrics":{"pending":0,"ready":128,"accountedBytes":1048576,"bitBytes":524288,"clusterBytes":196608,"spatialBytes":16760904,"spatialEntries":890,"spatialReady":890,"buildCpuMs":6242.399998664856,"maxChunkMs":18.40000009536743,"prunedQueries":0,"fallbackQueries":0,"pathInstances":6567,"pathSelectedInstances":0,"asyncSlices":31,"maxAsyncSliceMs":3,"lastPath":{"result":false,"reason":"clear","stage":"traversal","elapsedMs":184.10000002384186,"activeMs":65.39999985694885,"yieldMs":118.700000166893,"cacheWaitMs":0,"maxSliceMs":3,"promotedCaches":0,"deadlineOverrunMs":0}}}
+  … +319s ten hits
+  … +319s hit 2
+  … +319s hit 2 arrived after 0 s; B has 9 lives
+  … +319s hit 3
+  … +320s hit 3 arrived after 0 s; B has 8 lives
+  … +320s hit 4
+  … +321s hit 4 arrived after 0 s; B has 7 lives
+  … +321s hit 5
+  … +322s hit 5 arrived after 0 s; B has 6 lives
+  … +322s hit 6
+  … +322s hit 6 arrived after 0 s; B has 5 lives
+  … +323s hit 7
+  … +323s hit 7 arrived after 0 s; B has 4 lives
+  … +324s hit 8
+  … +324s hit 8 arrived after 0 s; B has 3 lives
+  … +325s hit 9
+  … +325s hit 9 arrived after 0 s; B has 2 lives
+  … +326s hit 10
+  … +326s hit 10 arrived after 0 s; B has 1 lives
+PASS +326s A stays connected through the fight (never dropped for shooting) — {"conn":true,"connects":1,"messages":154}
+FAIL +326s each hit takes a life; the tenth sends B back with all lives — [9,8,7,6,5,4,3,2,1]
+PASS +326s A scores each hit (stats pvpHits, SCORE.each; the bow's hit came before `before`) — {"hits":10,"pvp":10}
+PASS +326s B gets a deduction per hit — {"pen":10,"deaths":0,"pos":[2.6,9.9],"held":true,"target":200,"safeSpawn":false}
+FAIL +326s out of lives: B wakes on checked outdoor ground — [2.6,9.9]
+PASS +326s nothing else is reset: B still holds the saber and keeps its stats
+SOME FAILED (3)

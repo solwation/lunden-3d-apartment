@@ -1,0 +1,28 @@
+browsertest: running in browser slot 2 of 2
+browsertest: no systemd user scope here, running without a memory ceiling
+  … +0s loading three pages, one after another
+  … +136s pages loaded; waiting for A and B to see each other
+PASS +136s A and B connected and see each other — 0 s + 0 s; A: [{"n":"Anonym","h":"","solid":false,"op":1},{"n":"Tuva","h":"","solid":false,"op":1}] B: [{"n":"Olof","h":"","solid":false,"op":1},{"n":"Tuva","h":"","solid":false,"op":1}] A state: {"conn":true,"ws":1,"me":"5eb6c13a","connects":1,"retryIn":-135643,"still":68,"backoff":0,"overlay":true}
+  … +136s A takes a blaster
+PASS +136s armed A and unarmed B see each other fully visible without combat eligibility (B sees A carry the blaster) — [{"n":"Olof","h":"nerf","solid":false,"op":1},{"n":"Tuva","h":"","solid":false,"op":1}]
+FAIL +139s an unarmed player cannot be hit (no shot even sent)
+PASS +139s no hearts without a fight
+PASS +139s unarmed B is shown no shots
+  … +139s B takes the saber, C a wand
+PASS +140s A sees B (saber) and C (wand) fully visible
+PASS +140s B sees A fully visible
+PASS +140s C sees both fully visible
+PASS +140s the hearts show during the fight (10/10)
+  … +140s A misses with a dart
+PASS +140s B sees A's missed dart start where A's did, same direction and speed — {"seenMiss":{"w":"nerf","o":[1.36,1.47,11.12],"d":[0.245,0.03,-0.969],"s":30,"from":"5eb6c13a"},"a":{"from":[1.3586821145706995,1.4700000000000002,11.117177079553498],"d":[0.24548286776972716,0.029986509105671008,-0.9689370314438428],"s":29.999999999999996}}
+PASS +140s a dart from the blasters' own pool flies on B's screen (drawn only) — {"visible":true,"pos":[1.36,1.47,11.12]}
+PASS +140s a miss hurts nobody; the other's dart is not B's own (not counted)
+  … +140s A throws the ball
+PASS +235s B sees A's ball thrown on its arc — {"w":"ball","o":[1.26,1.53,11.34],"d":[0.28,0.522,-0.805],"s":9.74,"from":"5eb6c13a"}
+PASS +258s the ball is in view on B's screen (screenshot) — [{"pos":[1.67,2.15,10.16],"ndc":[0.52,0.88,0.879],"layer":1,"flying":true,"life":3.85}]
+FAIL +258s test crashed — page.evaluate: TypeError: Cannot read properties of null (reading 'putBack')
+    at eval (eval at evaluate (:290:30), <anonymous>:1:49)
+    at UtilityScript.evaluate (<anonymous>:292:16)
+    at UtilityScript.<anonymous> (<anonymous>:1:44)
+    at /home/devcontainers/wt/olw-win10-gpt-6-20261120-2210/tools/combattest.cjs:117:18
+SOME FAILED (2)

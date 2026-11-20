@@ -1527,6 +1527,10 @@ tools/combattest.cjs   fights (#667): three pages (A, B, C) against dev.mjs: una
                        Pages drive ghosts / combat updates themselves (SwiftShader frames take seconds). combatsteps.cjs requires
                        reciprocal connected foes and propagated weapons before dependent shots (timeout throws), keeps peers
                        moving during both full-quality screenshots, and stops/restores camera yaw plus screenshot state in finally.
+                       #2210 explicitly aims the bow at B's current torso after readiness: keepalive camera turns do not
+                       define aim, and this ten-life sequence requires a body hit rather than a cosmetic-size-dependent head hit.
+                       Both full-render screenshots precede the damage chain so a slow screenshot cannot heal the arrow
+                       injury via the real 60-second Worker recovery alarm before the nine Nerf hits.
                        Socket closes/reconnects are logged. #769 uses test=lazy and paused automatic loops during gameplay,
                        explicit real updates, and full rendering for both pictures. Its warm-cache setup verifies the actual
                        Nerf muzzle arc clear within 30 s; every subsequent real shot keeps the production 2 s deadline.

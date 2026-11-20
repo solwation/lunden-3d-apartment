@@ -112,19 +112,9 @@ async function until(fn, ms = 60000) { const t = Date.now(); for (;;) { const v 
       finally { await B.page.setViewportSize({ width: 320, height: 200 }); }
     } });
     check(ballOnB.length === 1 && ballOnB[0].ndc.every((x) => Math.abs(x) < 1), 'the ball is in view on B\'s screen (screenshot)', JSON.stringify(ballOnB));
-    // #690: the bow — A draws fully and looses at B: B sees the arrow and loses a life
-    step('A shoots the bow');
-    await A.page.evaluate(() => window.__bow.take());
-    await sees(B.page, (l) => l.find((g) => g.n === 'Olof')?.h === 'bow');
-    await ready('bow');
-    const bowShot = await A.page.evaluate(() => { const b = window.__bow; b.trigger(true); b.draw = 1; b.trigger(false); const c = window.__combat;
-      return { ...c.lastShot, state: { held: b.held, conn: window.__ghosts.connected, weapon: c.weapon(), foes: c.foes().length, shots: b.shots } }; });
-    const seenArrow = await shotSeen(3);
-    await until(async () => { await A.page.evaluate(() => { window.__ghosts.update(); window.__ghosts.sendShot(); }); return B.page.evaluate(() => window.__combat.hurts === 1); }, 180000);
-    const bowB = await B.page.evaluate(() => ({ lives: window.__combat.lives, arrow: window.__arrows.list.some((a) => a.remote && a.m.visible) }));
-    check(bowShot?.w === 'bow' && bowShot.to && seenArrow?.w === 'bow' && Math.abs(seenArrow.s - 42) < 0.1 && bowB.arrow && bowB.lives === 9,
-      'the bow: A\'s arrow hits B, B sees it fly (same speed) and has a life less', JSON.stringify({ bowShot, seenArrow, bowB }));
-    await A.page.evaluate(() => { window.__bow.putBack(); window.__app.toys.blasters[0].take(); }); // (the blaster again)
+    // Render the slow observer picture BEFORE any damage: real Worker recovery
+    // heals one heart after 60 s, so screenshots must not split the ten-hit chain.
+    await A.page.evaluate(() => { const app = window.__app; app.heldItem()?.putBack(); app.toys.blasters[0].take(); });
     step('C\'s screenshot');
     // screenshot: C's view of two solid armed players
     await sees(C.page, (l) => l.length === 2 && l.every((g) => g.solid));
@@ -139,6 +129,28 @@ async function until(fn, ms = 60000) { const t = Date.now(); for (;;) { const v 
       finally { await C.page.setViewportSize({ width: 320, height: 200 }); }
     } });
     await sees(A.page, (l) => l.length === 2 && l.every((g) => g.solid)); // (back from any idle while the screenshot rendered)
+    // #690: the bow — A draws fully and looses at B: B sees the arrow and loses a life
+    step('A shoots the bow');
+    await A.page.evaluate(() => window.__bow.take());
+    await sees(B.page, (l) => l.find((g) => g.n === 'Olof')?.h === 'bow');
+    await ready('bow');
+    const bowShot = await A.page.evaluate(() => {
+      const app = window.__app, c = window.__combat, b = window.__bow;
+      const foe = c.foes().find(g => g.name === 'Anonym');
+      if (!foe) throw new Error('Bow target B disappeared after readiness');
+      // Readiness/screenshot keepalives turn the camera; they do not establish aim.
+      // This life-count scenario needs a BODY hit, independent of cosmetic head size.
+      const aim = foe.feet.clone(); aim.y += 1;
+      app.camera.lookAt(aim); app.scene.updateMatrixWorld(true);
+      b.trigger(true); b.draw = 1; b.trigger(false);
+      return { ...c.lastShot, state: { held: b.held, conn: window.__ghosts.connected, weapon: c.weapon(), foes: c.foes().length, shots: b.shots, aim: aim.toArray() } };
+    });
+    const seenArrow = await shotSeen(3);
+    await until(async () => { await A.page.evaluate(() => { window.__ghosts.update(); window.__ghosts.sendShot(); }); return B.page.evaluate(() => window.__combat.hurts === 1); }, 180000);
+    const bowB = await B.page.evaluate(() => ({ lives: window.__combat.lives, arrow: window.__arrows.list.some((a) => a.remote && a.m.visible) }));
+    check(bowShot?.w === 'bow' && bowShot.to && !bowShot.hc && seenArrow?.w === 'bow' && Math.abs(seenArrow.s - 42) < 0.1 && bowB.arrow && bowB.lives === 9,
+      'the bow: A\'s arrow hits B, B sees it fly (same speed) and has a life less', JSON.stringify({ bowShot, seenArrow, bowB }));
+    await A.page.evaluate(() => { window.__bow.putBack(); window.__app.toys.blasters[0].take(); }); // (the blaster again)
     // ten hits (one arrow, nine darts): points for A, deductions and lives off for B, then B wakes on checked outdoor ground with all lives
     const before = { a: await A.page.evaluate(() => window.__app.stats.pvpHits ?? 0), bScore: await B.page.evaluate(() => window.__app.totalScore()) };
     await B.page.evaluate(() => { window.__app.stats.target = (window.__app.stats.target ?? 0) + 200; }); // something to deduct from
