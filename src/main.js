@@ -10,7 +10,8 @@ import { OUTDOOR, WALK } from './config.js';
 import { GroundPlacement } from './groundplacement.js';
 import { finishStartupCaches } from './startupcache.js';
 import { DanceTime } from './dancescore.js';
-import { stepSurface } from './stepsurface.js';
+import { stepInfo } from './stepsurface.js';
+import { pickStep } from './footsteps.js';
 import { OutdoorGym } from './outdoorgym.js';
 import { GymEffortHUD } from './gymefforthud.js';
 import { welcomeSettings, finishWelcome } from './welcome.js';
@@ -139,7 +140,7 @@ import { Quality } from './quality.js';
 import { QualitySetting } from './qualitysetting.js';
 import { HitchLog } from './hitchlog.js';
 import { applySeason, registeredTrees } from './seasons.js';
-import { SnowCover, snowState } from './snowcover.js';
+import { SnowCover, snowState, calendarCover } from './snowcover.js';
 import { buildSnowShelter } from './snowground.js';
 import { snowCapUniform, snowCapOn } from './snowcap.js';
 import { updateInstanceLods } from './lod.js';
@@ -1397,6 +1398,10 @@ function visitUse(thing) {
   } else if (thing.kind === 'lid') sfx.lid(thing.object.getWorldPosition(new THREE.Vector3()), thing.isOpen);
 }
 
+// #2193: the profile of a step (snow crunch, wet splash, hollow stair, leaf rustle) from the ground class and the weather state that
+// already exists (snow cover, ground wetness, temperature, month); `groundWet` / `snowState` are read once per audible step.
+const stepProfile = (pos) => pickStep(stepInfo(world, pos), { snow: snowState.driven ? snowState.cover : calendarCover(day.month),
+  wet: groundWet.wet, temp: weather.temp ?? 10, month: day.month });
 // footsteps every stride while walking on the ground
 let stride = 0;
 const lastPos = new THREE.Vector3();
@@ -1409,7 +1414,7 @@ function footsteps() {
   if (stride < (player.sprinting ? PLAYER.strideRun : PLAYER.strideWalk)) return;
   stride = 0;
   bump('steps');
-  sfx.step(stepSurface(world, player.pos));
+  sfx.step(stepProfile(player.pos));
 }
 function spawnAtStart() {
   slideRide.cancel(false); // a reset owns the new position, never return to an old ride start
@@ -3639,7 +3644,7 @@ ghosts.onToast = (m, g) => {
 // their footsteps and jetpack roar are derived here from their state (ghosts.js soundTick), all through sfx.playAt (fade, direction, voice cap)
 sfx.onMouth = (kind) => { ghosts.sound(kind); }; // #2160: our sip / bite goes to the room (others see the arm go to the mouth); their toast / sip / bite is posed in ghosts.js
 ghosts.onPlayerSound = (m, g) => { if (m.k === 'bell') sfx.playAt(g.head, 'bell'); };
-ghosts.onStep = (g) => sfx.playAt(g.feet, 'step', 1, stepSurface(world, g.feet));
+ghosts.onStep = (g) => sfx.playAt(g.feet, 'step', 1, stepProfile(g.feet));
 ghosts.onJet = (g) => sfx.playAt(g.head, 'jet');
 const bellBtn = document.getElementById('bell-btn');
 // #1637: the charged billiard stroke's power meter (desktop and touch), only while charging

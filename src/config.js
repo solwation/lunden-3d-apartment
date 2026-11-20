@@ -9541,7 +9541,17 @@ export const FOOTSTEPS = {
     hard:   { duration: .16, hz: 98, endHz: 52, body: .17, noise: .13, cutoff: 700 },
     grass:  { duration: .22, hz: 64, endHz: 36, body: .07, noise: .085, cutoff: 480 },
     gravel: { duration: .20, hz: 76, endHz: 42, body: .09, noise: .12, cutoff: 1050 },
+    // #2193 (artistic *guess*): weather / place variants picked by footsteps.js pickStep from state that already exists. `grain` = how
+    // many crackle flickers ride on the noise envelope (one gain node, no extra sources); `partial` = one extra short sine (squeak / ring).
+    snow:     { duration: .22, hz: 58, endHz: 34, body: .05, noise: .13, cutoff: 1500, grain: 7 },                                   // crunchy powder
+    snowCold: { duration: .22, hz: 58, endHz: 34, body: .05, noise: .13, cutoff: 1900, grain: 9, partial: { hz: 2300, endHz: 2700, gain: .018, duration: .14 } }, // the squeak below `squeakTemp`
+    wet:      { duration: .24, hz: 90, endHz: 50, body: .12, noise: .17, cutoff: 2200 },                                              // slapping splash on wet paving
+    stair:    { duration: .2, hz: 112, endHz: 70, body: .2, noise: .1, cutoff: 800, partial: { hz: 190, endHz: 170, gain: .06, duration: .22 } }, // hollow concrete treads
+    leaves:   { duration: .2, hz: 70, endHz: 40, body: .05, noise: .12, cutoff: 3000, grain: 8 },                                     // dry rustle
   },
+  // pickStep thresholds: snow cover (0…1) from which steps crunch; °C at or below which it squeaks; ground wetness (0…1) for splashes;
+  // `leafMonths` = SITE.leaves.months; `floorTol` m: a stairwell foot within this of a landing level is on the floor, otherwise on a tread.
+  snowMin: .15, squeakTemp: -5, wetMin: .35, leafMonths: [9, 10, 11], floorTol: .06, grainFloor: .12,
 };
 
 // ---- Squirrels (#1672, src/squirrelbrain.js, src/squirrels.js) ----

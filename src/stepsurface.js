@@ -1,4 +1,4 @@
-import { SITE, COURTYARD, LEVELS, UNIT_TOP, GARAGE, TILED_ROOMS, FOOTSTEPS as F } from './config.js';
+import { SITE, COURTYARD, LEVELS, UNIT_TOP, GARAGE, TILED_ROOMS, FOOTSTEPS as F, storeyFloor } from './config.js';
 import { onRoad, onWalk } from './roads.js';
 import { parkDeckAt } from './riverpark.js';
 import { insidePoly } from './parkinglayout.js';
@@ -21,30 +21,38 @@ function contains(p, x, z) {
   }
   return false;
 }
-/** An acoustic approximation from existing room, paving and path data; no scene rays or new geometry. */
-export function stepSurface(world, { x, y, z }) {
-  if (world.playroom?.contains(x, z)) return 'wood';
-  if (world.core?.contains(x, z, y) || (world.garage?.inside(x, z) && y < GARAGE.floor + F.garageHeadroom)) return 'hard';
+/** #2193: the underfoot class for a step: { surface (the #1519 profile), where: 'ground' (open ground, paving, roads) | 'exposed' (decks,
+ * roofs, patio) | 'core' (stairwell, garage) | 'indoor', road, stairs (on a stairwell tread, not a landing) }. Same data as before; no rays. */
+export function stepInfo(world, { x, y, z }) {
+  const r = (surface, where, extra) => ({ surface, where, road: false, stairs: false, ...extra });
+  if (world.playroom?.contains(x, z)) return r('wood', 'indoor');
+  if (world.core?.contains(x, z, y) || (world.garage?.inside(x, z) && y < GARAGE.floor + F.garageHeadroom)) {
+    const inCore = world.core?.contains(x, z, y), levels = [GARAGE.floor, storeyFloor(1), storeyFloor(2), storeyFloor(3), ...(world.core?.parts ?? []).flatMap(c => c.Y ?? [])];
+    return r('hard', 'core', { stairs: !!inCore && !levels.some(f => Math.abs(y - f) < F.floorTol) });
+  }
   const unit = world.unitAt?.(x, z, y);
   if (unit) {
     const room = unit.roomAt(unit.levelAt(y), x, z) ?? '';
-    return /hall|badrum|wc|dusch|tvätt/i.test(room) ? 'hard' : 'wood';
+    return r(/hall|badrum|wc|dusch|tvätt/i.test(room) ? 'hard' : 'wood', 'indoor');
   }
   if (x > 0 && z > 0 && x < world.size.x && z < world.size.z && y < UNIT_TOP - F.indoorTopMargin) {
     const level = y > LEVELS[1].floor - F.floorBand ? 1 : 0;
-    return TILED_ROOMS.some(r => r.level === level && inRect(r, x, z)) ? 'hard' : 'wood';
+    return r(TILED_ROOMS.some(t => t.level === level && inRect(t, x, z)) ? 'hard' : 'wood', 'indoor');
   }
   const deck = parkDeckAt(x, z);
-  if (deck !== null && Math.abs(y - deck) < F.floorBand) return 'wood';
+  if (deck !== null && Math.abs(y - deck) < F.floorBand) return r('wood', 'exposed');
   const roof = world.roofs?.under(x, z, y, F.floorBand);
-  if (roof && Math.abs(y - roof.y) < F.floorBand) return 'hard';
+  if (roof && Math.abs(y - roof.y) < F.floorBand) return r('hard', 'exposed');
   // Existing horizontal occluders include the actual patio paving footprint.
-  if (world.openings?.opaque?.some(r => r.y0 === r.y1 && Math.abs(y - r.y0) < F.floorBand && inRect(r, x, z))) return 'hard';
-  if (onRoad(x, z) || onWalk(x, z) || paving.some(r => inRect(r, x, z))) return 'hard';
-  if (COURTYARD.gravel.some(r => inRect(r, x, z))) return 'gravel';
-  for (const { p, bounds } of paths) if (inRect(bounds, x, z) && contains(p, x, z)) return p.surface === 'gravel' ? 'gravel' : 'hard';
-  return 'grass';
+  if (world.openings?.opaque?.some(o => o.y0 === o.y1 && Math.abs(y - o.y0) < F.floorBand && inRect(o, x, z))) return r('hard', 'exposed');
+  if (onRoad(x, z)) return r('hard', 'ground', { road: true });
+  if (onWalk(x, z) || paving.some(q => inRect(q, x, z))) return r('hard', 'ground');
+  if (COURTYARD.gravel.some(q => inRect(q, x, z))) return r('gravel', 'ground');
+  for (const { p, bounds } of paths) if (inRect(bounds, x, z) && contains(p, x, z)) return r(p.surface === 'gravel' ? 'gravel' : 'hard', 'ground');
+  return r('grass', 'ground');
 }
+/** An acoustic approximation from existing room, paving and path data; no scene rays or new geometry. */
+export const stepSurface = (world, pos) => stepInfo(world, pos).surface;
 
 /** #2153: the listener's indoor room class for the reverb: 'concrete' (stairwell, garage/basement), 'bright' (bathroom, laundry, tiled
  * halls), 'soft' (other rooms, playroom), or null outdoors. Same data and conditions as `stepSurface`'s indoor branches. */

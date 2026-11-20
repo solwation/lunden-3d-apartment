@@ -1,0 +1,224 @@
+{
+  "checks": [
+    "every variant is audible and does not clip",
+    "every variant stays within 1 noise source, <=3 oscillators, <=6 gains (no heavy per-source graph)",
+    "snow and leaves crackle: switching the grain on raises (snow, leaves; the snowCold >1.8 kHz band is dominated by its squeak sine, so it is not meaningful there) the envelope wobble >=25 % (mean of 8 seeds, same profile with grain 0)",
+    "cold snow has extra high-frequency squeak energy",
+    "wet paving is brighter / splashier than dry paving",
+    "stair tread has its extra ring and more body than grass",
+    "all nine profiles are distinct",
+    "real controller on snowy grass at -8 C steps with snowCold",
+    "real controller on snowy grass at -1 C steps with snow",
+    "real controller on October grass steps with leaves",
+    "summer grass is unchanged (grass)",
+    "stairwell samples classify both stair treads and landings",
+    "zero browser errors"
+  ],
+  "rows": [
+    {
+      "key": "wood",
+      "rms": 0.0067165925293870355,
+      "peak": 0.048233866691589355,
+      "highShare": 0.00010008233913287609,
+      "zcrPerSec": 50,
+      "activeMs": 105,
+      "flicker": 1.64,
+      "nodes": {
+        "osc": 1,
+        "src": 1,
+        "gain": 3,
+        "biquad": 1
+      },
+      "flickerAvg": 0
+    },
+    {
+      "key": "hard",
+      "rms": 0.0068525267739400425,
+      "peak": 0.05220339819788933,
+      "highShare": 0.0011117934126117174,
+      "zcrPerSec": 74,
+      "activeMs": 96,
+      "flicker": 1.66,
+      "nodes": {
+        "osc": 1,
+        "src": 1,
+        "gain": 3,
+        "biquad": 1
+      },
+      "flickerAvg": 0
+    },
+    {
+      "key": "grass",
+      "rms": 0.003469973420600586,
+      "peak": 0.025149622932076454,
+      "highShare": 0.0005518847186962277,
+      "zcrPerSec": 52,
+      "activeMs": 108,
+      "flicker": 1.59,
+      "nodes": {
+        "osc": 1,
+        "src": 1,
+        "gain": 3,
+        "biquad": 1
+      },
+      "flickerAvg": 0
+    },
+    {
+      "key": "gravel",
+      "rms": 0.00427381896238141,
+      "peak": 0.03148721531033516,
+      "highShare": 0.013439103096134481,
+      "zcrPerSec": 156,
+      "activeMs": 114,
+      "flicker": 1.77,
+      "nodes": {
+        "osc": 1,
+        "src": 1,
+        "gain": 3,
+        "biquad": 1
+      },
+      "flickerAvg": 0
+    },
+    {
+      "key": "snow",
+      "rms": 0.002873448227628142,
+      "peak": 0.029930969700217247,
+      "highShare": 0.10806321764795869,
+      "zcrPerSec": 310,
+      "activeMs": 119,
+      "flicker": 1.86,
+      "nodes": {
+        "osc": 1,
+        "src": 1,
+        "gain": 4,
+        "biquad": 1
+      },
+      "flickerAvg": 0,
+      "crackleOn": 2.74,
+      "crackleOff": 1.34
+    },
+    {
+      "key": "snowCold",
+      "rms": 0.0030960964528986275,
+      "peak": 0.03733212128281593,
+      "highShare": 0.4251978747051119,
+      "zcrPerSec": 1144,
+      "activeMs": 130,
+      "flicker": 0.83,
+      "nodes": {
+        "osc": 2,
+        "src": 1,
+        "gain": 5,
+        "biquad": 1
+      },
+      "flickerAvg": 0,
+      "crackleOn": 0.93,
+      "crackleOff": 0.99
+    },
+    {
+      "key": "wet",
+      "rms": 0.00604057991933186,
+      "peak": 0.050365038216114044,
+      "highShare": 0.11613277861161347,
+      "zcrPerSec": 476,
+      "activeMs": 141,
+      "flicker": 1.42,
+      "nodes": {
+        "osc": 1,
+        "src": 1,
+        "gain": 3,
+        "biquad": 1
+      },
+      "flickerAvg": 0
+    },
+    {
+      "key": "stair",
+      "rms": 0.010048518142517369,
+      "peak": 0.07113957405090332,
+      "highShare": 0.0006749408308490164,
+      "zcrPerSec": 158,
+      "activeMs": 208,
+      "flicker": 1.43,
+      "nodes": {
+        "osc": 2,
+        "src": 1,
+        "gain": 4,
+        "biquad": 1
+      },
+      "flickerAvg": 0
+    },
+    {
+      "key": "leaves",
+      "rms": 0.002996871852458534,
+      "peak": 0.03423707187175751,
+      "highShare": 0.3640977836031884,
+      "zcrPerSec": 760,
+      "activeMs": 105,
+      "flicker": 1.29,
+      "nodes": {
+        "osc": 1,
+        "src": 1,
+        "gain": 4,
+        "biquad": 1
+      },
+      "flickerAvg": 0,
+      "crackleOn": 2.42,
+      "crackleOff": 1.16
+    }
+  ],
+  "snow": {
+    "snow": 1,
+    "driven": true,
+    "temp": -8,
+    "month": 1,
+    "ev": [
+      "snowCold"
+    ]
+  },
+  "warm": {
+    "snow": 1,
+    "driven": true,
+    "temp": -1,
+    "month": 1,
+    "ev": [
+      "snow"
+    ]
+  },
+  "leaf": {
+    "snow": 0,
+    "driven": true,
+    "temp": 12,
+    "month": 10,
+    "ev": [
+      "leaves"
+    ]
+  },
+  "summer": {
+    "snow": 0,
+    "driven": true,
+    "temp": 24.4,
+    "month": 7,
+    "ev": [
+      "grass"
+    ]
+  },
+  "stairs": {
+    "found": {
+      "stair": {
+        "x": -33,
+        "y": -2.8125,
+        "z": 47.25
+      },
+      "landing": {
+        "x": -34.75,
+        "y": 0,
+        "z": 35.5
+      }
+    },
+    "tally": {
+      "hard": 3125,
+      "stair": 828
+    }
+  },
+  "errors": []
+}

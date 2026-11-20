@@ -52,6 +52,18 @@ then drives the real World controller over representative surfaces and checks
 the production nearby-player callback, mute, range and voice cap. L1007 room/
 patio, courtyard paving/grass/gravel and the timber bridge are representative;
 this is not an exhaustive survey of every remote footpath or furnishing.
+### Weather and place variants (#2193)
+
+`stepsurface.js` `stepInfo` returns `{ surface, where, road, stairs }` (`stepSurface` is its `.surface`); `footsteps.js` `pickStep(info, env)`
+(pure) turns that and `{ snow, wet, temp, month }` into a `FOOTSTEPS.profiles` key, once per audible step (`main.js` `stepProfile`, used by the
+own steps and `ghosts.onStep`): `stair` (stairwell tread, not a landing within `floorTol`), `snow` / `snowCold` (snow cover >= `snowMin`,
+squeak at <= `squeakTemp`; not on ploughed roads), `wet` (hard ground with `groundWet.wet` >= `wetMin`), `leaves` (grass/gravel in
+`leafMonths`), else the #1519 profile; snow outranks leaves. The synth stays one noise source: `grain` adds a flickering value-curve gain
+(crackle), `partial` one extra short sine (squeak, stair ring). All numbers are artistic *guess*es in `FOOTSTEPS`. Occlusion (#2181) and the
+voice cap are unchanged: the variant only changes the synth, the position/occlusion path is the same single source. Tests:
+`tools/stepvarianttest.mjs` (pick), `tools/stepvariantbrowser.cjs` (real audio graph per variant + real controller; evidence in
+`docs/verification/2193/`); `footstepstest.cjs` pins the page to July so the autumn variant does not replace grass/gravel.
+
 The public walkthrough has no audio engine or footsteps; this audio-only game
 change introduces no applicable geometry/navigation port or new public subsystem.
 

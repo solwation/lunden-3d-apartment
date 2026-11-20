@@ -1,3 +1,4 @@
+// #2193: the page is pinned to July (no snow) so the autumn leaf / snow variants do not replace the plain grass and gravel profiles.
 // Actual Web Audio comparison + actual World controller route. No production services.
 const assert=require('node:assert/strict'),fs=require('node:fs'),{execFileSync}=require('node:child_process');
 const kit=require('./testkit.cjs');
@@ -38,7 +39,7 @@ function wav(samples,rate=48000){const b=Buffer.alloc(44+samples.length*2);b.wri
  check(new Set(audio.filter(r=>r.version==='after').map(r=>r.highShare.toFixed(5))).size===4,'four distinct underfoot timbres');
  await page.unroute('**/src/bootstrap.js');
  await ctx.addInitScript(()=>{localStorage.setItem('lunden.name','Stegtest');sessionStorage.setItem('lunden.nameSkipped','1')});
- await page.goto(`${base}/?test=lazy&cloud=&mp=0&at=3,10.8,0&mess=0`);await page.waitForFunction(()=>window.__app?.renderer&&window.__app.loadingEl.hidden,null,{timeout:240000});
+ await page.goto(`${base}/?test=lazy&cloud=&mp=0&at=3,10.8,0&mess=0&month=7&snow=0`);await page.waitForFunction(()=>window.__app?.renderer&&window.__app.loadingEl.hidden,null,{timeout:240000});
  const classification=await page.evaluate(async()=>{
   const {stepSurface}=await import('/src/stepsurface.js'),{SITE}=await import('/src/config.js'),w=__app.world;
   const points=[['wood',{x:3,y:0,z:10.8}],['hard',{x:1,y:0,z:1.8}],['hard',{x:2,y:0,z:-1}],['hard',{x:3,y:0,z:14}],['grass',{x:-9,y:0,z:23}],['gravel',{x:-25,y:0,z:21}]];
