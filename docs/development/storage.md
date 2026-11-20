@@ -1230,7 +1230,10 @@ foreign-tab freshness/ownership, signature deduplication, quotas and Worker
 public projection are unchanged. See the native before/after verification;
 #669's physical context-loss acceptance remains open.
 
-### Desk shape (#1569)
+### Desk shape (#1569, inert since #2224)
+
+Since #2224 the desk is the Berdi secretary under the same id, so saved moves carry over without migration; it has no
+shape handle, so a stored `variant` is ignored by the client and kept valid by the Worker (below is the historical contract).
 
 Olof's desk stores its shape in the same additive material map:
 `state.materials["f-tillydesk-1-2.292-9.43-0-0"].variant = {choice: "corner", revision}`.

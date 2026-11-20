@@ -9010,15 +9010,15 @@ physical phone test or a production multiplayer session. Gameplay is original-on
 `tools/olofcomputertest.cjs GAME FRESH_LOCAL_WORKER OUT` (#1566) sits in the Batman chair with
 native E (desktop) and `#action` (touch), starts and plays Olofs dator while seated, checks the
 restored seated view and standing up, and that the gaming chair/bunk still reach Speldatorn.
-Since #1576 it also checks the desk's own lights (desktop on the straight desk, touch on the corner
-desk): off at start (screen atlas black, RGB/LED unlit, wall wash opacity 0), power-on lights them,
-the picker offers YouTube and Spel, Stäng av datorn darkens again, and desk draw calls off ≤ on
-(17/18, the app plane). Result images `av-*`/`pa-*` share one desk-local view.
-`tools/tillydeskvarianttest.cjs GAME FRESH_LOCAL_WORKER OUT` (#1569, #1596) switches the desk to the triangular corner
-shape through the menu (§, mouse) and back through the edit panel (touch tap), checks the saved
-choice across a reload, footprint/collision of the corner-only front area, the corner wall wash within 3 cm of the straight sides (#1603), desk draw calls corner ≤ straight, plays
-Ormstriden seated in the Batman chair at the corner desk, and that both resets give the straight desk.
-`node --test cloudflare/materialcatalog.test.mjs` covers the whitelisted `variant` surface.
+Since #1576 it also checks the computer's own lights: off at start (screen atlas black, RGB/LED unlit,
+wash opacity 0), power-on lights them, the picker offers YouTube and Spel, Stäng av datorn darkens
+again, and draw calls off ≤ on (the app plane). Since #2224 (Berdi secretary) it checks the closed start
+(cavity and computer box not drawn), opens the writing flap with E/touch from the Batman chair before
+using the computer, closes it and opens the lower door standing, and applies a layout with the old desk id
+moved 5 cm plus a stored `corner` shape. Desktop result images share desk-local views: `stangd`, `av-sekretar`,
+`pa-sekretar`, `oppen-nederdel`. `node --test tools/berditest.mjs` checks the pure secretary layout.
+`tools/tillydeskvarianttest.cjs` (#1569, #1596, corner desk shape) was retired with the desk in #2224.
+`node --test cloudflare/materialcatalog.test.mjs` still covers the whitelisted `variant` surface.
 
 The final #1491 toolbar was separately checked at844×390,390×844 and568×320
 using the actual ComputerHub and production CSS (`/tmp/snake1491-layout.cjs`).

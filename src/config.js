@@ -7018,58 +7018,65 @@ export const VANITY = {
   stool: { r: 0.18, h: 0.42, color: 0xc7a6e0 },
 };
 
-// #1557 personal setup, source: docs/datorsetup-secretlab-batman.jpg. ALL dimensions,
-// placement, colours and detail proportions below are guess from that photo, not manufacturer measurements.
-// East wall: desk starts z8.68 beyond the room door's 8.616 sweep; chair leaves the west passage
+// #1557 personal setup, source: docs/datorsetup-secretlab-batman.jpg. The devices' sizes, colours and detail proportions
+// below are guesses from that photo, not manufacturer measurements.
+// #2224: the brown desk is replaced by a Vicco "Berdi" secretary (Sekretär/Schreibtisch Berdi, Sonoma oak, the user's
+// ok-living.se link, 404 at registration). Verified from retailer listings (testsieger.de, kaufland, galaxus, 2026-11-20):
+// 110 cm wide × 45 cm deep × 140 cm high, 16 mm melamine-coated particleboard, a metal frame, "four open and three
+// closed compartments", sold in white and Sonoma. Everything else (the leg height, the compartment layout, the flap and
+// door sizes, the Sonoma colour) is a **guess**: no drawing or product photo could be fetched. The cabinet keeps the
+// desk's item spot and `type` (movable id f-tillydesk-1-2.292-9.43-0-0, so saved moves carry over) with its back
+// against the east wall where the desk's back was (local z `back`). Closed by default: the upper part is one writing
+// flap hinged at its bottom edge (it folds down into a writing surface at sitting height) with both monitors and the
+// keyboard inside; the lower left door hides the computer box; four open cubbies on the right hold the speakers, the
+// DAC and the mascot. Local: x across, -z the wall, +z the front, y up from the floor.
+// East wall: the cabinet spans z 8.88–9.98, clear of the room door's 8.616 sweep; chair leaves the west passage
 // and 0.53 m to DAYBED_Z - HEMNES_DAYBED.L/2. No posters on this wall.
 export const TILLY_DESK = {
   at: { x: 2.292, z: 9.43, rot: 90 }, chairAt: { x: 1.38, z: 9.20, rot: -90 },
-  w: 1.5, d: .65, h: .75, top: .03, round: .006,
-  leg: { x: .63, width: .07, depth: .065, foot: [.09,.035,.58], lower: .4, upper: .31, brace: [.05,.05] },
-  panel: { size: [.18,.032,.045], at: [.59,.702,.32], buttons: 6 },
-  hook: { x: .77, y: .70, z: .24, r: .035, tube: .005 },
-  mat: { size: [1.04,.004,.37], at: [-.1,.754,.10] },
-  monitors: [ { at: [-.23,1.105,-.13], size: [.66,.38,.027] }, { at: [.45,1.14,-.11], size: [.30,.54,.027] } ],
-  arm: { r: .012, z: -.24, clamp: [.065,.03,.06] }, bezel: .012,
-  ring: { at: [-.06,1.46,-.13], r: .053, tube: .008 }, webcam: { size: [.10,.024,.025], at: [-.23,1.315,-.115] },
-  keyboard: { size: [.46,.022,.15], at: [-.22,.768,.10], rows: 5, cols: 19, key: [.018,.006,.019] },
-  mouse: { at: [.20,.774,.12], scale: [.032,.021,.058], wheel: [.009,.005,.018], wheelZ: -.015, mark: [.002,.002,.014], markStep: .005, markZ: .016 },
-  speakers: { xs: [-.64,.65], at: [.82,-.19], size: [.105,.14,.10], r: .030 },
-  puck: { at: [.12,.773,-.10], r: .029, h: .025 }, charger: { at: [.63,.765,.19], r: .042, h: .022 },
-  dac: { size: [.13,.04,.09], at: [.30,.774,-.18], knob: .014 },
-  figure: { at: [.30,.835,-.18], scale: [.025,.041,.023], stitch: .003, rings: 5, eye: [.002,.003,.002], eyeAt: [.009,.012,.020] },
-  pc: { at: [.45,.265,.00], size: [.24,.52,.43], shell: .012, fan: .052, tube: .006, spacing: .135 },
-  led: { size: [1.33,.012,.012], at: [0,.80,-.307], glow: [1.5,.75], y: 1.03, opacity: .42, px: 64 },
+  cabinet: {
+    w: 1.10, d: .45, h: 1.40,  // retailer listings (verified)
+    board: .016,               // 16 mm particleboard (verified)
+    back: -.336,               // z of the back face: 4 mm off the east wall (local -0.34), so the item spot and id stay (guess)
+    backPanel: .008,           // hardboard back (guess)
+    legH: .10, leg: .03,       // the metal frame's four square legs (guess)
+    split: .70,                // y of the shelf board under the flap = the flap's hinge (guess: writing height ~0.72)
+    gap: .003,                 // reveal round the flap and the door (guess)
+    door: .42,                 // width of the lower left door (computer compartment) (guess)
+    cubbyDivider: .216,        // x of the divider between the two open cubby columns (guess)
+    cubbyShelf: .40,           // y of the shelf between the two open cubby rows (guess)
+    flapMax: 90, doorMax: 100, // degrees open (guess)
+    handle: { size: [.12,.012,.018], flapY: .62, door: [.32,.012,.018] }, // black bar grips: flap grip from the hinge, door grip (guess)
+    color: 0xc4a172, inside: 0xb89664, // Sonoma oak, inside a shade darker (guess by eye from typical Sonoma melamine)
+  },
+  round: .006,
+  // Devices inside, cabinet-local positions (guesses that fit the 1.068 m interior): both monitors on stands at the back
+  // of the cavity behind the flap, the keyboard/mouse in front, the computer box behind the door.
+  monitors: [ { at: [-.192,1.006,-.24], size: [.66,.38,.027] }, { at: [.306,1.07,-.24], size: [.30,.54,.027] } ],
+  stand: { foot: [.20,.012,.15], z: -.25, r: .012 }, // monitor stands on the cavity floor (they replace the desk-clamp arms)
+  bezel: .012,
+  ring: { at: [-.022,1.30,-.235], r: .053, tube: .008 }, webcam: { size: [.10,.024,.025], at: [-.192,1.208,-.225] },
+  mat: { size: [.86,.004,.20], at: [-.08,.718,-.01] },
+  keyboard: { size: [.46,.022,.15], at: [-.19,.732,.0], rows: 5, cols: 19, key: [.018,.006,.019] },
+  mouse: { at: [.20,.738,.01], scale: [.032,.021,.058], wheel: [.009,.005,.018], wheelZ: -.015, mark: [.002,.002,.014], markStep: .005, markZ: .016 },
+  puck: { at: [.33,.729,.03], r: .029, h: .025 }, charger: { at: [.45,.727,.02], r: .042, h: .022 },
+  hook: { x: .525, y: 1.20, z: -.05, r: .035, tube: .005 }, // headphone hook on the cavity's right side wall
+  // open cubbies (right half of the lower part): a speaker in each lower cubby, the DAC + mascot in the upper left one
+  speakers: { at: [[.050,.188,-.02],[.375,.188,-.02]], size: [.105,.14,.10], r: .030 },
+  dac: { size: [.13,.04,.09], at: [.050,.436,-.02], knob: .014 },
+  figure: { at: [.050,.497,-.02], scale: [.025,.041,.023], stitch: .003, rings: 5, eye: [.002,.003,.002], eyeAt: [.009,.012,.020] },
+  // a compact case (the desk's 0.43 m deep tower does not fit the 0.42 m compartment); glass front faces the door (guess)
+  pc: { at: [-.334,.346,-.12], size: [.22,.46,.38], shell: .012, fan: .048, tube: .006, spacing: .125 },
+  // RGB strip under the cavity's top front edge and its wash on the cavity's back panel (only while the flap is open)
+  led: { size: [1.04,.012,.012], at: [0,1.376,.08], glow: [1.0,.60], washY: 1.06, opacity: .42, px: 64 },
   chair: { radius: .31, seat: [.51,.09,.49], seatY: .47, back: [.47,.79,.105], backAt: [0,.91,-.205],
     wing: [.08,.40,.11], wingX: .235, arm: [.075,.035,.27], armX: .27, armY: .68,
     post: .025, postZ: -.02, armZ: .025, stemR: .035, stemGap: .08, spoke: [.027,.035], spokeY: .065, casterWidth: .032, casterInset: .025, wingZ: .03, bolsterY: .035, paddingRound: .025,
     pillow: [.28,.12,.065], pillowAt: [0,1.20,-.125], seam: .0015, wheel: .028, legs: 5,
     logo: { w: .24, h: .08, at: [0,1.04,-.143] }, rest: { x: 0, y: .515, z: -.01 } },
-  // #1596 triangular corner variant (Möblera om; replaces the #1569 L-shape), every value a **guess** from the player
-  // report ("en trekant in mot ett hörn med två raka sidor"). All points are desk-local [x, z] like the straight desk:
-  // -z is the back (the wall), +z the front where the Batman chair stands. The top is an isosceles right triangle whose
-  // two straight ~1.06 m sides meet at the rear peak (z -0.33, tip cut 6 cm) and whose 1.50 m front edge (z +0.45) faces
-  // the room and the chair. Turned 45° (Möblera om turns in 45° steps) the peak goes into a room corner with the sides
-  // along both walls; in the default spot (rot 90, wall at z -0.34) the peak just clears the wall. Everything below sits
-  // inside that triangle: monitors, keyboard, mouse and app screen stand at the front (#1566 computer still works),
-  // DAC + figure and the LED strip in the corner behind the screens, the PC under the peak. `footprint` holds rectangles
-  // inscribed in the triangle, so the desk fits into a corner without its collision touching the walls.
-  corner: {
-    topShape: [[-.03,-.33],[.03,-.33],[.78,.42],[.75,.45],[-.75,.45],[-.78,.42]],
-    footprint: [[-.70,.70,.34,.45],[-.45,.45,.09,.34],[-.20,.20,-.16,.09]], // [x0,x1,z0,z1]
-    legs: [{ at: [0,-.22], foot: [.16,.035,.09] }, { at: [-.42,.30], foot: [.09,.035,.30] }, { at: [.42,.30], foot: [.09,.035,.30] }],
-    monitors: [ { at: [-.17,1.105,.21], size: [.66,.38,.027] }, { at: [.33,1.14,.21], size: [.30,.54,.027] } ], armZ: .08,
-    mat: { size: [.80,.004,.24], at: [-.10,.754,.32] }, keyboard: [-.17,.768,.34], mouse: [.20,.774,.35],
-    speakers: [[-.58,.38],[.58,.38]], panel: [.25,.702,.42], charger: [.40,.761,.36], puck: [-.47,.773,.37],
-    dac: [.20,.774,.04], figure: [.20,.835,.04], pc: [0,.265,.09],
-    hook: { x: .68, y: .70, z: .475, r: .035, tube: .005 }, // under the front edge (straight desk: its +x end)
-    // #1603: the wall wash stands just behind the peak, where the top is only ~6 cm wide; turned into a corner the two
-    // walls run along the straight sides, so a wider wash would pass through them (the 0.50 m one stuck ~16 cm out,
-    // through the 12 cm wall into Speldatorn). 0.13 m keeps its ends within 3 cm of the side lines (*guess*).
-    led: { size: [.36,.012,.012], at: [0,.756,-.12], glow: [.13,.60], washZ: -.335 }, cable: [.06,-.20] },
   appLift: .002, // #1566: the shared computer-app plane floats this far (m) in front of the decorative main-screen atlas
-  detail: { sides: 10, tubeSides: 5, ringSides: 24, sphere: [12,8], texture: [512,256], carbonPx: 64, skin: .002, thin: .003, offset: .001, cable: .012, cableInset: .025, glowGap: .010 },
-  colors: { wood: 0x853b32, black: 0x15171b, rubber: 0x08090c, steel: 0x43474e, seam: 0xdedbd0,
+  detail: { sides: 10, tubeSides: 5, ringSides: 24, sphere: [12,8], texture: [512,256], carbonPx: 64, skin: .002, thin: .003, offset: .001, glowGap: .002 },
+  colors: { black: 0x15171b, rubber: 0x08090c, steel: 0x43474e, seam: 0xdedbd0,
     blue: 0x426dff, pink: 0xda51f3, cream: 0xe5d7b8,
     // #1576 computer off (guesses by eye): the screen atlas multiplied to black, unlit RGB/LED parts as dark plastic
     screenOff: 0x000000, unlit: 0x24272e },
@@ -7495,7 +7502,7 @@ export const FURNITURE = [
   // corner; the drawer column at the north end, the free end (the laptop, #283) towards the window; the stool in front
   { type: 'vanity', level: 1, x: 2.632 - VANITY.d / 2 - 0.004, z: 11.45, rot: 90 },
   { type: 'vanitystool', level: 1, x: 2.632 - VANITY.d - 0.2, z: 11.55, rot: -90 },
-  { type: 'tillydesk', mediaId: 'pc-olof', level: 1, ...TILLY_DESK.at }, // Olof's own setup; a shared computer (#1566)
+  { type: 'tillydesk', mediaId: 'pc-olof', level: 1, ...TILLY_DESK.at }, // Olof's own setup; a shared computer (#1566); the Berdi secretary since #2224
   { type: 'batmanchair', level: 1, ...TILLY_DESK.chairAt },
   // her wardrobe (#305, #311, SMASTAD): back to the north wall in the NW corner, its west side 4 mm off the west wall
   // (face x 0.202); it faces the room (south)

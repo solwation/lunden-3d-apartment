@@ -318,10 +318,13 @@ material/              screenshots of our choices in Peab's option portal (local
   14 globe bulbs (a lamp of its own, `sminkspegelns lampor`, at dusk like #234; a Reflector) and a lilac stool (a seat
   with an invisible pick box over it); on its free end a rose-gold laptop (#283, `src/laptop.js`, `LAPTOP`) playing an
   invented short-video feed ("Klipp"). North of the vanity, the east wall carries Tilly's personal
-  computer corner (#1557, `TILLY_DESK`, `src/tillydesk.js`): a guessed 150 × 65 cm red/black T-leg desk,
-  landscape + portrait monitors, photo-led accessories and a floor RGB PC. The black Batman chair
-  is a normal seat and separately movable/rotatable. Desk starts at z8.68, beyond the room door's
-  sweep; the chair is slightly north of the desk centre to keep the route to the daybed free.
+  computer corner (#1557, `TILLY_DESK`, `src/tillydesk.js`): since #2224 a Vicco Berdi secretary in Sonoma
+  oak (user's link https://www.ok-living.se/Sekreterarbord-Berdi-Sonoma-110-x-45-cm-Vicco, 404; retailer listings
+  verify 110 × 45 × 140 cm, 16 mm melamine board, metal frame, four open + three closed compartments; layout,
+  legs and colour *guess*), closed by default: a writing flap over both monitors, a door over a compact PC,
+  open cubbies with speakers/DAC/mascot. (It replaced a guessed 150 × 65 cm red/black T-leg desk with a
+  floor RGB PC.) The black Batman chair is a normal seat and separately movable/rotatable. The cabinet spans
+  z8.88–9.98, beyond the room door's sweep; the chair is slightly north of the desk centre to keep the route to the daybed free.
   No north/west poster moves or becomes covered. All new measurements remain guesses from
   docs/datorsetup-secretlab-batman.jpg. Bunks: IKEA MYDAL, white, 97 × 207 × 157 (`MYDAL`, #227: posts, end boards, a two-board guard rail, a straight
   ladder on the room side at the foot end); long side to the side wall, head end to the façade; a white IKEA MALM chest of 6 drawers

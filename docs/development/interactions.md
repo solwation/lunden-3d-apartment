@@ -668,7 +668,8 @@ src/rearrange.js       furniture cheat (#465): § / Enter (#596; not from a focu
                        "Gör till rakt skrivbord", in the menu (§ / Meny, for the aimed or selected piece) and in the edit panel while it
                        is selected (touch). `toggleVariant` cancels a preview, refuses a shape whose footprint would cross a wall where
                        the piece stands, and writes the choice as one revision-checked `materials` patch (surface `variant`); both
-                       resets put the default shape back in the same write. tools/tillydeskvarianttest.cjs.
+                       resets put the default shape back in the same write. #2224: the desk became the Berdi secretary, which has no
+                       `userData.variant`, so no piece shows the shape button now (the generic code stays; tools/tillydeskvarianttest.cjs is retired).
                        #1582: V toggles the selected/aimed piece's shape via `toggleVariant` (main.js keydown, only when the piece has a variant); each
                        `#rearrange-help` button has `data-key` shown as a CSS `::after` label, hidden under `body.touch`; V is added to the keyboard hint.
                        #1568: Tilly's basketball holder (`ball.holder`, src/basket.js `basketHolderFrame`) is a wall piece (`picture: true`, id
@@ -2359,6 +2360,8 @@ E/touch on each of the seven registered computers, within `COMPUTER_MEDIA.reach`
 Olof's desk corner in Sovrum 4 (#1566) is the seventh: its landscape monitor is the
 app screen, and the Batman chair is the ordinary seat in front of it; its screens, case
 RGB and LED strip follow the same power snapshot (#1576, `src/tillydesk.js` `deskPower`).
+Since #2224 it stands in a closed Berdi secretary: E/touch on the flap opens it, after which the monitors
+are the computer's E target as before ([furniture](furniture.md#tillys-personal-desk-corner-1557-berdi-secretary-since-2224)).
 All start off: the first interaction requests shared power-on without opening a modal;
 the next opens app selection. Walking near or sitting in a gaming/bunk chair never
 powers a registered station on. The laptop keyboard toggles shared power, and every

@@ -159,6 +159,8 @@ export const LONG_PILE_MATERIAL_IDS = RUG_MATERIAL_IDS.filter(id => FURNITURE.so
 export const materialChoice = id => [...MATERIAL_CHOICES, ...CURTAIN_MATERIAL_CHOICES, ...UPHOLSTERY_MATERIAL_CHOICES, ...PILE_CHOICES].find(c => c.id === id);
 // #1569: the shape of Olof's desk (straight = 'original', L-shaped 'corner') rides the same per-surface layout protocol
 // as a surface 'variant' of the actual desk only; it is a shape, never shown in the material library.
+// #2224: the desk became the Berdi secretary, which has no shape choice (no `userData.variant`): the client ignores a stored
+// choice; the ids/choices stay so the Worker keeps accepting and resetting layouts saved before.
 export const DESK_VARIANT_CHOICES = [{ id: 'original', name: 'Rakt' }, { id: 'corner', name: 'Hörn' }];
 const deskSerials = new Map();
 export const DESK_VARIANT_IDS = FURNITURE.flatMap(it => {

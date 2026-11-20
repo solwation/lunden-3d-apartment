@@ -5,9 +5,11 @@ import { TILLY_DESK as C } from './config.js';
 import { woodMaterial } from './woodgrain.js';
 import { upholsterySurface } from './upholstery.js';
 import { mergeStatic } from './merge.js';
-import { DESK_VARIANT_CHOICES } from './materialcatalog.js';
+import { Openable } from './openables.js';
+import { berdiLayout, flapOutline } from './berdi.js';
 
 // Personal, photo-led furniture (#1557). Dimensions/proportions are guesses in config.
+// #2224: the computer now lives in a Vicco Berdi secretary (`tillydesk` keeps its type/id); the Batman chair is unchanged.
 // The normal furniture merge batches rigid details by shared material; no live canvas or lamp.
 const D = C.detail, K = C.colors;
 const black = new THREE.MeshStandardMaterial({ color: K.black, roughness: .55 });
@@ -69,146 +71,133 @@ function glow() {
   glowMat=new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(c),color:K.blue,transparent:true,opacity:C.led.opacity,
     blending:THREE.CustomBlending,blendSrc:THREE.SrcAlphaFactor,blendDst:THREE.OneMinusSrcAlphaFactor,depthWrite:false,toneMapped:false});return glowMat;
 }
-/** The placements of the things that differ between the two desk shapes (#1569, #1596); everything else is shared. */
-function layoutFor(corner) {
-  const X = C.corner;
-  return corner ? { corner: true, panel: X.panel, charger: X.charger, puck: X.puck, dac: X.dac, figure: X.figure, speakers: X.speakers,
-      pc: X.pc, monitors: X.monitors, armZ: X.armZ, mat: X.mat, keyboard: X.keyboard, mouse: X.mouse, hook: X.hook,
-      led: X.led, cable: X.cable }
-    : { corner: false, panel: C.panel.at, charger: C.charger.at, puck: C.puck.at, dac: C.dac.at, figure: C.figure.at,
-      speakers: C.speakers.xs.map(x => [x, C.speakers.at[1]]), pc: C.pc.at, monitors: C.monitors, armZ: C.arm.z, mat: C.mat,
-      keyboard: C.keyboard.at, mouse: C.mouse.at, hook: C.hook, led: { ...C.led, washZ: -C.d/2-D.glowGap },
-      cable: [C.leg.x, -C.d/2+D.cableInset] };
-}
-/** #1596: the triangular corner top (desk-local [x, z] outline from config) as a flat slab C.top thick, top face at C.h. */
-function triangleTop(points) {
-  const shape=new THREE.Shape(points.map(([x,z])=>new THREE.Vector2(x,-z))); // shape y = -z: rotateX(-90°) maps it back to +z
-  const geo=new THREE.ExtrudeGeometry(shape,{depth:C.top,bevelEnabled:false});
-  geo.rotateX(-Math.PI/2);geo.translate(0,C.h-C.top,0);return geo;
-}
-/** One complete desk (straight or triangular corner) into `g`; returns its footprint rectangles. */
-function deskShape(g, P, wood, cream) {
-  const h=C.h,L=C.leg;
-  const leg=([x,z],foot)=>{box(g,foot,[x,L.foot[1]/2,z]);box(g,[L.width,L.lower,L.depth],[x,L.lower/2+L.foot[1],z]);
-    box(g,[L.width*.72,L.upper,L.depth*.72],[x,h-C.top-L.upper/2,z],steel);};
-  let footprint;
-  if(!P.corner) {
-    box(g,[C.w,C.top,C.d],[0,h-C.top/2,0],wood);
-    for(const s of [-1,1])leg([s*L.x,0],L.foot);
-    box(g,[2*L.x,...L.brace],[0,h-C.top-L.brace[0]/2,0]);
-    footprint=[{x0:-C.w/2,x1:C.w/2,z0:-C.d/2,z1:C.d/2}];
-  } else { // #1596: triangle top on three T legs (two at the front, one under the peak), a T-shaped brace frame
-    const X=C.corner,top=new THREE.Mesh(triangleTop(X.topShape),wood);top.castShadow=top.receiveShadow=true;g.add(top);
-    for(const l of X.legs)leg(l.at,l.foot);
-    const [fl,fr]=[X.legs[1].at,X.legs[2].at],rear=X.legs[0].at,by=h-C.top-L.brace[0]/2;
-    box(g,[fr[0]-fl[0],...L.brace],[(fl[0]+fr[0])/2,by,fl[1]]);
-    box(g,[L.brace[1],L.brace[0],fl[1]-rear[1]],[rear[0],by,(fl[1]+rear[1])/2]);
-    footprint=X.footprint.map(([x0,x1,z0,z1])=>({x0,x1,z0,z1}));
+/** #2224: the devices that stand in the cavity behind the flap (monitors on stands, keyboard, mouse, accessories, RGB strip
+ * and its wash), in cabinet-local coordinates from TILLY_DESK. Built into `g`, merged by the caller. */
+function upperDevices(g, L) {
+  const floor = L.upper.y0;
+  for (const [i, M] of C.monitors.entries()) {
+    box(g, M.size, M.at);
+    const geo = new THREE.PlaneGeometry(M.size[0] - C.bezel * 2, M.size[1] - C.bezel * 2);
+    const uv = geo.attributes.uv; for (let j = 0; j < uv.count; j++) uv.setX(j, uv.getX(j) * .5 + i * .5);
+    const m = new THREE.Mesh(geo, screens()); m.position.set(M.at[0], M.at[1], M.at[2] + M.size[2] / 2 + D.offset); g.add(m);
+    // a stand on the cavity floor instead of the desk clamp: foot plate, pole up behind the monitor
+    const S = C.stand, pz = M.at[2] - M.size[2] / 2 - S.r;
+    box(g, S.foot, [M.at[0], floor + S.foot[1] / 2, S.z]);
+    cylinder(g, S.r, M.at[1] - floor, [M.at[0], (M.at[1] + floor) / 2, pz], steel);
   }
-  box(g,C.panel.size,P.panel);
-  for(let i=0;i<C.panel.buttons;i++)box(g,[C.panel.size[0]/12,C.panel.size[1]/5,D.skin],
-    [P.panel[0]+(i-2.5)*C.panel.size[0]/7,P.panel[1],P.panel[2]+C.panel.size[2]/2],seam);
-  const Hk=P.hook,hook=ring(g,Hk.r,Hk.tube,[Hk.x,Hk.y,Hk.z],steel);hook.rotation.x=Math.PI/2;
-  if(P.corner)box(g,[Hk.r*2,C.top,Hk.tube],[Hk.x,Hk.y+C.top/2,C.corner.topShape[3][1]],steel); // clamped to the front edge
-  else box(g,[Hk.tube,C.top,Hk.r*2],[C.w/2,Hk.y+C.top/2,Hk.z],steel);
-  box(g,P.mat.size,P.mat.at,rubber);
-  for(const [i,M] of P.monitors.entries()) {
-    box(g,M.size,M.at);
-    const geo=new THREE.PlaneGeometry(M.size[0]-C.bezel*2,M.size[1]-C.bezel*2);
-    const uv=geo.attributes.uv;for(let j=0;j<uv.count;j++)uv.setX(j,uv.getX(j)*.5+i*.5);
-    const m=new THREE.Mesh(geo,screens());m.position.set(M.at[0],M.at[1],M.at[2]+M.size[2]/2+D.offset);g.add(m);
-    box(g,C.arm.clamp,[M.at[0],h,P.armZ]);
-    cylinder(g,C.arm.r,M.at[1]-h,[M.at[0],(M.at[1]+h)/2,P.armZ]);
-    box(g,[C.arm.r*2,C.arm.r*2,M.at[2]-P.armZ],[M.at[0],M.at[1],(M.at[2]+P.armZ)/2]);
-  }
-  // Webcam and ring light keep their offsets from the main monitor (#1596: it moves forward on the corner desk).
-  const main=P.monitors[0],[ox,,oz]=main.at.map((v,i)=>v-C.monitors[0].at[i]),cam=[C.webcam.at[0]+ox,C.webcam.at[1],C.webcam.at[2]+oz],
-    rl=[C.ring.at[0]+ox,C.ring.at[1],C.ring.at[2]+oz];
-  box(g,C.webcam.size,cam);
-  ring(g,C.webcam.size[1]/3,C.webcam.size[1]/8,[cam[0],cam[1],cam[2]+C.webcam.size[2]/2],steel);
-  ring(g,C.ring.r,C.ring.tube,rl,seam);
-  box(g,[C.arm.r,rl[1]-main.at[1]-main.size[1]/2,C.arm.r],[rl[0],(rl[1]+main.at[1]+main.size[1]/2)/2,rl[2]]);
-  const B=C.keyboard,kb=P.keyboard;box(g,B.size,kb);
-  for(let r=0;r<B.rows;r++)for(let c=0;c<B.cols;c++)box(g,B.key,
-    [kb[0]+(c-(B.cols-1)/2)*B.size[0]/(B.cols+1),kb[1]+B.size[1]/2,(r-(B.rows-1)/2)*B.size[2]/(B.rows+1)+kb[2]],steel,0);
-  const Ms=C.mouse,ms=P.mouse;sphere(g,Ms.scale,ms,black);
-  box(g,Ms.wheel,[ms[0],ms[1]+Ms.scale[1],ms[2]+Ms.wheelZ],steel);
+  // webcam on the main monitor, the ring light on a short rod above it
+  const main = C.monitors[0], cam = C.webcam.at, rl = C.ring.at;
+  box(g, C.webcam.size, cam);
+  ring(g, C.webcam.size[1] / 3, C.webcam.size[1] / 8, [cam[0], cam[1], cam[2] + C.webcam.size[2] / 2], steel);
+  ring(g, C.ring.r, C.ring.tube, rl, seam);
+  const top = main.at[1] + main.size[1] / 2, low = rl[1] - C.ring.r;
+  box(g, [C.stand.r, low - top, C.stand.r], [rl[0], (low + top) / 2, rl[2]]);
+  box(g, C.mat.size, C.mat.at, rubber);
+  const B = C.keyboard, kb = B.at; box(g, B.size, kb);
+  for (let r = 0; r < B.rows; r++) for (let c = 0; c < B.cols; c++) box(g, B.key,
+    [kb[0] + (c - (B.cols - 1) / 2) * B.size[0] / (B.cols + 1), kb[1] + B.size[1] / 2, (r - (B.rows - 1) / 2) * B.size[2] / (B.rows + 1) + kb[2]], steel, 0);
+  const Ms = C.mouse, ms = Ms.at; sphere(g, Ms.scale, ms, black);
+  box(g, Ms.wheel, [ms[0], ms[1] + Ms.scale[1], ms[2] + Ms.wheelZ], steel);
   // Small three-stroke mark on the Razer-style mouse.
-  for(let i=-1;i<=1;i++)box(g,Ms.mark,[ms[0]+i*Ms.markStep,ms[1]+Ms.scale[1]-D.skin,ms[2]+Ms.markZ],pink,0);
-  const S=C.speakers;
-  for(const [x,z] of P.speakers){box(g,S.size,[x,S.at[0],z]);ring(g,S.r,S.r/5,[x,S.at[0],z+S.size[2]/2],steel);
-    const cone=cylinder(g,S.r*.7,D.thin,[x,S.at[0],z+S.size[2]/2]);cone.rotation.x=Math.PI/2;}
-  cylinder(g,C.puck.r,C.puck.h,P.puck);cylinder(g,C.charger.r,C.charger.h,P.charger);
-  box(g,C.dac.size,P.dac);ring(g,C.dac.knob,C.dac.knob/4,[P.dac[0]+C.dac.size[0]/4,P.dac[1],P.dac[2]+C.dac.size[2]/2],steel);
-  const F=C.figure;deskMascot(g,F,P.figure,cream,black);
-  const Pc=C.pc,[px,py,pz]=P.pc,[pw,ph,pd]=Pc.size,t=Pc.shell;
-  // Hollow case: fans/GPU remain visibly behind the tinted glass.
-  for(const s of [-1,1]){box(g,[t,ph,pd],[px+s*(pw-t)/2,py,pz]);box(g,[pw,t,pd],[px,py+s*(ph-t)/2,pz]);}
-  box(g,[pw,ph,t],[px,py,pz-pd/2]);
-  box(g,[pw*.72,ph*.10,pd*.70],[px,py,pz],steel);
-  for(let i=-1;i<=1;i++) {
-    ring(g,Pc.fan,Pc.tube,[px,py+i*Pc.spacing,pz+pd/2-t*2],blue);
-    ring(g,Pc.fan*.80,Pc.tube*.55,[px,py+i*Pc.spacing,pz+pd/2-t*1.9],pink);
-    for(let k=0;k<5;k++){const a=k*Math.PI*2/5;const blade=box(g,[Pc.fan*.60,Pc.fan*.17,D.thin],[px+Math.sin(a)*Pc.fan*.40,py+i*Pc.spacing+Math.cos(a)*Pc.fan*.40,pz+pd/2-t*2.2],steel);blade.rotation.z=-a+.5;}
+  for (let i = -1; i <= 1; i++) box(g, Ms.mark, [ms[0] + i * Ms.markStep, ms[1] + Ms.scale[1] - D.skin, ms[2] + Ms.markZ], pink, 0);
+  cylinder(g, C.puck.r, C.puck.h, C.puck.at); cylinder(g, C.charger.r, C.charger.h, C.charger.at);
+  // headphone hook on the right side wall (a ring in the wall's plane on a small mount)
+  const Hk = C.hook, hook = ring(g, Hk.r, Hk.tube, [Hk.x, Hk.y, Hk.z], steel); hook.rotation.y = Math.PI / 2;
+  box(g, [L.upper.x1 - Hk.x, Hk.tube * 4, Hk.tube * 4], [(Hk.x + L.upper.x1) / 2, Hk.y + Hk.r, Hk.z], steel);
+  box(g, C.led.size, C.led.at, blue);
+  const wash = new THREE.Mesh(new THREE.PlaneGeometry(...C.led.glow), glow()); wash.position.set(0, C.led.washY, L.upper.z0 + D.glowGap); g.add(wash);
+}
+/** The compact case behind the door: hollow shell, fans and GPU behind tinted glass facing the door. */
+function computerBox(g) {
+  const Pc = C.pc, [px, py, pz] = Pc.at, [pw, ph, pd] = Pc.size, t = Pc.shell;
+  for (const s of [-1, 1]) { box(g, [t, ph, pd], [px + s * (pw - t) / 2, py, pz]); box(g, [pw, t, pd], [px, py + s * (ph - t) / 2, pz]); }
+  box(g, [pw, ph, t], [px, py, pz - pd / 2]);
+  box(g, [pw * .72, ph * .10, pd * .70], [px, py, pz], steel);
+  for (let i = -1; i <= 1; i++) {
+    ring(g, Pc.fan, Pc.tube, [px, py + i * Pc.spacing, pz + pd / 2 - t * 2], blue);
+    ring(g, Pc.fan * .80, Pc.tube * .55, [px, py + i * Pc.spacing, pz + pd / 2 - t * 1.9], pink);
+    for (let k = 0; k < 5; k++) { const a = k * Math.PI * 2 / 5; const blade = box(g, [Pc.fan * .60, Pc.fan * .17, D.thin], [px + Math.sin(a) * Pc.fan * .40, py + i * Pc.spacing + Math.cos(a) * Pc.fan * .40, pz + pd / 2 - t * 2.2], steel); blade.rotation.z = -a + .5; }
   }
-  const glass=new THREE.Mesh(new THREE.PlaneGeometry(pw-t*2,ph-t*2),glassMaterial());
-  glass.position.set(px,py,pz+pd/2);g.add(glass);
-  box(g,P.led.size,P.led.at,blue);
-  const wash=new THREE.Mesh(new THREE.PlaneGeometry(...P.led.glow),glow());wash.position.set(0,C.led.y,P.led.washZ);g.add(wash);
-  box(g,[D.cable,h-C.top,D.cable],[P.cable[0],(h-C.top)/2,P.cable[1]]);
-  footprint.push({x0:px-pw/2,x1:px+pw/2,z0:pz-pd/2,z1:pz+pd/2});
-  return footprint;
+  const glass = new THREE.Mesh(new THREE.PlaneGeometry(pw - t * 2, ph - t * 2), glassMaterial());
+  glass.position.set(px, py, pz + pd / 2); g.add(glass);
+}
+/** The speakers, the DAC and the mascot in the open cubbies (always on show; merged with the cabinet). */
+function cubbyDevices(g, cream) {
+  const S = C.speakers;
+  for (const [x, y, z] of S.at) { box(g, S.size, [x, y, z]); ring(g, S.r, S.r / 5, [x, y, z + S.size[2] / 2], steel);
+    const cone = cylinder(g, S.r * .7, D.thin, [x, y, z + S.size[2] / 2]); cone.rotation.x = Math.PI / 2; }
+  box(g, C.dac.size, C.dac.at); ring(g, C.dac.knob, C.dac.knob / 4, [C.dac.at[0] + C.dac.size[0] / 4, C.dac.at[1], C.dac.at[2] + C.dac.size[2] / 2], steel);
+  deskMascot(g, C.figure, C.figure.at, cream, black);
 }
 let glassMat;
 const glassMaterial=()=>glassMat??=new THREE.MeshStandardMaterial({color:0x8c9fc2,transparent:true,opacity:.20,roughness:.12,side:THREE.DoubleSide,depthWrite:false});
-const noRaycast=()=>{};
-/** #1576: the desk's lights follow the shared computer power. Off, both screens go black, the case RGB/fan rings, the
- * mouse mark and the LED strip are unlit plastic and the wall wash is clear. Only colours/opacity of the shared materials
+/** #1576: the computer's lights follow the shared computer power. Off, both screens go black, the case RGB/fan rings, the
+ * mouse mark and the LED strip are unlit plastic and the wash is clear. Only colours/opacity of the shared materials
  * change (same meshes, merged batches and draw calls; no shader recompile). */
 function deskPower(on) {
   screens().color.set(on?0xffffff:K.screenOff);
   blue.color.set(on?K.blue:K.unlit);pink.color.set(on?K.pink:K.unlit);
   glow().opacity=on?C.led.opacity:0;
 }
-const DESK_VARIANTS = DESK_VARIANT_CHOICES.map(c => c.id); // #1569: 'original' = the straight desk (layout default)
+/** #2224: Olof's computer in a Vicco Berdi secretary (Sonoma), closed by default. The flap (hinged at its bottom edge)
+ * folds down into a writing surface and shows both monitors, keyboard and accessories; the lower left door shows the
+ * computer box; the open cubbies hold speakers, DAC and mascot. Both fronts are ordinary Openables (E, saved open state);
+ * what is behind them is only drawn while its front is open (`contents`). Keeps the desk's type, item spot and movable
+ * id, so saved moves of the old desk carry over; the old straight/corner shape choice no longer applies. */
 export function tillydesk(item={}) {
-  const g=new THREE.Group(),wood=woodMaterial(K.wood,.48),cream=new THREE.MeshStandardMaterial({color:K.cream,roughness:1});
-  // #1569: both shapes are built whole from the same parts/materials and merged on their own, so only the shown one draws
-  // (the same draw calls either way); the layout's `variant` choice shows one and hides the other.
-  const shapes=DESK_VARIANTS.map(v=>{const s=new THREE.Group();s.name=`tillydesk-${v}`;g.add(s);
-    s.userData.footprint=deskShape(s,layoutFor(v==='corner'),wood,cream);mergeStatic(s);return s;});
-  g.userData.keep=[...shapes];
-  g.userData.shadowParts=shapes.map(s=>({object:s,rects:s.userData.footprint}));
-  let choice=null;
-  const variant={surface:'variant',get choice(){return choice;},
-    label(next=choice==='corner'?'original':'corner'){return next==='corner'?'Gör till hörnskrivbord':'Gör till rakt skrivbord';},
-    footprintFor:v=>shapes[Math.max(0,DESK_VARIANTS.indexOf(v))].userData.footprint,
-    /** Show variant `v` (unknown = original); true when it changed. */
-    apply(v){v=DESK_VARIANTS.includes(v)?v:'original';if(v===choice)return false;choice=v;
-      for(const [i,s] of shapes.entries()){const on=DESK_VARIANTS[i]===v;s.visible=on;
-        s.traverse(o=>{if(o.isMesh)o.raycast=on?THREE.Mesh.prototype.raycast:noRaycast;});}
-      g.userData.footprint=variant.footprintFor(v);g.userData.placeScreen?.(v==='corner');return true;}};
-  variant.apply('original');
-  g.userData.variant=variant;
+  const g=new THREE.Group(),L=berdiLayout(C),Q=C.cabinet,b=Q.board;
+  const oak=woodMaterial(Q.color,.6,[1,3]),inner=woodMaterial(Q.inside,.7,[1,3]),cream=new THREE.MeshStandardMaterial({color:K.cream,roughness:1});
+  for(const [size,at,inside] of L.boards)box(g,size,at,inside?inner:oak,0);
+  for(const [x,z] of L.legs)box(g,[Q.leg,L.legH,Q.leg],[x,L.legH/2,z],black,0);
+  cubbyDevices(g,cream);
+  // the writing flap: leaf + grip on its pivot (the hinge line on the outer face), turning out about +x
+  const fp=new THREE.Group();fp.position.set(...L.flap.hinge);
+  const [fw,fl,ft]=L.flap.size;box(fp,[fw,fl,ft],[0,fl/2,-ft/2],oak,0);
+  box(fp,Q.handle.size,[0,Q.handle.flapY,Q.handle.size[2]/2],black);
+  g.add(fp);
+  const flap=new Openable({name:'skrivklaffen',object:fp,mode:'flap',axis:[1,0,0],sign:1,max:Q.flapMax,speed:1.6});
+  const upper=new THREE.Group();upper.name='berdi-upper';upperDevices(upper,L);g.add(upper);
+  // the lower left door: leaf + vertical grip on its pivot (the left hinge line), turning out about y
+  const dp=new THREE.Group();dp.position.set(...L.door.hinge);
+  const [dw,dh,dt]=L.door.size;box(dp,[dw,dh,dt],[dw/2,dh/2,-dt/2],oak,0);
+  box(dp,[Q.handle.door[1],Q.handle.door[0],Q.handle.door[2]],[dw-.04,dh*.75,Q.handle.door[2]/2],black);
+  g.add(dp);
+  const door=new Openable({name:'datorluckan',object:dp,mode:'hinge',sign:-1,max:Q.doorMax});
+  const lower=new THREE.Group();lower.name='berdi-lower';computerBox(lower);g.add(lower);
+  for(const [o,front] of [[upper,flap],[lower,door]]){mergeStatic(o);o.visible=false;front.contents=o;}
+  // Open, the flap sticks out into the room at sitting height: it blocks the way (world segments, world.js) and is a
+  // put-down surface (#447 pattern: a gated surface, shown only fully open; the flap does not close under a thing)
+  flap.segments=function(){
+    if(this.t<.5)return [];
+    fp.parent.updateMatrixWorld();const p=flapOutline(L,Math.PI/2).map(([x,z])=>new THREE.Vector3(x,0,z).applyMatrix4(fp.parent.matrixWorld));
+    return [[p[0].x,p[0].z,p[1].x,p[1].z],[p[1].x,p[1].z,p[2].x,p[2].z],[p[2].x,p[2].z,p[3].x,p[3].z]];
+  };
+  const deskGate=new THREE.Group();deskGate.visible=false;g.add(deskGate);
+  const deskTop={...L.desk,gate:deskGate,door:flap};(g.userData.surfaces??=[]).push(deskTop);
+  const flapUpdate=flap.update;flap.update=function(dt){flapUpdate.call(this,dt);deskGate.visible=this.isOpen&&this.t>=1;};
+  Object.defineProperty(flap,'blocked',{get(){return this.isOpen&&!!deskTop.mesh?.userData.occupied();}});
+  flap.blockedText='Ta bort det som står på skrivklaffen först';
+  g.userData.targets=[flap,door];
+  g.userData.keep=[fp,dp,upper,lower,deskGate];
+  g.userData.footprint=L.footprint;
   deskPower(false); // #1576: off until the shared ComputerHub power state turns it on
-  if(item.mediaId)computerStation(g,item.mediaId);
-  // Occupied tabletop has no generic put-down plane: loose items cannot overlap the devices.
-  g.userData.setup='tilly';return g;
+  if(item.mediaId)computerStation(g,upper,item.mediaId);
+  return g;
 }
 /** #1566: the landscape monitor joins the shared ComputerHub (#1488) as Olof's computer. A separate unmerged
  * plane with whole-screen UVs carries the app/game texture while powered; #1576: off, the screens/RGB/LED are dark, and on,
- * the portrait monitor shows the static desktop atlas. */
-function computerStation(g,mediaId) {
+ * the portrait monitor shows the static desktop atlas. #2224: it lives in the flap's cavity, so it is seen (and E/touch on
+ * the monitors reaches it) only while the flap is open; E on the closed flap opens the flap. */
+function computerStation(g,upper,mediaId) {
   const M=C.monitors[0],app=new THREE.Mesh(new THREE.PlaneGeometry(M.size[0]-C.bezel*2,M.size[1]-C.bezel*2),
     new THREE.MeshBasicMaterial({color:0,toneMapped:false}));
-  // #1596: the app plane sits on the shown shape's main monitor (same size in both shapes).
-  g.userData.placeScreen=corner=>{const A=layoutFor(corner).monitors[0];app.position.set(A.at[0],A.at[1],A.at[2]+A.size[2]/2+D.offset+C.appLift);};
-  g.userData.placeScreen(g.userData.variant?.choice==='corner');app.visible=false;g.add(app);
-  (g.userData.keep??=[]).push(app);
+  app.position.set(M.at[0],M.at[1],M.at[2]+M.size[2]/2+D.offset+C.appLift);app.visible=false;upper.add(app);
   let on=false;
-  g.userData.interact={name:'Olofs dator',kind:'pc',pickable:g,mesh:app,mediaId,
+  const target={name:'Olofs dator',kind:'pc',pickable:upper,mesh:app,mediaId,
     get isOpen(){return on;},get verb(){return on?'välja på':'starta';},
     toggle(){return on=!on;},media(v){app.visible=v;deskPower(v);},watch(){}};
+  upper.traverse(o=>{if(o.isMesh)o.userData.door=target;});
+  g.userData.targets.push(target);
 }
 export function batmanchair() {
   const g=new THREE.Group(),B=C.chair,textile=upholsterySurface(g),cloth=textile.material(black),weave=textile.material(carbon());

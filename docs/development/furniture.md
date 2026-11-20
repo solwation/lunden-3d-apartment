@@ -135,52 +135,70 @@ tools/bestatest.html   headless test: the BESTÅ display cabinet's six doors ope
                        lit glass section switch with the room (#191)
 ```
 
-## Tilly's personal desk corner (#1557)
+## Tilly's personal desk corner (#1557, Berdi secretary since #2224)
 
 `src/tillydesk.js` builds `tillydesk` and `batmanchair`; `TILLY_DESK` in config
 centralizes every dimensional assumption, including the east-wall placement north
-of the vanity. Source: [the user's setup photo](../datorsetup-secretlab-batman.jpg).
-All sizes and proportions are **guess**; no manufacturer dimensions were verified.
-The mahogany-red top has telescopic T legs and a memory control panel, modelled at
-sitting height (no height-control interaction). Two arm-mounted monitors share one
-static invented editor/dashboard atlas. Accessories, keyboard keys and case details
-merge per material. The three fan rings, rear LED and wall wash are unlit materials;
-there is no new light, animation, private screen capture, mail or wall photograph.
-The floor PC has a hollow shell and tinted glass in front of the fans.
+of the vanity. Device source: [the user's setup photo](../datorsetup-secretlab-batman.jpg).
+Device sizes and proportions are **guess**; no manufacturer dimensions were verified.
+
+**Cabinet (#2224).** The brown/red T-leg desk (#1557, with its #1569/#1596 straight/corner shape choice)
+is replaced by a Vicco *Berdi* secretary in Sonoma oak (the user's ok-living.se link, 404).
+Verified from retailer listings: 110 × 45 × 140 cm (W × D × H), 16 mm melamine particleboard, a
+metal frame, "four open and three closed compartments", sold in white and Sonoma. Everything else
+is a *guess* in `TILLY_DESK.cabinet` (no drawing or product photo could be fetched): four 10 cm
+black legs, the Sonoma colour, and the layout. The upper part is one writing flap hinged at its
+bottom edge; it folds down to a 0.70 m deep writing surface level with the cavity floor
+(0.716 m). The lower left door hides the computer compartment. Four open cubbies on the right hold the
+speakers, the DAC and the mascot. The model has two closed fronts, not the listed three.
+The pure layout lives in `src/berdi.js` (`berdiLayout`, `deviceBoxes`,
+`flapTop`/`flapOutline`/`doorEdge`); the builder uses those numbers and `tools/berditest.mjs`
+checks them headless. The checks cover the outline, every device inside its compartment (nothing pokes
+through the shut fronts), the fronts covering their openings, the flat flap's height and the door
+swinging clear of the room door.
+
+The item keeps `type: 'tillydesk'`, its spot and the movable id `f-tillydesk-1-2.292-9.43-0-0`.
+Saved moves of the old desk therefore apply to the secretary without a layout migration. Its back stands 4 mm off the
+east wall (local z `back` −0.336; the desk's back was at −0.325), so the cabinet is off-centre on
+its origin. The old `variant` shape choice has no handle any more (`userData.variant` is gone), so a
+stored `corner` choice is ignored; `DESK_VARIANT_IDS`/`DESK_VARIANT_CHOICES` remain in
+`src/materialcatalog.js` so the Worker still accepts and resets layouts saved before.
+
+Both fronts are ordinary `Openable`s in `userData.targets` (`skrivklaffen`: mode `flap`;
+`datorluckan`: mode `hinge`), so E/touch, saved open state (`keep.js` `open`) and `?open` work
+as for other cabinets. It is closed by default. What is behind a front is its `contents` and is drawn only
+while that front is open: the cavity group (both monitors on foot stands, webcam, ring light, mat,
+keyboard, mouse, puck, charger, headphone hook, RGB strip and its wash on the back panel) and the
+computer box (a compact 22 × 46 × 38 cm case, *guess*, because the desk's 43 cm deep tower does not
+fit the 42 cm compartment). Open, the flap blocks the way (`segments()`, like the Bang secretary)
+and is a gated put-down surface. It does not close while something stands on it (#447 pattern).
+The desk's memory control panel, cable column and clamp arms belonged to the old desk and are gone.
+
+The setup is Olof's own computer (#1566): the landscape monitor is the shared `pc-olof` station
+(`COMPUTER_MEDIA`, [shared computers](interactions.md#shared-computers-1488)). The `pc` target is
+in `userData.targets`; its `pickable` is the cavity group, whose meshes carry it as `userData.door`.
+E/touch on the monitors reaches the computer, also while seated in the Batman chair. E on the closed flap
+opens the flap first. A separate unmerged plane with whole-screen UVs shows the app/game while powered.
+Power (#1576): the computer starts off and the shared power snapshot (`media(on)`) drives its lights.
+Off, the shared screen atlas, RGB/fan-ring and LED materials are recoloured
+(`TILLY_DESK.colors.screenOff`/`unlit`) and the wash goes to opacity 0. On, the portrait monitor shows
+the static desktop atlas.
+
+Draw calls (Node mesh count after the furniture merge, power off): old desk 17. Secretary closed 11,
+flap and door open 26, plus the app plane while on. The cavity and the computer box are merged on their own.
 
 The Batman chair has black upholstery, carbon-pattern sides, white seams, pillow
 and a stylized bat emblem. It uses normal E sitting/standing and the existing
 independent furniture move/rotate path; there is no extra in-place swivel mechanic.
-Its upholstery opts into the existing explicit material-library handle. Desk,
-floor PC and chair have ordinary footprint collision. The busy tabletop intentionally
-has no put-down surface, so loose items cannot overlap the devices. The setup is Olof's own
-computer (#1566): the landscape monitor is the shared `pc-olof` station
-(`COMPUTER_MEDIA`, [shared computers](interactions.md#shared-computers-1488)). A
-separate unmerged plane with whole-screen UVs shows the app/game while powered;
-off, it is hidden. E/touch anywhere on the desk targets the computer,
-also while seated in the Batman chair. The portrait monitor and accessories stay
-decorative. Power (#1576): the desk starts off and the shared power snapshot (`media(on)`)
-drives its lights. Off, the shared screen atlas, RGB/fan-ring and LED materials are
-recoloured (`TILLY_DESK.colors.screenOff`/`unlit`) and the LED wall wash goes to opacity 0;
-on, the portrait monitor shows the static desktop atlas. Same meshes, merged batches and
-draw calls in both desk shapes; the app plane is the only extra draw while on. This is personal furnishing and gameplay, excluded from the public downstream.
+Its upholstery opts into the existing explicit material-library handle. Cabinet and
+chair have ordinary footprint collision. This is personal furnishing and gameplay, excluded from the public downstream.
 
-Corner variant (#1569 L-shape, replaced by a triangle in #1596): in Möblera om the desk switches between straight
-(default) and a triangular corner desk ([interactions](interactions.md#module-and-test-map)).
-`tillydesk` builds both shapes whole, from the same parts and materials, as two
-subgroups merged on their own; only the shown one draws, so the corner costs no more
-draw calls than the straight desk. The corner top is an isosceles right triangle in desk-local
-coordinates: two straight ~1.06 m sides meet at the rear peak (−z, the wall side) and the 1.50 m
-front edge faces the room and the Batman chair. Turned 45° (Möblera om turns in 45° steps) the peak
-goes into a room corner with the sides along both walls; in the default spot the peak just clears the
-east wall. Three T legs (two front, one under the peak) carry it. Monitors, keyboard, mouse and the
-#1566 app screen move forward onto the front half (`userData.placeScreen` keeps the app plane on the
-shown shape's main monitor); DAC + figure and the LED strip sit in the corner behind the screens, the
-PC under the peak. The wall wash behind the peak is only 0.13 m wide (#1603), so in a corner it stays within
-3 cm of the walls instead of shining through them; `tillydeskvarianttest` checks that margin. `userData.footprint` uses rectangles inscribed in the triangle so its collision does
-not touch the walls in a corner. All values are guesses in `TILLY_DESK.corner`. The hidden shape has no
-raycast; `userData.footprint` and the per-shape contact shadows (`userData.shadowParts`) follow the shown
-one. The Batman chair stays an independent piece in front of the main monitor.
+```
+src/berdi.js          pure Berdi layout: boards, compartments, fronts, open-flap desk, device bounds (#2224)
+tools/berditest.mjs   node --test: verified outline, devices inside their compartments, fronts cover, flap/door open (#2224)
+tools/olofcomputertest.cjs  browser: closed start, E opens the flap, computer on/menu/Ormstriden seated, door shows the box,
+                      a legacy layout (old id moved + corner shape) still applies (#1566, #1576, #2224)
+```
 
 ## Recent implementation notes
 
