@@ -2426,8 +2426,9 @@ the checkout with three.js from the npm tarball (cached in ~/.cache), and Chrome
 the installed Playwright Chromium (for example `~/.cache/ms-playwright/chromium-*/chrome-linux64/chrome --no-sandbox`; some environments provide `/opt/pw-browsers/chromium`). Such a VM has ~4 CPUs: run at most ~3 headless test
 runs (agents) at a time, more only slows every one down. `/orkester [område]` (.claude/commands/orkester.md) runs a
 session as an orchestrator that works through the open issues with subagents under these rules.
-Several orchestrators (separate VMs) sync through issue #420 (label `orkester`, kept off the fridge notes): each keeps
-one status comment there and reserves whole chains with `in-progress` + a comment on each issue.
+Orchestrators on separate machines update their linked status comments in original #420 and public #4.
+Each agent claims its own current issue when work starts. Other issues follow the
+[project claim rules](../../.orchestra/project.md#claim-only-work-starting-now).
 
 Worker tests in a cloud session (#635): `tools/cloudtest.html` and `tools/resettest.html` need `node cloudflare/dev.mjs 8144` (admin token
 default `testtoken`; the tests stop at once with a clear FAIL if the wipe is refused). Run one at a time, open `http://localhost:<port>/tools/<test>.html`

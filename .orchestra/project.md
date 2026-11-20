@@ -96,7 +96,7 @@ service is installed to launch an agent when no agent session is running.
 
 Default scope is both repositories. Explicit scope limits implementation, never visibility
 of the other queue. Fetch all open pages in both before each selection, claim,
-takeover, chain continuation and idle check. Fetch the two repositories concurrently:
+takeover and idle check. Fetch the two repositories concurrently:
 
 ```sh
 gh api --paginate 'repos/solwation/lunden-3d-apartment/issues?state=open&per_page=100'
@@ -109,7 +109,13 @@ Issueflow guide, including recognized aliases; canonical labels are used for new
 a complete global check. Record skipped older/higher and outside-scope work. A request
 to create an issue during a session does not permanently exclude implementation.
 
-Reserve only the current issue, with a comment identifying session, responsibility and
+### Claim only work starting now
+
+Across both repositories, each agent may hold at most one active work issue and only
+while actually implementing, verifying or integrating it. A conductor doing queue
+coordination alone holds none. Several agents helping on one issue retain one claim.
+Planned capacity, a workstream, a parent or a list of next issues grants zero advance
+reservations. Record a claim when its named agent starts, with the session, responsibility and
 coordination links; re-read comments/labels immediately afterwards. Earlier valid claim
 wins. Create the session label if missing and set both labels together at active start;
 reconcile own claims on resume/status updates. Remove recognized work labels and own
@@ -126,11 +132,19 @@ A waiting child must be integrated and closed, or its work labels removed, befor
 no capacity slot. Same-file work needs distinct block/module ownership; actual
 coupled dependencies may require serial work, not bypassing priority for convenience.
 
-Documented `integration-ready` handoffs never expire under active/future-claim timers.
+Documented `integration-ready` handoffs retain their integration owner without a time limit.
 Investigate an unavailable owner and announce an explicit handover preserving checkout,
 commits and evidence; a missing owner label or heartbeat does not permit new implementation.
-Existing future claims expire after 30 minutes without start. Announce taking
-an unstarted claim when its owner has no capacity; release your own unused ones.
+At each selection and before reporting idle, check each remaining open work issue
+against its own claim, named agent and current work or handoff, concrete unfinished
+dependency, trusted acceptance, explicit deferral or pending product decision.
+Record the reason for each skipped issue. Check unclaimed siblings independently.
+A schedule or chain listed in a status comment cannot block a startable issue, even
+when a sibling is active. Legacy future reservations have no grace period. Release
+your own surplus claims immediately in the affected issues and coordination status,
+preserving any work first. If another session's status is ambiguous, check the
+affected issue, its comments and current activity before applying the active-work
+recovery rules below. Never clear another session's genuine work or handoff.
 An active issue may be taken over only after 90 minutes without commit/comment/status
 and no evidence its agent is running (missing from status, or session status older than
 90 minutes). A 3-hour-old session status is abandoned, but never seize visibly active
@@ -179,7 +193,7 @@ Keep these checks brief; no new background monitoring service is required.
 - Use fewer roles when only coupled work remains or delegation adds coordination
   cost. A free role may do independent cheap work while a browser job waits only
   when priority, headroom and review throughput permit it. Do not duplicate an
-  active issue or create future claims merely to fill capacity.
+  active issue. Claim newly selected work only as its assigned agent starts.
 
 Keep one publishing/integration owner. Expensive browser jobs run under
 [the existing browser wrapper](../tools/browsertest.sh): one at a time, plus a second
@@ -310,8 +324,8 @@ evidence (for example "docs-only: no result images"). Listed order is execution 
 recognizes only canonical priorities/literal `in-progress`, so raw labels and
 Issueflow take precedence for aliases and `integration-ready`; the helper does not
 understand the integration queue or waiting capacity. It is not the generic engine
-or a complete two-repository check; supplement the public queue and parent/claim
-analysis. It does not change labels or provide live polling.
+or a complete two-repository check. Its sorted rows include active issues. Inspect the raw
+labels, both queues, and per-issue evidence of work, handoffs and dependencies before selection. It does not change labels or provide live polling.
 
 ## Queue intake hooks
 

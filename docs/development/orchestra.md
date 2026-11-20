@@ -33,7 +33,8 @@ obligatorisk Claude-attribution gjorde dessutom instruktionerna verktygsbundna.
   ansvar, en integrationsägare, riskbaserade kontroller och en granskning.
 - Små sammanhängande ärenden levereras i ett steg. Dela bara när självständigt nyttiga
   leveranser motiverar det. Hjälpare för testförberedelse/granskning kräver inte delärenden.
-- En aktuell issue per arbetare; inga framtida reservationer som standard. Båda köerna
+- En aktuell issue per arbetande agent över båda repona. Noll förhandsreservationer
+  enligt [ägarregeln](../../.orchestra/project.md#claim-only-work-starting-now). Båda köerna
   hämtas samtidigt, men kraven på färsk fullständig kö och efterföljande claimkontroll kvarstår.
 - Återanvänd giltiga bevis efter orelaterad rebase. Fel eller ändrade relevanta indata
   utlöser riktat omprov. 10 minuter verifiering är en omprövningspunkt, inte dispens.

@@ -97,7 +97,9 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
   owner/integrator even if its owner label is missing; inspect its evidence instead of duplicating implementation. Before starting
   **each** new issue: `git pull --rebase origin main` (use `--rebase=merges` for unpublished subtree imports), then inspect `git status`. Preserve any uncommitted changes; use an isolated checkout when another agent
   shares the directory, and never discard their work.
-  Re-check the issue's label right before labelling it. Work on one issue at a time until done.
+  Re-check the issue's label right before labelling it. Each actually working agent holds at most one active work issue across both
+  repositories. Claim at start, release surplus reservations immediately, and evaluate siblings individually
+  under the [claim rules](.orchestra/project.md#claim-only-work-starting-now).
 - **Label issues `in-progress` when you start on them** (`gh issue edit N --add-label
   in-progress`). The label must never outlive the work: **remove it** (`--remove-label
   in-progress`) when you stop without finishing, when you close the issue after implementing it

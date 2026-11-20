@@ -20,6 +20,8 @@ For issue labels/state, follow [.orchestra/shared/ISSUE-WORKFLOW.md](.orchestra/
 the canonical guide from github-dashboard. Finished handoffs use `integration-ready`,
 retain their documented integration owner and consume no active slot; only that owner
 or integrator resumes them. See the [handoff policy](.orchestra/project.md#integration-handoffs).
+Across both repositories, an agent claims one issue when its work starts. Leave planned
+work and independent siblings available under the [claim rules](.orchestra/project.md#claim-only-work-starting-now).
 For chat change requests, create/reuse the matching issue and follow
 [chat intake](.orchestra/shared/ORCHESTRA.md#turn-chat-requests-into-work) and the
 [local intake mode](.orchestra/project.md#scope-queue-and-ownership). When the agent
