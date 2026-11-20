@@ -23,6 +23,7 @@ const ROWS = name === 'gait-side' ? SIDE : [{ fwd: 1.6, view: 'side' }, { fwd: 3
     info.forEach((r, i) => { const y = r.feet.flatMap((f) => [f.L[1], f.R[1]]); console.log('row', i, JSON.stringify(ROWS[i]), 'ankle y', Math.min(...y).toFixed(3), '…', Math.max(...y).toFixed(3)); if (Math.min(...y) < 0.03) fail(`row ${i}: an ankle below the ground (${Math.min(...y)})`); });
     const steps = [];
     for (const r of (name === 'gait-side' ? [ROWS[1], ROWS[2]] : [ROWS[0], ROWS[1], ROWS[4]])) { const s = await page.evaluate(([a, b]) => window.__steps(a, b), [r, 8]); steps.push(s); console.log('steps', JSON.stringify(r), JSON.stringify(s)); }
+    steps.forEach((s, i) => { if (!(s.footfalls > 0)) fail(`row with speed > 0 has ${s.footfalls} footfalls (standing figure?)`); });
     for (const s of steps) if (s.footfalls && Math.abs(s.heard - s.footfalls) > 1) fail(`footfall sounds ${s.heard} vs footfalls ${s.footfalls}`);
     fs.writeFileSync(path.join(out, name + '.json'), JSON.stringify({ rows: ROWS, info, steps }, null, 1));
   } finally { await ctx.close(); }

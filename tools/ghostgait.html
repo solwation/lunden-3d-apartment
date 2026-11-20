@@ -20,7 +20,7 @@ renderer.setPixelRatio(1); document.body.appendChild(renderer.domElement);
 const scene = new THREE.Scene(); scene.background = new THREE.Color(0xbfc6cc);
 scene.add(new THREE.HemisphereLight(0xffffff, 0x8a7f72, 1.6));
 const sun = new THREE.DirectionalLight(0xfff2e0, 2.2); sun.position.set(2, 4, 3); scene.add(sun);
-const ground = new THREE.Mesh(new THREE.PlaneGeometry(20, 6), new THREE.MeshLambertMaterial({ color: 0x9aa39a }));
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), new THREE.MeshLambertMaterial({ color: 0x9aa39a }));
 ground.rotation.x = -Math.PI / 2; scene.add(ground);
 const mk = (self) => { const g = new Ghost(scene, self ? 99 : 7, self ? 'Jag' : 'Spelare', self); if (g.tag) g.tag.visible = false; scene.add(g.root); g.root.visible = true; return g; };
 const remote = mk(false), mirror = mk(true);
@@ -31,6 +31,7 @@ function drive(g, ms, fwd, left, yaw) {
   for (let n = 0; n < Math.round(ms * FPS / 1000); n++) {
     t += 1000 / FPS;
     const vx = -Math.sin(yaw) * fwd - Math.cos(yaw) * left, vz = -Math.cos(yaw) * fwd + Math.sin(yaw) * left; // forward = the root's -z, its left = -x at yaw 0
+    g.root.position.x += vx / FPS; g.root.position.z += vz / FPS; // the gait derives from the root's own travel (#2004 ground motion), not from the velocity argument alone (#2207)
     g.air = 0; g.animate(t, 1, vx, vz);
   }
 }
@@ -42,9 +43,9 @@ window.__sheet = (rows) => {
     const g = r.self ? mirror : remote; remote.root.visible = !r.self; mirror.root.visible = !!r.self;
     const yaw = r.view === 'front' ? 0 : -Math.PI / 2; // side: it walks to the right of the picture; front: it faces the camera
     const fwd = r.fwd ?? 0, left = r.left ?? 0;
-    g.have = false; drive(g, 2500, fwd, left, yaw); // settle
+    g.root.position.set(0, 0, 0); g.motionFrame = null; g.lastDraw = 0; g.have = false; drive(g, 2500, fwd, left, yaw); // settle
     const cam = new THREE.PerspectiveCamera(27, CW / CH, 0.05, 50);
-    cam.position.set(r.view === 'front' ? 0 : 0, 1.05, r.view === 'front' ? -4.6 : 4.6); cam.lookAt(0, 0.92, 0);
+    const follow = (g) => { const p = g.root.position; cam.position.set(p.x, 1.05, p.z + (r.view === 'front' ? -4.6 : 4.6)); cam.lookAt(p.x, 0.92, p.z); };
     const row = { feet: [] };
     for (let c = 0; c < COLS; c++) {
       if (c) drive(g, STEP, fwd, left, yaw);
@@ -52,7 +53,7 @@ window.__sheet = (rows) => {
       const p = (k) => g.avatar.bones['foot' + k].getWorldPosition(new THREE.Vector3()).toArray().map((v) => Math.round(v * 1000) / 1000);
       row.feet.push({ L: p('L'), R: p('R'), contact: g.avatar.gaitInfo?.contact?.slice() ?? null });
       const x = c * CW, y = (rows.length - 1 - ri) * CH;
-      renderer.setViewport(x, y, CW, CH); renderer.setScissor(x, y, CW, CH);
+      follow(g); renderer.setViewport(x, y, CW, CH); renderer.setScissor(x, y, CW, CH);
       renderer.render(scene, cam);
     }
     info.push(row);
@@ -61,7 +62,7 @@ window.__sheet = (rows) => {
   return info;
 };
 window.__steps = (r, secs) => {
-  const g = r.self ? mirror : remote, yaw = -Math.PI / 2; g.have = false; g.root.visible = true;
+  const g = r.self ? mirror : remote, yaw = -Math.PI / 2; g.root.position.set(0, 0, 0); g.motionFrame = null; g.lastDraw = 0; g.have = false; g.root.visible = true;
   drive(g, 1500, r.fwd ?? 0, r.left ?? 0, yaw);
   const fake = { soundAt: 0, others: new Map([[1, g]]), onStep: () => { heard++; } };
   let heard = 0; g.dEye = 5; g.vh = Math.hypot(r.fwd ?? 0, r.left ?? 0); g.vy = 0; g.crouch = 0; g.pose = 0; g.jp = 0; g.swim = false;
