@@ -91,7 +91,7 @@ test('new counters share catalog curves, floor wire values, preserve old IDs and
   }
   assert.equal(new Set(MEDALS.map(m => m.id)).size, MEDALS.length);
   assert.ok(['steps', 'jetpack', 'astronaut', 'fish', 'outdoorcats', 'tasks'].every(id => MEDALS.some(m => m.id === id)));
-  assert.deepEqual(boardCounters({ cycleMetres: 1000.9, swimMetres: 100.9, diveSeconds: 60.9, route: [1, 2], scooterMetres: 12 }),
+  assert.deepEqual(boardCounters({ cycleMetres: 1000.9, swimMetres: 100.9, diveSeconds: 60.9, route: [1, 2], notACounter2229: 12 }),
     { cycleMetres: 1000, swimMetres: 100, diveSeconds: 60 });
   const huge = Object.fromEntries(MOVEMENT_COUNTERS.map(k => [k, 1e12]));
   const first = clampCounters(huge, null, 0);

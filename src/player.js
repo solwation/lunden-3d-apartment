@@ -712,7 +712,7 @@ export class Player {
     const fwd = (k.has('KeyW') || k.has('ArrowUp') ? 1 : 0) - (k.has('KeyS') || k.has('ArrowDown') ? 1 : 0) || this.analog.y;
     const desired = this.camera.rotation.y + Math.PI / 2 + side * C.turn * dt;
     const rawAngle = Math.atan2(Math.sin(desired - r.yaw), Math.cos(desired - r.yaw)), angle = Math.abs(rawAngle) < 1e-9 ? 0 : rawAngle;
-    const oldSpeed = r.speed ?? 0, P = r.bike.motionProfile?.() ?? C; // #2229: an e-scooter's motor, cap and take-off (scootermotion.js)
+    const oldSpeed = r.speed ?? 0, P = r.bike?.motionProfile?.() ?? C; // #2229: an e-scooter's motor, cap and take-off (scootermotion.js)
     r.speed = bicycleSpeed(oldSpeed, fwd, r.pitch ?? 0, !!r.airborne, dt, P);
     const travel = (oldSpeed + r.speed) * .5 * dt;
     const n = Math.max(1, Math.ceil((Math.abs(travel) + Math.abs(angle) * (Math.max(-C.rear, C.front) + C.radius+C.height*Math.abs(Math.sin(r.pitch??0)))) / (P.step ?? C.step))); // (#2229: a tuned scooter's coarser travel step)
@@ -757,7 +757,7 @@ export class Player {
       this.pos.set(p.x,y,p.z);previous=support;r.yaw=yaw;r.pitch=nextPitch;this.vy=airborne?vy:0;r.airborne=airborne;r.groundVy=airborne?0:groundVy;r.clear=airborne?y-support.y:0; // (#2229: clear of the ground, the scooter's jumps)
       if(this.fall&&!r.airborne) {const f=this.fall;this.fall=null;this.vy=0;if(f.gap>0 && f.top>this.pos.y)this.onLand?.(f.top-this.pos.y,f.gap);if(this.riding!==r)return;}
     }
-    if (!r.bike.isScooter) this.onCycleTravel?.(travelled, dt); // #2230: this bicycle path alone; no other riding mode (#2229: an e-scooter counts its own metres in main.js scooterFrame)
+    if (!r.bike?.isScooter) this.onCycleTravel?.(travelled, dt); // #2230: this bicycle path alone; no other riding mode (#2229: an e-scooter counts its own metres in main.js scooterFrame)
     this.bikeSplash(); // #1304: into the river
     this.edgeNotice(WALK.bikeEdge); // #1719: the bicycle stops ~1 m short of the edge, so a wider margin than on foot
     this.camera.rotation.y = r.yaw - Math.PI / 2; this.sprinting = false; this.jumpPress = false; this.crouch = this.crouched = false;
