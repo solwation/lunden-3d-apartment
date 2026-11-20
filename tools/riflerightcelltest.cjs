@@ -30,7 +30,7 @@ window.tick=null; // native geometry inventory runs before room connection/idle 
 window.peer=()=>[...ghosts.others.values()][0];
 window.aimAt=(y,x=0)=>{camera.position.set(position[0],position[1]+1.62,position[2]);camera.lookAt(position[0]+x,y,peer()?.feet.z??0);camera.updateMatrixWorld();};
 window.aimRight=(desired,unsafe=false)=>{
- const g=peer(),state={p:g.feet.toArray(),r:desired??g.snaps.at(-1).r},w=[.93,1,1.08][g.avatar.look.build],up=new T.Vector3(0,1,0);
+ const g=peer(),state={p:g.feet.toArray(),r:desired??g.snaps.at(-1).r},w=1,up=new T.Vector3(0,1,0);
  for(const distance of [1.6,2.1,2.6,3.6,4.1])for(const z of [.04,.039,.041])for(const y of [.1,.099,.101])for(const dz of [0,-.001,.001,-.002,.002])for(const dy of [0,-.001,.001,-.002,.002]){
   const o=new T.Vector3(distance,(config.PVP_RIFLE_HEAD.headY+y)*g.avatar.look.tall-dy*distance,-z*w-dz*distance).applyAxisAngle(up,state.r).add(g.feet);
   o.set(...o.toArray().map(v=>Math.round(v*100)/100));window.position=[o.x,g.feet.y,o.z];camera.position.copy(o);

@@ -31,13 +31,13 @@ const hit=ghosts.onHit,hurt=ghosts.onHurt;ghosts.onHit=(m,g)=>{acks.push(structu
 const mark=combat.hitMarker.show.bind(combat.hitMarker);combat.hitMarker.show=m=>{markers.push(m.head===true);mark(m);};
 window.tick=setInterval(()=>{ghosts.update();combat.update(0);},35);
 window.peer=()=>[...ghosts.others.values()][0];
-window.aimAt=(y,x)=>{camera.position.set(0,1.62,-4);camera.lookAt(x??(-.068*[.93,1,1.08][peer().avatar.look.build]),y,0);camera.updateMatrixWorld();};
+window.aimAt=(y,x)=>{camera.position.set(0,1.62,-4);camera.lookAt(x??(-.068*1),y,0);camera.updateMatrixWorld();};
 window.rightProof=async()=>{
  const {Ghosts}=await import('/src/ghosts.js'),gs=new Ghosts({scene:new T.Scene(),camera:new T.PerspectiveCamera(),url:'',active:()=>true,weapon:()=> 'rifle',state:()=>({p:[0,0,-3],r:0})}),seen=new Set(),support={},details=[];
  let rays=0,positive=0,unsupported=0,hidden=0,bad=0,corners=0,cornerBad=0,maxResidual=0;
  const scenarios=[['late',0,16],['suit',.5,100],['rifle',0,16],['rifle',2,100],['saber',.15,16],['saber',.3,600],['wave',0,16],['wave',.4,100],['wave',1.3,600],['wave',2.6,16],['repeat',1.3,600],['delayed',.4,600]];
  for(let n=0;n<10000&&seen.size<60;n++){
- const id='front-'+n,look=config.avatarLook(id),key=[look.style,look.build,look.tall].join('/');if(seen.has(key))continue;seen.add(key);support[key]={positive:0,unsupported:0,hidden:0};const width=[.93,1,1.08][look.build];
+ const id='front-'+n,look=config.avatarLook(id),key=[look.style,look.build,look.tall].join('/');if(seen.has(key))continue;seen.add(key);support[key]={positive:0,unsupported:0,hidden:0};const width=1;
  for(const yaw of [0,.79,.8,.81,3.14,-1.6])for(const [mode,phase,pause] of scenarios){
  let g;if(mode==='late'){gs.message(JSON.stringify({t:'w',i:'viewer',ps:[{i:id,p:[0,0,0],r:yaw,h:'rifle',l:10}]}));g=gs.others.get(id);}else g=gs.add(id,'Standing');const held=mode==='saber'?'saber':'rifle';let t=1000;
  if(g.root.visible||mode!=='late'&&g.snaps.length)throw Error('no-snapshot model must remain hidden');
@@ -64,7 +64,7 @@ window.rightProof=async()=>{
 };
 window.maxProof=async()=>{
  const {Ghosts}=await import('/src/ghosts.js'),gs=new Ghosts({scene:new T.Scene(),camera:new T.PerspectiveCamera(),url:'',active:()=>false,state:()=>({p:[0,0,0],r:0})}),seen=new Set(),details=[];let cases=0,admitted=0,corners=0,bad=0;
- for(let n=0;n<10000&&seen.size<60;n++){const id='lateral-'+n,look=config.avatarLook(id),key=[look.style,look.build,look.tall].join('/');if(seen.has(key))continue;seen.add(key);const width=[.93,1,1.08][look.build];
+ for(let n=0;n<10000&&seen.size<60;n++){const id='lateral-'+n,look=config.avatarLook(id),key=[look.style,look.build,look.tall].join('/');if(seen.has(key))continue;seen.add(key);const width=1;
  for(const shift of [[4990,4980,4990],[-4990,-4980,-4990]])for(const yaw of [0,.8]){cases++;const state={p:shift,r:yaw},g=gs.add(id,'Max'),up=new T.Vector3(0,1,0);g.push({...state,h:'rifle'},1000);g.draw(1000+config.GHOSTS.delay,new T.Vector3(...shift).add(new T.Vector3(3,1.62,0)));g.root.updateMatrixWorld(true);const flag=g.avatar.mesh.geometry.attributes.rifleSkull;let found=false;
  for(const distance of [.6,1,2,3])for(const yy of [.1,.099,.101,.0985,.1015])for(const zz of [.04,.0395,.0405,.039,.041]){if(found)continue;const point=new T.Vector3(.09*width,(config.PVP_RIFLE_HEAD.headY+yy)*look.tall,-zz*width).applyAxisAngle(up,yaw).add(new T.Vector3(...shift)),o=point.clone().add(new T.Vector3(distance,0,0).applyAxisAngle(up,yaw));o.set(...o.toArray().map(v=>Math.round(v*100)/100));const d=point.clone().sub(o).normalize();d.set(...d.toArray().map(v=>Math.round(v*1000)/1000));const h=new T.Raycaster(o,d.clone().normalize(),0,40).intersectObject(g.avatar.mesh,false)[0];if(!h)continue;const hc=h.point.toArray().map(v=>Math.round(v*1000)/1000);if(!flag.getX(h.face.a)||!config.rifleHeadGreetingRightRegion(id,state,hc,o.toArray(),d.toArray()))continue;found=true;admitted++;details.push({key,shift,yaw,distance,o:o.toArray(),d:d.toArray(),hc});
  for(const dx of [-.0005,.0005])for(const dy of [-.0005,.0005])for(const dz of [-.0005,.0005]){const q=new T.Vector3(...hc).add(new T.Vector3(dx,dy,dz)),near=new T.Raycaster(o,q.clone().sub(o).normalize(),0,40).intersectObject(g.avatar.mesh,false)[0];corners++;if(!near||!flag.getX(near.face.a))bad++;}}
@@ -84,7 +84,7 @@ for(const p of pages){await p.reload();await p.setupNative();}}
 await Promise.all(pages.map(p=>p.waitForFunction(()=>ghosts.connected&&peer()?.snaps.length&&peer().root.visible)));
 await a.waitForFunction(()=>peer().speed<.001&&(peer().avatar.gait??0)<.001);await a.waitForTimeout(650);
 const aim=async()=>a.evaluate(()=>{
- const g=peer(),look=g.avatar.look,w=[.93,1,1.08][look.build];
+ const g=peer(),look=g.avatar.look,w=1;
  for(const yy of [.1,.099,.101,.0985,.1015])for(const zz of [.04,.0395,.0405,.039,.041]){
  const y=(config.PVP_RIFLE_HEAD.headY+yy)*look.tall;camera.position.set(3,Math.round(y*100)/100,Math.round(-zz*w*100)/100);camera.lookAt(.09*w,y,-zz*w);camera.updateMatrixWorld();const c=combat.rifleContact();
  if(c?.hc&&config.rifleHeadGreetingRightRegion(g.id,{p:[g.feet.x,g.feet.y,g.feet.z],r:g.snaps.at(-1).r},c.hc.slice(1).map(v=>Math.round(v*1000)/1000),c.o.toArray(),c.d.toArray()))return{hc:c.hc,o:c.o.toArray(),d:c.d.toArray(),id:g.id};

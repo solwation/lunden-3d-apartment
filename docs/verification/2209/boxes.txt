@@ -1,0 +1,16 @@
+PASS standing box 1: first face, normalized direction, world distance
+PASS standing box 2: first face, normalized direction, world distance
+PASS standing box 3: first face, normalized direction, world distance
+PASS quarter-turn head faces the rotated ray
+PASS crouched head follows hip drop and torso lean
+PASS body boundary uses lowest transformed head height
+PASS off-head ray misses
+PASS range stops before head
+PASS ray starting inside head has zero entry distance
+PASS interpolated crouch 0 has a finite logical body boundary
+PASS interpolated crouch 0.5 has a finite logical body boundary
+PASS interpolated crouch 1 has a finite logical body boundary
+PASS invalid ray returns no contact
+PASS invalid pose returns no contact or body boundary
+PASS invalid range returns no contact
+ALL PASS 15 checks

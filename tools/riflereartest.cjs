@@ -49,7 +49,7 @@ window.proof=async()=>{
   for(let j=0;j<flag.count;j++)if(flag.getX(j))actual.push([array.getX(j),array.getY(j)-1.54,array.getZ(j)]);
   const canonical=config.rifleSkullProfile().flat();if(actual.length!==canonical.length)throw Error('skull topology mismatch');
   for(let j=0;j<actual.length;j++)for(let axis=0;axis<3;axis++)shapeError=Math.max(shapeError,Math.abs(actual[j][axis]-canonical[j][axis]));
-  const P=lk.style===3?config.PVP_RIFLE_HEAD.rear.beanie:config.PVP_RIFLE_HEAD.rear.lower,w=[.93,1,1.08][lk.build];
+  const P=lk.style===3?config.PVP_RIFLE_HEAD.rear.beanie:config.PVP_RIFLE_HEAD.rear.lower,w=1;
   for(const time of [0,.4,2,5]){
    if(time)a.update(time,{speed:0});
    for(const yaw of [0,.8,Math.PI,-1.6]){

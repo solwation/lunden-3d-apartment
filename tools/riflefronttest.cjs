@@ -32,12 +32,12 @@ const hit=ghosts.onHit,hurt=ghosts.onHurt;ghosts.onHit=(m,g)=>{acks.push(structu
 const mark=combat.hitMarker.show.bind(combat.hitMarker);combat.hitMarker.show=m=>{markers.push(m.head===true);mark(m);};
 window.tick=setInterval(()=>{ghosts.update();combat.update(0);},35);
 window.peer=()=>[...ghosts.others.values()][0];
-window.aimAt=(y,x)=>{camera.position.set(0,1.62,-4);camera.lookAt(x??(-.068*[.93,1,1.08][peer().avatar.look.build]),y,0);camera.updateMatrixWorld();};
+window.aimAt=(y,x)=>{camera.position.set(0,1.62,-4);camera.lookAt(x??(-.068*1),y,0);camera.updateMatrixWorld();};
 window.proof=async()=>{
  let eligible=0,bad=0,maxResidual=0,shapeError=0,negative=0,falseHeads=0,hidden=0,hiddenHeads=0,oblique=0;const variants=new Set(),details=[],support={};
  for(let seed=0;seed<10000&&variants.size<60;seed++){
   const id='front-'+seed,lk=config.avatarLook(id),key=lk.style+'/'+lk.build+'/'+lk.tall;if(variants.has(key))continue;variants.add(key);
-  const a=new Avatar(id),root=new T.Group();root.add(a.object);const width=[.93,1,1.08][lk.build],flag=a.mesh.geometry.attributes.rifleSkull,array=a.mesh.geometry.attributes.position,actual=[];
+  const a=new Avatar(id),root=new T.Group();root.add(a.object);const width=1,flag=a.mesh.geometry.attributes.rifleSkull,array=a.mesh.geometry.attributes.position,actual=[];
   for(let j=0;j<flag.count;j++)if(flag.getX(j))actual.push([array.getX(j),array.getY(j)-1.54,array.getZ(j)]);
   const canonical=config.rifleSkullProfile().flat();if(actual.length!==canonical.length)throw Error('actual skull topology mismatch');for(let j=0;j<actual.length;j++)for(let axis=0;axis<3;axis++)shapeError=Math.max(shapeError,Math.abs(actual[j][axis]-canonical[j][axis]));
   support[key]={positive:0,negative:0,hidden:0};
@@ -64,7 +64,7 @@ window.horizontalProof=async()=>{
  let eligible=0,bad=0,maxResidual=0,shapeError=0,negative=0,falseHeads=0,hidden=0,hiddenHeads=0,oblique=0;const variants=new Set(),details=[],support={};
  for(let seed=0;seed<10000&&variants.size<60;seed++){
   const id='front-'+seed,lk=config.avatarLook(id),key=lk.style+'/'+lk.build+'/'+lk.tall;if(variants.has(key))continue;variants.add(key);
-  const a=new Avatar(id),root=new T.Group();root.add(a.object);const width=[.93,1,1.08][lk.build],flag=a.mesh.geometry.attributes.rifleSkull,array=a.mesh.geometry.attributes.position,actual=[];
+  const a=new Avatar(id),root=new T.Group();root.add(a.object);const width=1,flag=a.mesh.geometry.attributes.rifleSkull,array=a.mesh.geometry.attributes.position,actual=[];
   for(let j=0;j<flag.count;j++)if(flag.getX(j))actual.push([array.getX(j),array.getY(j)-1.54,array.getZ(j)]);
   const canonical=config.rifleSkullProfile().flat();if(actual.length!==canonical.length)throw Error('actual skull topology mismatch');for(let j=0;j<actual.length;j++)for(let axis=0;axis<3;axis++)shapeError=Math.max(shapeError,Math.abs(actual[j][axis]-canonical[j][axis]));
   support[key]={positive:0,negative:0,hidden:0};
@@ -93,7 +93,7 @@ window.horizontalProof=async()=>{
 window.cornerProof=async()=>{
  let cells=0,corners=0,bad=0,maxPositive=0;const keys=new Set(),details=[];
  for(let n=0;n<10000&&keys.size<60;n++){
- const id='front-'+n,look=config.avatarLook(id),key=[look.style,look.build,look.tall].join('/');if(keys.has(key))continue;keys.add(key);const av=new Avatar(id),group=new T.Group();group.add(av.object);const w=[.93,1,1.08][look.build],flag=av.mesh.geometry.attributes.rifleSkull;
+ const id='front-'+n,look=config.avatarLook(id),key=[look.style,look.build,look.tall].join('/');if(keys.has(key))continue;keys.add(key);const av=new Avatar(id),group=new T.Group();group.add(av.object);const w=1,flag=av.mesh.geometry.attributes.rifleSkull;
  for(const time of [0,.4,2,5]){if(time)av.update(time,{speed:0});for(const yaw of [0,.8,Math.PI,-1.6]){group.rotation.y=yaw;group.updateMatrixWorld(true);for(const shift of (time===0&&yaw===0?[[0,0,0],[4990,4980,4990],[-4990,-4980,-4990]]:[[0,0,0]])){group.position.set(...shift);group.updateMatrixWorld(true);const state={p:shift,r:yaw};
  for(const x of [-.068,.068]){
  const target=new T.Vector3(-x*w,(config.PVP_RIFLE_HEAD.headY+.09)*look.tall,-.09*w).applyAxisAngle(new T.Vector3(0,1,0),yaw).add(new T.Vector3(...shift)),origin=target.clone().add(new T.Vector3(0,0,-3).applyAxisAngle(new T.Vector3(0,1,0),yaw));origin.set(...origin.toArray().map(v=>Math.round(v*100)/100));const d=target.clone().sub(origin).normalize();d.set(...d.toArray().map(v=>Math.round(v*1000)/1000));const hit=new T.Raycaster(origin,d.clone().normalize(),0,40).intersectObject(av.mesh,false)[0];if(!hit)continue;const hc=hit.point.toArray().map(v=>Math.round(v*1000)/1000);if(!flag.getX(hit.face.a)||!config.rifleHeadFrontRegion(id,state,hc,origin.toArray(),d.toArray()))continue;cells++;
@@ -114,7 +114,7 @@ const firstY=await a.evaluate(()=>(config.PVP_RIFLE_HEAD.headY+.09)*peer().avata
 check(await a.evaluate(()=>acks[0].head===true&&acks[0].l===8),'fresh unturned/ungreeted actual front contact retains2HP');
 await a.evaluate(()=>clearInterval(tick));await b.evaluate(()=>{heading=3.14;ghosts.update();});await a.waitForFunction(()=>peer()?.snaps.at(-1).r===3.14);await a.waitForTimeout(650);
 const pose=await a.evaluate(()=>{
- const id=peer().id,look=peer().avatar.look,w=[.93,1,1.08][look.build],state={p:[0,0,0],r:3.14},point=new T.Vector3(.068*w,(config.PVP_RIFLE_HEAD.headY+.09)*look.tall,-.09*w).applyAxisAngle(new T.Vector3(0,1,0),3.14),origin=point.clone().add(new T.Vector3(0,0,-3).applyAxisAngle(new T.Vector3(0,1,0),3.14));origin.set(...origin.toArray().map(v=>Math.round(v*100)/100));const d=point.clone().sub(origin).normalize();d.set(...d.toArray().map(v=>Math.round(v*1000)/1000));position=[origin.x,origin.y-1.62,origin.z];camera.position.copy(origin);camera.lookAt(origin.clone().add(d));camera.updateMatrixWorld();ghosts.update();scene.updateMatrixWorld(true);
+ const id=peer().id,look=peer().avatar.look,w=1,state={p:[0,0,0],r:3.14},point=new T.Vector3(.068*w,(config.PVP_RIFLE_HEAD.headY+.09)*look.tall,-.09*w).applyAxisAngle(new T.Vector3(0,1,0),3.14),origin=point.clone().add(new T.Vector3(0,0,-3).applyAxisAngle(new T.Vector3(0,1,0),3.14));origin.set(...origin.toArray().map(v=>Math.round(v*100)/100));const d=point.clone().sub(origin).normalize();d.set(...d.toArray().map(v=>Math.round(v*1000)/1000));position=[origin.x,origin.y-1.62,origin.z];camera.position.copy(origin);camera.lookAt(origin.clone().add(d));camera.updateMatrixWorld();ghosts.update();scene.updateMatrixWorld(true);
  const nearest=new T.Raycaster(origin,d.clone().normalize(),0,40).intersectObject(peer().avatar.mesh,false)[0],entry=config.rifleSkullEntry(id,state,origin.toArray(),d.toArray()),hc=[1,...origin.clone().addScaledVector(d.clone().normalize(),entry).toArray().map(v=>Math.round(v*1000)/1000)];return{id,look,state,o:origin.toArray(),d:d.toArray(),hc,nearest:nearest.point.toArray(),tags:Object.fromEntries(['rifleSkull','rifleNose','rifleJaw'].map(k=>[k,!!peer().avatar.mesh.geometry.attributes[k].getX(nearest.face.a)])),clientHC:combat.rifleContact().hc??null};
 });fs.writeFileSync(`${out}/pose-evidence.json`,JSON.stringify(pose,null,2));check(!pose.tags.rifleSkull&&pose.tags.rifleNose&&pose.clientHC===null,'actual paused first draw after validr2=3.14 has NOSE before deeper skull, native client remainsbody');
 await a.waitForTimeout(650);await a.evaluate(()=>combat.fire('rifle'));await a.evaluate(()=>ghosts.sendShot());await a.waitForFunction(()=>acks.length===2);check(await a.evaluate(()=>!acks[1].head&&acks[1].l===7),'actual nearest nose/body1 survives real650ms serverquiet without guessed render settlement');

@@ -1,0 +1,31 @@
+browsertest: running in browser slot 2 of 2
+browsertest: no systemd user scope here, running without a memory ceiling
+PASS Above-head miss: real shot is forwarded without damage, score or marker
+PASS Native wall blocks head: real shot is forwarded without damage, score or marker
+PASS Head box 1: actual Combat/Worker confirms 2 life damage
+PASS Head box 1: ordinary near points and marker awarded once
+PASS Head box 1: native client sends version-2 head contact
+PASS Head box 2: actual Combat/Worker confirms 2 life damage
+PASS Head box 2: ordinary near points and marker awarded once
+PASS Head box 2: native client sends version-2 head contact
+PASS Head box 3: actual Combat/Worker confirms 2 life damage
+PASS Head box 3: ordinary near points and marker awarded once
+PASS Head box 3: native client sends version-2 head contact
+PASS Body: actual Combat/Worker confirms 1 life damage
+PASS Body: ordinary near points and marker awarded once
+PASS Turned head: actual Combat/Worker confirms 2 life damage
+PASS Turned head: ordinary near points and marker awarded once
+PASS Turned head: native client sends version-2 head contact
+PASS Moving head: actual Combat/Worker confirms 2 life damage
+PASS Moving head: ordinary near points and marker awarded once
+PASS Moving head: native client sends version-2 head contact
+PASS moving head lethal receipt records exactly one kill and target death
+PASS replayed accepted lethal receipt duplicates neither kill, points nor hit marker
+PASS Crouched head: actual Combat/Worker confirms 2 life damage
+PASS Crouched head: ordinary near points and marker awarded once
+PASS Crouched head: native client sends version-2 head contact
+PASS all seven ordinary accepted shots total 35 points with one kill
+PASS both actual gameplay peers use native Three meshes without apartment or WebGL
+PASS one tiny real WebGL render retains native Avatar and three visible debug wireframes
+PASS zero browser errors (0)
+ALL PASS 28 checks, 0 FAIL

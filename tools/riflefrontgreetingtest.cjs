@@ -31,13 +31,13 @@ const hit=ghosts.onHit,hurt=ghosts.onHurt;ghosts.onHit=(m,g)=>{acks.push(structu
 const mark=combat.hitMarker.show.bind(combat.hitMarker);combat.hitMarker.show=m=>{markers.push(m.head===true);mark(m);};
 window.tick=setInterval(()=>{ghosts.update();combat.update(0);},35);
 window.peer=()=>[...ghosts.others.values()][0];
-window.aimAt=(y,x)=>{camera.position.set(0,1.62,-4);camera.lookAt(x??(-.068*[.93,1,1.08][peer().avatar.look.build]),y,0);camera.updateMatrixWorld();};
+window.aimAt=(y,x)=>{camera.position.set(0,1.62,-4);camera.lookAt(x??(-.068*1),y,0);camera.updateMatrixWorld();};
 window.greetingProof=async()=>{
  const {Ghosts}=await import('/src/ghosts.js'),gs=new Ghosts({scene:new T.Scene(),camera:new T.PerspectiveCamera(),url:'',active:()=>true,weapon:()=> 'rifle',state:()=>({p:[0,0,-3],r:0})}),seen=new Set(),support={},details=[];
  let rays=0,positive=0,unsupported=0,hidden=0,bad=0,corners=0,cornerBad=0,maxResidual=0;
  const scenarios=[['rifle',0,16],['rifle',2,100],['saber',.15,16],['saber',.3,600],['wave',0,16],['wave',.4,100],['wave',1.3,600],['wave',2.6,16],['repeat',1.3,600],['delayed',.4,600]];
  for(let n=0;n<10000&&seen.size<60;n++){
- const id='front-'+n,look=config.avatarLook(id),key=[look.style,look.build,look.tall].join('/');if(seen.has(key))continue;seen.add(key);support[key]={positive:0,unsupported:0,hidden:0};const width=[.93,1,1.08][look.build];
+ const id='front-'+n,look=config.avatarLook(id),key=[look.style,look.build,look.tall].join('/');if(seen.has(key))continue;seen.add(key);support[key]={positive:0,unsupported:0,hidden:0};const width=1;
  for(const yaw of [0,.8,3.14,-1.6])for(const [mode,phase,pause] of scenarios){
  const g=gs.add(id,'Standing');const held=mode==='saber'?'saber':'rifle';let t=1000;
  if(g.root.visible||g.snaps.length)throw Error('no-snapshot model must remain hidden');
@@ -73,7 +73,7 @@ for(const p of pages){await p.reload();await p.setupNative();}
 await Promise.all(pages.map(p=>p.waitForFunction(()=>ghosts.connected&&peer()?.snaps.length&&peer().root.visible)));
 await a.waitForFunction(()=>peer().speed<.001&&(peer().avatar.gait??0)<.001);await a.waitForTimeout(650);
 const aim=async()=>a.evaluate(()=>{
- const g=peer(),look=g.avatar.look,w=[.93,1,1.08][look.build];camera.position.set(0,1.62,-4);
+ const g=peer(),look=g.avatar.look,w=1;camera.position.set(0,1.62,-4);
  for(const xx of [-.068,.068,-.067,.067,-.069,.069])for(const yy of [.09,.088,.092]){
  const p=new T.Vector3(-xx*w,(config.PVP_RIFLE_HEAD.headY+yy)*look.tall,-.09*w);camera.lookAt(p);camera.updateMatrixWorld();const c=combat.rifleContact();
  if(c?.hc&&config.rifleHeadGreetingFrontRegion(g.id,{p:[g.feet.x,g.feet.y,g.feet.z],r:g.snaps.at(-1).r},c.hc.slice(1).map(v=>Math.round(v*1000)/1000),c.o.toArray(),c.d.toArray()))return{hc:c.hc,o:c.o.toArray(),d:c.d.toArray(),id:g.id};

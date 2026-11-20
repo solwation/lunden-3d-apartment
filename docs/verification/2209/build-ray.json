@@ -1,0 +1,62 @@
+{
+  "base": "f9658b5846490a7c8b1c9c9f4bb27712d8d3fd57",
+  "state": {
+    "p": [
+      0,
+      0,
+      0
+    ],
+    "r": 0
+  },
+  "o": [
+    -0.072,
+    1.62,
+    -4
+  ],
+  "d": [
+    0,
+    0,
+    1
+  ],
+  "hc": [
+    1,
+    -0.072,
+    1.62,
+    -0.082
+  ],
+  "rows": [
+    {
+      "build": 0,
+      "before": {
+        "entry": 3.9301155734892452,
+        "accepted": false
+      },
+      "after": {
+        "entry": 3.9177706208481053,
+        "accepted": true
+      }
+    },
+    {
+      "build": 1,
+      "before": {
+        "entry": 3.9177706208481053,
+        "accepted": true
+      },
+      "after": {
+        "entry": 3.9177706208481053,
+        "accepted": true
+      }
+    },
+    {
+      "build": 2,
+      "before": {
+        "entry": 3.903662105920072,
+        "accepted": true
+      },
+      "after": {
+        "entry": 3.9177706208481053,
+        "accepted": true
+      }
+    }
+  ]
+}

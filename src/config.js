@@ -8613,6 +8613,8 @@ export function avatarLook(seed) {
 
 // #897/#916: v1 supports only measured exposed central fronts of the standing skull.
 // Existing physical mesh dimensions, shared with Avatar. Other unsupported parts stay body-only.
+// #2209: legacy v1 x/z head regions use width 1, like the current three-box collider and rendered head since #2141.
+// Body build changes the body below the neck only; retain the old cached-client gates without adding anatomy refinements.
 export const PVP_RIFLE_HEAD = {
   version: 1, style: 0, bodyDamage: 1, headDamage: 2,
   coreStyles: [0, 1, 2, 3],
@@ -8687,7 +8689,7 @@ export function rifleSkullEntry(seed,state,origin,direction) {
 }
 /** Shared finite front-triangle entry; profile is canonical head-bind-relative. */
 export function rifleProfileEntry(triangles,seed,state,origin,direction) {
-  const look=avatarLook(seed),width=[.93,1,1.08][look.build],a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),length=Math.hypot(...direction);
+  const look=avatarLook(seed),width=1,a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),length=Math.hypot(...direction);
   const turn=([x,y,z])=>[(c*x-s*z)/width,y/look.tall,(s*x+c*z)/width];
   const o=turn(origin.map((v,i)=>v-state.p[i]));o[1]-=PVP_RIFLE_HEAD.headY;
   const dir=turn(direction.map(v=>v/length));let first=Infinity;
@@ -8720,7 +8722,7 @@ export function rifleHeadContact(seed,state,shot,shooterFeet,range,maxOrigin,all
 
 /** A quantized cell wholly inside the canonical core; boundary cells fail closed instead of inflating the patch. */
 export function rifleHeadCoreRegion(seed,state,point,origin,direction) {
-  const H=PVP_RIFLE_HEAD,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=[.93,1,1.08][look.build];
+  const H=PVP_RIFLE_HEAD,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=1;
   if(!H.coreStyles.includes(look.style))return false;
   const patch=H.corePatches[look.style]??H.patch;
   // Beanie-facing core is body-only on steep rays: a nearer brim/nose can hide the primary skull.
@@ -8749,7 +8751,7 @@ export function rifleNoseProfile() {
 }
 /** Only the measured frontal nose core; no side/back/hidden-surface claim. */
 export function rifleNoseRegion(seed,state,point) {
-  const H=PVP_RIFLE_HEAD,N=H.nosePatch,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=[.93,1,1.08][look.build];
+  const H=PVP_RIFLE_HEAD,N=H.nosePatch,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=1;
   const [x,y,z]=point.map((v,i)=>v-state.p[i]);
   const lx=(c*x-s*z)/width,ly=y/look.tall-H.headY,lz=(s*x+c*z)/width;
   return Math.abs(lx)+H.wireMetres/width<=N.across && ly-H.wireMetres/look.tall>=N.low && ly+H.wireMetres/look.tall<=N.high && lz-H.wireMetres/width>=N.front;
@@ -8764,7 +8766,7 @@ export function rifleNoseEntry(seed,state,origin,direction) {
 export function rifleHeadFrontRegion(seed,state,point,origin,direction) {
   const H=PVP_RIFLE_HEAD,F=H.front,look=avatarLook(seed);
   if(state.c||!F.styles.includes(look.style)||![origin,direction].every(v=>Array.isArray(v)&&v.length===3&&v.every(Number.isFinite)))return false;
-  const a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),w=[.93,1,1.08][look.build];
+  const a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),w=1;
   const [dx,dy,dz]=direction,front=s*dx+c*dz,side=c*dx-s*dz;
   if(!(front<0)||Math.abs(side)>-front*F.approach||Math.abs(dy)>-front*F.approach)return false;
   const [x,y,z]=point.map((v,i)=>v-state.p[i]),q=[Math.abs((c*x-s*z)/w),y/look.tall-H.headY,(s*x+c*z)/w],e=[H.wireMetres/w,H.wireMetres/look.tall,H.wireMetres/w];
@@ -8774,7 +8776,7 @@ export function rifleHeadFrontRegion(seed,state,point,origin,direction) {
 /** #944: independent measured subset, never an override of existing private front eligibility. */
 export function rifleHeadAfterTurnFrontRegion(seed,state,point,origin,direction) {
   if(!rifleHeadFrontRegion(seed,state,point,origin,direction))return false;
-  const H=PVP_RIFLE_HEAD,F=H.afterTurnFrontPatch,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),w=[.93,1,1.08][look.build];
+  const H=PVP_RIFLE_HEAD,F=H.afterTurnFrontPatch,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),w=1;
   const front=s*direction[0]+c*direction[2],side=c*direction[0]-s*direction[2];
   if(Math.abs(side)>-front*F.approach||Math.abs(direction[1])>-front*F.approach)return false;
   const [x,y,z]=point.map((v,i)=>v-state.p[i]),qx=Math.abs((c*x-s*z)/w),qy=y/look.tall-H.headY;
@@ -8787,7 +8789,7 @@ export function rifleHeadRegion(seed,state,point,origin,direction,allowLateral =
 /** Exposed lower rear skull only, with the same snapped ray as the actual native contact. */
 export function rifleHeadRearRegion(seed,state,point,origin,direction) {
   if(!Array.isArray(origin)||!Array.isArray(direction)||origin.length!==3||direction.length!==3||![...origin,...direction].every(Number.isFinite))return false;
-  const H=PVP_RIFLE_HEAD,R=H.rear,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=[.93,1,1.08][look.build];
+  const H=PVP_RIFLE_HEAD,R=H.rear,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=1;
   if(look.style===1)return false; // Actual long hair is first; no invented exposed back surface.
   const P=look.style===3?R.beanie:R.lower,[x,y,z]=point.map((v,i)=>v-state.p[i]);
   const lx=(c*x-s*z)/width,ly=y/look.tall-H.headY,lz=(s*x+c*z)/width;
@@ -8807,14 +8809,14 @@ function rifleJawDirection(state,direction) {
 }
 export function rifleJawRegion(seed,state,point,origin,direction) {
   if(!rifleJawDirection(state,direction))return false;
-  const H=PVP_RIFLE_HEAD,J=H.jawPatch,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=[.93,1,1.08][look.build];
+  const H=PVP_RIFLE_HEAD,J=H.jawPatch,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=1;
   const [x,y,z]=point.map((v,i)=>v-state.p[i]),lx=(c*x-s*z)/width,ly=y/look.tall-H.headY,lz=(s*x+c*z)/width;
   return Math.abs(lx)+H.wireMetres/width<=J.across && ly-H.wireMetres/look.tall>=J.low && ly+H.wireMetres/look.tall<=J.high && lz-H.wireMetres/width>=J.front;
 }
 /** #959: actual frontal Jaw strips only; the server separately requires permanent private pose history. */
 export function rifleJawFrontSideRegion(seed,state,point,origin,direction) {
   if(state.c||!rifleJawDirection(state,direction))return false;
-  const H=PVP_RIFLE_HEAD,J=H.jawFrontSidePatch,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=[.93,1,1.08][look.build];
+  const H=PVP_RIFLE_HEAD,J=H.jawFrontSidePatch,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=1;
   const [x,y,z]=point.map((v,i)=>v-state.p[i]),lx=Math.abs((c*x-s*z)/width),ly=y/look.tall-H.headY,lz=(s*x+c*z)/width;
   return lx-H.wireMetres/width>=J.across[0]&&lx+H.wireMetres/width<=J.across[1]&&ly-H.wireMetres/look.tall>=J.low&&ly+H.wireMetres/look.tall<=J.high&&lz-H.wireMetres/width>=J.front;
 }
@@ -8826,7 +8828,7 @@ export function rifleJawEntry(seed,state,origin,direction) {
 export function rifleHeadLateralRegion(seed,state,point,origin,direction) {
   if(!Array.isArray(origin)||!Array.isArray(direction)||origin.length!==3||direction.length!==3||
     !origin.every(Number.isFinite)||!direction.every(Number.isFinite))return false;
-  const H=PVP_RIFLE_HEAD,L=H.lateralPatch,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=[.93,1,1.08][look.build];
+  const H=PVP_RIFLE_HEAD,L=H.lateralPatch,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=1;
   const [x,y,z]=point.map((v,i)=>v-state.p[i]);
   const lx=(c*x-s*z)/width,ly=y/look.tall-H.headY,lz=(s*x+c*z)/width,e=H.wireMetres/width,ey=H.wireMetres/look.tall;
   if(Math.abs(lx)-e<L.across[0]||Math.abs(lx)+e>L.across[1]||ly-ey<L.vertical[0]||ly+ey>L.vertical[1]||lz-e<L.front[0]||lz+e>L.front[1])return false;
@@ -8839,7 +8841,7 @@ export function rifleHeadLateralRegion(seed,state,point,origin,direction) {
 /** #938: left only, inside the original ray/profile guard; eligibility belongs to the server attachment, not the wire. */
 export function rifleHeadGreetingLeftRegion(seed,state,point,origin,direction) {
   if(!rifleHeadLateralRegion(seed,state,point,origin,direction))return false;
-  const H=PVP_RIFLE_HEAD,L=H.greetingLeftPatch,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=[.93,1,1.08][look.build];
+  const H=PVP_RIFLE_HEAD,L=H.greetingLeftPatch,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=1;
   const [x,y,z]=point.map((v,i)=>v-state.p[i]);
   const lx=(c*x-s*z)/width,ly=y/look.tall-H.headY,lz=(s*x+c*z)/width,e=H.wireMetres/width,ey=H.wireMetres/look.tall;
   return lx>0&&ly-ey>=L.vertical[0]&&ly+ey<=L.vertical[1]&&lz-e>=L.front[0]&&lz+e<=L.front[1];
@@ -8851,7 +8853,7 @@ export function rifleHeadGreetingLeftRegion(seed,state,point,origin,direction) {
 
 /** #934: additive frontal side family; original nose core/entry stay unchanged. */
 export function rifleNoseExtraRegion(seed,state,point) {
-  const H=PVP_RIFLE_HEAD,N=H.noseExtraPatch,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=[.93,1,1.08][look.build];
+  const H=PVP_RIFLE_HEAD,N=H.noseExtraPatch,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=1;
   const [x,y,z]=point.map((v,i)=>v-state.p[i]);
   const lx=(c*x-s*z)/width,ly=y/look.tall-H.headY,lz=(s*x+c*z)/width;
   return Math.abs(lx)+H.wireMetres/width<=N.across && ly-H.wireMetres/look.tall>=N.low && ly+H.wireMetres/look.tall<=N.high && lz-H.wireMetres/width>=N.front;
@@ -8859,7 +8861,7 @@ export function rifleNoseExtraRegion(seed,state,point) {
 
 /** #937: additive lower central standing band; original nose core/entry stay unchanged. */
 export function rifleNoseBandRegion(seed,state,point) {
-  const H=PVP_RIFLE_HEAD,N=H.noseBandPatch,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=[.93,1,1.08][look.build];
+  const H=PVP_RIFLE_HEAD,N=H.noseBandPatch,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=1;
   const [x,y,z]=point.map((v,i)=>v-state.p[i]);
   const lx=(c*x-s*z)/width,ly=y/look.tall-H.headY,lz=(s*x+c*z)/width;
   return Math.abs(lx)+H.wireMetres/width<=N.across && ly-H.wireMetres/look.tall>=N.low && ly+H.wireMetres/look.tall<=N.high && lz-H.wireMetres/width>=N.front;
@@ -8867,7 +8869,7 @@ export function rifleNoseBandRegion(seed,state,point) {
 
 /** #950: central depth cells, admitted by the server only for known immutable standing history. */
 export function rifleNoseDepthRegion(seed,state,point) {
-  const H=PVP_RIFLE_HEAD,N=H.noseDepthPatch,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=[.93,1,1.08][look.build];
+  const H=PVP_RIFLE_HEAD,N=H.noseDepthPatch,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=1;
   const [x,y,z]=point.map((v,i)=>v-state.p[i]);
   const lx=(c*x-s*z)/width,ly=y/look.tall-H.headY,lz=(s*x+c*z)/width,e=H.wireMetres/width,ey=H.wireMetres/look.tall;
   return Math.abs(lx)+e<=N.across && ly-ey>=N.low && ly+ey<=N.high && lz-e>=N.back && lz+e<=N.front;
@@ -8876,7 +8878,7 @@ export function rifleNoseDepthRegion(seed,state,point) {
 /** #943: a separate narrow Front family; only authoritative immutable standing history may reopen it after greeting. */
 export function rifleHeadGreetingFrontRegion(seed,state,point,origin,direction) {
   if(!rifleHeadFrontRegion(seed,state,point,origin,direction))return false;
-  const H=PVP_RIFLE_HEAD,F=H.greetingFrontPatch,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=[.93,1,1.08][look.build];
+  const H=PVP_RIFLE_HEAD,F=H.greetingFrontPatch,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=1;
   const [x,y]=point.map((v,i)=>v-state.p[i]),lx=(c*x-s*(point[2]-state.p[2]))/width,ly=y/look.tall-H.headY,e=H.wireMetres/width,ey=H.wireMetres/look.tall;
   const n=Math.hypot(...direction),[dx,dy,dz]=direction.map(v=>v/n),forward=s*dx+c*dz;
   return Math.abs(lx)-e>=F.across[0]&&Math.abs(lx)+e<=F.across[1]&&ly-ey>=F.vertical[0]&&ly+ey<=F.vertical[1]&&Math.abs(c*dx-s*dz)<=-forward*F.direction&&Math.abs(dy)<=-forward*F.direction;
@@ -8885,7 +8887,7 @@ export function rifleHeadGreetingFrontRegion(seed,state,point,origin,direction) 
 /** #946: right/back only; does not mirror the broad left band or infer completion of a paused wave. */
 export function rifleHeadGreetingRightRegion(seed,state,point,origin,direction) {
   if(!rifleHeadLateralRegion(seed,state,point,origin,direction))return false;
-  const H=PVP_RIFLE_HEAD,R=H.greetingRightPatch,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=[.93,1,1.08][look.build];
+  const H=PVP_RIFLE_HEAD,R=H.greetingRightPatch,look=avatarLook(seed),a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),width=1;
   const [x,y,z]=point.map((v,i)=>v-state.p[i]),lx=(c*x-s*z)/width,ly=y/look.tall-H.headY,lz=(s*x+c*z)/width,e=H.wireMetres/width,ey=H.wireMetres/look.tall;
   const n=Math.hypot(...direction),[dx,dy,dz]=direction.map(v=>v/n);
   return lx<0&&ly-ey>=R.vertical[0]&&ly+ey<=R.vertical[1]&&lz-e>=R.front[0]&&lz+e<=R.front[1]&&Math.abs(s*dx+c*dz)<=R.directionZ&&Math.abs(dy)<=R.directionY;
@@ -8899,7 +8901,7 @@ export function rifleHeadGreetingRightRegion(seed,state,point,origin,direction) 
 export function rifleHeadGreetingRightCellRegion(seed,state,point,origin,direction) {
   const style=avatarLook(seed).style; // #968: style2 shares the certified prism; long hair/style1 stays excluded.
   if((style!==0&&style!==2)||!rifleHeadGreetingRightRegion(seed,state,point,origin,direction))return false;
-  const P=PVP_RIFLE_HEAD.greetingRightCell,look=avatarLook(seed),w=[.93,1,1.08][look.build];
+  const P=PVP_RIFLE_HEAD.greetingRightCell,look=avatarLook(seed),w=1;
   const a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a),turn=([x,y,z])=>[(c*x-s*z)/w,y/look.tall,(s*x+c*z)/w];
   const o=turn(origin.map((v,i)=>v-state.p[i]));if(!(o[0]<P.x[0]))return false;
   const insideRay=d=>d[0]>0&&P.x.every(x=>{const t=(x-o[0])/d[0],y=o[1]+t*d[1],z=o[2]+t*d[2];return t>=0&&y>=P.vertical[0]&&y<=P.vertical[1]&&z>=P.front[0]&&z<=P.front[1];});
@@ -8920,7 +8922,7 @@ export function rifleHeadGreetingRightCellRegion(seed,state,point,origin,directi
  */
 export function rifleNoseSideRegion(seed,state,point,origin,direction) {
   if(state.c||![point,origin,direction].every(v=>Array.isArray(v)&&v.length===3&&v.every(Number.isFinite)))return false;
-  const P=PVP_RIFLE_HEAD.noseSidePrism,look=avatarLook(seed),w=[.93,1,1.08][look.build],a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a);
+  const P=PVP_RIFLE_HEAD.noseSidePrism,look=avatarLook(seed),w=1,a=state.r+Math.PI,c=Math.cos(a),s=Math.sin(a);
   const turn=([x,y,z])=>[(c*x-s*z)/w,y/look.tall,(s*x+c*z)/w];
   const o=turn(origin.map((v,i)=>v-state.p[i]));
   if(!(o[2]>P.front))return false;

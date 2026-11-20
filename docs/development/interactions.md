@@ -225,7 +225,7 @@ and 1180×820. Physical-phone comfort remains the acceptance test.
 Version 2 uses three shared logical head boxes from `PVP_HEAD_BOXES` in `src/config.js`:
 lower, middle and a smaller crown. Dimensions are gameplay approximations, not exact
 mesh anatomy. `rifleBoxHeadContact` transforms the rounded shot by heading, existing
-build/height scale and a simple crouch hip/lean transform, then finds the first slab
+height scale (body build does not widen the head) and a simple crouch hip/lean transform, then finds the first slab
 intersection. It has no hair, eye, greeting, idle-phase or standing-history gates.
 Client `Combat.rifleContact` compares the boxes with actual skinned body contacts below
 `rifleHeadBaseY`; the old capsule must not swallow head hits. World obstacles still
@@ -238,6 +238,13 @@ Confirmed head/body damage stays 2/1; range, rate, points, marker, life recovery
 kill receipts are unchanged. Interpolated client poses can differ from the server's
 latest snapshot, so a predicted head hit may still receive body damage. This does
 not promise exact mesh contact or lag compensation.
+
+Legacy version-1 cached-client rifle proofs retain their existing permissions and damage rules.
+Since #2209 their profile/region x/z scale is also 1 for every body build, matching
+the rendered head and the current three-box contract; no new anatomical region or
+per-polygon acceptance is introduced. `tools/riflebuildtest.mjs` checks the same
+legacy ray/packet for slim, medium and heavy builds, while the ordinary Worker and
+Combat tests retain head/body/wall/damage coverage.
 
 #893 reuses the same boxes for wand/web rays. `Combat.straightContact` preserves
 existing capsule body targets and saber swing/cone eligibility; a saber receives

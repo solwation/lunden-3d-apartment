@@ -789,7 +789,7 @@ test('lateral skull: both-side approach, whole-cell boundaries and missing ray f
   const variants=new Set(),state={p:[0,0,0],r:0};
   for(let n=0;n<3000&&variants.size<60;n++){
     const id='lateral-'+n,look=avatarLook(id),key=[look.style,look.build,look.tall].join('/');if(variants.has(key))continue;variants.add(key);
-    const width=[.93,1,1.08][look.build];
+    const width=1;
     for(const side of [-1,1]){
       const o=[-side*3,+((H.headY+.095)*look.tall).toFixed(2),+(-.065*width).toFixed(2)],d=[side,0,0];
       const entry=rifleSkullEntry(id,state,o,d);assert.ok(entry>0);
@@ -809,7 +809,7 @@ test('lateral skull: both-side approach, whole-cell boundaries and missing ray f
 test('lateral skull room: canonical actual socket, alternating sides, shared lethal receipt and old-client fallback',async()=>{
   const {avatarLook,rifleSkullEntry,PVP_RIFLE_HEAD:H}=await import('../src/config.js');
   const env=setup(),a=await connect(env,'Side shooter'),b=await connect(env,'Side target');
-  const id=b.got.find(m=>m.t==='w').i,look=avatarLook(id),width=[.93,1,1.08][look.build],state={p:[0,0,0],r:0};
+  const id=b.got.find(m=>m.t==='w').i,look=avatarLook(id),width=1,state={p:[0,0,0],r:0};
   b.send({...state,h:'rifle'});await settle(env);
   let last;
   for(let i=0;i<5;i++){
@@ -833,7 +833,7 @@ test('lateral skull greeting exclusion is attachment-authoritative, persists aft
   // #1109: the greeter's fixed first-standing pose legitimately reopens the narrow #938 left temple after a greeting.
   // The old ray (front .065*width, rounded) landed inside that patch for build 1 / tall >= 1 ids (~1 in 5 random looks).
   // Aim at a lateral cell in front of the #938 patch, assert that precondition, and always pick that formerly failing look.
-  const env=setup(),a=await connect(env,'Shooter'),b=await connectLook(env,'Greeter',l=>l.build===1&&l.tall>=1),id=b.got.find(m=>m.t==='w').i,look=avatarLook(id),width=[.93,1,1.08][look.build];
+  const env=setup(),a=await connect(env,'Shooter'),b=await connectLook(env,'Greeter',l=>l.build===1&&l.tall>=1),id=b.got.find(m=>m.t==='w').i,look=avatarLook(id),width=1;
   assert.ok(look.build===1&&look.tall>=1,'deterministic formerly flaky look');
   const state={p:[0,0,0],r:0};b.send({...state,h:'rifle'});a.send({p:[-3,0,0],r:0,h:'rifle'});await settle(env);now+=1000;
   const shoot=async side=>{const feet=[-side*3,0,0];a.send({p:feet,r:0,h:'rifle'});await settle(env);now+=1000;const o=[feet[0],+((H.headY+.095)*look.tall).toFixed(2),+(-.05*width).toFixed(2)],d=[side,0,0],entry=rifleSkullEntry(id,state,o,d),shot={t:'a',w:'rifle',to:id,o,d,hc:[1,...o.map((v,k)=>+(v+d[k]*entry).toFixed(3))],gt:undefined,head:true};
@@ -859,7 +859,7 @@ test('extra frontal nose cell: authoritative damage, legacy fallback, one fatal 
   // Select a supported serialized ray on the ACTUAL assigned seed's unchanged shared physical profile.
   // Browser skin/nearest-face/cell proof is independent; this room test covers authoritative semantics.
   for(const ox of [0,-.01,.01])for(const dx of [-.004,-.006,-.008,-.010])for(const dy of [.087,.09,.093,.096]){
-    const o=[ox,1.62,-4],raw=[dx*[.93,1,1.08][look.build]-ox,(H.headY+dy)*look.tall-o[1],3.866],length=Math.hypot(...raw),d=raw.map(v=>+(v/length).toFixed(3)),unit=d.map(v=>v/Math.hypot(...d)),entry=rifleNoseEntry(id,state,o,d);
+    const o=[ox,1.62,-4],raw=[dx*1-ox,(H.headY+dy)*look.tall-o[1],3.866],length=Math.hypot(...raw),d=raw.map(v=>+(v/length).toFixed(3)),unit=d.map(v=>v/Math.hypot(...d)),entry=rifleNoseEntry(id,state,o,d);
     if(entry===null)continue;const hc=[1,...o.map((v,i)=>+(v+unit[i]*entry).toFixed(3))];
     if(!shot&&!rifleNoseRegion(id,state,hc.slice(1))&&rifleNoseExtraRegion(id,state,hc.slice(1)))shot={t:'a',w:'rifle',o,d,hc,to:id};
   }
@@ -960,7 +960,7 @@ test('#938 immutable standing history: first real state, normalized changes, leg
 });
 
 test('#938 named optional regions preserve legacy front/rear/default/undefined/null guard semantics', async()=>{
-  const C=await import('../src/config.js'),id='lateral-1',look=C.avatarLook(id),H=C.PVP_RIFLE_HEAD,width=[.93,1,1.08][look.build],state={p:[0,0,0],r:0};
+  const C=await import('../src/config.js'),id='lateral-1',look=C.avatarLook(id),H=C.PVP_RIFLE_HEAD,width=1,state={p:[0,0,0],r:0};
   // Pure guard fixtures use the shared exact production profile. Actual nearest-surface evidence is in riflelefttest.cjs.
   const ray=(o,d)=>{const unit=d.map(v=>v/Math.hypot(...d)),entry=C.rifleSkullEntry(id,state,o,d);return{t:'a',w:'rifle',o,d,hc:[1,...o.map((v,i)=>+(v+unit[i]*entry).toFixed(3))]};};
   const left=ray([-4,(H.headY+.1)*look.tall,-.07*width],[1,0,0]),feet=[-4,0,-.07*width];
@@ -1000,7 +1000,7 @@ test('lower central nose band: authoritative damage, legacy fallback, one fatal 
   // The 3mm forward offset is a room-only guard control; independent native skin proof establishes physical support.
   // Browser skin/nearest-face/cell proof is independent; this room test covers authoritative semantics.
   for(const oy of [1.60,1.61,1.62,1.63,1.64])for(const oz of [-4,-3,-2])for(const ox of [0,-.01,.01])for(const dx of [0,-.002,.002])for(const dy of [.0815,.082,.0825]){
-    const o=[ox,oy,oz],raw=[dx*[.93,1,1.08][look.build]-ox,(H.headY+dy)*look.tall-o[1],-oz-.134*[.93,1,1.08][look.build]],length=Math.hypot(...raw),d=raw.map(v=>+(v/length).toFixed(3)),unit=d.map(v=>v/Math.hypot(...d)),entry=rifleNoseEntry(id,state,o,d);
+    const o=[ox,oy,oz],raw=[dx*1-ox,(H.headY+dy)*look.tall-o[1],-oz-.134*1],length=Math.hypot(...raw),d=raw.map(v=>+(v/length).toFixed(3)),unit=d.map(v=>v/Math.hypot(...d)),entry=rifleNoseEntry(id,state,o,d);
     if(entry===null)continue;const hc=[1,...o.map((v,i)=>+(v+unit[i]*(entry-.003)).toFixed(3))];
     if(!shot&&!rifleNoseRegion(id,state,hc.slice(1))&&rifleNoseBandRegion(id,state,hc.slice(1)))shot={t:'a',w:'rifle',o,d,hc,to:id};
   }
@@ -1047,7 +1047,7 @@ test('#947 tiny LEFT turn anchor stays private, normalized, permanent and indepe
 test('#947 accepted normalized tiny turn after greeting gives authoritative LEFT2, legacy/invalid returns remain body1',async()=>{
  const C=await import('../src/config.js'),env=setup(),a=await connect(env),b=await connect(env),id=b.got[0].i;const send=async(c,m)=>{now+=1000;c.send(m);await settle(env);};
  const first={p:[0,0,0],r:.8,h:'rifle'},state={p:[0,0,0],r:.81};await send(a,{p:[-4,0,0],r:0,h:'rifle'});await send(b,first);await send(b,{t:'g',to:a.got[0].i,k:0});await send(b,{...first,r:.81,h:'saber',sp:true,score:4});
- const look=C.avatarLook(id),width=[.93,1,1.08][look.build],r2=v=>+(v).toFixed(2),r3=v=>+(v).toFixed(3);let shot;
+ const look=C.avatarLook(id),width=1,r2=v=>+(v).toFixed(2),r3=v=>+(v).toFixed(3);let shot;
  for(const yy of[.098,.099,.100,.101,.102])for(const zz of[.067,.068,.069,.070,.071,.072,.073]){
   const y=(C.PVP_RIFLE_HEAD.headY+yy)*look.tall,o=[r2(-4*Math.cos(state.r)-zz*width*Math.sin(state.r)),r2(y),r2(4*Math.sin(state.r)-zz*width*Math.cos(state.r))],d=[r3(Math.cos(state.r)),0,r3(-Math.sin(state.r))],unit=d.map(v=>v/Math.hypot(...d)),entry=C.rifleSkullEntry(id,state,o,d);if(entry===null)continue;const hc=[1,...o.map((v,i)=>r3(v+unit[i]*entry))];if(!shot&&C.rifleHeadGreetingLeftRegion(id,state,hc.slice(1),o,d))shot={t:'a',w:'rifle',o,d,hc,to:id};
  }
@@ -1067,7 +1067,7 @@ test('post-turn frontal corridor: private first-standing anchor, permanent escap
   a.send({p:[0,0,-3],r:0,h:'rifle'});b.send({p:[0,0,0],r:0,h:'rifle'});await settle(env);now+=1000;
   const socket=()=>[...env.PLAYERS.object('world').ctx.getWebSockets()].find(ws=>ws.deserializeAttachment().i===id),attachment=()=>socket().deserializeAttachment();
   assert.deepEqual(attachment().frontTurn,{p:[0,0,0],r:0});
-  const shotFor=(r,seed=id)=>{const look=avatarLook(seed),w=[.93,1,1.08][look.build],state={p:[0,0,0],r};for(const x of [-.067,.067])for(const dy of [.089,.09,.091])for(const distance of [3,3.5,4]){
+  const shotFor=(r,seed=id)=>{const look=avatarLook(seed),w=1,state={p:[0,0,0],r};for(const x of [-.067,.067])for(const dy of [.089,.09,.091])for(const distance of [3,3.5,4]){
     const c=Math.cos(r),s=Math.sin(r),target=[-x*w*c-.08*w*s,(H.headY+dy)*look.tall,x*w*s-.08*w*c],o=[+(target[0]-distance*s).toFixed(2),1.62,+(target[2]-distance*c).toFixed(2)],raw=target.map((v,i)=>v-o[i]),n=Math.hypot(...raw),d=raw.map(v=>+(v/n).toFixed(3)),unit=d.map(v=>v/Math.hypot(...d)),first=rifleSkullEntry(seed,state,o,d);if(first===null)continue;const hc=[1,...o.map((v,i)=>+(v+unit[i]*first).toFixed(3))];if(rifleHeadAfterTurnFrontRegion(seed,state,hc.slice(1),o,d))return{t:'a',w:'rifle',to:seed,o,d,hc};
   }throw Error('no rounded narrow frontal corridor contact');};
   const shoot=async (r,seed=id)=>{const shot=shotFor(r,seed);a.send({p:[shot.o[0],0,shot.o[2]],r:0,h:'rifle'});await settle(env);now+=1000;a.send(shot);await settle(env);return a.got.filter(m=>m.t==='hit').at(-1);};
@@ -1093,7 +1093,7 @@ test('#955 greeted post-turn Front: normalized authority, history, lethal/replay
   a.send({p:[0,0,-3],r:0,h:'rifle'});b.send({p:[0,0,0],r:0,h:'rifle'});await settle(env);now+=1000;
   const socket=()=>[...env.PLAYERS.object('world').ctx.getWebSockets()].find(ws=>ws.deserializeAttachment().i===id),attachment=()=>socket().deserializeAttachment();
   assert.deepEqual(attachment().frontTurn,{p:[0,0,0],r:0});
-  const shotFor=(r,seed=id)=>{const look=avatarLook(seed),w=[.93,1,1.08][look.build],state={p:[0,0,0],r};for(const x of [-.067,.067])for(const dy of [.089,.09,.091])for(const distance of [3,3.5,4]){
+  const shotFor=(r,seed=id)=>{const look=avatarLook(seed),w=1,state={p:[0,0,0],r};for(const x of [-.067,.067])for(const dy of [.089,.09,.091])for(const distance of [3,3.5,4]){
     const c=Math.cos(r),s=Math.sin(r),target=[-x*w*c-.08*w*s,(H.headY+dy)*look.tall,x*w*s-.08*w*c],o=[+(target[0]-distance*s).toFixed(2),1.62,+(target[2]-distance*c).toFixed(2)],raw=target.map((v,i)=>v-o[i]),n=Math.hypot(...raw),d=raw.map(v=>+(v/n).toFixed(3)),unit=d.map(v=>v/Math.hypot(...d)),first=rifleSkullEntry(seed,state,o,d);if(first===null)continue;const hc=[1,...o.map((v,i)=>+(v+unit[i]*first).toFixed(3))];if(rifleHeadAfterTurnFrontRegion(seed,state,hc.slice(1),o,d))return{t:'a',w:'rifle',to:seed,o,d,hc};
   }throw Error('no rounded narrow frontal corridor contact');};
   const shoot=async (r,seed=id)=>{const shot=shotFor(r,seed);a.send({p:[shot.o[0],0,shot.o[2]],r:0,h:'rifle'});await settle(env);now+=1000;a.send(shot);await settle(env);return a.got.filter(m=>m.t==='hit').at(-1);};
@@ -1158,7 +1158,7 @@ test('#953 larger LEFT standing turn anchor stays private, normalized, permanent
 test('#953 accepted larger standing turn after greeting gives authoritative LEFT2, legacy/invalid returns remain body1',async()=>{
  const C=await import('../src/config.js'),env=setup(),a=await connect(env),b=await connect(env),id=b.got[0].i;const send=async(c,m)=>{now+=1000;c.send(m);await settle(env);};
  const first={p:[0,0,0],r:.8,h:'rifle'},state={p:[0,0,0],r:1.10};await send(a,{p:[-4,0,0],r:0,h:'rifle'});await send(b,first);await send(b,{t:'g',to:a.got[0].i,k:0});await send(b,{...first,r:1.10,h:'saber',sp:true,score:4});
- const look=C.avatarLook(id),width=[.93,1,1.08][look.build],r2=v=>+(v).toFixed(2),r3=v=>+(v).toFixed(3);let shot;
+ const look=C.avatarLook(id),width=1,r2=v=>+(v).toFixed(2),r3=v=>+(v).toFixed(3);let shot;
  for(const yy of[.098,.099,.100,.101,.102])for(const zz of[.067,.068,.069,.070,.071,.072,.073]){
   const y=(C.PVP_RIFLE_HEAD.headY+yy)*look.tall,o=[r2(-4*Math.cos(state.r)-zz*width*Math.sin(state.r)),r2(y),r2(4*Math.sin(state.r)-zz*width*Math.cos(state.r))],d=[r3(Math.cos(state.r)),0,r3(-Math.sin(state.r))],unit=d.map(v=>v/Math.hypot(...d)),entry=C.rifleSkullEntry(id,state,o,d);if(entry===null)continue;const hc=[1,...o.map((v,i)=>r3(v+unit[i]*entry))];if(!shot&&C.rifleHeadGreetingLeftRegion(id,state,hc.slice(1),o,d))shot={t:'a',w:'rifle',o,d,hc,to:id};
  }
@@ -1204,7 +1204,7 @@ test('#952 greeted post-turn Rear: normalized authority, history, lethal/replay 
   a.send({p:[0,0,-3],r:0,h:'rifle'});b.send({p:[0,0,0],r:0,h:'rifle'});await settle(env);now+=1000;
   const socket=()=>[...env.PLAYERS.object('world').ctx.getWebSockets()].find(ws=>ws.deserializeAttachment().i===id),attachment=()=>socket().deserializeAttachment();
   assert.deepEqual(attachment().frontTurn,{p:[0,0,0],r:0});
-  const shotFor=(r,seed=id)=>{const look=avatarLook(seed),w=[.93,1,1.08][look.build],state={p:[0,0,0],r},patch=look.style===3?H.rear.beanie:H.rear.lower;for(const dy of [patch.low+.001,(patch.low+patch.high)/2,patch.high-.001])for(const distance of [3,3.5,4]){
+  const shotFor=(r,seed=id)=>{const look=avatarLook(seed),w=1,state={p:[0,0,0],r},patch=look.style===3?H.rear.beanie:H.rear.lower;for(const dy of [patch.low+.001,(patch.low+patch.high)/2,patch.high-.001])for(const distance of [3,3.5,4]){
     const c=Math.cos(r),s=Math.sin(r),target=[.08*w*s,(H.headY+dy)*look.tall,.08*w*c],o=[+(target[0]+distance*s).toFixed(2),target[1],+(target[2]+distance*c).toFixed(2)].map(v=>+v.toFixed(2)),raw=target.map((v,i)=>v-o[i]),n=Math.hypot(...raw),d=raw.map(v=>+(v/n).toFixed(3)),unit=d.map(v=>v/Math.hypot(...d)),first=rifleSkullEntry(seed,state,o,d);if(first===null)continue;const hc=[1,...o.map((v,i)=>+(v+unit[i]*first).toFixed(3))];if(rifleHeadRearRegion(seed,state,hc.slice(1),o,d))return{t:'a',w:'rifle',to:seed,o,d,hc};
   }throw Error('no rounded Rear corridor contact');};
   const shoot=async (r,seed=id)=>{const shot=shotFor(r,seed);a.send({p:[shot.o[0],0,shot.o[2]],r:0,h:'rifle'});await settle(env);now+=1000;a.send(shot);await settle(env);return a.got.filter(m=>m.t==='hit').at(-1);};
@@ -1271,7 +1271,7 @@ test('#950 immutable Nose depth uses existing private history; changed/legacy re
 
 // #959 math/authority regression; actual nearest surfaces and quantized cells are proved by the native driver.
 const jawStripShot = (C,id,state={p:[0,0,0],r:0}) => {
-  const l=C.avatarLook(id),w=[.93,1,1.08][l.build],H=C.PVP_RIFLE_HEAD;
+  const l=C.avatarLook(id),w=1,H=C.PVP_RIFLE_HEAD;
   for(const distance of[2,2.2,2.4,2.6,2.8,3,3.2,3.4,3.6,3.8,4])for(const yy of[.038,.0385,.039]){
     const o=[0,1.62,-+(distance+.115*w).toFixed(2)],at=[-.026*w,(H.headY+yy)*l.tall,-.115*w],v=at.map((x,i)=>x-o[i]),d=v.map(x=>+(x/Math.hypot(...v)).toFixed(3));
     const entry=C.rifleJawEntry(id,state,o,d);if(entry===null)continue;
@@ -1319,7 +1319,7 @@ test('#962 first ordinary-turn Rear: normalized authority, history, lethal/repla
   a.send({p:[0,0,-3],r:0,h:'rifle'});b.send({p:[0,0,0],r:0,h:'rifle'});await settle(env);now+=1000;
   const socket=()=>[...env.PLAYERS.object('world').ctx.getWebSockets()].find(ws=>ws.deserializeAttachment().i===id),attachment=()=>socket().deserializeAttachment();
   assert.deepEqual(attachment().rearFirstTurn,{p:[0,0,0],r:0,next:null});
-  const shotFor=(r,seed=id)=>{const look=avatarLook(seed),w=[.93,1,1.08][look.build],state={p:[0,0,0],r},patch=look.style===3?H.rear.beanie:H.rear.lower;for(const dy of [patch.low+.001,(patch.low+patch.high)/2,patch.high-.001])for(const distance of [3,3.5,4]){
+  const shotFor=(r,seed=id)=>{const look=avatarLook(seed),w=1,state={p:[0,0,0],r},patch=look.style===3?H.rear.beanie:H.rear.lower;for(const dy of [patch.low+.001,(patch.low+patch.high)/2,patch.high-.001])for(const distance of [3,3.5,4]){
     const c=Math.cos(r),s=Math.sin(r),target=[.08*w*s,(H.headY+dy)*look.tall,.08*w*c],o=[+(target[0]+distance*s).toFixed(2),target[1],+(target[2]+distance*c).toFixed(2)].map(v=>+v.toFixed(2)),raw=target.map((v,i)=>v-o[i]),n=Math.hypot(...raw),d=raw.map(v=>+(v/n).toFixed(3)),unit=d.map(v=>v/Math.hypot(...d)),first=rifleSkullEntry(seed,state,o,d);if(first===null)continue;const hc=[1,...o.map((v,i)=>+(v+unit[i]*first).toFixed(3))];if(rifleHeadRearRegion(seed,state,hc.slice(1),o,d))return{t:'a',w:'rifle',to:seed,o,d,hc};
   }throw Error('no rounded Rear first-only history contact');};
   const shoot=async (r,seed=id)=>{const shot=shotFor(r,seed);a.send({p:[shot.o[0],0,shot.o[2]],r:0,h:'rifle'});await settle(env);now+=1000;a.send(shot);await settle(env);return a.got.filter(m=>m.t==='hit').at(-1);};
@@ -1426,10 +1426,10 @@ test('#967 source-derived style0 whole-cell admission preserves old regions and 
   assert.equal(C.rifleHeadGreetingRightRegion('front-0',changed,unsafe.hc.slice(1),unsafe.o,unsafe.d),true);
   assert.equal(C.rifleHeadContact('front-0',changed,unsafe,unsafe.o,40,4,false,{...options,allowGreetingRight:true}),true);
   assert.equal(C.rifleHeadContact('front-0',changed,unsafe,unsafe.o,40,4,false,{...options,allowGreetingRightFirstTurn:true}),false);
-  // Actual native5 fresh style0 target: valid first turn, nearest Skull, old leaf true, body1 receipt.
+  // #2209: this old heavy-build packet aimed at the former ×1.08 head. It is outside the current unit-width region.
   const outside={t:'a',w:'rifle',o:[3.11,1.72,-2.67],d:[-.765,-.002,.643],hc:[1,.051,1.712,-.099]};
   assert.equal(C.avatarLook('e6a4612d').style,0);
-  assert.equal(C.rifleHeadGreetingRightRegion('e6a4612d',changed,outside.hc.slice(1),outside.o,outside.d),true);
+  assert.equal(C.rifleHeadGreetingRightRegion('e6a4612d',changed,outside.hc.slice(1),outside.o,outside.d),false,'obsolete heavy-build ray no longer widens the head region');
   assert.equal(C.rifleHeadContact('e6a4612d',changed,outside,outside.o,40,4,false,{...options,allowGreetingRightFirstTurn:true}),false);
   // The actual r3 ray must remain in the prism independently of the cell-corner rays.
   assert.equal(C.rifleHeadGreetingRightCellRegion('front-78',state,shot.hc.slice(1),shot.o,[-1,.01,0]),false);
@@ -1592,7 +1592,7 @@ test('rest posture forwards to observers and late joins, omission and malformed 
 
 test('#1150 authoritative head contact follows seated and lying torso frames', async () => {
   const env=setup(), a=await connect(env,'Shooter'), b=await connect(env,'Resting target');
-  const look=avatarLook(b.got[0].i), width=[.93,1,1.08][look.build], { REST } = await import('../src/config.js');
+  const look=avatarLook(b.got[0].i), width=1, { REST } = await import('../src/config.js');
   for (const pose of [1,2,3]) { // 3: the seated torso with the legs out (#1237)
     const lean=pose!==2?.1:Math.PI/2-REST.avatarLieTilt, // #1234: a lying figure's torso is tilted up on the pillows
      hip=pose!==2?.525:.9;
@@ -1608,7 +1608,7 @@ test('#1150 authoritative head contact follows seated and lying torso frames', a
 // width for every build (before #2141 a side ray at x = .105 hit the heavy build's wider box and missed the slim one).
 test('#1175 actual wire build is forwarded; #2141 the authoritative head width no longer depends on it', async () => {
   const C=await import('../src/config.js'),env=setup(),a=await connect(env,'Shooter'),b=await connect(env,'Target');
-  for(const build of [0,2]) for(const [x,head] of [[.1,true],[.11,false]]) {
+  for(const build of [0,1,2]) for(const [x,head] of [[.1,true],[.11,false]]) {
     const wire=C.splitAvatarCode(C.encodeAvatarWireLook({...C.avatarLook('canonical-build'),build,tall:1}));
     now+=1000;a.send({p:[x,.04,3],r:0,h:'rifle'});b.send({p:[0,0,0],r:0,h:'rifle',...wire});await settle(env);
     assert.equal(a.states().at(-1).ax,wire.ax);

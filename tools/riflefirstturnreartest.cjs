@@ -11,7 +11,7 @@ const nativeFirstProof = async ({start,count})=>{
  for(let seed=0;seed<3000&&keys.size<60;seed++){
   const id='rear-'+seed,look=C.avatarLook(id),key=[look.style,look.build,look.tall].join('/');if(keys.has(key))continue;keys.add(key);if(ordinal++<start)continue;if(models.length===count)break;
   const m={id,key,style:look.style,rays:0,positive:0,corners:0,cornerBad:0,wrong:0,forged:0,forgedWrong:0,oldIndependent:0,earlier:0,unsupported:0,firstAligned:0,maxResidual:0,examples:[],cases:{},bones:{}};
-  const width=[.93,1,1.08][look.build],P=look.style===3?C.PVP_RIFLE_HEAD.rear.beanie:C.PVP_RIFLE_HEAD.rear.lower;
+  const width=1,P=look.style===3?C.PVP_RIFLE_HEAD.rear.beanie:C.PVP_RIFLE_HEAD.rear.lower;
   for(const anchor of[0,.8,3.14,-3.14])for(const sign of[-1,1])for(const late of[false,true]){
    const endpoint=+(anchor+sign*.04).toFixed(2),first=late?endpoint:anchor;
    gs.message(JSON.stringify({t:'j',i:id,n:'Rear'}));gs.message(JSON.stringify({t:'s',i:id,p:[0,0,0],r:first,h:'rifle',l:10}));const g=gs.others.get(id),t0=g.snaps[0].t;let t=t0+C.GHOSTS.delay+1;g.draw(t,eye);if(g.have&&g.body===first)m.firstAligned++;
