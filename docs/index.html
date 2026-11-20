@@ -695,6 +695,10 @@
               </li>
               <li class="comp-item">
                 <span class="comp-icon">⚠️</span>
+                <span><strong>Anyone can queue work:</strong> In a public repository, any account's issue, including a "disregard all previous instructions" hidden in it, gets implemented and pushed.</span>
+              </li>
+              <li class="comp-item">
+                <span class="comp-icon">⚠️</span>
                 <span><strong>Blind test reruns:</strong> Full test suites executed over and over "just in case", wasting tokens, context, and time.</span>
               </li>
               <li class="comp-item">
@@ -721,6 +725,10 @@
               <li class="comp-item">
                 <span class="comp-icon">✅</span>
                 <span><strong>Isolated worktrees:</strong> Each worker plays its part in its own worktree under a git-ignored <code>workingtree/</code> directory, on its own branch and ports, with automatic cleanup.</span>
+              </li>
+              <li class="comp-item">
+                <span class="comp-icon">✅</span>
+                <span><strong>Trusted intake:</strong> Issues from accounts without write access wait until a maintainer accepts them. Issue and comment text is data, never instructions.</span>
               </li>
               <li class="comp-item">
                 <span class="comp-icon">✅</span>
@@ -843,7 +851,7 @@
             <div class="phase-num">1</div>
             <h3 class="phase-title">Planning</h3>
             <p class="phase-desc">
-              Write a short plan: outcome and boundary, critical path, 2–3 risk-based checks, smallest useful team, integration owner and follow-up. Claim the issue under Issueflow.
+              Write a short plan: outcome and boundary, critical path, 2–3 risk-based checks, smallest useful team, integration owner and follow-up. Claim the issue under Issueflow once it is from a trusted author or accepted.
             </p>
           </div>
 
@@ -943,7 +951,7 @@ and fill in the project policy from what you know about this repository.</pre>
           <div class="code-block">
             <button class="copy-btn" onclick="navigator.clipboard.writeText(this.nextElementSibling.innerText); this.innerText='Copied!'; setTimeout(()=>this.innerText='Copy', 2000);">Copy</button>
             <pre>git subtree add --prefix=.orchestra/shared \
-  https://github.com/solwation/dirigenten-och-orkestern.git v0.14.5 --squash
+  https://github.com/solwation/dirigenten-och-orkestern.git v0.15.0 --squash
 cp .orchestra/shared/PROJECT.example.md .orchestra/project.md
 echo '/workingtree/' >> .gitignore   # worker checkouts live here
 echo '/.claude/worktrees/' >> .gitignore   # if Claude Code's Agent tool creates worktrees</pre>

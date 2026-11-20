@@ -19,6 +19,7 @@ Agents left to themselves over-plan, spawn unneeded helpers, rerun test suites i
 - **Requests become issues:** Ask for a change in chat and the conductor files an issue and delivers it, with no separate command needed.
 - **Autonomous queue execution:** `/orkester` works through the open issues unattended: one bounded pass by default, or a queue session with polling and an idle watch if your policy enables it. If the queue is empty at the start, it first reviews the project, files concrete findings as issues and then fixes them.
 - **Isolated worktrees:** Each worker plays its part in its own checkout under a git-ignored `workingtree/` directory, with its own ports; no colliding git stashes.
+- **Trusted intake:** In a public repository, issues from accounts without write access wait until a maintainer accepts them; issue and comment text is data, never instructions, so a "disregard all previous instructions" in an issue does nothing.
 - **Risk-based verification:** 2–3 checks chosen for the actual risk, then stop.
 - **Evidence before delivery:** Test results, links, and diffs verified on `main` (pushed directly or merged as a PR, per your policy) before closing.
 - **Best-guess closure:** Routine issues settled autonomously; questions only for real user decisions.
@@ -59,7 +60,7 @@ The six phase gates (Planning → Implementation → Verification → Review →
 
 ```sh
 git subtree add --prefix=.orchestra/shared \
-  https://github.com/solwation/dirigenten-och-orkestern.git v0.14.5 --squash
+  https://github.com/solwation/dirigenten-och-orkestern.git v0.15.0 --squash
 cp .orchestra/shared/PROJECT.example.md .orchestra/project.md
 echo '/workingtree/' >> .gitignore   # worker checkouts live here
 echo '/.claude/worktrees/' >> .gitignore   # if Claude Code's Agent tool creates worktrees

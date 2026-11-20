@@ -14,6 +14,9 @@ not executable code. Keep project details here, never in the shared instructions
 - Repositories and coordination issues: <owner/repo, status issue per repository>.
 - Issue workflow authority: shared ISSUE-WORKFLOW.md for GitHub; specify an adapter
   for other trackers. Local ancestor/port constraints: <policy>.
+- Trusted issue authors and acceptance: <core default: write access, GitHub
+  `OWNER`/`MEMBER`/`COLLABORATOR`; a narrower or wider set; acceptance label, default
+  `accepted`; labels the host's issue templates apply, which are never acceptance>.
 - Excluded coordination labels; active/session labels: <names>. Session ID project
   short name and label prefix: <name, default repository name; `orkester: `>.
 - Claims, race handling, expiry and handover: <rules; retain documented integration
