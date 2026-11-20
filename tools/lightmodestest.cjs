@@ -4,6 +4,7 @@
 // Go's colour kept, Prata still answering, released (nothing put back) by a power cut and by F. A picture per mode.
 //   PLAYWRIGHT_MODULE=… CHROME_PATH=… node tools/lightmodestest.cjs http://localhost:8764 OUTDIR
 const { chromium } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
+const kit = require('./testkit.cjs');
 const fs = require('fs'), os = require('os'), path = require('path');
 const BASE = process.argv[2] || 'http://localhost:8764', OUT = process.argv[3] || path.join(os.tmpdir(), 'lightmodes');
 fs.mkdirSync(OUT, { recursive: true });
@@ -14,6 +15,7 @@ async function open(b, w, h, touch) {
   p.on('pageerror', (e) => console.log('pageerror', e.message));
   await p.goto(`${BASE}/index.html?test=lazy&freeze&time=21&weather=clear${touch ? '&phone' : ''}`, { timeout: 120000 });
   await p.waitForFunction(() => window.__app, null, { timeout: 240000 });
+  await kit.skipNameDialog(p); // the first-visit name dialog (#441) covers the start buttons (#2223)
   if (touch) await p.locator('#start-go').tap({ timeout: 90000 }); else await p.locator('#start-mouse').click({ timeout: 90000 }); // native: pointer lock / touch
   await p.waitForFunction((t) => (t ? __app.touch.enabled : document.pointerLockElement === __app.renderer.domElement), touch, { timeout: 15000 });
   await p.evaluate(() => {
