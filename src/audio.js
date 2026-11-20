@@ -108,7 +108,7 @@ export function updateListener(camera) {
 }
 
 /** Output node for one effect: positional panner (if pos given) → master. */
-function out(pos, gain = 1, ref = 1.2, loop = false) { // `ref`: m within which a positional sound plays at full loudness (#1780: the squirrels' chirp carries farther)
+function out(pos, gain = 1, ref = 1.2, loop = false, occlude = true) { // `occlude` false: the caller models its own path (the open window's wind, #2181) // `ref`: m within which a positional sound plays at full loudness (#1780: the squirrels' chirp carries farther)
   const g = ctx.createGain();
   g.gain.value = gain;
   if (pos) {
@@ -118,8 +118,8 @@ function out(pos, gain = 1, ref = 1.2, loop = false) { // `ref`: m within which 
     p.refDistance = ref;
     p.rolloffFactor = 1.2;
     p.positionX.value = pos.x; p.positionY.value = pos.y; p.positionZ.value = pos.z;
-    const oc = loop ? null : occluded(pos); // #2181: one estimate when the effect starts; only an obscured voice gets a low-pass
-    if (loop) { const L = occludedLoop(pos, p); g.connect(L.input); g._occ = L; loops.add(L); } // a loop re-estimates a few times a second (updateOcclusion)
+    const oc = loop || !occlude ? null : occluded(pos); // #2181: one estimate when the effect starts; only an obscured voice gets a low-pass
+    if (loop && occlude) { const L = occludedLoop(pos, p); g.connect(L.input); g._occ = L; loops.add(L); } // a loop re-estimates a few times a second (updateOcclusion)
     else if (oc) { const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = oc.hz; lp.Q.value = 0.7; g.gain.value = gain * oc.gain; g.connect(lp).connect(p); } else g.connect(p);
     p.connect(master);
     if (reverb) p.connect(reverb.input); // #2153: effects get the room (one send per effect, after the distance fade)
@@ -552,7 +552,7 @@ export const sfx = {
    *  brightness follow the wind power (#2177: setWindPower). */
   wind(pos) {
     if (!ready()) return null;
-    const t = ctx.currentTime, d = out(pos, 0.6), w0 = windowWindParams(windNow);
+    const t = ctx.currentTime, d = out(pos, 0.6, 1.2, false, false), w0 = windowWindParams(windNow); // no occlusion: it is heard through the OPEN window and follows the wind itself (#2177)
     const src = ctx.createBufferSource();
     src.buffer = noiseBuf;
     src.loop = true;

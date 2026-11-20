@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { cellOf, occlusionFor, doorsOnLine } from '../src/soundocclusion.js';
-import { OCCLUSION as O } from '../src/config.js';
+import { OCCLUSION as O, BIRD_SONG as B } from '../src/config.js';
 
 const door = (seg, t, y = 0) => ({ t, object: { position: { y } }, segment: () => seg });
 // A flat with a wall at x=5 on level 0 (z 0..6; the doorway gap is not in the wall list) and a door at z 6.5..7.5.
@@ -59,4 +59,11 @@ test('cells: playroom, core and visited flat are their own cells', () => {
 });
 test('non-finite positions never throw', () => {
   assert.doesNotThrow(() => occlusionFor(world(), at(2, 1.5, 3), at(NaN, 0, 0)));
+});
+test('bird call from outside heard indoors: only the facade occlusion, not facade x BIRD_SONG.indoors (#2178 double-attenuation)', () => {
+  const w = world({ doors: [] }), r = occlusionFor(w, at(2, 1.5, 3), at(2, 6, 30)); // a treetop outdoors, listener indoors
+  assert.deepEqual(r.parts, ['facade']);
+  assert.equal(B.indoors, 1, 'the scheduler adds no second indoor factor');
+  const total = B.level.song * B.indoors * r.gain; // what audio.js hears: scheduler level x occlusion
+  assert.ok(Math.abs(total - B.level.song * Math.pow(10, -O.facade.db / 20)) < 1e-12);
 });

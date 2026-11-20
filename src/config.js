@@ -2358,14 +2358,14 @@ export const WIND_SOUND = {
 // birds at once (VoiceCap); `peak` phrases per minute at the strongest hour of the strongest month; `month[m-1]` = [season level 0…1,
 // blackbird, chaffinch, great tit, robin weights]; `dawn`/`evening` = hours around sunrise / sunset (chorus months only: `chorus`);
 // `day` the base share of the peak by day; `rain` precipitation 0…1 from `rainFrom` to `rainTo` thins song to `rainLeft` of its rate;
-// `gull` calls per minute by day, `gullAlarm` flushed-flock cry calls; `level` loudness (songbird / gull / alarm), `indoors` the share heard through walls.
+// `gull` calls per minute by day, `gullAlarm` flushed-flock cry calls; `level` loudness (songbird / gull / alarm), `indoors` the extra share heard through walls (1 since #2181: occlusion applies it).
 export const BIRD_SONG = {
   every: 0.25, range: 40, gullRange: 60, maxVoices: 2, peak: 14, day: 0.3, chorus: [3, 4, 5, 6, 7],
   month: [[0.2, 0, 0, 0.5, 0.6], [0.3, 0.1, 0, 0.7, 0.7], [0.7, 0.7, 0.5, 0.9, 0.8], [1, 1, 1, 1, 0.8], [1, 1, 1, 0.9, 0.7], [0.9, 1, 0.9, 0.7, 0.6],
     [0.6, 0.6, 0.4, 0.4, 0.5], [0.15, 0.05, 0, 0.15, 0.5], [0.2, 0, 0, 0.2, 0.6], [0.25, 0, 0, 0.3, 0.7], [0.2, 0, 0, 0.4, 0.6], [0.15, 0, 0, 0.4, 0.5]],
   dawn: { from: -1.1, full: -0.4, hold: 0.6, to: 1.8, boost: 0.7 }, evening: { from: -2, full: -1.2, hold: -0.2, to: 0.4, boost: 0.3 },
   night: { before: -1.2, after: 0.5 }, nonChorusBoost: 0.1,
-  rainFrom: 0.03, rainTo: 0.4, rainLeft: 0.04, gull: 3, gullAlarm: 8, level: { song: 0.2, gull: 0.3, alarm: 0.4 }, indoors: 0.2, ref: 6,
+  rainFrom: 0.03, rainTo: 0.4, rainLeft: 0.04, gull: 3, gullAlarm: 8, level: { song: 0.2, gull: 0.3, alarm: 0.4 }, indoors: 1, ref: 6, // #2181: indoors = 1: the walls/facade now dull a bird call themselves (soundocclusion.js via audio.js out()); the old x0.2 would double it
 };
 
 // Speech bubbles (#247, src/greet.js): Olof's lines and your own show for `bubble` s. The neighbours to greet were
