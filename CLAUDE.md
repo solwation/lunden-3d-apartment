@@ -199,9 +199,13 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
   note on the freezer (the start screen says nothing about news; visitors find the note themselves);
   entries newer than the visitor's last visit are marked "Nytt".
   Use plain player language; technical implementation details belong in issues and development docs.
-  Head-hit updates must carry `"group": "head-hits"`: the freezer presents them once as
-  “Förbättringar för huvudträffar.”. Nerf optimization updates use `"group": "nerf-improvements"`
-  and display “Förbättringar för Nerf-skott.”. Original history and publication times remain intact.
+  Add `"issues": [N]` with the change's actual issue reference. Related changes also carry a known
+  `"group"` from the label table in `src/changelog.js` (for example `ducks`, `cats`, `squirrels`,
+  `trees`, `weather`, `avatars`, `kitchen`, `nerf`). Multiple entries in a topic appear as one short
+  Swedish summary plus all member issue references; a singleton or unknown topic stays an ordinary row.
+  Extend the table with a heading and a 2–4-word description when a new topic needs it. Only backfill
+  issue references verified against the original issue/commit; preserve original id/date/text/publication time.
+  Legacy `head-hits` and `nerf-improvements` keep their fixed summaries (also for singletons).
   **The id is picked last:** after your final `git pull --rebase`, right before pushing, renumber your entry to
   the file's max id + 1 and keep it on top — never an id chosen when the work started (parallel agents push in
   between). The ids must stay unique and strictly descending in file order; `tools/stamp.sh` warns (`::warning::`

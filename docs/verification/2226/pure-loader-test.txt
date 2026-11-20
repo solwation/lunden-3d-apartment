@@ -1,0 +1,22 @@
+PASS same topic collapses with every unique sorted reference
+PASS newest publication member supplies metadata; lower id can be new
+PASS singleton, unknown and missing topic retain ordinary text and order
+PASS prototype names are unknown topics
+PASS presentation is idempotent including issue references
+PASS original history untouched
+PASS first visit has no badges
+PASS repeat visit has no badges
+PASS seen markers track original history
+PASS any member may supply New
+PASS separate topics each produce their own union
+PASS legacy singleton remains summarized
+PASS invalid references cannot enter a summary
+PASS real loader marks before grouping
+PASS offline cache stores exact original rows with group/issues
+PASS existing three fetch attempts and offline return badge behavior
+PASS offline summaries match available cached history
+PASS partial cache never regresses seen id
+PASS history ids unique and descending
+PASS full real history projection is idempotent
+PASS real November 18 window is substantially shorter
+ALL PASS 21; Nov18 58 -> 39 rows

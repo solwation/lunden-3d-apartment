@@ -1,0 +1,102 @@
+{
+  "checks": [
+    {
+      "ok": true,
+      "name": "actual history has exactly one head-hit summary"
+    },
+    {
+      "ok": true,
+      "name": "one Nerf improvement summary; unrelated Nerf feature remains separate"
+    },
+    {
+      "ok": true,
+      "name": "all original history fields remain unchanged"
+    },
+    {
+      "ok": true,
+      "name": "every unrelated original row remains in order"
+    },
+    {
+      "ok": true,
+      "name": "presentation is idempotent"
+    },
+    {
+      "ok": true,
+      "name": "unknown groups stay ordinary"
+    },
+    {
+      "ok": true,
+      "name": "inherited object names stay ordinary unknown groups"
+    },
+    {
+      "ok": true,
+      "name": "group inherits newest publication row despite lower id; id-only visitor migrates"
+    },
+    {
+      "ok": true,
+      "name": "original max id and publication markers retained"
+    },
+    {
+      "ok": true,
+      "name": "return visit has no false new badge"
+    },
+    {
+      "ok": true,
+      "name": "first visit has no badges"
+    },
+    {
+      "ok": true,
+      "name": "any new group member marks summary new"
+    },
+    {
+      "ok": true,
+      "name": "actual index list groups before its 100-row limit"
+    },
+    {
+      "ok": true,
+      "name": "real loader uses original publication order before grouping"
+    },
+    {
+      "ok": true,
+      "name": "raw offline cache preserves both original group ids/t"
+    },
+    {
+      "ok": true,
+      "name": "offline return retains original max id and no false new badge"
+    },
+    {
+      "ok": true,
+      "name": "partial cached history cannot regress seen id"
+    },
+    {
+      "ok": true,
+      "name": "actual loader retains 100 display rows after grouping"
+    },
+    {
+      "ok": true,
+      "name": "bounded offline cache displays the projection of its original rows"
+    },
+    {
+      "ok": true,
+      "name": "actual paper canvas draws one plain summary, no technical group text"
+    },
+    {
+      "ok": true,
+      "name": "paper uses plain Nerf summary and new stamp"
+    },
+    {
+      "ok": true,
+      "name": "late refresh disposes old texture and keeps one summary"
+    },
+    {
+      "ok": true,
+      "name": "zero WebGL contexts"
+    }
+  ],
+  "rawCount": 1724,
+  "groupedCount": 1543,
+  "headCount": 33,
+  "errors": [],
+  "pid": 58545,
+  "profile": "/tmp/native-fullscreen-yw8MK3"
+}

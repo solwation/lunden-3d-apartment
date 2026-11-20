@@ -1,0 +1,3 @@
+PASS 1723 original rows retain every original field, id/date/text/group and any t; exactly one new entry.
+PASS 149 backfilled rows match exact original text in source commits with explicit issue references; bulk rewrites skipped.
+PASS canonical changelog_stamp.id_times() after commit retains all 1723 original publication timestamps exactly.

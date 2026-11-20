@@ -1,0 +1,1343 @@
+[
+  {
+    "id": 1721,
+    "group": "weather",
+    "commit": "0638c8b1f6da01c372af58aac4178a2b5b6d0231",
+    "subject": "Add wind-bent condensation at existing roof outlets (Refs #2204)",
+    "issues": [
+      2204
+    ]
+  },
+  {
+    "id": 1720,
+    "group": "ducks",
+    "commit": "a5983bfa86849660315b1f2bbcfd1f5a9226463c",
+    "subject": "Add mallard calls and shore sleep (Refs #2202)",
+    "issues": [
+      2202
+    ]
+  },
+  {
+    "id": 1717,
+    "group": "weather",
+    "commit": "6965828e881fac294545142656fc672d0465230d",
+    "subject": "Rain sound varies with the surround: one rain loop with roof-drum, metal-ping, leafy and splash layers by roof, car, trees (#2177) and river distance (#2190), softer hiss over grass; indoor model unchanged. Refs #2200",
+    "issues": [
+      2200
+    ]
+  },
+  {
+    "id": 1714,
+    "group": "weather",
+    "commit": "64b23c3bf751662c847cca9e1ffb1f75cbb2a66c",
+    "subject": "The moon follows its real phase and orbit: a low-precision lunar ephemeris (moon.js) gives position and elongation for the game's date and time; the sky shader shades the disc as a sphere lit from the sun's side (crescent to full, faint earthshine), and the moonlight and halo follow the lit fraction. Refs #2194",
+    "issues": [
+      2194
+    ]
+  },
+  {
+    "id": 1713,
+    "group": "weather",
+    "commit": "30002987432fef01214293892b9890d5a14bc011",
+    "subject": "Footsteps vary with the ground state: snow crunch (squeak below -5 C), wet splash on hard ground, hollow stairwell treads and autumn leaf rustle, picked from existing snow/wetness/temperature/month state by one pure helper; same single synth source. Refs #2193",
+    "issues": [
+      2193
+    ]
+  },
+  {
+    "id": 1712,
+    "group": "cats",
+    "commit": "90bce1e7bfaa90237adfa932c533c8b3c0550a33",
+    "subject": "Indoor cat sleeps curled up in a floor sun patch while the sun shines in, on the bed in the evening, else by a radiator; wakes with a stretch when the visitor comes near. Pure helpers catrest.js, CAT_REST tunables, &catsleep debug param. Refs #2192",
+    "issues": [
+      2192
+    ]
+  },
+  {
+    "id": 1709,
+    "group": "weather",
+    "commit": "d7c6e714babb043e279f1ae9ca9a7a4688c60460",
+    "subject": "Valley mist: a fog weather code and calm cool dry mmornings pull the fog in to ~80-250 m and lay a few low soft veils over Hoeje aa, thinning as the sun rises. Pure mistDensity/mistFog helpers, ValleyVeils (one draw call, quality-scaled, fewer on phones), &weather=fog. Refs #2187",
+    "issues": [
+      2187
+    ]
+  },
+  {
+    "id": 1705,
+    "group": "ponies",
+    "commit": "b0fb62601aa732a601b8bdd92ca284bc11de55eb",
+    "subject": "Ponies make ambient sounds (snort, hoof beats, shuffles, tearing grass, a greeting nicker, a rare whinny; one VoiceCap) and show their breath as vapour below ~9 degC through the avatars' shared puff pool: pure schedule/breath helpers, muzzle from the head bone. Refs #2188",
+    "issues": [
+      2188
+    ]
+  },
+  {
+    "id": 1704,
+    "group": "weather",
+    "commit": "5b3802ed01c9785699c841fc41c74733e76f156f",
+    "subject": "Snow cover follows the real weather: depth builds with snowfall and melts above zero (hourly series, calendar months as fallback), one shared snowCover for every reader instead of SEASON.snowMonths, patchy ground snow (asphalt first; crowns, north facades and lawn last) and dirty-grey plough ridges along the road edges (placement guess). Refs #2176",
+    "issues": [
+      2176
+    ]
+  },
+  {
+    "id": 1703,
+    "group": "avatars",
+    "commit": "ebb98ead58fdf16dcd3744bb426f0a1ea56e6703",
+    "subject": "Top patterns: striped, checked, marl and two-tone sleeves, procedural in the bind pose in the cloth block (tag m above the cut/outer value, customizer buttons, derived second colour); tests, before/after images. Refs #2168",
+    "issues": [
+      2168
+    ]
+  },
+  {
+    "id": 1702,
+    "group": "cats",
+    "commit": "e06e9ad8375bbf01516ae7634bfeee821af3faad",
+    "subject": "Outdoor cats stalk ground birds (creep, wiggle, leap and miss) and chatter at birds perched in trees; the flock lifts when the cat gets close. Refs #2182",
+    "issues": [
+      2182
+    ]
+  },
+  {
+    "id": 1698,
+    "group": "avatars",
+    "commit": "376a09d566cd0cb294bd9f97df04d5dc217b15a8",
+    "subject": "Remote figures typing in the chat (or away) hold a generic smartphone in the right hand: rounded body, thin-bezel screen with a procedural chat and keyboard, camera island on the back, collapsed in the shared geometry unless the pose shows it (no extra draw call, texture, program or light); its screen casts a cool directional light on the face and hand in the avatar's own shader. Refs #2217",
+    "issues": [
+      2217
+    ]
+  },
+  {
+    "id": 1697,
+    "group": "birds",
+    "commit": "337d1a75b0a842fd09713d5b2aa3f546cbbeb1ea",
+    "subject": "Bird song and gull calls by time of day, season and weather: dawn chorus Mar-Jul, smaller evening session, thin late summer and winter (robin, great tit), nearly silent in rain; songs from treetops within 40 m, gulls call/laugh and cry out when flushed; one oscillator + band-pass per call, at most two voices (VoiceCap). Refs #2178",
+    "issues": [
+      2178
+    ]
+  },
+  {
+    "id": 1694,
+    "group": "weather",
+    "commit": "ef2bc2166995d8f0a7d8e303226b99b1636e1fdb",
+    "subject": "Rain wets facades, roofs, cars and benches: one chained fragment step per material class (brick, render, roof, car paint, wood, metal) reading the ground's wetness: darker albedo, glossier film with a faint sky sheen, run streaks on soaked walls, dropwise beads on car paint; no new programs on phones. Refs #2175",
+    "issues": [
+      2175
+    ]
+  },
+  {
+    "id": 1693,
+    "group": "avatars",
+    "commit": "4b87aad64484d591e152ae8aa2dff58aa5265ddd",
+    "subject": "Players whose name contains \"Olof\" start every session with Olof's look from the car (case-insensitive substring); the saved look is left untouched and mirror edits hold for the session. Refs #2218",
+    "issues": [
+      2218
+    ]
+  },
+  {
+    "id": 1692,
+    "group": "weather",
+    "commit": "26fa2762aa43792163904aa8721db95091b2e329",
+    "subject": "Outdoor wind sound follows the simulated/real wind: one noise loop with a low-pass body (whoosh, howl in storm) and a band-pass (summer leaf rustle near trees, bare winter whistle), gusts sweeping by, muffled indoors; the open-window wind follows the strength too. Refs #2177",
+    "issues": [
+      2177
+    ]
+  },
+  {
+    "id": 1690,
+    "group": "avatars",
+    "commit": "1125c124c0469365da19327aee439aa826a85eb7",
+    "subject": "Stair gait for the avatars: forward lean and higher knee lift going up, shorter backward-leaning bent-knee steps going down, and a hand sliding along the handrail when one is in reach (rails registered by the stair builders, slope read from the ground; no wire field). Refs #2172",
+    "issues": [
+      2172
+    ]
+  },
+  {
+    "id": 1689,
+    "group": "avatars",
+    "commit": "d048ed1a5857fe6b8aca3c0ad57b229692c4b87c",
+    "subject": "Avatar glasses get clear lenses with a faint reflection and rounder frames; metal, frames and eyes reflect the painted room (outdoors the sky and sun), scaled by the local light level. Refs #2173",
+    "issues": [
+      2173
+    ]
+  },
+  {
+    "id": 1688,
+    "group": "avatars",
+    "commit": "9d0d72579a215713c1e0a84f42d86a533c93ca9d",
+    "subject": "Wet lips, curved upper and lower lashes as separate hairs, and selectable makeup (lip colour, mascara, eyeliner, blush): lips get their own lower roughness, lash rows are 22 + 14 curved blades per eye, makeup is one code in the legs tag p's tens (lipstick/liner as vertex colours, mascara/blush as two uniforms; no new draws or textures). Refs #2170",
+    "issues": [
+      2170
+    ]
+  },
+  {
+    "id": 1687,
+    "group": "avatars",
+    "commit": "164e34d02ce55cd1a51b91915e6e83917e8e1351",
+    "subject": "Far figure gets silhouette, hair, sleeve/leg length, the near figure's light level and a gait swing: tapered lathe parts, per-instance look/light/gait attributes read from the appearance code, still one draw call and the #1966 dither. Refs #2164",
+    "issues": [
+      2164
+    ]
+  },
+  {
+    "id": 1686,
+    "group": "avatars",
+    "commit": "6cbd202fc86a705ec0d4d85aa0a9861acb297304",
+    "subject": "Add boot, leather low shoe and sandal models and visible socks for the avatars: look fields shoeModel / socks in the headphones' tag f (tens; older clients keep trainers), the trainer's sole and foot IK unchanged, glossy leather region, customizer choices. Refs #2169",
+    "issues": [
+      2169
+    ]
+  },
+  {
+    "id": 1685,
+    "group": "avatars",
+    "commit": "598db761ca0495b1208505ef8a1d3a77ee62ac26",
+    "subject": "Add stubble (shader-only dots and darker skin in the beard zone, clear of lips and nose) and a short-cropped beard as customizer choices 4 and 5; the beard cut rides the x tag's tens, older clients read none / the full beard. Refs #2166",
+    "issues": [
+      2166
+    ]
+  },
+  {
+    "id": 1683,
+    "group": "avatars",
+    "commit": "fc34633591b4d47d1375f54be5872e386174ba9e",
+    "subject": "Lying down and getting up play a short sequence (sit up, legs out, lie back and the reverse); asleep after a while in bed: eyes shut, slower breathing, now and then on the side; tests, images. Refs #2163",
+    "issues": [
+      2163
+    ]
+  },
+  {
+    "id": 1682,
+    "group": "avatars",
+    "commit": "024d680e21f220816cf03b147a0ae607774ea4dd",
+    "subject": "Fabrics get their own finish: per-weave roughness and a cheap sheen lobe (knit and fleece fuzz, cotton a little, denim almost none) and faded, worn jeans at knees, thighs, lap, seams and hem; one shader, no new texture or draw; test, browser check, images. Refs #2165",
+    "issues": [
+      2165
+    ]
+  },
+  {
+    "id": 1681,
+    "group": "avatars",
+    "commit": "e53f475a6593d00b41427d1f8095301804834b7e",
+    "subject": "Remote figures reach for a door handle and for things another player takes or puts down: the nearer free wrist goes to the target for about 0.35 s, a low thing makes them crouch, lean and look down (derived from the door's / thing's position, no wire field). Refs #2161",
+    "issues": [
+      2161
+    ]
+  },
+  {
+    "id": 1680,
+    "group": "avatars",
+    "commit": "53565c3059a8336966d641605d9db6f5105cd0dd",
+    "subject": "Remote billiard players bend over the table while aiming: bridge hand near the cue tip, stroke hand on the cue grip drawn back with the charge and forward on the shot, bounded forward lean (cue frame from the table, no new wire field). Refs #2162",
+    "issues": [
+      2162
+    ]
+  },
+  {
+    "id": 1679,
+    "group": "avatars",
+    "commit": "d7c40aa49114e811087f9f6d790460122f438dd8",
+    "subject": "WIP skirt/dress, Refs #2157",
+    "issues": [
+      2157
+    ]
+  },
+  {
+    "id": 1678,
+    "group": "avatars",
+    "commit": "3d192b76d587a878db43a64abdc57a017063b418",
+    "subject": "WIP seated legs, Refs #2158",
+    "issues": [
+      2158
+    ]
+  },
+  {
+    "id": 1676,
+    "group": "avatars",
+    "commit": "52e5626fa01f5a3f477e7fd3dd647690af9d3e1a",
+    "subject": "Show others the arm going to the mouth with the head tipped back for sips and bites, and the glass raised for a toast: pure avatarmouth timeline, new 'sip'/'bite' sound-event kinds (client and room whitelist), sfx.mouth hooks in cups/beer/food, ghostmouth browser page. Refs #2160",
+    "issues": [
+      2160
+    ]
+  },
+  {
+    "id": 1675,
+    "group": "avatars",
+    "commit": "1c7a99909720638542ad5233dcbcd09640f72973",
+    "subject": "Lean the avatars into a start and back against a sudden stop: stepAccel (third term of stepLean) differentiates the forward speed (the #2139 playback curve's velocity along the body, no wire field) through a slew limit, low-passes and a dead band, pitches the torso by a share of atan(a/g) within bounds through an under-damped spring (light over-swing), the head keeps the gaze level and the free arms go forward while braking; off in the air, water, seat, bike, dance, hug. AVATAR_ACCEL_LEAN tunables, node test, side-view before/after strips. Refs #2159",
+    "issues": [
+      2159
+    ]
+  },
+  {
+    "id": 1674,
+    "group": "weather",
+    "commit": "bbf007354eafac7d23a7b5b704989029acdc53bc",
+    "subject": "Sky clouds: procedural noise layer drifting with the wind and following the weather's cloudiness, sharing noise and drift with the ground cloud shadows (old texture at lowest quality / phones). Refs #2154",
+    "issues": [
+      2154
+    ]
+  },
+  {
+    "id": 1673,
+    "group": "avatars",
+    "commit": "cea65011bdf213daf49b70606bfa8be545695f53",
+    "subject": "Restore the avatars' outdoor shade level (AVATAR_LIGHT.level.shade 0.55; #2155 had changed it to 0.32 by mistake along with AVATAR_AGE.shade) and update two avatar tests for #2150's mouth strips: the #2063 whole-figure budget leaves out teethExtraTriangles(), the #2084 byte contract compares #2084's own before/after avatar.js. Refs #2150 #2155",
+    "issues": [
+      2150
+    ]
+  },
+  {
+    "id": 1672,
+    "group": "avatars",
+    "commit": "9f2d2013a0b15e605ed7462d5ae23a074f282ba0",
+    "subject": "Ten skin tones with undertones: SKIN_TONES (very light to deep dark; warm/neutral/olive/deep), the skin digit keeps the nearest old tone and the real tone rides in the u tag above the top; blush, backlight colour and rim follow the undertone via three per-avatar uniforms (src/avatartone.js); mirror swatches, tests, docs, result images. Refs #2156",
+    "issues": [
+      2156
+    ]
+  },
+  {
+    "id": 1671,
+    "group": "kitchen",
+    "commit": "7adb45fd27ebec7fb811cb67fb09ae5d1a4bca69",
+    "subject": "Glossy surfaces indoors reflect the room: a 64 px cube-camera probe per room zone (L1007's rooms and the visited flats'), PMREM-filtered and kept per zone (LRU 6), captured after the warm-up, on entering a zone without a fresh map and on a light change (daylight band with hysteresis, any lamp or the mains; settle 0.6 s), one face per frame, never in a shadow-map frame; no pass otherwise. Chrome, steel, porcelain, glossy glass, white appliances and tiles (low, #271) in interior.js, standardinterior.js, toilet.js, hood.js, fridge.js, ovens.js and world.js are tagged by class (ROOM_PROBE.k). Lowest quality level keeps the painted roomEnv() (moved to roomprobe.js, re-exported by lights.js), dimmed at night; phones capture once into an isXRRenderTarget sRGB target (screen programs, #1561) decoded in PMREM's cube material. 64 px everywhere keeps one program per material for painted and captured maps. &noprobe = the old look. Pure helpers + node test tools/roomprobetest.mjs; before|after images and perf numbers in docs/verification/2151. Refs #2151",
+    "issues": [
+      2151
+    ]
+  },
+  {
+    "id": 1670,
+    "group": "avatars",
+    "commit": "7e9b67481bbd6c870605ed55a8cf4c1481e84cb2",
+    "subject": "Age slider: folds (forehead, crow's feet, glabella, under-eye bags, deeper nasolabial) through the sculpt normals, salt-and-pepper hair, beard and brows with grey temples, matter skin; deterministic per avatar, packed in the hat's q tag (hat + 10 x step). Refs #2155",
+    "issues": [
+      2155
+    ]
+  },
+  {
+    "id": 1669,
+    "group": "avatars",
+    "commit": "c6d30702100ab955a0f1fb9c7ae9d14f1f56dd3f",
+    "subject": "Show teeth, a dark mouth cavity gradient and a hinted tongue when the mouth opens: jaw-weighted strips in the same head mesh (24 extra triangles), zero height when shut. Refs #2150",
+    "issues": [
+      2150
+    ]
+  },
+  {
+    "id": 1666,
+    "group": "avatars",
+    "commit": "5b41845ae5ea468b22ff361f9268e070f6308a79",
+    "subject": "Remote figures aim rifle, Nerf, bow and wand with the gaze pitch: wrist on the line from the shoulder, support hand on the fore-end / bow string, torso lean, prop tilt; saber keeps its swing. Refs #2149",
+    "issues": [
+      2149
+    ]
+  },
+  {
+    "id": 1663,
+    "group": "avatars",
+    "commit": "b87bbcf121d6076af1f9e1c1751ca3aa5b05d674",
+    "subject": "Outer layer: selectable zip jacket and mid-length coat (collar, open front edge, longer hem), put on automatically outdoors in cold or rain and off indoors; derived locally, chosen value packed into look tag m (older clients show the base top). Refs #2147",
+    "issues": [
+      2147
+    ]
+  },
+  {
+    "id": 1662,
+    "group": "avatars",
+    "commit": "4870502a86e49b7c05b42733e953e9d555b80dae",
+    "subject": "Changelog order for #2147. Refs #2147",
+    "issues": [
+      2147
+    ]
+  },
+  {
+    "id": 1661,
+    "group": "avatars",
+    "commit": "90b08ab5e6e31bda93cc15632cbd04760fe85e72",
+    "subject": "Carry pose by held category for remote avatars and the mirror image: two hands and a back-lean for boxes/gifts/plants, relaxed hanging arm for bags and fish, hug for plush toys (new 'plush' category: Pingping), binoculars up to the eyes, flashlight/spray can/harpoon/rod following the gaze pitch. Derived from hi and the look, no new wire field except the whitelisted category value. Refs #2144",
+    "issues": [
+      2144
+    ]
+  },
+  {
+    "id": 1660,
+    "group": "avatars",
+    "commit": "bd4fb2e7c1fb2943a0fc652d97b70c05b25c3719",
+    "subject": "Smooth other players on a jittery network: adaptive jitter buffer (delay floor GHOSTS.delay, mean + 2.5 deviations, cap 400 ms, slewed), cadence-timed snapshots, monotone Hermite curve with neighbour velocities, bounded decaying extrapolation (150 ms) that settles back on a real stop, blended curve changes, teleport on implausible horizontal speed as well as distance. Pure helper src/ghostinterp.js + GHOST_PLAYBACK tunables; hit tests keep reading the drawn figure. Refs #2139",
+    "issues": [
+      2139
+    ]
+  },
+  {
+    "id": 1659,
+    "group": "avatars",
+    "commit": "1d310ac382624d2acbef5d4b53f8ae7d5c476544",
+    "subject": "Avatar self shadow: the sun's ray is tested analytically in the figure's own shader against six capsules (head, torso, arms) and the cap peak / hat brim, dimming only the sun light (no shadow map, no new draw); outdoors in open sun only, eased. Refs #2143",
+    "issues": [
+      2143
+    ]
+  },
+  {
+    "id": 1658,
+    "group": "avatars",
+    "commit": "447977a8f57061d76586ac066e6baa604b2f0c7a",
+    "subject": "Jump pose for remote avatars and the mirror image: crouch before take-off (from the delayed snapshots), legs tucked up / stretched down, arms out, flailing arms after a long fall, hips that compress by fall height on landing; small camera dip after ordinary jumps. Derived from vy and ground height, no wire field. Refs #2140",
+    "issues": [
+      2140
+    ]
+  },
+  {
+    "id": 1657,
+    "group": "avatars",
+    "commit": "569c0a8fafc1cffddb174af2cbeb60286c8a4465",
+    "subject": "Changelog order for #2140. Refs #2140",
+    "issues": [
+      2140
+    ]
+  },
+  {
+    "id": 1656,
+    "group": "squirrels",
+    "commit": "8a89f610be761e5baf9ae7eb7a98c4ce1c881b5b",
+    "subject": "Let the squirrels climb the trees' real trunks and limbs: a loose spiral up the leaning stem with the belly to the drawn bark, out along a main limb to perch, runs and hops between limbs, jumps only between branch points within 2.6 m (crown or neighbour), head first down; crown sway out on a limb; new limb state goes over the wire as up. Refs #2132",
+    "issues": [
+      2132
+    ]
+  },
+  {
+    "id": 1655,
+    "group": "trees",
+    "commit": "48c80e0e6b590f0824f370974f11fe8cccccc1a7",
+    "subject": "Fade leaf cards seen edge-on up close, so near tree crowns no longer show long smeared streaks; shared, LOD and wind leaf materials only (shadows, wind, LOD, seasons, draws unchanged). Refs #2133",
+    "issues": [
+      2133
+    ]
+  },
+  {
+    "id": 1654,
+    "group": "trees",
+    "commit": "184b4fa73163e01ff3000867311904a13f3490dc",
+    "subject": "Give the site's trees species-specific forms: broad round maples, domed limes, irregular leaning oaks and narrow birches with hanging lobes, branch orders through the crown (drooping on birches, thicker limbs on the far trunk in winter), and per-tree turn, lean and size spread; same instanced batches, LOD, seasons and wind; skeleton helper for climbing. Refs #2131",
+    "issues": [
+      2131
+    ]
+  },
+  {
+    "id": 1653,
+    "group": "birds",
+    "commit": "6c03c9ad200a10fdd96bda3900f32a9a3d3c66e1",
+    "subject": "Birds come alive: sparrow-like flocks with round turns and bounding flight land on real perches (tree crowns, walkable roof edges, pergola beams, the park bridge's handrails, courtyard gravel/lawn and the park glade), hop and peck on the ground and flush away from the eye and outdoor cats; the low gulls glide down now and then to stand on roof tops and the river banks. Pure seeded logic in src/birdflock.js (tools/birdflocktest.mjs); the sparrows share the gulls' shader material (explicit-pose instances), +1 draw, no new program. Refs #2129",
+    "issues": [
+      2129
+    ]
+  },
+  {
+    "id": 1652,
+    "group": "fish",
+    "commit": "ef43316d16f16196f9ee826325713866b7641b47",
+    "subject": "Let the river fish swim in loose schools that turn together, stand still in the lee of stones and lily pads, and now and then take something at the surface with rings seen from the bridge. Refs #2130",
+    "issues": [
+      2130
+    ]
+  },
+  {
+    "id": 1651,
+    "group": "squirrels",
+    "commit": "e5784ceb6b0141283ea179fe691aed2c7d4f7c12",
+    "subject": "Give the squirrels a fluffier tail with an S-wave that balances hops and leaps, eating with the front paws, seasonal caching (bury in autumn, dig up in winter) and jerky scanning stops; derived locally, no new sync field. Refs #2128",
+    "issues": [
+      2128
+    ]
+  },
+  {
+    "id": 1650,
+    "group": "cats",
+    "commit": "6bbfb28287e2dc234abcdfea9a414d62ac8d5197",
+    "subject": "Living cats: coat shader, tail motion, ears, grooming, stretching, low stalk and tail round the paws. Refs #2125",
+    "issues": [
+      2125
+    ]
+  },
+  {
+    "id": 1649,
+    "group": "weather",
+    "commit": "0b2eb36bf2ebed1f7f1af25509dd06e6e1bdedc0",
+    "subject": "Add a thin snow cap on narrow upward faces in the snow months. Refs #2123",
+    "issues": [
+      2123
+    ]
+  },
+  {
+    "id": 1648,
+    "group": "ducks",
+    "commit": "1f71fe84802961ddf8a0fee28860ba084ad5651d",
+    "subject": "Give the river mallards swim strokes with a head bob, a faint V wake, dabbling, preening, shaking and a short take-off when rushed. Refs #2126",
+    "issues": [
+      2126
+    ]
+  },
+  {
+    "id": 1647,
+    "group": "ponies",
+    "commit": "09d773af91396f626dfed510fbca122b9fcc2abb",
+    "subject": "Give the ponies secondary motion: wind in mane and tail (siteWind), weight shift with a resting hind leg, chewing, independent ears, summer fly twitches and tail swats, and slow grazing steps; the rug follows the body roll. Refs #2127",
+    "issues": [
+      2127
+    ]
+  },
+  {
+    "id": 1645,
+    "group": "weather",
+    "commit": "e15142537f9729c988b9d90385faae90f23da4ab",
+    "subject": "Give dawn and dusk more colour depth: pink-violet layer above the warm horizon, deeper zenith, a bright halo round the low sun (also in the haze) and cloud edges lit from below; day and night unchanged. Refs #2124",
+    "issues": [
+      2124
+    ]
+  },
+  {
+    "id": 1643,
+    "group": "weather",
+    "commit": "e30ed6f0dbbc173828e70920b6a2a430ea95cdaf",
+    "subject": "Rain draws small expanding rings in the puddles and a faint splash glitter on the wet ground, desktop only. Refs #2119",
+    "issues": [
+      2119
+    ]
+  },
+  {
+    "id": 1641,
+    "group": "weather",
+    "commit": "b525c700c9db557f42378e03ccdf6c901718d971",
+    "subject": "Drive the wind from the real weather: Open-Meteo 10 m wind historically and in the forecast, a seeded seasonal draw beyond. Refs #2117",
+    "issues": [
+      2117
+    ]
+  },
+  {
+    "id": 1640,
+    "group": "avatars",
+    "commit": "a859a1c67693fc4b4ab12f6046008769daddc1c4",
+    "subject": "Add optional, discreet skin variation to the avatars: freckles, a few birthmarks and a slightly uneven tone, chosen in the mirror settings. Refs #2111",
+    "issues": [
+      2111
+    ]
+  },
+  {
+    "id": 1639,
+    "group": "avatars",
+    "commit": "2fc1a5bc803f9f40687a2dbc81a9baf962fc7b2f",
+    "subject": "Outdoor wind stirs avatars' long hair, bun and sweater hem with a soft, irregular flutter downwind (#2101's site wind on #2014's springs); still indoors. Refs #2110",
+    "issues": [
+      2110
+    ]
+  },
+  {
+    "id": 1638,
+    "group": "avatars",
+    "commit": "581233d4bb562ffbe8af6808908ccbc4539931a8",
+    "subject": "Avatars breathe visibly: chest, belly and shoulders rise and fall on #2037's rhythm, deeper and faster right after running, calming over a few seconds. Refs #2108",
+    "issues": [
+      2108
+    ]
+  },
+  {
+    "id": 1637,
+    "group": "avatars",
+    "commit": "568098abc19cb8df3b174721d6912ff72d1b9675",
+    "subject": "Give avatar garments discreet seams, ribbed cuffs and collars, stitched hems, a waistband with belt loops and pockets. Refs #2107",
+    "issues": [
+      2107
+    ]
+  },
+  {
+    "id": 1636,
+    "group": "avatars",
+    "commit": "c1309fa319e34dace2e9a61ca71ad55dae556692",
+    "subject": "Head and gaze lead into turns, torso follows, slight inward lean in fast curves, head steadied against running bounce. Refs #2109",
+    "issues": [
+      2109
+    ]
+  },
+  {
+    "id": 1635,
+    "group": "trees",
+    "commit": "9113aa3a517a0e78c03d4f282fb8c8ee84ac469b",
+    "subject": "Fallen autumn leaves on lawns, paths and kerbs, denser under trees and growing towards late autumn. Refs #2105",
+    "issues": [
+      2105
+    ]
+  },
+  {
+    "id": 1634,
+    "group": "avatars",
+    "commit": "af250a991a786c2458fa8a525d6290f97db68644",
+    "subject": "Give avatar hands nails, joint creases, knuckles, rounded tips, a softer palm and gripping tendons. Refs #2106",
+    "issues": [
+      2106
+    ]
+  },
+  {
+    "id": 1631,
+    "group": "weather",
+    "commit": "70131cb8a10ac6ce9c84ca1216cba11e0d885f83",
+    "subject": "Let soft cloud shadows drift with the wind over ground, roofs and facades under a partly cloudy sky. Refs #2102",
+    "issues": [
+      2102
+    ]
+  },
+  {
+    "id": 1630,
+    "group": "trees",
+    "commit": "314c2d93e6474c37a4d7fa2a99369c1b3385a33d",
+    "subject": "Sway site trees, shrubs and reeds softly in the weather's wind (vertex shader, matching shadows). Refs #2101",
+    "issues": [
+      2101
+    ]
+  },
+  {
+    "id": 1629,
+    "group": "weather",
+    "commit": "0f68a41416fcedd36d23b2c61698aa34f57cb92e",
+    "subject": "Wet ground in and after rain: darker, glossier surfaces and shallow sky-coloured puddles. Refs #2099",
+    "issues": [
+      2099
+    ]
+  },
+  {
+    "id": 1628,
+    "group": "weather",
+    "commit": "c54c3b6e081d176bfa11616a443e74287e53ee9c",
+    "subject": "Give the distance fog an aerial perspective: bluer mid-distance haze, warm towards the sun, denser under rain clouds. Refs #2100",
+    "issues": [
+      2100
+    ]
+  },
+  {
+    "id": 1624,
+    "group": "trees",
+    "commit": "b1c509f51bdd2aabd3a9339d4f238ac022094a74",
+    "subject": "Give clipped hedges visible leaf clumps, darker interior near the ground and a slightly lighter top. Refs #2094",
+    "issues": [
+      2094
+    ]
+  },
+  {
+    "id": 1615,
+    "group": "avatars",
+    "commit": "5972b48c3f80a2df70c245ecd0f2b143a254c2af",
+    "subject": "Verifiera verklig divansnörning, riggbevarande och kostnad (Refs #2084)",
+    "issues": [
+      2084
+    ]
+  },
+  {
+    "id": 1614,
+    "group": "trees",
+    "commit": "fa04a0ef0b1163d23832efe8a6a7b97bad07f3ac",
+    "subject": "Add subtle RGB detail to the existing leaf atlas. Refs #2085",
+    "issues": [
+      2085
+    ]
+  },
+  {
+    "id": 1611,
+    "group": "trees",
+    "commit": "99fc1e1cbcb9dcc9e8857a56add9fe66281853e3",
+    "subject": "Add restrained bark and birch surface relief. Refs #2081",
+    "issues": [
+      2081
+    ]
+  },
+  {
+    "id": 1599,
+    "group": "kitchen",
+    "commit": "212d64f5632ecd8031ceb26452ec270ef6917b31",
+    "subject": "Dokumentera matchade kakelytor och texturkostnad (Refs #2070)",
+    "issues": [
+      2070
+    ]
+  },
+  {
+    "id": 1598,
+    "group": "avatars",
+    "commit": "7c9f8e8ef796c32505ecf9eccab056510e6cf8e2",
+    "subject": "Avatarprofil: matchade huvudformer, skägg och budgetbevis (Refs #2066)",
+    "issues": [
+      2066
+    ]
+  },
+  {
+    "id": 1597,
+    "group": "avatars",
+    "commit": "bbd3f79a90c3217a6b84e934b4fb96593966a29a",
+    "subject": "Avatarhud: fin tät struktur med släta ögonlock och läppar (Refs #2067)",
+    "issues": [
+      2067
+    ]
+  },
+  {
+    "id": 1596,
+    "group": "avatars",
+    "commit": "27af1859fc84b1f2011fa3cb245aaf6a8e4a4c80",
+    "subject": "Avatar: färgad smal glans i mörkt hår utan grå band (Refs #2068)",
+    "issues": [
+      2068
+    ]
+  },
+  {
+    "id": 1595,
+    "group": "avatars",
+    "commit": "e347566c8477c17b163ee64eae21075273f5dd85",
+    "subject": "Avatar: rundade läppar med fylligare underläpp och näsränna (Refs #2065)",
+    "issues": [
+      2065
+    ]
+  },
+  {
+    "id": 1594,
+    "group": "avatars",
+    "commit": "fbdba46b7aed473f0fcf4aa634e2523af2e1f889",
+    "subject": "Avatarögon: sänk globen i ögonhålan och bevara tillbehörens läge (Refs #2063)",
+    "issues": [
+      2063
+    ]
+  },
+  {
+    "id": 1593,
+    "group": "avatars",
+    "commit": "f89fc1919ffa13a1d4fcfbf0376efb45fe2582d2",
+    "subject": "Avatarögon: varm ögonvita, tårkarunkel och iris under virtuell hornhinna (Refs #2064)",
+    "issues": [
+      2064
+    ]
+  },
+  {
+    "id": 1592,
+    "group": "avatars",
+    "commit": "b78e0b64cdfb2e871f506e9a0d8ad411db603dd5",
+    "subject": "Skäggets polisong möter hårfästets polisong: resultatbilder, test, dokumentation och ändringslogg (Fixes #2061)",
+    "issues": [
+      2061
+    ]
+  },
+  {
+    "id": 1591,
+    "group": "avatars",
+    "commit": "37f40b659b7373b1d215128a4ca1a3d7dc27bc1f",
+    "subject": "Avatarhuvud: kort hår i lager och tofsar med ojämn nacke och bena, knut av virade slingor (Refs #2055)",
+    "issues": [
+      2055
+    ]
+  },
+  {
+    "id": 1589,
+    "group": "avatars",
+    "commit": "71457f3ca2d0fcdc98642816bdb17ef74623ae98",
+    "subject": "Puss-posen: pussens vikt tonas mjukt ut mot näsan i stället för ett hårt snitt, inga trasiga trianglar vid näsroten (Refs #2058)",
+    "issues": [
+      2058
+    ]
+  },
+  {
+    "id": 1588,
+    "group": "avatars",
+    "commit": "99565acd7f8aa4b8c5bb701422b1156f61bd6a44",
+    "subject": "Avatarhuvud: lockigt hår som lockvolymer i stället för rör – lockar, fina lockstrån, resultatbilder, test, dokumentation och ändringslogg (Refs #2054)",
+    "issues": [
+      2054
+    ]
+  },
+  {
+    "id": 1587,
+    "group": "avatars",
+    "commit": "b296b645fe218835f68a589b7a520d87d724d86f",
+    "subject": "Avatarhuvud: långt hår i slingor – axelstopp, framslingor synliga under mjukt hårfäste, test, dokumentation och ändringslogg (Refs #2053)",
+    "issues": [
+      2053
+    ]
+  },
+  {
+    "id": 1586,
+    "group": "avatars",
+    "commit": "bbb6a240c44f8f8b7143e7391646d800374454bd",
+    "subject": "Avatarhuvud: skägg och mustasch med mjuk kant och strånas riktning – resultatbilder, test, dokumentation och ändringslogg (Refs #2051)",
+    "issues": [
+      2051
+    ]
+  },
+  {
+    "id": 1585,
+    "group": "avatars",
+    "commit": "e3d1358d6dbf3f6bd2830e8a3937b555f9d3c6a2",
+    "subject": "Avatarhuvud: näsans formvarianter – resultatbilder, test, dokumentation och ändringslogg (Refs #2049)",
+    "issues": [
+      2049
+    ]
+  },
+  {
+    "id": 1584,
+    "group": "avatars",
+    "commit": "02f82731ee108dec04929ea84481b93250ae072a",
+    "subject": "Hår: billigare strångriktning (tabell, ett steg) och glanslober, svagare glans på bryn (WIP) (Refs #2052)",
+    "issues": [
+      2052
+    ]
+  },
+  {
+    "id": 1583,
+    "group": "avatars",
+    "commit": "4771179d72fa396e6d78b14f2c2bdb02f635d8ee",
+    "subject": "Avatarhuvud: näsa – resultatbilder, test, dokumentation och ändringslogg (Refs #2048)",
+    "issues": [
+      2048
+    ]
+  },
+  {
+    "id": 1582,
+    "group": "avatars",
+    "commit": "79fa4c1e8a423ea6e2028c47aaeb2fef457bd64e",
+    "subject": "Avatarhuvud: mjukt hårfäste – resultatbilder, dokumentation och ändringslogg (Refs #2050)",
+    "issues": [
+      2050
+    ]
+  },
+  {
+    "id": 1581,
+    "group": "avatars",
+    "commit": "96ae077dc0c3af29788036fabca695421356564b",
+    "subject": "Avatarhuvud: öron med ytterkant, veck, öronmussla och örsnibb, vinklade ut från huvudet – resultatbilder, test, dokumentation och ändringslogg (Refs #2047)",
+    "issues": [
+      2047
+    ]
+  },
+  {
+    "id": 1580,
+    "group": "avatars",
+    "commit": "899a5a93be2231ac8a6d56186a0dcf7e448b7562",
+    "subject": "Ögon: dokumentation, resultatbilder och ändringslogg (Refs #2045)",
+    "issues": [
+      2045
+    ]
+  },
+  {
+    "id": 1579,
+    "group": "avatars",
+    "commit": "1fe1aba118b5440b513510c0360d720388de501b",
+    "subject": "Avatarhuvud: skulpterat ansikte – resultatbilder, test, dokumentation och ändringslogg (Refs #2044)",
+    "issues": [
+      2044
+    ]
+  },
+  {
+    "id": 1578,
+    "group": "avatars",
+    "commit": "b8ece3c8897b0e74dfc97f7d60693b204e7e2d92",
+    "subject": "Avatarhuvud: bryn av hårstrån – resultatbilder, dokumentation och ändringslogg (Refs #2046)",
+    "issues": [
+      2046
+    ]
+  },
+  {
+    "id": 1577,
+    "group": "avatars",
+    "commit": "53f1d4eb35c5b5c565263ba766b4d7a82a2aebbd",
+    "subject": "Avatarhuvud: mjuk kontur i kind, käke och haka, rundad hakundersida och formad hals (WIP) (Refs #2043)",
+    "issues": [
+      2043
+    ]
+  },
+  {
+    "id": 1576,
+    "group": "avatars",
+    "commit": "b5cb5c9501ca528122948dc7e5789ff7d0956411",
+    "subject": "Tygveck: resultatbilder på integrerad revision, dokumentation och ändringslogg (Refs #2034)",
+    "issues": [
+      2034
+    ]
+  },
+  {
+    "id": 1575,
+    "group": "avatars",
+    "commit": "54e68eb760494fdb7faa21f13d9a8fe98b35f326",
+    "subject": "Avatarer: flyghår och mjuk motljuskant i hår och skägg (Refs #2040)",
+    "issues": [
+      2040
+    ]
+  },
+  {
+    "id": 1574,
+    "group": "avatars",
+    "commit": "1bf0693cff6575a2833245db847ad573f165fc80",
+    "subject": "Helskägg med mustasch: oval munöppning som följer läpparna och fjädrar ner mot huden (Refs #2041)",
+    "issues": [
+      2041
+    ]
+  },
+  {
+    "id": 1573,
+    "group": "avatars",
+    "commit": "ac054d513194f39eef769191a06fd59f3c43b9dd",
+    "subject": "Avatarer i gatlampsljus: varmt ljus under lit gatlampa/pollare på natten, mörk natt mellan lamporna (Refs #2039)",
+    "issues": [
+      2039
+    ]
+  },
+  {
+    "id": 1572,
+    "group": "avatars",
+    "commit": "14ea93ab07d52d441651927aaaa5cb4d5be22938",
+    "subject": "Avslappnade händer och samtalsgester för avatarer (Refs #2038)",
+    "issues": [
+      2038
+    ]
+  },
+  {
+    "id": 1571,
+    "group": "avatars",
+    "commit": "0f5cbb53f52d08a221bfe78e7ea3bcd81bc31c4b",
+    "subject": "Levande vila för stillastående avatarer: viktskifte, blickar och armgester (Refs #2035)",
+    "issues": [
+      2035
+    ]
+  },
+  {
+    "id": 1570,
+    "group": "avatars",
+    "commit": "a0a5b562a5dec528904128c92de7954296c88a5d",
+    "subject": "Andedräkt i kyla, rodnad och svettglans: testsida, resultatbilder, dokumentation och ändringslogg (Refs #2037)",
+    "issues": [
+      2037
+    ]
+  },
+  {
+    "id": 1568,
+    "group": "avatars",
+    "commit": "7fa434c229e78684f16a5b05adf05657b1d3812a",
+    "subject": "Avatarögon: glansreflex följer solen, matt pupill, resultatbilder och dokumentation (Refs #2033)",
+    "issues": [
+      2033
+    ]
+  },
+  {
+    "id": 1567,
+    "group": "avatars",
+    "commit": "92fe770d3be8e4c67d7783c78a7116fd2377c22f",
+    "subject": "Avatarmimik: tydligare grimas, testsida, resultatbilder och dokumentation (Refs #2031)",
+    "issues": [
+      2031
+    ]
+  },
+  {
+    "id": 1566,
+    "group": "avatars",
+    "commit": "1a10323a02abc70b20cb84b8a358e1d5edaa3237",
+    "subject": "Levande hud på avatarer: porer nära, rodnad och ljus genom öron i motljus (Refs #2032)",
+    "issues": [
+      2032
+    ]
+  },
+  {
+    "id": 1561,
+    "group": "avatars",
+    "commit": "d747e54db3cdc7128dcb3b2bb9021d1c41558941",
+    "subject": "Axlar och armhålor: armstyrd korrigering i stället för statiska hjälpvikter (Refs #2022)",
+    "issues": [
+      2022
+    ]
+  },
+  {
+    "id": 1558,
+    "group": "avatars",
+    "commit": "f28b40870b31725d9d3c0d5efc2bd0440c894caf",
+    "subject": "Refs #2017 Avatarernas ljus följer rummets ljusnivå (en uniform, ingen ny draw call)",
+    "issues": [
+      2017
+    ]
+  },
+  {
+    "id": 1557,
+    "group": "avatars",
+    "commit": "903d313d75ecfaad4a174c665bec886c1392ab03",
+    "subject": "Refs #2021 Hattens brätte ansluter till kronan utan glapp där håret syntes; hår under huvudbonader kontrollerat i alla vyer",
+    "issues": [
+      2021
+    ]
+  },
+  {
+    "id": 1556,
+    "group": "avatars",
+    "commit": "5b33ecfbb4968085a7f82d7e2c021e79bb16bd1b",
+    "subject": "Skägg med mustasch: munöppningen följer läpparna, ingen mörk lapp (Refs #2020)",
+    "issues": [
+      2020
+    ]
+  },
+  {
+    "id": 1555,
+    "group": "avatars",
+    "commit": "ca515097cdbd5495c5ed40ed8461a75926524670",
+    "subject": "Tröjfållen står fri från byxlinningen och långt hår ligger utanpå tröjryggen (Refs #2019)",
+    "issues": [
+      2019
+    ]
+  },
+  {
+    "id": 1554,
+    "group": "avatars",
+    "commit": "7e3c398ba029b5fbb5e6dd3f554c445fe6504dfc",
+    "subject": "Refs #2016 Fingrarna sluter sig runt hållna föremål (cylinder-, pistol-, nyp- och platt grepp)",
+    "issues": [
+      2016
+    ]
+  },
+  {
+    "id": 1553,
+    "group": "avatars",
+    "commit": "73f1e8901c9e035a6896c39f4365de62ce7ed373",
+    "subject": "Refs #2015 Fötterna placeras på trappsteg och lutning (fot-IK mot golvhöjd, höften sänks, foten lutas)",
+    "issues": [
+      2015
+    ]
+  },
+  {
+    "id": 1552,
+    "group": "avatars",
+    "commit": "6f1e293bb90cae04bef75a165b29bef5e6805e91",
+    "subject": "Avatarer blir blöta i regn och snöiga i snöfall (Refs #2018)",
+    "issues": [
+      2018
+    ]
+  },
+  {
+    "id": 1551,
+    "group": "avatars",
+    "commit": "8f25755b57371d2ca02f3c4b76c820a65b192969",
+    "subject": "Ta bort före-bilder för axlarna, justera ändringsloggen (Fixes #2013)",
+    "issues": [
+      2013
+    ]
+  },
+  {
+    "id": 1550,
+    "group": "avatars",
+    "commit": "48373fc137df8e117e6d774a3fd29866e82907c2",
+    "subject": "Refs #2012 Finare hår- och skäggformer utan långhårsskarv",
+    "issues": [
+      2012
+    ]
+  },
+  {
+    "id": 1549,
+    "group": "avatars",
+    "commit": "0cba5a00b3fdfd485028f557f45a92e2b6acfc10",
+    "subject": "Refs #2014 Sekundärrörelse i långt hår, knut och tröjfåll",
+    "issues": [
+      2014
+    ]
+  },
+  {
+    "id": 1548,
+    "group": "avatars",
+    "commit": "a19fa7531645370c9c225d8589fa7a60356b70ac",
+    "subject": "Refs #2010 Mjuk kontaktskugga under andra spelare (en instansierad draw call)",
+    "issues": [
+      2010
+    ]
+  },
+  {
+    "id": 1547,
+    "group": "avatars",
+    "commit": "1c348ad4b2d4a3d52eafdb3ec0b90fa399c97ffb",
+    "subject": "Refs #2011 Blinkning och levande blick mot spelare i närheten",
+    "issues": [
+      2011
+    ]
+  },
+  {
+    "id": 1546,
+    "group": "avatars",
+    "commit": "c370d766f6f64653ab0b267f9f016ff2154546b5",
+    "subject": "Refs #2004 Lägg kontaktmedvetna stopp och avvägda posemål",
+    "issues": [
+      2004
+    ]
+  },
+  {
+    "id": 1545,
+    "group": "avatars",
+    "commit": "77ad37097f132137765b6fe09dd95e5c4e3a6fe5",
+    "subject": "Improve avatar facial anatomy and directional hair (Refs #2002)",
+    "issues": [
+      2002
+    ]
+  },
+  {
+    "id": 1542,
+    "group": "avatars",
+    "commit": "5a2f40370c0e6eb5078f9e7ca97e3ace2f2e28e6",
+    "subject": "Avatar gait #2006: sideways is a carioca (feet cross, planted at ground speed), cadence <= 1.35x forward; tests, evidence, changelog (Refs #2006)",
+    "issues": [
+      2006
+    ]
+  },
+  {
+    "id": 1541,
+    "group": "avatars",
+    "commit": "17ff832e2b8003d1381abfd7f548ea07ca98cff8",
+    "subject": "Ghost name/score tag keeps its raised position when the life row is shown (Fixes #2007)",
+    "issues": [
+      2007
+    ]
+  },
+  {
+    "id": 1540,
+    "group": "avatars",
+    "commit": "dfad84d604b060c49c284dc3aae42a6a4942cc00",
+    "subject": "Avatar gait #2003: planted stance feet, speed-adapted cadence, foot angle, footfall sounds in step; tests, evidence, changelog (Refs #2003)",
+    "issues": [
+      2003
+    ]
+  },
+  {
+    "id": 1536,
+    "group": "avatars",
+    "commit": "3dfa46268d4cadd5b7ed3bc67ad95a7f53bf9263",
+    "subject": "Refine continuous avatar facial skin and material response (Fixes #1995)",
+    "issues": [
+      1995
+    ]
+  },
+  {
+    "id": 1533,
+    "group": "avatars",
+    "commit": "878236d835954dd9395ab5d69c7a9dfe0284737b",
+    "subject": "Simplify mirror customization and preview the actual avatar (Fixes #1994)",
+    "issues": [
+      1994
+    ]
+  },
+  {
+    "id": 1525,
+    "group": "cats",
+    "commit": "da739a01a32f48d1e4a8951511f31c4752abbb63",
+    "subject": "Fix binder portraits cropped by the world pixel ratio; cache key revision (Fixes #1984)",
+    "issues": [
+      1984
+    ]
+  },
+  {
+    "id": 1521,
+    "group": "trees",
+    "commit": "af7da30696fd737fd1c1f99c715657d8d0775bfa",
+    "subject": "Distance LOD with dithered pixel-fade crossfade: shared src/lod.js helper, trees use it (Refs #1958)",
+    "issues": [
+      1958
+    ]
+  },
+  {
+    "id": 1512,
+    "group": "kitchen",
+    "commit": "1405058238622459dd952f051e45102fd4f136a0",
+    "subject": "Shaker frame as one chamfered ring: no bright upward ledge per drawer (checkpoint, Refs #1973)",
+    "issues": [
+      1973
+    ]
+  },
+  {
+    "id": 1503,
+    "group": "kitchen",
+    "commit": "27c217ba89c96ffd1e5291aea9fea3c2389c24d2",
+    "subject": "Architectural edges multiply the drawn surface and fade with distance: soft shadow joints instead of drawn lines (Refs #1957)",
+    "issues": [
+      1957
+    ]
+  },
+  {
+    "id": 1485,
+    "group": "fish",
+    "commit": "a85a699b5ba556dc285843208b4f82081b111981",
+    "subject": "Refine shark surfaces and shared fin consumers within bounded costs (Refs #1926)",
+    "issues": [
+      1926
+    ]
+  },
+  {
+    "id": 1483,
+    "group": "birds",
+    "commit": "a25c85eca0f3e510890db904cbaa759a7902e296",
+    "subject": "Give gulls readable bodies, swept wings and exclusive near/far flight batches (Refs #1924)",
+    "issues": [
+      1924
+    ]
+  },
+  {
+    "id": 1482,
+    "group": "fish",
+    "commit": "29e22c84eec92c111dad59ca3aace36ad13f974e",
+    "subject": "Refine six fish species in live and caught views (Refs #1922)",
+    "issues": [
+      1922
+    ]
+  },
+  {
+    "id": 1480,
+    "group": "squirrels",
+    "commit": "aa9fe25a50f10a405b07bdfe4e28a9dd2aab889b",
+    "subject": "Refine squirrel body and continuous tail surfaces (Refs #1920)",
+    "issues": [
+      1920
+    ]
+  },
+  {
+    "id": 1479,
+    "group": "ducks",
+    "commit": "a963287ffaacad8fa405f91c086752255aefcb2d",
+    "subject": "Refine mallard profiles, folded wings and webbed feet; Refs #1921",
+    "issues": [
+      1921
+    ]
+  },
+  {
+    "id": 1478,
+    "group": "ponies",
+    "commit": "3d9d7f289fab3f0f434566175af6508951410b23",
+    "subject": "Refine pony anatomy and flowing hair surfaces; Refs #1919",
+    "issues": [
+      1919
+    ]
+  },
+  {
+    "id": 1477,
+    "group": "cats",
+    "commit": "8e34412352e69fe0b9d9f7dac31f3123ffd210de",
+    "subject": "Refine cat anatomy and continuous coat surfaces; Refs #1918",
+    "issues": [
+      1918
+    ]
+  },
+  {
+    "id": 1475,
+    "group": "avatars",
+    "commit": "267d51ff62a66ab96ea9f652c0f1bb254be9eab9",
+    "subject": "Refine connected avatar anatomy and surfaces (Refs #1916)",
+    "issues": [
+      1916
+    ]
+  },
+  {
+    "id": 1473,
+    "group": "cats",
+    "commit": "5afd028c80ba60c657d8bf1857460a4f3ea774ac",
+    "subject": "Restore cat shapes and breed identity; Refs #1910",
+    "issues": [
+      1910
+    ]
+  },
+  {
+    "id": 1470,
+    "group": "fish",
+    "commit": "e76603a7f42c255b90020799ccfdd4258854d1ad",
+    "subject": "Restore fish proportions and anatomical shark exports (Refs #1911)",
+    "issues": [
+      1911
+    ]
+  },
+  {
+    "id": 1469,
+    "group": "ducks",
+    "commit": "2482f29e1e624e9948b6055e4efdc1a0328569e0",
+    "subject": "Restore rounded mallards and preserve bill contact (Refs #1909)",
+    "issues": [
+      1909
+    ]
+  },
+  {
+    "id": 1468,
+    "group": "avatars",
+    "commit": "e7148fe6a33acba703022897daad0f9285e09034",
+    "subject": "Restore connected avatar rig and supported appearances; Refs #1907",
+    "issues": [
+      1907
+    ]
+  },
+  {
+    "id": 1467,
+    "group": "squirrels",
+    "commit": "cf5621eb2099e8688e1551f5ce4fa08ab9b908f7",
+    "subject": "Restore rounded squirrel anatomy and individual coats (Refs #1908)",
+    "issues": [
+      1908
+    ]
+  },
+  {
+    "id": 1466,
+    "group": "ponies",
+    "commit": "bc6f65f6c86083740b04df597f272cf186c5cb62",
+    "subject": "Restore coherent photo-based pony anatomy and correct skeletal binding; Refs #1906",
+    "issues": [
+      1906
+    ]
+  },
+  {
+    "id": 1464,
+    "group": "fish",
+    "commit": "747cab83b7dd71e3743fd1fa440e0c94958daa89",
+    "subject": "feat(riverfish,shark): migrate fish and shark geometries to GLB models (Fixes #1902)",
+    "issues": [
+      1902
+    ]
+  },
+  {
+    "id": 1461,
+    "group": "ponies",
+    "commit": "5c474ed23c73a7cb3ca3d908538b82a8b3115805",
+    "subject": "Ersätt blockiga ponnyer med riggad GLB (Fixes #1897)",
+    "issues": [
+      1897
+    ]
+  },
+  {
+    "id": 1460,
+    "group": "avatars",
+    "commit": "8de436719cc90ef2d98c4da0a52b1ee9ce5d9397",
+    "subject": "Ersätt proceduriella spelaravatarer med riggad GLB (Fixes #1899)",
+    "issues": [
+      1899
+    ]
+  },
+  {
+    "id": 1459,
+    "group": "cats",
+    "commit": "8f61ee0d13ce778724151c5b4f7df71fb5eaa945",
+    "subject": "Åtgärda kattbilder och mötesfoton i kattpärmen (Fixes #1900)",
+    "issues": [
+      1900
+    ]
+  },
+  {
+    "id": 1458,
+    "group": "ducks",
+    "commit": "dff3eb027c18b74c6a896edf935506936391bf26",
+    "subject": "Ersätt proceduriella gräsänder med riggad GLB (Fixes #1896)",
+    "issues": [
+      1896
+    ]
+  },
+  {
+    "id": 1457,
+    "group": "squirrels",
+    "commit": "8bca1656cdcd3914bf497f197b25de1072d80614",
+    "subject": "Ersätt procedurgenererade ekorrar med riggad GLB (Fixes #1895)",
+    "issues": [
+      1895
+    ]
+  },
+  {
+    "id": 1456,
+    "group": "cats",
+    "commit": "8ac079807ce21738f4d013de693832a7b531e579",
+    "subject": "Migrera katter till riggad GLB med skelettanimering (Fixes #1894)",
+    "issues": [
+      1894
+    ]
+  }
+]

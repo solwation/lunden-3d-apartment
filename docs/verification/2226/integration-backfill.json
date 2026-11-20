@@ -1,0 +1,74 @@
+[
+  {
+    "id": 1722,
+    "issues": [
+      2205
+    ],
+    "group": null,
+    "commit": "2e3e2ec5b63a295d26565fe84695038475eecbc7",
+    "subject": "Add shallow roller and ceiling spray detail to painted surfaces (Refs #2205)"
+  },
+  {
+    "id": 1723,
+    "issues": [
+      2206
+    ],
+    "group": null,
+    "commit": "25bb8953ad6c3f8a229d4aa25afa45162dd01d58",
+    "subject": "Add bounded dust motes in low window sunlight (Refs #2206)"
+  },
+  {
+    "id": 1724,
+    "issues": [
+      2209
+    ],
+    "group": "head-hits",
+    "commit": "962aa3f7a925167eb6078d1206b78f938c80f8fa",
+    "subject": "Keep legacy rifle head width independent of body build (Refs #2209)"
+  },
+  {
+    "id": 1725,
+    "issues": [
+      2199
+    ],
+    "group": null,
+    "commit": "03a3746e5bc5b8c2a69324be302ad25e6e111204",
+    "subject": "TV screens that are on and the playhouse SPEL neon throw coloured light into the room: each TV is one more lampwash entry whose colour follows the picture's average (sampled 10/s, eased, lobe along the screen), SPEL gets static coloured neon/LED terms in the clubhouse shader; no real light, no extra draw. Refs #2199"
+  },
+  {
+    "id": 1726,
+    "issues": [
+      2208
+    ],
+    "group": "avatars",
+    "commit": "f691c2db351a6a9363fd4688b03a8fc813a79708",
+    "subject": "Keep planted soles on stair treads with inspected evidence (Refs #2208)"
+  },
+  {
+    "id": 1727,
+    "issues": [
+      2196
+    ],
+    "group": "birds",
+    "commit": "4d13c926b48d1d4028943b5515df456b6b9aac5b",
+    "subject": "Corvids all year: jackdaws, hooded crows and magpies on lawns, roofs and in trees (one instanced draw per species, striding/hopping gaits, calls through the shared voice cap, cats can stalk them). Refs #2196"
+  },
+  {
+    "id": 1728,
+    "issues": [
+      2183
+    ],
+    "group": null,
+    "commit": "1da6a3c94adf3115a0b5845bd87c9106f73db987",
+    "subject": "Stairwells get daylight and surface detail: each stair core (Hus A/B/C/L) bakes one extra per-vertex float of how much daylight from its own panes reaches it; by day the shader dims the lamp light deep in the core and lifts it near the glass under a hue-preserving soft shoulder (no blown whites), blended by DayCycle and overcast; a shared 64x64 world-space texture adds paint grain, a hand-height wear band and polished floor patches. No draw call, light, pass or program added; phones keep the plain material. Refs #2183"
+  },
+  {
+    "id": 1729,
+    "issues": [
+      2201
+    ],
+    "group": null,
+    "commit": "9e1c2ee7b5b41e271be6a8f962132d32631b3893",
+    "subject": "Parked cars come in several body types (small, estate, SUV, van beside the compact): one low-poly body warped per type with rigid wheel zones, hash-picked per car so placement and collision stay, three instanced batches per type, per-type far LOD and contact shadows. Refs #2201"
+  }
+]

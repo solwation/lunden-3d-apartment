@@ -30,27 +30,45 @@ export function markNew(entries, store) {
   return sorted.map((e) => ({ ...e, isNew: seenT > 0 && e.t > seenT }));
 }
 
+// Labels and 2–4-word descriptions are editorial data; unknown topics stay ordinary rows.
 const GROUP_LABELS = new Map([
-  ['head-hits', 'Förbättringar för huvudträffar.'],
-  ['nerf-improvements', 'Förbättringar för Nerf-skott.']
+  ['head-hits', { text: 'Förbättringar för huvudträffar.', always: true }],
+  ['nerf-improvements', { text: 'Förbättringar för Nerf-skott.', always: true }],
+  ['ducks', { text: 'Förbättrade ankor: utseende, läten och beteende' }],
+  ['cats', { text: 'Förbättrade katter: utseende och beteende' }],
+  ['squirrels', { text: 'Förbättrade ekorrar: utseende och rörelser' }],
+  ['ponies', { text: 'Förbättrade ponnyer: utseende, läten och beteende' }],
+  ['birds', { text: 'Förbättrade fåglar: utseende, läten och beteende' }],
+  ['fish', { text: 'Förbättrade fiskar: utseende och rörelser' }],
+  ['trees', { text: 'Förbättrade träd: löv, bark och rörelser' }],
+  ['weather', { text: 'Förbättrat väder: ljus, nederbörd och vind' }],
+  ['avatars', { text: 'Förbättrade figurer: utseende och rörelser' }],
+  ['kitchen', { text: 'Förbättrat kök: matlagning och inredning' }],
+  ['nerf', { text: 'Förbättrade Nerf-skott: sikte och träffar' }]
 ]);
 
 /** Presentation only: originals stay in the history/cache and are marked before grouping.
- * Input is in display order, so the first member supplies the latest id/date/publication time. */
+ * Input is in display order, so the first member supplies the latest id/date/publication time.
+ * A projected row is a valid input too: a lone summary survives later DOM/canvas projections. */
 export function summarizeChangelog(entries) {
-  const groups = new Map(), out = [];
+  const groups = new Map();
   for (const e of entries) {
-    const label = GROUP_LABELS.get(e.group);
-    if (!label) { out.push(e); continue; }
-    const previous = groups.get(e.group);
-    if (previous) previous.isNew ||= !!e.isNew;
-    else {
-      const summary = { ...e, text: label, isNew: !!e.isNew };
-      groups.set(e.group, summary);
-      out.push(summary);
-    }
+    if (!GROUP_LABELS.has(e.group)) continue;
+    if (!groups.has(e.group)) groups.set(e.group, []);
+    groups.get(e.group).push(e);
   }
-  return out;
+  const emitted = new Set();
+  return entries.flatMap((e) => {
+    const label = GROUP_LABELS.get(e.group), members = groups.get(e.group);
+    if (!label || (members.length === 1 && !label.always)) return [e];
+    if (emitted.has(e.group)) return [];
+    emitted.add(e.group);
+    const issues = [...new Set(members.flatMap(m => Array.isArray(m.issues) ? m.issues : [])
+      .filter(n => Number.isSafeInteger(n) && n > 0))].sort((a, b) => a - b);
+    const references = issues.length ? ` (${issues.map(n => `#${n}`).join(', ')})` : '';
+    return [{ ...e, text: label.text + references, ...(issues.length ? { issues } : {}),
+      isNew: members.some(m => !!m.isNew) }];
+  });
 }
 
 const KEY_CACHE = 'lunden.changelogCache'; // the last good answer (#655): the newest entries only, a few tens of kB

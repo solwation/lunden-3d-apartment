@@ -1,0 +1,35 @@
+ALL PASS
+PASS "Nytt" on 100 of 100 entries since seen=1
+PASS last seen id updated
+PASS seenT 250: ordered by t, only the later ones new (4* 7* 6 3)
+PASS old id key 7 migrates: only the late id 4 new (4* 7 6 3)
+PASS seen again: nothing new (4 7 6 3)
+PASS first visit: nothing new (4 7 6 3)
+PASS without t: file order, by id as before (7* 6* 4 3)
+PASS latest 100 selected after sorting by publication time, with correct New markers
+PASS full history and last-seen metadata retained
+PASS history with 0 changes displays all entries
+PASS history with 50 changes displays all entries
+PASS history with 100 changes displays all entries
+PASS action button "Läsa lappen"
+PASS note opens
+PASS no walking while reading
+PASS note closes
+PASS note is on the freezer door
+PASS freezer open, the note moved 0.38 m
+PASS freezer closed, the note back in place
+PASS a long list (10591 > 568 px)
+PASS ArrowDown: scrollTop 0 → 40
+PASS KeyS: scrollTop 40 → 80
+PASS PageDown: scrollTop 80 → 568
+PASS Space: scrollTop 568 → 1056
+PASS End: scrollTop 0 → 10023
+PASS ArrowUp: scrollTop 2000 → 1960
+PASS KeyW: scrollTop 2000 → 1960
+PASS PageUp: scrollTop 2000 → 1512
+PASS Shift+Space: scrollTop 2000 → 1512
+PASS Home: scrollTop 10023 → 0
+PASS the player does not move while scrolling
+PASS a held W ignored (scrollTop 300)
+PASS pressed again, W scrolls up and repeats (220)
+PASS E still closes it

@@ -1,0 +1,8 @@
+{
+  "src/changelog.js": "a2407bd681cfd743a0d8d4f6f4304069863939ff41c84447705442b641106079",
+  "data/changelog.json": "6b6cade164fb62cf71ba57c6e75dfdf648a2372e02bd9e95957af8ad71e6c2e4",
+  "tools/freezersummarytest.cjs": "f681aa27ae518f0693c2befa2541a21f1f34522e20f125dc29832800df0319d1",
+  "tools/changelogtest.cjs": "18681699d12f8fa9e352dca589b37d7e92472cde8662e6624d295d8e5be3c009",
+  "tools/freezernoteapp.cjs": "9ee0e4f9c3b85566430a4a4d6830522351fa659a25daf108f17dd66ece9e1bbd",
+  "tools/notetest.html": "4ef8b9c17f785c68e7cf052b954a7b7c2cb02523ef1a621f75b77a762b30a8bf"
+}

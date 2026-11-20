@@ -1,0 +1,1 @@
+Integration: 1728 current-main original rows retain id/date/text/t and existing groups; all 1728 original publication timestamps exactly unchanged. 149 worker metadata backfills + 8 verified recent original references; one new row id1730. Source-bound pure/browser evidence reused; no summary/mark/cache code altered during integration.

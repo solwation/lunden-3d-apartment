@@ -13,7 +13,7 @@ window.addEventListener('unhandledrejection', (e) => { out.textContent = `SOME F
 localStorage.setItem('lunden.changelogSeen', '1');
 const f = document.createElement('iframe');
 f.width = 900; f.height = 600;
-f.src = '../index.html';
+f.src = '../index.html?test=lazy';
 document.body.append(f);
 f.onload = async () => {
   const w = f.contentWindow, d = f.contentDocument;
@@ -63,6 +63,7 @@ f.onload = async () => {
   try {
     const history=Array.from({length:251},(_,i)=>({id:i+1,t:i+100,date:'2026-10-08',text:`change ${i+1}`}));
     history[0].t=1000; // lowest id was actually published last
+    w.localStorage.setItem(keys[0],'0'); // isolate synthetic ids from the real history's monotonic marker
     w.localStorage.setItem(keys[1],'300');
     const resp=(d)=>async()=>({ok:true,status:200,json:async()=>d,text:async()=>JSON.stringify(d)}); // like a real Response (#755: the loader checks ok)
     w.fetch=resp(history);
