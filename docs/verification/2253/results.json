@@ -1,0 +1,11 @@
+{
+  "nativeExit": 0,
+  "pass": 24,
+  "fail": 0,
+  "pageErrors": [],
+  "originalResetCancelAssertion": "PASS; real confirm dismissed, isolated target123/cats37/reset effects0 retained",
+  "sourceFrozenAndServedMainIndexMatch": true,
+  "reviewedNativeImage": "statspanel/touch.png, 844x390; native DOM component with controlled statistics; no apartment/WebGL",
+  "runs": "one actual statspanel native command; no historical, courtyard or rendering rerun",
+  "processes": "own browser exited and server8454 stopped"
+}

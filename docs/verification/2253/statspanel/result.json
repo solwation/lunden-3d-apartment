@@ -1,0 +1,48 @@
+{
+  "before": false,
+  "lines": [
+    "PASS genuine browser pointer lock acquired on the original mouse-start button",
+    "PASS Tab opens the original panel with free mouse and no pause-menu cover",
+    "PASS real mouse wheel scrolls long statistics without changing a focus action",
+    "PASS opening statistics releases an already-held automatic trigger",
+    "PASS keyboard End reaches the long panel contents",
+    "PASS keyboard Home returns to the top",
+    "PASS keyboard PageDown scrolls the focused panel",
+    "PASS panel keyboard causes no movement, shooting or focus action behind it",
+    "PASS Tab release closes a temporary panel and exposes explicit mouse return",
+    "PASS the return click reacquires real lock without shooting",
+    "PASS genuine close-button click works while Tab is still held",
+    "PASS pinned T panel allows Tab focus navigation rather than closing on keyup",
+    "PASS Shift-Tab returns keyboard focus to scrollable contents",
+    "PASS genuine original close-button click closes the pinned panel",
+    "PASS Enter on the focused return affordance reacquires genuine pointer lock",
+    "PASS T toggles its pinned panel closed with explicit return",
+    "PASS Escape closes statistics instead of controlling the game",
+    "PASS original touch statistics button opens an input-isolated panel",
+    "PASS genuine touch drag scrolls statistics without creating joystick input",
+    "PASS original touch close button resumes the existing touch mode",
+    "PASS native Touch child-button Enter activation preserves touch mode without mouse lock",
+    "PASS native Touch child-button Space activation preserves touch mode without mouse lock",
+    "PASS existing menu reset confirmation remains usable and cancellation preserves isolated statistics",
+    "PASS no native page errors"
+  ],
+  "failures": 0,
+  "errors": [],
+  "source": {
+    "main": "2c6d91bdc08426a0905a4eabeb9036b886d6fddc60506c2453e803c1f5f5a837",
+    "index": "a5e413154d2ca51d7bb4fb64cf44497026f83a89641eaaded9d7cc5d8f5c92ee",
+    "parts": {
+      "active": "176afcf3fb6a145fc4385b205ddaf390ff946ba3c977edd306f6cd25de5e57ec",
+      "start": "e98462f57f1b2fe47f53b63957efecc951d6bdec9c22bf53764ebd749c8b4971",
+      "arm": "eb5d72931b6d7b6ba5b5e2f756537d6a9ded5f2795a63282a7c36324a3902744",
+      "touchStart": "0a931c545e33b4a9b0422a26d697ffd34596f79f4b8e722e56eada11ada93565",
+      "error": "90d5fcefd29943b84df92fa21bd666149c1b6c1e2b896b53e68eff41ccb74bef",
+      "lock": "1860e6c294a47044afa18c765eea9d1c1fb036554387a5eec0d5332d445a8990",
+      "click": "6025ebbe03ce18940fa1eed0ee14607c794ec5235f3154e81755f50a3918d5cb",
+      "wheel": "735ca3a2e28d1d0382f1c0a219815034899dd466518ed93ab03a24893ea3160e",
+      "keyboard": "9d6ffb3a91129a0ae10b8b02d501232455bcf4ca9f4d779660107ae054180d86",
+      "stats": "798f20bebbe990c05ce251dad45e3a61af08c5609fff745db29d29e7e9cdc58a"
+    }
+  },
+  "scope": "Original DOM/CSS, genuine pointer lock/touch gestures, complete verbatim main blocks, real StatsPanel/Player/touch/statistics; controlled world/weapon collaborators, no apartment/WebGL/real visitor statistics"
+}

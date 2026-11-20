@@ -1,0 +1,13 @@
+{
+  "base": "9001212af04c40a3aeea78ec1b3bbe8cba6a484d",
+  "checks": [
+    "syntax passed",
+    "entire old script equals new script after removing the one controlled setup insertion",
+    "all existing input, reset dialog/cancel assertions and final result-writing code byte-identical",
+    "historical before extract SHA256 unchanged",
+    "actual added before=false guard skips welcome import when before=true"
+  ],
+  "historicalBeforeExtractSha256": "b941fa4a81d34a55d9633b806f3a2473441cbaf97dbf5a3f87f8904442c6fe22",
+  "pass": 5,
+  "fail": 0
+}

@@ -1,0 +1,19 @@
+{
+  "base": "9001212af04c40a3aeea78ec1b3bbe8cba6a484d",
+  "frozenUTC": "2026-11-20T17:09:05.726695+00:00",
+  "sha256": {
+    "tools/statspaneltest.cjs": "b42628403ed186ca9bfee8ef266947517567122c93d81c69af6e73376d0d870e",
+    "tools/mainfixture.cjs": "0359133b8f73576ffa7aa135e8242ceccdaa505809e2858ccbea10e588523fbd",
+    "src/main.js": "2c6d91bdc08426a0905a4eabeb9036b886d6fddc60506c2453e803c1f5f5a837",
+    "src/welcome.js": "8235426f370a02c030d389d8b0ffd82edf6a06640ddb273e5dbd5049e184e6f9",
+    "src/menusettings.js": "af95b86b7ae362acdc23da2f4173aa80021b9a3fefe84bd5c7a3527b03df986d",
+    "src/version.js": "3495b43f0710ac8bdeb304c36eeb16584b1a067cec352e314537b00e3ce6d620",
+    "src/player.js": "316c049f6179b8116e718aac3d9bed42d2e2cc1008405ccd11bccc981c953981",
+    "src/stats.js": "a268b8067ca8eb3f41f9767b5dcedf20b1ebde6bcdcd30020028880de9dcf44b",
+    "src/statspanel.js": "aa8a20410ac3d86831be1c99924862f08a1dff261a321db77c9f232b76fdc9d7",
+    "src/touch.js": "dd50e6cbaa7de942e1bafa5dcd72f435c9d9bc98a9a7dfe8c7a964f12cc4dcf0",
+    "src/config.js": "eab184ec0cbcdc7a7de93d0b17ffdc7afaf7da4950328aec56af654579fbac34",
+    "index.html": "a5e413154d2ca51d7bb4fb64cf44497026f83a89641eaaded9d7cc5d8f5c92ee"
+  },
+  "scope": "one existing native statistics command; real finishWelcome DOM phase, no bootstrap/renderer"
+}

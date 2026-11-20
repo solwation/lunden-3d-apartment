@@ -19,6 +19,8 @@ try{const context=await browser.newContext({viewport:{width:844,height:390},hasT
 await page.route(game+'/',r=>r.fulfill({contentType:'text/html',body:html}));await page.route('**/src/bootstrap.js',r=>r.fulfill({contentType:'text/javascript',body:'// intentionally no apartment bootstrap'}));
 await page.goto(game);await installMainImports(page);await page.evaluate(async({parts,before})=>{
  const T=await import('three'),{Player}=await import('/src/player.js'),{setupTouch}=await import('/src/touch.js'),S=await import('/src/stats.js'),{StatsPanel}=await import('/src/statspanel.js');Object.assign(window,{StatsPanel,S,PLAYER:(await import('/src/config.js')).PLAYER});(await import('/src/hudicons.js')).initHudIcons();
+ // #2253: complete the real runtime DOM phase without bootstrapping the apartment; historical HTML keeps its old setup.
+ if (!before) (await import('/src/welcome.js')).finishWelcome();
  window.player=new Player({size:{x:5.75,z:12.1},levels:[{segments:[],footprints:[]},{segments:[],footprints:[]}],doors:[]},new T.PerspectiveCamera());player.spawn(2,-10,0);
  // This newly-created browser context owns its own statistics; no real visitor data can be read or reset.
  S.stats.target=123;S.stats.cats=37;S.stats.byVariant=Object.fromEntries(Array.from({length:100},(_,i)=>['Isolerad testkatt '+i,1]));
