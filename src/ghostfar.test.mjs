@@ -47,7 +47,7 @@ test('#2164: hair stays behind and above the face from the front; the arms touch
     if (pl.getX(i) === 3 && (hv > 0 || (y > 1.5 && pl.getY(i) === 0))) { // hair parts (the beanie is `top`: its cuff edge is the brow)
       if (y < 1.6 && Math.abs(x) < 0.1) assert.ok(z < 0.02, `hair variant ${hv} in front of the face at y ${y.toFixed(3)}, z ${z.toFixed(3)}`);
     }
-    if (hv === 1) assert.ok(z <= 0.001, `long hair vertex in front of the head's middle (z ${z.toFixed(3)})`);
+    if (hv === 1) assert.ok(Math.abs(x) >= 0.1 ? z < 0.05 : z < 0.02, `long hair vertex in front of the face (x ${x.toFixed(3)}, z ${z.toFixed(3)})`);
   }
   let torso = 0, arm = 9;
   for (let i = 0; i < pl.count; i++) {

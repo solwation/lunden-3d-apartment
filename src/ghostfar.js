@@ -52,7 +52,7 @@ export function farBodyGeometry() {
   put(new THREE.IcosahedronGeometry(0.115, 1).scale(0.95, 1.12, 1), PARTS.skin, 0, 1.615, 0.005); // (the head: an egg)
   const cap = (r, part, hair, y, z, sy = 1) => put(new THREE.SphereGeometry(r, 8, 4, 0, Math.PI * 2, 0, Math.PI * 0.5).scale(1, sy, 1), part, 0, y, z, 0, hair);
   cap(0.125, PARTS.hair, HAIRS.cap, 1.625, -0.012);
-  put(new THREE.CylinderGeometry(0.14, 0.11, 0.34, 8, 1, true, Math.PI / 2, Math.PI), PARTS.hair, 0, 1.45, -0.012, 0, HAIRS.long, 1, 0.85); // long hair: a sheet down the back and sides
+  put(new THREE.CylinderGeometry(0.155, 0.125, 0.34, 10, 1, true, Math.PI / 2 - 0.35, Math.PI + 0.7), PARTS.hair, 0, 1.45, -0.012, 0, HAIRS.long, 1, 0.85); // long hair: a sheet down the back and round the sides to the ears, never across the face
   put(new THREE.SphereGeometry(0.055, 6, 4), PARTS.hair, 0, 1.705, -0.115, 0, HAIRS.bun);
   cap(0.14, PARTS.top, HAIRS.beanie, 1.615, -0.012);
   cap(0.15, PARTS.hair, HAIRS.curly, 1.625, -0.012, 0.95); // curls: a fuller cap (a whole ball would cover the face)
