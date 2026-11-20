@@ -1221,19 +1221,36 @@ export class Ghosts {
   /** The mirror's pass is about to draw (reflections.js): put our solid avatar where we stand. */
   beforeMirror() {
     const g = this.myGhost;
-    this.mirrorSelfView = { visible: g?.root.visible ?? false, body: this.selfBody, arms: this.selfArms,
+    this.mirrorSelfView = { visible: g?.root.visible ?? false, body: this.selfBody, arms: this.selfArms, near: this.selfNear,
       typing: g?.typingSprite?.visible ?? false };
     // A reflector can exit early; afterMirror always restores this exact view in its finally block.
     this.setSelfView(false);
-    if (this.mine && this.mirrored()) this.showSelf(true);
-    else if (g) g.root.visible = false;
+    if (this.mine && this.mirrored()) {
+      if (this.mirrorSelfView.body) {
+        // The main camera just posed this body. Reuse its bones for the mirror,
+        // moving the standing figure from its camera offset back to its real feet.
+        const pos = g.root.position, feet = this.mine.p;
+        if (pos.x !== feet.x || pos.z !== feet.z) {
+          this.mirrorSelfView.x = pos.x;
+          this.mirrorSelfView.z = pos.z;
+          pos.x = feet.x;
+          pos.z = feet.z;
+          g.root.updateMatrixWorld(true);
+        }
+      } else this.showSelf(true);
+    } else if (g) g.root.visible = false;
   }
 
   afterMirror() {
     const view = this.mirrorSelfView;
     this.mirrorSelfView = null;
-    this.setSelfView(!!view?.body, !!view?.arms);
+    this.setSelfView(!!view?.body, !!view?.arms, view?.near);
     if (this.myGhost) {
+      if (view?.x !== undefined) {
+        this.myGhost.root.position.x = view.x;
+        this.myGhost.root.position.z = view.z;
+        this.myGhost.root.updateMatrixWorld(true);
+      }
       this.myGhost.root.visible = view?.visible ?? false;
       if (this.myGhost.typingSprite) this.myGhost.typingSprite.visible = view?.typing ?? false;
     }
@@ -1243,7 +1260,7 @@ export class Ghosts {
   setSelfView(body = false, arms = false, near = 0) {
     for (const [object, visible] of this.selfHidden ?? []) object.visible = visible;
     this.selfHidden = [];
-    this.selfBody = body; this.selfArms = arms;
+    this.selfBody = body; this.selfArms = arms; this.selfNear = near;
     const g = this.myGhost;
     if (!g) return;
     g.avatar.material.userData.u.uSelfView.value.set(body ? (near > 0 ? 2 + near : 1) : 0, body && arms ? 1 : 0);
