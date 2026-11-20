@@ -74,3 +74,14 @@ owns integration/publication and closure. Approximate phases: inventory/plan 2 m
 implementation/contracts 1 min, native runs under 1 min, failure review/docs 2 min.
 Stopped after the prescribed commands and separate failure diagnosis, before the
 ten-minute verification reassessment point; no further run was started.
+
+## Delivery
+
+Integrated as `9001212af04c40a3aeea78ec1b3bbe8cba6a484d`, preserving the
+independent2232 welcome-background HTML/image change. Frozen browser evidence above
+belongs to the recorded base; the shared helper and actual input/focus excerpts
+are unchanged by that background change. [Pages44780248474](https://github.com/solwation/lunden-3d-apartment/actions/runs/44780248474)
+is green on the integrated source. [Completion](https://github.com/solwation/lunden-3d-apartment/issues/2252#issuecomment-7045704748)
+embeds both reviewed native component images before closure; SHA-pinned image
+size/access verified via GitHub Contents. Statistics remains22PASS plus the
+separate2253 reset-staging failure, never a claimed green complete suite here.
