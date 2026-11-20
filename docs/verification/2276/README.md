@@ -1,0 +1,5 @@
+## Packaged L1007 material check
+
+Both images came from Epic's signed stock UnrealGame.exe, UE 5.8.4 (CL 58902052), in a cooked Win64 Development archive on an RTX 3080. A Level Sequence moved the camera through the imported L1007 apartment and patio. The screenshots show frame 200 in each 340-frame pass at 1280 × 720, High, with Lumen. The camera follows real time and its angle differs slightly between the captures.
+
+The original game log contained 517 paths with “missing usage flag Nanite! Default Material will be used in game.” The rebuilt game log contained zero. A fresh editor independently read 1,896 Nanite meshes, 73 meshes using raster fallback for unsupported translucent slots, and 482 Nanite material entries across both zones. Both packaged games loaded the map, displayed the living room and completed the CSV capture. The new cook completed with zero errors and zero warnings. The project-owned sky and room lighting also evolved during pilot development, so the log and serialized material checks establish the change independently of pixel differences.
