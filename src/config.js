@@ -10933,6 +10933,18 @@ export const SNOW_CAP = { up: [0.55, 0.85], scale: 0.45, patch: 0.35, strength: 
 // material colour `diffuse` keeps the bodies' diffuse tone as before (0.65 = 1 − the old metalness 0.35). Trim: per part
 // roughness/metalness through a tiny map (matte black plastic, glossy lamp lenses, chrome, rims); `tyre`: rubber. `far`: the
 // coarse LOD car (rougher and dimmer: no sparkle at a distance). All visual *guess* values tuned on screenshots.
+/** #2184: Olof's car lights the road at night: one merged additive decal in the car's frame (no light source), see carlights.js.
+ * All sizes are gameplay/appearance *guesses* (the car's real light pattern is not measured). */
+export const CAR_LIGHTS = {
+  movingSpeed: 0.05, brakeDecel: 0.2, // m/s, m/s²: above this speed it counts as rolling; slowing harder than this is braking
+  fadeOn: 0.12, fadeOff: 0.35, // s to full / to nothing
+  tailDay: 0.2, tailNight: 1.2, tailBrake: 4, // the tail lamps' emissive intensity (was 0.2 / 1.2): day, night, braking
+  beam: { len: 9, width: 1.5, side: 0.62, color: 0xfff1cf, peak: 0.34 }, // two forward lobes (m): length, half width, lateral offset
+  red: { len: 1.4, width: 1.6, color: 0xff2418, peak: 0.5 }, // the red pool behind (m)
+  white: { len: 2.2, width: 1.4, color: 0xf4f6ff, peak: 0.6 }, // the reversing pool behind (m)
+  reverseLamp: { y: 0.86, z: 0.5 }, // the two white lenses on the tailgate (m)
+};
+
 export const CAR_FINISH = {
   paint: { roughness: 0.2, metalness: 0.12, diffuse: 0.74 }, reflectionDay: 0.55, reflectionNight: 0.04,
   trim: { black: [0.72, 0], roof: [0.2, 0.05], lens: [0.12, 0.2], led: [0.3, 0], blink: [0.3, 0], tail: [0.3, 0], chrome: [0.25, 0.9], rim: [0.42, 0.75] },

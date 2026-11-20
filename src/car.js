@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-import { CAR as C, REST, SONOS, SITE } from './config.js';
+import { CAR as C, REST, SONOS, SITE, CAR_LIGHTS as CL } from './config.js';
+import { lampTargets, easeLamp, buildCarGlow, buildReverseLamps } from './carlights.js';
 import { along, nearestS } from './roads.js';
 import { buildCar, MEGANE, drawScreen, SCREEN_BUTTONS } from './carmodel.js';
 import { curvature, wheelAngle, curveWindow } from './olofdrive.js';
@@ -97,6 +98,9 @@ export class Car {
     this.lightMat = m.materials.led;
     this.tailMat = m.materials.tail;
     this.blinkMat = m.materials.blink;
+    this.lamps = { head: 0, brake: 0, reverse: 0 }; this.decel = 0; // #2184: eased lamp levels; the last step's slowing (m/s²)
+    this.glow = buildCarGlow(L); g.add(this.glow.mesh);
+    this.reverseLamps = buildReverseLamps(L); g.add(this.reverseLamps);
     this.screenMat = m.materials.screen;
     const plate = new THREE.MeshStandardMaterial({ map: plateTexture(C.plate), roughness: 0.5 });
     this.plates = [];
@@ -322,12 +326,23 @@ export class Car {
     return ahead > 0 && ahead < reach && side < radius;
   }
 
+  /** #2184: lamp levels from speed / braking / reversing / night; the tail lamps and the road decal follow. */
+  updateLamps(dt, night) {
+    const driving = this.state === 'arriving' || this.state === 'leaving', t = lampTargets({ night, driving, speed: this.speed, decel: this.decel, reversing: this.drive.reversing });
+    const L = this.lamps; let changed = false;
+    for (const k of ['head', 'brake', 'reverse']) { const v = easeLamp(L[k], t[k], dt); changed ||= v !== L[k]; L[k] = v; }
+    this.lightMat.emissiveIntensity = night ? 2.2 : 0.3;
+    this.tailMat.emissiveIntensity = t.tail + (CL.tailBrake - t.tail) * L.brake;
+    this.reverseLamps.visible = L.reverse > 0.01;
+    if (this.reverseLamps.visible) this.reverseLamps.material.color.setScalar(0.35 + 0.65 * L.reverse);
+    if (changed || this.glow.mesh.visible !== (L.head + L.brake + L.reverse > 0.002)) this.glow.set(L);
+  }
+
   update(dt, night, player) {
     this.object.userData.detailUnit = this.state !== 'garage'; // in its stall its small parts may go one by one (#598)
     this.blinkT = Math.max(0, this.blinkT - dt);
     this.blinkMat.emissiveIntensity = this.blinkT > 0 && Math.floor(this.blinkT * 3) % 2 === 0 ? 2.5 : 0;
-    this.lightMat.emissiveIntensity = night ? 2.2 : 0.3;
-    this.tailMat.emissiveIntensity = night ? 1.2 : 0.2;
+    this.updateLamps(dt, night);
     // the doors swing (eased), the screens wake while a door is open or someone sits inside
     for (const d of this.doors) {
       d.angle += (d.target - d.angle) * Math.min(1, dt * 7);
@@ -345,7 +360,7 @@ export class Car {
     }
     this.screenMat.emissiveIntensity += ((this.awake > 0 ? 0.9 : 0) - this.screenMat.emissiveIntensity) * Math.min(1, dt * 3);
     if (this.leaveWhenShut && this.doorsShut) { this.leaveWhenShut = false; this.leave(); }
-    if (this.state !== 'arriving' && this.state !== 'leaving') { this.driveFeel(dt, 0, 0, 0, false, 0); return; } // (stopped: the wheel centres)
+    if (this.state !== 'arriving' && this.state !== 'leaving') { this.decel = 0; this.driveFeel(dt, 0, 0, 0, false, 0); return; } // (stopped: the wheel centres)
     const left = this.total() - this.d;
     let want = C.speed;
     if (this.state === 'arriving') want = Math.min(C.speed, Math.max(0.4, Math.sqrt(2 * C.brake * left)));
@@ -360,6 +375,7 @@ export class Car {
     if (this.blocked(player)) want = 0; // never into the visitor
     const v0 = this.speed;
     this.speed += Math.sign(want - this.speed) * Math.min(Math.abs(want - this.speed), C.brake * 1.5 * dt);
+    this.decel = (v0 - this.speed) / Math.max(dt, 1e-4);
     const was = this.d;
     this.d = Math.min(this.total(), this.d + this.speed * dt);
     if (was < P.revEnd && this.d > P.revEnd) { this.d = P.revEnd; this.speed = 0; } // stop at the cusp before driving off forwards
