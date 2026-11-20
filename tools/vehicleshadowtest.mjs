@@ -7,9 +7,10 @@ import * as THREE from 'three';
 const { vehicleFootprint, shadeAt, buildVehicleShadow, itemsFromMatrices } = await import('../src/vehicleshadow.js');
 const { VEHICLE_SHADOW: K } = await import('../src/config.js');
 
-test('a car: body pool plus one patch per wheel, aligned with its nose', () => {
+test('a car: body rectangle plus one patch per wheel, aligned with its nose', () => {
   const e = vehicleFootprint({ x: 10, z: 20, ax: 0, az: -3, kind: 'car' });
   assert.equal(e.length, 5);
+  assert.ok(e[0].rect && e[0].ra >= 2.17 + 0.1 && e[0].rb >= 0.92 + 0.1, 'reaches past the bumpers and sills');
   assert.deepEqual([e[0].x, e[0].z, e[0].ax, e[0].az], [10, 20, 0, -1]);
   const wheels = e.slice(1).map((w) => [Math.round((w.x - 10) * 100) / 100, Math.round((w.z - 20) * 100) / 100].join());
   assert.equal(new Set(wheels).size, 4, 'four distinct wheel positions');
@@ -44,4 +45,16 @@ test('items from instance matrices: position and nose axis', () => {
   const m = new THREE.Matrix4().compose(new THREE.Vector3(3, 0.1, 4), new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI / 2), new THREE.Vector3(1, 1, 1));
   const [i] = itemsFromMatrices([m], 'car');
   assert.ok(Math.abs(i.x - 3) < 1e-9 && Math.abs(i.z - 4) < 1e-9 && Math.abs(i.ax) < 1e-9 && Math.abs(i.az + 1) < 1e-9);
+});
+test('car body pool: dark to the sill/bumper line, untouched at the outer edge', () => {
+  const v = buildVehicleShadow([{ x: 0, z: 0, ax: 1, az: 0, kind: 'car' }], () => 0, { phone: true });
+  const p = v.mesh.geometry.attributes.position, c = v.mesh.geometry.attributes.color;
+  let inner = 1, outer = 0;
+  for (let i = 0; i < p.count; i++) {
+    const x = Math.abs(p.getX(i)), z = Math.abs(p.getZ(i));
+    if (x <= 2.0 && z <= 0.9) inner = Math.min(inner, c.getX(i));
+    if (x >= K.car.half[0] + K.car.soft - 1e-6 || z >= K.car.half[1] + K.car.soft - 1e-6) outer = Math.max(outer, 1 - c.getX(i));
+  }
+  assert.ok(inner < 0.05, 'under the body: near black ' + inner);
+  assert.ok(outer < 1e-6, 'outer edge: nothing');
 });

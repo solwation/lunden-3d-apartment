@@ -11129,8 +11129,8 @@ export const AVATAR_STAIRS = {
  * parked vehicles lie outside / beyond the sun's shadow box so they otherwise float. All sizes and strengths are appearance *guesses*. */
 export const VEHICLE_SHADOW = {
   lift: 0.08, // m over the ground sample: over the asphalt (0.02-0.05, measured: a 4 cm lift was hidden by the car park's asphalt) and the stall lines (0.045); under the car body, hidden by it
-  car: { x: 0, half: [2.9, 1.4], strength: 0.95, rings: 5, segs: 16 }, // body pool in the car's frame (nose +x): centre x, half length / half width (m; the body is 4.34 x 1.84), darkest at the middle
-  tyre: { x: 1.35, z: 0.78, half: [0.85, 0.55], strength: 0.9, rings: 3, segs: 8 }, // one dark patch under each wheel: axle offset x (both axles, +/-), track z (+/-), half sizes; added on top of the body pool
+  car: { x: 0, half: [2.27, 1.02], soft: 0.32, strength: 0.9 }, // body pool in the car's frame (nose +x): a rounded rectangle, fully dark out to this half length / half width (the body is 4.34 x 1.84, so ~10 cm beyond the bumpers and sills), then `soft` m easing out to nothing
+  tyre: { x: 1.35, z: 0.8, half: [0.5, 0.3], strength: 1, rings: 3, segs: 10 }, // a distinct near-black contact patch under each wheel: axle offset x (both axles, +/-), track z (+/-), half sizes; on top of the body pool (reaches ~25 cm past the sill)
   bike: { x: -0.04, half: [1.15, 0.38], strength: 0.85, rings: 2, segs: 10 }, // a narrow strip along the two wheels (bikeGeometry: wheels at x -0.5 / 0.42)
-  plateau: 0.7, // the pool stays at full strength out to this share of its radius (so the band beyond the body stays dark), then eases out to nothing at the rim
+  plateau: 0.55, // the wheel and bike pools stay at full strength out to this share of its radius (so the band beyond the body stays dark), then eases out to nothing at the rim
 };
