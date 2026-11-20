@@ -5552,6 +5552,17 @@ export const BRICK_SURFACE = {
 export const RIVER_SURFACE = {
   waves: [[8.8, 3.1, 0.65, -0.37, 0.55, 0.035], [-4.6, 13.4, 0.4, 0.7, 0.45, 0.02]],
   distance: [12, 45], footprint: [0.035, 0.12], levelTolerance: 0.002,
+  // #2186: the sky in the water and ripples that drift with the current, all artistic *guesses* (no measured flow speed or reflectance).
+  // `sky`: Fresnel-weighted reflection of DayCycle's own horizon / zenith colours (the wet ground's shared uniforms): weight = f0 + (1 - f0)
+  // x (1 - cos)^power, times `gain`, added to the indirect specular (no env map, no reflection pass, off when seen from below). `bank`: the
+  // mirror turns darker and green-tinted towards the shore (|across| / half width from `from` to 1, up to `mix`), where the trees stand.
+  // `flow`: the near-water ripples live in the river's own frame (chainage u, across v) and travel downstream (towards increasing path
+  // index, the way SITE.river.fall drops) at 2 pi x `cycles` / RAIN_RIPPLES.wrap m/s (~0.4 m/s); the wrap length of the shared clock is
+  // exactly `cycles` whole wave-lengths for every wave, so the clock's wrap is invisible: keep each wave's ku and c INTEGERS.
+  // waves: [ku, kv, c, d, bend, gain] (rad/m along / across the flow, bend wobble). Slope bound = sum of gains.
+  sky: { f0: 0.05, power: 4, gain: 2.6 },
+  bank: { from: 0.55, mix: 0.7, tint: [0.03, 0.05, 0.035] },
+  flow: { cycles: 38, waves: [[2, 9, 1, 3, 0.5, 0.04], [5, -3.4, 3, 0.7, 0.4, 0.025]] },
 };
 
 // #2072: local asphalt's visual surface, artist *guesses*, not a surveyed aggregate or repair pattern.
