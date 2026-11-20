@@ -24,6 +24,7 @@ test('#2048 budget: the finer nose grid stays within +10 % of the head triangles
     const style = +key[1], facial = +key[3], g = avatarModelGeometry({ ...avatarLook('nose'), style, facial, gender: style % 2 }), a = g.attributes;
     let head = 0, curl = 0; for (let i = 0; i < a.position.count; i += 3) { const f = a.facePart.getX(i); if (f > 0 && f < 30) head++; if (f === 7 && a.faceAnchor.getY(i) > 0.5 && a.faceAnchor.getZ(i) < 0.5) curl++; }
     head -= long2053(style) + shortHairTriangles(style); // (#2055: the locks and wound bun, their own budget)
+    head -= 320; // #2170: the two lash rows of curved hairs (432 triangles) in place of the single wedge (112)
     head -= teethExtraTriangles(); // #2150: the mouth's teeth / tongue strips have their own budget (avatarteethtest)
     if (curl) head -= curl - 5040; // (#2054: the curl volumes in place of the #1377 tubes have their own budget, avatarcurlstest)
     assert.equal(head, tris + own, `${key}: ${head} head triangles = ${tris} + the nose's ${own}`);

@@ -2,7 +2,7 @@ import { playerLocalStorage as localStorage } from './playerprofiles.js';
 import { BUILD } from './version.js';
 import { wornLook, outerColour } from './avataroutwear.js'; // #2147
 import { skirtKind } from './avatarskirt.js'; // #2157
-import { SKIN, SKIN_TONES, HAIR, TOPS, PANTS, SHOES, AVATAR_HEIGHT, encodeAvatarLook, decodeAvatarLook, avatarLook, avatarHeightCm, EYES, AVATAR_SHAPE, avatarShape, AVATAR_BUILD, avatarBuildStep, avatarBuildWidth, AVATAR_GLASSES, AVATAR_HAT, AVATAR_PHONES, AVATAR_NECKLACE, AVATAR_EARRINGS, AVATAR_RING, AVATAR_WRIST, wristValue, AVATAR_CLOTHES, AVATAR_OUTERWEAR, outerValue, AVATAR_NOSE_FORMS, noseFormOf, AVATAR_SKIN_VARIATION, skinVarOf, AVATAR_AGE, ageStepOf, beardCutOf, beardChoiceOf, setBeardChoice, AVATAR_SHOES, shoeModelOf, socksOf } from './config.js';
+import { SKIN, SKIN_TONES, HAIR, TOPS, PANTS, SHOES, AVATAR_HEIGHT, encodeAvatarLook, decodeAvatarLook, avatarLook, avatarHeightCm, EYES, AVATAR_SHAPE, avatarShape, AVATAR_BUILD, avatarBuildStep, avatarBuildWidth, AVATAR_GLASSES, AVATAR_HAT, AVATAR_PHONES, AVATAR_NECKLACE, AVATAR_EARRINGS, AVATAR_RING, AVATAR_WRIST, wristValue, AVATAR_CLOTHES, AVATAR_OUTERWEAR, outerValue, AVATAR_NOSE_FORMS, noseFormOf, AVATAR_SKIN_VARIATION, skinVarOf, AVATAR_AGE, ageStepOf, beardCutOf, beardChoiceOf, setBeardChoice, AVATAR_SHOES, shoeModelOf, socksOf, AVATAR_MAKEUP, makeupOf } from './config.js';
 
 // #1220: the brows' colours (config.js HAIR, the hair swatches' names) and a first choice that follows the hair
 const BROW_NAMES = ['Mörkbruna', 'Bruna', 'Ljusbruna', 'Guldbruna', 'Blonda', 'Grå', 'Röda', 'Svarta'];
@@ -290,9 +290,13 @@ export function drawAvatarPreview(canvas, look) {
   const noseF = noseFormOf(look); // #2049: broad a little wider, upturned a little higher, convex a little lower
   ctx.ellipse(cx, 60 + 3 * noseS + [0, 0.6, -0.8, 0][noseF], 2 * noseS * noseW * (noseF === 3 ? 1.25 : 1), 2.5 * noseS, 0, 0, Math.PI * 2);
   ctx.fill();
-  ctx.fillStyle = '#9a5a52';
+  const mk = makeupOf(look); // #2170: lipstick, blush and eyeliner in the 2D preview
+  if (mk.blush) { ctx.fillStyle = toHex(AVATAR_MAKEUP.blush.colour); ctx.globalAlpha = 0.22 + 0.2 * mk.blush; for (const s of [-1, 1]) { ctx.beginPath(); ctx.ellipse(cx + s * 10 * headW, 63, 4.5, 3, 0, 0, Math.PI * 2); ctx.fill(); } ctx.globalAlpha = 1; }
+  if (mk.eye >= 2) { ctx.strokeStyle = '#141010'; ctx.lineWidth = 1; for (const s of [-1, 1]) { const ex = cx + s * 7 * headW; ctx.beginPath(); ctx.ellipse(ex, 57, 3.8 * eyeS, 2.7 * eyeS * eyeO, 0, Math.PI * 1.05, Math.PI * 1.95); ctx.stroke(); ctx.beginPath(); ctx.moveTo(ex + s * 3.6 * eyeS, 56.5); ctx.lineTo(ex + s * 5.4 * eyeS, 55.2); ctx.stroke(); } }
+  if (mk.eye === 1 || mk.eye === 3) { ctx.strokeStyle = '#141010'; ctx.lineWidth = 0.8; for (const s of [-1, 1]) { const ex = cx + s * 7 * headW; for (let k = -2; k <= 2; k++) { ctx.beginPath(); ctx.moveTo(ex + k * 1.3 * eyeS, 55 - 1.5 * eyeS * eyeO * (1 - Math.abs(k) * 0.2)); ctx.lineTo(ex + k * 1.7 * eyeS + s * 0.5, 52.3 - 0.6 * (2 - Math.abs(k))); ctx.stroke(); } } }
+  ctx.fillStyle = mk.lip ? toHex(AVATAR_MAKEUP.lips.colours[mk.lip]) : '#9a5a52';
   ctx.beginPath();
-  ctx.roundRect(cx - 4, 69, 8, 2, 1);
+  if (mk.lip) ctx.roundRect(cx - 4.5, 68.2, 9, 3.6, 1.8); else ctx.roundRect(cx - 4, 69, 8, 2, 1);
   ctx.fill();
 
   if (beardCutOf(look) === 1) { // #2166: stubble: a faint shade and dots over the beard's area
@@ -541,6 +545,8 @@ function updateActiveSwatches() {
   groups.push({ type: 'hat', value: Number(currentLook.hat) || 0 }); // #1321
   groups.push({ type: 'phones', value: Number(currentLook.phones) || 0 }); // #1322
   groups.push({ type: 'necklace', value: Number(currentLook.necklace) || 0 }); // #1323
+  const mk = makeupOf(currentLook); // #2170
+  groups.push({ type: 'lipstick', value: mk.lip }, { type: 'eyeMakeup', value: mk.eye }, { type: 'blush', value: mk.blush });
   groups.push({ type: 'ring', value: Number(currentLook.ring) || 0 }); // #1324
   groups.push({ type: 'metal', value: Number(currentLook.metal) || 0 });
   groups.push({ type: 'bracelet', value: wristValue(currentLook.bracelet) }, { type: 'watch', value: wristValue(currentLook.watch) }); // #1334
@@ -769,6 +775,7 @@ function initCustomizerDOM() {
   addFaceSections(customizerEl.querySelector('.customizer-controls'));
   addAccessorySection(customizerEl.querySelector('.customizer-controls')); // #1321
   addNecklaceSection(customizerEl.querySelector('.customizer-controls')); // #1323
+  addMakeupSection(customizerEl.querySelector('.customizer-controls')); // #2170
   addRingSection(customizerEl.querySelector('.customizer-controls')); // #1324
   addWristSection(customizerEl.querySelector('.customizer-controls')); // #1334
   addSkinVarSection(customizerEl.querySelector('.customizer-controls')); // #2111
@@ -834,6 +841,15 @@ function initCustomizerDOM() {
       applyAndRefresh();
     } else if (type === 'earrings' && AVATAR_EARRINGS.names[idx] !== undefined) { // #1325
       currentLook.earrings = idx;
+      applyAndRefresh();
+    } else if (type === 'lipstick' && AVATAR_MAKEUP.lips.names[idx] !== undefined) { // #2170
+      currentLook.lipstick = idx;
+      applyAndRefresh();
+    } else if (type === 'eyeMakeup' && AVATAR_MAKEUP.eyes.names[idx] !== undefined) {
+      currentLook.eyeMakeup = idx;
+      applyAndRefresh();
+    } else if (type === 'blush' && AVATAR_MAKEUP.blush.names[idx] !== undefined) {
+      currentLook.blush = idx;
       applyAndRefresh();
     } else if (type === 'necklace' && AVATAR_NECKLACE.names[idx] !== undefined) { // #1323
       currentLook.necklace = idx;
@@ -1060,6 +1076,30 @@ function addAccessorySection(controls) {
     const row = document.createElement('div');
     row.className = 'btn-group';
     cfg.names.forEach((n, i) => {
+      const b = document.createElement('button');
+      Object.assign(b.dataset, { type, index: String(i) });
+      b.textContent = i ? n : none;
+      row.append(b);
+    });
+    sec.append(row);
+    controls.append(sec);
+  }
+}
+
+/** #2170: the makeup sections (lip colour, eye makeup, blush), each with its own "none" first. */
+function addMakeupSection(controls) {
+  if (!controls || controls.querySelector?.('[data-makeup-section]')) return;
+  const kinds = [['lipstick', 'Läppfärg', AVATAR_MAKEUP.lips.names, 'Ingen läppfärg'], ['eyeMakeup', 'Ögonsmink', AVATAR_MAKEUP.eyes.names, 'Inget ögonsmink'], ['blush', 'Rouge', AVATAR_MAKEUP.blush.names, 'Inget rouge']];
+  for (const [type, title, names, none] of kinds) {
+    const sec = document.createElement('section');
+    sec.className = 'customizer-section';
+    sec.dataset.makeupSection = type;
+    const h = document.createElement('h3');
+    h.textContent = title;
+    sec.append(h);
+    const row = document.createElement('div');
+    row.className = 'btn-group';
+    names.forEach((n, i) => {
       const b = document.createElement('button');
       Object.assign(b.dataset, { type, index: String(i) });
       b.textContent = i ? n : none;

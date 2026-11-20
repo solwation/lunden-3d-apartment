@@ -4323,7 +4323,7 @@ export const AVATAR = { fill: 0.07, rim: 0.85, rimPower: 2.2, emissiveOutline: 0
 export const AVATAR_SURFACE = {
   // #1995 authored surface-response guesses: one PBR material, no image maps.
   // Detail is in bind-pose metres and fades with pixel footprint at distance.
-  finish: { skin: 0.55, cloth: 0.92, hair: 0.48, eye: 0.16, shoe: 0.72, leather: 0.34, accessory: 0.6, // #2169: leather shoes (glossier than the trainers' 0.72) *guess*
+  finish: { skin: 0.55, lips: 0.26, cloth: 0.92, hair: 0.48, eye: 0.16, shoe: 0.72, leather: 0.34, accessory: 0.6, // #2169: leather shoes (glossier than the trainers' 0.72) *guess*
     metalRoughness: 0.28, metalness: 0.72, weaveRate: 950, weaveStrength: 0.045,
     hairSway: 0.18, hairBend: 12, hairRate: 170, hairStrength: 0.09, skinRate: 155, skinStrength: 0.018 },
   sides: 12, jointBlend: 0.055, wristBlend: 0.028, shoulderBlend: 0.45,
@@ -7624,8 +7624,43 @@ export const AVATAR_LIDS = {
   crease: { at: 0.6, width: 0.13, depth: 0.0007, shade: 0.84 },
   shade: { upper: [0.74, 0.5], lower: [0.8, 0.8] },
   blink: { close: 0.35, fold: 0.0032, foldLower: 0.0025, push: 0.002 },
-  lash: { segments: 14, length: 0.0011, up: 0.55, forward: 0.84, splay: 0.25, span: [0.85, 0.95], shade: 0.32, flip: 1.7, px: [[0.35, 0.7], [0.8, 1.6]] },
+  // #2170: the lashes are separate curved hairs now (src/avatarlids.js `lashes`): `count` along the span (inner, outer: fractions of the opening's half
+  // width, x towards the temple), `length` m at the middle of the opening (x 0.4 ... 1 with its height, x `outer` [inner end, temple end]), `jitter` the
+  // hairs' length variation, `angle` [root, curl] degrees from straight forward towards up (lower lashes: down), `width` m at the root (the
+  // mid keeps `mid` x of it, the tip a point), `splay` m sideways per m of length at the temple end, `flip` how far a shut lid turns them over,
+  // `down` how much a shut lid folds the lower ones up, `px` when they are drawn (old / new lash line). All *guess* by eye on the mirror preview.
+  lash: { count: 22, length: 0.0075, outer: [0.7, 1.3], jitter: 0.16, angle: [28, 52], width: 0.0004, mid: 0.7, splay: 0.35, span: [0.85, 0.95], shade: 0.3, flip: 1.7, down: 0.9, px: [[0.35, 0.7], [0.8, 1.6]],
+    lower: { count: 14, length: 0.0045, outer: [0.6, 1.2], angle: [-38, 30], span: [0.45, 0.85], shade: 0.4 } },
 };
+// #2170 makeup: lip colour, eye makeup and blush as customizer choices (the look's `lipstick`, `eyeMakeup`, `blush`, each 0 = none = today's look). The three
+// are one code (lip + lips x (eye + eyes x blush), 0 ... 59) in the legs tag `p`'s tens (the legs in the units, 0 ... 4): a missing tag = no makeup; an older client
+// cannot read a `p` of 5 or more and shows the default legs, otherwise the plain face. *Guess* by eye, not measured.
+//  - `lips`: the lip colour (sRGB, none = the skin-derived lips) mixed in by `mix` before the vertex shade; the lips' finish is SURFACE.finish.lips either way.
+//  - `eyes`: 1 mascara (the lashes `lash` x longer and `dark` of the way to black, shader only), 2 eyeliner (the lid margin's vertex colours to `colour` x
+//    skin: full inside `upper` [full, none] m above the upper opening edge, `lowerK` x of it under the lower, a wing past the outer corner of `wing` m rising
+//    `rise` per m, fading in from `inner` of the opening's half width), 3 both.
+//  - `blush`: the cheeks' soft area (the skinArea format, head bone's frame) x `strength` (shader only: the skin's colour x `mul` plus `colour` x `tint`).
+export const AVATAR_MAKEUP = { tag: 'p', pack: 10,
+  lips: { names: ['Ingen', 'Rosa', 'Röd', 'Vinröd', 'Nude'], colours: [0, 0xc4506c, 0xa3152a, 0x62183a, 0xb07a6c], mix: 0.85 },
+  eyes: { names: ['Inget', 'Mascara', 'Eyeliner', 'Mascara & eyeliner'], lash: 1.4, dark: 0.92,
+    liner: { colour: 0.08, upper: [0.0014, 0.0034], lowerK: 0.65, lower: [0.0004, 0.0016], wing: 0.0075, rise: 0.35, inner: 0.35 } },
+  blush: { names: ['Inget', 'Lätt', 'Tydlig'], strength: [0, 0.4, 0.8], area: [0.05, 0.068, 0.055, 0.034, 1, 1.2], colour: 0xd0506c, mul: [1.2, 0.68, 0.76], tint: 0.16 } };
+const mkPick = (v, n) => (Number.isInteger(v) && v > 0 && v < n ? v : 0);
+/** The look's makeup choices, each an integer in range (0 = none, also for any missing or unknown value). */
+export function makeupOf(look) {
+  const M = AVATAR_MAKEUP;
+  return { lip: mkPick(look?.lipstick, M.lips.names.length), eye: mkPick(look?.eyeMakeup, M.eyes.names.length), blush: mkPick(look?.blush, M.blush.names.length) };
+}
+/** The makeup code 0 ... 59 (0 = none) and its inverse; `null` for a code out of range. */
+export function makeupCode(look) {
+  const M = AVATAR_MAKEUP, m = makeupOf(look);
+  return m.lip + M.lips.names.length * (m.eye + M.eyes.names.length * m.blush);
+}
+export function makeupFromCode(code) {
+  const M = AVATAR_MAKEUP, L = M.lips.names.length, E = M.eyes.names.length;
+  if (!Number.isInteger(code) || code < 0 || code >= L * E * M.blush.names.length) return null;
+  return { lipstick: code % L, eyeMakeup: Math.floor(code / L) % E, blush: Math.floor(code / (L * E)) };
+}
 // #2014: secondary motion of long hair (styles 1, 4), the bun (2) and the sweater/jacket hem: one damped spring per group (src/avatarsway.js),
 // driven by the rendered head's (hair, bun) or torso's (hem) acceleration and turning, derived locally for every player (no network field).
 // Per group: `omega` rad/s (the spring's natural frequency), `zeta` damping ratio (< 1 overshoots once or twice), `gain` of the pseudo-force
@@ -7863,7 +7898,8 @@ function encodeLookExt(look) {
   if (zv > 0) out += `${AVATAR_RING.metalTag}${zv}`;
   const brows = look.brows == null ? -1 : HAIR.indexOf(look.brows); // #1220
   if (brows >= 0) out += `${AVATAR_BROWS.tag}${brows}`;
-  if (look.legs > 0 && look.legs < AVATAR_CLOTHES.legs.names.length) out += `${AVATAR_CLOTHES.legs.tag}${look.legs}`; // #1244
+  const legsV = look.legs > 0 && look.legs < AVATAR_CLOTHES.legs.names.length ? look.legs : 0, mkV = makeupCode(look);
+  if (legsV || mkV) out += `${AVATAR_CLOTHES.legs.tag}${legsV + AVATAR_MAKEUP.pack * mkV}`; // #1244; #2170: the makeup code in the tens
   const cutV = look.cut > 0 && look.cut < AVATAR_CLOTHES.cut.names.length ? look.cut : 0, ow = outerValue(look.outer), om = ow && look.outerMode === 1 ? 1 : 0; // #2147
   if (cutV || ow) out += `${AVATAR_CLOTHES.cut.tag}${cutV + 3 * (ow + 3 * om)}`;
   return out;
@@ -7932,7 +7968,11 @@ function decodeLookExt(ext, lk) {
       continue;
     }
     if (tag === AVATAR_BROWS.tag) { if (v < HAIR.length) lk.brows = HAIR[v]; continue; } // #1220
-    if (tag === AVATAR_CLOTHES.legs.tag) { if (v < AVATAR_CLOTHES.legs.names.length) lk.legs = v; continue; } // #1244
+    if (tag === AVATAR_CLOTHES.legs.tag) { // #1244 the legs in the units, #2170 the makeup code in the tens
+      const mk = makeupFromCode(Math.floor(v / AVATAR_MAKEUP.pack));
+      if (v % AVATAR_MAKEUP.pack < AVATAR_CLOTHES.legs.names.length && mk) { lk.legs = v % AVATAR_MAKEUP.pack; if (v >= AVATAR_MAKEUP.pack) Object.assign(lk, mk); }
+      continue;
+    }
     if (tag === AVATAR_CLOTHES.cut.tag) { // #2147: the top in the units, the outer layer in the threes, its mode above
       const c = v % 3, w = Math.floor(v / 3) % 3, m = Math.floor(v / 9);
       if (m <= 1 && (w > 0 || !m)) { lk.cut = c; if (w) { lk.outer = w; lk.outerMode = m; } }

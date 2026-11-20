@@ -5,7 +5,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { avatarModelGeometry } from '../src/avatar.js';
 import { avatarLook, AVATAR_LIDS as L, AVATAR_FACE as FACE, AVATAR_SURFACE as SURFACE } from '../src/config.js';
-import { irisDisc, pupilDisc, lidSurface, upperLashes, lidBlink, scleraZ, edgeY } from '../src/avatarlids.js';
+import { irisDisc, pupilDisc, lidSurface, lashes, lashHairs, lidBlink, scleraZ, edgeY } from '../src/avatarlids.js';
 
 const flat = () => 0; // a flat head surface at the eyeball's centre (the real one: avatar.js headFront)
 const tris = (g) => (g.index ? g.index.count : g.attributes.position.count) / 3;
@@ -16,7 +16,7 @@ test('#2045 the eyes stay within +10 % of the head\'s triangles over #2033\'s 60
     let eye = 0, head = 0;
     for (let i = 0; i < a.position.count; i += 3) { const f = a.facePart.getX(i); if (f === 3 || f === 26) eye++; if (f > 0 && f < 100) head++; }
     assert.ok(eye - 608 <= 0.1 * (head - eye + 608), `s${style}f${facial}: ${eye} eye triangles, head ${head}`);
-    assert.equal(eye, 1248, 'the documented count (docs/verification/2045)');
+    assert.equal(eye, 1248 - 2 * 56 + 2 * (L.lash.count + L.lash.lower.count) * 6, 'the documented count (docs/verification/2045: 1248 with 2 x 56 lash triangles; #2170: six per hair, two rows)');
     g.dispose();
   }
 });
@@ -45,16 +45,38 @@ test('#2045 the lids have thickness in front of the eyeball, a fold over the upp
   assert.ok(z1 > scleraZ(0) + SURFACE.eye.irisDepth * FACE.eye.iris * Math.sqrt(1 - (SURFACE.eye.upper / FACE.eye.iris) ** 2));
 });
 
-test('#2045 the lashes root in the upper margin and point forward and up, both sides wound outwards', () => {
-  for (const side of [-1, 1]) {
-    const g = upperLashes(side), p = g.attributes.position, n = g.attributes.normal;
-    for (let i = 0; i < p.count; i += 3) {
-      const x = p.getX(i), base = [p.getY(i), p.getZ(i)], tip = [p.getY(i + 1), p.getZ(i + 1)];
-      assert.ok(base[0] >= edgeY(x, true) && tip[0] > base[0] && tip[1] > base[1], 'up and forward from the margin');
+test('#2045 / #2170 the lashes root in the margin and curl away from it, both rows, both sides', () => {
+  for (const side of [-1, 1]) for (const upper of [true, false]) {
+    const g = lashes(side, upper), p = g.attributes.position, Z = upper ? L.lash : L.lash.lower, sgn = upper ? 1 : -1;
+    assert.equal(tris(g), Z.count * 6, 'six triangles per hair');
+    for (const h of lashHairs(side, upper)) {
+      assert.ok(sgn * (h.root[1] - edgeY(h.root[0], upper)) > 0, 'rooted just outside the margin');
+      assert.ok(sgn * (h.mid[1] - h.root[1]) > 0 && h.mid[2] > h.root[2], 'away from the lid and forward');
+      if (upper) assert.ok(h.tip[1] > h.mid[1], 'on up');
+      assert.ok(Math.abs(h.tip[1] - h.mid[1]) >= Math.abs(h.mid[1] - h.root[1]) * (upper ? 1 : -1) * 0 && h.len < Z.length * Z.outer[1] * (1 + L.lash.jitter) * 1.0001 && h.len > 0, 'length within bounds');
     }
-    let down = 0, up = 0; for (let i = 0; i < n.count; i++) { if (n.getY(i) < 0) down++; else up++; }
-    assert.ok(down > 0 && up > 0, 'a closed wedge');
-    assert.equal(tris(g), L.lash.segments * 4);
+    let down = 0, up = 0; const n = g.attributes.normal; for (let i = 0; i < n.count; i++) { if (n.getY(i) < 0) down++; else up++; }
+    assert.ok(down > 0 && up > 0, 'two-sided blades');
+    for (let i = 0; i < p.count; i++) assert.ok(Number.isFinite(p.getX(i) + p.getY(i) + p.getZ(i)));
+  }
+});
+
+test('#2170 lashes: longer toward the temple, the upper row longer than the lower, the curl turns the tip upward / downward', () => {
+  for (const side of [-1, 1]) {
+    const up = lashHairs(side, true), lo = lashHairs(side, false);
+    assert.ok(up.reduce((m, h) => Math.max(m, h.len), 0) > 0.005 && up.reduce((m, h) => Math.max(m, h.len), 0) < 0.014, 'upper lashes 5 ... 14 mm');
+    assert.ok(lo.reduce((m, h) => Math.max(m, h.len), 0) < up.reduce((m, h) => Math.max(m, h.len), 0));
+    const key = (h) => side * h.root[0];
+    const sorted = [...up].sort((a, b) => key(a) - key(b)), q = (a) => a.slice(0, 4).reduce((s, h) => s + h.len, 0), r = (a) => a.slice(-4).reduce((s, h) => s + h.len, 0);
+    assert.ok(r(sorted) > q(sorted), 'longest at the temple end');
+    for (const h of up) { // the curl: the second half's slope is steeper than the first (towards up)
+      const s1 = (h.mid[1] - h.root[1]) / (h.mid[2] - h.root[2]), s2 = (h.tip[1] - h.mid[1]) / (h.tip[2] - h.mid[2]);
+      assert.ok(s2 > s1, 'curls up');
+    }
+    for (const h of lo) {
+      const s1 = (h.mid[1] - h.root[1]) / (h.mid[2] - h.root[2]), s2 = (h.tip[1] - h.mid[1]) / (h.tip[2] - h.mid[2]);
+      assert.ok(s2 > s1 && s1 < 0, 'the lower row points down and turns back up');
+    }
   }
 });
 

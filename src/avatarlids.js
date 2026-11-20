@@ -104,38 +104,49 @@ export function lidSurface(skin) {
   return g;
 }
 
-/** The upper lashes of one eye (`side` +1: the figure's left, its temple towards +x): a closed wedge rooted in the margin's rounded edge.
- * Region `brow` (the brows' colour, darkened by the part's shade). */
-export function upperLashes(side) {
-  const A = L.lash, n = A.segments, position = [], index = [];
-  const [m, l] = A.span, x0 = -side * m * R(), x1 = side * l * R();
-  for (let i = 0; i <= n; i++) {
-    const x = x0 + (x1 - x0) * (i / n), e = eyeOpen(x), lat = side * x / R();
-    const y = edgeY(x, true), z = scleraZ(x) + lidThick(x, true), len = A.length * (0.45 + 0.55 * Math.sqrt(e)) * (1 + 0.2 * lat);
-    const base = lashBase(x);
-    position.push(x, base[0], base[1]); // the root's front, in the margin's edge
-    position.push(x + side * A.splay * Math.max(0, lat) * len, base[0] + A.up * len, base[1] + A.forward * len); // the tip
-    position.push(x, y + 0.0003, z + L.lid.round * 0.6); // the root's back, in the rounded top
-  }
+/** A lash root's [y, z] at x on the upper or lower margin (the shader collapses a lash onto it). */
+export const lashBase = (x, upper = true) => (upper
+  ? [edgeY(x, true) + 0.00005, scleraZ(x) + lidThick(x, true) - 0.00008]
+  : [edgeY(x, false) - 0.00005, scleraZ(x) + lidThick(x, false) - 0.00008]);
+
+/** The hairs of one lash row (#2170): `count` hairs along the span, each a flat blade (its width along x) in the plane of its curved
+ * path: the root's two points in the margin's edge, a mid ring, a pointed tip. Returns [{x, len, p: [root, mid, tip] as [x, y, z]}].
+ * `side` +1: the figure's left, its temple towards +x. Pure (numbers only), so the test checks the placement without a renderer. */
+export function lashHairs(side, upper) {
+  const A = L.lash, Z = upper ? A : A.lower, n = Z.count, [m, l] = Z.span, x0 = -side * m * R(), x1 = side * l * R(), hairs = [];
+  const rad = (d) => d * Math.PI / 180, sgn = upper ? 1 : -1;
   for (let i = 0; i < n; i++) {
-    const a = i * 3, b = a + 3;
-    index.push(a, a + 1, b, b, a + 1, b + 1); // the underside (seen from the front)
-    index.push(a + 1, a + 2, b + 1, b + 1, a + 2, b + 2); // the top
+    const x = x0 + (x1 - x0) * ((i + 0.5) / n), e = eyeOpen(x), lat = side * x / R(); // lat: -m (inner) … +l (temple)
+    const t = (lat + m) / (m + l); // 0 inner end … 1 temple end
+    const jit = 1 + A.jitter * Math.sin(i * 2.399 + (upper ? 0 : 1.3)); // an irrational step: no visible period
+    const len = Z.length * (0.4 + 0.6 * Math.sqrt(e)) * (Z.outer[0] + (Z.outer[1] - Z.outer[0]) * t) * jit;
+    const [by, bz] = lashBase(x, upper), [a0, a1] = Z.angle.map(rad), h = len / 2;
+    const d1 = a0 + (a1 - a0) * 0.5, sx = side * A.splay * Math.max(0, lat); // lateral m per m of length: the temple end fans out
+    const mid = [x + sx * h, by + Math.sin(d1) * h, bz + Math.cos(d1) * h];
+    const tip = [mid[0] + sx * h, mid[1] + Math.sin(a1) * h, mid[2] + Math.cos(a1) * h];
+    hairs.push({ x, len, root: [x, by, bz], mid, tip, upper: sgn > 0 });
   }
-  const g = geometry(position, index);
-  // wind both sides outwards (the front faces forward-down, the top up-back), whichever side the eye is on
-  const p = g.attributes.position, u = new THREE.Vector3(), w = new THREE.Vector3(), c = new THREE.Vector3(), I = g.index.array;
-  for (let t = 0; t < I.length; t += 3) {
-    const [i0, i1, i2] = [I[t], I[t + 1], I[t + 2]];
-    u.fromBufferAttribute(p, i1).sub(c.fromBufferAttribute(p, i0)); w.fromBufferAttribute(p, i2).sub(c);
-    const nrm = u.cross(w), front = (t / 3) % 4 < 2;
-    if ((front ? nrm.z * 0.3 - nrm.y : nrm.y - nrm.z * 0.3) < 0) { I[t + 1] = i2; I[t + 2] = i1; }
-  }
-  g.computeVertexNormals();
-  return g;
+  return hairs;
 }
-/** A lash root's [y, z] at x (the shader collapses a lash onto it). */
-const lashBase = (x) => [edgeY(x, true) + 0.00005, scleraZ(x) + lidThick(x, true) - 0.00008];
+
+/** The upper row (older avatar.js copies the trainers test imports from history call this name). */
+export const upperLashes = (side) => lashes(side, true);
+
+/** One lash row of one eye as a mesh (region `brow`, the brows' colour darkened by the part's shade): per hair a double-sided blade
+ * (two roots, two mid points, a tip; 6 triangles), vertices not shared between its sides so each takes its own normal. */
+export function lashes(side, upper = true) {
+  const A = L.lash, w = A.width / 2, position = [], index = [];
+  for (const h of lashHairs(side, upper)) {
+    const k = position.length / 3, wm = w * A.mid;
+    for (let copy = 0; copy < 2; copy++) { // front side, then back side (opposite winding)
+      const o = k + copy * 5;
+      position.push(h.root[0] - w, h.root[1], h.root[2], h.root[0] + w, h.root[1], h.root[2], h.mid[0] - wm, h.mid[1], h.mid[2], h.mid[0] + wm, h.mid[1], h.mid[2], ...h.tip);
+      const tris = [[0, 2, 1], [1, 2, 3], [2, 4, 3]].map((t) => t.map((v) => o + v));
+      for (const t of tris) index.push(...(copy ? [t[0], t[2], t[1]] : t));
+    }
+  }
+  return geometry(position, index);
+}
 
 /** Vertex GLSL, in avatar.js' eye branch after the gaze (replacing #2011's squeeze): the blink, the lashes' fold and their far collapse.
  * Works in the eye frame with the eye's size undone; `warp` = the head's widthwise factor at the eyes (faceWarp). */
@@ -147,12 +158,14 @@ export function lidBlink(warp) {
             float lx = lq.x / ${f(warp * Rr)}, le = max(1.0 - lx * lx, 0.0);
             float yU = ${f(K.upper)} * le, yL = -${f(K.lower)} * le, yC = -${f(B.close * K.lower)} * le, lb = uBlink;
             if (abs(region - 9.0) < 0.5) { // the lashes: drawn only while long enough on screen; they fold down as the lid shuts
-              float yB = yU + 0.00005, zB = ${f(zs)} * (${f(K.scleraBase)} + ${f(K.scleraRound)} * le) + ${f(D.thick[0])} * (${f(D.corner)} + ${f(1 - D.corner)} * sqrt(le)) - 0.00008;
+              bool lw = lq.y < 0.0; // (the lower row's hairs lie under the opening's middle line, the upper row's over it)
+              float yB = (lw ? -${f(K.lower)} * le - 0.00005 : yU + 0.00005), zB = ${f(zs)} * (${f(K.scleraBase)} + ${f(K.scleraRound)} * le) + (lw ? ${f(D.thick[1])} : ${f(D.thick[0])}) * (${f(D.corner)} + ${f(1 - D.corner)} * sqrt(le)) - 0.00008;
               float lDep = max(-(modelViewMatrix * vec4(faceAnchor, 1.0)).z, 0.01);
               float lPx = ${f(A.length)} * uEye.x * abs(projectionMatrix[1][1]) * max(uFly.x, 1.0) / (2.0 * lDep);
               float lKeep = uFly.y > 0.5 ? smoothstep(${f(aa[0])}, ${f(aa[1])}, lPx) : smoothstep(${f(na[0])}, ${f(na[1])}, lPx);
-              lq.yz = mix(vec2(yB, zB), lq.yz, lKeep);
-              lq.y = yB + (yC - yU) * lb + (lq.y - yB) * (1.0 - ${f(A.flip)} * lb);
+              lq.yz = mix(vec2(yB, zB), lq.yz, lKeep * uMake.x); // (#2170: mascara lengthens them about their roots)
+              if (lw) lq.y = yB + (yC - yL) * lb + (lq.y - yB) * (1.0 - ${f(A.down)} * lb);
+              else lq.y = yB + (yC - yU) * lb + (lq.y - yB) * (1.0 - ${f(A.flip)} * lb);
             } else if (region < 0.5) { // the lids: the margins meet on the closing line, the skin up to the fold stretching with them
               if (lq.y > yC) lq.y += (yC - yU) * lb * (lq.y < yU ? 1.0 : max(0.0, 1.0 - (lq.y - yU) / ${f(B.fold)}));
               else lq.y += (yC - yL) * lb * (lq.y > yL ? 1.0 : max(0.0, 1.0 - (yL - lq.y) / ${f(B.foldLower)}));

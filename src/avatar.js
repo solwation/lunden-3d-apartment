@@ -16,7 +16,8 @@ import { newBlink, stepBlink, solveGaze, stepSaccade } from './avatargaze.js';
 import { armFixShader, installArmFix } from './avatararmfix.js'; // #2022
 import { newWet, stepWet, falling, wetEnv, WET_DECL, wetVertex, wetColor, wetRoughness } from './avatarweather.js'; // #2018
 import { eyeUniforms, EyeLight, EYE_VDECL, EYE_FDECL, eyePupil, eyeAt, eyeBall, eyeView, eyeWet, eyeGlint } from './avatareyes.js'; // #2033
-import { irisDisc, pupilDisc, lidSurface, upperLashes, lidBlink } from './avatarlids.js'; // #2045
+import { irisDisc, pupilDisc, lidSurface, lashes, lidBlink } from './avatarlids.js'; // #2045
+import { lipColour, linerWeight, linerShade, makeupUniforms, applyMakeupLook, makeupDecl, blushGLSL, mascaraGLSL, makeupKey, makeupOf } from './avatarmakeup.js'; // #2170
 import { lampUniforms, LAMP_FDECL, lampGlsl } from './avatarlight.js'; // #2039: the street lamps' light
 import { SelfShadow, selfShadowUniforms, SELF_VDECL, SELF_VCODE, SELF_FDECL, selfLightsChunk, selfShadowKey } from './avatarselfshadow.js'; // #2143: the sun's self-shadow
 import { fabricKey, fabricLight } from './avatarfabric.js'; // #2165
@@ -42,7 +43,7 @@ import { genderFaceGLSL } from './avatarfacegender.js'; // #2142
 import { hairlineAt, hairlineShell, hairlineAvoid, hairlineUniforms, applyHairlineLook, hairlineFDecl, hairlineColor } from './avatarhairline.js'; // #2050
 import { refineNose, noseHeight, noseVertexGLSL, noseFragmentGLSL, noseKey, NOSE_SKIN, noseUniforms, applyNoseLook, noseFormDecl, noseNormalGLSL } from './avatarnose.js'; // #2048: the nose (#2049: its shape variants)
 import { glossUniforms, applyGlossLook, glossVertex, glossFragment, glossKey } from './avatarhairgloss.js'; // #2052: gloss along the strands
-import { beardCutOf } from './config.js'; // #2166
+import { beardCutOf, AVATAR_MAKEUP as MAKEUP } from './config.js'; // #2166, #2170
 import { beardShell, moustacheShell, beardCore, skinProbe, beardUniforms, applyBeardLook, beardFDecl, beardColor, beardRoughness, beardKey } from './avatarbeard.js'; // #2051
 import { AVATAR_SHORT_HAIR as SHORT } from './config.js'; // #2055
 import { AVATAR_OUTERWEAR } from './config.js';
@@ -1048,7 +1049,8 @@ function addFace(add, sphere, P) {
     eye(irisDisc(), 'iris', 'head', [x, y, z]);
     eye(pupilDisc(), 'fixed', 'head', [x, y, z], 1, E.pupilColour);
     eye(lidSurface((dx, dy) => headFront(x + dx, y + dy) - z), 'skin', 'head', [x, y, z], 0.97);
-    eye(upperLashes(s), 'brow', 'head', [x, y, z], AVATAR_LIDS.lash.shade);
+    eye(lashes(s, true), 'brow', 'head', [x, y, z], AVATAR_LIDS.lash.shade); // #2170: curved hairs, upper and lower rows
+    eye(lashes(s, false), 'brow', 'head', [x, y, z], AVATAR_LIDS.lash.lower.shade);
     // #2046: a thin brow of hairs lying on the forehead (src/avatarbrow.js), its centre line the per-vertex control pivot.
     const brow = browSurface(s, headFront);
     add(brow.geometry, 'brow', 'head', [0, 0, 0], 0.85);
@@ -1128,6 +1130,8 @@ function skinShading() {
           float ear = ${SK.ear[2].toFixed(3)} * smoothstep(${SK.ear[0].toFixed(3)}, ${SK.ear[1].toFixed(3)}, abs(q.x)) * (1.0 - smoothstep(0.0, 0.03, q.z));
           tone *= mix(vec3(1.0), uSkBlush, clamp(cheek + noseTip + lipRim + ear * 0.5, 0.0, 1.0));
           tone *= mix(vec3(1.0), ${v3(SK.socket)}, clamp(socket, 0.0, 1.0));
+          ${skinArea('blushA', MAKEUP.blush.area)}
+          ${blushGLSL()} // #2170
           tone *= mix(vec3(1.0), ${v3(SK.underTint)}, clamp(under + ear * 0.4, 0.0, 1.0));
         } else if (skinRole == 4.0) tone = ${v3(SK.hand)};
         else tone = ${v3(SK.limb)};
@@ -1173,7 +1177,8 @@ function surfaceRoughness() {
   const F = SURFACE.finish;
   return `float region = floor(vSurface.x + 0.5);
     float finish = ${F.accessory.toFixed(3)};
-    if (region == 0.0 || region == 6.0) finish = ${F.skin.toFixed(3)};
+    if (region == 0.0) finish = ${F.skin.toFixed(3)};
+    else if (region == 6.0) finish = ${F.lips.toFixed(3)}; // #2170: wet lips
     else if (region == 1.0 || region == 2.0) finish = ${F.cloth.toFixed(3)};
     else if (region == 3.0 || region == 8.0 || region == 9.0) finish = ${F.hair.toFixed(3)};
     else if (region == 5.0) finish = ${F.shoe.toFixed(3)};
@@ -1279,17 +1284,25 @@ function base(style = 0, sleeves = 0, gender = 0, facial = 0, legs = 0, cut = 0,
 export function avatarModelGeometry(lk) {
   const b = base(lk.style, lk.sleeves, lk.gender ?? lk.figure ?? 0, (Number(lk.facial ?? lk.facialHair) || 0) + (beardCutOf(lk) === 2 ? 10 : 0), lk.legs | 0, lk.cut | 0, shoeModelOf(lk) + 4 * socksOf(lk)), n = b.attributes.position.count;
   const pal = [lk.skin, (lk.cut | 0) > 2 ? outerColour(lk) : lk.top, lk.pants, lk.hair, 0, lk.shoes].map((c) => new THREE.Color(c)); // #2147: a worn layer has its own colour
-  pal[6] = pal[0].clone().lerp(new THREE.Color(FACE.lipTint), 0.35).multiplyScalar(0.92); // #1101: the lips, from the skin
+  pal[6] = lipColour(pal[0].clone().lerp(new THREE.Color(FACE.lipTint), 0.35).multiplyScalar(0.92), lk); // #1101: the lips, from the skin (#2170: or the chosen lipstick)
   pal[7] = new THREE.Color(EYES.includes(lk.eyes) ? lk.eyes : EYES[0]); // #1138: the irises
   pal[8] = new THREE.Color(lk.beard ?? lk.hair); // #1156: a beard of its own colour (Olof's grey one; players' follow their hair)
   pal[10] = pal[5].clone(); // #2169: leather shoes in the chosen shoe colour
   pal[9] = new THREE.Color(lk.brows ?? lk.hair); // #1220: the brows' own colour, else the hair's
-  const base3 = b.attributes.color.array, reg = b.attributes.region.array, col = new Float32Array(n * 3);
+  const base3 = b.attributes.color.array, reg = b.attributes.region.array, col = new Float32Array(n * 3), liner = makeupOf(lk).eye; // (#2170)
   for (let i = 0; i < n; i++) {
     const r = reg[i];
     if (r === REGION.fixed) { col[i * 3] = base3[i * 3]; col[i * 3 + 1] = base3[i * 3 + 1]; col[i * 3 + 2] = base3[i * 3 + 2]; continue; }
     const c = pal[r], s = base3[i * 3]; // #2084: old upper is exactly1; new panels inherit the chosen shoe tone
     col[i * 3] = c.r * s; col[i * 3 + 1] = c.g * s; col[i * 3 + 2] = c.b * s;
+  }
+  if (liner) { // #2170: eyeliner on the lid margins, in each eye's own frame (so it follows the lid)
+    const pos = b.attributes.position.array, part = b.attributes.facePart.array, anc = b.attributes.faceAnchor.array, hx = bindAt('head').x;
+    for (let i = 0; i < n; i++) {
+      if (reg[i] !== REGION.skin || part[i] !== FACE_PART.eye) continue;
+      const out = anc[i * 3] > hx ? 1 : -1, w = linerWeight((pos[i * 3] - anc[i * 3]) / FACE.warp.width * out, pos[i * 3 + 1] - anc[i * 3 + 1], 1, liner);
+      if (w > 0) { const k = linerShade(w); col[i * 3] *= k; col[i * 3 + 1] *= k; col[i * 3 + 2] *= k; }
+    }
   }
   const g = new THREE.BufferGeometry();
   for (const name of ['position', 'normal', 'region', 'bare', 'noseBlend', 'skinIndex', 'skinWeight', 'rifleSkull', 'rifleNose', 'rifleJaw', 'mouth', 'pucker', 'facePart', 'faceAnchor', 'armPump', 'suitRole']) g.setAttribute(name, b.attributes[name]);
@@ -1331,6 +1344,7 @@ function makeMaterial(rim, headProjection) {
   Object.assign(u, skinVarUniforms()); // #2111
   Object.assign(u, ageUniforms()); // #2155
   Object.assign(u, toneUniforms()); // #2156
+  Object.assign(u, makeupUniforms()); // #2170
   const m = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: SURFACE.finish.cloth, metalness: 0, transparent: false, depthWrite: true });
   m.emissive.setScalar(A.emissiveSolid);
   m.userData.u = u;
@@ -1344,7 +1358,7 @@ function makeMaterial(rim, headProjection) {
     const skin = avatarSkinGLSL({ head: bindAt('head'), hand: bindAt('handL'), part: FACE_PART, nose: NOSE_SKIN }); // #2032 (#2048: the nose's own skin)
     const hand = handFragmentGLSL({ bindL: bindAt('handL'), bindR: bindAt('handR'), part: FACE_PART }); // #2106
     sh.vertexShader = sh.vertexShader.replace('#include <skinbase_vertex>', fix.base).replace('#include <skinnormal_vertex>', fix.normal).replace('#include <skinning_vertex>', fix.skin)
-      .replace('#include <common>', '#include <common>\nattribute float region; attribute float suitRole; varying float vSuitRole; attribute float noseBlend; varying float vNose; varying vec2 vSurface; attribute vec4 armPump; uniform float uPump; varying vec3 vSuitAt; attribute float bare; varying float vBare; varying float vRing; attribute float mouth; uniform float uMouth; attribute float pucker; uniform float uKiss;\n' + WET_DECL + '\n' + FACE_SHAPE_DECL() + '\n' + fix.decl + '\n' + EYE_VDECL + '\n' + FLY_VDECL + '\n' + CHEST_DECL)
+      .replace('#include <common>', '#include <common>\nattribute float region; attribute float suitRole; varying float vSuitRole; attribute float noseBlend; varying float vNose; varying vec2 vSurface; attribute vec4 armPump; uniform float uPump; varying vec3 vSuitAt; attribute float bare; varying float vBare; varying float vRing; attribute float mouth; uniform float uMouth; attribute float pucker; uniform float uKiss;\n' + WET_DECL + '\n' + FACE_SHAPE_DECL() + '\n' + fix.decl + '\n' + EYE_VDECL + '\n' + makeupDecl() + '\n' + FLY_VDECL + '\n' + CHEST_DECL)
       .replace('#include <beginnormal_vertex>', `#include <beginnormal_vertex>
 ${noseNormalGLSL(bindAt('head'), FACE_PART.head)}
 float pumpF = 1.0 + uPump * ${GYM_PUMP.circumference} * armPump.z;
@@ -1358,7 +1372,7 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
     sh.vertexShader = sh.vertexShader.replace('#include <project_vertex>', `#include <project_vertex>\n${flyProject(bindAt('head').add(new THREE.Vector3(...HAIR.centre)))}`); // #2040
     sh.fragmentShader = sh.fragmentShader
       .replace('#include <common>', `#include <common>\n${LAMP_FDECL}`) // #2039
-      .replace('#include <common>', '#include <common>\nuniform float uOutline, uFill, uRim, uLight;\nuniform vec3 uRimColor;\nuniform float uSuit, uSuitMaskBand; uniform sampler2D uSuitTexture; varying vec3 vSuitAt; varying float vSuitRole; varying float vBare; varying float vRing; varying vec2 vSurface; uniform vec3 uRingColor;\n' + WET_DECL + skin.decl + hand.decl + '\n' + skinVarDecl() + '\n' + toneDecl() + '\n' + EYE_FDECL + '\n' + FLY_FDECL + '\n' + browFDecl() + '\n' + hairlineFDecl() + '\n' + shortHairFDecl() + '\n' + CURL_FDECL + '\n' + noseFragmentGLSL(bindAt('head'), FACE_PART.head).decl + '\n' + beardFDecl())
+      .replace('#include <common>', '#include <common>\nuniform float uOutline, uFill, uRim, uLight;\nuniform vec3 uRimColor;\nuniform float uSuit, uSuitMaskBand; uniform sampler2D uSuitTexture; varying vec3 vSuitAt; varying float vSuitRole; varying float vBare; varying float vRing; varying vec2 vSurface; uniform vec3 uRingColor;\n' + WET_DECL + skin.decl + hand.decl + '\n' + skinVarDecl() + '\n' + toneDecl() + '\n' + makeupDecl() + '\n' + EYE_FDECL + '\n' + FLY_FDECL + '\n' + browFDecl() + '\n' + hairlineFDecl() + '\n' + shortHairFDecl() + '\n' + CURL_FDECL + '\n' + noseFragmentGLSL(bindAt('head'), FACE_PART.head).decl + '\n' + beardFDecl())
       .replace('#include <color_fragment>', `#include <color_fragment>
       if (uSuit > 0.5) {
         vec3 red = vec3(${new THREE.Color(SPIDER.colors.red).toArray().join(',')}), blue = vec3(${new THREE.Color(SPIDER.colors.blue).toArray().join(',')});
@@ -1379,6 +1393,7 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
       }
       ${skinShading()}
       ${skin.color}
+      ${mascaraGLSL(FACE_PART.eye)} // #2170
       ${skinVarColor({ head: bindAt('head'), part: FACE_PART, lips: REGION.lips })}
       ${hand.color}
       ${surfaceColor()}
@@ -1412,7 +1427,7 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
     const gloss = { head: bindAt('head'), region: REGION, part: FACE_PART }; // #2052
     sh.vertexShader = glossVertex(sh.vertexShader, gloss); sh.fragmentShader = curlGloss(glossFragment(sh.fragmentShader, gloss)); // (#2054: the curls turn its strands)
   };
-  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light' + '-armfix2022' + skinKey() + '-expr2031' + '-eyes2064' + '-exert2037' + flyKey() + '-cloth2034' + '-skirt2157' + '-brow2046' + sculptKey() + '-hairline2050' + noseKey() + glossKey() + beardKey() + '-curls2054' + shortHairKey() + handKey() + seamKey() + chestKey() + skinVarKey() + ageKey() + toneKey() + selfShadowKey() + buildKey() + fabricKey(); // #2108, #2111, #2107; #2032, #2031, #2033, #2037, #2040, #2034, #2050, #2048, #2052, #2051
+  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light' + '-armfix2022' + skinKey() + '-expr2031' + '-eyes2064' + '-exert2037' + flyKey() + '-cloth2034' + '-skirt2157' + '-brow2046' + sculptKey() + '-hairline2050' + noseKey() + glossKey() + beardKey() + '-curls2054' + shortHairKey() + handKey() + seamKey() + chestKey() + skinVarKey() + ageKey() + toneKey() + selfShadowKey() + buildKey() + fabricKey() + makeupKey(); // #2170, #2108, #2111, #2107; #2032, #2031, #2033, #2037, #2040, #2034, #2050, #2048, #2052, #2051
   installSelfView(m); // #2080: the own camera hides head/hair; mirrors and peers keep the full figure
   return m;
 }
@@ -1552,6 +1567,7 @@ function applyFaceShape(u, lk) {
   applySkinVarLook(u, lk); // #2111
   applyAgeLook(u, lk); // #2155
   applyToneLook(u, lk); // #2156
+  applyMakeupLook(u, lk); // #2170
   u.uHair.value = v('hairLength'); // #1165
   u.uGlasses.value = Number.isInteger(lk.glasses) && lk.glasses > 0 && lk.glasses < GLASSES.names.length ? lk.glasses : 0;
   u.uEarrings.value = Number.isInteger(lk.earrings) && lk.earrings > 0 && lk.earrings < EARR.names.length ? lk.earrings : 0; // #1325
