@@ -73,6 +73,33 @@ life state, calls `window.close()` directly in the user gesture, and shows manua
 close instructions if the browser refuses. `tools/quitmenutest.cjs` covers the
 browser/PWA/mobile/hybrid matrix and actual mode changes.
 
+## Outdoor movement statistics and medals (#2230)
+
+`Player.bikeStep` emits accepted horizontal bicycle travel before any river rescue;
+`swimStep` emits own horizontal strokes after current drift and collision/bank clipping,
+plus simulated time only when both interval ends are actually diving. Exit climbs,
+teleports and current-only drift are excluded. The existing active-player gate freezes
+these producers for the menu/statistics panel. No positions or routes are stored.
+`movementstats.js` bounds finite positive increments by the physical speed and a maximum
+0.1-second step; `stats.recordMovement` uses ordinary dirty saving without per-frame
+badges or points. Old saves default `cycleMetres`, `swimMetres`, `diveSeconds` to zero.
+
+The statistics panel shows metres cycled, metres actively swum and submerged time.
+Cyklist / Åsimmare / Dykare use the existing medal UI, bonus and exponential curve
+(factor 1.5, cap 10); first levels 1000 m / 100 m / 60 s are gameplay guesses. Only medal
+bonuses award points. The shared Worker catalog syncs floored aggregate counters:
+`cycleMetres` 720/min, start 100000; `swimMetres` 180/min, start 10000;
+`diveSeconds` 60/min, start 3600 (generous guessed physical/history allowances, with the
+existing one-minute per-write rate slack). No new list or network/storage mechanism.
+Scooter counters/records/medals belong separately to #2229 and are not included by the
+bicycle-only producer. This first batch leaves all previous medal families intact.
+
+Checks: `node --test tools/movementstatstest.mjs cloudflare/medals.test.mjs
+cloudflare/boards.test.mjs` and `tools/browsertest.sh node tools/movementstatsbrowser.cjs
+BASE OUT`. [Source-bound results and native app panels](../verification/2230/README.md).
+The isolated local Worker test is not production-service evidence. No public port:
+personal gameplay achievements and the leaderboard have no neutral-viewer consumer.
+
 ## Outdoor exercise (#1811)
 
 `src/outdoorgym.js` owns `outdoorGym` targets and transient station/effort/repetition state. `main.js` registers its targets and collision, starts the ordinary Rest entry glide with a moving `follow` spot, updates effort before Rest, and gives active exercise a short status plus “Avsluta träningen”. The Rest API is unchanged; setupTouch has an optional blocked predicate to suspend look/stick input during exercise. E/click or the native touch action begins; E, Space/C or the touch action ends via ordinary stand-up, preferring the still-free original entry location. Menu teleport/death's usual stand path clears gym state and resets the moving press log. Pausing freezes the exercise; station/animation state remains transient and no ordinary sitting/lying point is awarded. Since #1828, completed cycles alone call `onRep(n)` → `bump('gymReps', n)`; the cumulative counter and awarded exercise points share the existing statistics save. Entry requires empty hands and standing without flight/riding/climbing/equipment. The original delivery used existing multiplayer Rest poses; #1842 extends the optional spectator pose hint below. The scoring protocol remains unchanged.

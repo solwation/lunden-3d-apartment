@@ -1,0 +1,14 @@
+{
+  "base": "6c2e4f65756bf3eafb838061262c0e9c1b12048a",
+  "sha256": {
+    "tools/movementstatstest.mjs": "532dc013ca03fe4f87c9d3e51975b80bab05e26d9292fedbffd2fa32cb4ee304",
+    "tools/movementstatsbrowser.cjs": "ddcdeee9f73dc16d670ebc8612561fc31c9a658b90fb58dc337ce1ff11be0545",
+    "cloudflare/boards.test.mjs": "252f415d457d27a91e133fabf472ff389165a86c8758fa4d523dcd0c8df7097f",
+    "cloudflare/medals.test.mjs": "f85b4f74a9fd133461b05513bb6d76614bab24877c0925d44f8a15cd1a593af4",
+    "cloudflare/boards.js": "918729f7887e0695986af0e0f471328bab820beaa5bac7516c601574577d0129",
+    "cloudflare/worker.js": "81812780595db8edc547a62ac33c7295b4575d1f5f652fcaeace00d0ba5d8aea"
+  },
+  "nodeCommand": "node --test tools/movementstatstest.mjs cloudflare/medals.test.mjs cloudflare/boards.test.mjs",
+  "nodeResult": "28 passed, 0 failed, 470.223507 ms",
+  "browserCommand": "tools/browsertest.sh node tools/movementstatsbrowser.cjs http://localhost:8454 docs/verification/2230"
+}

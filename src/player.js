@@ -716,7 +716,7 @@ export class Player {
     r.speed = bicycleSpeed(oldSpeed, fwd, r.pitch ?? 0, !!r.airborne, dt);
     const travel = (oldSpeed + r.speed) * .5 * dt;
     const n = Math.max(1, Math.ceil((Math.abs(travel) + Math.abs(angle) * (Math.max(-C.rear, C.front) + C.radius+C.height*Math.abs(Math.sin(r.pitch??0)))) / C.step));
-    let previous=this.bikeSupport(this.pos,r.yaw);
+    let previous=this.bikeSupport(this.pos,r.yaw), travelled = 0;
     for (let i = 0; i < n; i++) {
       const h=dt/n;
       let yaw=r.yaw+angle/n, p=this.pos.clone().add(new THREE.Vector3(Math.cos(yaw)*travel/n,0,-Math.sin(yaw)*travel/n));
@@ -753,9 +753,11 @@ export class Player {
       if(falling && (airborne || this.fall)) {
         const f=(this.fall??={top:this.pos.y,gap:0});f.top=Math.max(f.top,this.pos.y);f.gap=Math.max(f.gap,this.pos.y-support.y);
       }
+      travelled += Math.hypot(p.x - this.pos.x, p.z - this.pos.z); // #2230: accepted moves only, before any river rescue
       this.pos.set(p.x,y,p.z);previous=support;r.yaw=yaw;r.pitch=nextPitch;this.vy=airborne?vy:0;r.airborne=airborne;r.groundVy=airborne?0:groundVy;
       if(this.fall&&!r.airborne) {const f=this.fall;this.fall=null;this.vy=0;if(f.gap>0 && f.top>this.pos.y)this.onLand?.(f.top-this.pos.y,f.gap);if(this.riding!==r)return;}
     }
+    this.onCycleTravel?.(travelled, dt); // #2230: this bicycle path alone; no other riding mode
     this.bikeSplash(); // #1304: into the river
     this.edgeNotice(WALK.bikeEdge); // #1719: the bicycle stops ~1 m short of the edge, so a wider margin than on foot
     this.camera.rotation.y = r.yaw - Math.PI / 2; this.sprinting = false; this.jumpPress = false; this.crouch = this.crouched = false;
@@ -991,6 +993,7 @@ export class Player {
    * With the jetpack worn the jump input is its thrust instead. False when the swim ended this frame and the ordinary update should go on. */
   swimStep(dt, fwd, side, amount, pressed = false) {
     const s = this.swim, p = this.pos;
+    const wasUnder = this.diving; // #2230: both ends of the interval must actually be below the surface
     this.vy = 0; this.fall = null; this.fling = null; this.flying = false; this.crouched = false; this.sprinting = false; this.sliding = false; this.slideV = 0;
     s.t += dt;
     // #1944: crouch held = dive (down to the bed at SWIM.dive.rate), released = up again; climbing out always surfaces
@@ -1019,7 +1022,7 @@ export class Player {
     s.moving = pushing;
     const n = Math.max(1, Math.ceil(Math.hypot(v.x, v.z) * dt / 0.05)), h = dt / n;
     const [stat, dyn] = this.segments(); // (the perimeter wall, the bridge piers, fences: as when walking)
-    let blocked = false, bx = 0, bz = 0;
+    let blocked = false, bx = 0, bz = 0, travelled = 0;
     for (let i = 0; i < n; i++) {
       const push = () => { for (let it = 0; it < 3; it++) { let hit = false; for (const w of stat) hit = pushOut(p, PLAYER.radius, w) || hit; for (const w of dyn) hit = pushOut(p, PLAYER.radius, w) || hit; if (!hit) break; } };
       // the current first: against a bank (a bend) it turns towards the centre line instead of pushing the swimmer ashore
@@ -1033,12 +1036,16 @@ export class Player {
       if (!pushing) continue;
       x0 = p.x; z0 = p.z;
       p.x += v.sx * h; p.z += v.sz * h; push();
-      if (swimWater(p.x, p.z)) continue;
-      blocked = true; bx = p.x; bz = p.z; // the water's edge: along it where one axis is still water
-      if (swimWater(p.x, z0)) p.z = z0; else if (swimWater(x0, p.z)) p.x = x0; else { p.x = x0; p.z = z0; }
+      if (!swimWater(p.x, p.z)) {
+        blocked = true; bx = p.x; bz = p.z; // the water's edge: along it where one axis is still water
+        if (swimWater(p.x, z0)) p.z = z0; else if (swimWater(x0, p.z)) p.x = x0; else { p.x = x0; p.z = z0; }
+      }
+      // #2230: x0/z0 are AFTER current drift; count only the accepted own stroke, bounded by its intended length.
+      travelled += Math.min(Math.hypot(p.x - x0, p.z - z0), Math.hypot(v.sx, v.sz) * h);
     }
     p.y = swimBedY(p.x, p.z);
     s.depth = diveStep(s.depth, s.dive, waterYAt(p.x, p.z) - p.y, 0); // (#1944: the bed where the stroke ended limits the depth)
+    this.onSwimTravel?.(travelled, dt, wasUnder && this.diving); // #2230: before a climb or rescue can change the position
     let bank = null;
     if (blocked && pushing) { // a walkable spot on the bank just ahead, reached through no wall
       bank = splashBank(bx, bz, p.y, SWIM.exitReach);

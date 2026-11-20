@@ -8,12 +8,14 @@ import { playerLocalStorage as localStorage } from './playerprofiles.js';
 import { KISS, SECRET, SCORE, FISHING } from './config.js';
 import { targetScoreOf, creditTarget } from './targetscore.js';
 import { addCount } from './statcount.js';
+import { creditMovement, MOVEMENT_COUNTERS } from './movementstats.js';
 import { creditDuckFeeds, duckScoreOf } from './duckscore.js';
 import { gymScoreOf, creditGym } from './gymscore.js';
 import { huntState, findOutdoorCat } from './outdoorcathunt.js';
 const KEY = 'lunden.stats';
 
 const fresh = () => ({ love: 0, loveReceipts: [], pvpKills: 0, killReceipts: {}, cats: 0, rare: 0, byVariant: {}, petted: 0, ponyPets: 0, squirrelFeeds: 0, fishFeeds: 0, duckFeeds: 0, duckScore: 0, duckFeedDay: null, doors: 0, lids: 0, flushes: 0, taps: 0, fridge: 0, appliances: 0, cabinets: 0, beer: 0, coffee: 0, fish: 0, turbo: 0, shots: 0, fried: 0, burnt: 0, catFish: 0, chicken: 0, wine: 0, champagne: 0, whisky: 0, milk: 0, kask: 0, posted: 0, thrown: 0, lights: 0, sat: 0, lay: 0, steps: 0, metres: 0, stairs: 0, danceSeconds: 0, danceScore: 0, danceRewardDay: null, gymPump: null, jetpackMetres: 0, gymReps: 0, gymScore: 0, gymRewardDay: null, seconds: 0, visited: {}, secrets: 0, secretKinds: {}, catPhotos: 0, grill: 0, hood: 0, songs: 0, carMusic: 0, read: 0, car: 0, magic: 0, target: 0, baskets: 0, threes: 0, freeThrows: 0, twoPointers: 0, basketPoints: 0, footballGoals: 0, footballRecord: null,
+  cycleMetres: 0, swimMetres: 0, diveSeconds: 0,
   byBreed: {}, seen: {}, secretRare: {}, tv: 0, pc: 0, parasol: 0, clock: 0, calendar: 0, cooked: 0, brews: 0, drawn: 0, splashes: 0, cuts: 0, dribbles: 0, catButts: 0, shattered: 0, shatterRange: 0, pingpingHugs: 0, blinds: 0, curtains: 0, airfried: 0, clips: 0, penalties: {}, penaltyPoints: 0, kittens: 0, kittenPets: 0, petsByBreed: {}, hugsByBreed: {}, vacuumed: 0, tasks: 0, taskCounts: {}, taskRewardDays: {}, taskBonusDays: {}, taskBonusPoints: 0, taskDay: null, mieleDay: null, legacyTaskPoints: 0, pvpRangePoints: 0, medals: {}, medalsSeeded: false, medalPoints: 0, fishCaught: 0, fishBySpecies: {}, fishEaten: 0, outdoorCatRounds: 0, outdoorCatsFound: [] });
 
 
@@ -34,6 +36,7 @@ function load() {
     if (!Number.isFinite(s.taskBonusPoints) || s.taskBonusPoints < 0) s.taskBonusPoints = 0;
     if (!s.killReceipts || typeof s.killReceipts !== 'object' || Array.isArray(s.killReceipts)) s.killReceipts = {};
     if (!Number.isSafeInteger(s.pvpKills) || s.pvpKills < 0) s.pvpKills = 0;
+    for (const k of MOVEMENT_COUNTERS) if (!Number.isFinite(s[k]) || s[k] < 0) s[k] = 0;
     if (!Number.isFinite(s.jetpackMetres) || s.jetpackMetres < 0) s.jetpackMetres = 0;
     huntState(s); // #1885
     return s;
@@ -177,6 +180,11 @@ export function bump(key, n = 1, id = key) {
   renderScore();
   if (BADGES[key] && fresh) badge(BADGES[key], key !== 'love');
   if (key === 'steps' && stats.steps % STEP_BADGE === 0) badge(`👣 ${stats.steps} steg`, false);
+}
+
+// #2230: movement has no per-frame score/badge; ordinary saving and medal checks observe it.
+export function recordMovement(kind, metres, dt, under = false) {
+  if (creditMovement(stats, kind, metres, dt, under)) dirty = true;
 }
 
 /** #1754: a fish caught in Höje å: counted (the medal's `fishCaught`) and per species (FISHING.points, rarer = more). */
@@ -415,6 +423,9 @@ export function statRows() {
     ['🌦 Ute i vädret', `${['walkRain', 'walkSnow', 'walkHail', 'walkStorm'].reduce((n, k) => n + (stats[k] ?? 0), 0)}`,
       [['regn', 'walkRain'], ['snö', 'walkSnow'], ['hagel', 'walkHail'], ['åska', 'walkStorm']].filter(([, k]) => stats[k]).map(([t, k]) => `${t} ${stats[k]}`).join(', ')],
     ['🏠 Tak besökta', `${Object.keys(stats.seen.roofs ?? {}).length}`], // (#360)
+    ['🚲 Cyklat', `${Math.round(stats.cycleMetres)} m`],
+    ['🏊 Simmat', `${Math.round(stats.swimMetres)} m`, 'Egen rörelse genom vattnet'],
+    ['🤿 Tid under ytan', fmtTime(stats.diveSeconds)],
     ['🧑‍🚀 Jetpack uppåt', `${Math.floor(stats.jetpackMetres)} höjdmeter`],
     ['🚀 Jetpackturer', `${stats.flights ?? 0}`], // take-offs (#359)
     ['💺 Satt ner', `${stats.sat}`],

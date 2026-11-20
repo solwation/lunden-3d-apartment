@@ -19,6 +19,7 @@ import { renderPlayingNow } from './playerportraits.js';
 import { growGymPump } from './stats.js';
 import { pumpSampler } from './gympump.js';
 import { saveStats } from './stats.js';
+import { recordMovement } from './stats.js';
 import { playerLocalStorage as localStorage, playerSessionStorage as sessionStorage } from './playerprofiles.js';
 import { KISS, HUG, REACT, SCORE, SQUIRRELS, REACH } from './config.js';
 import { MATERIAL_CHOICES, materialChoices, materialChoice } from './materialcatalog.js';
@@ -660,6 +661,9 @@ player.onSwim = (into, at) => { // #1943: into the river on foot: a splash, then
   badge('Plask! Du simmar i ån', false);
 };
 player.onSwimKick = (under) => sfx.swimStroke(under); // #1951: a swim stroke with the jump button: a soft swish
+// #2230: aggregate numeric progress only; Player supplies its collision-approved own movement.
+player.onCycleTravel = (metres, dt) => recordMovement('cycle', metres, dt);
+player.onSwimTravel = (metres, dt, under) => recordMovement('swim', metres, dt, under);
 player.onEdge = () => badge('Här slutar promenadområdet', false); // #1236: the outer wall
 // the jetpack on its hook by the garage door (#359): worn on the back, flies; home again after a bad fall
 const jetpack = new Jetpack({ scene, camera, player, groundY, hud: { el: document.getElementById('jetpack'), glow: document.getElementById('jet-glow'),

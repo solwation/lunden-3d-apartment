@@ -1,0 +1,18 @@
+browsertest: no systemd user scope here, running without a memory ceiling
+PASS actual whole World, ordinary touch play, no partial test scene {}
+PASS served source matches frozen checkout src/player.js {}
+PASS served source matches frozen checkout src/main.js {}
+PASS served source matches frozen checkout src/movementstats.js {}
+PASS served source matches frozen checkout src/stats.js {}
+PASS served source matches frozen checkout src/medalcatalog.js {}
+PASS served source matches frozen checkout src/boardcatalog.js {}
+PASS served source matches frozen checkout src/config.js {}
+PASS native stats button opens all three new rows at zero {}
+PASS real World bicycle producer reaches actual stats binding {"mounted":true,"before":0,"after":0.026869058900942377,"pos":[-56.60686905890094,0,3.1]}
+PASS actual stats panel pause freezes all movement counters and body {"same":true,"position":true}
+PASS actual World swim/dive binding counts own strokes and underwater time, excludes drift/teleport {"dismounted":true,"entered":true,"before":{"cycle":0.026869058900942377,"swim":0,"dive":0},"drift":0,"swim":0.9000000000000002,"dive":1.5500000000000007,"cycle":0.026869058900942377}
+PASS all three real medal levels advance once and actual statistics save retains aggregate totals {"levels":[1,1,1],"paid":30,"again":30,"saved":[1250,140,75]}
+PASS new statistics rows visible inside native viewport {}
+PASS native menu opens medal grid with all three names, level and progress in view {}
+PASS no page errors []
+PASS production sources stayed frozen throughout app evidence {}

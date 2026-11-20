@@ -1,0 +1,130 @@
+{
+  "source": {
+    "src/player.js": "17dd85d527af5e8c54bb5c71efa0677d232aa4b2df10cff9c6790d6f5c781e18",
+    "src/main.js": "b4b869648fc0d124d7773675d676e2483646f549bfa89c04d1d6903739fb0057",
+    "src/movementstats.js": "a8d99a5fbffb83e464411aeb85562d84a2864d0666a5a9c4b5151bf4d1a971cf",
+    "src/stats.js": "c104780d3068860631b06927b52364baee6fcbcb885cf1da74fe0fa763bb3508",
+    "src/medalcatalog.js": "51d2ce01e452da9ff01dfe3b0624f497f2ba5b8da93dc9bc44f77cf06181e032",
+    "src/boardcatalog.js": "67daa099144ad2838c03c6657088d452262f23d8e439f0f5c7b38bc0d9a686aa",
+    "src/config.js": "43af8ca9b50c46cc2c53153cf7f4ef22147ad5b71b149a1dea96d60a3fca3412"
+  },
+  "checks": [
+    {
+      "ok": true,
+      "name": "actual whole World, ordinary touch play, no partial test scene"
+    },
+    {
+      "ok": true,
+      "name": "served source matches frozen checkout src/player.js"
+    },
+    {
+      "ok": true,
+      "name": "served source matches frozen checkout src/main.js"
+    },
+    {
+      "ok": true,
+      "name": "served source matches frozen checkout src/movementstats.js"
+    },
+    {
+      "ok": true,
+      "name": "served source matches frozen checkout src/stats.js"
+    },
+    {
+      "ok": true,
+      "name": "served source matches frozen checkout src/medalcatalog.js"
+    },
+    {
+      "ok": true,
+      "name": "served source matches frozen checkout src/boardcatalog.js"
+    },
+    {
+      "ok": true,
+      "name": "served source matches frozen checkout src/config.js"
+    },
+    {
+      "ok": true,
+      "name": "native stats button opens all three new rows at zero"
+    },
+    {
+      "ok": true,
+      "name": "real World bicycle producer reaches actual stats binding",
+      "data": {
+        "mounted": true,
+        "before": 0,
+        "after": 0.026869058900942377,
+        "pos": [
+          -56.60686905890094,
+          0,
+          3.1
+        ]
+      }
+    },
+    {
+      "ok": true,
+      "name": "actual stats panel pause freezes all movement counters and body",
+      "data": {
+        "same": true,
+        "position": true
+      }
+    },
+    {
+      "ok": true,
+      "name": "actual World swim/dive binding counts own strokes and underwater time, excludes drift/teleport",
+      "data": {
+        "dismounted": true,
+        "entered": true,
+        "before": {
+          "cycle": 0.026869058900942377,
+          "swim": 0,
+          "dive": 0
+        },
+        "drift": 0,
+        "swim": 0.9000000000000002,
+        "dive": 1.5500000000000007,
+        "cycle": 0.026869058900942377
+      }
+    },
+    {
+      "ok": true,
+      "name": "all three real medal levels advance once and actual statistics save retains aggregate totals",
+      "data": {
+        "levels": [
+          1,
+          1,
+          1
+        ],
+        "paid": 30,
+        "again": 30,
+        "saved": [
+          1250,
+          140,
+          75
+        ]
+      }
+    },
+    {
+      "ok": true,
+      "name": "new statistics rows visible inside native viewport"
+    },
+    {
+      "ok": true,
+      "name": "native menu opens medal grid with all three names, level and progress in view"
+    },
+    {
+      "ok": true,
+      "name": "no page errors",
+      "data": []
+    },
+    {
+      "ok": true,
+      "name": "production sources stayed frozen throughout app evidence"
+    }
+  ],
+  "errors": [],
+  "externalBlocked": [
+    "https://lunden-l1007.olw.workers.dev"
+  ],
+  "elapsedMs": 55701,
+  "environment": "Chromium/SwiftShader, whole app, lowmem phone quality0, 1100x760 DPR1; isolated fresh context, remote HTTP blocked",
+  "staging": "1250/140/75 cumulative UI totals are controlled fixture values after real producer checks"
+}
