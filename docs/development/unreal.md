@@ -424,6 +424,54 @@ the supplied directory. Shipping ignores `-seconds=10`, so the test ended its ow
 headless process at the timeout. A normal user shutdown and a rendered pilot view
 are separate tests.
 
+#### Local playable L1007 pilot (#2246)
+
+Use a separate Windows staging copy with its Git LFS game assets hydrated. Run
+the #2245 web export and importer for `l1007` and `l1007-uteplats`, including
+the persisted Nanite settings. Preserve the checked-in pilot map as the reusable
+base. The following steps compose a writable copy with the first-person GameMode,
+ten hinged doors, collision, street approach and patio. Use a short, space-free checkout and output path for the Unreal Python commandlet.
+
+Set the following keys under `[/Script/EngineSettings.GameMapsSettings]` in the
+staging copy's `unreal/Lunden/Config/DefaultEngine.ini`:
+
+```ini
+GameDefaultMap=/Game/Lunden/Maps/Pilot_L1007.Pilot_L1007
+GlobalDefaultGameMode=/Game/Lunden/Blueprints/Pilot/BP_LundenPilotMode.BP_LundenPilotMode_C
+```
+
+From the staging repository root, select a fresh output directory, assemble the
+playable map, and cook it with the installed Epic Win64 Shipping runtime:
+
+```powershell
+$project = (Resolve-Path unreal/Lunden/Lunden.uproject).Path
+$measurements = (Resolve-Path unreal/Lunden/Import/measurements.json).Path.Replace('\', '/')
+$build = "C:/LundenBuilds/Pilot-$([guid]::NewGuid().ToString('N'))"
+New-Item -Type Directory $build | Out-Null
+node tools/unreal-engine/pilot-scene.mjs $measurements "$build/scene.json"
+if ($LASTEXITCODE) { throw "Pilot scene input failed" }
+.\tools\unreal-engine\run-python.ps1 tools/unreal-engine/python/prepare_playable_pilot.py $measurements "$build/scene.json"
+if ($LASTEXITCODE) { throw "Pilot preparation failed" }
+$uat = "C:/Program Files/Epic Games/UE_5.8/Engine/Build/BatchFiles/RunUAT.bat"
+& $uat BuildCookRun "-project=$project" -platform=Win64 -clientconfig=Shipping `
+  -nocompileuat -nocompile -skipbuild -cook "-map=/Game/Lunden/Maps/Pilot_L1007" `
+  "-AdditionalCookerOptions=-NullRHI -NoSplash -NoLogWindow -NoDialog" `
+  -stage -pak -iostore -package -nodebuginfo -nobootstrapexe -archive `
+  "-stagingdirectory=$build/stage" "-archivedirectory=$build/archive" -unattended -nop4 -utf8output
+if ($LASTEXITCODE) { throw "Pilot cook failed" }
+Copy-Item unreal/LocalPilot/* "$build/archive/Windows/"
+Copy-Item unreal/Lunden/THIRD_PARTY_NOTICES.md "$build/archive/Windows/"
+Rename-Item "$build/archive/Windows" "Lunden-L1007"
+Compress-Archive "$build/archive/Lunden-L1007" "$build/Lunden-L1007-Win64.zip"
+```
+
+`LUNDEN_PLAYABLE_PILOT_OK` confirms that the saved map uses the player GameMode
+and the door and patio streams after collision preparation. Extract the zip in
+a fresh directory and double-click **Starta Lunden.cmd**. The stock executable
+mounts the descriptor from the project pak, and writes its settings to
+`Pilotdata` next to the start file. Check the signed runtime against the installed
+engine before handing out a local test build.
+
 ### IoStore repeatability (#2248)
 
 Two successful Windows Shipping cooks with Epic UE 5.8.4 (CL 58902052) used the same

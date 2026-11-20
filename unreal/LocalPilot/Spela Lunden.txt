@@ -1,0 +1,14 @@
+﻿Lunden L1007 – lokal Windows-pilot
+
+1. Högerklicka på zip-filen och välj Extrahera alla.
+2. Öppna den uppackade mappen Lunden-L1007 och dubbelklicka på Starta Lunden.cmd.
+   Spelet öppnas i ett 1280 × 720-fönster. Ge första starten tid att läsa in nivån.
+
+Gå med W, A, S och D. Titta med musen. Vänster Skift springer, vänster Ctrl hukar
+och mellanslag hoppar. Rikta blicken mot en dörr och tryck E eller vänsterklicka
+för att öppna eller stänga. Avsluta med Alt+F4 eller fönstrets stängknapp.
+
+Prova entrén, trappan, övre planet och uteplatsen. Det här är projektets
+första Windows-pilot för L1007. Omgivande kvarter och flera ytmaterial är
+fortfarande under arbete. Spelet använder den medföljande Win64-motorn
+från Epic Games och lägger lokala inställningar i Pilotdata bredvid startfilen.

@@ -25,3 +25,7 @@ unreal/**/*.wav filter=lfs diff=lfs merge=lfs -text
 unreal/**/*.ogg filter=lfs diff=lfs merge=lfs -text
 unreal/**/*.mp3 filter=lfs diff=lfs merge=lfs -text
 unreal/**/*.mp4 filter=lfs diff=lfs merge=lfs -text
+
+# Keep the local pilot launcher and its Notepad guide native to Windows in each checkout.
+unreal/LocalPilot/*.cmd text eol=crlf
+unreal/LocalPilot/*.txt text eol=crlf

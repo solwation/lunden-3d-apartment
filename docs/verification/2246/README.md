@@ -158,3 +158,21 @@ node tools/unreal-engine/check-pilot-distances.mjs $observed
 The comparator exits nonzero for a missing or misplaced face or a difference
 above 1 cm. The saved observations can also be checked without the editor by
 passing `docs/verification/2246/imported-distances.json` as the argument.
+
+## Local Win64 Shipping package
+
+Epic UE 5.8.4 cooked the playable pilot on 2026-11-21. Preparation verified
+the player GameMode, ten interactive door hinges, both streamed zones and the
+walkable route. The cook finished with code 0. The local ZIP was 329,894,548
+bytes, SHA-256 `b661e8e1d4fe69a27f900e419f59c3e786798bb678ab1d126f7914e66c463a49`.
+All 28 ZIP entries passed CRC checks and all 14 stock runtime binaries matched
+the pinned UE 5.8.4 inventory. The ZIP includes the Swedish controls guide and
+double-click launcher. See the [build instructions](../../development/unreal.md#local-playable-l1007-pilot-2246).
+
+The newly extracted stock Shipping executable ran with D3D12 and
+`-RenderOffscreen` for 23.48 seconds. Windows reported 274,724,117 bytes read
+by the running process, and the game created its private `Pilotdata` directory.
+All 140 EnumWindows samples returned zero game windows, including hidden handles.
+The probe ended its own process with code 234. With no native game window,
+the close button and Alt+F4 were untested. This run produced no screenshot.
+The five editor camera pairs and the recorded PIE route are separate evidence.
