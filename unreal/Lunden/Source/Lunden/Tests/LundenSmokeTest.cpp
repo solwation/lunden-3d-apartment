@@ -1,4 +1,4 @@
-// Lunden (#2243): minimal Automation Test so tools/ue/ue-test.ps1 has a project test to run (filter "Lunden.").
+// Lunden (#2243): minimal Automation Test so tools/unreal-engine/run-tests.ps1 has a project test to run (filter "Lunden.").
 #include "Misc/AutomationTest.h"
 #include "Modules/ModuleManager.h"
 

@@ -1,4 +1,4 @@
-// Lunden (#2243): editor target, built by tools/ue/ue-build-editor.ps1.
+// Lunden (#2243): editor target, built by tools/unreal-engine/build-editor.ps1.
 using UnrealBuildTool;
 using System.Collections.Generic;
 

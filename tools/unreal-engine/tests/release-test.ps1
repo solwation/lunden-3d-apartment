@@ -1,10 +1,10 @@
 # Windows PowerShell integration test: real Git and release.ps1, disposable UAT/toolchain fixtures.
 $ErrorActionPreference = 'Stop'
-$ue = Split-Path $PSScriptRoot
+$unrealEngineTools = Split-Path $PSScriptRoot
 $temp = Join-Path ([IO.Path]::GetTempPath()) ('Lunden build test ' + [guid]::NewGuid().ToString('N'))
 $repo = Join-Path $temp 'source repo'
 $out = Join-Path $temp 'unsigned builds'
-$fixture = Join-Path $repo 'tools\ue'
+$fixture = Join-Path $repo 'tools\unreal-engine'
 $engine = Join-Path $temp 'fixture engine'
 $batDir = Join-Path $engine 'Engine\Build\BatchFiles'
 $ps = (Get-Process -Id $PID).Path
@@ -29,11 +29,11 @@ function Git-Fixture {
 }
 try {
     New-Item -ItemType Directory -Path $fixture, $batDir, (Join-Path $repo 'unreal\Lunden') | Out-Null
-    Copy-Item (Join-Path $ue 'release.ps1'), (Join-Path $ue 'ue-common.ps1') -Destination $fixture
-    $source = Join-Path $ue '..\..\unreal\Lunden'
+    Copy-Item (Join-Path $unrealEngineTools 'release.ps1'), (Join-Path $unrealEngineTools 'common.ps1') -Destination $fixture
+    $source = Join-Path $unrealEngineTools '..\..\unreal\Lunden'
     Copy-Item (Join-Path $source 'Lunden.uproject'), (Join-Path $source 'ENGINE_VERSION') -Destination (Join-Path $repo 'unreal\Lunden')
     # Only the disposable checkout substitutes discovery of installed VS/SDK. Real engine-lock checks stay active.
-    Add-Content (Join-Path $fixture 'ue-common.ps1') @'
+    Add-Content (Join-Path $fixture 'common.ps1') @'
 function Find-VisualStudio {
     [pscustomobject]@{ Name='Fixture'; Version=[version]'17.14'; Path='test'; Msvc=@([version]'14.38')
         Components=@('Microsoft.Net.Component.4.6.2.TargetingPack'); MissingComponents=@() }
@@ -69,7 +69,7 @@ Set-Content (Join-Path $dir 'Lunden-Win64-Shipping.exe') 'synthetic game fixture
     Git-Fixture add .
     Git-Fixture -c user.name=Fixture -c user.email=fixture@example.invalid -c commit.gpgSign=false commit -qm fixture
     $sha = Git-Fixture rev-parse HEAD
-    $blob = Git-Fixture rev-parse 'HEAD:tools/ue/release.ps1'
+    $blob = Git-Fixture rev-parse 'HEAD:tools/unreal-engine/release.ps1'
     $env:LUNDEN_FIXTURE_MODE = 'success'
     Run-Release
     Run-Release

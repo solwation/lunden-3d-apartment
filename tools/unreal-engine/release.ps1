@@ -2,7 +2,7 @@
 .SYNOPSIS
   Build a local unsigned Win64 Shipping archive and record its source revision (#2244).
 .EXAMPLE
-  .\tools\ue\release.ps1 -Version 0.1.0 -Content 12 -OutputRoot D:\LundenBuilds
+  .\tools\unreal-engine\release.ps1 -Version 0.1.0 -Content 12 -OutputRoot D:\LundenBuilds
 #>
 [CmdletBinding()]
 param(
@@ -11,7 +11,7 @@ param(
     [string]$OutputRoot = (Join-Path $env:LOCALAPPDATA 'Lunden\Builds'),
     [string]$EngineDir
 )
-. (Join-Path $PSScriptRoot 'ue-common.ps1')
+. (Join-Path $PSScriptRoot 'common.ps1')
 
 $project = Get-LundenProject
 function Get-CleanRevision {
@@ -24,7 +24,7 @@ function Get-CleanRevision {
 }
 
 $commit = Get-CleanRevision
-$scriptBlob = & git -C $project.RepoRoot rev-parse --verify "${commit}:tools/ue/release.ps1"
+$scriptBlob = & git -C $project.RepoRoot rev-parse --verify "${commit}:tools/unreal-engine/release.ps1"
 if ($LASTEXITCODE -ne 0) { throw 'release.ps1 must be tracked in the release commit.' }
 
 $base = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($OutputRoot)
@@ -38,9 +38,9 @@ $stage = Join-Path $build 'stage'
 $uatArgs = @('BuildCookRun', "-project=$($project.UProject)", '-platform=Win64', '-clientconfig=Shipping',
     '-build', '-cook', '-stage', '-pak', '-iostore', '-package', '-nodebuginfo', '-archive',
     "-stagingdirectory=$stage", "-archivedirectory=$archive", '-unattended', '-nop4', '-utf8output')
-$report = Resolve-UeForRun $EngineDir 'release' {
+$report = Resolve-UnrealForRun $EngineDir 'release' {
     param($root)
-    Format-UeCommand (Join-Path $root 'Engine\Build\BatchFiles\RunUAT.bat') (($uatArgs | ForEach-Object { ConvertTo-UeArg $_ }) -join ' ')
+    Format-UnrealCommand (Join-Path $root 'Engine\Build\BatchFiles\RunUAT.bat') (($uatArgs | ForEach-Object { ConvertTo-UnrealArg $_ }) -join ' ')
 }
 if (-not (Test-Path -LiteralPath $report.Engine.RunUAT -PathType Leaf)) { throw 'RunUAT.bat is missing from the engine installation.' }
 New-Item -ItemType Directory -Path $build | Out-Null

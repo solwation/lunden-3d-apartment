@@ -30,14 +30,14 @@ unreal/Lunden/Content/Lunden/      hand-made content: Materials/, Blueprints/, M
                                    assets exist); Generated/ is reserved for imports from #2245, never hand-edited
 unreal/Lunden/.gitignore           Binaries, Intermediate, Saved, DerivedDataCache, .vs, *.sln, packaged builds, .mcp.json
 .gitattributes, .lfsconfig         Git LFS rules for unreal/** only; LFS downloads of unreal/** off by default
-tools/ue/ue-common.ps1             shared functions (engine/VS/SDK discovery, exit codes, logs); dot-sourced
-tools/ue/ue-env.ps1                environment report and check (read-only)
-tools/ue/ue-build-editor.ps1       builds LundenEditor with Build.bat
-tools/ue/ue-python.ps1             runs a Python script headless (UnrealEditor-Cmd -run=pythonscript)
-tools/ue/ue-test.ps1               runs Automation Tests headless and reads the exported report
-tools/ue/release.ps1               runs a clean Win64 Shipping build, archives it with build-info.json and keeps the log
-tools/ue/python/smoke_create_asset.py  phase-B smoke test: create, save, reload, delete a material asset
-tools/ue/lunden-unreal.vsconfig    Visual Studio 2022 component list for Unreal C++ development
+tools/unreal-engine/common.ps1                    shared functions (engine/VS/SDK discovery, exit codes, logs); dot-sourced
+tools/unreal-engine/check-environment.ps1         environment report and check (read-only)
+tools/unreal-engine/build-editor.ps1              builds LundenEditor with Build.bat
+tools/unreal-engine/run-python.ps1                runs a Python script headless (UnrealEditor-Cmd -run=pythonscript)
+tools/unreal-engine/run-tests.ps1                 runs Automation Tests headless and reads the exported report
+tools/unreal-engine/release.ps1                     runs a clean Win64 Shipping build, archives it with build-info.json and keeps the log
+tools/unreal-engine/python/smoke_create_asset.py  phase-B smoke test: create, save, reload, delete a material asset
+tools/unreal-engine/lunden-unreal.vsconfig        Visual Studio 2022 component list for Unreal C++ development
 ```
 
 The configuration values in `Config/*.ini` are **assumptions** modelled on what a UE 5.x Blank C++ template writes
@@ -68,11 +68,11 @@ The development PC (i9-10900K, RTX 3080, 32 GB RAM, Windows 11 Pro) is above Epi
    **5.8.x** → install to the default `C:\Program Files\Epic Games\UE_5.8`. In the engine's dropdown, turn off
    automatic updates so a new hotfix does not silently replace the locked version.
 2. **Visual Studio 2022 Community** with the project's component list
-   [`tools/ue/lunden-unreal.vsconfig`](../../tools/ue/lunden-unreal.vsconfig): download the bootstrapper
+   [`tools/unreal-engine/lunden-unreal.vsconfig`](../../tools/unreal-engine/lunden-unreal.vsconfig): download the bootstrapper
    https://aka.ms/vs/17/release/vs_community.exe and run, from the repository root on Windows,
 
    ```text
-   vs_community.exe --config tools\ue\lunden-unreal.vsconfig
+   vs_community.exe --config tools\unreal-engine\lunden-unreal.vsconfig
    ```
 
    (or *Visual Studio Installer → More → Import configuration* for an existing install). The file selects the
@@ -81,17 +81,17 @@ The development PC (i9-10900K, RTX 3080, 32 GB RAM, Windows 11 Pro) is above Epi
    .NET Framework 4.6.2 targeting pack, C++ diagnostic tools and `Component.Unreal.Ide` (IDE support for Unreal
    Engine). The separate "Unreal Engine installer" component is not included: the engine comes from the Launcher.
    VS 2026 also satisfies Epic's requirements.
-3. Check: `powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/ue/ue-env.ps1` must end with
+3. Check: `powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/check-environment.ps1` must end with
    `OK: the Unreal environment matches the project lock.`
 
-`ue-env.ps1` deliberately checks only what a build needs: a VS 2022 17.14+/2026 instance with MSVC 14.38+, a
+`check-environment.ps1` deliberately checks only what a build needs: a VS 2022 17.14+/2026 instance with MSVC 14.38+, a
 Windows SDK 10.0.22621.0+ and the .NET Framework 4.6.2 targeting pack. Other components of the `.vsconfig` that are
 missing are listed for information; Unreal-specific VS components are never checked.
 
 ## Version lock
 
 - `EngineAssociation: "5.8"` in `Lunden.uproject` makes the Launcher/editor pick the installed 5.8 engine.
-- `unreal/Lunden/ENGINE_VERSION` holds the exact hotfix (`5.8.4`). `ue-env.ps1` (and every script that runs the
+- `unreal/Lunden/ENGINE_VERSION` holds the exact hotfix (`5.8.4`). `check-environment.ps1` (and every script that runs the
   engine) reads `Engine\Build\Build.version` and fails with exit code 3 on any other version:
   `ERROR: Wrong engine version: found 5.8.3 …, the project is locked to 5.8.4`.
 - Upgrading (a new 5.8 hotfix, or 5.9 once it is stable) is a deliberate change in its own issue: update
@@ -104,39 +104,39 @@ Windows programs: building a project on a `\\wsl.localhost\…` path is slow or 
 overturned in one sentence): Unreal work runs in a Windows-drive checkout** (today the Windows clone
 `C:\Users\Olof\Documents\lunden-3d-apartment`, the `winc` side of the mirror), and is committed with **Windows Git**,
 which has Git LFS (3.8.1). The scripts refuse to run the engine on a WSL/UNC checkout (exit code 6) and only warn in
-`ue-env.ps1`.
+`check-environment.ps1`.
 
 - WSL Git has **no git-lfs**. A `.uasset` committed from WSL would bypass the LFS filter and land in normal Git
   history. Commit Unreal binaries only with Windows Git (`"/mnt/c/Program Files/Git/cmd/git.exe"` from WSL, or
   Git for Windows directly) until git-lfs is installed in WSL.
-- Text files (`.uproject`, `Config/`, `Source/`, `tools/ue/`, this document) can be edited and committed from the
+- Text files (`.uproject`, `Config/`, `Source/`, `tools/unreal-engine/`, this document) can be edited and committed from the
   ext4 mirror as usual; the LFS rules do not touch them.
 - How the `wsl-repo-sync` mirror (`winc` remote, `updateInstead`) behaves with LFS pointers is verified in phase B
   (#2243 point 5); the ext4 mirror only ever needs the pointers because `.lfsconfig` excludes `unreal/**`.
 
-## Scripts (`tools/ue/`)
+## Scripts (`tools/unreal-engine/`)
 
 All scripts are PowerShell (Windows PowerShell 5.1 or PowerShell 7), run on Windows and callable from WSL:
 
 ```text
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/ue/ue-env.ps1
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/ue/ue-build-editor.ps1 [-Configuration Development|DebugGame]
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/ue/ue-python.ps1 tools/ue/python/smoke_create_asset.py [args…]
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/ue/ue-test.ps1 [-Filter Lunden.] [-WithRhi]
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/check-environment.ps1
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/build-editor.ps1 [-Configuration Development|DebugGame]
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/smoke_create_asset.py [args…]
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-tests.ps1 [-Filter Lunden.] [-WithRhi]
 ```
 
 `-ExecutionPolicy Bypass` is needed because Windows 11's default policy blocks unsigned scripts. Every script
-takes `-EngineDir <root>` (or the environment variable `LUNDEN_UE_ROOT`); otherwise the engine is found through the
+takes `-EngineDir <root>` (or the environment variable `LUNDEN_UNREAL_ENGINE_ROOT`); otherwise the engine is found through the
 registry (`HKLM\SOFTWARE\EpicGames\Unreal Engine\5.8`), the Launcher's `LauncherInstalled.dat` and finally the
 default path. Logs go to `unreal/Lunden/Saved/Logs/<script>-<time>.log` and test reports to
 `unreal/Lunden/Saved/Automation/<time>/` (both ignored by Git).
 
 | Script | Runs | Success means |
 |---|---|---|
-| `ue-env.ps1` | nothing; reports project, engine, VS/MSVC, SDK, .NET | exit 0 and `OK: …` |
-| `ue-build-editor.ps1` | `Build.bat LundenEditor Win64 Development -Project=… -WaitMutex` | Build.bat exit 0 |
-| `ue-python.ps1` | `UnrealEditor-Cmd.exe <uproject> -run=pythonscript -script="<file> <args>" -unattended -nullrhi …` | exit 0 **and** no `LogPython: Error`/traceback in the log |
-| `ue-test.ps1` | `UnrealEditor-Cmd.exe <uproject> -ExecCmds="Automation RunTests <filter>; Quit" -TestExit="Automation Test Queue Empty" -ReportExportPath=… -nullrhi` | report `index.json`: ≥ 1 passed, 0 failed |
+| `check-environment.ps1` | nothing; reports project, engine, VS/MSVC, SDK, .NET | exit 0 and `OK: …` |
+| `build-editor.ps1` | `Build.bat LundenEditor Win64 Development -Project=… -WaitMutex` | Build.bat exit 0 |
+| `run-python.ps1` | `UnrealEditor-Cmd.exe <uproject> -run=pythonscript -script="<file> <args>" -unattended -nullrhi …` | exit 0 **and** no `LogPython: Error`/traceback in the log |
+| `run-tests.ps1` | `UnrealEditor-Cmd.exe <uproject> -ExecCmds="Automation RunTests <filter>; Quit" -TestExit="Automation Test Queue Empty" -ReportExportPath=… -nullrhi` | report `index.json`: ≥ 1 passed, 0 failed |
 
 Exit codes (all scripts): 0 ok, 1 command failed, 2 engine not found, 3 wrong engine version, 4 toolchain
 (VS/MSVC/SDK/.NET targeting pack) missing, 5 project files invalid, 6 checkout on a WSL/UNC path.
@@ -176,7 +176,7 @@ photos) only when they are actually used, and keep generated imports (#2245) out
 
 ## Web protection
 
-- `.github/workflows/pages.yml` ignores pushes that only change `unreal/**`, `tools/ue/**` or `shared/schema/**`
+- `.github/workflows/pages.yml` ignores pushes that only change `unreal/**`, `tools/unreal-engine/**` or `shared/schema/**`
   (the JSON schemas planned in #2245, not loaded by the web), in addition to docs/material/cloudflare/`*.md`.
   A web change still deploys as before.
 - `tools/stamp.sh` copies an explicit list of web files (unchanged) and, at the end, **fails the build** with
@@ -187,8 +187,8 @@ photos) only when they are actually used, and keep generated imports (#2245) out
 
 ## Claude Code and MCP
 
-Stable automation does not depend on MCP: headless Python (`ue-python.ps1`), commandlets, Automation Tests
-(`ue-test.ps1`) and later `RunUAT BuildCookRun` are the primary route. MCP is a complement for interactive work in
+Stable automation does not depend on MCP: headless Python (`run-python.ps1`), commandlets, Automation Tests
+(`run-tests.ps1`) and later `RunUAT BuildCookRun` are the primary route. MCP is a complement for interactive work in
 an open editor.
 
 - **Plugins in `Lunden.uproject`:** `ModelContextProtocol` (the server, experimental in UE 5.8) and `AllToolsets`
@@ -228,7 +228,7 @@ Binary Unreal assets cannot be merged. Rules for agents and people working in pa
   its own small `.uasset` under `__ExternalActors__/` and two owners of different actors in one level rarely
   collide. The level file itself still has one owner. (No level exists yet; #2246 creates the first.)
 - `Content/Lunden/Generated/` is written only by the #2245 importer; hand edits there are lost on the next import.
-- Different tools folders can be worked on in parallel (`tools/ue/export*`, `tools/ue/package*`,
+- Different tools folders can be worked on in parallel (`tools/unreal-engine/export*`, `tools/unreal-engine/package*`,
   `unreal/Launcher/`; #2242).
 
 ## Build location (decision #2244)
@@ -246,15 +246,15 @@ with scripts on the Windows development PC**; signing and publishing happen late
   `%LOCALAPPDATA%\UnrealEngine\Common\Zen\Data`. Set `UE-ZenDataPath` for a different local disk.
   [Epic documents the Zen data location and overrides](https://dev.epicgames.com/documentation/en-us/unreal-engine/using-zen-storage-server-as-cooked-output-store-for-unreal-engine).
 - Another Windows PC can take over by following the install steps above, cloning the repository, running
-  `git config lfs.fetchexclude ""` + `git lfs pull` and `ue-env.ps1`.
+  `git config lfs.fetchexclude ""` + `git lfs pull` and `check-environment.ps1`.
 
 ### Building an unsigned archive
 
 Use Windows Git to check out the intended commit with all Unreal LFS objects. Verify
-`ue-env.ps1` on that checkout. From Windows PowerShell run
+`check-environment.ps1` on that checkout. From Windows PowerShell run
 
 ```powershell
-.\tools\ue\release.ps1 -Version 0.1.0 -Content 12 -OutputRoot D:\LundenBuilds
+.\tools\unreal-engine\release.ps1 -Version 0.1.0 -Content 12 -OutputRoot D:\LundenBuilds
 ```
 
 `-Version` is the app version and `-Content` is its accompanying content version
@@ -274,21 +274,21 @@ can leave files and its log in its own build directory. Hand off only a complete
 archive. For #2248, build twice from one commit and compare the resulting program
 and container files across the two archives.
 
-Run `tools/ue/tests/release-test.ps1` with Windows PowerShell for a disposable
+Run `tools/unreal-engine/tests/release-test.ps1` with Windows PowerShell for a disposable
 Windows Git and simulated UAT check. The real cook, archived layout, container
 hash comparison and cross-cook compatibility need the installed 5.8.4 engine
 and pilot content (#2243/#2248).
 
 ## Phase B (needs the engine)
 
-1. `ue-env.ps1` → OK on the Windows checkout (engine 5.8.4, VS, SDK, targeting pack).
+1. `check-environment.ps1` → OK on the Windows checkout (engine 5.8.4, VS, SDK, targeting pack).
 2. `git config lfs.fetchexclude ""` in that checkout; open `Lunden.uproject` once (accept module build), confirm the
    ModelContextProtocol/AllToolsets plugin names and let the editor add missing template config keys; commit
    reviewed config changes.
-3. `ue-build-editor.ps1` builds the C++ module; pin `BuildSettingsVersion`/`EngineIncludeOrderVersion` if UBT asks.
-4. `ue-python.ps1 tools/ue/python/smoke_create_asset.py` exits 0 and logs `LUNDEN_SMOKE_OK`; confirm whether the
+3. `build-editor.ps1` builds the C++ module; pin `BuildSettingsVersion`/`EngineIncludeOrderVersion` if UBT asks.
+4. `run-python.ps1 tools/unreal-engine/python/smoke_create_asset.py` exits 0 and logs `LUNDEN_SMOKE_OK`; confirm whether the
    pythonscript commandlet itself returns non-zero on a Python exception (the script checks the log either way).
-5. `ue-test.ps1` runs `Lunden.Smoke.ModuleLoaded` and reports 1 passed, 0 failed (confirm the `index.json` field
+5. `run-tests.ps1` runs `Lunden.Smoke.ModuleLoaded` and reports 1 passed, 0 failed (confirm the `index.json` field
    names).
 6. MCP: `ModelContextProtocol.StartServer`, `claude mcp add …`, `list_toolsets` — or document why not.
 7. First real `.uasset` commit with Windows Git: `git lfs ls-files` shows it, `git check-attr` matrix, a push with

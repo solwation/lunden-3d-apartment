@@ -7,8 +7,8 @@
   Default filter "Lunden." (the project's own tests, e.g. Lunden.Smoke.ModuleLoaded). Without a usable engine it
   only prints the command. Logs and reports under unreal/Lunden/Saved.
 .EXAMPLE
-  powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/ue/ue-test.ps1
-  powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/ue/ue-test.ps1 -Filter Lunden.Smoke
+  powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-tests.ps1
+  powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-tests.ps1 -Filter Lunden.Smoke
 #>
 [CmdletBinding()]
 param(
@@ -16,30 +16,30 @@ param(
 	[switch]$WithRhi,
 	[string]$EngineDir
 )
-. (Join-Path $PSScriptRoot 'ue-common.ps1')
+. (Join-Path $PSScriptRoot 'common.ps1')
 
 $p = Get-LundenProject
 $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'
 $report = Join-Path $p.Dir "Saved\Automation\$stamp"
-$log = '<unreal/Lunden/Saved/Logs/ue-test-TIME.log>'
+$log = '<unreal/Lunden/Saved/Logs/run-tests-TIME.log>'
 $argsFor = { param($logPath)
-	$a = "$(ConvertTo-UeArg $p.UProject) -ExecCmds=`"Automation RunTests $Filter; Quit`" -TestExit=`"Automation Test Queue Empty`"" +
-		" -ReportExportPath=$(ConvertTo-UeArg $report) -unattended -nosplash -nosound -nop4 -stdout -FullStdOutLogOutput -abslog=$(ConvertTo-UeArg $logPath)"
+	$a = "$(ConvertTo-UnrealArg $p.UProject) -ExecCmds=`"Automation RunTests $Filter; Quit`" -TestExit=`"Automation Test Queue Empty`"" +
+		" -ReportExportPath=$(ConvertTo-UnrealArg $report) -unattended -nosplash -nosound -nop4 -stdout -FullStdOutLogOutput -abslog=$(ConvertTo-UnrealArg $logPath)"
 	if (-not $WithRhi) { $a += ' -nullrhi' }
 	$a }
-$envr = Resolve-UeForRun $EngineDir 'ue-test' { param($root) Format-UeCommand (Join-Path $root 'Engine\Binaries\Win64\UnrealEditor-Cmd.exe') (& $argsFor $log) }
+$envr = Resolve-UnrealForRun $EngineDir 'run-tests' { param($root) Format-UnrealCommand (Join-Path $root 'Engine\Binaries\Win64\UnrealEditor-Cmd.exe') (& $argsFor $log) }
 
-$log = New-UeLogPath 'ue-test'
+$log = New-UnrealLogPath 'run-tests'
 New-Item -ItemType Directory -Force -Path $report | Out-Null
-$code = Invoke-UeProcess $envr.Engine.EditorCmd (& $argsFor $log)
+$code = Invoke-UnrealProcess $envr.Engine.EditorCmd (& $argsFor $log)
 $index = Join-Path $report 'index.json'
 if (-not (Test-Path -LiteralPath $index)) {
 	Write-Host "ERROR: no test report at $index (editor exit code $code); see $log" -ForegroundColor Red
-	exit $UeExit.Failed
+	exit $UnrealExit.Failed
 }
 $r = Get-Content -LiteralPath $index -Raw | ConvertFrom-Json
 $passed = [int]$r.succeeded + [int]$r.succeededWithWarnings
 Write-Host "Automation '$Filter': passed $passed (with warnings $($r.succeededWithWarnings)), failed $($r.failed), not run $($r.notRun); editor exit code $code"
 Write-Host "Report $report; log $log"
-if ([int]$r.failed -gt 0 -or $passed -lt 1) { exit $UeExit.Failed }
-exit $UeExit.Ok
+if ([int]$r.failed -gt 0 -or $passed -lt 1) { exit $UnrealExit.Failed }
+exit $UnrealExit.Ok

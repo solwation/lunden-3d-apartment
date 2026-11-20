@@ -14,7 +14,7 @@ on:
       # the Unreal version (#2243) is not part of the site: its project, build scripts and data-contract schemas
       # (#2245) never deploy Pages; the site's own files stay where they are
       - 'unreal/**'
-      - 'tools/ue/**'
+      - 'tools/unreal-engine/**'
       - 'shared/schema/**'
   workflow_dispatch:
   # once a day, so the TODO post-its on the fridge (#340, tools/todo.py) follow the issues without a code push;

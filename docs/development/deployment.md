@@ -112,7 +112,7 @@ The published package contains no `tools/` at all (#745): the test pages are not
 It also writes `data/todo.json` from the repo's open issues (`tools/todo.py`, REST API with the workflow's
 GITHUB_TOKEN, `[]` on any error) AFTER the hash and outside it (#340): a changed TODO list reloads nobody; the Pages
 workflow also runs once a day (schedule) so the post-its follow the issues. Locally `data/todo.sample.json` is used.
-Commits that only touch docs/, material/, cloudflare/, `*.md`, cloud.yml, `unreal/`, `tools/ue/` or `shared/schema/` do not deploy at all (`paths-ignore`; the Unreal version and its LFS rules: [unreal](unreal.md#web-protection), #2243).
+Commits that only touch docs/, material/, cloudflare/, `*.md`, cloud.yml, `unreal/`, `tools/unreal-engine/` or `shared/schema/` do not deploy at all (`paths-ignore`; the Unreal version and its LFS rules: [unreal](unreal.md#web-protection), #2243).
 The Worker job (cloud.yml) runs on `cloudflare/**` and on every `src/` file the Worker imports, listed in its `paths`; `cloudflare/deploypaths.test.mjs` follows the Worker's import graph and fails (in CI: a warning) when a newly imported `src/` file is missing there (#1606).
 Crash reports (#629): the Worker (cloudflare/crash.js) must be deployed (cloud.yml does it on `cloudflare/**` pushes) before reports
 arrive; until then POST /crash gets 404 and the client just queues at most three and gives up silently. Read them with

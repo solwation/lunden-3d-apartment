@@ -1,8 +1,8 @@
 """Lunden (#2243) headless smoke test: create, save, reload and delete an asset in the Unreal editor.
 
-Run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/ue/ue-python.ps1 tools/ue/python/smoke_create_asset.py
+Run: powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/smoke_create_asset.py
 Uses only /Game/Lunden/_Smoke (ignored by unreal/Lunden/.gitignore) and deletes it again; raises on any failure so
-tools/ue/ue-python.ps1 reports a non-zero exit.
+tools/unreal-engine/run-python.ps1 reports a non-zero exit.
 """
 import unreal
 

@@ -58,7 +58,7 @@ Build/*/**
 # Per-machine MCP client config written by ModelContextProtocol.GenerateClientConfig (docs/development/unreal.md)
 .mcp.json
 
-# Scratch assets of tools/ue/python/smoke_create_asset.py (deleted by the script; ignored in case it is interrupted)
+# Scratch assets of tools/unreal-engine/python/smoke_create_asset.py (deleted by the script; ignored in case it is interrupted)
 /Content/Lunden/_Smoke/
 
 # NOT ignored on purpose (template ignores it): *_BuiltData.uasset. With Lumen only (r.AllowStaticLighting=False)
