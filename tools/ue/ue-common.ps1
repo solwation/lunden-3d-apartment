@@ -98,7 +98,10 @@ function Find-VisualStudio {
 	$vswhere = Join-Path ${env:ProgramFiles(x86)} 'Microsoft Visual Studio\Installer\vswhere.exe'
 	if (-not (Test-Path -LiteralPath $vswhere)) { return @() }
 	$json = & $vswhere -products * -all -prerelease -include packages -format json | Out-String
-	$instances = @($json | ConvertFrom-Json)
+	# Windows PowerShell 5.1 emits a JSON array as ONE pipeline object, so @(... | ConvertFrom-Json) would wrap the whole
+	# array as a single element once two VS instances exist (e.g. Build Tools + Community); assign first, then unroll
+	$parsed = $json | ConvertFrom-Json
+	$instances = @($parsed)
 	$wanted = Get-LundenVsConfigComponents
 	foreach ($i in $instances) {
 		if (-not $i.installationPath) { continue }
