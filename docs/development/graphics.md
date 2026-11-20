@@ -1749,6 +1749,21 @@ checks. `tools/avatartrainers2084browser.cjs` uses actual furniture/Rest/Ghosts/
 production frame hooks and reflector. [Own captures, source hashes, budgets and limits](../verification/2084/README.md).
 This character change has no public downstream application.
 
+### Shoe models and socks (#2169)
+
+Look fields `shoeModel` (0 trainer = as before, 1 boot, 2 leather low shoe, 3 sandal) and `socks` (0 none, 1 white, 2 dark, 3 grey), tunables in
+`AVATAR_SHOES` (config.js, all *guess*). Wire: both ride the headphones' tag `f` as `phones + 10 * (shoeModel + 4 * socks)`; an older client reads
+only f0-f2, skips the value and shows trainers without socks (and without headphones, the one cost of sharing the tag). Missing value = today's look
+(no tag written). Every model keeps the trainer's sole (same footprint, height and the foot IK #2015 contact points); the variant key gets the
+suffix `_<shoeModel + 4 * socks>` only when non-zero, so existing variants and vertex order are unchanged. Boot: the trainer's upper under a shaft
+and collar lathe skinned like the leg (`limbWeights`), so it follows the shin. Leather shoe (`src/avatarshoes.js`): a lower, pointed upper with a
+dark throat and toe-cap seam in a new surface region (`REGION.leather` 10, roughness `finish.leather` 0.34 against the trainer's 0.72), dark sole.
+Sandal: a bare skin foot, forefoot and instep straps and an ankle strap, tan sole. Socks: a leg tube (the `garment` ease over the skin) from the ankle
+up `sockHeight`, built only with shorts or a skirt/dress and not under a boot. Triangle delta per avatar (both feet): boot +280, leather -242,
+sandal +164, socks +288 (shorts), on a 16 076 triangle base; no new draw call, texture or uniform. Customizer: "Skomodell" and "Strumpor" beside the
+shoe colours. Tests: `tools/avatarshoes2169test.mjs` (tag round trip / fallback, sole on the floor and on a kerb for every model), browser capture
+`tools/avatarshoes2169browser.cjs` with `tools/avatarshoes2169.html`.
+
 ### Hands: nails, joint creases, knuckles and tendons (#2106)
 
 `src/avatarhand.js` (tunables `AVATAR_HAND_DETAIL`, all *guess*; program key suffix `-hand2106`) places per finger, from #2016's own

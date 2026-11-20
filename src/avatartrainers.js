@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { AVATAR_TRAINERS as S } from './config.js';
 const cross = (a, b, c) => (b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]);
 /** Clip an XZ detail to each real upper triangle: no smooth-ellipsoid approximation or sunken chords. */
-function patch(upper, polygons, lift) {
+export function patch(upper, polygons, lift) {
   upper.computeBoundingBox();
   const top = upper.boundingBox.max.y, p = upper.attributes.position, n = upper.attributes.normal, indices = upper.index?.array ?? Array.from({ length: p.count }, (_, i) => i), position = [], normal = [];
   for (let i = 0; i < indices.length; i += 3) {
@@ -35,7 +35,7 @@ function patch(upper, polygons, lift) {
   }
   return new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(position, 3)).setAttribute('normal', new THREE.Float32BufferAttribute(normal, 3));
 }
-function ribbon(a, b, width) {
+export function ribbon(a, b, width) {
   const dx = b[0] - a[0], dz = b[1] - a[1], k = width / (2 * Math.hypot(dx, dz)), x = -dz * k, z = dx * k;
   return [[a[0] + x, a[1] + z], [b[0] + x, b[1] + z], [b[0] - x, b[1] - z], [a[0] - x, a[1] - z]];
 }

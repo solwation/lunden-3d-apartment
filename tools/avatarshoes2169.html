@@ -1,0 +1,45 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Avatar shoes — #2169</title><link rel="icon" href="data:,">
+<script type="importmap">{"imports":{"three":"../node_modules/three/build/three.module.js","three/addons/":"../node_modules/three/examples/jsm/"}}</script>
+<style>html,body{margin:0;background:#c9d0d5}canvas{display:block}</style></head>
+<body><script type="module">
+// #2169 component page: window.__row(looks, view) draws one avatar per look side by side (feet / legs crop), window.__stair(look) a figure standing on a stair.
+// Driven by tools/avatarshoes2169browser.cjs.
+import * as THREE from 'three';
+import { Avatar } from '../src/avatar.js';
+import { avatarLook } from '../src/config.js';
+const W = 1000, H = 560, renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(W, H); renderer.setPixelRatio(1); renderer.toneMapping = THREE.NeutralToneMapping; document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0xc9d0d5);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8a7f72, 1.7));
+const sun = new THREE.DirectionalLight(0xfff2e0, 2.4); sun.position.set(2, 4, 3); scene.add(sun);
+const floor = new THREE.Mesh(new THREE.PlaneGeometry(30, 30), new THREE.MeshStandardMaterial({ color: 0xb7a58f, roughness: 0.9 })); floor.rotation.x = -Math.PI / 2; floor.position.y = -0.002; scene.add(floor);
+const cam = new THREE.PerspectiveCamera(10, W / H, 0.05, 60);
+let made = [];
+const clear = () => { for (const o of made) scene.remove(o); made = []; };
+const mk = (over, i) => ({ ...avatarLook('p' + i), style: 0, hair: 0x3b2a1e, top: 0x3d6b8f, pants: 0x3a3c41, shoes: 0x2a2523, skin: 0xe0ae8a, tall: 1, build: 1, gender: 0, cut: 0, sleeves: 0, legs: 1, ...over });
+window.__row = (looks, yaw, crop) => {
+  clear();
+  looks.forEach((over, i) => { const a = new Avatar(mk(over, i)); a.object.position.set((i - (looks.length - 1) / 2) * 0.5, 0, 0); a.object.rotation.y = yaw; scene.add(a.object); made.push(a.object); a.update(0, {}); });
+  const [cy, fov, cx = 0, dz = 8] = crop; cam.fov = fov; cam.updateProjectionMatrix(); cam.position.set(cx + Math.sin(yaw) * 0, cy, dz); cam.lookAt(cx, cy, 0);
+  renderer.render(scene, cam); return renderer.domElement.toDataURL('image/png');
+};
+const STEP = { rise: 0.18, tread: 0.28, n: 8 };
+const groundAt = (x, z) => { const d = -z; return d <= 0 ? 0 : STEP.rise * Math.min(STEP.n, Math.ceil(d / STEP.tread - 1e-9)); };
+window.__stair = (over, secs = 2.2) => {
+  clear();
+  const mat = new THREE.MeshStandardMaterial({ color: 0xd9d4ca, roughness: 0.85 });
+  for (let i = 0; i < STEP.n; i++) { const m = new THREE.Mesh(new THREE.BoxGeometry(1.2, STEP.rise * (i + 1), STEP.tread), mat); m.position.set(0, STEP.rise * (i + 1) / 2, -STEP.tread * (i + 0.5)); scene.add(m); made.push(m); }
+  const a = new Avatar(mk(over, 0)); scene.add(a.object); made.push(a.object);
+  const dt = 1 / 60, v = 0.9; let z = 0.2;
+  a.object.rotation.y = Math.PI;
+  for (let i = 0; i < Math.round(secs / dt); i++) {
+    z -= v * dt; const y = groundAt(0, z); a.object.position.set(0, y, z);
+    a.update(dt, { speed: v, groundSpeed: v, motionFrame: [0, z, Math.PI], groundEnabled: true, ground: groundAt, floorY: y, gaitDir: [0, 1] });
+  }
+  a.object.updateMatrixWorld(true);
+  cam.fov = 20; cam.updateProjectionMatrix(); cam.position.set(2.6, a.object.position.y + 0.55, a.object.position.z + 0.3); cam.lookAt(0, a.object.position.y + 0.35, a.object.position.z - 0.15);
+  renderer.render(scene, cam); return renderer.domElement.toDataURL('image/png');
+};
+window.__ready = true;
+</script></body></html>

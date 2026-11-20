@@ -4318,7 +4318,7 @@ export const AVATAR = { fill: 0.07, rim: 0.85, rimPower: 2.2, emissiveOutline: 0
 export const AVATAR_SURFACE = {
   // #1995 authored surface-response guesses: one PBR material, no image maps.
   // Detail is in bind-pose metres and fades with pixel footprint at distance.
-  finish: { skin: 0.55, cloth: 0.92, hair: 0.48, eye: 0.16, shoe: 0.72, accessory: 0.6,
+  finish: { skin: 0.55, cloth: 0.92, hair: 0.48, eye: 0.16, shoe: 0.72, leather: 0.34, accessory: 0.6, // #2169: leather shoes (glossier than the trainers' 0.72) *guess*
     metalRoughness: 0.28, metalness: 0.72, weaveRate: 950, weaveStrength: 0.045,
     hairSway: 0.18, hairBend: 12, hairRate: 170, hairStrength: 0.09, skinRate: 155, skinStrength: 0.018 },
   sides: 12, jointBlend: 0.055, wristBlend: 0.028, shoulderBlend: 0.45,
@@ -7763,6 +7763,20 @@ export const AVATAR_TRAINERS = {
 };
 
 export const AVATAR_CLOTHES = { legs: { tag: 'p', names: ['Raka', 'Shorts', 'Vida', 'Kjol', 'Klänning'], wide: 1.45, shorts: -0.2 }, cut: { tag: 'm', names: ['T-shirt', 'Linne', 'Luvtröja'] } };
+// #2169: shoe models (look field `shoeModel`: 0 trainer = the look as it was, 1 boot, 2 leather shoe, 3 sandal) and socks (`socks`: 0 none,
+// 1 white, 2 dark, 3 grey; shown with shorts / skirts, under any shoe but the boot). Both ride the headphones' tag `f`
+// (`phones` + 10 × (`shoeModel` + 4 × `socks`)): an older client reads only f0-f2, skips a bigger value and shows trainers, no
+// socks and no headphones. Every model keeps the trainer's sole (same footprint, same height) so foot IK (#2015) is unchanged.
+// Geometry, *guess* by eye, in the shoe-local frame of the trainer (y -0.442 = the sole's top, z the foot's length, ankle at y -0.41)
+// except `boot` / `sock`, whose tubes are skinned like the leg (hip frame, `h` metres above the ankle).
+export const AVATAR_SHOES = {
+  tag: 'f', models: ['Gymnastikskor', 'Känga', 'Lågskor', 'Sandaler'], socks: ['Inga strumpor', 'Vita', 'Mörka', 'Grå'],
+  sockColours: [0, 0xf2f0ec, 0x25262b, 0x8b8e95], sockHeight: 0.13, // m of sock above the ankle bone (the trainer's collar reaches ~0.055)
+  soles: { boot: 0x2a2523, leather: 0x2b211c, sandal: 0xa98d68 },
+  boot: { profile: [[0.054, -0.03], [0.054, 0.02], [0.059, 0.08], [0.065, 0.14], [0.07, 0.205]], collar: [0.0705, 0.0065, 0.205, 0.76], sides: 14, depth: 1.06 },
+  leather: { size: [0.098, 0.15, 0.272], toeTaper: 0.3, throat: { x: 0.017, z: [-0.01, 0.07], shade: 0.55, lift: 0.0007 }, cap: { z: 0.12, width: 0.003, shade: 0.8 } },
+  sandal: { foot: [0.088, 0.12, 0.27], straps: [[0.032, 0.016], [0.125, 0.016]], thick: 0.0035, ankle: [0.0475, 0.0505, 0.016, -0.016] },
+};
 // #2157: the A-line skirt (`legs` 3, in the trousers' colour) and the simple dress (`legs` 4: the skirt in the top's colour under the chosen
 // top, read as one garment with a waist seam). They are new values of the trousers' tag `p` (p3 / p4): an older client only accepts
 // p0-p2, skips the value and shows straight trousers. Geometry (src/avatarskirt.js, hips-local bind metres: y 0 = the hip joints' height,
@@ -7832,7 +7846,8 @@ function encodeLookExt(look) {
   if (gl || er) out += `${AVATAR_GLASSES.tag}${gl + 10 * er}`;
   const hatV = Number.isInteger(look.hat) && look.hat > 0 && look.hat < AVATAR_HAT.names.length ? look.hat : 0, ageV = ageStepOf(look);
   if (hatV || ageV) out += `${AVATAR_HAT.tag}${hatV + 10 * ageV}`; // #1321; #2155: the age step in the tens
-  if (Number.isInteger(look.phones) && look.phones > 0 && look.phones < AVATAR_PHONES.names.length) out += `${AVATAR_PHONES.tag}${look.phones}`; // #1322
+  const ph = Number.isInteger(look.phones) && look.phones > 0 && look.phones < AVATAR_PHONES.names.length ? look.phones : 0, shoeV = shoeModelOf(look) + 4 * socksOf(look);
+  if (ph || shoeV) out += `${AVATAR_PHONES.tag}${ph + 10 * shoeV}`; // #1322; #2169: the shoe model and socks in the tens
   const neck = Number.isInteger(look.necklace) && look.necklace > 0 && look.necklace < AVATAR_NECKLACE.names.length ? look.necklace : 0, beardV = beardCutOf(look);
   if (neck || beardV) out += `${AVATAR_NECKLACE.tag}${neck + 10 * beardV}`; // #1323; #2166: the beard cut in the tens
   const hasRing = Number.isInteger(look.ring) && look.ring > 0 && look.ring <= 10;
@@ -7847,6 +7862,16 @@ function encodeLookExt(look) {
   const cutV = look.cut > 0 && look.cut < AVATAR_CLOTHES.cut.names.length ? look.cut : 0, ow = outerValue(look.outer), om = ow && look.outerMode === 1 ? 1 : 0; // #2147
   if (cutV || ow) out += `${AVATAR_CLOTHES.cut.tag}${cutV + 3 * (ow + 3 * om)}`;
   return out;
+}
+/** The look's shoe model (#2169): 0 trainer (also for any missing or unknown value), 1 boot, 2 leather shoe, 3 sandal. */
+export function shoeModelOf(look) {
+  const v = look?.shoeModel;
+  return Number.isInteger(v) && v > 0 && v < AVATAR_SHOES.models.length ? v : 0;
+}
+/** The look's socks (#2169): 0 none (also for any missing or unknown value), 1 white, 2 dark, 3 grey. */
+export function socksOf(look) {
+  const v = look?.socks;
+  return Number.isInteger(v) && v > 0 && v < AVATAR_SHOES.socks.length ? v : 0;
 }
 /** The look's age step (#2155): an integer 0 … steps − 1, 0 (young: the look as it was) for a missing or invalid value. */
 export function ageStepOf(look) {
@@ -7886,7 +7911,11 @@ function decodeLookExt(ext, lk) {
       if (v % 10 < AVATAR_HAT.names.length && Math.floor(v / 10) < AVATAR_AGE.steps) { lk.hat = v % 10; if (v >= 10) lk.age = Math.floor(v / 10); }
       continue;
     }
-    if (tag === AVATAR_PHONES.tag) { if (v < AVATAR_PHONES.names.length) lk.phones = v; continue; } // #1322
+    if (tag === AVATAR_PHONES.tag) { // #1322 the headphones in the units, #2169 the shoe model and socks above them
+      const w = Math.floor(v / 10);
+      if (v % 10 < AVATAR_PHONES.names.length && w < 4 * AVATAR_SHOES.socks.length) { lk.phones = v % 10; if (w) { lk.shoeModel = w % 4; lk.socks = Math.floor(w / 4); } }
+      continue;
+    }
     if (tag === AVATAR_NECKLACE.tag) { // #1323 the necklace in the units, #2166 the beard cut in the tens
       if (v % 10 < AVATAR_NECKLACE.names.length && Math.floor(v / 10) < AVATAR_BEARD_CUT.names.length) { lk.necklace = v % 10; if (v >= 10) lk.beardCut = Math.floor(v / 10); }
       continue;

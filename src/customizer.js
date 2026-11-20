@@ -2,7 +2,7 @@ import { playerLocalStorage as localStorage } from './playerprofiles.js';
 import { BUILD } from './version.js';
 import { wornLook, outerColour } from './avataroutwear.js'; // #2147
 import { skirtKind } from './avatarskirt.js'; // #2157
-import { SKIN, SKIN_TONES, HAIR, TOPS, PANTS, SHOES, AVATAR_HEIGHT, encodeAvatarLook, decodeAvatarLook, avatarLook, avatarHeightCm, EYES, AVATAR_SHAPE, avatarShape, AVATAR_BUILD, avatarBuildStep, avatarBuildWidth, AVATAR_GLASSES, AVATAR_HAT, AVATAR_PHONES, AVATAR_NECKLACE, AVATAR_EARRINGS, AVATAR_RING, AVATAR_WRIST, wristValue, AVATAR_CLOTHES, AVATAR_OUTERWEAR, outerValue, AVATAR_NOSE_FORMS, noseFormOf, AVATAR_SKIN_VARIATION, skinVarOf, AVATAR_AGE, ageStepOf, beardCutOf, beardChoiceOf, setBeardChoice } from './config.js';
+import { SKIN, SKIN_TONES, HAIR, TOPS, PANTS, SHOES, AVATAR_HEIGHT, encodeAvatarLook, decodeAvatarLook, avatarLook, avatarHeightCm, EYES, AVATAR_SHAPE, avatarShape, AVATAR_BUILD, avatarBuildStep, avatarBuildWidth, AVATAR_GLASSES, AVATAR_HAT, AVATAR_PHONES, AVATAR_NECKLACE, AVATAR_EARRINGS, AVATAR_RING, AVATAR_WRIST, wristValue, AVATAR_CLOTHES, AVATAR_OUTERWEAR, outerValue, AVATAR_NOSE_FORMS, noseFormOf, AVATAR_SKIN_VARIATION, skinVarOf, AVATAR_AGE, ageStepOf, beardCutOf, beardChoiceOf, setBeardChoice, AVATAR_SHOES, shoeModelOf, socksOf } from './config.js';
 
 // #1220: the brows' colours (config.js HAIR, the hair swatches' names) and a first choice that follows the hair
 const BROW_NAMES = ['Mörkbruna', 'Bruna', 'Ljusbruna', 'Guldbruna', 'Blonda', 'Grå', 'Röda', 'Svarta'];
@@ -528,6 +528,7 @@ function updateActiveSwatches() {
     { type: 'sleeves', value: currentLook.sleeves },
     { type: 'pants', value: currentLook.pants, list: PANTS },
     { type: 'shoes', value: currentLook.shoes, list: SHOES },
+    { type: 'shoeModel', value: shoeModelOf(currentLook) }, { type: 'socks', value: socksOf(currentLook) }, // #2169
     { type: 'style', value: currentLook.style },
     { type: 'legs', value: Number(currentLook.legs) || 0 }, // #1244
     { type: 'cut', value: Number(currentLook.cut) || 0 },
@@ -674,7 +675,7 @@ function organizeControls() {
     const shape = section.querySelector('[data-shape]')?.dataset.shape;
     const key = section.querySelector('#avatar-height, #avatar-build') || ['gender', 'skin'].includes(type) ? 'body'
       : ['style', 'facial'].includes(type) || shape === 'hairLength' ? 'hair'
-      : ['top', 'pants', 'shoes', 'legs'].includes(type) ? 'clothes'
+      : ['top', 'pants', 'shoes', 'shoeModel', 'socks', 'legs'].includes(type) ? 'clothes'
       : section.hasAttribute('data-face-section') ? 'face' : 'accessories';
     panels.get(key).append(section);
   }
@@ -800,6 +801,12 @@ function initCustomizerDOM() {
       applyAndRefresh();
     } else if (type === 'shoes' && SHOES[idx] !== undefined) {
       currentLook.shoes = SHOES[idx];
+      applyAndRefresh();
+    } else if (type === 'shoeModel' && AVATAR_SHOES.models[idx] !== undefined) { // #2169
+      currentLook.shoeModel = idx;
+      applyAndRefresh();
+    } else if (type === 'socks' && AVATAR_SHOES.socks[idx] !== undefined) {
+      currentLook.socks = idx;
       applyAndRefresh();
     } else if (type === 'legs' && AVATAR_CLOTHES.legs.names[idx] !== undefined) { // #1244
       currentLook.legs = idx;

@@ -10,7 +10,8 @@ import { GYM_PUMP } from './config.js';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import * as SkeletonUtils from 'three/addons/utils/SkeletonUtils.js';
-import { KISS, AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, AVATAR_GLASSES as GLASSES, AVATAR_EARRINGS as EARR, AVATAR_HAT as HAT, AVATAR_PHONES as PHONES, AVATAR_NECKLACE as NECK_L, AVATAR_RING as RING, AVATAR_WRIST as WRIST, wristValue, AVATAR_CLOTHES, AVATAR_SURFACE as SURFACE, AVATAR_SKIN as SK, AVATAR_MOUTH as MOUTH, SPIDER, avatarLook, avatarProportions, avatarBuildWidth, EYES, avatarShape, PVP_RIFLE_HEAD as RH, AVATAR_CROUCH as CR, AVATAR_GAIT as GAIT, AVATAR_MOTION as MOTION, DANCE, AVATAR_AIR as AIR, SWIM, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion, AVATAR_JUMP as JUMP, AVATAR_BLINK, AVATAR_GAZE, AVATAR_LIDS, AVATAR_NOSE as NOSE } from './config.js';
+import { KISS, AVATAR as A, AVATAR_BEARD as BEARD, AVATAR_HAIR as HAIR, AVATAR_FACE as FACE, AVATAR_GLASSES as GLASSES, AVATAR_EARRINGS as EARR, AVATAR_HAT as HAT, AVATAR_PHONES as PHONES, AVATAR_NECKLACE as NECK_L, AVATAR_RING as RING, AVATAR_WRIST as WRIST, wristValue, AVATAR_CLOTHES, AVATAR_SURFACE as SURFACE, AVATAR_SKIN as SK, AVATAR_MOUTH as MOUTH, SPIDER, avatarLook, avatarProportions, avatarBuildWidth, EYES, avatarShape, PVP_RIFLE_HEAD as RH, AVATAR_CROUCH as CR, AVATAR_GAIT as GAIT, AVATAR_MOTION as MOTION, DANCE, AVATAR_AIR as AIR, SWIM, rifleHeadRegion, rifleNoseRegion, rifleNoseExtraRegion, rifleNoseBandRegion, rifleNoseDepthRegion, rifleNoseSideRegion, rifleJawRegion, rifleJawFrontSideRegion, AVATAR_JUMP as JUMP, AVATAR_BLINK, AVATAR_GAZE, AVATAR_LIDS, AVATAR_NOSE as NOSE, AVATAR_SHOES, shoeModelOf, socksOf } from './config.js';
+import { leatherShoe, sandal } from './avatarshoes.js';
 import { newBlink, stepBlink, solveGaze, stepSaccade } from './avatargaze.js';
 import { armFixShader, installArmFix } from './avatararmfix.js'; // #2022
 import { newWet, stepWet, falling, wetEnv, WET_DECL, wetVertex, wetColor, wetRoughness } from './avatarweather.js'; // #2018
@@ -82,7 +83,7 @@ import { NAMES, HIP, NECK, UPPER, FORE, HAND, SH, SHIN, THIGH, bindAt, lathe, to
 
 export { avatarLook as look } from './config.js';
 const look = avatarLook;
-const REGION = { skin: 0, top: 1, pants: 2, hair: 3, fixed: 4, lips: 6, iris: 7, beard: 8, brow: 9 }; // 5: the shoes; 8 (#1156): facial hair, the look's `beard` or its hair colour; 9 (#1220): the brows, the look's `brows` or its hair colour
+const REGION = { skin: 0, top: 1, pants: 2, hair: 3, fixed: 4, lips: 6, iris: 7, beard: 8, brow: 9, leather: 10 }; // 5: the shoes; 8 (#1156): facial hair, the look's `beard` or its hair colour; 9 (#1220): the brows, the look's `brows` or its hair colour
 // #1138: which face part a head-bone vertex belongs to (the `facePart` attribute; 0 = not on the head), see faceShape
 // #1165: hair (the scalp shell / curtain, lengthened below the crown), round and square glasses frames and the temples + bridge shared by both
 // #1241: cowlHide collapses protruding facial features (lips, brow ridge) under the Spider-Man mask
@@ -97,7 +98,7 @@ const H = 0.1; // The head bone's eye-height reference (ears, hair, moustache).
 const bases = new Map();
 
 /** Parts of one variant: [geometry, region, shade, bone, fixed colour]. */
-function parts(style, sleeves, gender = 0, facial = 0, legs = 0, cut = 0) {
+function parts(style, sleeves, gender = 0, facial = 0, legs = 0, cut = 0, shoe = 0) {
   const P = [];
   const add = (g, region, bone, at = [], shade = 1, fixed = 0) => {
     place(g, bone, at); P.push([g, REGION[region], shade, fixed]); P[P.length - 1].bone = bone;
@@ -108,7 +109,7 @@ function parts(style, sleeves, gender = 0, facial = 0, legs = 0, cut = 0) {
   const cap = (r, h) => new THREE.CapsuleGeometry(r, h, 1, 5);
   // the body below the head (#1103): torso, shoulders, arms, hands, trousers, belt and shoes (bodyParts below)
   const isFemale = (Number(gender) || 0) === 1;
-  bodyParts(add, cut === 2 || cut > 2 ? 1 : cut === 1 ? 0 : sleeves, isFemale, legs, cut);
+  bodyParts(add, cut === 2 || cut > 2 ? 1 : cut === 1 ? 0 : sleeves, isFemale, legs, cut, shoe);
   // the head: neck, head, ears, face, hair
   add(neckGeometry(isFemale), 'skin', 'head'); // #2043: a tapered column set back under the jaw (was an 8-sided cylinder)
   P[P.length - 1].face = FACE_PART.neck;
@@ -636,7 +637,7 @@ function upperBody(sleeves, female, cut) {
   });
 }
 
-function bodyParts(add, sleeves, isFemale, legs = 0, cut = 0) {
+function bodyParts(add, sleeves, isFemale, legs = 0, cut = 0, shoe = 0) {
   const sphere = (r, w = 10, h = 7, ...a) => new THREE.SphereGeometry(r, w, h, ...a);
   const cap = (r, h, seg = 5) => new THREE.CapsuleGeometry(r, h, 1, seg);
   const hipScale = isFemale ? [1.2, 1, 0.78] : [1.15, 1, 0.75];
@@ -698,10 +699,29 @@ function bodyParts(add, sleeves, isFemale, legs = 0, cut = 0) {
     const upper = shape(sphere(0.5, 10, 4, 0, Math.PI * 2, 0, Math.PI / 2).scale(0.105, 0.18, 0.27), (v) => {
       v.y *= 1 - 0.58 * smoothstep(-0.02, 0.12, v.z); v.y += -0.442; v.z += 0.055;
     });
-    trainerParts.push(...trainerDetails(upper).map(part => ({ ...part, side: s })));
-    add(upper, 'fixed', 'foot' + s, [0, SHIN, 0], 1, 0); // (#1149: the shoe and its sole on the ankle, flat on the floor in a squat)
-    shoePart();
-    add(new THREE.CylinderGeometry(0.5, 0.5, 1, 10).scale(0.11, 0.018, 0.278).translate(0, -0.451, 0.055), 'fixed', 'foot' + s, [0, SHIN, 0], 1, 0xe9e6df); // the sole
+    const model = shoe & 3, socks = shoe >> 2, SS = AVATAR_SHOES, ankle = -(THIGH + SHIN);
+    if (socks && model !== 1 && (legs === 1 || skirt)) { // #2169: socks under the shoe, over the leg's skin (the boot's shaft covers them)
+      add(limbWeights(garment(ringSurface(ringRange(SURFACE.leg, ankle + SS.sockHeight, bottom)), true), s, true), 'fixed', 'thigh' + s, [], 1, SS.sockColours[socks]);
+    }
+    if (model === 0) {
+      trainerParts.push(...trainerDetails(upper).map(part => ({ ...part, side: s })));
+      add(upper, 'fixed', 'foot' + s, [0, SHIN, 0], 1, 0); // (#1149: the shoe and its sole on the ankle, flat on the floor in a squat)
+      shoePart();
+    } else if (model === 1) { // #2169 boot: the trainer's upper under a shaft skinned like the leg, so it follows the shin
+      add(upper, 'fixed', 'foot' + s, [0, SHIN, 0], 1, 0); shoePart();
+      const B = SS.boot, tube = lathe(B.profile, B.sides).scale(1, 1, B.depth).translate(0, ankle, 0);
+      add(limbWeights(tube, s, true), 'fixed', 'thigh' + s, [], 1, 0); shoePart();
+      const [cr, ct, ch, cs] = B.collar;
+      add(limbWeights(new THREE.TorusGeometry(cr, ct, 4, B.sides * 2).rotateX(Math.PI / 2).scale(1, 1, B.depth).translate(0, ankle + ch, 0), s, true), 'fixed', 'thigh' + s, [], cs, 0); shoePart();
+    } else if (model === 2) { // #2169 leather low shoe: a lower, pointed, glossy upper
+      leatherShoe().forEach(({ geometry, shade }) => { add(geometry, 'fixed', 'foot' + s, [0, SHIN, 0], shade, 0); shoePart(); add.last().leather = true; });
+    } else { // #2169 sandal: a bare foot with a forefoot, an instep and an ankle strap
+      const sd = sandal();
+      add(sd.foot, 'skin', 'foot' + s, [0, SHIN, 0], 1);
+      for (const g of sd.straps) { add(g, 'fixed', 'foot' + s, [0, SHIN, 0], 1, 0); shoePart(); }
+    }
+    const soleColour = [0xe9e6df, SS.soles.boot, SS.soles.leather, SS.soles.sandal][model];
+    add(new THREE.CylinderGeometry(0.5, 0.5, 1, 10).scale(0.11, 0.018, 0.278).translate(0, -0.451, 0.055), 'fixed', 'foot' + s, [0, SHIN, 0], 1, soleColour); // the sole
   }
   for (const part of trainerParts) {
     add(part.geometry, 'fixed', 'foot' + part.side, [0, SHIN, 0], part.shade, part.colour ?? 0);
@@ -1157,6 +1177,7 @@ function surfaceRoughness() {
     else if (region == 1.0 || region == 2.0) finish = ${F.cloth.toFixed(3)};
     else if (region == 3.0 || region == 8.0 || region == 9.0) finish = ${F.hair.toFixed(3)};
     else if (region == 5.0) finish = ${F.shoe.toFixed(3)};
+    else if (region == 10.0) finish = ${F.leather.toFixed(3)};
     if ((abs(vSurface.y - ${FACE_PART.eye.toFixed(1)}) < 0.5 || abs(vSurface.y - ${FACE_PART.iris.toFixed(1)}) < 0.5) && vBare < 0.5) finish = ${F.eye.toFixed(3)};
     if (uSuit > 0.5) finish = ${F.cloth.toFixed(3)};
     roughnessFactor = mix(finish, ${F.metalRoughness.toFixed(3)}, vRing);`;
@@ -1185,11 +1206,11 @@ function mouthWeight(role, x, y, z) {
 }
 
 /** The shared base geometry of a variant: positions, normals, skin attributes and `region` + `base` colour per vertex. */
-function base(style = 0, sleeves = 0, gender = 0, facial = 0, legs = 0, cut = 0) {
-  const key = `${style}_${sleeves}_${gender}_${facial}_${legs}_${cut}`;
+function base(style = 0, sleeves = 0, gender = 0, facial = 0, legs = 0, cut = 0, shoe = 0) {
+  const key = `${style}_${sleeves}_${gender}_${facial}_${legs}_${cut}${shoe ? '_' + shoe : ''}`; // (#2169: the shoe model + 4 × socks, last)
   let b = bases.get(key);
   if (b) return b;
-  const list = parts(style, sleeves, gender, facial, legs, cut), geos = []; let headProjection = null, headRadius = 0;
+  const list = parts(style, sleeves, gender, facial, legs, cut, shoe), geos = []; let headProjection = null, headRadius = 0;
   for (const part of list) {
     const [g0, region, shade, fixed] = part;
     if (part.rifleSkull) {
@@ -1228,7 +1249,7 @@ function base(style = 0, sleeves = 0, gender = 0, facial = 0, legs = 0, cut = 0)
         pucker[i] = Math.round(255 * (follow === undefined ? (['upper', 'lower', 'seam'].includes(part.mouth) ? 1 : skin) : skin + (1 - skin) * follow));
       }
       if (hb) mouth[i] = g.attributes.jawWeight ? g.attributes.jawWeight.getX(i) : mouthWeight(part.mouth, gp.getX(i) - hb.x, gp.getY(i) - hb.y, gp.getZ(i) - hb.z); // (#2150: the cavity / teeth strips carry their own weight)
-      jaw[i] = part.rifleJaw || (part.continuousHead && gp.getY(i) - hb.y < SURFACE.jawTop) ? 1 : 0; nose[i] = part.rifleNose || noseBlend.getX(i) > 0.25 ? 1 : 0; contact[i] = part.rifleSkull ? 1 : 0; reg[i] = part.shoe ? 5 : region; if (g.attributes.skinIndex) { for (let j = 0; j < 4; j++) { si[i * 4 + j] = g.attributes.skinIndex.array[i * 4 + j]; sw[i * 4 + j] = g.attributes.skinWeight.array[i * 4 + j]; } } else { si[i * 4] = k; sw[i * 4] = 1; }
+      jaw[i] = part.rifleJaw || (part.continuousHead && gp.getY(i) - hb.y < SURFACE.jawTop) ? 1 : 0; nose[i] = part.rifleNose || noseBlend.getX(i) > 0.25 ? 1 : 0; contact[i] = part.rifleSkull ? 1 : 0; reg[i] = part.shoe ? (part.leather ? REGION.leather : 5) : region; if (g.attributes.skinIndex) { for (let j = 0; j < 4; j++) { si[i * 4 + j] = g.attributes.skinIndex.array[i * 4 + j]; sw[i * 4 + j] = g.attributes.skinWeight.array[i * 4 + j]; } } else { si[i * 4] = k; sw[i * 4] = 1; }
     }
     g.setAttribute('color', new THREE.BufferAttribute(col, 3));
     g.setAttribute('region', new THREE.BufferAttribute(reg, 1));
@@ -1256,11 +1277,12 @@ function base(style = 0, sleeves = 0, gender = 0, facial = 0, legs = 0, cut = 0)
 
 /** A geometry for one player: the variant's shared position / normal / skin attributes and an own colour attribute. */
 export function avatarModelGeometry(lk) {
-  const b = base(lk.style, lk.sleeves, lk.gender ?? lk.figure ?? 0, (Number(lk.facial ?? lk.facialHair) || 0) + (beardCutOf(lk) === 2 ? 10 : 0), lk.legs | 0, lk.cut | 0), n = b.attributes.position.count;
+  const b = base(lk.style, lk.sleeves, lk.gender ?? lk.figure ?? 0, (Number(lk.facial ?? lk.facialHair) || 0) + (beardCutOf(lk) === 2 ? 10 : 0), lk.legs | 0, lk.cut | 0, shoeModelOf(lk) + 4 * socksOf(lk)), n = b.attributes.position.count;
   const pal = [lk.skin, (lk.cut | 0) > 2 ? outerColour(lk) : lk.top, lk.pants, lk.hair, 0, lk.shoes].map((c) => new THREE.Color(c)); // #2147: a worn layer has its own colour
   pal[6] = pal[0].clone().lerp(new THREE.Color(FACE.lipTint), 0.35).multiplyScalar(0.92); // #1101: the lips, from the skin
   pal[7] = new THREE.Color(EYES.includes(lk.eyes) ? lk.eyes : EYES[0]); // #1138: the irises
   pal[8] = new THREE.Color(lk.beard ?? lk.hair); // #1156: a beard of its own colour (Olof's grey one; players' follow their hair)
+  pal[10] = pal[5].clone(); // #2169: leather shoes in the chosen shoe colour
   pal[9] = new THREE.Color(lk.brows ?? lk.hair); // #1220: the brows' own colour, else the hair's
   const base3 = b.attributes.color.array, reg = b.attributes.region.array, col = new Float32Array(n * 3);
   for (let i = 0; i < n; i++) {
@@ -1278,7 +1300,7 @@ export function avatarModelGeometry(lk) {
 }
 
 /** Triangles of one avatar (documented; perfcount): 'tris' of any variant. */
-export const avatarTriangles = (variant = 0, legs = 0, cut = 0) => base(variant >> 1, variant & 1, 0, 0, legs, cut).attributes.position.count / 3;
+export const avatarTriangles = (variant = 0, legs = 0, cut = 0, shoe = 0) => base(variant >> 1, variant & 1, 0, 0, legs, cut, shoe).attributes.position.count / 3;
 
 // --- the material: lit solid, or an outline -----------------------------------------------------------------------------
 /** MeshStandardMaterial with a rim: `uOutline` 1 → alpha = `uFill` inside and up to `uRim` at the edges (fresnel) with the
