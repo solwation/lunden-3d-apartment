@@ -31,6 +31,10 @@ export const COUNTERS = {
   tasks: { perMin: 6, start: 2000 },
   vacuumed: { perMin: 60, start: 20000 }, // m², rounded
   steps: { perMin: 500, start: 2_000_000 },
+  // #2230: generous physical bounds / old-save allowances (*guess*), separate from #2229 scooter counters.
+  cycleMetres: { perMin: 720, start: 100_000 }, // bicycle's 11 m/s ceiling = 660 m/min
+  swimMetres: { perMin: 180, start: 10_000 }, // .9 m/s + at most1.8 m/s stroke = 162 m/min, current excluded
+  diveSeconds: { perMin: 60, start: 3600 }, // actual simulated seconds, never faster than time
   dribbles: { perMin: 150, start: 50000 },
   danceSeconds: { perMin: 60, start: 100000 }, // #1829: real whole seconds
   gymReps: { perMin: 30, start: 10000 }, // #1828: fastest full cycle 2.4s = 25/min, plus headroom (*guess*)

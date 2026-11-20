@@ -43,6 +43,10 @@ export const MEDALS = [
   { id: 'hotdogs', counter: 'hotdogs', icon: '🌭', name: 'Korvkung', unit: 'korvar med bröd', base: 25 },
   { id: 'vacuumed', counter: 'vacuumed', icon: '🧹', name: 'Dammsugarkung', unit: 'm² dammsugna', base: 500 },
   { id: 'steps', counter: 'steps', icon: '👣', name: 'Vandrare', unit: 'steg', base: 10000, oldBase: 20000 },
+  // #2230: first coherent outdoor-motion batch; bases are gameplay guesses, ordinary factor/cap/bonus unchanged.
+  { id: 'cycling', counter: 'cycleMetres', icon: '🚲', name: 'Cyklist', unit: 'meter cyklade', base: 1000 },
+  { id: 'swimming', counter: 'swimMetres', icon: '🏊', name: 'Åsimmare', unit: 'meter simmade', base: 100 },
+  { id: 'diving', counter: 'diveSeconds', icon: '🤿', name: 'Dykare', unit: 'sekunder under ytan', base: 60 },
   { id: 'stairs', counter: 'stairs', icon: '🔼', name: 'Trappspringare', unit: 'trappturer', base: 100 },
   { id: 'jetpack', counter: 'flights', icon: '🚀', name: 'Jetpackpilot', unit: 'flygningar', base: 25 },
   { id: 'astronaut', counter: 'jetpackMetres', icon: '🧑‍🚀', name: 'Astronaut', unit: 'höjdmeter uppåt med jetpack', base: 100 }, // #1857: first level100 m is a gameplay guess
