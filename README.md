@@ -297,6 +297,15 @@ python3 -m http.server 8137
 
 Öppna sedan http://localhost:8137/ i Chrome.
 
+## Unreal-version för Windows (under uppbyggnad)
+
+En Unreal Engine 5-version av Lunden för Windows byggs i samma repo under `unreal/Lunden/` (#2242). Webbversionen
+påverkas inte: Pages publicerar bara webbfilerna, och Git LFS används enbart för filer under `unreal/`.
+Krav (Unreal Engine 5.8 via Epic Games Launcher, Visual Studio 2022 med
+[`tools/ue/lunden-unreal.vsconfig`](tools/ue/lunden-unreal.vsconfig)), skript i `tools/ue/` och regler för
+LFS och parallellt arbete finns i [docs/development/unreal.md](docs/development/unreal.md). Kontrollera miljön med
+`powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/ue/ue-env.ps1`.
+
 ## Hur det funkar
 
 `tools/extract_plan.py` läser väggar, fönster, dörrar, trappa och fast inredning direkt ur

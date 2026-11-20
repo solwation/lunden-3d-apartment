@@ -1,0 +1,27 @@
+# Git LFS is used ONLY for the Unreal project under unreal/ (#2243, docs/development/unreal.md).
+# GitHub Pages cannot serve LFS files (it would publish the pointer text), so everything the web version loads
+# (index.html, src/, data/, models/, music/, textures/, icons/ ...) must stay a normal Git blob.
+# Never add an LFS rule outside unreal/ here; tools/stamp.sh fails the Pages build if a pointer slips through.
+# .lfsconfig excludes unreal/** from LFS downloads by default (quota); the Unreal machine overrides it locally.
+
+# Unreal assets and levels: binary, unmergeable -> LFS + lockable (lock before editing, one owner per file)
+unreal/**/*.uasset filter=lfs diff=lfs merge=lfs -text lockable
+unreal/**/*.umap filter=lfs diff=lfs merge=lfs -text lockable
+
+# Source art and import files that only the Unreal project uses
+unreal/**/*.fbx filter=lfs diff=lfs merge=lfs -text
+unreal/**/*.obj filter=lfs diff=lfs merge=lfs -text
+unreal/**/*.glb filter=lfs diff=lfs merge=lfs -text
+unreal/**/*.exr filter=lfs diff=lfs merge=lfs -text
+unreal/**/*.hdr filter=lfs diff=lfs merge=lfs -text
+unreal/**/*.png filter=lfs diff=lfs merge=lfs -text
+unreal/**/*.tga filter=lfs diff=lfs merge=lfs -text
+unreal/**/*.psd filter=lfs diff=lfs merge=lfs -text
+unreal/**/*.tif filter=lfs diff=lfs merge=lfs -text
+unreal/**/*.tiff filter=lfs diff=lfs merge=lfs -text
+unreal/**/*.jpg filter=lfs diff=lfs merge=lfs -text
+unreal/**/*.jpeg filter=lfs diff=lfs merge=lfs -text
+unreal/**/*.wav filter=lfs diff=lfs merge=lfs -text
+unreal/**/*.ogg filter=lfs diff=lfs merge=lfs -text
+unreal/**/*.mp3 filter=lfs diff=lfs merge=lfs -text
+unreal/**/*.mp4 filter=lfs diff=lfs merge=lfs -text

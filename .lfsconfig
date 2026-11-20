@@ -1,0 +1,4 @@
+[lfs]
+	# Agent clones, cloud sessions and the Pages checkout never download Unreal content (LFS quota, #2243).
+	# The Unreal machine opts in locally: git config lfs.fetchexclude ""
+	fetchexclude = unreal/**

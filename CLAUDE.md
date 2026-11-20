@@ -249,6 +249,7 @@ When adding, changing or removing a cheat code, update the shared `src/cheats.js
 | [Browser verification and test selection](docs/development/verification.md) | selecting browser tests, screenshots and checks before pushing |
 | [Rendering performance](docs/development/performance.md) | mesh merging, culling, warm-up, resolution or render budgets |
 | [Apartment facts, materials and references](docs/development/plan-material.md) | verified apartment/site facts, furniture references and chosen finishes |
+| [Unreal Engine version](docs/development/unreal.md) | the Windows Unreal project in `unreal/`, `tools/ue/` scripts, Git LFS, engine lock, MCP or Unreal build/packaging |
 
 Common routes: a wall or door change → architecture + plan/material facts + verification; a touch control → interactions + verification; a life item → life + food + storage; startup/update → deployment + storage + verification. Read several topics when a change crosses their responsibilities. The per-topic module/test maps retain the detailed historical implementation notes.
 

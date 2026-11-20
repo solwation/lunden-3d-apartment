@@ -1,0 +1,65 @@
+# Unreal project ignores (#2243), based on github/gitignore UnrealEngine.gitignore.
+# Content/ is NOT a cache: levels, materials, Blueprints and imported assets are versioned (via Git LFS, see the
+# repository's .gitattributes). Only generated/local state is ignored here.
+
+# Visual Studio / Rider local state and generated project files
+.vs/
+.idea/
+*.sln
+*.slnx
+*.suo
+*.opensdf
+*.sdf
+*.VC.db
+*.VC.opendb
+.vsconfig
+*.xcodeproj
+*.xcworkspace
+
+# Compiled objects, libraries and executables
+*.slo
+*.lo
+*.o
+*.gch
+*.pch
+*.so
+*.dylib
+*.dll
+*.lai
+*.la
+*.a
+*.lib
+*.exe
+*.out
+*.app
+*.ipa
+*.pdb
+
+# Engine-generated build output and caches
+Binaries/*
+Plugins/**/Binaries/*
+Intermediate/*
+Plugins/**/Intermediate/*
+Saved/*
+DerivedDataCache/*
+
+# Build/ except icons and pak deny-lists
+Build/*
+!Build/*/
+Build/*/**
+!Build/*/PakBlacklist*.txt
+!Build/**/*.ico
+
+# Packaged/staged builds never enter Git (releases go to GitHub Releases, #2248)
+/Packaged/
+/Releases/
+/Staged/
+
+# Per-machine MCP client config written by ModelContextProtocol.GenerateClientConfig (docs/development/unreal.md)
+.mcp.json
+
+# Scratch assets of tools/ue/python/smoke_create_asset.py (deleted by the script; ignored in case it is interrupted)
+/Content/Lunden/_Smoke/
+
+# NOT ignored on purpose (template ignores it): *_BuiltData.uasset. With Lumen only (r.AllowStaticLighting=False)
+# maps produce no lightmaps; whether built data is versioned or rebuilt at packaging is decided in #2246.

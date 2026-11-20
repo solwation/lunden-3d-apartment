@@ -39,3 +39,22 @@ printf '{"version":"%s","content":"%s","built":"%s"}\n' "$V" "$C" "$(date -u +%Y
 sed -i -E "s#(from '\./[^']+\.js)'#\1?v=$V'#g" "$OUT"/src/*.js
 sed -i -E "s#src=\"src/bootstrap\.js\"#src=\"src/bootstrap.js?v=$V\"#" "$OUT/index.html"
 sed -i -E "s#'(data/[^']+\.json)'#'\1?v=$V'#g" "$OUT"/src/*.js
+# Pages gets real web files only (#2243): Git LFS is for unreal/ alone and the Pages checkout does not fetch LFS, so
+# an LFS-tracked web file would be published as its pointer text; Unreal packages never belong on the site either
+python3 - "$OUT" <<'PY' || { echo "::error::stamp.sh: $OUT contains a Git LFS pointer or an Unreal package (#2243, docs/development/unreal.md)" >&2; exit 1; }
+import os, sys
+MARK = b'version https://git-lfs.github.com/spec/v1'
+bad = []
+for d, _, files in os.walk(sys.argv[1]):
+    for f in files:
+        p = os.path.join(d, f)
+        if f.lower().endswith(('.uasset', '.umap', '.pak', '.utoc', '.ucas')):
+            bad.append(f'Unreal package: {p}')
+        else:
+            with open(p, 'rb') as fh:
+                if fh.read(len(MARK)) == MARK:
+                    bad.append(f'LFS pointer: {p}')
+for b in bad: print(b, file=sys.stderr)
+print(f"site ok: no Git LFS pointers or Unreal packages in {sys.argv[1]}") if not bad else None
+sys.exit(1 if bad else 0)
+PY
