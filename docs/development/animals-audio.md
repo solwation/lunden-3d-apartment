@@ -57,12 +57,29 @@ change introduces no applicable geometry/navigation port or new public subsystem
 
 #1830: Kattmatare uses the existing `catFishFeeds` counter (first level 25, gameplay guess), including roaming cats and the promoted `CatSpawner`. Promotion sets `on:null` for the ground cat so raw-fish feeding stays enabled; `leave()` retains its fade in place via the `outdoorCat` marker. Furniture feeding remains gated. Outdoor petting preserves the ordinary `cat.onPet` callback and `petted` counter. No additional raw-fish score is awarded.
 
+## Bird song and gull calls (#2178)
+
+`src/birdsong.js` (pure, config-only; `BIRD_SONG` in config.js, all *guesses* by ear and by the Swedish song calendar) holds the schedule and the
+phrases. `songPlan({ month, hour, rise, set, rain })` gives a phrase rate (per minute, peak 14) and a species mix: a dawn chorus Mar-Jul around
+sunrise (`timeFactor`), a smaller evening session before sunset, a flat day base, silence at night, thin late summer and winter where only
+robin and great tit sing (blackbird / chaffinch weights 0 Aug-Feb), and nearly silent rain (`rainFactor`, 4 % left in a downpour).
+`songPhrase(species)` builds blackbird flute notes (+ a twitter), great tit "ti-tu", a falling chaffinch trill with a flourish and a robin's thin
+warble; `gullCall('call' | 'laugh' | 'alarm')` the gull cries. `pickPerch` chooses a random treetop (`aoTrees` crown top) within 40 m (3D);
+`BirdSong` (main.js, every `BIRD_SONG.every` s, only with audio started and not underground) draws Poisson events: songs from treetops,
+gull calls/laughs from the circling flock (`Birds.gullPoint`, within 60 m, only while the gulls are shown), and an alarm cry at a flushed
+gull (`GullRoost.flushed` / `lastFlush`, counted in `flush`). Indoors the level is x0.2. `sfx.birdCall(call, pos, level)` (audio.js) plays
+one call as ONE oscillator through ONE band-pass with per-note pitch and gain automation; a `VoiceCap(2)` (songbirds and gulls together)
+refuses a third voice. The master's under-water muffle (#1949) and mute still apply. #2129 motion, #1924 gull art/LOD and #1699 are untouched.
+Tests: `tools/birdsongtest.mjs` (pure, node), `tools/birdsongbrowser.cjs` (real graph in an OfflineAudioContext). Table and levels:
+docs/verification/2178/README.md.
+
 ## Module and test map
 
 ```text
 docs/development/rigged-cat-evaluation.md #1892 architecture & mobile performance evaluation for rigged GLB cats
 tools/riggedcattest.html  #1892 interactive & headless prototype for rigged vs procedural cat evaluation
 tools/riggedcattest.mjs   #1892 automated model validation for rigged GLB cat evaluation
+src/birdsong.js        #2178 bird song / gull call schedule, phrases, perch pick, scheduler (node test tools/birdsongtest.mjs, browser tools/birdsongbrowser.cjs)
 src/cat.js             the cat: random coat, washing animation, appears/moves/vanishes behind doors
 src/catlife.js         #2125 pure helpers: sitting habits, grooming kind, tail spring + mood flicks, ear aim/twitch, stretch (node test tools/catlifetest.mjs)
 src/catfur.js          #2125 coat shader on the cats' own materials: strand clumps, strand sheen, tail bend (browser tools/catlife2125browser.cjs)

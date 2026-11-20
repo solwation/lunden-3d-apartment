@@ -86,7 +86,9 @@ import { watchForUpdates, BUILD } from './version.js';
 import { CatSpawner, VARIANTS, BREEDS, kittenName, MieleDaily } from './cat.js';
 import { initAudio, sfx, toggleMuted, isMuted, updateListener, setRoomZone, setWindPower, audioParts } from './audio.js';
 import { windSoundParams, gustAt, windStrength, treeNearness } from './windsound.js'; // #2177: the wind's sound
-import { WIND_SOUND, SEASON } from './config.js';
+import { WIND_SOUND, SEASON, BIRD_SONG } from './config.js';
+import { BirdSong } from './birdsong.js'; // #2178: bird song and gull calls by time of day, season and weather
+import { sunTimes } from './daycycle.js';
 import { reverbZone } from './roomreverb.js';
 let roomZoneClock = 0;
 import { stairHeight, stairUnderside } from './stairs.js';
@@ -761,6 +763,7 @@ const watering = new Watering(life,world,{sillPots,things,lights});
 const plantWind=new PlantWind(world,weather);scene.traverse(windShadow);
 const [windForce, windTime] = (params0.get('wind') ?? '').split(',').map((v) => (v === '' ? NaN : Number(v)));
 let windSoundT = 0, windBed = null; // #2177
+let birdSongT = 0; const birdSong = new BirdSong((c, p, l) => sfx.birdCall(c, p, l)), birdEye = { x: 0, y: 0, z: 0 }, gullTmp = new THREE.Vector3(), birdGulls = { n: 0, at: (i, o) => { birds.gullPoint(i, gullTmp); o.x = gullTmp.x; o.y = gullTmp.y; o.z = gullTmp.z; } }; // #2178
 const siteWind = new SiteWind(weather, { force: windForce, time: windTime }); // #2101: trees, shrubs and reeds sway; &wind=power[,seconds] pins it
 const tableSetting = new TableSetting(life,world);
 const hallCare = new HallCare(life,world);
@@ -4001,6 +4004,14 @@ function step(dt) {
     const indoors = !player.outdoors || player.below || player.inCore || player.inPlayroom;
     windBed?.set(windSoundParams({ speed, gust, leaves: SEASON.trees[day.month]?.[3] ?? 1, near: treeNearness(treeFeet, player.pos.x, player.pos.z), indoors }), WIND_SOUND.ease);
     setWindPower(windStrength(speed, gust));
+  }
+  birdSongT += dt; // #2178: song and gull calls, scheduled a few times a second (a Poisson draw each; playing needs the audio started)
+  if (birdSongT >= BIRD_SONG.every && audioParts() && !player.below) {
+    const step = birdSongT; birdSongT = 0;
+    const st = sunTimes(day.doy), eye = camera.position; birdEye.x = eye.x; birdEye.y = eye.y; birdEye.z = eye.z;
+    birdGulls.n = birds?.count ?? 0;
+    birdSong.update(step, { month: day.month, hour: day.hour, rise: st?.[0] ?? 6, set: st?.[1] ?? 18, rain: weather.rain, indoors: !player.outdoors || player.inCore || player.inPlayroom,
+      eye: birdEye, crowns: aoTrees, gulls: birds && birds.fade > 0.5 ? birdGulls : null, flushed: birds?.gullFlushes ?? 0, flushAt: birds?.gullFlushAt ?? null });
   }
   greet.update(dt); conversation.update(); // speech bubbles (#247)
   if (cat.visible && !cat.held && !cat.released) cat.followRug(); // #1009: idle floor support also follows material previews.

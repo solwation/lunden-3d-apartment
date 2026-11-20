@@ -2352,6 +2352,22 @@ export const WIND_SOUND = {
   window: { gain: [0.08, 0.3], hz: [300, 930], gust: 0.07, lfoHz: 520 / 4 },
 };
 
+// #2178: bird song and gull calls (src/birdsong.js schedule + sfx.birdCall in audio.js). All numbers are our picks (*guess*) by ear and
+// by the Swedish song calendar (blackbird / chaffinch sing Mar–Jul, robin and great tit all year; dawn chorus Mar–Jul).
+// `every` s between schedule ticks; `range` m within which a songbird is heard (gulls `gullRange`, they carry farther); at most `maxVoices`
+// birds at once (VoiceCap); `peak` phrases per minute at the strongest hour of the strongest month; `month[m-1]` = [season level 0…1,
+// blackbird, chaffinch, great tit, robin weights]; `dawn`/`evening` = hours around sunrise / sunset (chorus months only: `chorus`);
+// `day` the base share of the peak by day; `rain` precipitation 0…1 from `rainFrom` to `rainTo` thins song to `rainLeft` of its rate;
+// `gull` calls per minute by day, `gullAlarm` flushed-flock cry calls; `level` loudness (songbird / gull / alarm), `indoors` the share heard through walls.
+export const BIRD_SONG = {
+  every: 0.25, range: 40, gullRange: 60, maxVoices: 2, peak: 14, day: 0.3, chorus: [3, 4, 5, 6, 7],
+  month: [[0.2, 0, 0, 0.5, 0.6], [0.3, 0.1, 0, 0.7, 0.7], [0.7, 0.7, 0.5, 0.9, 0.8], [1, 1, 1, 1, 0.8], [1, 1, 1, 0.9, 0.7], [0.9, 1, 0.9, 0.7, 0.6],
+    [0.6, 0.6, 0.4, 0.4, 0.5], [0.15, 0.05, 0, 0.15, 0.5], [0.2, 0, 0, 0.2, 0.6], [0.25, 0, 0, 0.3, 0.7], [0.2, 0, 0, 0.4, 0.6], [0.15, 0, 0, 0.4, 0.5]],
+  dawn: { from: -1.1, full: -0.4, hold: 0.6, to: 1.8, boost: 0.7 }, evening: { from: -2, full: -1.2, hold: -0.2, to: 0.4, boost: 0.3 },
+  night: { before: -1.2, after: 0.5 }, nonChorusBoost: 0.1,
+  rainFrom: 0.03, rainTo: 0.4, rainLeft: 0.04, gull: 3, gullAlarm: 8, level: { song: 0.2, gull: 0.3, alarm: 0.4 }, indoors: 0.2, ref: 6,
+};
+
 // Speech bubbles (#247, src/greet.js): Olof's lines and your own show for `bubble` s. The neighbours to greet were
 // removed in #670 (with their lines and `reach`).
 export const GREET = { bubble: 2.8 };

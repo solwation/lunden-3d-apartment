@@ -142,6 +142,10 @@ export class Birds {
     return (this.life = { flocks, roost, spots, threats: [] });
   }
 
+  /** #2178: the gull flock's running flush count and where the last flush was, for the alarm call. */
+  get gullFlushes() { return this.life?.roost?.flushed ?? 0; }
+  get gullFlushAt() { return this.life?.roost?.lastFlush ?? null; }
+
   /** Where gull `i` is now (the bestiary's sighting point): its landing pose or its circle. */
   gullPoint(i, out) {
     const p = this.poses[i];

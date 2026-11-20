@@ -376,7 +376,9 @@ export class GullRoost {
       g.flushK = c.k; g.flushAt = t; g.from = { x: p.x, y: p.y, z: p.z };
       const h = threats.reduce((a, b) => (Math.hypot(b.x - p.x, b.z - p.z) < Math.hypot(a.x - p.x, a.z - p.z) ? b : a));
       g.yaw = angleTo(p.x - h.x, p.z - h.z); n++; // away from it
+      this.lastFlush = { x: p.x, y: p.y, z: p.z };
     }
+    this.flushed = (this.flushed ?? 0) + n; // #2178: the running count and place of the last flush (the flock's alarm call)
     return n;
   }
 }

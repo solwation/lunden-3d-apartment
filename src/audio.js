@@ -4,7 +4,7 @@ import { synthFootstep } from './footsteps.js';
 // The AudioContext can only start after a user gesture — call initAudio() from a click.
 
 import { windowWindParams } from './windsound.js';
-import { SOUNDS, KISS, PLAYROOM, SANTA, FOOTSTEPS, SQUIRRELS, SWIM } from './config.js';
+import { SOUNDS, BIRD_SONG, KISS, PLAYROOM, SANTA, FOOTSTEPS, SQUIRRELS, SWIM } from './config.js';
 import { distanceGain, VoiceCap } from './spatialsound.js';
 import { RoomReverb } from './roomreverb.js';
 import { lowMemory } from './lowmemory.js';
@@ -12,6 +12,7 @@ import { lowMemory } from './lowmemory.js';
 let ctx = null, master = null, noiseBuf = null, reverb = null; // #2153: `reverb` = the shared room-acoustics send bus (effects only; music/TV connect to master directly and stay dry)
 const listenerAt = { x: 0, y: 0, z: 0 }, voices = new VoiceCap(SOUNDS.maxVoices); // (#1302: where we hear from; the cap on other players' sounds)
 let muted = false;
+const birdVoices = new VoiceCap(BIRD_SONG.maxVoices); // #2178: at most two birds at once (songbirds and gulls together)
 const windows = new Set(); let windNow = 0.35; // #2177: the open windows' wind (sfx.wind) and the wind power they follow (setWindPower)
 
 export function initAudio() {
@@ -566,6 +567,25 @@ export const sfx = {
         ease(gb.gain, p.bandGain, tc); ease(bp.frequency, p.bandHz, tc); ease(bp.Q, p.bandQ, tc);
       },
     };
+  },
+  /** #2178: one bird call (birdsong.js songPhrase / gullCall) at `pos`: ONE oscillator through ONE band-pass and an envelope, its pitch and loudness
+   *  scheduled per note. Takes one of BIRD_SONG.maxVoices slots for the call's length; false when muted, not started or all slots are busy. */
+  birdCall(call, pos, level = 1) {
+    if (!ready() || !(level > 0) || !birdVoices.take(ctx.currentTime, call.dur + 0.1)) return false;
+    const t0 = ctx.currentTime + 0.02, d = out(pos, level, BIRD_SONG.ref);
+    const o = ctx.createOscillator(); o.type = call.type;
+    const bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = call.hz; bp.Q.value = call.q;
+    const g = ctx.createGain(); g.gain.value = 0;
+    let last = 0;
+    for (const n of call.notes) {
+      const a = t0 + n.t, b = a + n.d, att = Math.min(0.012, n.d * 0.3);
+      o.frequency.setValueAtTime(n.f0, a); o.frequency.linearRampToValueAtTime(n.f1, b);
+      g.gain.setValueAtTime(0, a); g.gain.linearRampToValueAtTime(n.g, a + att); g.gain.linearRampToValueAtTime(0, b);
+      last = b;
+    }
+    o.connect(bp).connect(g).connect(d);
+    o.start(t0); o.stop(last + 0.05);
+    return true;
   },
   /** Rain (#248): a looping hiss whose level and muffling are set every frame (`set(gain, cutoff)`); null before audio. */
   rain() {
