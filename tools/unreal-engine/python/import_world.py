@@ -35,8 +35,11 @@ import sys
 
 import unreal
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from prepare_nanite_materials import prepare_zone
+
 SUPPORTED_FORMAT_VERSION = 1
-IMPORTER_VERSION = 1  # bump when the importer's output changes for the same export (forces a re-import)
+IMPORTER_VERSION = 2  # bump when the importer's output changes for the same export (forces a re-import)
 GENERATED_ROOT = "/Game/Lunden/Generated"
 TOLERANCE_CM = 1.0
 ID_KINDS = ("door", "window", "light", "furniture", "interactive")
@@ -292,6 +295,7 @@ def import_zone(zone, glb_path, glb_entry, manifest, table, map_sha):
         raise RuntimeError(f"{zone}: {len(missing)} nodes have no actor after import, e.g. {missing[:5]}")
     collisions = apply_collision(by_id, extras)
     materials = apply_materials(zone, table)
+    prepare_zone(zone)
     if not unreal.EditorLoadingAndSavingUtils.save_map(world, level_path(zone)):
         raise RuntimeError(f"could not save {level_path(zone)}")
     eal.save_directory(folder, only_if_is_dirty=False, recursive=True)

@@ -34,6 +34,7 @@ def build(path, spec):
         c = mel.create_material_expression(material, unreal.MaterialExpressionConstant, -400, y)
         c.set_editor_property("r", float(spec[key]))
         mel.connect_material_property(c, "", prop)
+    mel.set_base_material_usage(material, unreal.MaterialUsage.MATUSAGE_NANITE, True)
     mel.recompile_material(material)
     eal.save_loaded_asset(material, only_if_is_dirty=False)
     return material

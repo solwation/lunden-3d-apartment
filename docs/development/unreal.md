@@ -830,6 +830,24 @@ What 5.8.4 does, and what the importer does about it:
   loaded (else the editor deletion). `LevelEditorSubsystem.new_level` saves an empty level at once and then refuses
   the path after a failed import, so the importer builds in a blank map and saves it with `save_map` at the end.
 
+**Nanite materials in cooked builds (#2276).** The importer reads each mesh slot's
+effective blend mode, including overrides on glTF instances. Any translucent or
+otherwise unsupported slot sends that mesh through the regular raster path.
+Opaque and masked Nanite meshes use a saved Nanite usage flag on project materials
+and an explicit override on imported material instances. Interchange's engine
+material stays shared. Importer version 2 regenerates older stamped zones.
+After a fresh editor start, check the persisted settings without writing assets:
+
+```powershell
+.\tools\unreal-engine\run-python.ps1 tools/unreal-engine/python/prepare_nanite_materials.py --check l1007 l1007-uteplats
+```
+
+On the measured two-zone import, 1,896 meshes kept Nanite and 73 used raster
+for unsupported blends. The clean read-back checked 461 apartment materials and
+21 patio materials with zero changes, warnings or errors. The final runtime
+check is a new Development cook and camera route with no missing Nanite usage or
+default-material substitutions in the packaged process log.
+
 **Idempotency, defined.** `Generated/<zone>/import-stamp.json` records the GLB's SHA-256 and source commit, the
 importer version, the engine version, the hash of `material-map.json`, a content fingerprint and the SHA-256 of every
 package file. When all of these match and every package file is byte-identical, the zone is **skipped and nothing is
