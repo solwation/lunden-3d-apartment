@@ -1,0 +1,70 @@
+TAP version 13
+# Subtest: all defaults initialize; native excerpt collaborators are inactive and callable where needed
+ok 1 - all defaults initialize; native excerpt collaborators are inactive and callable where needed
+  ---
+  duration_ms: 2.431292
+  type: 'test'
+  ...
+# Subtest: richer collaborators supplied before or after init retain their identity across repeated initialization
+ok 2 - richer collaborators supplied before or after init retain their identity across repeated initialization
+  ---
+  duration_ms: 0.866797
+  type: 'test'
+  ...
+# Subtest: existing lazy DOM element getters remain live and allow an explicit fixture override
+ok 3 - existing lazy DOM element getters remain live and allow an explicit fixture override
+  ---
+  duration_ms: 1.796694
+  type: 'test'
+  ...
+# Subtest: global installer passes the shared script before navigation
+ok 4 - global installer passes the shared script before navigation
+  ---
+  duration_ms: 0.356099
+  type: 'test'
+  ...
+# Subtest: real module import map is preserved and import installer respects already supplied functions
+ok 5 - real module import map is preserved and import installer respects already supplied functions
+  ---
+  duration_ms: 0.750098
+  type: 'test'
+  ...
+# Subtest: actual current main extracts the complete keydown prefix and keyup, ending before blur
+ok 6 - actual current main extracts the complete keydown prefix and keyup, ending before blur
+  ---
+  duration_ms: 2.690791
+  type: 'test'
+  ...
+# Subtest: unrelated listeners before and after the gameplay block do not change its verbatim text
+ok 7 - unrelated listeners before and after the gameplay block do not change its verbatim text
+  ---
+  duration_ms: 0.2186
+  type: 'test'
+  ...
+# Subtest: prefix statements inserted before the gate remain part of the gameplay handler
+ok 8 - prefix statements inserted before the gate remain part of the gameplay handler
+  ---
+  duration_ms: 0.1182
+  type: 'test'
+  ...
+# Subtest: missing or duplicate gameplay gates fail closed
+ok 9 - missing or duplicate gameplay gates fail closed
+  ---
+  duration_ms: 0.359399
+  type: 'test'
+  ...
+# Subtest: missing listener or blur boundary fails closed
+ok 10 - missing listener or blur boundary fails closed
+  ---
+  duration_ms: 0.1642
+  type: 'test'
+  ...
+1..10
+# tests 10
+# suites 0
+# pass 10
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 53.184021

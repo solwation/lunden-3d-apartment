@@ -1,0 +1,22 @@
+{
+  "base": "ce2bc335305900ca6201900d7677beb2648c9b20",
+  "frozenUTC": "2026-11-20T17:02:45.003857+00:00",
+  "sha256": {
+    "tools/mainfixture.cjs": "0359133b8f73576ffa7aa135e8242ceccdaa505809e2858ccbea10e588523fbd",
+    "tools/mainfixturetest.cjs": "f9283dbfd5308417273f58494a04740fe5b9ba70701191ef576e16e884e48c29",
+    "tools/mainfixturebindingstest.cjs": "97d50c7e90055f6feaa5e33c001afa5b59bf4ad51168ac17fade1e64c0d2715e",
+    "tools/statspaneltest.cjs": "abb84138510458badcae088df515bfc0015615261c33a71e7b805c293ddc105b",
+    "tools/courtyardbicycletest.cjs": "87eef9c3d757af1c9d256f7c22dbb81fce7e04556ae82b732027fbfe84d6510c",
+    "src/main.js": "2c6d91bdc08426a0905a4eabeb9036b886d6fddc60506c2453e803c1f5f5a837",
+    "src/player.js": "316c049f6179b8116e718aac3d9bed42d2e2cc1008405ccd11bccc981c953981",
+    "src/config.js": "eab184ec0cbcdc7a7de93d0b17ffdc7afaf7da4950328aec56af654579fbac34",
+    "src/courtyard.js": "5d842f03831a7478d3431f8815670e4a41aa2ecee8e4ce538e64e80e45fadd23",
+    "src/stats.js": "a268b8067ca8eb3f41f9767b5dcedf20b1ebde6bcdcd30020028880de9dcf44b",
+    "src/statspanel.js": "aa8a20410ac3d86831be1c99924862f08a1dff261a321db77c9f232b76fdc9d7",
+    "src/touch.js": "dd50e6cbaa7de942e1bafa5dcd72f435c9d9bc98a9a7dfe8c7a964f12cc4dcf0",
+    "src/keep.js": "b34912eb232efdf85257fd37c8a9fc8f3bc2e7e06a90a582e2beba2fb344274d",
+    "index.html": "c6f4120cfd77e14347010641c4254fe13c5954931776a54b3ed165cc568a692b"
+  },
+  "scope": "original native component fixtures; no production sources, assertions, tolerances, data or CI changed",
+  "historicalBeforeExtractSha256": "b941fa4a81d34a55d9633b806f3a2473441cbaf97dbf5a3f87f8904442c6fe22"
+}

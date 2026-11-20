@@ -1,0 +1,42 @@
+browsertest: no systemd user scope here, running without a memory ceiling
+PASS genuine browser pointer lock acquired on the original mouse-start button
+PASS Tab opens the original panel with free mouse and no pause-menu cover
+PASS real mouse wheel scrolls long statistics without changing a focus action
+PASS opening statistics releases an already-held automatic trigger
+PASS keyboard End reaches the long panel contents
+PASS keyboard Home returns to the top
+PASS keyboard PageDown scrolls the focused panel
+PASS panel keyboard causes no movement, shooting or focus action behind it
+PASS Tab release closes a temporary panel and exposes explicit mouse return
+PASS the return click reacquires real lock without shooting
+PASS genuine close-button click works while Tab is still held
+PASS pinned T panel allows Tab focus navigation rather than closing on keyup
+PASS Shift-Tab returns keyboard focus to scrollable contents
+PASS genuine original close-button click closes the pinned panel
+PASS Enter on the focused return affordance reacquires genuine pointer lock
+PASS T toggles its pinned panel closed with explicit return
+PASS Escape closes statistics instead of controlling the game
+PASS original touch statistics button opens an input-isolated panel
+PASS genuine touch drag scrolls statistics without creating joystick input
+PASS original touch close button resumes the existing touch mode
+PASS native Touch child-button Enter activation preserves touch mode without mouse lock
+PASS native Touch child-button Space activation preserves touch mode without mouse lock
+locator.click: Timeout 30000ms exceeded.
+Call log:
+[2m  - waiting for locator('#stats-reset')[22m
+[2m    - locator resolved to <button type="button" id="stats-reset" class="menu-btn">…</button>[22m
+[2m  - attempting click action[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is not visible[22m
+[2m    - retrying click action[22m
+[2m    - waiting 20ms[22m
+[2m    2 × waiting for element to be visible, enabled and stable[22m
+[2m      - element is not visible[22m
+[2m    - retrying click action[22m
+[2m      - waiting 100ms[22m
+[2m    58 × waiting for element to be visible, enabled and stable[22m
+[2m       - element is not visible[22m
+[2m     - retrying click action[22m
+[2m       - waiting 500ms[22m
+
+    at /home/devcontainers/wt/olw-win10-gpt-6-20261120-2252/tools/statspaneltest.cjs:85:386

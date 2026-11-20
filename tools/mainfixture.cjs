@@ -26,6 +26,11 @@ const DEFAULTS = {
   lightModes: '{page:"top",rows:()=>[],release(){},update(){}}',
   scooters: '{tuner:{release(){},start(){},update(){},fraction:()=>0,holding:false},speedo:{show(){}}}', // #2229: the hold-to-tune releases with the fuse box's in the input excerpts
   screwdriver: 'null',
+  // #2252: unrelated systems reached by native start/input/focus excerpts; richer fixtures always win.
+  updateAppMenu: '()=>{}', // quit/install visibility is outside these input fixtures; startMouse remains verbatim
+  roofPicnic: '{seat:{},targets:()=>[]}',
+  mussels: '{targets:()=>[]}',
+  measure: '{active:false}',
 };
 // DOM elements main.js looks up at load: the init script runs before the DOM exists, so they resolve lazily (a test's own
 // assignment replaces the getter).

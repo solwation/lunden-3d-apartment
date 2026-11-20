@@ -1,0 +1,31 @@
+{
+  "contracts": {
+    "pass": 10,
+    "fail": 0,
+    "ms": 53.184021
+  },
+  "statspanel": {
+    "exit": 1,
+    "pass": 22,
+    "failedAssertions": 0,
+    "finalResetAssertionNotReached": true,
+    "uncaught": "locator.click timeout30000ms; stats-reset hidden by data-welcome-runtime ancestor",
+    "emittedPageErrors": 0,
+    "followup": 2253
+  },
+  "courtyard": {
+    "exit": 0,
+    "pass": 90,
+    "fail": 0,
+    "pageErrors": [],
+    "keepWarnings": [],
+    "webgl": 0
+  },
+  "reviewedNativeImages": {
+    "statspanel/touch.png": "844x390, original DOM/CSS, controlled long statistics and real native touch scroll; no apartment/WebGL",
+    "courtyard/native-hud.png": "900x600, original bicycle HUD and controlled world collaborators; no scene render"
+  },
+  "noFurtherRuns": "one actual browser command per affected consumer, no renderer/full-app/historical browser profile",
+  "cleanProduction": true,
+  "processes": "own browsers exited and server8454 stopped"
+}
