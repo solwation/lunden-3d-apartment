@@ -447,7 +447,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
     this.root.visible = d < G.far || kd < G.far;
     this.dEye = d; this.vh = Math.hypot(v.x, v.z); this.vy = v.y; // (#1302: what the footsteps derive from; #2139: the curve's velocity)
     if (this.tag) { // (#1296) beyond tagFar the tag grows with distance: constant size on screen, no pop-out
-      this.tag.visible = d < G.far && !this.knock;
+      this.tag.visible = d < G.far && !this.knock && !this.inCarSeat; // #2274: no tag while seated under a car roof
       const f = Math.max(1, d / G.tagFar);
       this.tag.scale.set(G.tagWidth * f, (this.tagH ?? G.tagHeight) * f, 1);
     }
@@ -473,6 +473,9 @@ export class Ghost { // (exported for tools/ghostprops.html)
     const seat = REST.avatarSeat - (at.fit?.hip ?? 0); // (the hips sunk into the cushion: the knees bend for the lower seat)
     return (this.seatLegs = seatedLegs(seat, localFloor(at.y, rp.y, k, REST.avatarSeat), this.seatPumpK, this.seatLegs ?? undefined)).feet;
   }
+
+  /** #2274: seated on a vehicle's seat (the cabin floor found by seatFeet): the head is under the roof, where the name tag would be cut in half, so it is hidden as a whole (depth-tested against walls like every tag). */
+  get inCarSeat() { return this.pose === 1 && !this.gx && !!this.seatAt?.vehicle; }
 
   /** #2269: the closedSeatFit of the current seat (null off a vehicle's seat; read after seatFeet). */
   get seatFit() { return this.seatAt?.fit ?? null; }

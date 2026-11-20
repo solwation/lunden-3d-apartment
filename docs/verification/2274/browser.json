@@ -1,0 +1,90 @@
+{
+ "base": "9d4770a91bb46d2419125f5c17c4f0913b9eb558",
+ "head": "9d4770a91bb46d2419125f5c17c4f0913b9eb558",
+ "phases": {
+  "before": {
+   "errors": [],
+   "heights": {
+    "175-passagerarsätet": {
+     "tagVisible": true,
+     "inCarSeat": null,
+     "rootVisible": true
+    },
+    "175-förarsätet": {
+     "tagVisible": true,
+     "inCarSeat": null,
+     "rootVisible": true
+    },
+    "200-passagerarsätet": {
+     "tagVisible": true,
+     "inCarSeat": null,
+     "rootVisible": true
+    },
+    "200-förarsätet": {
+     "tagVisible": true,
+     "inCarSeat": null,
+     "rootVisible": true
+    }
+   },
+   "loadMs": 82421,
+   "sofa": {
+    "tagVisible": true,
+    "hips": [
+     4.323,
+     0.52,
+     11.621
+    ],
+    "head": [
+     4.323,
+     1.197,
+     11.689
+    ]
+   },
+   "ms": 168353
+  },
+  "after": {
+   "errors": [],
+   "heights": {
+    "175-passagerarsätet": {
+     "tagVisible": false,
+     "inCarSeat": true,
+     "rootVisible": true
+    },
+    "175-förarsätet": {
+     "tagVisible": false,
+     "inCarSeat": true,
+     "rootVisible": true
+    },
+    "200-passagerarsätet": {
+     "tagVisible": false,
+     "inCarSeat": true,
+     "rootVisible": true
+    },
+    "200-förarsätet": {
+     "tagVisible": false,
+     "inCarSeat": true,
+     "rootVisible": true
+    }
+   },
+   "loadMs": 74164,
+   "sofa": {
+    "tagVisible": true,
+    "hips": [
+     4.323,
+     0.52,
+     11.621
+    ],
+    "head": [
+     4.323,
+     1.197,
+     11.689
+    ]
+   },
+   "ms": 150381
+  }
+ },
+ "external": [
+  "https://lunden-l1007.olw.workers.dev/beer-shelf",
+  "https://lunden-l1007.olw.workers.dev/beer-shelf"
+ ]
+}

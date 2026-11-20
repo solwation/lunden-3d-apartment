@@ -1,4 +1,5 @@
 [
+  {"id": 1753, "date": "2026-11-20", "text": "Namnskylten döljs nu helt medan en spelare sitter i bilen, i stället för att kluvas av taket.", "issues": [2274]},
   {"id": 1752, "date": "2026-11-20", "text": "Huvud- och kroppsträffar på spelare i bilens framsäten följer nu hur de sitter.", "group": "head-hits", "issues": [2273]},
   {"id": 1751, "date": "2026-11-20", "text": "Spelare i bilens framsäten får nu plats med huvudet under taket, även långa.", "issues": [2269]},
   {"id": 1750, "date": "2026-11-20", "text": "Olof får plats i bilen igen utan att huvudet sticker upp genom taket.", "issues": [2265]},
