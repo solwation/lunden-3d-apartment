@@ -22,6 +22,7 @@ const DEFAULTS = {
   binoculars: '{zoomed:false,stepZoom(){},lookScale:()=>1,fov:f=>f,setZoom(){}}', // #1706: updateFocus/look read the binoculars from the mailbox
   tvMedia: '{seekable:()=>false,show(){},power(){}}',
   remote: '{findTv:()=>null,seek(){},update(){}}', // #1653: the key handler / updateFocus compare heldItem() with the TV remote
+  reactionCam: '{active:false}',           // #2222: the keydown excerpt stops the reaction camera on movement keys
   lightModes: '{page:"top",rows:()=>[],release(){},update(){}}',
 };
 // DOM elements main.js looks up at load: the init script runs before the DOM exists, so they resolve lazily (a test's own
@@ -30,7 +31,7 @@ const ELEMENTS = { bellBtn: 'bell-btn', remoteSeekControls: 'remote-seek' }; // 
 const initScript = '(()=>{for(const [k,id] of Object.entries(' + JSON.stringify(ELEMENTS) + '))if(!(k in window))Object.defineProperty(window,k,{configurable:true,get:()=>document.getElementById(id),set(v){Object.defineProperty(window,k,{value:v,writable:true,configurable:true});}});const d={' + Object.entries(DEFAULTS).map(([k, v]) => `${k}:()=>(${v})`).join(',') + '};' +
   'for(const k in d)if(!(k in window))try{window[k]=d[k]();}catch(e){window[k]=null;}})();';
 // Functions main.js imports from modules cannot be stubbed before load; the real ones are imported once the page is up.
-const IMPORTS = { fitChoiceLabels: '/src/hudicons.js', REACT: '/src/config.js' }; // REACT: #1639 key handler
+const IMPORTS = { fitChoiceLabels: '/src/hudicons.js', REACT: '/src/config.js', INVENTORY_KEYS: '/src/inventoryhud.js' }; // REACT: #1639 key handler; INVENTORY_KEYS: #1954/#2222 key handler
 async function installMainImports(page) {
   await page.evaluate(async imports => { for (const [k, url] of Object.entries(imports)) if (!(k in window)) window[k] = (await import(url))[k]; }, IMPORTS);
 }
