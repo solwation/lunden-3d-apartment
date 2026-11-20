@@ -40,7 +40,10 @@ export class TVMedia {
     return session.player.shareTv(kind==='toggle'?{on:!target.isOpen,ch:cur}:{on:true,ch:(cur+1+Math.floor(Math.random()*(n-1)))%n});
   }
   get open(){return [...this.sessions.values()].some(s=>s.player.open);}
-  get watching(){return [...this.sessions.values()].some(s=>s.player.inside&&!!s.player.state?.video);}
+  get watching() {
+    return [...this.sessions.values()].some(({player}) =>
+      player.inside && (player.state?.video || player.state?.tv?.on));
+  }
   connect(net) {for(const [id,{player}] of this.sessions)player.net={ready:net.ready,id:net.id,send:m=>net.send({...m,screen:id})};}
   receive(m){this.sessions.get(m.screen)?.player.receive(m);}
   show(target) {

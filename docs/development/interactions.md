@@ -2355,6 +2355,9 @@ stored as optional `state.tv`, owner-only, no stale check because it is an idemp
 claims control briefly when nobody has it, a non-controller gets a notice, and every viewer applies `state.tv` through `CinemaPlayer.onState`
 (channel index wrapped to `PROGRAMS.length`). No shared session (offline, outside the room) or a state without `tv` keeps the old local behaviour,
 and older clients ignore the field. The position inside a programme is not shared.
+A viewer in the TV's room stays connected while a shared ordinary channel is on, including after
+the normal two-minute movement timeout. Switching off the TV, leaving its room or hiding the
+tab ends that viewing interest (#2262).
 Unique dialog/input/title IDs and shared CSS replace the earlier cinema-only
 selectors; `showNote(false)` also closes an open TV chooser.
 
