@@ -10791,5 +10791,5 @@ export const AVATAR_AIM = {
 export const AVATAR_SLEEP = {
   down: [0.5, 0.9, 1.1], up: [1.0, 0.8, 0.6], legsMix: 0.5, sitFeet: 0.45, reset: 3,
   eyes: { after: [10, 16], close: 2.5, open: 0.6 }, breath: 0.55, ramp: 6,
-  turn: { first: [14, 30], wait: [30, 90], roll: 1.0, move: 2.2 },
+  turn: { first: [14, 30], wait: [30, 90], roll: 0.5, move: 2.2 },
 };

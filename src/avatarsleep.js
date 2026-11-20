@@ -43,3 +43,7 @@ export function applySleepRoll(obj, roll, hipY) {
   const y = hipY * (obj.scale.y || 1);
   obj.position.x += -y * Math.sin(roll); obj.position.y += y * (1 - Math.cos(roll));
 }
+
+/** The height (m, model units) above the back-lying pose of a body point `h` m above the roll axis (the hip line) after a roll of `roll` rad:
+ * h (cos roll - 1), never positive, so a rolled sleeper sinks into the mattress a little and never lifts off it. */
+export const rollLift = (h, roll) => h * (Math.cos(roll) - 1);

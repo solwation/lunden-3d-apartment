@@ -33,7 +33,7 @@ window.run=(version,script,times,view='side',pre=0)=>{
  while(t<=end+1e-6){
   set(Math.max(t,0));now+=dt*1000;g.animate(now,1,0,0);
   if(col<times.length&&t>=times[col]-1e-6){
-   cam.up.set(0,1,0);if(view==='side')cam.position.set(5.2,.8,.15),cam.lookAt(0,.72,.15),cam.fov=26;else if(view==='foot')cam.position.set(1.9,2.1,-2.6),cam.lookAt(0,.95,.35),cam.fov=24;else{g.avatar.object.updateMatrixWorld(true);const h=g.avatar.bones.head.getWorldPosition(new T.Vector3());const hb=g.avatar.bones.head,eye=hb.localToWorld(new T.Vector3(0,.1,.62)),at=hb.localToWorld(new T.Vector3(0,.1,0)),upv=hb.localToWorld(new T.Vector3(0,1,0)).sub(h);cam.up.copy(upv);cam.position.copy(eye);cam.lookAt(at);cam.fov=11;}
+   cam.up.set(0,1,0);if(view==='side')cam.position.set(6.2,1.0,.15),cam.lookAt(0,1.0,.15),cam.fov=36;else if(view==='foot')cam.position.set(1.9,2.1,-2.6),cam.lookAt(0,.95,.35),cam.fov=24;else{g.avatar.object.updateMatrixWorld(true);const h=g.avatar.bones.head.getWorldPosition(new T.Vector3());const hb=g.avatar.bones.head,eye=hb.localToWorld(new T.Vector3(0,.1,.62)),at=hb.localToWorld(new T.Vector3(0,.1,0)),upv=hb.localToWorld(new T.Vector3(0,1,0)).sub(h);cam.up.copy(upv);cam.position.copy(eye);cam.lookAt(at);cam.fov=11;}
    cam.updateProjectionMatrix();renderer.setViewport(col*W,0,W,H);renderer.setScissor(col*W,0,W,H);renderer.render(scene,cam);col++;
   }
   t+=dt;

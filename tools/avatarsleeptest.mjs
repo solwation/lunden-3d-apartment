@@ -2,9 +2,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { sequenceAt, mixPose, lieKeyframes, copyPose, transitionPose } from '../src/avatarmotion.js';
-import { newSleep, stepSleep } from '../src/avatarsleep.js';
+import { newSleep, stepSleep, rollLift } from '../src/avatarsleep.js';
 import { newBreath, stepBreath } from '../src/avatarbreath.js';
-import { AVATAR_SLEEP as S, AVATAR_BREATH as B } from '../src/config.js';
+import { AVATAR_SLEEP as S, AVATAR_BREATH as B, REST } from '../src/config.js';
 
 const pose = (hipY, lean, feetY, feetZ) => ({ hip: [hipY, 0.05], lean, head: 0, turn: 0, flat: 0, toes: 0, hipX: 0, hipRoll: 0, torsoRoll: 0, torsoYaw: 0, knee: [0, 0.5, 1], pitch: [0, 0], footYaw: [0, 0],
   feet: [[0.11, feetY, feetZ], [-0.11, feetY, feetZ]], hands: [1, -1].map(s => ({ at: [s * 0.2, hipY, 0.1], pole: [s, 0, 0] })), can: null });
@@ -96,4 +96,16 @@ test('the side turn happens now and then and stays bounded; leaving the bed roll
   // no turn before it is asleep
   const t0 = newSleep(rnd); for (let t = 0; t < S.eyes.after[0] - 1; t += 0.1) stepSleep(t0, 0.1, true, rnd);
   assert.equal(t0.roll, 0);
+});
+
+test('during the side turn the head and torso stay within a few cm of the back-lying height (roll, not sit-up)', () => {
+  const rnd = seeded(), s = newSleep(rnd), head = REST.avatarLieTorso * Math.sin(REST.avatarLieTilt), shoulder = 0.2;
+  let worst = 0;
+  for (let t = 0; t < 600; t += 0.05) {
+    stepSleep(s, 0.05, true, rnd);
+    for (const h of [head, head * 0.5]) worst = Math.max(worst, Math.abs(rollLift(h, s.roll)));
+    // a shoulder's own sideways offset adds sin(roll) * shoulder above the axis on the upper side: still below the arm's thickness
+    assert.ok(shoulder * Math.sin(Math.abs(s.roll)) < 0.12);
+  }
+  assert.ok(worst < 0.05, 'head height change ' + worst);
 });
