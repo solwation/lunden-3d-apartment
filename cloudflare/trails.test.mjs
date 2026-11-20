@@ -18,12 +18,13 @@ test('a sparse point per gap m walked; a jump, a ride, the jetpack or sitting st
   assert.ok(s.every((p) => p[0] === s[0][0]), 'one trail');
   T.record('a', { p: [40, 0, 0] }, t0 + 10_200); // teleported
   T.record('a', { p: [42, 0, 0], bk: 1 }, t0 + 10_400); // riding: nothing, and the trail breaks
+  T.record('a', { p: [43, 0, 0], sc: 0 }, t0 + 10_500); // on an e-scooter (#2235): nothing either
   T.record('a', { p: [44, 0, 0] }, t0 + 10_600);
   T.record('a', { p: [46, 0, 0], pose: 1 }, t0 + 10_800);
   T.record('a', { p: [48, 0, 0], jp: 2 }, t0 + 11_000);
   s = T.snapshot(t0 + 11_000).k;
   assert.deepEqual(new Set(s.map((p) => p[0])).size, 3, 'jump and ride make new trails');
-  assert.ok(!s.some((p) => p[1] === 42 || p[1] === 46 || p[1] === 48), 'no point while riding, sitting or flying');
+  assert.ok(!s.some((p) => p[1] === 42 || p[1] === 43 || p[1] === 46 || p[1] === 48), 'no point while riding, sitting or flying');
 });
 
 test('bounded: at most `max` points, the oldest go first, and none older than FOOTPRINTS.life', () => {

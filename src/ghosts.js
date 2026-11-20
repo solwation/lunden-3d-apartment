@@ -15,7 +15,7 @@ import { updateBreath, BreathPuffs } from './avatarbreath.js'; // #2037
 import * as THREE from 'three';
 import { CUE_ARM, FALL, SELF_STAND, TOAST, SOUNDS, KISS, HUG, REACT, REST, SEAT_LEGS } from './config.js';
 import { chooseGazeTarget } from './avatargaze.js';
-import { AVATAR_GAZE, SCOOTER } from './config.js';
+import { AVATAR_GAZE, SCOOTER, SCOOTER_GHOST } from './config.js';
 import { makesSteps, strideFor } from './spatialsound.js';
 import { newPlayback, receive, playStep } from './ghostinterp.js'; // #2139
 import { GHOST_PLAYBACK as PLAY } from './config.js';
@@ -51,7 +51,7 @@ import { reachPose, toFigureFrame, REACH_TOTAL } from './avatarreach.js'; // #21
 import { lifeEvent, nearestShooter, knockPose, KNOCK_TOTAL } from './avatarknock.js'; // #2167
 import { flinch, hitDir } from './avatarhit.js';
 import { stepBikeRide, bikeGrip, bikeSeat } from './bikeride.js';
-import { ghostProp, ghostJetpack, ghostBike, ghostItem } from './ghostprops.js'; // what an armed player holds: their weapon's own model (#667, #1126)
+import { ghostProp, ghostJetpack, ghostBike, ghostScooter, ghostItem } from './ghostprops.js'; // what an armed player holds: their weapon's own model (#667, #1126)
 
 // Other players as ghosts (#666): a WebSocket to the Worker's players' room (cloudflare/players.js, one Durable Object for
 // everybody). Inert without the cloud (cloud.js `cloudUrl`), with GHOSTS.enabled false or ?mp=0. We send our feet and
@@ -214,7 +214,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
   }
 
   /** A state from the room at time t (ms). After a pause the last one is repeated just before it, so it walks off smoothly. */
-  push({ p, r, h = '', hi = '', score = 0, l, c = false, sp = false, jp = 0, bk, pose = 0, look = [0, 0], av, ax, cat, dn, am, cq, fb, bp, gx, aw }, t) {
+  push({ p, r, h = '', hi = '', score = 0, l, c = false, sp = false, jp = 0, bk, sc, pose = 0, look = [0, 0], av, ax, cat, dn, am, cq, fb, bp, gx, aw }, t) {
     this.away = aw === 1; // #2216: the player's tab is hidden (the room keeps them AWAY.ms); #2217's phone pose may read it
     this.lastP = p; // #2241: the last position as sent (Ghosts.near)
     this.bob = Array.isArray(fb) && fb.length === 4 && fb.every(Number.isFinite) ? fb : null; // #1753: their fishing float [x, y, z, bite] (src/fishing.js draws it)
@@ -232,16 +232,17 @@ export class Ghost { // (exported for tools/ghostprops.html)
     this.setItem(hi); // (#1297: an ordinary held thing, by category)
     this.heldCat.set(cat, this.root);
     this.avatar.setSuit(sp);
-    this.bikeWire = Number.isFinite(bk) ? bk : null; // (#1286: the bicycle's heading while riding)
+    this.scooterWire = Number.isFinite(sc) && !Number.isFinite(bk); // #2235: `sc` = the e-scooter's heading while standing on one (an older client sends nothing and is just seen standing)
+    this.bikeWire = Number.isFinite(bk) ? bk : this.scooterWire ? sc : null; // (#1286: the bicycle's heading while riding; the scooter's heading rides the same snapshot slot)
     this.setJetpack(h === 'jetpack' && !jp ? 1 : jp); // (an older client only says h: 'jetpack', which is no weapon, #1705)
     this.refreshBadge();
     // #2139 (src/ghostinterp.js): the arrival feeds the jitter buffer; a teleport (#1319: into / out of the children's room; a respawn:
     // an implausible speed or GHOSTS.jump m) appears there, no streak across the map; after a pause it walks off from where it stood
     const p3 = new THREE.Vector3(...p);
     const had = this.snaps.length > 0;
-    const ts = receive(this.play, this.snaps, p3, t, G.jump, PLAY, (last, at) => ({ t: at, p: last.p, r: last.r, c: last.c, pose: last.pose, look: last.look, bk: last.bk, dn: last.dn, am: last.am, gx:last.gx }));
+    const ts = receive(this.play, this.snaps, p3, t, G.jump, PLAY, (last, at) => ({ t: at, p: last.p, r: last.r, c: last.c, pose: last.pose, look: last.look, bk: last.bk, sc: last.sc, dn: last.dn, am: last.am, gx:last.gx }));
     this.noteLives(prevLives, had && this.snaps.length === 0, t); // #2167 (before the new place is pushed: the figure still stands where it was drawn)
-    this.snaps.push({ t: ts, look, gx:gymPoseWire(gx), dn: dn === 1 || dn === 2 ? dn : 0, am: airMode(am), bk: this.bikeWire, p: p3, r, c: c === true ? 1 : 0, pose: pose >= 1 && pose <= 3 && Number.isInteger(pose) ? pose : 0 });
+    this.snaps.push({ t: ts, look, gx:gymPoseWire(gx), dn: dn === 1 || dn === 2 ? dn : 0, am: airMode(am), bk: this.bikeWire, sc: this.scooterWire ? 1 : 0, p: p3, r, c: c === true ? 1 : 0, pose: pose >= 1 && pose <= 3 && Number.isInteger(pose) ? pose : 0 });
     if (this.snaps.length > 8) this.snaps.splice(0, this.snaps.length - 8);
   }
 
@@ -309,18 +310,28 @@ export class Ghost { // (exported for tools/ghostprops.html)
   }
 
   /** The bicycle under a rider (#1286): `bk` the bike's heading (camera-yaw convention, as `r`), null when not riding. */
-  setBike(on) {
+  setBike(on, scooter = false) {
+    if (on && this.bikeMesh && !!this.bikeMesh.userData.scooter !== scooter) this.setBike(false); // (a bicycle swapped for a scooter between two snapshots)
     if (on === !!this.bikeMesh) return;
-    if (!on) { this.bikeMesh.removeFromParent(); this.bikeMesh.material.dispose(); this.bikeMesh = null; this.bikeYaw = null; this.avatar.object.rotation.set(0, this.avatar.object.rotation.y, 0, 'XYZ'); return; }
-    this.bikeMesh = ghostBike(); this.root.add(this.bikeMesh); this.bikeLastYaw = null;
+    if (!on) { const sc = this.bikeMesh.userData.scooter; this.bikeMesh.removeFromParent(); if (!sc) this.bikeMesh.material.dispose(); this.bikeMesh = null; this.bikeYaw = null; this.avatar.object.rotation.set(0, this.avatar.object.rotation.y, 0, 'XYZ'); this.avatar.object.position.y = 0; return; }
+    this.bikeMesh = scooter ? ghostScooter() : ghostBike(); this.root.add(this.bikeMesh); this.bikeLastYaw = null;
   }
 
   /** The riding state at render time: the heading is interpolated like `r`. */
   bikeAt(a, b, k) {
     const s = (k < 1 ? a : b).bk ?? null;
-    this.setBike(s !== null);
+    this.setBike(s !== null, s !== null && !!(k < 1 ? a : b).sc); // (#2235: `sc` 1 = the heading belongs to an e-scooter)
     this.bikeYaw = s === null ? null : (a.bk != null && b.bk != null ? lerpAngle(a.bk, b.bk, k) : s);
     if (this.bikeMesh) this.bikeMesh.rotation.y = Math.PI / 2 + wrap(this.bikeYaw - this.root.rotation.y); // (the bike's heading against the look; its x is forward)
+  }
+
+  /** #2235: standing on an e-scooter's deck, the hands on the grips, the feet planted one behind the other, the body along the
+   * direction of travel. Legs and arms stay still (no gait): the scooter carries the rider. */
+  poseScooter() {
+    const D = SCOOTER_GHOST, G = SCOOTER.grip, o = this.avatar.object;
+    o.rotation.set(0, o.rotation.y, 0, 'XYZ'); o.position.y = SCOOTER.deck;
+    poseOlof(this.avatar, { hip: D.hip, lean: D.lean, head: -0.05 + (this.look?.[1] ?? 0), turn: 0, feet: D.feet, knee: D.knee,
+      hands: [1, -1].map((s) => ({ at: [s * G.z, G.y - SCOOTER.deck, G.x], pole: [s, 0, -0.5] })), can: null });
   }
 
   /** Seated on the saddle (or standing on a steep climb), the hands on the turned handlebar, the feet on the cranks, which turn
@@ -619,7 +630,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
     if (wet) sink(this.avatar.swimAmt, this.avatar.swimLine, this.avatar.diveAmt); // (blending in from standing on the bed)
     applyRestPose(this.avatar, this.pose, this.look, react, this.pose === 1 && !this.gx ? this.seatFeet(dt, vx, vz) : this.seatFeet(-1));
     applyGymBodyPose(this.avatar,this.gx,this.look);
-    if (this.bikeMesh) this.poseBike(dt, Math.hypot(vx, vz), turn, this.vy ?? 0);
+    if (this.bikeMesh) { if (this.bikeMesh.userData.scooter) this.poseScooter(); else this.poseBike(dt, Math.hypot(vx, vz), turn, this.vy ?? 0); }
     const poseKey = this.gx || this.bikeMesh || air || wet || amount ? -1 : this.pose || 0;
     const poseFrame = this.poseFrame ??= [0, 0, 0, 0, 1, 1];
     poseFrame[0] = this.root.position.x; poseFrame[1] = this.root.position.y; poseFrame[2] = this.root.position.z;
@@ -891,6 +902,7 @@ export class Ghosts {
     s.am = airMode(s.am); // #1799
     s.hi = cleanHeldCategory(s.hi);
     s.bk = Number.isFinite(s.bk) ? s.bk : null;
+    s.sc = Number.isFinite(s.sc) ? s.sc : null; // #2235: the e-scooter's heading
     s.cq = Array.isArray(s.cq) ? s.cq.map((v) => Math.round(v * 100) / 100) : null; // #1637: the billiard cue while aiming / charging
     s.cqKey = s.cq ? s.cq.join() : '';
     s.fb = Array.isArray(s.fb) && s.fb.length === 4 && s.fb.every(Number.isFinite) ? s.fb : null; // #1753: the fishing float while it is out
@@ -901,7 +913,7 @@ export class Ghosts {
     if (!this.on) return;
     s.score = badgeScore(this.score());
     const prev = this.prev;
-    if (!prev || Math.hypot(s.p[0] - prev.p[0], s.p[1] - prev.p[1], s.p[2] - prev.p[2]) > G.move || Math.abs(s.r - prev.r) > G.turn || s.h !== prev.h || s.hi !== prev.hi || s.c !== prev.c || s.pose !== prev.pose || s.gxKey !== prev.gxKey || Math.abs(s.look[0] - prev.look[0]) > G.turn || Math.abs(s.look[1] - prev.look[1]) > G.turn || s.sp !== prev.sp || s.jp !== prev.jp || s.dn !== prev.dn || s.am !== prev.am || (s.bk === null) !== (prev.bk === null) || Math.abs((s.bk ?? 0) - (prev.bk ?? 0)) > G.turn || s.catKey !== prev.catKey || s.cqKey !== prev.cqKey || s.fbKey !== prev.fbKey || this.sentAv !== this.avatarCode) { this.lastMove = t; this.prev = s; }
+    if (!prev || Math.hypot(s.p[0] - prev.p[0], s.p[1] - prev.p[1], s.p[2] - prev.p[2]) > G.move || Math.abs(s.r - prev.r) > G.turn || s.h !== prev.h || s.hi !== prev.hi || s.c !== prev.c || s.pose !== prev.pose || s.gxKey !== prev.gxKey || Math.abs(s.look[0] - prev.look[0]) > G.turn || Math.abs(s.look[1] - prev.look[1]) > G.turn || s.sp !== prev.sp || s.jp !== prev.jp || s.dn !== prev.dn || s.am !== prev.am || (s.bk === null) !== (prev.bk === null) || (s.sc === null) !== (prev.sc === null) || Math.abs((s.sc ?? 0) - (prev.sc ?? 0)) > G.turn || Math.abs((s.bk ?? 0) - (prev.bk ?? 0)) > G.turn || s.catKey !== prev.catKey || s.cqKey !== prev.cqKey || s.fbKey !== prev.fbKey || this.sentAv !== this.avatarCode) { this.lastMove = t; this.prev = s; }
     if (this.prev?.score !== s.score || this.prev?.bp !== s.bp) this.prev = s; // score changes use the same 5 Hz slot; do not reset movement idle time
     const playing = this.active() && !document.hidden && (this.keepConnected?.() || t - this.lastMove < G.idleMs);
     if (!playing) { if (this.ws) this.disconnect(); }
@@ -913,7 +925,7 @@ export class Ghosts {
       const again = !fresh && this.resent !== sent && t - this.stateAt >= G.resendMs;
       if (t - this.lastSent >= 1000 / G.hz && (fresh || again)) {
         const p = this.prev ?? s;
-        this.ws.send(JSON.stringify({ p: p.p.map((v) => Math.round(v * 100) / 100), r: Math.round(p.r * 100) / 100, score: p.score, ...(p.bp ? { bp: p.bp } : {}), ...(p.gx?{gx:p.gx}:{}), ...(p.h ? { h: p.h } : {}), ...(p.hi ? { hi: p.hi } : {}), ...(p.c ? { c: true } : {}), ...(p.pose ? { pose: p.pose } : {}), ...(p.pose !== 2 ? { look: p.look.map(v => Math.round(v * 100) / 100) } : {}), ...(p.sp ? { sp: true } : {}), ...(p.jp ? { jp: p.jp } : {}), ...(p.dn ? { dn: p.dn } : {}), ...(p.am ? { am: p.am } : {}), ...(p.bk !== null && p.bk !== undefined ? { bk: Math.round(p.bk * 100) / 100 } : {}), ...(p.cat ? { cat: p.cat } : {}), ...(p.cq ? { cq: p.cq } : {}), ...(p.fb ? { fb: p.fb } : {}), ...(this.avatarCode ? avatarWire(this.avatarCode) : {}) }));
+        this.ws.send(JSON.stringify({ p: p.p.map((v) => Math.round(v * 100) / 100), r: Math.round(p.r * 100) / 100, score: p.score, ...(p.bp ? { bp: p.bp } : {}), ...(p.gx?{gx:p.gx}:{}), ...(p.h ? { h: p.h } : {}), ...(p.hi ? { hi: p.hi } : {}), ...(p.c ? { c: true } : {}), ...(p.pose ? { pose: p.pose } : {}), ...(p.pose !== 2 ? { look: p.look.map(v => Math.round(v * 100) / 100) } : {}), ...(p.sp ? { sp: true } : {}), ...(p.jp ? { jp: p.jp } : {}), ...(p.dn ? { dn: p.dn } : {}), ...(p.am ? { am: p.am } : {}), ...(p.bk !== null && p.bk !== undefined ? { bk: Math.round(p.bk * 100) / 100 } : {}), ...(p.sc !== null && p.sc !== undefined ? { sc: Math.round(p.sc * 100) / 100 } : {}), ...(p.cat ? { cat: p.cat } : {}), ...(p.cq ? { cq: p.cq } : {}), ...(p.fb ? { fb: p.fb } : {}), ...(this.avatarCode ? avatarWire(this.avatarCode) : {}) }));
         if (fresh) this.stateAt = t;
         this.resent = fresh ? null : p; this.sent = p; this.sentAv = this.avatarCode; this.lastSent = this.lastBeat = t; this.messages++; if (!fresh) this.resends++;
       }
@@ -1286,7 +1298,7 @@ export class Ghosts {
     g.air = m.am; g.vy = m.vy;
     g.react = this.myReact ?? null;
     g.root.position.copy(m.p);
-    if (m.sc) g.root.position.y += SCOOTER.deck; // #2229: standing on an e-scooter's deck (local only: `sc` is never sent)
+    if (m.sc != null) g.root.position.y += SCOOTER.deck; // #2229: standing on an e-scooter's deck (`sc`: the scooter's heading, which the peers get as the prop; the own scooter stands in the world, so the mirror draws no second one)
     this.light.apply(g.avatar, g.lightSt ??= {}, m.p.x, m.p.y, m.p.z, performance.now()); // #2017
     g.root.rotation.y = m.r;
     g.bikeAt({ bk: m.bk }, { bk: m.bk }, 1);
@@ -1295,7 +1307,7 @@ export class Ghosts {
     g.crouch = now - last < 250 ? THREE.MathUtils.clamp(goal, (g.crouch ?? goal) - (now - last) / 1000 / AVATAR_CROUCH.time, (g.crouch ?? goal) + (now - last) / 1000 / AVATAR_CROUCH.time) : goal;
     g.root.visible = true;
     g.mirrorTyping(!!this.mirrorTyping?.(now), now);
-    g.animate(now, 0, m.sc ? 0 : m.vx, m.sc ? 0 : m.vz); // (#2229: on a scooter the legs stand still)
+    g.animate(now, 0, m.sc != null ? 0 : m.vx, m.sc != null ? 0 : m.vz); // (#2229: on a scooter the legs stand still)
   }
 
   /** One bounded self-damage request; never send client HP or replay it after a disconnect. */

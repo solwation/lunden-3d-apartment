@@ -16,7 +16,7 @@ export class RoomTrails {
   /** A player's accepted state `s` (cleanState) at room time `now` ms. */
   record(id, s, now = Date.now()) {
     if (!Array.isArray(s?.p)) return;
-    if (s.bk !== undefined || s.jp === 2 || s.pose) { this.walkers.delete(id); return; } // riding, flying, seated / lying: no prints
+    if (s.bk !== undefined || s.sc !== undefined || s.jp === 2 || s.pose) { this.walkers.delete(id); return; } // riding, flying, seated / lying: no prints
     const [x, y, z] = s.p;
     let w = this.walkers.get(id);
     const d = w ? Math.hypot(x - w.x, z - w.z) : Infinity;

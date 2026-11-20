@@ -8832,6 +8832,10 @@ export const SCOOTER = {
   screwdriver: { level: 0, x: .27, y: 1.768, z: .9, turn: .12, back: ['elskåpet', 'lägga tillbaka skruvmejseln i'], held: { x: .19, y: -.2, z: -.36 } },
 };
 
+/** #2235: how a peer's figure stands on an e-scooter (figure frame: x left, y up, z forward; the deck's top is SCOOTER.deck, lifted by the pose).
+ * All *guess*: the hips a little forward and low, a slight forward lean, the front foot ahead of the back foot, the knees soft. */
+export const SCOOTER_GHOST = { hip: [0.86, 0.02], lean: 0.1, feet: [[0.06, 0, 0.12], [-0.06, 0, -0.2]], knee: [0.3, 0.9, 1] };
+
 let rifleNoseTriangles;
 export function rifleNoseProfile() {
   return rifleNoseTriangles ??= rifleSphereProfile(PVP_RIFLE_HEAD.nose);

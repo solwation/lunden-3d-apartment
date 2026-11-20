@@ -10,6 +10,7 @@ import { buildSaber } from './saber.js';
 import { bowGeometry } from './bow.js';
 import { packGeometry, flameGeometry } from './jetpack.js';
 import { bikeGeometry } from './streetlife.js';
+import { scooterGeometry } from './scooters.js'; // #2235
 import { blasterModel, wandModel } from './toys.js';
 
 // What an armed player carries, seen by the others (#667, #1126): the same models the player holds in first person,
@@ -129,6 +130,17 @@ export function ghostBike() {
   m.raycast = () => {}; m.name = 'ghost-bike'; m.rotation.order = 'YZX'; // (heading, then pitch about z, then roll about the forward x)
   m.userData.ride = newBikeRide(); m.frustumCulled = false; // (the turning parts stay within the unturned bounds, but the pivot of the pitch is the origin)
   m.onBeforeRender = () => { const r = m.userData.ride; uBike.value.set(r.wheel, r.crank, r.steer, 0); };
+  return m;
+}
+
+let scooterGeo = null, scooterMat = null;
+/** An e-scooter under a riding avatar (#2235): the same baked geometry as the pavement scooters (scooters.js scooterGeometry, forward +x,
+ * the ground at y 0), one draw call, one material shared by every peer's scooter. Origin at the scooter, like ghostBike. */
+export function ghostScooter() {
+  scooterGeo ??= scooterGeometry();
+  scooterMat ??= new THREE.MeshLambertMaterial({ vertexColors: true });
+  const m = new THREE.Mesh(scooterGeo, scooterMat);
+  m.raycast = () => {}; m.name = 'ghost-scooter'; m.frustumCulled = false; m.userData.scooter = true;
   return m;
 }
 

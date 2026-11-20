@@ -1651,6 +1651,15 @@ test('#1286 bk (bicycle heading) is a bounded finite number, rounded, else dropp
   for (const bk of [101, '1', null, true, [1], {}]) assert.equal('bk' in s(bk), false, JSON.stringify(bk));
 });
 
+test('#2235 sc (e-scooter heading) is a bounded finite number, rounded, else dropped; bk wins when both come', async () => {
+  const { cleanState } = await import('./players.js');
+  const s = (sc, bk) => cleanState(JSON.stringify({ p: [1, 0, 2], r: 0, sc, bk }));
+  assert.equal(s(1.2345).sc, 1.23); assert.equal(s(-3).sc, -3); assert.equal(s(0).sc, 0);
+  for (const sc of [101, '1', null, true, [1], {}]) assert.equal('sc' in s(sc), false, JSON.stringify(sc));
+  const both = s(1, 2); assert.equal(both.bk, 2); assert.equal('sc' in both, false);
+  assert.equal('sc' in cleanState(JSON.stringify({ p: [1, 0, 2], r: 0 })), false, 'an older client sends none');
+});
+
 test('#1297 hi (held-item category) is whitelisted, forwarded in states, late welcomes and hibernation; anything else is dropped', async () => {
   const { cleanState } = await import('./players.js');
   const { HELD_CATEGORIES } = await import('../src/heldcategory.js');

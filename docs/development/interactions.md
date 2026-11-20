@@ -2784,8 +2784,15 @@ legs stand still). It eases back on landing.
 `perMin` / `start` sized for 90 km/h, one record jump up to `jump.maxCm`, the tune time). Top list `hogsta-scooterhopp` ("Högsta hopp
 med elsparkcykel", kind `most` on the best jump in cm). Medals: `scooter-km` (first level 1 km), `scooter-jumps`, secret `scooter-tunes`.
 
-**Shared world (first slice).** Other players see a scooter rider as a standing figure moving along (`bk` is not sent for a scooter, so
-no bicycle is drawn under them); a ghost scooter prop and its pose are #2235.
+**Shared world (#2235).** A rider on a scooter sends the optional wire field `sc` (the scooter's heading in the camera-yaw convention, as `bk`;
+no `bk` is sent then, so an older client simply sees a standing figure and ignores `sc`). Worker `cleanState` keeps a finite |sc| ≤ 100,
+rounded, only when no `bk` came; `cloudflare/trails.js` lays no footprints while `sc` is present (as for `bk`). `Ghosts.push` takes `sc`
+into the snapshot slot `bk` uses (so `bikeWire`, the interpolation, the send-throttle and every riding gate behave as for a bicycle) plus a
+`sc` 1 flag; `Ghost.setBike(on, scooter)` / `bikeAt` swap in `ghostprops.js ghostScooter` (the same baked `scooterGeometry`, one draw call,
+one `MeshLambertMaterial` shared by every peer) and `poseScooter` stands the figure on the deck (`SCOOTER.deck` lift, `SCOOTER_GHOST` hip /
+lean / feet / knees in config.js, *guess*; hands on `SCOOTER.grip`, legs still, body along the heading). Cost: +1 draw call per remote
+scooter rider. The own mirror (`Ghosts.mirrorAt`) stands on the deck from the local `mine.sc` but draws no second scooter (the real one is in
+the world). Real app, two clients: `tools/browsertest.sh node tools/ghostscootertest.cjs GAME WORKER` (images `docs/verification/2235/`).
 
 Tests: `node --test tools/scooter2229test.mjs` (caps, acceleration, braking, take-off, tuning progress, jump/slow-motion thresholds,
 chase camera, spots, catalogue). Real app: `tools/browsertest.sh node tools/scooter2229browser.cjs BASE OUT` (placement and mounting,
