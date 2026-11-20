@@ -26,6 +26,7 @@ export class GameBoards {
     return global.map(r=>({...r,me:!!r.key&&r.key===this.myKey}));
   }
   global(game) { return this.lists.has(game); }
+  useLocal(game) { if(this.lists.delete(game))this.version++; }
   set(game,list) {
     if(!Array.isArray(list))return;
     this.lists.set(game,list.filter(r=>r&&Number.isInteger(r.score)).slice(0,G.top).map(r=>({name:String(r.name??''),score:r.score,key:typeof r.key==='string'?r.key:'',avatar:typeof r.avatar==='string'?r.avatar:''})));
@@ -40,7 +41,7 @@ export class GameBoards {
   async refresh(game,force=false) {
     if(!this.on||(!force&&Date.now()-(this.at.get(game)??0)<G.cacheMs))return this.top(game);
     this.at.set(game,Date.now());
-    try{this.ownKey();this.set(game,await this.request(game));}catch{/* offline: keep the local list */}
+    try{this.ownKey();this.set(game,await this.request(game));}catch{this.useLocal(game);}
     return this.top(game);
   }
   /** Remember a finished single-player round locally and send it to the Worker. Never throws. */
@@ -50,7 +51,7 @@ export class GameBoards {
     write(game,local);this.version++;
     if(!this.on)return this.top(game);
     try{this.ownKey();this.set(game,await this.request(game,{method:'POST',headers:{'Content-Type':'text/plain'},body:JSON.stringify({id:this.id(),name:this.name()||'',...result,...(look?{avatar:look}:{})})}));}
-    catch{/* keep the local list; the round stays in the local best list */}
+    catch{this.useLocal(game);} // show the saved round even if a previous GET had cached a global list
     return this.top(game);
   }
 }

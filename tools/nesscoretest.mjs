@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
-import { createNesScoreReader } from '../src/nesboards.js';
+import { NES_BOARDS, createNesScoreReader } from '../src/nesboards.js';
 
 const { NES, Controller } = createRequire(import.meta.url)('./retro2231/vendor/jsnes.js');
 const rom = file => readFile(new URL(file, import.meta.url));
@@ -57,4 +57,30 @@ test('Lawn Mower reads completed lawns; its built-in level skip invalidates the 
   assert.equal(reader.result().score, 2);
   ram[0xca] = 0; reader.sample(ram);
   assert.equal(reader.result().score, 2);
+});
+
+test('a failed POST after a cached global GET shows this cartridge’s local round', async () => {
+  const previous = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+  const values = new Map();
+  Object.defineProperty(globalThis, 'localStorage', { configurable: true, value: {
+    getItem: key => values.get(key) ?? null, setItem: (key, value) => values.set(key, value),
+  } });
+  try {
+    const { GameBoards } = await import('../src/gameboards.js');
+    const boards = new GameBoards({url: 'https://worker.test', id: () => 'player-local', name: () => 'Lo',
+      fetch: async (_url, init) => {
+        if (init.method === 'POST') throw new Error('offline');
+        return Response.json([{name: 'Annan', score: 2}]);
+      }});
+    const key = 'nes-lightcatch';
+    await boards.refresh(key);
+    assert.equal(boards.global(key), true);
+    await boards.submit(key, {score: 1, ms: 3600, sha256: NES_BOARDS[key].sha256});
+    assert.equal(boards.global(key), false);
+    assert.deepEqual(boards.top(key).map(r => [r.name,r.score]), [['Lo',1]]);
+    assert.deepEqual(boards.top('nes-thwaite'), []);
+  } finally {
+    if (previous) Object.defineProperty(globalThis, 'localStorage', previous);
+    else delete globalThis.localStorage;
+  }
 });

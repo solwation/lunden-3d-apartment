@@ -81,3 +81,23 @@ test('a ROM whose hash or size differs from the manifest is refused',async()=>{
  const {g}=game({rom:()=>Promise.resolve(bad)});await g.start();assert.equal(g.phase,'error');assert.equal(g.nes,null);assert.match(g.error,/stämmer inte/);
  const {g:h}=game({rom:()=>Promise.resolve(romBytes.subarray(0,1000))});await h.start();assert.equal(h.phase,'error');
 });
+
+test('a real completed catch uses the loaded cartridge and only counts emulated frames',async()=>{
+ const {g}=game();await g.start();assert.equal(g.result(),null);
+ for(let i=0;i<220;i++){if(i===100)g.press('right',true);g.step(ms);}
+ assert.equal(g.score,1);
+ const result={score:1,ms:Math.round(220*1000/60),sha256:NES_TITLES[0].sha256};
+ assert.deepEqual(g.result(),result);assert.equal(g.reader.game,'nes-lightcatch');
+ g.pause();g.step(4000);assert.deepEqual(g.result(),result);
+ g.dispose();assert.equal(g.nes,null);assert.deepEqual(g.result(),result);
+});
+
+test('plain HTTP can play the ROM but cannot read or submit a score',async()=>{
+ const crypto=Object.getOwnPropertyDescriptor(globalThis,'crypto');
+ Object.defineProperty(globalThis,'crypto',{value:undefined,configurable:true});
+ try{
+  const {g}=game();await g.start();assert.equal(g.phase,'running');assert.equal(g.reader,null);
+  for(let i=0;i<220;i++){if(i===100)g.press('right',true);g.step(ms);}
+  assert.equal(g.nes.cpu.mem[2],1);assert.equal(g.score,0);assert.equal(g.result(),null);
+ }finally{Object.defineProperty(globalThis,'crypto',crypto);}
+});

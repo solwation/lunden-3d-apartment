@@ -28,13 +28,24 @@ export function maxNesScore(game, sha256, ms) {
   return Math.min(board.max, Math.floor(ms / 1000 * board.perSecond));
 }
 
-/** One reader per loaded cartridge. Sample the CPU RAM once after each actual
- * emulated frame. Pausing or merely drawing the old screen spends no round time. */
-export async function createNesScoreReader(bytes) {
+/** Match a manifest entry for browsing a board, or the digest of loaded bytes for scoring. */
+export const nesBoardForHash = hash => Object.keys(NES_BOARDS).find(key => NES_BOARDS[key].sha256 === hash);
+
+/** Hex SHA-256, or null on a plain-HTTP browser without Web Crypto. */
+export async function sha256(bytes) {
   if (!globalThis.crypto?.subtle) return null;
-  const digest = await crypto.subtle.digest('SHA-256', bytes);
-  const sha256 = Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
-  const game = Object.keys(NES_BOARDS).find(key => NES_BOARDS[key].sha256 === sha256);
+  const digest = await globalThis.crypto.subtle.digest('SHA-256', bytes);
+  return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
+}
+
+export async function createNesScoreReader(bytes) {
+  return readerForVerifiedHash(await sha256(bytes));
+}
+
+/** One reader per loaded cartridge. Pass the digest computed from the actual ROM, never
+ * its advertised manifest hash. Sample once per emulated frame; pausing spends no time. */
+export function readerForVerifiedHash(sha256) {
+  const game = nesBoardForHash(sha256);
   if (!game) return null;
   let frames = 0, best = 0, lanPlayingLevel = -1;
   return {
@@ -69,6 +80,7 @@ export async function createNesScoreReader(bytes) {
         }
       }
       if (score > best && score <= NES_BOARDS[game].max) best = score;
+      return best;
     },
     result() {
       return best ? { score: best, ms: Math.round(frames * 1000 / 60), sha256 } : null;

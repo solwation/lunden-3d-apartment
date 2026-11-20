@@ -2444,7 +2444,11 @@ so each adapter brings its own. A hidden tab, `blur` or `pagehide` pauses and le
 the player resumes (no fast-forward). Leaving, switching app, power off or lost control calls `dispose()`,
 which drops the emulator instance, ROM string and picture (the parsed engine script stays cached). Audio is
 off in this first delivery (`emulateSound:false`): `src/audio.js` has no PCM input yet, so a room-aware
-NES sound path is a follow-up. No top list (a later issue binds scores to RAM per ROM hash); the panel's
+NES sound path is a follow-up. The panel shows the selected supported title’s top list and score unit
+with the label “klientrapporterade resultat” (#2239). “Avsluta omgång”, leaving and switching titles
+finish a round once. Pausing retains it. Only a positive result from a reader matched to the actual
+cartridge digest is submitted. Unknown cartridges and plain HTTP without Web Crypto are playable
+without scoring. See the [per-title score sources](storage.md#nes-score-sources-2239). The panel's
 "Om NES och licenser" and the monitor's start card carry the licence notices. Onlookers see the "<namn>
 spelar …" card: a #2241 NES codec is a follow-up. Tests: `node --test src/nes.test.mjs` (mapping, pad,
 lazy-load/retry contract, the real ROM moved by input, pause/resume/dispose) and `tools/nestest.cjs`.

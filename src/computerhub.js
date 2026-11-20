@@ -4,6 +4,7 @@ import { CinemaSurface } from './cinemasurface.js';
 import { COMPUTER_MEDIA as C, SNAKE, GAME_BOARDS, SCREEN_SHARE, NES, computerViewer, nearComputer } from './config.js';
 import { NesGame, NES_KEYS, NES_PAD, drawNes } from './nes.js';
 import { NES_TITLES, nesTitle } from './nestitles.js';
+import { NES_BOARDS, nesBoardForHash } from './nesboards.js';
 import { drawSnake, drawComputerMenu } from './snakeview.js';
 import { BlocksGame } from './blocks.js';
 import { MeteorsGame } from './meteors.js';
@@ -23,14 +24,14 @@ const ARCADE={
     help:'← → svänger, ↑ gasar och mellanslag skjuter. Esc / E lämnar datorn.',
     keys:{ArrowLeft:'left',KeyA:'left',ArrowRight:'right',KeyD:'right',ArrowUp:'thrust',KeyW:'thrust',Space:'fire'},
     pad:[['left','↺','Sväng vänster'],['thrust','▲','Gasa'],['right','↻','Sväng höger'],['fire','●','Skjut']]},
-  // #2237: the NES adapter (src/nes.js): no top list (`board`), its own touch-pad profile and key map, redrawn at NES.renderMs,
+  // #2237: the NES adapter (src/nes.js): a cartridge-specific board (#2239), its own touch-pad profile and key map, redrawn at NES.renderMs,
   // the emulator loaded on Starta and freed on leaving (arcadeEnd → dispose), paused by P / a hidden tab / a lost window focus.
   // Onlookers see the "spelar" card: NES screen sharing (#2241 codec) is a follow-up.
   // The titles come from the manifest src/nestitles.js (a picker in the panel when there are several; `s.nesTitle` per computer).
   nes:{title:'NES',make:s=>new NesGame({title:s?.nesTitle}),draw:drawNes,hold:true,renderMs:NES.renderMs,license:true,titles:true,
     about:'',help:'Pilar / WASD styrkors, Z / K = B, X / J = A, Enter = Start, Skift = Select. Mellanslag startar, P pausar, Esc / E lämnar datorn.',
     keys:NES_KEYS,pad:NES_PAD,
-    status:(g,p)=>({loading:'Laddar emulatorn …',running:'Spelar NES.',paused:'Pausad. Fortsätt med knappen eller mellanslag.',error:g.error})[g.phase]??(p.owns?'Starta med knappen eller mellanslag.':p.state?.owner?`${p.state.name} spelar.`:'')},
+    status:(g,p)=>({loading:'Laddar emulatorn …',running:g.reader?`${NES_BOARDS[g.reader.game].label}: ${g.score}`:'Spelar NES.',paused:'Pausad. Fortsätt med knappen eller mellanslag.',over:'Omgången är avslutad.',error:g.error})[g.phase]??(p.owns?'Starta med knappen eller mellanslag.':p.state?.owner?`${p.state.name} spelar.`:'')},
 };
 // #2237: the NES title picker and the licence notices shown in the computer, built from the manifest (the full texts are
 // published next to the files they cover).
@@ -63,7 +64,7 @@ export class ComputerHub {
       const game=document.createElement('section');game.className='computer-game';game.hidden=true;
       game.innerHTML='<h3>Ormstriden</h3><p>Ät ljuspunkter och väx. Få de andra att krocka med din kropp och ät det som blir kvar. Vid huvudkrock vinner den större ormen. Undvik väggarna!</p><p class="computer-help">Piltangenter / WASD eller peka på skärmen. Esc / E lämnar datorn.</p><p class="computer-score" aria-live="polite"></p><div class="cinema-row"><button type="button" data-snake="join">Gå med i spelet</button><button type="button" data-angle="-1.5707963267948966" aria-label="Sväng upp">↑</button><button type="button" data-angle="3.141592653589793" aria-label="Sväng vänster">←</button><button type="button" data-angle="1.5707963267948966" aria-label="Sväng ner">↓</button><button type="button" data-angle="0" aria-label="Sväng höger">→</button></div><p class="computer-players"></p><h4 class="computer-top-title">Topplista</h4><ol class="computer-top"></ol>';
       const arcade=document.createElement('section');arcade.className='computer-game computer-arcade';arcade.hidden=true;
-      arcade.innerHTML='<h3></h3><p class="computer-about"></p><p class="computer-help"></p><p class="computer-score" aria-live="polite"></p><div class="cinema-row"><button type="button" data-arcade="start">Starta</button></div><h4 class="computer-top-title">Topplista</h4><ol class="computer-top"></ol>';arcade.querySelector('.computer-score').after(...nesPanel());
+      arcade.innerHTML='<h3></h3><p class="computer-about"></p><p class="computer-help"></p><p class="computer-score" aria-live="polite"></p><div class="cinema-row"><button type="button" data-arcade="start">Starta</button><button type="button" data-arcade="finish" hidden>Avsluta omgång</button></div><h4 class="computer-top-title">Topplista</h4><ol class="computer-top"></ol>';arcade.querySelector('.computer-score').after(...nesPanel());
       const pad=arcade.querySelector('[data-arcade=start]').parentElement;
       for(const [app,def]of Object.entries(ARCADE))for(const [action,text,label]of def.pad){
         const b=document.createElement('button');b.type='button';b.dataset.pad=action;b.dataset.padApp=app;b.textContent=text;b.setAttribute('aria-label',label);b.hidden=true;pad.append(b);
@@ -78,7 +79,7 @@ export class ComputerHub {
       const texture=new THREE.CanvasTexture(poster);texture.colorSpace=THREE.SRGBColorSpace;
       const material=new THREE.MeshBasicMaterial({map:texture,toneMapped:false});
       player.surface=new CinemaSurface(canvas,target.mesh,`computer-world-${info.id}`);player.surface.poster=material;
-      const session={info,target,player,poster,texture,material,nav,movie,game,arcade,arcadeTitle:arcade.querySelector('h3'),arcadeHelp:arcade.querySelector('.computer-help'),arcadeScore:arcade.querySelector('.computer-score'),arcadeStart:arcade.querySelector('[data-arcade=start]'),arcadeTop:arcade.querySelector('.computer-top'),arcadeTopTitle:arcade.querySelector('.computer-top-title'),snakeTop:game.querySelector('.computer-top'),snakeTopTitle:game.querySelector('.computer-top-title'),run:null,score:game.querySelector('.computer-score'),list:game.querySelector('.computer-players'),join:game.querySelector('[data-snake=join]'),available:false,feed:new ScreenFeed()};
+      const session={info,target,player,poster,texture,material,nav,movie,game,arcade,arcadeTitle:arcade.querySelector('h3'),arcadeHelp:arcade.querySelector('.computer-help'),arcadeScore:arcade.querySelector('.computer-score'),arcadeStart:arcade.querySelector('[data-arcade=start]'),arcadeFinish:arcade.querySelector('[data-arcade=finish]'),arcadeTop:arcade.querySelector('.computer-top'),arcadeTopTitle:arcade.querySelector('.computer-top-title'),snakeTop:game.querySelector('.computer-top'),snakeTopTitle:game.querySelector('.computer-top-title'),run:null,score:game.querySelector('.computer-score'),list:game.querySelector('.computer-players'),join:game.querySelector('[data-snake=join]'),available:false,feed:new ScreenFeed()};
       this.sessions.set(info.id,session);
       for(const [app,label]of [['menu','Startsida'],['youtube','YouTube'],['snake','Spel · Ormstriden'],['blocks','Spel · Klossar'],['meteors','Spel · Meteoriter'],['nes','Spel · NES']]) {
         const button=document.createElement('button');button.type='button';button.dataset.app=app;button.textContent=label;nav.append(button);
@@ -92,9 +93,10 @@ export class ComputerHub {
       const receive=player.receive.bind(player);player.receive=m=>{receive(m);if(m.k==='no'&&session.pendingPower!==undefined)this.onNotice?.(player.status.textContent);session.pendingPower=undefined;this.syncPower(session);this.controls(session);if(m.k==='state'&&player.state?.app!=='youtube')player.status.textContent=player.owns?'Du styr datorn. Välj YouTube eller Spel.':player.state?.owner?`${player.state.name} använder datorn.`:'Datorn är ledig.';};
       session.join.addEventListener('click',()=>{if(player.owns){this.pendingScreen=info.id;this.send({k:'join',screen:info.id,pid:this.boards?.id()});session.joining=true;this.controls(session);session.join.focus();}});
       session.arcadeStart.addEventListener('click',()=>this.arcadeStart(session));
+      session.arcadeFinish.addEventListener('click',()=>{if(player.owns&&player.state?.app==='nes')this.arcadeEnd(session);});
       for(const b of arcade.querySelectorAll('[data-nes-title]'))b.addEventListener('click',()=>{ // #2237: another title frees the running one
-        if(!player.owns||player.state?.app!=='nes'||session.nesTitle===b.dataset.nesTitle&&session.run?.game.title===b.dataset.nesTitle)return;
-        session.nesTitle=b.dataset.nesTitle;this.arcadeEnd(session);session.run={app:'nes',game:ARCADE.nes.make(session),sent:true};session.lastApp=null;session.menuKey=null;this.controls(session);});
+        if(!player.owns||player.state?.app!=='nes'||nesTitle(session.nesTitle).id===b.dataset.nesTitle)return;
+        this.arcadeEnd(session);session.nesTitle=b.dataset.nesTitle;session.run={app:'nes',game:ARCADE.nes.make(session),sent:true};session.lastApp=null;session.menuKey=null;this.controls(session);});
       for(const b of game.querySelectorAll('[data-angle]'))b.addEventListener('click',()=>{this.angle=Number(b.dataset.angle);session.join.focus();});
       const headings={ArrowRight:0,KeyD:0,ArrowDown:Math.PI/2,KeyS:Math.PI/2,ArrowLeft:Math.PI,KeyA:Math.PI,ArrowUp:-Math.PI/2,KeyW:-Math.PI/2};
       el.addEventListener('keydown',e=>{if(player.state?.app==='snake'&&e.code in headings){e.preventDefault();this.angle=headings[e.code];}});
@@ -109,6 +111,7 @@ export class ComputerHub {
         const i=buttons.indexOf(document.activeElement),next=(i+(e.shiftKey?-1:1)+buttons.length)%buttons.length;buttons[next]?.focus();return;
       }
       const arcade=ARCADE[s.player.state?.app];
+      if(e.target.closest?.('[data-arcade=finish]')&&(e.code==='Enter'||e.code==='Space'))return;
       if(e.target.closest?.('button')&&(e.code==='Enter'&&!(arcade?.keys[e.code]&&this.arcadeGame(s)?.running)||e.code==='Space'&&!arcade))return;
       e.preventDefault();e.stopImmediatePropagation();
       if(type==='keyup'){if(arcade)this.arcadeKey(s,e.code,false,false);return;}
@@ -219,23 +222,25 @@ export class ComputerHub {
   arcadeGame(s){const app=s.player.state?.app;return ARCADE[app]&&s.run?.app===app?s.run.game:null;}
   arcadeControls(s,app,entered){
     const def=ARCADE[app],p=s.player;s.arcade.hidden=!def;if(!def)return;
+    const t=def.titles?nesTitle(s.nesTitle):null;
+    const board=t?(globalThis.crypto?.subtle&&nesBoardForHash(t.sha256)):def.board;
     if(entered){
-      const t=def.titles?nesTitle(s.nesTitle):null; // #2237: the chosen NES title's own name, description and button hint
       s.arcadeTitle.textContent=t?`${def.title} · ${t.title}`:def.title;s.arcade.querySelector('.computer-about').textContent=t?t.about:def.about;s.arcadeHelp.textContent=t?`${t.controls} ${def.help}`:def.help;
       const picker=s.arcade.querySelector('.computer-nes-titles');picker.hidden=!def.titles||NES_TITLES.length<2;
       for(const b of picker.children)b.setAttribute('aria-pressed',String(b.dataset.nesTitle===nesTitle(s.nesTitle).id));
       for(const b of s.arcade.querySelectorAll('[data-pad]'))b.hidden=b.dataset.padApp!==app;
-      s.arcadeTop.hidden=s.arcadeTopTitle.hidden=!def.board;s.arcade.querySelector('.computer-license').hidden=!def.license;s.arcade.classList.toggle('computer-nes',app==='nes');
-      if(p.inside&&def.board)this.loadTop(s,def.board);
+      s.arcadeTop.hidden=s.arcadeTopTitle.hidden=!board;s.arcade.querySelector('.computer-license').hidden=!def.license;s.arcade.classList.toggle('computer-nes',app==='nes');
+      if(p.inside&&board)this.loadTop(s,board);
     }
     if(p.owns&&s.run?.app!==app)s.run={app,game:def.make(s),sent:true}; // the start screen with the top list
     const g=this.arcadeGame(s),running=!!g?.running&&p.owns;
-    s.arcadeStart.disabled=!p.owns||running||!!g?.loading;s.arcadeStart.textContent=g?.paused?'Fortsätt':g?.over&&def.board?'Spela igen':'Starta';
+    s.arcadeStart.disabled=!p.owns||running||!!g?.loading;s.arcadeStart.textContent=g?.paused?'Fortsätt':g?.over&&(board||t)?'Spela igen':'Starta';
+    s.arcadeFinish.hidden=!t||!p.owns||!(running||g?.paused);
     for(const b of s.arcade.querySelectorAll('[data-pad]'))b.disabled=!running;
     for(const b of s.arcade.querySelectorAll('[data-nes-title]'))b.disabled=!p.owns||!!g?.loading;
     s.arcadeScore.textContent=def.status&&g?def.status(g,p):running?`${g.score} poäng`:g?.over?`Slut: ${g.score} poäng.`:p.owns?'Starta en omgång med knappen eller mellanslag.':p.state?.owner?`${p.state.name} spelar.`:'';
     s.shownScore=g?.score;
-    if(def.board)this.renderTop(s.arcadeTop,s.arcadeTopTitle,def.board);
+    if(board)this.renderTop(s.arcadeTop,s.arcadeTopTitle,board,t?.title);
   }
   arcadeStart(s){
     const app=s.player.state?.app,def=ARCADE[app],old=this.arcadeGame(s);if(!def||!s.player.owns||old?.running||old?.loading)return;
@@ -246,10 +251,17 @@ export class ComputerHub {
   /** Ends a running round (leaving, switching app, power off) and sends a finished round's result once. */
   arcadeEnd(s){
     const r=s.run;if(!r)return;const g=r.game;
-    if(g.dispose){if(!g.disposed){g.dispose();this.controls(s);}r.sent=true;return;} // #2237: leaving frees the emulator; no top list
-    if(g.running){g.running=false;g.over=true;}
-    if(r.sent||!g.over)return;r.sent=true;
-    this.boards?.submit(ARCADE[r.app].board,g.result()).then(()=>this.controls(s));this.controls(s);
+    if(g.dispose){
+      if(g.disposed)return;
+      g.dispose();
+    }else if(g.running){g.running=false;g.over=true;}
+    else if(r.sent||!g.over)return;
+    if(!r.sent){
+      r.sent=true;
+      const board=r.app==='nes'?g.reader?.game:ARCADE[r.app].board,result=g.result();
+      if(board&&result?.score>0)this.boards?.submit(board,result).then(()=>this.controls(s));
+    }
+    this.controls(s);
   }
   arcadeInput(s,action,down){
     const g=this.arcadeGame(s);if(!g?.running||!s.player.owns)return;
@@ -265,10 +277,11 @@ export class ComputerHub {
     this.arcadeInput(s,action,down);
   }
   loadTop(s,board){this.boards?.refresh(board).then(()=>this.controls(s));}
-  renderTop(list,title,board){
+  renderTop(list,title,board,cartridge){
     if(!list||!this.boards)return;
     const key=`${this.boards.version}:${board}:${this.boards.global(board)}`;if(list.dataset.key===key)return;list.dataset.key=key;
-    const top=this.boards.top(board);title.textContent=this.boards.global(board)?'Topplista':'Dina bästa omgångar (lokalt)';
+    const top=this.boards.top(board);const heading=this.boards.global(board)?'Topplista':'Dina bästa omgångar (lokalt)';
+    title.textContent=cartridge?`${heading} · ${cartridge} · ${NES_BOARDS[board].label} (klientrapporterade resultat)`:heading;
     list.replaceChildren(...(top.length?top:[null]).map(r=>{const li=document.createElement('li');if(!r){li.textContent='Inga resultat än';return li;}
       if(r.me)li.className='me';li.append(portraitThumb(r.avatar,18),document.createTextNode(`${r.name||'Anonym'}: ${r.score}`));return li;})); // #1585: avatar thumbnail, name as text
   }
@@ -314,7 +327,7 @@ export class ComputerHub {
       if(playing){this.playing=s;if(now-(this.inputAt??0)>=SNAKE.inputMs){this.inputAt=now;this.send({k:'input',screen:id,seq:++this.seq,angle:this.angle});}}
       else if(this.playing===s&&(!inside||!p.open||!p.owns||p.state?.app!=='snake'||!nearComputer(id,this.position)))this.stopInput(s);
       const arcade=this.arcadeGame(s);
-      if(arcade?.running){if(inside&&p.open&&p.owns&&nearComputer(id,this.position))arcade.step(now-(s.stepAt??now));s.stepAt=now;if(p.open&&s.shownScore!==arcade.score){s.shownScore=arcade.score;s.arcadeScore.textContent=`${arcade.score} poäng`;}}
+      if(arcade?.running){if(inside&&p.open&&p.owns&&nearComputer(id,this.position))arcade.step(now-(s.stepAt??now));s.stepAt=now;if(p.open&&s.shownScore!==arcade.score){s.shownScore=arcade.score;s.arcadeScore.textContent=ARCADE[s.run.app].status?.(arcade,p)??`${arcade.score} poäng`;}}
       if(s.run&&s.run.game.over&&!s.run.sent)this.arcadeEnd(s);
       if(arcade&&inside&&p.owns&&s.target.isOpen)this.shareFrame(s,arcade,now); // #2241
       if(!inside&&s.feed.data)s.feed.clear(); // (an onlooker who leaves stops; the room stops sending too)
@@ -335,7 +348,7 @@ export class ComputerHub {
             if(s.feedDrawn!==s.feed.version&&now-(s.feedAt??-Infinity)>=(this.lowMemory?1000/SCREEN_SHARE.lowMemoryHz:0)&&this.inView(s.target.mesh,camera,now)){
               def.draw(s.poster,SCREEN_CODECS[p.state.app].view(remote),s.info.color,this.boards?.top(def.board)??[],p.state.name);s.feedDrawn=s.feed.version;s.feedAt=now;s.menuKey=`feed:${s.feed.version}`;
             }
-          }else if(live||s.menuKey!==key){if(own)def.draw(s.poster,arcade,s.info.color,this.boards?.top(def.board)??[],this.boards?.name());else drawArcadeCard(s.poster,def.title,p.state.owner?p.state.name:'',def.board?this.boards?.top(def.board)??[]:null,s.info.color);s.menuKey=key;}
+          }else if(live||s.menuKey!==key){if(own)def.draw(s.poster,arcade,s.info.color,def.board?this.boards?.top(def.board)??[]:[],this.boards?.name());else drawArcadeCard(s.poster,def.title,p.state.owner?p.state.name:'',def.board?this.boards?.top(def.board)??[]:null,s.info.color);s.menuKey=key;}
         }else if(!p.state?.video&&s.menuKey!==`${p.state?.q}`){drawComputerMenu(s.poster,s.info,p.state?.app,p.state?.name);s.menuKey=`${p.state?.q}`;}
         if(p.state?.app==='snake'||live||s.drawnMenu!==s.menuKey){s.texture.needsUpdate=true;s.drawnMenu=s.menuKey;}
       }

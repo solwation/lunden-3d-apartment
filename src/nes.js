@@ -1,5 +1,7 @@
 import { NES } from './config.js';
 import { nesTitle } from './nestitles.js';
+import { readerForVerifiedHash, sha256 } from './nesboards.js';
+export { sha256 };
 
 // #2237: the NES adapter on the computers. One NesGame per computer run (ComputerHub's ARCADE entry `nes`); it follows the
 // single-player game interface there (running / over / score / start / step / result) plus pause / resume / press / dispose.
@@ -39,11 +41,6 @@ export async function loadRom(path) {
   const r = await fetch(nesUrl(`../${path}`)); if (!r.ok) throw Error('Spelet kunde inte laddas. Försök igen.');
   return new Uint8Array(await r.arrayBuffer());
 }
-/** Hex SHA-256, or null without WebCrypto (plain-http LAN pages): then the size check alone guards the file. */
-export async function sha256(bytes) {
-  const subtle = globalThis.crypto?.subtle; if (!subtle) return null;
-  return [...new Uint8Array(await subtle.digest('SHA-256', bytes))].map(b => b.toString(16).padStart(2, '0')).join('');
-}
 const binary = b => { let s = ''; for (let i = 0; i < b.length; i += 8192) s += String.fromCharCode.apply(null, b.subarray(i, i + 8192)); return s; };
 
 const median = (v, q) => { if (!v.length) return 0; const s = [...v].sort((a, b) => a - b); return s[Math.min(s.length - 1, Math.floor(q * s.length))]; };
@@ -53,7 +50,7 @@ export class NesGame {
   constructor({ title, engine = loadEngine, rom = loadRom, clock = () => performance.now() } = {}) {
     this.info = nesTitle(title); this.title = this.info.id; this.load = { engine, rom }; this.clock = clock;
     this.nes = null; this.running = false; this.paused = false; this.loading = false; this.over = false; this.disposed = false; this.error = '';
-    this.score = 0; this.frames = 0; this.acc = 0; this.held = new Set(); this.emuTimes = []; this.drawTimes = []; this.pixels = null; this.fresh = false;
+    this.reader = null; this.score = 0; this.frames = 0; this.acc = 0; this.held = new Set(); this.emuTimes = []; this.drawTimes = []; this.pixels = null; this.fresh = false;
   }
   /** idle | loading | running | paused | error | over: what the monitor and the panel show. */
   get phase() { return this.loading ? 'loading' : this.running ? 'running' : this.paused ? 'paused' : this.error ? 'error' : this.over ? 'over' : 'idle'; }
@@ -69,7 +66,7 @@ export class NesGame {
       if (this.disposed) return; // left while loading: never build the instance
       const pixels = this.pixels = new Uint32Array(256 * 240);
       this.nes = new jsnes.NES({ emulateSound: false, onFrame: buf => { for (let i = 0; i < pixels.length; i++) pixels[i] = 0xff000000 | buf[i]; this.fresh = true; } });
-      this.nes.loadROM(binary(data)); this.frames = 0; this.acc = 0; this.running = true; this.paused = false;
+      this.nes.loadROM(binary(data)); this.reader = readerForVerifiedHash(digest); this.frames = 0; this.acc = 0; this.running = true; this.paused = false;
     } catch (e) { this.nes = null; this.error = e?.message || 'NES-spelet kunde inte startas.'; }
     finally { this.loading = false; }
   }
@@ -78,7 +75,11 @@ export class NesGame {
     if (!this.running || !this.nes) return 0;
     const ms = 1000 / NES.hz; this.acc = Math.min(this.acc + Math.max(0, dt || 0), NES.catchUp * ms);
     const n = Math.floor(this.acc / ms + 1e-9); this.acc = Math.max(0, this.acc - n * ms);
-    for (let i = 0; i < n; i++) { const t = this.clock(); this.nes.frame(); this.sample(this.emuTimes, this.clock() - t); this.frames++; }
+    for (let i = 0; i < n; i++) {
+      const t = this.clock(); this.nes.frame();
+      if (this.reader) this.score = this.reader.sample(this.nes.cpu.mem);
+      this.sample(this.emuTimes, this.clock() - t); this.frames++;
+    }
     return n;
   }
   sample(list, v) { list.push(v); if (list.length > NES.statSamples) list.shift(); }
@@ -92,8 +93,8 @@ export class NesGame {
   resume() { if (!this.nes || this.running || this.disposed) return false; this.running = true; this.paused = false; this.acc = 0; return true; }
   /** Leaving: frees the emulator instance (the loaded engine script stays cached; the instance, ROM and picture go). */
   dispose() { this.release(); this.running = this.paused = this.loading = false; this.disposed = this.over = true; this.nes = null; this.pixels = null; this.fresh = false; }
-  /** For ARCADE's interface; NES titles have no top list yet (a later issue binds scores to RAM per ROM hash). */
-  result() { return { score: 0, ms: 0 }; }
+  /** The reader retains only counters after dispose; zero and unsupported rounds have no result. */
+  result() { return this.reader?.result() ?? null; }
   /** In-game cost per emulated frame (jsnes frame + pixel conversion) and per monitor redraw (putImageData + scaled drawImage). */
   stats() { const e = this.emuTimes, d = this.drawTimes; return { frames: this.frames, samples: e.length, emuMedian: median(e, .5), emuP95: median(e, .95), emuMax: e.length ? Math.max(...e) : 0, draws: d.length, drawMedian: median(d, .5), drawP95: median(d, .95) }; }
   /** Draws the newest NES picture into x,y,w,h of a 2D context (pixel-sharp); false when there is none. */
