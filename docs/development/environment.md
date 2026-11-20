@@ -1327,3 +1327,22 @@ Not covered: Hus L's own courtyard units (`neighborLitGlass` in exterior.js) rem
 Car lights (#2184): `src/carlights.js` (`CAR_LIGHTS`, appearance *guesses*) — Olof's Megane lights the road in the dark without a light source: one merged additive decal (groundglow.js fall-off, vertex colours, fog-faded, child of the car, one draw call, hidden unless a group is lit) with two forward beam lobes while driving at night, a red pool behind that brightens on braking (decel > `brakeDecel`, or held at a stop on the route; the tail lamps' emissive rises to `tailBrake`) and a white pool plus two small reverse lenses while backing out of the garage. `lampTargets` (pure) → eased levels in `Car.updateLamps`. Costs +1 draw call (+1 reversing lenses), one extra program (vertex colours); parked cars show none. `tools/carlightstest.mjs`, browser check `tools/carlightsbrowser.cjs`, [before/after](../verification/2184/).
 
 Vehicle contact shadows (#2185): `src/vehicleshadow.js` (`VEHICLE_SHADOW`, appearance *guesses*) — the sun's shadow box only covers ±14 m, so parked cars and bikes stood on the ground without touching it. One merged multiply-blended mesh per place (vertex colours from groundglow.js' `poolGeometry` fall-off, no texture, no light, no shadow caster): the street car park + the bike yard (`street-vehicle-shadow`, streetlife.js), the east campus lots (`east-lot-car-shadow`, eastlot.js, draped with `renderedTerrainY`) and Olof's car (`carShadow`, child of the car, moves with it). A body oval plus a darker patch under each wheel per car (phones: body only), a thin strip per bike; a bike that is ridden away switches its own vertex range off (`Bicycle.place`) and back on at its rack. `vehicleFootprint` / `shadeAt` / `itemsFromMatrices` are pure. +1 draw call per place and one extra program (vertex colours), no new shadow caster. `tools/vehicleshadowtest.mjs`, browser check `tools/vehicleshadowbrowser.cjs`, [before/after](../verification/2185/). Garage cars/bikes are not covered (indoors, no sun).
+
+## Cold roof condensation (#2204)
+
+`src/roofsteam.js` adds one shared `THREE.Points` batch near existing rooftop outlets.
+`surroundings.js` records the actual top centres of A/B/C's seeded vent hoods,
+`campusfacades.js`/`schoolfacade.js` return their drawn chimney-cap tops, and `sitebackdrop.js`
+collects those plus its flat-roof ventilation units. No building geometry, placement or collision changes;
+Hus L has no equivalent hood in these builders, so this does not invent an outlet there.
+`RoofSteam` collects world-space metadata once, deduplicates it and keeps the nearest outlets only.
+It follows `Weather.temp` and `Weather.wind` (the same `windsim` vector as rain/snow);
+`steamDensity` fades out at +8 °C, while `plumeAt` rises before bending downwind.
+All visual/thermal parameters in `ROOF_STEAM` are illustrative *guesses*, not verified HVAC operation.
+
+Maximum 20 outlets × 24 points on desktop, 6 × 12 with `lowMemory`; quality 0 turns the effect off,
+quality 1 halves outlet capacity. Warm or out-of-range batches are hidden (zero draw calls).
+One soft fogged point batch otherwise, no texture, light, shadow caster or extra rendering pass.
+The pure helpers and production batch are checked by `tools/roofsteamtest.mjs`;
+`tools/roofsteambrowser.cjs` captures matched effect-off/on real-app roof views and checks warm/range/quality/phone gates.
+[Verification and images](../verification/2204/README.md). The neutral module and metadata are suitable for a separate public port.

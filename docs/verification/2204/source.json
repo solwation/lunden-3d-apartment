@@ -1,0 +1,14 @@
+{
+  "base": "6965828e881fac294545142656fc672d0465230d",
+  "files": {
+    "src/roofsteam.js": "95a631637ef07b79114107d11e8aa603cc94191391fae2d510560acd5d0d5a4f",
+    "src/config.js": "e033983fa53d239f5b7f7512981d69c7364d3c9448a11109307d1a5582de118b",
+    "src/campusfacades.js": "7d2bd09e273ad63088877d6aa3326b0c8077ba682798608c3894ecf10bcb7232",
+    "src/schoolfacade.js": "e47c0af787a8e6509cec37d6264f818335f899d43fdef995bfaa56f92f6d0f52",
+    "src/sitebackdrop.js": "9cef6d1520a8788accf743ac4a6e54c101e850a6833a8fa42d90ad12f2d48a7f",
+    "src/surroundings.js": "941e8b606fa5bd60b947bede34bde46bce69013ffa9977f5656ab3a2af8b8e5d",
+    "src/main.js": "b36ce1796c463be9a8d38213f4d9b4c55ed4d5702fd9cdbe14627601bccc370a",
+    "tools/roofsteamtest.mjs": "4bd689a40d99aede90747c16078f9f9419b7ca25f8c9920e160478dab2ecf4c0",
+    "tools/roofsteambrowser.cjs": "8ce08e7ce5aa121384604a09a409b022a212f9cf5467ffb507f16a806e41ab2c"
+  }
+}

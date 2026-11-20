@@ -2064,6 +2064,7 @@ export function* surroundingsParts({ grass, husL = null }) {
   yield 0.7;
   // low hip roofs of roofing felt (#258; Peab's aerial render, Q&A) over the light metal edge, a few vent hoods along the ridge;
   // #348: each house its own (roofSpec), with the roof box the roof plans draw (in the sheet metal below)
+  const roofSteam = group.userData.roofSteam = []; // #2204: only the existing vent hoods emit
   const roofBoxes = [], walk = { surfaces: [...lg.canopies], walls: [] }; // walking up there (#360, src/roofs.js)
   mesh(modern.flatMap((b) => {
     const R = roofSpec(b), o = R.overhang, eave = R.eave, cx = (b.x0 + b.x1) / 2, cz = (b.z0 + b.z1) / 2, r = rng(Math.round(b.x0 * 7 + b.z0 * 13));
@@ -2082,6 +2083,7 @@ export function* surroundingsParts({ grass, husL = null }) {
       const s2 = 0.6 + r() * 0.9, hgt = 0.5 + r() * 0.7, x = cx + (r() - 0.5) * 3, z = cz + (r() - 0.5) * Math.max(2, 2 * (hz - hx) + 2);
       const d2 = s2 * (0.7 + r() * 0.6), vy = roofY(x, z) - 0.15 + hgt;
       geos.push(new THREE.BoxGeometry(s2, hgt, d2).translate(x, vy - hgt / 2, z).toNonIndexed());
+      roofSteam.push([x, vy, z]); // #2204: the actual hood top; same seeded geometry
       walk.surfaces.push({ id: `roof-${b.name}`, name: `${b.name}s tak`, x0: x - s2 / 2, x1: x + s2 / 2, z0: z - d2 / 2, z1: z + d2 / 2, y: vy }); // a vent hood: in the way, or climbed
       wallRect(walk.walls, x - s2 / 2, x + s2 / 2, z - d2 / 2, z + d2 / 2, eave, vy);
     }

@@ -115,7 +115,7 @@ export function buildSchoolFacade(p, base, bottom, eave, parts, lite = lowMemory
     parts.schoolBrick.push(plain(new THREE.BoxGeometry(...P.chimney).translate(x,y+.5,z)));
     parts.schoolRoof.push(tint(new THREE.BoxGeometry(...P.cap).toNonIndexed().translate(x,y+1.28,z),schoolRoofTint())); // #1696: own dark-metal tint, not the building's roof tone
   }
-  return {windows,ridge:eave+P.roofRise,roofY:top};
+  return {windows,ridge:eave+P.roofRise,roofY:top,steamOutlets:P.chimneys.map(([x,z])=>[x,top(x,z)+1.28+P.cap[1]/2,z])}; // #2204: drawn cap tops
 }
 
 // #1679: the roof batch's seam texture is neutral grey so every roof's colour comes from its vertex tint (per building,

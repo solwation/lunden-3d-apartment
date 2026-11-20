@@ -1,0 +1,65 @@
+{
+  "environment": "Chromium SwiftShader, 1280x720 DPR1, test lazy + full draw, quality 3",
+  "views": [
+    {
+      "view": "vents",
+      "outlet": {
+        "x": -1.0243142249594974,
+        "y": 14.254230316741209,
+        "z": 39.77694973579931
+      },
+      "allSources": 49,
+      "selected": 20,
+      "count": 480,
+      "visible": true,
+      "before": {
+        "calls": 499,
+        "triangles": 1085676,
+        "points": 80,
+        "programs": 143
+      },
+      "after": {
+        "calls": 500,
+        "triangles": 1085676,
+        "points": 560,
+        "programs": 143
+      }
+    },
+    {
+      "view": "campus",
+      "outlet": {
+        "x": 32,
+        "y": 23.085277510035397,
+        "z": -122.5
+      },
+      "allSources": 49,
+      "selected": 20,
+      "count": 480,
+      "visible": true,
+      "before": {
+        "calls": 43,
+        "triangles": 325816,
+        "points": 80,
+        "programs": 158
+      },
+      "after": {
+        "calls": 44,
+        "triangles": 325816,
+        "points": 560,
+        "programs": 158
+      }
+    }
+  ],
+  "gates": {
+    "warm": true,
+    "far": true,
+    "low": true,
+    "restored": true,
+    "phone": {
+      "sources": 6,
+      "count": 72,
+      "max": 72
+    }
+  },
+  "errors": []
+}

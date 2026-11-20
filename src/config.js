@@ -11260,3 +11260,13 @@ export const RAIN_SURFACE = {
   grassHz: 4500, hardHz: 7000,
   roof: [450, 0.9, 3], metal: [3300, 6, 2], leaf: [4800, 0.7, 1.3], water: [1800, 0.5, 1.1],
 };
+
+// #2204: illustrative condensation, not a measured exhaust simulation (all values *guess*).
+export const ROOF_STEAM = {
+  cold: -8, warm: 8, windThin: 0.06, maxWind: 16,
+  life: 7, rise: 0.75, windShare: 0.34, bend: 0.7, swirl: 0.18,
+  size: [0.38, 2.1], alpha: 0.3, fadeIn: 0.08,
+  far: 125, fadeFrom: 95, every: 0.4, maxSources: 20, phoneSources: 6,
+  points: 24, phonePoints: 12, minLevel: 1, lowLevelShare: 0.5,
+  outletLift: 0.04, minLight: 0.11, color: [0.82, 0.85, 0.88],
+};
