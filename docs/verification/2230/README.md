@@ -66,7 +66,7 @@ The native panels deliberately show **controlled cumulative UI totals 1250 m / 1
 after the genuine producer checks. These values make level 1 and progress to level 2
 reviewable; they were not organically earned during the 55.7-second visit.
 
-![Actual statistics at zero](stats-before.png)
+[Historical zero-total comparison](https://github.com/solwation/lunden-3d-apartment/blob/c2753825c674a0f5ad4b80a77f522b785b693a30/docs/verification/2230/stats-before.png?raw=true)
 ![Actual statistics with controlled cumulative totals](stats-after.png)
 ![Actual medal dialog with the three new level 1 cards](medals-after.png)
 
@@ -91,3 +91,19 @@ which the neutral downstream excludes. No public consumer exists.
 Own browser and server on 8454 were stopped. Approximate phases: inventory/coordination
 4 min, implementation/scoped tests5 min, browser 1 min, image/docs/diff review 3 min.
 Green planned checks ended verification; no extra scene profile was run.
+
+## Delivery
+
+Client `c2753825c674a0f5ad4b80a77f522b785b693a30` matches all seven served
+production hashes. Worker catalog `47a00242021213fde369dd909f65f00ab8d0a502`
+was actually deployed first by [run44771336896](https://github.com/solwation/lunden-3d-apartment/actions/runs/44771336896),
+version `fab50414-c44c-4a6f-b666-7c3d67e21b43` at16:15:11 UTC.
+[Pages44772411503](https://github.com/solwation/lunden-3d-apartment/actions/runs/44772411503)
+succeeded on the exact client revision. Earlier44771544197 built successfully but
+attempt1 failed with GitHub HTTP502 and attempt2 with duplicate artifacts; separate
+#2236 records the recovery procedure. No green result is attributed to either failure.
+
+[Completion comment](https://github.com/solwation/lunden-3d-apartment/issues/2230#issuecomment-7044665500)
+embeds the reviewed result images before closure. All three SHA-pinned images were
+verified through GitHub Contents. The zero-total comparison is pruned from main after
+publication and remains available through its pinned historical link; result images remain.
