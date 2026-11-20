@@ -22,7 +22,9 @@ if (-not (Test-Path -LiteralPath $scriptPath)) {
 	$alt = Join-Path $p.RepoRoot $Script
 	if (Test-Path -LiteralPath $alt) { $scriptPath = $alt } else { Write-Host "ERROR: Python script not found: $Script" -ForegroundColor Red; exit $UnrealExit.Failed }
 }
-$scriptPath = [System.IO.Path]::GetFullPath($scriptPath)
+# Forward slashes: with arguments the pythonscript commandlet parses -script as a command line in which a backslash
+# is an escape (verified #2243 phase B: C:\...\tools became C:\...<TAB>ools and the script failed to load).
+$scriptPath = [System.IO.Path]::GetFullPath($scriptPath).Replace('\', '/')
 $log = '<unreal/Lunden/Saved/Logs/run-python-TIME.log>'
 $argsFor = { param($logPath)
 	$inner = (@($scriptPath) + $ScriptArgs) -join ' '
