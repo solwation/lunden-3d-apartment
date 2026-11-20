@@ -1,0 +1,177 @@
+{
+ "phase": "before",
+ "base": "30002987",
+ "shots": [
+  {
+   "scen": "frost",
+   "view": "bank",
+   "file": "/tmp/f2195/before-frost-bank.png",
+   "calls": 175,
+   "triangles": 704266,
+   "programs": 105,
+   "temp": -4,
+   "overcast": 0,
+   "wind": {
+    "x": 2.9788309146715144,
+    "z": 2.6482199560396844
+   },
+   "frost": null,
+   "snow": 0,
+   "sunY": -0.012636322158942174
+  },
+  {
+   "scen": "frost",
+   "view": "bilar",
+   "file": "/tmp/f2195/before-frost-bilar.png",
+   "calls": 86,
+   "triangles": 495057,
+   "programs": 123,
+   "temp": -4,
+   "overcast": 0,
+   "wind": {
+    "x": 2.9788309146715144,
+    "z": 2.6482199560396844
+   },
+   "frost": null,
+   "snow": 0,
+   "sunY": -0.012636322158942174
+  },
+  {
+   "scen": "frost",
+   "view": "bil2",
+   "file": "/tmp/f2195/before-frost-bil2.png",
+   "calls": 70,
+   "triangles": 513204,
+   "programs": 123,
+   "temp": -4,
+   "overcast": 0,
+   "wind": {
+    "x": 2.9788309146715144,
+    "z": 2.6482199560396844
+   },
+   "frost": null,
+   "snow": 0,
+   "sunY": -0.012636322158942174
+  },
+  {
+   "scen": "frost",
+   "view": "gard",
+   "file": "/tmp/f2195/before-frost-gard.png",
+   "calls": 173,
+   "triangles": 713440,
+   "programs": 124,
+   "temp": -4,
+   "overcast": 0,
+   "wind": {
+    "x": 2.9788309146715144,
+    "z": 2.6482199560396844
+   },
+   "frost": null,
+   "snow": 0,
+   "sunY": -0.012636322158942174
+  },
+  {
+   "scen": "melt",
+   "view": "bank",
+   "file": "/tmp/f2195/before-melt-bank.png",
+   "calls": 174,
+   "triangles": 701326,
+   "programs": 107,
+   "temp": -4,
+   "overcast": 0,
+   "wind": {
+    "x": 3.4608967963147763,
+    "z": 2.705858830975536
+   },
+   "frost": null,
+   "snow": 0,
+   "sunY": 0.05441859231244202
+  },
+  {
+   "scen": "melt",
+   "view": "bilar",
+   "file": "/tmp/f2195/before-melt-bilar.png",
+   "calls": 86,
+   "triangles": 492131,
+   "programs": 123,
+   "temp": -4,
+   "overcast": 0,
+   "wind": {
+    "x": 3.4608967963147763,
+    "z": 2.705858830975536
+   },
+   "frost": null,
+   "snow": 0,
+   "sunY": 0.05441859231244202
+  },
+  {
+   "scen": "snow",
+   "view": "bank",
+   "file": "/tmp/f2195/before-snow-bank.png",
+   "calls": 158,
+   "triangles": 572528,
+   "programs": 98,
+   "temp": -3,
+   "overcast": 0,
+   "wind": {
+    "x": -0.11090345294378068,
+    "z": -3.4069260894893327
+   },
+   "frost": null,
+   "snow": 0.9,
+   "sunY": 0.22146968553080615
+  },
+  {
+   "scen": "snow",
+   "view": "bilar",
+   "file": "/tmp/f2195/before-snow-bilar.png",
+   "calls": 77,
+   "triangles": 401397,
+   "programs": 110,
+   "temp": -3,
+   "overcast": 0,
+   "wind": {
+    "x": -0.11090345294378068,
+    "z": -3.4069260894893327
+   },
+   "frost": null,
+   "snow": 0.9,
+   "sunY": 0.22146968553080615
+  },
+  {
+   "scen": "snow",
+   "view": "bil2",
+   "file": "/tmp/f2195/before-snow-bil2.png",
+   "calls": 61,
+   "triangles": 433920,
+   "programs": 110,
+   "temp": -3,
+   "overcast": 0,
+   "wind": {
+    "x": -0.11090345294378068,
+    "z": -3.4069260894893327
+   },
+   "frost": null,
+   "snow": 0.9,
+   "sunY": 0.22146968553080615
+  },
+  {
+   "scen": "snow",
+   "view": "gard",
+   "file": "/tmp/f2195/before-snow-gard.png",
+   "calls": 156,
+   "triangles": 578288,
+   "programs": 111,
+   "temp": -3,
+   "overcast": 0,
+   "wind": {
+    "x": -0.11090345294378068,
+    "z": -3.4069260894893327
+   },
+   "frost": null,
+   "snow": 0.9,
+   "sunY": 0.22146968553080615
+  }
+ ],
+ "errors": []
+}

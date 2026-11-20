@@ -3,7 +3,7 @@
 // node tools/frost2195browser.cjs BASE OUT before|after   (THREE_DIR = a local three@0.170.0 package: the CDN is routed to it.) Run through tools/browsertest.sh.
 const kit = require('./testkit.cjs'), fs = require('node:fs'), path = require('node:path'), { execFileSync } = require('node:child_process');
 const [base = 'http://localhost:8462', out = 'docs/verification/2195', phase = 'after'] = process.argv.slice(2), three = process.env.THREE_DIR;
-const BASE_REV = process.env.BASE_REV || '30002987', touched = ['config.js', 'main.js', 'seasons.js', 'snowground.js', 'exterior.js', 'surroundings.js', 'courtyard.js', 'busstop.js', 'carfinish.js'];
+const BASE_REV = process.env.BASE_REV || '30002987', touched = ['config.js', 'main.js', 'seasons.js', 'snowground.js', 'exterior.js', 'surroundings.js', 'courtyard.js', 'busstop.js', 'carfinish.js', 'grass.js'];
 const before = phase === 'before';
 const VIEWS = { // [x, z, yaw°, pitch°, feet?]
   bank: [-30, 26, 90, -33, 8], bilar: [-36, -6.5, -40.5, -13.8], bil2: [-36, -6.5, 22, -10], tak: [3, 5, 0, -22, 12.75], gard: [-30, 26, 90, -20, 3], husA: [2, 23, 200, -20, 3],
