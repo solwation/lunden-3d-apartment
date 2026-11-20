@@ -34,8 +34,11 @@ function safeName(name) {
 
 async function regularRoot(root) {
   const resolved = path.resolve(root);
-  check((await lstat(resolved)).isDirectory() && (await realpath(resolved)) === resolved, 'Expected a directory without links: ' + resolved);
-  return resolved;
+  check((await lstat(resolved)).isDirectory(), 'Expected a directory: ' + resolved);
+  for (let part = resolved; part !== path.dirname(part); part = path.dirname(part))
+    check(!(await lstat(part)).isSymbolicLink(), 'Linked directory: ' + part);
+  // Windows TEMP can use an 8.3 alias. Canonicalize it after checking the actual components.
+  return realpath(resolved);
 }
 
 async function inspectFile(filename, captureLimit = 0) {
@@ -210,8 +213,8 @@ export async function generate(options) {
   const key = (await readSmall(publicKey)).toString();
   const trust = releaseInputs(options.launcherTag, options.signerSha256, key);
   const archiveRoot = await regularRoot(archive), launcherRoot = await regularRoot(signedLauncher);
-  const target = path.resolve(out);
-  await regularRoot(path.dirname(target));
+  const destination = path.resolve(out);
+  const target = path.join(await regularRoot(path.dirname(destination)), path.basename(destination));
   for (const root of [archiveRoot, launcherRoot]) {
     const relative = path.relative(root, target);
     check(relative === '..' || relative.startsWith('..' + path.sep) || path.isAbsolute(relative), 'Write the output outside both input directories.');
