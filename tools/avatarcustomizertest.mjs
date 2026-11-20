@@ -231,10 +231,10 @@ test('#1165 hair length and glasses: tags h / g, old codes unchanged, bad values
   const back = decodeAvatarLook(code, 'p');
   assert.equal(back.hairLength, 1); assert.equal(back.glasses, 2); assert.equal(encodeAvatarLook(back), code);
   assert.equal(encodeAvatarLook({ ...plain, glasses: 0, hairLength: AVATAR_SHAPE.mid }), base, 'defaults are not written');
-  assert.equal(encodeAvatarLook({ ...plain, glasses: 4 }), base, 'an unknown glasses kind (#1325: 3 is sunglasses) is not written');
+  assert.equal(encodeAvatarLook({ ...plain, glasses: 5 }), base, 'an unknown glasses kind (#1325: 3 is sunglasses, #2234: 4 aviators) is not written');
   assert.equal(decodeAvatarLook(base + 'g9', 'p').glasses, 0, 'out-of-range glasses ignored');
   assert.equal(decodeAvatarLook(base + 'h9', 'p').hairLength, AVATAR_SHAPE.mid, 'out-of-range length ignored');
-  assert.equal(AVATAR_GLASSES.names.length, 4);
+  assert.equal(AVATAR_GLASSES.names.length, 5); // #2234: Pilotsolglasögon
   // together with the height and the face, and through the wire split
   const all = encodeAvatarLook({ ...lk, height: 140, eyeSize: 7 });
   assert.equal(all, base + '140' + 'e7h1g2');
@@ -609,8 +609,8 @@ test('#1325 earrings and sunglasses: earrings share the g tag (glasses + 10 * ea
   const plain = avatarLook('ear-plain'), base = encodeAvatarLook(plain);
   assert.equal(defaultFaceLook().earrings, 0, 'no earrings by default');
   assert.equal(decodeAvatarLook(base, 'p').earrings, 0);
-  assert.equal(AVATAR_EARRINGS.names.length, 5); assert.equal(AVATAR_GLASSES.names.length, 4);
-  for (let g = 1; g < 4; g++) { // glasses alone are written exactly as before
+  assert.equal(AVATAR_EARRINGS.names.length, 5); assert.equal(AVATAR_GLASSES.names.length, 5); // #2234: aviators are kind 4
+  for (let g = 1; g < 5; g++) { // glasses alone are written exactly as before
     assert.equal(encodeAvatarLook({ ...plain, glasses: g }), `${base}g${g}`);
     const back = decodeAvatarLook(`${base}g${g}`, 'p'); assert.equal(back.glasses, g); assert.equal(back.earrings, 0);
   }
