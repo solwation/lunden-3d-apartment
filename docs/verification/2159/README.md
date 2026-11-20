@@ -12,13 +12,16 @@ largest forward lean at the start, a steady stretch, the largest back lean at th
 
 | sprint 4.8 m/s (trunk pitch hips → neck, rad, + forward) | before | after |
 |---|---|---|
-| start (peak) | 0.085 | 0.302 |
+| start (peak) | 0.085 | 0.309 |
 | steady run (mean) | 0.079 | 0.078 |
-| sudden stop (peak back) | −0.001 | −0.261 |
-| left hand ahead of the hips at the stop (m) | 0.019 | 0.208 |
-| over-swing after the stop | −0.010 | 0.049 |
+| sudden stop (peak back) | −0.004 | −0.168 |
+| left hand ahead of the hips at the stop (m) | 0.015 | 0.246 |
+| mean knee flexion at the stop (rad) | 0.505 | 0.738 |
+| hip height at the stop (m) | 0.916 | 0.882 |
+| feet height difference after − before from the stop on (m) | | 0 |
+| over-swing after the stop | −0.007 | 0.025 |
 
-At a walk (1.4 m/s) the effect is deliberately much smaller: the start goes from −0.032 to 0.049 and the stop from −0.002 to −0.079.
+At a walk (1.4 m/s) the effect is deliberately much smaller: the start goes from −0.032 to 0.052 and the stop from −0.002 to −0.082.
 At constant speed the term stays below 0.02 rad (sprint) and 0.013 rad (walk) on the jittery playback, and it is back under 0.01 rad
 1.5 s after the stop. The page and console logged no errors. `Ghost.animate` cost stayed within the noise. Full numbers:
 [browser.json](browser.json).

@@ -5,60 +5,77 @@
    "times": [
     1.6333,
     3.2,
-    4.2667,
-    4.7833
+    4.15,
+    4.8667
    ],
    "moments": {
     "start": {
      "pitchBefore": 0.0852,
-     "pitchAfter": 0.3017,
+     "pitchAfter": 0.3085,
      "handBefore": 0.38,
      "handAfter": 0.38,
+     "kneeBefore": 0.6846,
+     "kneeAfter": 0.6778,
+     "hipYBefore": 0.853,
+     "hipYAfter": 0.8537,
      "accel": 0.2468
     },
     "run": {
-     "pitchBefore": 0.0731,
-     "pitchAfter": 0.0826,
-     "handBefore": -0.3305,
-     "handAfter": -0.3282,
+     "pitchBefore": 0.081,
+     "pitchAfter": 0.0859,
+     "handBefore": -0.3286,
+     "handAfter": -0.3274,
+     "kneeBefore": 0.878,
+     "kneeAfter": 0.878,
+     "hipYBefore": 0.7596,
+     "hipYAfter": 0.7596,
      "accel": 0.0002
     },
     "stop": {
-     "pitchBefore": -0.0011,
-     "pitchAfter": -0.2606,
-     "handBefore": 0.0187,
-     "handAfter": 0.2082,
-     "accel": -0.2585
+     "pitchBefore": -0.0035,
+     "pitchAfter": -0.1676,
+     "handBefore": 0.0152,
+     "handAfter": 0.2459,
+     "kneeBefore": 0.5053,
+     "kneeAfter": 0.7382,
+     "hipYBefore": 0.9159,
+     "hipYAfter": 0.8819,
+     "accel": -0.161
     },
     "overSwing": {
-     "pitchBefore": -0.0096,
-     "pitchAfter": 0.0493,
-     "handBefore": 0.0186,
-     "handAfter": 0.0204,
-     "accel": 0.0527
+     "pitchBefore": -0.0066,
+     "pitchAfter": 0.0246,
+     "handBefore": 0.0188,
+     "handAfter": 0.0197,
+     "kneeBefore": 0.41,
+     "kneeAfter": 0.4344,
+     "hipYBefore": 0.9241,
+     "hipYAfter": 0.9216,
+     "accel": 0.0258
     }
    },
+   "footDiffAfterStop": 0,
    "steadyRun": {
-    "pitchBefore": 0.0788,
-    "pitchAfter": 0.0776,
+    "pitchBefore": 0.079,
+    "pitchAfter": 0.0789,
     "accelMaxAbs": 0.0199
    },
    "settled": {
-    "accelAbsAfter1_5s": 0.0088
+    "accelAbsAfter1_5s": 0.0044
    },
    "bench": {
     "unit": "µs/Ghost.animate",
     "before": [
-     48.13333333345751,
-     45.53333333320916,
-     39.89999999975165,
-     36.80000000012418
+     22.833333333333332,
+     19.433333333329454,
+     18.100000000015523,
+     16.666666666666668
     ],
     "after": [
-     39.933333333581686,
-     39.30000000012418,
-     31.76666666629414,
-     29.90000000037253
+     22.86666666667831,
+     25.466666666674428,
+     26.666666666666668,
+     17.79999999998836
     ]
    }
   },
@@ -71,37 +88,54 @@
    ],
    "moments": {
     "start": {
-     "pitchBefore": -0.0319,
-     "pitchAfter": 0.0492,
+     "pitchBefore": -0.0318,
+     "pitchAfter": 0.0524,
      "handBefore": -0.2001,
      "handAfter": -0.1922,
+     "kneeBefore": 0.5794,
+     "kneeAfter": 0.5897,
+     "hipYBefore": 0.8892,
+     "hipYAfter": 0.888,
      "accel": 0.0845
     },
     "run": {
      "pitchBefore": -0.0286,
-     "pitchAfter": -0.0273,
+     "pitchAfter": -0.029,
      "handBefore": 0.1242,
-     "handAfter": 0.1242,
+     "handAfter": 0.1239,
+     "kneeBefore": 0.6994,
+     "kneeAfter": 0.6896,
+     "hipYBefore": 0.9164,
+     "hipYAfter": 0.9177,
      "accel": 0.0023
     },
     "stop": {
-     "pitchBefore": -0.002,
-     "pitchAfter": -0.0788,
+     "pitchBefore": -0.0024,
+     "pitchAfter": -0.0823,
      "handBefore": 0.0191,
-     "handAfter": 0.0824,
+     "handAfter": 0.1534,
+     "kneeBefore": 0.6057,
+     "kneeAfter": 0.7251,
+     "hipYBefore": 0.9193,
+     "hipYAfter": 0.9006,
      "accel": -0.0812
     },
     "overSwing": {
-     "pitchBefore": -0.002,
-     "pitchAfter": 0.0284,
+     "pitchBefore": -0.0024,
+     "pitchAfter": 0.0264,
      "handBefore": 0.0191,
-     "handAfter": 0.0199,
+     "handAfter": 0.0198,
+     "kneeBefore": 0.4736,
+     "kneeAfter": 0.4733,
+     "hipYBefore": 0.9173,
+     "hipYAfter": 0.9173,
      "accel": 0.0303
     }
    },
+   "footDiffAfterStop": 0,
    "steadyRun": {
-    "pitchBefore": -0.0291,
-    "pitchAfter": -0.0297,
+    "pitchBefore": -0.0289,
+    "pitchAfter": -0.0296,
     "accelMaxAbs": 0.013
    },
    "settled": {
@@ -110,16 +144,16 @@
    "bench": {
     "unit": "µs/Ghost.animate",
     "before": [
-     19.033333333209157,
-     18.86666666654249,
-     21.466666666790843,
-     18.066666667039197
+     20.5,
+     19.433333333329454,
+     18.466666666655026,
+     16.666666666666668
     ],
     "after": [
-     20.833333333333332,
-     20.666666666666668,
-     20.633333332836628,
-     19.53333333383004
+     21,
+     20.333333333333332,
+     18.933333333348855,
+     20.09999999999612
     ]
    }
   }
