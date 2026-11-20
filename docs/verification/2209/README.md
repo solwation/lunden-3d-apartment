@@ -33,3 +33,5 @@ The change has no new visible graphic result: it corrects an invisible legacy cl
 Head-related changelog uses `group: head-hits`; conductor renumbers its provisional id after the final rebase. `interactions.md` and `storage.md` now explicitly document build-independent x/z widths and cached v1 behavior. No personal state, stored data, service or deployment configuration changes. Public downstream: **not applicable**, PvP/gameplay/Worker logic excluded from kvarteret-lunden.
 
 Conductor owns integration/publication, completion evidence and optional pinned debug-image embedding, release checks, issue closure and checkout removal. No push or closure by the worker. Approximate phases: plan/investigation 2 min, implementation 2 min, verification/documentation 5 min (including one corrected old fixture and bounded before/after diagnostic), total about 9 min; one worker, no helpers.
+
+Published source `962aa3f7a925167eb6078d1206b78f938c80f8fa`; pinned evidence: https://github.com/solwation/lunden-3d-apartment/issues/2209#issuecomment-7042749381. Both Pages and Worker deployment succeeded before resolving.
