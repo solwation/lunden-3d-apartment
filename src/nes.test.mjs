@@ -6,6 +6,7 @@ import { createRequire } from 'node:module';import { readFileSync } from 'node:f
 import { NesGame, NES_KEYS, NES_PAD, NES_BUTTONS, nesUrl, loadEngine } from './nes.js';
 import { NES } from './config.js';
 import { NES_TITLES, nesTitle } from './nestitles.js';
+import { NES_BOARDS, nesBoardForHash } from './nesboards.js';
 import { createHash } from 'node:crypto';import { existsSync } from 'node:fs';
 
 const jsnes=createRequire(import.meta.url)('./vendor/jsnes/jsnes.js');
@@ -100,4 +101,15 @@ test('plain HTTP can play the ROM but cannot read or submit a score',async()=>{
   for(let i=0;i<220;i++){if(i===100)g.press('right',true);g.step(ms);}
   assert.equal(g.nes.cpu.mem[2],1);assert.equal(g.score,0);assert.equal(g.result(),null);
  }finally{Object.defineProperty(globalThis,'crypto',crypto);}
+});
+
+test('every selectable cartridge binds the score reader to its actual bytes',async()=>{
+ for(const t of NES_TITLES){
+  const g=new NesGame({title:t.id,engine:async()=>jsnes,rom:path=>new Uint8Array(readFileSync(site(path)))});
+  await g.start();assert.equal(g.phase,'running',t.id);
+  const board=nesBoardForHash(t.sha256);
+  assert.equal(g.reader?.game,board,t.title);
+  if(board)assert.equal(NES_BOARDS[board].sha256,t.sha256);
+  g.dispose();
+ }
 });

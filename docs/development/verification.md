@@ -332,6 +332,10 @@ before Starta and only same-origin requests after it, keyboard input changing th
 texture showing the NES picture, a hidden-tab pause, Esc freeing the instance, the in-game frame cost
 (`NesGame.stats()`), and the touch pad on a phone-sized touch page. Result images: `docs/verification/2237/`.
 
+For NES top lists (#2239), run `node --test src/nes.test.mjs tools/nesscoretest.mjs cloudflare/games.test.mjs tools/arcadegamestest.mjs`.
+The real-app round and second-client check use `tools/browsertest.sh node tools/nesleader2239browser.cjs GAME FRESH_LOCAL_WORKER OUT`.
+The [verification record](../verification/2239/README.md) describes the observed score and the cartridge coverage.
+
 ## Playhouse popcorn cart (#1567)
 
 `tools/popcorntest.html` covers the actual action button, cart collision, gradual
