@@ -1,6 +1,6 @@
 {
- "base": "a567260d28fbd318c1badb4545d798aae2cc4b81",
- "head": "f0ba9f6caebae3ad681d85eb4501e60b3c71f722",
+ "base": "f20f6b7d7d722f2e53e9fddda5d70dec48954b68",
+ "head": "440e91f4ccb153409ca25eebbacb7a434071c2e8",
  "phases": {
   "before": {
    "errors": [],
@@ -17,23 +17,10 @@
       0.22
      ],
      "seatTop": 0.6
-    },
-    "gamingstol": {
-     "pose": 1,
-     "scale": 0.95,
-     "floorY": 3.25,
-     "rootY": 3.322,
-     "hipOverFloor": 0.571,
-     "kneeOverFloor": 0.505,
-     "ankleOverFloor": [
-      0.12,
-      0.12
-     ],
-     "seatTop": 0.5
     }
    },
-   "loadMs": 66950,
-   "ms": 169294
+   "loadMs": 51654,
+   "ms": 63562
   },
   "after": {
    "errors": [],
@@ -44,29 +31,16 @@
      "floorY": 0,
      "rootY": 0.172,
      "hipOverFloor": 0.671,
-     "kneeOverFloor": 0.629,
+     "kneeOverFloor": 0.437,
      "ankleOverFloor": [
-      0.257,
-      0.257
+      0.047,
+      0.047
      ],
      "seatTop": 0.6
-    },
-    "gamingstol": {
-     "pose": 1,
-     "scale": 0.95,
-     "floorY": 3.25,
-     "rootY": 3.322,
-     "hipOverFloor": 0.571,
-     "kneeOverFloor": 0.456,
-     "ankleOverFloor": [
-      0.067,
-      0.067
-     ],
-     "seatTop": 0.5
     }
    },
-   "loadMs": 77156,
-   "ms": 166594
+   "loadMs": 41895,
+   "ms": 54009
   }
  },
  "external": [

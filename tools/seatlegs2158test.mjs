@@ -78,3 +78,14 @@ test('the real figure\'s IK puts the ankles where seatedLegs asks', () => {
     }
   }
 });
+
+test('0.60 m seat (the storage box): an adult reaches the floor, a child dangles', () => {
+  const rootY = 0, seatWorld = 0.6; // the root follows REST.avatarSeat * scale under the seat top
+  for (const k of [1, 0.95, 1.05]) {
+    const r = seatedLegs(SEAT, localFloor(0 - (seatWorld - SEAT * k), 0, k, SEAT));
+    assert.equal(r.dangle, 0, 'adult scale ' + k);
+    assert.ok(Math.abs(r.feet[0][1] - (localFloor(0 - (seatWorld - SEAT * k), 0, k, SEAT) + SEAT_LEGS.ankle)) < 1e-9, 'on the floor, scale ' + k);
+  }
+  const cf = localFloor(0 - (seatWorld - SEAT * 0.6), 0, 0.6, SEAT), child = seatedLegs(SEAT, cf);
+  assert.ok(child.dangle > 0 && child.feet[0][1] - cf > 0.1, 'child (scale 0.6) dangles: ' + child.dangle);
+});

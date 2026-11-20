@@ -5020,7 +5020,7 @@ export const SEAT_LEGS = {
   ankle: 0.05, hipZ: 0.07, // the ankle over the floor and the hips' forward offset (as seatedPose)
   base: [0.155, 0.134],
   low: [-0.45, 0.9], // a low seat at its limit: knees up, shins forward (the car)
-  reach: [0.3, 0], // a high seat at its limit with the feet still down: thighs over the front edge, shins upright, toes reaching
+  reach: [0.85, -0.05], // a high seat at its limit with the feet still down (an adult's knee-to-sole ~0.5-0.55 m reaches a 0.60 m seat: thighs sloping down over the front edge, shins upright to slightly tucked, toes touching; *guess*)
   dangle: [0.1, 0.3], band: 0.1, // beyond reach the legs relax into hanging over `band` m more drop: feet off the floor
   pump: [0.75, -0.5], pumpSpeed: 1.1, pumpMax: 2.5, pumpEase: 6, // a swing (#1818): shin tilt added at full forward / backward speed (m/s); faster = a vehicle, no pump
   probe: 0.35, reread: 0.4, // the floor is read this far in front of the root, once per seat (again only after the root moved `reread` m)
