@@ -42,6 +42,7 @@ import { AvatarShadows } from './avatarshadow.js'; // #2010: soft contact shadow
 import { GhostFar } from './ghostfar.js'; // #1966: far players as one draw call
 import { mouthPose, blendHand } from './avatarmouth.js'; // #2160
 import { cueArms, newCueArms, strokePull } from './avatarcue.js'; // #2162
+import { typeStep, typePose, typeAllowed } from './avatartype.js'; // #2174
 import { reachPose, toFigureFrame, REACH_TOTAL } from './avatarreach.js'; // #2161
 import { lifeEvent, nearestShooter, knockPose, KNOCK_TOTAL } from './avatarknock.js'; // #2167
 import { flinch, hitDir } from './avatarhit.js';
@@ -566,6 +567,13 @@ export class Ghost { // (exported for tools/ghostprops.html)
       this.avatar.object.rotation.y = lerpAngle(this.avatar.object.rotation.y, direction - this.root.rotation.y, kissed);
     }
     if (hugged) this.poseHug(hug, hugged, hands);
+    { // #2174: typing in the chat: the head tips down, the right hand holds a phone up in front of the chest (eases in / out; nothing else may own the body)
+      const busy = showItem || !!this.mouth || !!this.reach || this.waveT > 0 || !!this.dance || !!this.cue || !!kp || !!this.heldCat.object;
+      const ok = typeAllowed({ bike: !!this.bikeMesh, swim: !!wet, armed: !!this.h, air: !!this.air, gym: !!this.gx, lying: this.pose === 2, knock: !!this.knock, kiss: !!kissed, hug: !!hugged, busy });
+      this.typeW = typeStep(this.typeW ?? 0, !!this.typing && ok, dt);
+      const tp = typePose(this.typeW, -1, this.typeOut ??= { w: 0, hand: { at: [0, 0, 0], pole: [0, 0, 0] }, head: 0, lean: 0 });
+      if (tp) { hands.R = blendHand(hands.R ?? armTarget.rest(-1), tp.hand, tp.w); mouthHead += tp.head; mouthLean += tp.lean; }
+    }
     const carryOn = !this.pose && !this.gx && !this.bikeMesh && !wet && !this.dance && !this.waveT;
     this.carryLean = easeLean(this.carryLean ?? 0, carryOn ? carry.lean : 0, dt); // #2144: the back-lean under a heavy thing, eased in and out
     let react = null; // #1639

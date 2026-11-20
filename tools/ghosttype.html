@@ -1,0 +1,46 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Ghost typing pose</title><link rel="icon" href="data:,">
+<script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  } }
+</script>
+<style>html,body{margin:0;background:#bfc6cc}canvas{display:block}</style></head>
+<body><script type="module">
+// #2174 component page: three remote avatars (Ghost): A not typing, B typing (chat flag `typing`), C typing but armed (suppressed: nothing changes). Seen from the
+// front-left and from the side. `?off=1` never sets the flag (the state before the issue). Driven by tools/ghosttypetest.cjs.
+import * as THREE from 'three';
+import { Ghost } from '../src/ghosts.js';
+const q = new URLSearchParams(location.search), off = q.has('off');
+const CASES = [{ typing: false, h: '' }, { typing: true, h: '' }, { typing: true, h: 'nerf' }];
+const W = 1500, H = 640, renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(W, H); document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0xbfc6cc);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8a7f72, 1.6));
+const sun = new THREE.DirectionalLight(0xfff2e0, 2.2); sun.position.set(2, 4, 3); scene.add(sun);
+const ghosts = CASES.map(({ h }, i) => {
+  const g = new Ghost(scene, i + 1, 'Spelare ' + (i + 1));
+  if (g.tag) g.tag.visible = false;
+  g.root.visible = true;
+  g.push({ p: [0, 0, 0], r: Math.PI, hi: '', h, look: [0, 0] }, 1000); g.look = [0, 0];
+  return g;
+});
+const cam = new THREE.PerspectiveCamera(20, W / H, 0.05, 50);
+window.__shot = (view) => {
+  const n = ghosts.length, mid = (n - 1) / 2;
+  if (view === 'side') { cam.position.set(6.0, 1.35, 0); cam.lookAt(0, 1.3, 0); }
+  else { cam.position.set(-1.0, 1.55, 4.6); cam.lookAt(0, 1.3, 0); }
+  ghosts.forEach((g, i) => g.root.position.set(view === 'side' ? 0 : (i - mid) * 0.95, 0, view === 'side' ? (i - mid) * 0.95 : 0));
+  let t = 1000;
+  ghosts.forEach((g, i) => {
+    g.root.rotation.y = Math.PI; g.have = false; g.typing = false; g.typeW = 0;
+    for (let k = 0; k < 30; k++) g.animate(t += 33, 1, 0, 0); // settle at rest
+    if (!off) g.typing = CASES[i].typing;
+    for (let k = 0; k < 30; k++) g.animate(t += 33, 1, 0, 0); // ~1 s: the pose has eased fully in
+  });
+  renderer.render(scene, cam);
+  return { typeW: ghosts.map((g) => +(g.typeW ?? 0).toFixed(2)) };
+};
+window.__ready = true;
+</script></body></html>

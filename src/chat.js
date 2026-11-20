@@ -141,7 +141,7 @@ export class Chat {
       b = { el, ghost: g };
       this.bubbles.set(g.id, b);
     }
-    b.ghost = g; b.typing = text === null; b.t = (b.typing ? CHAT.typingStale / 1000 : CHAT.bubbleTtl);
+    b.ghost = g; b.typing = text === null; g.typing = b.typing; b.t = (b.typing ? CHAT.typingStale / 1000 : CHAT.bubbleTtl); // #2174: g.typing: their figure looks down at a phone while "skriver…"
     b.expiresAt = performance.now() + b.t * 1000;
     b.el.className = `say theirs chat-bubble${b.typing ? ' typing' : text.length > 32 ? ' long' : ''}`;
     if (b.typing) {
@@ -155,6 +155,7 @@ export class Chat {
   }
 
   unbubble(id) {
+    const gt = this.bubbles.get(id)?.ghost; if (gt) gt.typing = false; // #2174
     this.bubbles.get(id)?.ghost?.avatar?.stopTalking?.();
     this.bubbles.get(id)?.el.remove();
     this.bubbles.delete(id);

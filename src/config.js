@@ -9171,6 +9171,11 @@ export const MOUTH = {
   toast: { dur: 1.6, up: 0.25, down: 0.3, head: 0.1, lean: 0.0, hand: [-0.2, 1.5, 0.5], pole: [-0.8, -0.4, -0.3] },
 };
 
+// #2174: a remote figure typing in the chat (src/avatartype.js), *guess* by eye. up / down = seconds to ease the pose in / out; head = rad the head tips
+// down; lean = rad the torso bends forward; hand / pole = the right wrist and elbow-pole targets in the figure frame (x right-negative, y up, z forward),
+// a phone held in front of the chest at about 1.15 m.
+export const TYPING = { up: 0.45, down: 0.4, head: 0.5, lean: 0.07, hand: [-0.09, 1.26, 0.32], pole: [-0.9, -0.5, -0.3] };
+
 // #2162: how a remote figure bends over the billiard table while it aims (src/avatarcue.js). Figure frame, metres; all *guess*: shoulder = where the
 // arm starts (y of the 1.8 m figure), bridgeS = the left hand's rest on the felt that far behind the cue tip, gripS = the right hand's grip that far
 // from the tip along the cue (it moves with the pull-back), reach = the longest wrist-to-shoulder distance asked of an arm (beyond it the hand falls
