@@ -4,7 +4,7 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import { installRuntime,fakeNamespace } from './devws.mjs';import worker,{PlayerRoom} from './worker.js';import { PLAYERS } from './players.js';
 import { COMPUTER_MEDIA,LEVELS,SCREEN_SHARE as S } from '../src/config.js';
-import { cleanScreenFrame } from '../src/screenwire.js';import { encodeBlocks } from '../src/screenshare.js';import { BlocksGame } from '../src/blocks.js';
+import { cleanScreenFrame } from '../src/screenwire.js';import { MeteorsGame } from '../src/meteors.js';import { encodeBlocks, encodeMeteors } from '../src/screenshare.js';import { BlocksGame } from '../src/blocks.js';
 installRuntime();let now=Date.UTC(2026,10,20,12);Date.now=()=>now;
 const settle=async env=>{for(let i=0;i<3;i++){await new Promise(r=>setTimeout(r,0));await env.PLAYERS.ctx('world').idle();}};
 const setup=()=>{const env={};env.PLAYERS=fakeNamespace(PlayerRoom,env);return env;};
@@ -25,7 +25,7 @@ async function playing(env,screen='pc-home'){
 test('parser: a known computer, a shared app, a bounded printable payload; forged fields are stripped',()=>{
  const f=encodeBlocks(new BlocksGame(()=>.4));
  assert.deepEqual(cleanScreenFrame(JSON.stringify({...frame('pc-home',7,f),i:'forged',owner:'x'})),{screen:'pc-home',app:'blocks',n:7,f});
- for(const m of [frame('lounge',1),frame('pc-nope',1),frame('pc-home',1,f,'meteors'),frame('pc-home',1,f,'snake'),frame('pc-home',-1),frame('pc-home',1.5),
+ for(const m of [frame('lounge',1),frame('pc-nope',1),frame('pc-home',1,f,'youtube'),frame('pc-home',1,f,'snake'),frame('pc-home',-1),frame('pc-home',1.5),
   frame('pc-home',1,'x'.repeat(S.maxFrame+1)),frame('pc-home',1,'<\u0000>'),frame('pc-home',1,'å'),{...frame('pc-home',1),t:'cinema'},{...frame('pc-home',1),f:12}])
   assert.equal(cleanScreenFrame(JSON.stringify(m)),null,JSON.stringify(m).slice(0,80));
  assert.equal(cleanScreenFrame('{"t":"scr"'),null);
@@ -65,4 +65,15 @@ test('rate: SCREEN_SHARE.hz frames a second pass, faster ones are dropped silent
  for(let i=0;i<6;i++){raw(200+i,150);await settle(env);}
  assert.equal(b.frames().length-before,3,'every 150 ms: only every second one (≥ 200 ms apart)');
  assert.equal(a.closed,false);
+});
+
+test('Meteoriter pictures reach only the current owner’s nearby viewers and stop on an app change',async()=>{
+ const env=setup(),{a,b,out}=await playing(env);
+ const g=new MeteorsGame(()=>.1);g.start();const f=encodeMeteors(g);
+ const m=frame('pc-home',8,f,'meteors');
+ await a.send(m);assert.equal(b.frames().length,0,'Klossar still owns the screen');
+ await a.cinema('app',{app:'meteors'});
+ await b.send(m);assert.equal(a.frames().length,0,'the onlooker cannot send gameplay');
+ await a.send(m);assert.deepEqual(b.frames(),[{...m,i:a.id}]);assert.equal(out.frames().length,0);
+ await a.cinema('app',{app:'snake'});await a.send({...m,n:9});assert.equal(b.frames().length,1);
 });

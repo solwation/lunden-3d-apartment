@@ -1,10 +1,10 @@
 // #2241: two actual apps against a fresh local Worker. A plays Klossar on the home gaming PC; B stands beside it and sees the same
 // board, piece and score on the same monitor (the controller's snapshots, drawn with drawBlocks). Measures the bytes per second B
 // receives, checks B's draw calls do not change, that B cannot control, that leaving stops the pictures, and a film on the
-// computer and on the lounge TV seen by both. Side-by-side JPEGs in OUT. GAME FRESH_LOCAL_WORKER OUT
+// computer and on the lounge TV seen by both. Pass meteors to check that game instead. GAME FRESH_LOCAL_WORKER OUT [meteors]
 const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
 const {chromium}=require(process.env.PLAYWRIGHT_MODULE||'playwright');
-const [game,worker,out]=process.argv.slice(2),log=(s,v)=>console.log('PASS',s,v?JSON.stringify(v):'');
+const [game,worker,out,app]=process.argv.slice(2),log=(s,v)=>console.log('PASS',s,v?JSON.stringify(v):'');
 const VIDEO='aqz-KE-bpKQ';
 (async()=>{
  fs.mkdirSync(out,{recursive:true});const browser=await chromium.launch({executablePath:process.env.CHROME_PATH,args:['--no-sandbox','--use-angle=swiftshader','--enable-unsafe-swiftshader','--autoplay-policy=no-user-gesture-required','--disable-background-timer-throttling','--disable-renderer-backgrounding','--disable-backgrounding-occluded-windows']});const errors=[],pages=[],result={};
@@ -27,6 +27,7 @@ const VIDEO='aqz-KE-bpKQ';
     const sc=k=>Array.isArray(scale)?scale[k]:scale,w=imgs.map((i,k)=>Math.round(i.width*sc(k))),h=Math.max(...imgs.map((i,k)=>Math.round(i.height*sc(k)))),c=document.createElement('canvas');c.width=w.reduce((a,b)=>a+b,0)+8*(imgs.length-1);c.height=h+30;const g=c.getContext('2d');g.fillStyle='#1d2330';g.fillRect(0,0,c.width,c.height);
     let x=0;imgs.forEach((i,k)=>{g.drawImage(i,x,30,w[k],Math.round(i.height*sc(k)));g.fillStyle='#fff';g.font='bold 17px sans-serif';g.fillText(labels[k],x+8,21);x+=w[k]+8;});return c.toDataURL('image/jpeg',.82);},[urls,labels,scale]);
    const buf=Buffer.from(data.split(',')[1],'base64');fs.writeFileSync(path.join(out,file),buf);assert(buf.length<=600*1024,`${file} ${buf.length} bytes`);console.log('IMAGE',file,Math.round(buf.length/1024),'KB');};
+  const compareTextures=(page,ta,tb)=>page.evaluate(([a,b])=>Promise.all([a,b].map(u=>new Promise(r=>{const i=new Image();i.onload=()=>{const c=document.createElement('canvas');c.width=i.width;c.height=i.height;const g=c.getContext('2d');g.drawImage(i,0,0);r(g.getImageData(0,0,c.width,c.height).data);};i.src=u;}))).then(([x,y])=>{let d=0;for(let k=0;k<x.length;k+=4)if(Math.abs(x[k]-y[k])+Math.abs(x[k+1]-y[k+1])+Math.abs(x[k+2]-y[k+2])>30)d++;return d/(x.length/4);}),[ta,tb]);
   const calls=p=>p.evaluate(()=>{const r=__app.renderer;r.info.autoReset=false;r.info.reset();__app.testMode.draw();const n=r.info.render.calls;r.info.autoReset=true;return n;});
 
   const [A,B]=await Promise.all([make('Spelaren'),make('Åskådaren')]);log('both apps loaded');
@@ -36,6 +37,35 @@ const VIDEO='aqz-KE-bpKQ';
   await B.waitForFunction(()=>__app.computerHub.sessions.get('pc-home').target.isOpen);
   await A.evaluate(()=>__app.computerHub.show(__app.computerHub.sessions.get('pc-home').target));await A.waitForFunction(()=>__app.computerHub.sessions.get('pc-home').player.owns);
   await look(B,'pc-home');
+  // #2267: isolate the Meteoriter regression without repeating the film checks from #2241.
+  if(app==='meteors'){
+    await A.locator('#computer-pc-home [data-app=meteors]').click();
+    await B.waitForFunction(()=>__app.computerHub.sessions.get('pc-home').feed.app==='meteors');
+    await A.keyboard.press('Space');
+    await A.keyboard.down('ArrowRight');await A.keyboard.down('ArrowUp');await A.keyboard.down('Space');
+    // Freeze after real keyboard input has moved the ship and produced a visible shot.
+    await A.waitForFunction(()=>{
+      const h=__app.computerHub,g=h.arcadeGame(h.sessions.get('pc-home'));
+      if(!g?.running||!g.bullets.length||g.ms<350||g.ms<g.ship.safeUntil&&Math.floor(g.ms/120)%2)return false;
+      g.step=()=>{};return true;
+    });
+    await A.keyboard.up('Space');await A.keyboard.up('ArrowRight');await A.keyboard.up('ArrowUp');
+    const expected=await A.evaluate(async()=>{const h=__app.computerHub,{encodeMeteors}=await import('/src/screenshare.js');return encodeMeteors(h.arcadeGame(h.sessions.get('pc-home')));});
+    await B.waitForFunction(async f=>{
+      const h=__app.computerHub,s=h.sessions.get('pc-home'),{encodeMeteors}=await import('/src/screenshare.js');
+      return s.feed.app==='meteors'&&s.feed.data?.running&&s.feedDrawn===s.feed.version&&s.menuKey?.startsWith('feed:')&&encodeMeteors(s.feed.data)===f;
+    },expected,{timeout:45000});
+    const status=await B.evaluate(()=>{
+      const h=__app.computerHub,s=h.sessions.get('pc-home'),d=s.feed.data;
+      return {controller:s.player.owns,localGame:!!h.arcadeGame(s),rocks:d.rocks.length,shots:d.bullets.length,score:d.score,lives:d.lives,wave:d.wave,frames:h.screenStats.got};
+    });
+    assert.equal(status.controller,false);assert.equal(status.localGame,false);assert.ok(status.rocks&&status.shots&&status.frames>1);
+    const ta=await texture(A,'pc-home'),tb=await texture(B,'pc-home');
+    const diff=await compareTextures(B,ta,tb);assert(diff<.02,`monitor textures disagree on ${diff} of the pixels`);
+    await compose('meteoriter-monitor-a-b.jpg',[ta,tb],['A spelar Meteoriter','B ser A:s spel'],1);
+    assert.deepEqual(errors,[]);log('real Meteoriter owner and onlooker share the same bounded picture',{...status,payload:expected.length,textureDiff:diff});
+    return;
+  }
   // A opens Klossar and starts with the real keyboard path; B sees the start screen, then the running game.
   await A.locator('#computer-pc-home [data-app=blocks]').click();await A.waitForFunction(()=>__app.computerHub.sessions.get('pc-home').inWorld);
   await B.waitForFunction(()=>__app.computerHub.sessions.get('pc-home').feed.data?.running===false,null,{timeout:15000});log('B sees the start screen as a snapshot');
@@ -64,7 +94,7 @@ const VIDEO='aqz-KE-bpKQ';
   await drawnFeed();
   const ta=await texture(A,'pc-home'),tb=await B.evaluate(()=>new Promise(r=>{const t=setInterval(()=>{const s=__app.computerHub.sessions.get('pc-home');if(s.menuKey?.startsWith('feed:')&&s.feedDrawn===s.feed.version){clearInterval(t);r(s.poster.toDataURL('image/png'));}},20);})); // (the drawn snapshot itself)
   console.log('ARRIVALS',JSON.stringify(await B.evaluate(()=>{const a=window.arrivals,g=a.slice(1).map((t,i)=>Math.round(t-a[i]));return{n:a.length,maxGap:Math.max(...g),gaps:g.slice(-12)};})));
-  const diff=await B.evaluate(([a,b])=>Promise.all([a,b].map(u=>new Promise(r=>{const i=new Image();i.onload=()=>{const c=document.createElement('canvas');c.width=i.width;c.height=i.height;const g=c.getContext('2d');g.drawImage(i,0,0);r(g.getImageData(0,0,c.width,c.height).data);};i.src=u;}))).then(([x,y])=>{let d=0;for(let k=0;k<x.length;k+=4)if(Math.abs(x[k]-y[k])+Math.abs(x[k+1]-y[k+1])+Math.abs(x[k+2]-y[k+2])>30)d++;return d/(x.length/4);}),[ta,tb]);
+  const diff=await compareTextures(B,ta,tb);
   result.textureDiff=diff;console.log('TEXTURE DIFF',diff);
   await compose('klossar-monitor-a-b.jpg',[ta,tb],['A spelar (sin skärm)','B tittar (samma skärm)']);
   assert(diff<.02,`the two monitor textures are (nearly) identical: ${diff}`);

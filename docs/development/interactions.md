@@ -2422,8 +2422,7 @@ draw calls; idle/start/end screens upload only when they change). They use the s
 toolbar, screen framing, window input capture and Esc/E/Startsida exits as Ormstriden; the
 toolbar has Starta/Spela igen and 44px touch pads (Meteoriter's pads act while held). Space
 starts a round, then hard-drops or fires. Leaving, switching app or powering off ends a
-running round. Other visitors in the computer's room see the same Klossar picture (#2241, below);
-for Meteoriter, which #2240 removes, they keep the cheap "<namn> spelar …" card with the top list.
+running round. Other visitors in the computer's room see Klossar (#2241) and Meteoriter (#2267) on the monitor.
 
 NES (#2237, `src/nes.js`, NES in config): the picker's "Spel · NES" (server app id `nes`) runs the
 titles of the manifest `src/nestitles.js` in **jsnes 1.2.1** (Apache-2.0, vendored unmodified in
@@ -2452,14 +2451,16 @@ lazy-load/retry contract, the real ROM moved by input, pause/resume/dispose) and
 
 Onlookers (#2241, `src/screenshare.js`, wire check `src/screenwire.js`, SCREEN_SHARE in config, *guess*):
 while another (not away) player's last position is inside a computer's viewing zone (`computerViewer`,
-the same room/floor bounds the Worker uses), the controller's client encodes its running Klossar game
-(run-length board, falling piece, next, score/lines/level, running/over/idle; ≤ SCREEN_SHARE.maxFrame
-printable characters) and sends `{t:'scr'}` when the picture changes, at most SCREEN_SHARE.hz a second
+the same room/floor bounds the Worker uses), Klossar shares its run-length board, falling piece, next piece,
+score, lines, level and round state. Meteoriter shares its ship, blink and thrust phase, shots, rock positions,
+sizes and outlines, score, wave and lives. Coordinates use eight bits per axis and angles use six bits. When
+individual rocks would exceed the payload budget, a 30 × 18 grid shows the largest rock in each occupied cell.
+The controller sends `{t:'scr'}` when the picture changes, at most SCREEN_SHARE.hz a second
 (lowMemoryHz on phones), an unchanged picture every keyMs, nothing while nobody watches. It waits in the
 existing 5 Hz socket budget as a replaceable snapshot (`Ghosts.screen`, outbox tier 0). The room relays it
 only from the current owner of that powered computer for its current app to that computer's other room
 viewers (`RoomCinema.relay`). The onlooker keeps the newest frame per owner (`ScreenFeed`), draws it with
-the same `drawBlocks` on its own monitor canvas only when a new frame arrived and the monitor is inside the
+the same `drawBlocks` or `drawMeteors` on its own monitor canvas only when a new frame arrived and the monitor is inside the
 camera frustum (phones at most lowMemoryHz), so no mesh, material or draw call is added; a short gap freezes
 the picture and after staleMs it falls back to the card. Leaving the room clears it. Onlookers can still only
 watch: the toolbar, pads and app buttons stay disabled until "Ta kontroll". The menu screen outlines the

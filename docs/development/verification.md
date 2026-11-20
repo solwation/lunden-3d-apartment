@@ -314,6 +314,12 @@ identical once A's game is held still, B's main-scene draw calls equal its menu-
 steer, the bytes per second B receives over 10 s are printed, leaving the room stops both sending and drawing,
 and a film chosen by A on the computer and on the lounge TV is the same video for B. Side-by-side JPEGs.
 
+For Meteoriter (#2267), add `meteors` after OUT. Two isolated Chromium contexts use the same local Worker.
+The controller starts, moves and fires with the keyboard. The observer must receive the matching ship, shots,
+rocks and HUD, draw that snapshot on the monitor and have no local round or control. The test freezes the
+round to compare monitor pixels (less than 2% may differ after quantization).
+[Player and observer monitors](../verification/2267/meteoriter-monitor-a-b.jpg).
+
 ## NES on the computers (#2237)
 
 Scoped plan: `node --test src/nes.test.mjs` (key map and touch profile, nothing loaded before start,

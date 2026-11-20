@@ -343,7 +343,7 @@ src/gameboards.js      the computer games' top lists (#1577): GET/POST the Worke
                        written only when a row improves; Ormstriden rows come from PlayerRoom's server arena). Client scores
                        are bounded by GAME_BOARDS (*guess*) and the per-IP write limiter. Offline/error: localStorage
                        'lunden.gameBest.<game>' (this browser's ten best rounds). `node --test cloudflare/games.test.mjs`
-src/screenshare.js     #2241: a computer game's picture for the onlookers: the Klossar codec (encode/decode/view), ScreenFeed (newest frame
+src/screenshare.js     #2241: a computer game's picture for the onlookers: the Klossar and Meteoriter codecs (encode/decode/view), ScreenFeed (newest frame
                        per owner, staleMs) and frameDue (SCREEN_SHARE.hz pacing); src/screenwire.js the { t: 'scr' } check shared with the
                        Worker (RoomCinema.relay). Nothing stored. `node --test src/screenshare.test.mjs cloudflare/screenshare.test.mjs`
 src/nes.js             #2237: the computers' NES adapter (NesGame, key map, touch pad, drawNes). Loads src/vendor/jsnes/jsnes.js

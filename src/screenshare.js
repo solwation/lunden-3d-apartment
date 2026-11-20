@@ -1,4 +1,4 @@
-import { BLOCKS, SCREEN_SHARE as S } from './config.js';
+import { BLOCKS, METEORS as M, SCREEN_SHARE as S } from './config.js';
 export { cleanScreenFrame, cleanScreenRelay } from './screenwire.js';
 import { BlocksGame, SHAPES } from './blocks.js';
 
@@ -56,7 +56,88 @@ export function decodeBlocks(f) {
 /** A BlocksGame carrying the decoded picture, so drawBlocks (and its ghost piece) draws it exactly as for the player. */
 export function blocksView(d) { return Object.assign(new BlocksGame(() => 0), d); }
 
-export const SCREEN_CODECS = { blocks: { encode: encodeBlocks, decode: decodeBlocks, view: blocksView } };
+// Meteoriter shares the rendered state. No spectator runs the simulation or changes its controls.
+const DIGITS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_', TAU = 2 * Math.PI;
+const quant = (v, range) => Math.max(0, Math.min(255, Math.round(v * 255 / range)));
+function body(x, y, angle = 0, size = 0) {
+  const turn = (Math.round(angle * 64 / TAU) % 64 + 64) % 64;
+  const word = (quant(x, M.width) << 16) | (quant(y, M.height) << 8) | (turn << 2) | size;
+  return [18, 12, 6, 0].map(shift => DIGITS[(word >> shift) & 63]).join('');
+}
+function readBody(text) {
+  let word = 0;
+  for (const c of text) word = (word << 6) | DIGITS.indexOf(c);
+  return { x: (word >>> 16) * M.width / 255, y: ((word >>> 8) & 255) * M.height / 255,
+    spin: ((word >>> 2) & 63) * TAU / 64, size: word & 3 };
+}
+
+// If individual rock outlines would exceed maxFrame, represent every occupied cell.
+// Three two-bit cells per character: zero is empty, otherwise the largest rock in the cell.
+const COLS = 30, ROWS = 18;
+function rockGrid(rocks) {
+  const cells = new Uint8Array(COLS * ROWS);
+  for (const rock of rocks) {
+    const col = Math.min(COLS - 1, Math.floor(rock.x / M.width * COLS));
+    const row = Math.min(ROWS - 1, Math.floor(rock.y / M.height * ROWS));
+    const at = row * COLS + col;
+    cells[at] = Math.max(cells[at], M.sizes.length - rock.size);
+  }
+  let grid = '';
+  for (let i = 0; i < cells.length; i += 3) grid += DIGITS[(cells[i] << 4) | (cells[i + 1] << 2) | cells[i + 2]];
+  return grid;
+}
+
+export function encodeMeteors(g) {
+  const s = g.ship, phase = Math.floor(g.ms / 60) % 4;
+  const flags = (s.alive ? 1 : 0) | (g.ms < s.safeUntil ? 2 : 0) | (g.input.thrust ? 4 : 0) | (phase << 3);
+  const hud = `${g.score},${g.wave},${g.lives},${g.running ? 'r' : g.over ? 'o' : 'i'}`;
+  const header = `${hud}|${DIGITS[flags]}${body(s.x, s.y, s.a)}|${g.bullets.map(b => body(b.x, b.y)).join('')}|`;
+  return header.length + 1 + g.rocks.length * 4 <= S.maxFrame
+    ? header + 'v' + g.rocks.map(r => body(r.x, r.y, r.spin, r.size)).join('')
+    : header + 'g' + rockGrid(g.rocks);
+}
+
+export function decodeMeteors(f) {
+  if (typeof f !== 'string' || f.length > S.maxFrame) return null;
+  const match = /^(\d{1,16}),(\d{1,16}),(\d),([rio])\|([A-Za-z0-9_-]{5})\|([A-Za-z0-9_-]*)\|([vg])([A-Za-z0-9_-]*)$/.exec(f);
+  if (!match || match[0] !== f) return null;
+  const [, score, wave, lives, mode, ship, shots, form, field] = match;
+  if (!Number.isSafeInteger(+score) || !Number.isSafeInteger(+wave) || +lives > M.lives ||
+      shots.length % 4 || shots.length > M.maxBullets * 4) return null;
+  const flags = DIGITS.indexOf(ship[0]), s = readBody(ship.slice(1));
+  if (flags >= 32 || s.size !== 0) return null;
+  const bullets = [], rocks = [];
+  for (let i = 0; i < shots.length; i += 4) {
+    const bullet = readBody(shots.slice(i, i + 4));
+    if (bullet.spin || bullet.size) return null;
+    bullets.push(bullet);
+  }
+  if (form === 'v') {
+    if (field.length % 4) return null;
+    for (let i = 0; i < field.length; i += 4) {
+      const rock = readBody(field.slice(i, i + 4));
+      if (rock.size >= M.sizes.length) return null;
+      rocks.push({ ...rock, r: M.sizes[rock.size] });
+    }
+  } else {
+    if (field.length !== ROWS * COLS / 3) return null;
+    for (let i = 0; i < ROWS * COLS; i++) {
+      const cell = (DIGITS.indexOf(field[Math.floor(i / 3)]) >> (4 - 2 * (i % 3))) & 3;
+      if (!cell) continue;
+      const size = M.sizes.length - cell;
+      rocks.push({ x: (i % COLS + .5) * M.width / COLS, y: (Math.floor(i / COLS) + .5) * M.height / ROWS,
+        spin: 0, size, r: M.sizes[size] });
+    }
+  }
+  return { score: +score, wave: +wave, lives: +lives, running: mode === 'r', over: mode === 'o',
+    ship: { x: s.x, y: s.y, a: s.spin, alive: !!(flags & 1), safeUntil: (flags & 2) ? 240 : 0 },
+    ms: (flags >> 3) * 60, input: { thrust: !!(flags & 4) }, bullets, rocks };
+}
+
+export const SCREEN_CODECS = {
+  blocks: { encode: encodeBlocks, decode: decodeBlocks, view: blocksView },
+  meteors: { encode: encodeMeteors, decode: decodeMeteors, view: data => data },
+};
 
 /** The onlooker's side for one screen: the newest decoded frame from the current owner. Older or repeated frame numbers from the
  * same sender are dropped (a reloaded controller starts its numbers from the clock, src/computerhub.js); a frame older than

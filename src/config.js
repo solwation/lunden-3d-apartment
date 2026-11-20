@@ -9657,8 +9657,8 @@ export const METEORS = { width:32, height:20, step:1/60, catchUp:.25, turn:4.2, 
 // GHOSTS.hz 5, so one slot stays for its own state), `lowMemoryHz` on phones (sent and redrawn), `keyMs` an unchanged picture
 // is repeated this often for a late onlooker, `staleMs` without a snapshot the onlooker goes back to the "spelar" card (a short
 // break just freezes the picture). `maxFrame` characters of codec payload, `maxBytes` the whole message (below PLAYERS.maxBytes);
-// `apps` the codecs the Worker relays (Meteoriter is left out: #2240 removes it). All values are our picks (*guess*).
-export const SCREEN_SHARE = { hz: 4, lowMemoryHz: 2, keyMs: 2000, staleMs: 4000, maxFrame: 300, maxBytes: 420, apps: ['blocks'] };
+// `apps` the single-player picture codecs the Worker relays. All values are our picks (*guess*).
+export const SCREEN_SHARE = { hz: 4, lowMemoryHz: 2, keyMs: 2000, staleMs: 4000, maxFrame: 300, maxBytes: 420, apps: ['blocks', 'meteors'] };
 // #1577: global top lists for the three computer games (cloudflare/games.js, src/gameboards.js). One row per player id and
 // game (the best round). Single-player scores come from the client, so they are only bounded: a round lasts `minMs`..`maxMs`
 // and a score must fit what the rules can give in that time. All limits are our picks (*guess*).

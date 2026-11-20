@@ -12,8 +12,8 @@ import { portraitThumb } from './playerportraits.js';
 import { SCREEN_CODECS, ScreenFeed, cleanScreenRelay, frameDue } from './screenshare.js';
 
 // #1577: single-player games run only in the controlling client while its panel is open; `board` names the top list.
-// #2241: the onlookers in the computer's room see the same picture when the app has a codec in src/screenshare.js (Klossar; not
-// Meteoriter, which #2240 removes): the controller sends compact snapshots, they draw them with the same `draw` on their monitor canvas.
+// #2241: the onlookers in the computer's room see the same picture when the app has a codec in src/screenshare.js (Klossar and Meteoriter):
+// the controller sends compact snapshots, they draw them with the same `draw` on their monitor canvas.
 const ARCADE={
   blocks:{title:'Klossar',board:'klossar',make:()=>new BlocksGame(),draw:drawBlocks,about:'Vrid och flytta bitarna så att hela rader försvinner. Varje nivå går lite fortare.',
     help:'← → flyttar, ↑ vrider, ↓ släpper snabbare och mellanslag släpper ner. Esc / E lämnar datorn.',
