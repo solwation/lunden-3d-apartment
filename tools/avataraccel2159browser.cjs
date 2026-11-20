@@ -31,7 +31,7 @@ const [base = 'http://127.0.0.1:8234', out = 'docs/verification/2159', rev = 'ce
           for (let n = 0; n * dt < plan.total && next < times.length; n++) { const d = step(dt); while (next < times.length && d.t >= times[next] - 1e-9) { shoot(next); next++; } }
           await new Promise(requestAnimationFrame);
           const kind = v > 3 ? 'löpning' : 'gång';
-          shot = labelled(`#2159 · fjärrfigur från sidan, ${kind} ${String(v).replace('.', ',')} m/s: start, jämn fart, tvärstopp`, ['start (lutar framåt)', 'jämn ' + kind, 'tvärstopp (bakåt, armar fram)', 'efter stoppet (lätt fjädring)']);
+          shot = labelled(`#2159 · fjärrfigur från sidan, ${kind} ${String(v).replace('.', ',')} m/s: start, jämn fart, tvärstopp`, ['start (lutar framåt)', 'jämn ' + kind, 'tvärstopp (knäna böjs, armar fram)', 'efter stoppet (lätt fjädring)']);
         }
         return { data, times, shot, bench: shootIt ? bench() : null };
       }, { v, shootIt: true });
@@ -42,7 +42,10 @@ const [base = 'http://127.0.0.1:8234', out = 'docs/verification/2159', rev = 'ce
       const rnd = (x) => +x.toFixed(4);
       report.runs[name] = {
         times: result.times.map(rnd),
-        moments: Object.fromEntries(['start', 'run', 'stop', 'overSwing'].map((k, i) => { const d = at(result.times[i]); return [k, { pitchBefore: rnd(d.before.pitch), pitchAfter: rnd(d.after.pitch), handBefore: rnd(d.before.hand), handAfter: rnd(d.after.hand), accel: rnd(d.after.accel) }]; })),
+        moments: Object.fromEntries(['start', 'run', 'stop', 'overSwing'].map((k, i) => { const d = at(result.times[i]); const kn = (r) => (r.knee[0] + r.knee[1]) / 2;
+          return [k, { pitchBefore: rnd(d.before.pitch), pitchAfter: rnd(d.after.pitch), handBefore: rnd(d.before.hand), handAfter: rnd(d.after.hand), kneeBefore: rnd(kn(d.before)), kneeAfter: rnd(kn(d.after)), hipYBefore: rnd(d.before.hipY), hipYAfter: rnd(d.after.hipY), accel: rnd(d.after.accel) }]; })),
+        // the feet's world height after − before on every frame from the stop on (sinking < 0 / floating > 0 against the same gait)
+        footDiffAfterStop: rnd(Math.max(...result.data.filter((d) => d.t > plan_stop(result)).flatMap((d) => [0, 1].map((f) => Math.abs(d.after.feet[f][1] - d.before.feet[f][1]))))),
         steadyRun: { pitchBefore: rnd(mean(steady.map((d) => d.before.pitch))), pitchAfter: rnd(mean(steady.map((d) => d.after.pitch))), accelMaxAbs: rnd(Math.max(...steady.map((d) => Math.abs(d.after.accel)))) },
         settled: { accelAbsAfter1_5s: rnd(Math.max(...result.data.filter((d) => d.t > plan_end(result) - 0.4).map((d) => Math.abs(d.after.accel)))) },
         bench: result.bench,
@@ -54,3 +57,4 @@ const [base = 'http://127.0.0.1:8234', out = 'docs/verification/2159', rev = 'ce
   } finally { await browser.close(); }
 })().catch((e) => { console.error(e); process.exitCode = 1; });
 function plan_end(r) { return r.data.at(-1).t; }
+function plan_stop(r) { return r.times[2] - 0.6; }

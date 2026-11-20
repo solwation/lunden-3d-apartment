@@ -25,10 +25,12 @@ test('a start leans forward, a sudden stop leans back, a sprint more than a walk
   const walk = run(1.4), sprint = run(4.8);
   const wf = peak(walk, 0.5, 1.6, 1), sf = peak(sprint, 0.5, 1.6, 1), wb = peak(walk, 2.7, 3.8, -1), sb = peak(sprint, 2.7, 3.8, -1);
   assert.ok(wf > 0.04 && wf < 0.12, `walk start ${wf}`);
-  assert.ok(sf > 0.2 && sf <= AC.forward + 1e-12, `sprint start ${sf}`);
+  const F = AC.forward * AC.overshoot + 1e-12, B = AC.back * AC.overshoot + 1e-12; // (the spring's own swing may pass the target bounds a little)
+  assert.ok(sf > 0.2 && sf <= F, `sprint start ${sf}`);
   assert.ok(sf > 2 * wf, 'stronger at a sprint start');
-  assert.ok(wb < -0.04 && sb < -0.18 && sb >= -AC.back - 1e-12, `stops ${wb} ${sb}`);
-  for (const h of [walk, sprint]) for (const p of h) assert.ok(p.x <= AC.forward + 1e-12 && p.x >= -AC.back - 1e-12, `bound ${p.x}`);
+  assert.ok(wb < -0.04 && sb < -0.12 && sb >= -B, `stops ${wb} ${sb}`);
+  assert.ok(-sb <= 0.165, 'braking leans back only moderately (the knees take the rest)');
+  for (const h of [walk, sprint]) for (const p of h) assert.ok(p.x <= F && p.x >= -B, `bound ${p.x}`);
 });
 
 test('the spring: the upper body swings lightly past upright after a stop, then settles', () => {
@@ -60,7 +62,7 @@ test('off (air, water, seat, bike…) and long gaps: springs back to zero, no sp
   assert.ok(m < 1e-9, `gap ${m}`);
   // any frame time stays stable and bounded
   const big = run(4.8, 6, () => true, () => 0.2);
-  for (const p of big) assert.ok(Number.isFinite(p.x) && p.x <= AC.forward + 1e-12 && p.x >= -AC.back - 1e-12, `dt 0.2: ${p.x}`);
+  for (const p of big) assert.ok(Number.isFinite(p.x) && p.x <= AC.forward * AC.overshoot + 1e-12 && p.x >= -AC.back * AC.overshoot - 1e-12, `dt 0.2: ${p.x}`);
 });
 
 test('stepLean: the third term rides along (fwd defaults to speed), brace only while braking, the turn terms untouched', () => {
@@ -79,8 +81,8 @@ test('stepLean: the third term rides along (fwd defaults to speed), brace only w
 });
 
 // The real rig: Avatar.update through a sprint start and stop tips the torso forward / back against a figure without the lean, and the free
-// hands go forward while braking.
-test('Avatar: torso pitch into the start and back at the stop, hands forward while braking', async (t) => {
+// hands go forward while braking; both knees bend (the hips sink) and the feet stay on the ground.
+test('Avatar: torso pitch into the start and back at the stop, hands forward, knees bent and feet on the ground while braking', async (t) => {
   let THREE, Avatar;
   try { THREE = await import('three'); ({ Avatar } = await import('../src/avatar.js')); } catch { t.skip('three not resolvable'); return; }
   const go = (noLean) => {
@@ -93,15 +95,21 @@ test('Avatar: torso pitch into the start and back at the stop, hands forward whi
       av.object.updateMatrixWorld(true);
       const hips = av.bones.hips.getWorldPosition(new THREE.Vector3()), up = av.bones.torso.getWorldPosition(new THREE.Vector3());
       const head = av.bones.head.getWorldPosition(new THREE.Vector3()), hand = av.bones.handL.getWorldPosition(new THREE.Vector3());
-      hist.push({ t: tt, tilt: Math.atan2(up.z - head.z, head.y - up.y), hand: hips.z - hand.z }); // + forward
+      const P = (k) => av.bones[k].getWorldPosition(new THREE.Vector3());
+      const flex = (s) => { const a = P('thigh' + s), k = P('knee' + s), f = P('foot' + s); return k.clone().sub(a).normalize().angleTo(f.clone().sub(k).normalize()); };
+      hist.push({ t: tt, tilt: Math.atan2(up.z - head.z, head.y - up.y), hand: hips.z - hand.z, knee: [flex('L'), flex('R')], feet: [P('footL').y, P('footR').y], hipY: hips.y }); // + forward
     }
     return hist;
   };
   const on = go(false), off = go(true), at = (h, a) => h[Math.round(a / dt)];
   const fwd = Math.max(...on.slice(40, 90).map((p, i) => p.tilt - off[40 + i].tilt)), back = Math.min(...on.slice(165, 215).map((p, i) => p.tilt - off[165 + i].tilt));
   assert.ok(fwd > 0.15, `forward at the start ${fwd}`);
-  assert.ok(back < -0.15, `back at the stop ${back}`);
+  assert.ok(back < -0.1 && back > -0.2, `back at the stop, moderately ${back}`);
   const i = on.slice(165, 215).reduce((b, p, k) => (p.tilt - off[165 + k].tilt < on[b].tilt - off[b].tilt ? 165 + k : b), 165);
   assert.ok(on[i].hand - off[i].hand > 0.05, `hands forward while braking ${on[i].hand - off[i].hand}`);
-  assert.ok(Math.abs(at(on, 4.9).tilt - at(off, 4.9).tilt) < 0.01, 'settled');
+  for (let s = 0; s < 2; s++) { const k = on[i].knee[s] - off[i].knee[s]; assert.ok(k > 0.15 && k < 0.35, `knee ${s} bends ${k}`); }
+  assert.ok(on[i].hipY < off[i].hipY - 0.02, 'the hips sink');
+  // the feet keep their height against the figure without the lean (no sinking into / floating over the ground) through the whole stop
+  for (let n = 160; n < 300; n++) for (let s = 0; s < 2; s++) assert.ok(Math.abs(on[n].feet[s] - off[n].feet[s]) < 0.004, `foot ${s} at ${n}: ${on[n].feet[s]} vs ${off[n].feet[s]}`);
+  assert.ok(Math.abs(at(on, 4.9).tilt - at(off, 4.9).tilt) < 0.01 && Math.abs(at(on, 4.9).hipY - at(off, 4.9).hipY) < 0.003, 'settled');
 });

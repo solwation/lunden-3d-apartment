@@ -8679,14 +8679,16 @@ export const AVATAR_LEAN = {
 // All *guess*es by eye against ordinary start / stop footage, not measured. `slew` m/s² is the most the input speed may change per second
 // (a single-frame glitch or a teleport frame is cut off), `speedTau` / `accelTau` s low-pass the speed before and the acceleration after
 // differentiating, `maxAccel` m/s² clamps it and `dead` m/s² ignores the playback's small ripple. The target torso pitch is `share` of the
-// physical atan(a / g), within `forward` / `back` rad; the upper body follows it as a spring (`omega` rad/s, damping ratio `zeta` < 1:
-// a light over-swing). `head`: share of the pitch the head takes back (the gaze stays level); `arm` m: how far the free hands go forward /
-// up at full braking lean; `resetTime` s: a longer frame gap restarts the speed tracking (no spike).
+// physical atan(a / g), within `forward` / `back` rad (the spring may pass them by `overshoot` ×, never more); the upper body follows it
+// as a spring (`omega` rad/s, damping ratio `zeta` < 1: a light over-swing). Braking leans back only moderately: the body sinks instead.
+// `head`: share of the pitch the head takes back (the gaze stays level); `arm` m: how far the free hands go forward / up at full braking
+// lean; `knee` m: how far the hips drop / go back then (the leg IK bends both knees about 0.25 rad, the feet stay where the gait put
+// them; it follows the same spring); `resetTime` s: a longer frame gap restarts the speed tracking (no spike).
 export const AVATAR_ACCEL_LEAN = {
   slew: 16, speedTau: 0.06, accelTau: 0.25, maxAccel: 14, dead: 0.8,
-  share: 0.3, forward: 0.26, back: 0.26,
+  share: 0.3, forward: 0.26, back: 0.14, overshoot: 1.15,
   omega: 8, zeta: 0.27,
-  head: 0.45, arm: { fwd: 0.2, up: 0.12 }, resetTime: 0.25,
+  head: 0.45, arm: { fwd: 0.2, up: 0.12 }, knee: { drop: 0.04, back: 0.03 }, resetTime: 0.25,
 };
 
 // #1639: reactions in the BIO (cry, laugh, scream in terror). One-shot event { t: 'rx', k } (the room's PLAYERS.reactions = kinds.length),

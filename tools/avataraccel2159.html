@@ -40,7 +40,8 @@ function sample(g) {
   const d = neck.clone().sub(hips);
   return { pitch: Math.atan2(d.dot(fw), d.y), // + the trunk (hips → neck) leans forward
     hand: hand.clone().sub(hips).dot(fw), speed: Math.hypot(g.playOut.v.x, g.playOut.v.z),
-    accel: g.avatar.lean?.out?.accel ?? 0, feet: ['footL', 'footR'].map((k) => B[k].getWorldPosition(new T.Vector3()).toArray()), contact: av.gaitInfo?.contact?.slice() };
+    accel: g.avatar.lean?.out?.accel ?? 0, knee: ['L', 'R'].map((k) => { const a = B['thigh' + k].getWorldPosition(new T.Vector3()), n = B['knee' + k].getWorldPosition(new T.Vector3()), f = B['foot' + k].getWorldPosition(new T.Vector3()); return n.clone().sub(a).normalize().angleTo(f.sub(n).normalize()); }),
+    hipY: hips.y, feet: ['footL', 'footR'].map((k) => B[k].getWorldPosition(new T.Vector3()).toArray()), contact: av.gaitInfo?.contact?.slice() };
 }
 let t = 0;
 window.step = (dt = 1 / 60) => {

@@ -20,8 +20,8 @@ export const newLean = () => ({ yaw: null, rate: 0, head: 0, torso: 0, lean: 0, 
 export const newAccel = () => ({ v: null, f: 0, a: 0, x: 0, xv: 0, target: 0 });
 
 /** #2159: advances the acceleration lean by `dt` s for the forward speed `fwd` m/s (signed, along the body's heading); `on` as in stepLean
- * (off: the speed is only tracked, the pitch springs back to zero). Returns the pitch (rad, + forward), always within
- * [−AC.back, AC.forward]. Noise immunity: the input may change by at most AC.slew·dt per frame (a one-frame glitch is cut down to that),
+ * (off: the speed is only tracked, the pitch springs back to zero). Returns the pitch (rad, + forward): its target stays within
+ * [−AC.back, AC.forward], the spring's own swing within AC.overshoot × those. Noise immunity: the input may change by at most AC.slew·dt per frame (a one-frame glitch is cut down to that),
  * is low-passed before and after differentiating and a dead band takes out the playback's ripple; a gap over AC.resetTime restarts the
  * tracking at the current speed. */
 export function stepAccel(s, dt, fwd, on = true) {
@@ -43,8 +43,9 @@ export function stepAccel(s, dt, fwd, on = true) {
     s.xv += (w * w * (s.target - s.x) - 2 * AC.zeta * w * s.xv) * k;
     s.x += s.xv * k;
   }
-  if (s.x > AC.forward) { s.x = AC.forward; s.xv = Math.min(0, s.xv); }
-  if (s.x < -AC.back) { s.x = -AC.back; s.xv = Math.max(0, s.xv); }
+  const fMax = AC.forward * AC.overshoot, bMax = AC.back * AC.overshoot;
+  if (s.x > fMax) { s.x = fMax; s.xv = Math.min(0, s.xv); }
+  if (s.x < -bMax) { s.x = -bMax; s.xv = Math.max(0, s.xv); }
   return s.x;
 }
 
@@ -58,7 +59,7 @@ export const physicalLean = (v, rate) => Math.atan(v * rate / 9.81);
  * head bone), headPitch (+ back), headRoll (Euler z, + tips the top to the right), torsoYaw, torsoRoll (+ tips the top to the right), hipX (m, + left),
  * hipRoll (+ lifts the left side). Every output is bounded; a teleport / long gap restarts the rate at zero; straight walking gives zero turn terms.
  * #2159 `fwd` m/s: the forward speed (signed; default `speed`) whose change gives `accel` (rad torso pitch, + forward: subtract it from
- * poseOlof's lean) and `brace` (0 … 1, how far the free arms go forward as a counterweight while braking). */
+ * poseOlof's lean) and `brace` (0 … 1 while braking: the free arms forward as a counterweight, the hips down / back so both knees bend). */
 export function stepLean(s, dt, { yaw, speed = 0, on = true, bounce = 0, sway = 0, fwd = speed } = {}) {
   const o = s.out;
   if (!(dt > 0)) return o;
@@ -91,6 +92,6 @@ export function stepLean(s, dt, { yaw, speed = 0, on = true, bounce = 0, sway = 
   o.headPitch = s.pitch;
   o.rate = s.rate; o.lean = lean;
   o.accel = stepAccel(s.acc ??= newAccel(), dt, fwd, on); // #2159
-  o.brace = clamp(-o.accel / AC.back, 0, 1);
+  o.brace = clamp(-o.accel / AC.back, 0, 1); // (follows the spring: the arms and the knees sink in and come back with the lean)
   return o;
 }

@@ -2067,8 +2067,8 @@ export class Avatar {
     const idle = groundEnabled && !walking && !am && !jumpOn && !swim && !dance && !react && !kiss ? (1 - g) * (1 - c) : 0;
     const iv = this.updateIdle(dt, idle > 0.5 && c < MOTION.groundCrouch, (1 - g) * (1 - c), !hands.L && !hands.R, turn, pitch); // #2035: weight shift, glances, arms
     const sway = flossSway + gt.sway + MOTION.idleSway * idle * Math.sin(this.time * Math.PI * 2 * MOTION.idleHz) + iv.hipX + ln.hipX;
-    let hipY = HIP - 0.02 - CR.hipDrop * c + (rp?.dy ?? 0) + kissLift * kiss - flossBob - gBob + breathe - gt.hip - AIR.climb.hipDrop * climbA + stepHip + iv.hipY - jp.dip;
-    const hipZ = CR.hipForward * c, feet = gt.feet;
+    let hipY = HIP - 0.02 - CR.hipDrop * c + (rp?.dy ?? 0) + kissLift * kiss - flossBob - gBob + breathe - gt.hip - AIR.climb.hipDrop * climbA + stepHip + iv.hipY - jp.dip - ACL.knee.drop * ln.brace; // (#2159: braking sinks the hips, the leg IK bends both knees)
+    const hipZ = CR.hipForward * c - ACL.knee.back * ln.brace, feet = gt.feet; // (#2159: and a little back, behind the planted feet)
     const stepIK = this.footIK?.active && (Math.abs(this.footIK.off[0]) > 0.004 || Math.abs(this.footIK.off[1]) > 0.004); // #2015: also standing on uneven ground
     if ((g > 0.001 || stepIK) && !c) { // the hips stay within the legs' reach of both ankles (a long stride sinks them, as a real runner's do)
       const L = GAIT.reach * (THIGH + SHIN);
