@@ -1,0 +1,25 @@
+{
+  "result": [
+    {
+      "id": "lightcatch",
+      "frames": 319,
+      "lit": 69
+    },
+    {
+      "id": "thwaite",
+      "frames": 798,
+      "lit": 6523
+    },
+    {
+      "id": "lan-master",
+      "frames": 476,
+      "lit": 43413
+    },
+    {
+      "id": "lawn-mower",
+      "frames": 479,
+      "lit": 42321
+    }
+  ],
+  "errors": []
+}

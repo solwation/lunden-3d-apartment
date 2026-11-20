@@ -2427,7 +2427,11 @@ running round. Other visitors in the computer's room see Klossar (#2241) and Met
 NES (#2237, `src/nes.js`, NES in config): the picker's "Spel · NES" (server app id `nes`) runs the
 titles of the manifest `src/nestitles.js` in **jsnes 1.2.1** (Apache-2.0, vendored unmodified in
 `src/vendor/jsnes/`). The first title is the own MIT *Fånga ljuset* (`data/nes/lightcatch/`, generator
-`tools/retro2231/make_rom.py`). Manifest contract per entry: `id`, `title`, `rom` and `notice` (site-root
+`tools/retro2231/make_rom.py`). #2238 adds three reviewed homebrew releases from `data/nes/homebrew/` (provenance, hashes and
+licences in its README): *Thwaite* 0.03 (Damian Yerrick, GPL-3.0-or-later, corresponding source shipped as
+`source-0.03.zip`), *LAN Master* and *Lawn Mower* (Shiru 2011, public domain); their music is silent while audio is off,
+and `tools/nestitles2238browser.cjs` starts every title on a computer and checks that it draws and reacts to input
+([result](../verification/2238/)). Manifest contract per entry: `id`, `title`, `rom` and `notice` (site-root
 paths under `data/nes/`), `sha256`, `bytes`, SPDX `license`, `source`, `credit`, Swedish `about` and
 `controls`; `node --test src/nes.test.mjs` checks every entry against its files, and the adapter refuses a
 ROM whose size or SHA-256 differs. With two or more entries the panel shows a title picker (per computer;
