@@ -199,9 +199,10 @@ export class SmallFlock {
 
   /** Any sitting (or landing) bird within its perch kind's flush distance of a threat → that threat, else null. */
   danger(threats) {
-    const C = this.C, kind = this.group?.kind ?? 'tree', d = C.flush[kind];
+    const C = this.C, kind = this.group?.kind ?? 'tree', d0 = C.flush[kind];
     for (const t of threats) for (const b of this.birds) {
       const p = b.mode === FLY ? b.spot : b; if (!p) continue;
+      const d = d0 * (t.k ?? 1); // (#2182: a stalking cat is low and slow: `k` < 1 shortens its flush distance)
       if (Math.abs(t.y - p.y) < C.flushUp + (kind === 'tree' ? 3 : 0) && (t.x - p.x) ** 2 + (t.z - p.z) ** 2 < d * d) return t;
     }
     return null;
@@ -302,6 +303,13 @@ export class SmallFlock {
   groundBirds(out = []) {
     out.length = 0;
     if (this.group?.kind === 'ground') for (const b of this.birds) if (b.mode === SIT && !b.from) out.push(b);
+    return out;
+  }
+
+  /** #2182: birds sitting in a tree or on a roof/rail ({ x, y, z } each, into `out`): what a cat below chatters at. */
+  perchedBirds(out = []) {
+    out.length = 0;
+    if (this.group && this.group.kind !== 'ground') for (const b of this.birds) if (b.mode === SIT && !b.from) out.push(b);
     return out;
   }
 }

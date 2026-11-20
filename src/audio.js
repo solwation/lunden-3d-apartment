@@ -620,6 +620,14 @@ export const sfx = {
     o.start(t0); o.stop(last + 0.05);
     return true;
   },
+  /** #2182: a cat chattering at a bird out of reach: a burst of 7-10 quick dry clicks (band-passed noise, ~14 per second, a little shaky in pitch)
+   *  at `pos`. No oscillator; the caller starts at most one burst per cat per ~1.3 s. */
+  catChatter(pos, level = 1) {
+    if (!ready() || !(level > 0)) return false;
+    const t0 = ctx.currentTime + 0.02, d = out(pos, level, 1.5), n = 7 + Math.floor(Math.random() * 4);
+    for (let i = 0; i < n; i++) noise(t0 + i * (0.062 + 0.012 * Math.random()), 0.03, d, { type: 'bandpass', freq: 2300 + 700 * Math.random(), q: 2.2, gain: 0.7 + 0.3 * Math.random(), attack: 0.002 });
+    return true;
+  },
   /** Rain (#248): a looping hiss whose level and muffling are set every frame (`set(gain, cutoff)`); null before audio. */
   rain() {
     if (!ctx) return null;

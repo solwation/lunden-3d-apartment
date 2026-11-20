@@ -1,0 +1,185 @@
+{
+ "phase": "before",
+ "errors": [],
+ "labels": [
+  "A1 cat 1 s before it creeps into the frame",
+  "A2 creeping up on the flock",
+  "A3 crouched, wiggling, before the leap",
+  "A4 mid-leap, the flock lifting",
+  "A5 after the missed leap, birds flying off",
+  "B1 sitting under the birds",
+  "B2 chattering at the birds, jaw and tail tip trembling",
+  "B3 between bursts, still looking up",
+  "B4 second burst"
+ ],
+ "views": {
+  "chat": {
+   "flock": 1,
+   "tree": {
+    "x": -96.85694865503206,
+    "z": 161.42410064787794,
+    "y": 7.418416150640983
+   },
+   "P": {
+    "x": -92.51028243673125,
+    "z": 160.25941494491659
+   },
+   "yaw": -1.308996938995746
+  },
+  "stalk": {
+   "flock": 1,
+   "g": {
+    "x": -67.28426266899332,
+    "z": 113.12259946120903,
+    "y": -3.188824854832204
+   },
+   "P": {
+    "x": -67.28426266899332,
+    "z": 120.52259946120904
+   },
+   "yaw": 3.141592653589793
+  },
+  "chatM": 1,
+  "A0": {
+   "cat": [
+    -67.28426266899332,
+    120.52259946120904
+   ],
+   "P": {
+    "x": -67.28426266899332,
+    "z": 120.52259946120904
+   },
+   "camA": [
+    -62.08426266899332,
+    -2.02468359725901,
+    116.82259946120904
+   ]
+  },
+  "A": {
+   "t": 0,
+   "creep": 9,
+   "crouch": 19,
+   "leap": 19.75,
+   "lift": 19.75
+  },
+  "B": {
+   "start": 0.25
+  }
+ },
+ "log": [
+  {
+   "label": "A1 cat 1 s before it creeps into the frame",
+   "t": 8,
+   "st": "route",
+   "act": "look",
+   "dist": 33.76,
+   "flying": 8,
+   "flushes": 2
+  },
+  {
+   "label": "A2 creeping up on the flock",
+   "t": 13,
+   "st": "route",
+   "act": "look",
+   "dist": 61.08,
+   "flying": 7,
+   "flushes": 2
+  },
+  {
+   "label": "A3 crouched, wiggling, before the leap",
+   "t": 19.5,
+   "st": "route",
+   "act": "look",
+   "dist": 65.91,
+   "flying": 0,
+   "flushes": 2
+  },
+  {
+   "label": "A4 mid-leap, the flock lifting",
+   "t": 20.1,
+   "st": "route",
+   "act": "look",
+   "dist": 65.91,
+   "flying": 0,
+   "flushes": 2
+  },
+  {
+   "label": "A5 after the missed leap, birds flying off",
+   "t": 21.35,
+   "st": "route",
+   "act": "look",
+   "dist": 65.91,
+   "flying": 0,
+   "flushes": 2
+  },
+  {
+   "sceneA": {
+    "dmin": 4.67,
+    "events": {
+     "t": 0,
+     "creep": null,
+     "crouch": null,
+     "leap": null,
+     "lift": 1.5
+    },
+    "T": {
+     "t": 0,
+     "creep": 9,
+     "crouch": 19,
+     "leap": 19.75,
+     "lift": 19.75
+    }
+   }
+  },
+  {
+   "birdsAfter": 8
+  },
+  {
+   "label": "B1 sitting under the birds",
+   "t": 0.05,
+   "st": "route",
+   "act": "look",
+   "k": 0,
+   "chirps": 0
+  },
+  {
+   "label": "B2 chattering at the birds, jaw and tail tip trembling",
+   "t": 0.5,
+   "st": "route",
+   "act": "look",
+   "k": 0,
+   "chirps": 0
+  },
+  {
+   "label": "B3 between bursts, still looking up",
+   "t": 1,
+   "st": "route",
+   "act": "look",
+   "k": 0,
+   "chirps": 0
+  },
+  {
+   "label": "B4 second burst",
+   "t": 1.9,
+   "st": "route",
+   "act": "look",
+   "k": 0,
+   "chirps": 0
+  },
+  {
+   "sceneB": {
+    "sawChatter": false,
+    "maxK": 0,
+    "chirps": 0,
+    "birds": 8,
+    "perched": 8
+   }
+  }
+ ],
+ "has": false,
+ "calls": 64,
+ "tris": 383558,
+ "programs": 42,
+ "textures": 24,
+ "perf": 0.024
+}

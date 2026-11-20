@@ -67,11 +67,11 @@ export class OutdoorCats {
    * `cat`: main.js's CatSpawner (the ordinary cat an outdoor cat turns into); `ground(x, z)`: the terrain height; `walkable(x, z)`:
    * not road, not water (the way home is checked with it); `lowMemory`: phones draw nearer. #1772: `free(x, z)`: no wall or fence there
    * (outings); `feet` / `crowns`: surroundings.js treeFeet / aoTrees (the trees a cat may climb); `hour()` / `month()`: the game's day;
-   * `prey()`: squirrels on the ground [{ x, z }]. #1782: `food()`: the raw caught fish a cat may eat (fishing.feedable); `onFed(fish)`: one ate it.
+   * `prey()`: squirrels (and #2182 ground birds, `kind: 'bird'`) on the ground [{ x, z }]; `perched()`: birds in trees / on roofs [{ x, y, z }]. #1782: `food()`: the raw caught fish a cat may eat (fishing.feedable); `onFed(fish)`: one ate it.
    * #1885: `onSeen(name)`: the visitor has seen this cat up close (drawn within `near` and in view, or it became the ordinary cat);
    * called once per approach, the receiver (stats.js foundOutdoorCat, "Hitta alla utekatter") ignores cats already found this round.
    */
-  constructor({ scene, camera, cat, ground, walkable = () => true, free = null, feet = [], crowns = [], hour = () => 12, month = () => 7, prey = null, food = null, onFed = null, onSeen = null, lowMemory = false }) {
+  constructor({ scene, camera, cat, ground, walkable = () => true, free = null, feet = [], crowns = [], hour = () => 12, month = () => 7, prey = null, perched = null, food = null, onFed = null, onSeen = null, lowMemory = false }) {
     Object.assign(this, { scene, camera, cat, ground, walkable, food, onFed, onSeen, foodScan: 0 });
     this.drawDist = lowMemory ? C.drawDistPhone : C.drawDist;
     this.now = () => Date.now() / 1000; // tests replace it
@@ -80,7 +80,7 @@ export class OutdoorCats {
     this.still = 0; // s the visitor has stood still (a shy cat calms)
     this.lastEye = null;
     this.bound = null; // the outdoor cat that is the ordinary cat just now
-    this.env = { now: () => this.now(), hour, month, ground, prey, free, clear: (ax, az, bx, bz) => this.clearWay(ax, az, bx, bz), trees: this.climbable(feet, crowns) };
+    this.env = { now: () => this.now(), hour, month, ground, prey, perched, free, clear: (ax, az, bx, bz) => this.clearWay(ax, az, bx, bz), trees: this.climbable(feet, crowns) };
     this.bfGeo = butterflyGeometry();
     this.cats = C.cats.map((spec, id) => this.makeCat(spec, id));
     this.nuzzle = new CatNuzzle({config:C.nuzzle,now:()=>this.now(),ground,clear:(c,...q)=>c.clearOut(...q),
@@ -343,12 +343,12 @@ export class OutdoorCats {
     P.walked = false; P.hopY = c.hop ?? 0; P.headOff.set(0, 0, 0);
     // #2125: mood (tail and ears), a low stalk, what its ears follow (prey, the butterfly, the visitor walking near or meeting it)
     P.mood = moodOf(c.st === 'flee' ? 'flee' : c.st === 'notice' || c.st === 'seek' ? 'alert' : activity);
-    P.wantCrouch = activity === 'creep' || activity === 'crouch' ? 1 : 0;
+    P.wantCrouch = activity === 'creep' || activity === 'crouch' || activity === 'chatter' ? 1 : 0;
     P.wantWrap = 0; P.bow = null;
     const eye = this.camera.position;
     P.earAt = c.st === 'prey' && c.prey ? c.prey : c.bf ? c.bf : c.faceEye || (this.still < 0.5 && Math.hypot(eye.x - c.x, eye.z - c.z) < LF.ears.reach) ? eye : null;
     const stretch = !walking && c.st === 'route' && c.h < 0.05 && c.restLeft <= LF.stretch.secs && c.restDone >= LF.stretch.after && activity !== 'eat' && activity !== 'nuzzle';
-    const up = stretch || activity === 'sniff' || activity === 'crouch' || activity === 'pounce' || activity === 'nuzzle'; // (on its feet without walking)
+    const up = stretch || activity === 'sniff' || activity === 'crouch' || activity === 'pounce' || activity === 'chatter' || activity === 'nuzzle'; // (on its feet without walking)
     P.wantStand = walking || up ? 1 : 0;
     if (walking && P.stand > 0.5 && moved > 0) P.stride(moved);
     const sleep = !walking && !stretch && activity === 'sleep';
@@ -367,6 +367,11 @@ export class OutdoorCats {
     } else if (activity === 'sniff') {
       P.shoulder.rotation.set(0, 0, 0); P.headOff.set(0, -0.05, 0.03);
       P.head.rotation.set(0.6 + 0.08 * Math.sin(c.t * 9), 0.35 * Math.sin(c.t * 0.8), 0); P.tailGroup.rotation.y = 0.1 * Math.sin(c.t * 1.7);
+    } else if (activity === 'chatter') { // #2182: head up at the bird, jaw trembling and the tail tip flicking in bursts (c.chatterK)
+      const k = c.chatterK ?? 0;
+      P.shoulder.rotation.set(0, 0, 0); P.headOff.set(0, 0.02, 0.01);
+      P.head.rotation.set(-(c.lookUp ?? 0.5) * 0.9 + 0.07 * k * Math.sin(c.t * 70), 0.05 * k * Math.sin(c.t * 33), 0);
+      P.tailGroup.rotation.y = (0.15 + 0.6 * k) * Math.sin(c.t * 11);
     } else if (activity === 'crouch' || activity === 'pounce') {
       const hop = c.hop ?? 0; P.headOff.set(0, -0.035 * (1 - hop * 8), 0.015);
       P.shoulder.rotation.set(-12 * hop, 0, 0); P.leftShoulder.rotation.set(-12 * hop, 0, 0);
@@ -385,6 +390,8 @@ export class OutdoorCats {
       else if (choice === 'wrap') P.sitLook(now, true);
       else { P.head.rotation.set(0, 0.45 * Math.sin(c.t * 0.6), 0); P.tailGroup.rotation.y = 0.08 * Math.sin(c.t * 2.3); }
     }
+    if (c.lookUp > 0 && (activity === 'look' || activity === 'pounce') && c.st === 'leap') P.head.rotation.set(-c.lookUp, 0, 0); // #2182: after the missed leap it looks up after the birds
+    if (c.chirp) sfx.catChatter({ x: c.x, y: this.ground(c.x, c.z) + 0.4, z: c.z }, C.brain.hunt.level); // #2182
     P.pose(dt);
     if(c.st==='social'&&this.nuzzle.pair)poseCatNuzzle(c,this.nuzzle.pair,C.nuzzle);
   }

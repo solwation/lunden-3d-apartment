@@ -899,6 +899,20 @@ BILJARD/DJ bounds (`PLAYROOM.speakers.bounds`), rather than the full clubhouse.
 They face the centre of that room; no DJ speaker sits in BIO, SPEL or the hall.
 This gameplay-only room has no A/B/C/L house variant or public downstream equivalent.
 
+### Cats and birds (#2182)
+
+Local layer only (no schedule change, no network field): `src/outdoorcatprey.js` (pure; `src/outdoorcatprey.test.mjs`) holds `pickPrey` (nearest ground
+prey within `brain.preyRange`, birds counted `birdBias` x), `pickPerched`, `wantsChatter` (hash per cat and stop), `leapTo`/`leapPose`/`leapOutcome`
+(always a miss: nothing is ever caught) and `chatterAt`. `OutdoorCatBrain` gets the states `prey` (now also for birds: creep to `stop` m, a
+bottom wiggle for `wait` s), `leap` (`leapLen` m in `leapSecs` s, looks after the birds `after` s, then `huntCool` s without hunting) and `chatter`
+(a cat resting or stalking within `chatterRange` m of a bird perched >= `chatterUp` m above: sits up, head up at it, jaw/tail tip in bursts
+`chatterAt`, one `sfx.catChatter` click burst per burst, `chatterCool` s between). main.js feeds `env.prey()` with pooled `{ kind: 'bird' }` wrappers of
+`Birds.groundBirds()` and `env.perched()` from `Birds.perchedBirds()` (`SmallFlock.perchedBirds`); `birdThreats` gives each cat a flush scale `k`
+(`SmallFlock.danger`): `stalkFlush` while it stalks a bird, `restFlush` while it sits, 1 when it walks or leaps, so a cat can get close and the leap
+lifts the flock. Animation: `OutdoorCats.animate` (`chatter` pose, head lift after the leap); mood 'stalk' for `chatter` (`catlife.moodOf`). Tunables:
+`OUTDOOR_CATS.brain.hunt` (*guess*). No new mesh, light, pass, texture or program. Tests: `node --test src/outdoorcatprey.test.mjs tools/outdoorcatbraintest.mjs`;
+browser `tools/outdoorcathunt2182browser.cjs` (before/after frame sequences). [Verification](../verification/2182/).
+
 ## Small birds and landing gulls (#2129)
 
 `src/birdflock.js` (no three.js; `tools/birdflocktest.mjs`) holds the behaviour; `src/birds.js` draws it. `collectPerches` takes landing places only

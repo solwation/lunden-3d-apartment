@@ -537,7 +537,7 @@ const birdCatPool = [];
 function birdThreats(out) { // the eye and every outdoor cat that is out (#2129: they flush the birds); pooled, no allocation per frame
   out.length = 0; out.push(camera.position);
   let k = 0;
-  for (const c of outdoorCats?.cats ?? []) if (c.st !== 'away' && outdoorCats.isOut(c)) { const p = birdCatPool[k++] ??= {}; p.x = c.x; p.y = parkGround(c.x, c.z); p.z = c.z; out.push(p); }
+  for (const c of outdoorCats?.cats ?? []) if (c.st !== 'away' && outdoorCats.isOut(c)) { const p = birdCatPool[k++] ??= {}; p.x = c.x; p.y = parkGround(c.x, c.z); p.z = c.z; p.k = c.st === 'prey' && c.prey?.kind === 'bird' ? OUTDOOR_CATS.brain.hunt.stalkFlush : c.walking || c.st === 'leap' ? 1 : OUTDOOR_CATS.brain.hunt.restFlush; out.push(p); } // (#2182: a low, slow or sitting cat startles birds later)
   return out;
 }
 const birds = params0.has('nobirds') ? null : new Birds({ scene, camera, day, center: BIRDS.center, lowMemory, count: params0.has('birds') ? Number(params0.get('birds')) : null, // #1252: gulls circling by day
@@ -1314,6 +1314,7 @@ const ducks = new Ducks({scene,camera,life,ground:renderedTerrainY,say:t=>badge(
 ducks.onFeed = () => bump('duckFeeds'); // #1827: successful finite bread consumption only
 // #1772: each has a brain (outdoorcatbrain.js): outings round its rest stops (trees from treeFeet/aoTrees like the squirrels', no wall
 // in the way while the visitor is out on the street level), butterflies by the game's day, squirrels on the ground to stalk
+const catPrey = [], catBirdTmp = [], catBirdPool = [], catPerched = []; // #2182: the cats' prey lists (birds is defined further down, read per frame)
 const outdoorCatGround = createCatGround(parkGround,renderedTerrainY,catSkirtTop,OUTDOOR,CAT_EDGE.level); // #1844: existing deck, drawn triangles and northern skirt/parking surfaces
 const outdoorCats = params0.has('nooutdoorcats') ? null : new OutdoorCats({ scene, camera, cat, ground: outdoorCatGround, lowMemory,
   walkable: (x, z) => outdoorCatGround(x, z) > waterYAt(x, z) + 0.3 && !onRoad(x, z, 0.8) && !onVehicle(x,z,OUTDOOR_CATS.exploration.roadMargin), feet: treeFeet, crowns: aoTrees,
@@ -1321,7 +1322,13 @@ const outdoorCats = params0.has('nooutdoorcats') ? null : new OutdoorCats({ scen
   hour: () => day.hour, month: () => day.month,
   food: () => fishing.feedable, onFed: (f) => fishing.eatenByCat(f), // #1782: a raw caught fish nearby, eaten as the ordinary cat's (#1766)
   onSeen: (name) => { const r = foundOutdoorCat(name); if (r) badge(huntText(r, MEDAL_MAX_LEVEL), false); }, // #1885: "Hitta alla utekatter"
-  prey: () => (squirrels?.animals ?? []).filter((a) => a.group.visible && Math.abs(a.brain.y - parkGround(a.brain.x, a.brain.z)) < 0.15).map((a) => a.brain) });
+  prey: () => { // squirrels on the ground, and (#2182) small birds sitting on the ground (pooled wrappers: no allocation per frame)
+    const out = catPrey; out.length = 0;
+    for (const a of squirrels?.animals ?? []) if (a.group.visible && Math.abs(a.brain.y - parkGround(a.brain.x, a.brain.z)) < 0.15) out.push(a.brain);
+    if (birds) { let k = 0; for (const b of birds.groundBirds(catBirdTmp)) { const p = catBirdPool[k++] ??= { kind: 'bird', x: 0, z: 0 }; p.x = b.x; p.z = b.z; out.push(p); } }
+    return out;
+  },
+  perched: () => (birds ? birds.perchedBirds(catPerched) : catPerched) }); // #2182: birds in trees / on roofs, for chattering
 const mieleFrustum = new THREE.Frustum(), mieleAt = new THREE.Vector3();
 function checkMiele() {
   if (!cat.visible || !cat.isMiele || cat.seen || cat.held || cat.leaving?.hurt) return;

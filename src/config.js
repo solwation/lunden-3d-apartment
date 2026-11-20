@@ -10328,6 +10328,14 @@ export const OUTDOOR_CATS = {
     block: 16, noise: 0.22, margin: 12, trot: 0.75, creep: 0.22, climb: 0.7, reach: 7, climbReach: 9, branch: [1.3, 2.6],
     butterflyMonths: [5, 6, 7, 8, 9], butterflyHours: [9, 19], seekRange: 13, seekSpeed: 0.75, seekStop: 1.3, followTime: 8,
     shyRange: 6, shyCalm: 4, fleeSpeed: 0.95, preyRange: 9,
+    // #2182: hunting birds (all *guess*, by eye). A stalking cat picks the nearest ground prey, birds weighted `birdBias` (< 1: preferred); it creeps
+    // up to `stop` m of a bird, wiggles `wait` s, then leaps `leapLen` m in `leapSecs` s and misses (the birds are never hurt: the leap flushes them, the cat
+    // looks after them `after` s). While it creeps its flush distance for the birds is `stalkFlush` x the ordinary one (a low, slow cat), a sitting one `restFlush` x; after a leap it hunts nothing for `huntCool` s.
+    // `chatter`: a cat that rests or stalks within `chatterRange` m of a bird perched at least `chatterUp` m above it, with chance `chatterChance`
+    // x (0.4 + curiosity) per stop, sits up and chatters for `chatterSecs` s: bursts of `burst` s every `burstEvery` s, clicks heard at `level`
+    // (sfx.catChatter), at most one chatter per `chatterCool` s per cat.
+    hunt: { birdBias: 0.8, stop: 2.3, stalkFlush: 0.2, restFlush: 0.6, wait: 1.1, huntCool: 40, leapLen: 1.8, leapSecs: 0.7, after: 2.6, giveUp: 30,
+      chatterRange: 11, chatterUp: 1.5, chatterChance: 0.9, chatterSecs: [5, 9], chatterCool: 60, burst: 0.55, burstEvery: 1.3, level: 0.5 },
     // what an outing needs at least (s of the rest), and per behaviour the change of each need (energy up = rested; the others are urges)
     minRest: { rest: 0, sleep: 25, seek: 15, explore: 22, stalk: 26, butterfly: 30, climb: 38 },
     needs: {

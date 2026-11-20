@@ -161,6 +161,13 @@ export class Birds {
     return out;
   }
 
+  /** #2182: small birds sitting in trees, on roofs or rails now ({ x, y, z }), for the cats' chattering. */
+  perchedBirds(out = []) {
+    out.length = 0;
+    for (const f of this.life?.flocks ?? []) if (f.visible) for (const b of f.perchedBirds(f.scratch2 ??= [])) out.push(b);
+    return out;
+  }
+
   /** Per frame: `rain` = the weather's strength 0…1, `hidden` = underground. No allocations. */
   update(dt, rain = 0, hidden = false) {
     const B = BIRDS, d = this.day, u = this.uniforms, cam = this.camera.position;

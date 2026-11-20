@@ -66,7 +66,7 @@ export function bumps(seed, t, rate, len) {
 export function moodOf(activity) {
   switch (activity) {
     case 'sleep': return 'sleep';
-    case 'creep': case 'crouch': return 'stalk';
+    case 'creep': case 'crouch': case 'chatter': return 'stalk';
     case 'pounce': case 'chase': case 'play': return 'play';
     case 'notice': case 'fish': case 'eat': case 'sniff': case 'climb': case 'alert': return 'alert';
     case 'pet': case 'held': case 'nuzzle': case 'happy': return 'happy';

@@ -2,6 +2,7 @@ import { OUTDOOR_CATS } from './config.js';
 import { CatExploration } from './catexploration.js';
 import { CAT_AFFORDANCES } from './cataffordances.js';
 import { hash01, routePlan, catAt, lapPlan } from './outdoorcatroute.js';
+import { pickPrey, pickPerched, wantsChatter, leapTo, leapPose, chatterAt, preyKind } from './outdoorcatprey.js';
 
 // #1772: an outdoor cat's brain (no three.js, so a node test can drive it: tools/outdoorcatbraintest.mjs). Modelled on the squirrels'
 // SquirrelBrain (src/squirrelbrain.js): a small state machine whose numbers the personality tilts, here with a utility AI on top.
@@ -22,7 +23,7 @@ import { hash01, routePlan, catAt, lapPlan } from './outdoorcatroute.js';
 // Outings and every local move are tested with `env.clear` (no road, no water, no drop) and, for outings, `env.free` (no wall or
 // fence, main.js); an outing goes out and back the same checked way.
 
-const C = OUTDOOR_CATS, B = C.brain;
+const C = OUTDOOR_CATS, B = C.brain, H = B.hunt;
 let exploration;
 const explorer = () => exploration ??= new CatExploration(CAT_AFFORDANCES, C.exploration);
 export const BEHAVIOURS = ['rest', 'sleep', 'seek', 'explore', 'stalk', 'butterfly', 'climb'];
@@ -77,12 +78,12 @@ export function branchHeight(t) {
 }
 
 export class OutdoorCatBrain {
-  /** env: { now() s, hour() 0 … 24, month() 1 … 12, ground(x, z), clear(ax, az, bx, bz) (walkable, no drop), free(x, z) (no wall; optional),
+  /** env: { perched() -> [{ x, y, z }] (small birds in trees/on roofs, #2182; optional), now() s, hour() 0 … 24, month() 1 … 12, ground(x, z), clear(ax, az, bx, bz) (walkable, no drop), free(x, z) (no wall; optional),
    *  trees: [{ x, z, y, cy, r }] (trunk foot, crown centre height and radius), prey() -> [{ x, z }] (squirrels on the ground; optional) } */
   constructor(spec, id, env) {
     Object.assign(this, { spec, id, env, explores:!!(spec.explore&&C.exploration), name: spec.name, traits: { ...TRAITS0, ...spec.traits }, plan: routePlan(spec.route, spec.rest, C.speed, spec.vary),
       st: 'route', x: 0, z: 0, h: 0, yaw: 0, pitch: 0, hop: 0, walking: false, activity: 'look', moved: 0, faceEye: false, lost: false,
-      at: null, outing: null, kind: 'rest', bf: null, legInfo: [], memo: { n: NaN, needs: null }, checkT: 0, reactT: 0, stateT: 0, seekCool: 0, prey: null, food: null });
+      at: null, outing: null, kind: 'rest', bf: null, legInfo: [], memo: { n: NaN, needs: null }, checkT: 0, reactT: 0, stateT: 0, seekCool: 0, prey: null, food: null, leap: null, huntCool: 0, chat: null, chatCool: 0, chatStop: -1, chatterK: 0, chirp: false, lookUp: 0 });
     const s = this.scheduled(); this.x = s.x; this.z = s.z; this.yaw = s.yaw;
   }
   get L() { return this.plan.legs.length; }
@@ -283,7 +284,7 @@ export class OutdoorCatBrain {
   /** One frame. `vis`: { x, z, d (m, 3D), ok (it may react: shown, not sheltering), still (s the visitor has stood still) };
    * `near`: within reach of being seen (the brain only plans then; far away it stays on its loop). */
   update(dt, vis, near = true) {
-    this.lost = false; this.faceEye = false; this.stateT += dt; this.seekCool = Math.max(0, this.seekCool - dt);
+    this.lost = false; this.faceEye = false; this.chirp = false; this.chatterK = 0; this.lookUp = 0; this.chatCool = Math.max(0, this.chatCool - dt); this.huntCool = Math.max(0, this.huntCool - dt); this.stateT += dt; this.seekCool = Math.max(0, this.seekCool - dt);
     const sp = this.schedulePose(near), t = this.traits, px = this.x, pz = this.z, onGround = this.h < 0.05 || !!this.at?.surface;
     this.bf = this.st === 'route' ? sp.bf : null;
     if ((this.st === 'route' || this.st === 'home') && vis.ok && onGround && (sp.h < 0.05 || sp.surface) && !(this.st === 'route' && sp.activity === 'chase') && (this.reactT -= dt) <= 0) { // (all eyes for the butterfly)
@@ -292,10 +293,8 @@ export class OutdoorCatBrain {
       if (t.shy > 0.5 && vis.d < B.shyRange && vis.still < B.shyCalm) this.set('flee');
       else if (vis.d < C.notice) this.set('notice');
       else if (seekR > C.notice && vis.d < seekR && !this.seekCool && this.env.clear(this.x, this.z, vis.x, vis.z)) this.set('seek');
-      else if (this.kind === 'stalk' && this.env.prey) {
-        const q = this.env.prey().find((a) => Math.hypot(a.x - this.x, a.z - this.z) < B.preyRange && this.env.clear(this.x, this.z, a.x, a.z));
-        if (q) { this.prey = q; this.set('prey'); }
-      }
+      else if (this.kind === 'stalk' && this.env.prey && !this.huntCool && (this.prey = pickPrey(this, this.env.prey(), (x, z) => this.env.clear(this.x, this.z, x, z)))) this.set('prey'); // (#2182: squirrels and ground birds)
+      else if (!sp.walking && ['stalk', 'explore', 'rest'].includes(this.kind) && this.env.perched && !this.chatCool && this.outing && this.chatStop !== this.outing.m && this.startChatter()) this.chatStop = this.outing.m;
     }
     let walking = false, activity = 'look', speed = 0, tx = this.x, tz = this.z, stop = 0;
     const toVis = Math.atan2(vis.x - this.x, vis.z - this.z);
@@ -331,11 +330,40 @@ export class OutdoorCatBrain {
         if (!speed) this.faceEye = true; // cornered: it sits and watches
         break;
       }
-      case 'prey': { // stalking a squirrel on the ground: creep up to it, crouch and watch
-        const q = this.prey && this.env.prey().find((a) => a === this.prey || Math.hypot(a.x - this.prey.x, a.z - this.prey.z) < 1.5);
-        if (!q || this.kind !== 'stalk' || this.stateT > 25) { this.set('home'); break; }
-        this.prey = q; tx = q.x; tz = q.z; stop = 1.8; speed = B.creep; activity = 'creep';
+      case 'prey': { // stalking a squirrel or a bird on the ground: creep up to it, crouch and watch (a bird: then the leap)
+        const q = this.prey && this.env.prey().find((a) => Math.hypot(a.x - this.prey.x, a.z - this.prey.z) < 1.5 && preyKind(a) === this.prey.kind);
+        if (!q && this.prey?.kind === 'bird' && this.stateT < H.giveUp && Math.hypot(this.prey.x - this.x, this.prey.z - this.z) < H.stop + 1.6) { // the flock lifted just as it got close: it leaps at the empty spot anyway
+          const l = leapTo(this.x, this.z, this.prey.x, this.prey.z);
+          if (this.clearOut(this.x, this.z, l.x, l.z)) { this.leap = { x0: this.x, z0: this.z, ...l }; this.set('leap'); return this.update(0, vis, near); }
+        }
+        if (!q || this.kind !== 'stalk' || this.stateT > (this.prey.kind === 'bird' ? H.giveUp : 25)) { this.set('home'); break; }
+        this.prey.x = q.x; this.prey.z = q.z; tx = q.x; tz = q.z; speed = B.creep; activity = 'creep';
+        if (this.prey.kind === 'bird') {
+          stop = H.stop;
+          if (Math.hypot(q.x - this.x, q.z - this.z) <= H.stop + 0.12 && (this.prey.wait = (this.prey.wait ?? 0) + dt) >= H.wait) { // close enough: the bottom wiggle for `wait` s, then the leap (it misses)
+            const l = leapTo(this.x, this.z, q.x, q.z), to = this.clearOut(this.x, this.z, l.x, l.z);
+            if (!to) { this.set('home'); break; }
+            this.leap = { x0: this.x, z0: this.z, ...l }; this.set('leap'); return this.update(0, vis, near);
+          }
+        } else stop = 1.8;
         break;
+      }
+      case 'leap': { // #2182: the leap at a bird: it lifts off as the cat comes in range (the flock's threat), the cat lands on nothing and looks up after it
+        const L = this.leap, k = this.stateT / H.leapSecs, p = leapPose(k);
+        if (!L) { this.set('home'); break; }
+        this.x = L.x0 + (L.x - L.x0) * p.fwd; this.z = L.z0 + (L.z - L.z0) * p.fwd; this.yaw = L.yaw; this.hop = p.hop; this.pitch = 0; this.h = 0; this.moved = 0;
+        this.walking = false; this.activity = k < 1 ? 'pounce' : 'look'; this.lookUp = k < 1 ? 0 : 0.5;
+        if (this.stateT > H.leapSecs + H.after) { this.leap = null; this.huntCool = H.huntCool; this.set('home'); }
+        return;
+      }
+      case 'chatter': { // #2182: a bird out of reach in a tree or on a roof: it sits up, looks at it and chatters (jaw and tail tip in bursts)
+        const c = this.chat, b = c && this.env.perched().find((a) => Math.hypot(a.x - c.x, a.z - c.z) < 1.5 && Math.abs(a.y - c.y) < 1.5);
+        if (!b || !vis.ok || vis.d < C.notice + 0.5 || this.stateT > c.secs) { this.chatCool = H.chatterCool; this.chat = null; this.set(vis.ok && vis.d < C.notice + 0.5 ? 'notice' : 'home'); break; }
+        const e = chatterAt(this.stateT), n = e.n;
+        this.yaw = turnTo(this.yaw, Math.atan2(b.x - this.x, b.z - this.z), dt * 3); this.lookUp = c.pitch; this.chatterK = e.k;
+        if (n !== c.n) { c.n = n; this.chirp = true; }
+        this.walking = false; this.activity = 'chatter'; this.hop = 0; this.pitch = 0; this.moved = 0;
+        return;
       }
       case 'food': { // #1782: a raw fish nearby (outdoorcats.js keeps `food` at the fish): it hesitates by its personality, then walks there
         const f = this.food;
@@ -378,6 +406,15 @@ export class OutdoorCatBrain {
     }
     if (!walking && (this.faceEye || this.st === 'seek' || this.st === 'follow')) { this.faceEye = true; this.yaw = turnTo(this.yaw, toVis, dt * 3); }
     this.walking = walking; this.activity = walking ? (activity === 'creep' ? 'creep' : 'walk') : activity === 'creep' ? 'crouch' : activity === 'eat' ? 'eat' : 'look';
+  }
+  /** #2182: a bird perched above it (env.perched) within reach: it starts chattering at it. False when there is none or this stop is not for it. */
+  startChatter() {
+    const o = this.outing, p = pickPerched({ x: this.x, z: this.z, gy: this.env.ground(this.x, this.z) }, this.env.perched());
+    if (!p || !wantsChatter(this.id, o.m, this.traits)) return false;
+    const [a, b] = H.chatterSecs;
+    this.chat = { x: p.bird.x, y: p.bird.y, z: p.bird.z, pitch: p.pitch, n: -1, secs: a + (b - a) * hash01(this.id, o.m, 78) };
+    this.set('chatter');
+    return true;
   }
   /** #1782: go for food at (x, z) (a raw fish), stopping `stop` m short; how long it hesitates first follows its personality (`foodWait`). */
   goFor(x, z, stop) { this.food = { x, z, stop, t: 0, wait: this.foodWait() }; this.set('food'); }
