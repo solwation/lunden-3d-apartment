@@ -50,3 +50,5 @@ Far from trees (near = 0) the summer rustle is 0 and the winter whistle is halve
 
 Graph built once per bed (1 buffer source + 2 filters), repeated `set` builds nothing, no page errors. The centroid column is a crude
 first-difference estimate (white-noise-heavy, so over-reads the high band), only for relative comparison.
+
+Published result: [#2177 comment](https://github.com/solwation/lunden-3d-apartment/issues/2177#issuecomment-7033911226). Pages run 44699349598 and Worker run 44699349677 success. Public port: solwation/kvarteret-lunden#336.
