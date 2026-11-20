@@ -13,3 +13,5 @@ The old fixture created the hit and unhit Ghost twins separately. `Ghost.animate
 - `git diff --check` and fixture-source review. `source.json` binds the fixture and unchanged production consumer bytes.
 
 The contact sheets illustrate the existing reaction, not a new visual effect in the game. Final browser: **PASS**, no page/console errors; all eight crown end distances round to **0.0000 m**, every hit effect is inactive, and each pair has identical logged breathing phases. Head peaks are 0.110–0.129 m; body peaks 0.102–0.226 m, with distinct front/side/back responses. Both native1400×1080 contact sheets were opened and inspected: the reaction unfolds and returns without changing the existing appearance. Chromium/SwiftShader only; no full-apartment/device/FPS assertion. Public downstream has no avatar/gameplay consumer, so no transfer is applicable.
+
+Published source `676d12503c229035a79238f5b35c23b6a95e078b`; pinned native result images: https://github.com/solwation/lunden-3d-apartment/issues/2215#issuecomment-7043134293. Pages succeeded before closure; no Worker source/config changed.
