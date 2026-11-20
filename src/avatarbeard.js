@@ -15,7 +15,7 @@
 //    narrower than a pixel draw fainter and fade to their expected coverage once several lanes share one (no shimmer at distance).
 // Numbers: config.js AVATAR_BEARD. Pure helpers (headless-testable) plus GLSL that avatar.js splices in.
 import * as THREE from 'three';
-import { AVATAR_BEARD as B, AVATAR_FACE as FACE } from './config.js';
+import { AVATAR_BEARD as B, AVATAR_FACE as FACE, AVATAR_BEARD_CUT as CUT, beardCutOf } from './config.js';
 import { sideburnTop, sideburnThick, sideburnBack, sideburnBackShift, sideburnGLSL } from './avatarsideburn.js'; // #2061
 
 const DEG = Math.PI / 180;
@@ -68,10 +68,10 @@ export function moustacheDensity(a, e) {
   return smooth(0, off > 0 ? M.feather[0] : M.feather[1], h - Math.abs(off));
 }
 /** The beard's thickness off the skin (m) where its density is `d`: fullest at the chin, a moustache's bulk over the lip (facial 3). */
-function thickness(a, e, d, lip) {
+function thickness(a, e, d, lip, k = 1) {
   const x = Math.abs(a), chin = (1 - smooth(20, 60, x)) * smooth(-18, -45, e);
   const lipBulk = lip ? (1 - smooth(16, 30, x)) * smooth(O.e - 2, O.e + 4, e) : 0;
-  return B.lift + (B.thick[1] + (B.thick[0] - B.thick[1]) * chin + B.thick[2] * lipBulk) * Math.pow(d, 0.7) * sideburnThick(a, e); // (#2061: flat under the hair)
+  return B.lift + k * (B.thick[1] + (B.thick[0] - B.thick[1]) * chin + B.thick[2] * lipBulk) * Math.pow(d, 0.7) * sideburnThick(a, e); // (#2061: flat under the hair)
 }
 
 /** A ray probe of the head's real skin: `geos` (head-frame geometries before the face warp, e.g. the head and the neck); returns
@@ -114,8 +114,8 @@ function grid(az, cols, rows, range, skin, lift, keep = () => true, patch = null
 
 /** The full beard (facial 1, `lip` false: a notch under the lips; facial 3, `lip` true: the moustache over an oval mouth opening, #2041)
  * in the head bone's frame before placement; `skin` from skinProbe. */
-export function beardShell(lip, skin) {
-  const range = (a) => [B.bottom, beardTop(a, lip)], lift = (a, e) => thickness(a, e, beardDensity(a, e, lip), lip);
+export function beardShell(lip, skin, short = false) { // #2166: `short` = the cropped beard, a thinner shell (AVATAR_BEARD_CUT.short.thick)
+  const k = short ? CUT.short.thick : 1, range = (a) => [B.bottom, beardTop(a, lip)], lift = (a, e) => thickness(a, e, beardDensity(a, e, lip), lip, k);
   if (!lip) return grid([-B.azimuth, B.azimuth], B.columns, B.rows, range, skin, lift);
   const step = (2 * B.azimuth) / B.columns, rowE = (a, j) => B.bottom + ((beardTop(a, true) - B.bottom) * j) / B.rows;
   const keep = (a, e) => Math.abs(a) > O.frame[0] * step || e < rowE(a, O.frame[1]) || e > rowE(a, O.frame[2]); // the frame's quads give way to the ring
@@ -164,20 +164,28 @@ export function beardCore(g, kind, min = 0.5) {
 }
 
 /** The material's own uniforms: the facial hair kind (the look's `facial`) and the skin's colour (the no-MSAA fallback mixes towards it). */
-export const beardUniforms = () => ({ uBeard: { value: 0 }, uBeardSkin: { value: new THREE.Color(0xd0a080) } });
+export const beardUniforms = () => ({ uBeard: { value: 0 }, uBeardSkin: { value: new THREE.Color(0xd0a080) }, uStubble: { value: 0 }, uBeardShort: { value: 0 }, uStubbleCol: { value: new THREE.Color(0x4a4038) } });
+/** #2166: the stubble's zone (0 … 1) at (a, e) degrees: the beard-and-moustache area without the lips' oval (mouthOut) or anything above the
+ * moustache (the nose); the fragment shader's stZone is the same. */
+export function stubbleZone(a, e) {
+  return Math.max(beardDensity(a, e, true, false), moustacheDensity(a, e)) * smooth(0, CUT.stubble.mouth, mouthOut(a, e));
+}
 /** From a look (avatar.js applyFaceShape). */
 export function applyBeardLook(u, lk) {
   if (!u.uBeard) return;
   u.uBeard.value = Number(lk?.facial ?? lk?.facialHair ?? 0) || 0;
+  const cut = beardCutOf(lk); // #2166: stubble = no shell at all, only the skin's shading; short = the shell's hairs cropped
+  u.uStubble.value = cut === 1 ? 1 : 0; u.uBeardShort.value = cut === 2 ? 1 : 0;
+  if (cut === 1 && lk) u.uStubbleCol.value.set(lk.beard ?? lk.hair ?? 0x4a4038);
   if (lk?.skin !== undefined) u.uBeardSkin.value.set(lk.skin).multiplyScalar(B.skinShade);
 }
-export const beardKey = () => '-beard2051-sideburn2061';
+export const beardKey = () => '-beard2051-sideburn2061-stubble2166';
 
 const Hr = B.hair, MPD = B.radius * DEG; // metres per degree of arc on the beard
 /** Fragment declarations (global scope). */
 export function beardFDecl() {
   const sm = (e0, e1, x) => `smoothstep(${f(e0)}, ${f(e1)}, ${x})`;
-  return `uniform float uBeard; uniform vec3 uBeardSkin;
+  return `uniform float uBeard, uStubble, uBeardShort; uniform vec3 uBeardSkin, uStubbleCol;
 // #2051 beards of hairs (src/avatarbeard.js)
 float bdS(float e0, float e1, float x) { float t = clamp((x - e0) / (e1 - e0), 0.0, 1.0); return t * t * (3.0 - 2.0 * t); } // (either edge order)
 ${sideburnGLSL()}
@@ -204,6 +212,7 @@ float bdMoustache(float a, float e) {
   float h = 0.5 * (top - bottom) * pow(1.0 - ${sm(M.taper * M.half, M.half, 'x')}, 0.6), off = e - 0.5 * (top + bottom);
   return ${sm(0, 1, `(h - abs(off)) / (off > 0.0 ? ${f(M.feather[0])} : ${f(M.feather[1])})`)};
 }
+float stZone(float a, float e) { return max(bdBeard(a, e, 1.0, 0.0), bdMoustache(a, e)) * bdS(0.0, ${f(CUT.stubble.mouth)}, bdMouthOut(a, e)); } // #2166 (= stubbleZone)
 float bdDensity(vec2 ae, float kind) { return kind > 1.5 && kind < 2.5 ? bdMoustache(ae.x, ae.y) : bdBeard(ae.x, ae.y, step(2.5, kind), 1.0); }
 float bdEdge(vec2 ae, float kind) { return kind > 1.5 && kind < 2.5 ? bdMoustache(ae.x, ae.y) : bdBeard(ae.x, ae.y, step(2.5, kind), 0.0); } // (no patches: the undercoat)
 vec4 bdHash(vec2 c) { return fract(sin(dot(c, vec2(12.9898, 78.233)) + vec4(0.0, 1.7, 3.1, 5.3)) * 43758.5453); }
@@ -214,6 +223,7 @@ vec2 bdHairs(vec2 ae, float mode, float kind, float px, float dHere) { // dHere:
   vec2 len;
   if (mode < 0.5) { float g = exp(${f(Hr.converge)} * (Y - ${f(Hr.y0)})); N = X * g; T = -Y; across = g; lane = ${f(Hr.lane / MPD)}; cellL = ${f(Hr.cell / MPD)}; len = vec2(${f(Hr.len[0] / MPD)}, ${f(Hr.len[1] / MPD)}); }
   else { float ax = abs(X), sl = ${f(Hr.slope[0])} + 2.0 * ${f(Hr.slope[1])} * ax; N = Y + ${f(Hr.slope[0])} * ax + ${f(Hr.slope[1])} * ax * ax; T = ax; across = sqrt(1.0 + sl * sl); lane = ${f(Hr.lane / MPD)}; cellL = ${f(Hr.cell / MPD * 0.8)}; len = vec2(${f(Hr.lenM[0] / MPD)}, ${f(Hr.lenM[1] / MPD)}); }
+  len *= mix(1.0, ${f(CUT.short.len)}, uBeardShort); // #2166: the cropped beard's shorter hairs
   float ln = floor(N / lane), cl = floor(T / cellL), hairs = 0.0, dark = 0.0, w0 = ${f(Hr.width / MPD)}, pxd = px / ${f(MPD)};
   float far = smoothstep(0.5, 1.5, pxd / lane);
   if (far < 0.999) for (int k = 0; k < 3; k++) { // (once lanes share a pixel only the expected coverage is drawn: no loop)
@@ -237,6 +247,7 @@ vec2 bdHairs(vec2 ae, float mode, float kind, float px, float dHere) { // dHere:
   }
   dark = hairs > 0.0001 ? dark / hairs : 1.0;
   float expect = ${f(Math.min(0.9, (Hr.fill * ((Hr.len[0] + Hr.len[1]) / 2) * 2 * Hr.width * 0.7) / (Hr.cell * Hr.lane)))};
+  expect *= mix(1.0, ${f(CUT.short.len)}, uBeardShort);
   return vec2(mix(hairs, expect * dHere, far), mix(dark, ${f((Hr.shade[0] + Hr.shade[1]) / 2)}, far));
 }`;
 }
@@ -259,7 +270,7 @@ export function beardColor({ hb, region, skinTone = 'vec3 beardTone = vec3(1.0);
       if (bm < 0.999) bh = bdHairs(bae, 0.0, uBeard, bpx, bhere);
       if (bm > 0.001) bh2 = bdHairs(bae, 1.0, uBeard, bpx, bhere);
       bh = mix(bh, bh2, bm);
-      float bbase = ${f(Hr.base)} * smoothstep(${f(Hr.baseFrom)}, 1.0, bdens);
+      float bbase = ${f(Hr.base)} * smoothstep(${f(Hr.baseFrom)}, 1.0, bdens); bbase *= mix(1.0, ${f(CUT.short.base)}, uBeardShort); // #2166: the cropped beard lets the skin show between its short hairs
       if (uFly.y > 0.5) { // on the silhouette the undercoat gives way: the outline is hairs
         float graze = 1.0 - abs(dot(normalize(vNormal), normalize(vViewPosition)));
         bbase *= 1.0 - ${f(Hr.graze[2])} * smoothstep(${f(Hr.graze[0])}, ${f(Hr.graze[1])}, graze);
@@ -268,6 +279,31 @@ export function beardColor({ hb, region, skinTone = 'vec3 beardTone = vec3(1.0);
       diffuseColor.rgb *= mix(${f(Hr.baseShade)}, bh.y, bh.x / max(beardCov, 0.0001));
       if (uFly.y > 0.5) diffuseColor.a *= beardCov;
       else { vec3 q = vSuitAt - vec3(${f(hb.x)}, ${f(hb.y)}, ${f(hb.z)}); ${skinTone} diffuseColor.rgb = mix(uBeardSkin * beardTone, diffuseColor.rgb, beardCov); }
+    }${stubbleGLSL(hb)}`;
+}
+
+/** #2166: the stubble's fragment code (after the beard's): skin region only, `hb` the head bone's bind position. */
+function stubbleGLSL(hb) {
+  const W = FACE.warp, c = B.centre;
+  return `
+    if (uStubble > 0.5 && uSuit < 0.5 && vFly.x < 0.5 && abs(vSurface.x) < 0.5) { // #2166: stubble: darker skin and fine dots in the beard's zone (shader only; no shell)
+      vec3 sq = vSuitAt - vec3(${f(hb.x)}, ${f(hb.y)}, ${f(hb.z)}), sfw = fwidth(vSuitAt);
+      sq.x /= ${f(W.width)} * (1.0 - ${f(W.narrow)} * bdS(${f(W.y[0])}, ${f(W.y[1])}, sq.y) * bdS(${f(W.z[0])}, ${f(W.z[1])}, sq.z));
+      vec3 sc = sq - vec3(${f(c[0])}, ${f(c[1])}, ${f(c[2])});
+      vec2 sae = vec2(atan(sc.x, sc.z), atan(sc.y, length(sc.xz))) / ${f(DEG)};
+      float zone = stZone(sae.x, sae.y);
+      if (zone > 0.002) {
+        vec2 sp = vec2(sae.x * cos(sae.y * ${f(DEG)}), sae.y) * ${f(MPD / CUT.stubble.cell)};
+        float spx = max(max(sfw.x, sfw.y), max(sfw.z, 0.000001)) / ${f(CUT.stubble.cell)}; // cells per pixel width
+        vec2 cid = floor(sp); vec4 sr = bdHash(cid + 17.0);
+        vec2 cen = 0.25 + 0.5 * sr.xy; float rad = ${f(CUT.stubble.radius)} * (0.7 + 0.5 * sr.z);
+        float edge = max(0.5 * spx, 0.12), dotC = 1.0 - smoothstep(rad - edge, rad + edge, length(fract(sp) - cen));
+        float present = step(sr.w, ${f(CUT.stubble.fill)} * zone);
+        float expectDot = ${f(CUT.stubble.fill)} * zone * ${f(Math.PI)} * rad * rad;
+        float dots = mix(present * dotC, expectDot, smoothstep(0.7, 1.6, spx));
+        diffuseColor.rgb = mix(diffuseColor.rgb, diffuseColor.rgb * ${f(CUT.stubble.shade)} + uStubbleCol * ${f(CUT.stubble.tint)}, zone * ${f(CUT.stubble.base)});
+        diffuseColor.rgb = mix(diffuseColor.rgb, uStubbleCol * ${f(CUT.stubble.dot)}, clamp(dots, 0.0, 1.0) * ${f(CUT.stubble.strength)});
+      }
     }`;
 }
 

@@ -2,7 +2,7 @@ import { playerLocalStorage as localStorage } from './playerprofiles.js';
 import { BUILD } from './version.js';
 import { wornLook, outerColour } from './avataroutwear.js'; // #2147
 import { skirtKind } from './avatarskirt.js'; // #2157
-import { SKIN, SKIN_TONES, HAIR, TOPS, PANTS, SHOES, AVATAR_HEIGHT, encodeAvatarLook, decodeAvatarLook, avatarLook, avatarHeightCm, EYES, AVATAR_SHAPE, avatarShape, AVATAR_BUILD, avatarBuildStep, avatarBuildWidth, AVATAR_GLASSES, AVATAR_HAT, AVATAR_PHONES, AVATAR_NECKLACE, AVATAR_EARRINGS, AVATAR_RING, AVATAR_WRIST, wristValue, AVATAR_CLOTHES, AVATAR_OUTERWEAR, outerValue, AVATAR_NOSE_FORMS, noseFormOf, AVATAR_SKIN_VARIATION, skinVarOf, AVATAR_AGE, ageStepOf } from './config.js';
+import { SKIN, SKIN_TONES, HAIR, TOPS, PANTS, SHOES, AVATAR_HEIGHT, encodeAvatarLook, decodeAvatarLook, avatarLook, avatarHeightCm, EYES, AVATAR_SHAPE, avatarShape, AVATAR_BUILD, avatarBuildStep, avatarBuildWidth, AVATAR_GLASSES, AVATAR_HAT, AVATAR_PHONES, AVATAR_NECKLACE, AVATAR_EARRINGS, AVATAR_RING, AVATAR_WRIST, wristValue, AVATAR_CLOTHES, AVATAR_OUTERWEAR, outerValue, AVATAR_NOSE_FORMS, noseFormOf, AVATAR_SKIN_VARIATION, skinVarOf, AVATAR_AGE, ageStepOf, beardCutOf, beardChoiceOf, setBeardChoice } from './config.js';
 
 // #1220: the brows' colours (config.js HAIR, the hair swatches' names) and a first choice that follows the hair
 const BROW_NAMES = ['Mörkbruna', 'Bruna', 'Ljusbruna', 'Guldbruna', 'Blonda', 'Grå', 'Röda', 'Svarta'];
@@ -295,6 +295,18 @@ export function drawAvatarPreview(canvas, look) {
   ctx.roundRect(cx - 4, 69, 8, 2, 1);
   ctx.fill();
 
+  if (beardCutOf(look) === 1) { // #2166: stubble: a faint shade and dots over the beard's area
+    ctx.fillStyle = hair;
+    ctx.globalAlpha = 0.28;
+    ctx.beginPath();
+    ctx.moveTo(cx - 15, 62);
+    ctx.quadraticCurveTo(cx - 15, 75, cx - 8, 79);
+    ctx.quadraticCurveTo(cx, 81, cx + 8, 79);
+    ctx.quadraticCurveTo(cx + 15, 75, cx + 15, 62);
+    ctx.closePath();
+    ctx.fill();
+    ctx.globalAlpha = 1;
+  }
   // Facial hair: 0 none, 1 beard, 2 mustache, 3 beard + mustache
   if (facial === 1 || facial === 3) {
     ctx.fillStyle = hair;
@@ -510,7 +522,7 @@ function updateActiveSwatches() {
   if (!customizerEl || !currentLook) return;
   const groups = [
     { type: 'gender', value: Number(currentLook.gender ?? currentLook.figure) || 0 },
-    { type: 'facial', value: Number(currentLook.facial ?? currentLook.facialHair) || 0 },
+    { type: 'facial', value: beardChoiceOf(currentLook) }, // #2166: 4 stubble, 5 short beard
     { type: 'skin', value: currentLook.skin, list: SKIN_TONES.map((t) => t.c) }, // #2156
     { type: 'top', value: currentLook.top, list: TOPS },
     { type: 'sleeves', value: currentLook.sleeves },
@@ -772,7 +784,7 @@ function initCustomizerDOM() {
       currentLook.gender = idx;
       applyAndRefresh();
     } else if (type === 'facial') {
-      currentLook.facial = idx;
+      setBeardChoice(currentLook, idx); // #2166
       applyAndRefresh();
     } else if (type === 'skin' && SKIN_TONES[idx] !== undefined) {
       currentLook.skin = SKIN_TONES[idx].c; // #2156

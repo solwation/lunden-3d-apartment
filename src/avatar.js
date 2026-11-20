@@ -41,6 +41,7 @@ import { genderFaceGLSL } from './avatarfacegender.js'; // #2142
 import { hairlineAt, hairlineShell, hairlineAvoid, hairlineUniforms, applyHairlineLook, hairlineFDecl, hairlineColor } from './avatarhairline.js'; // #2050
 import { refineNose, noseHeight, noseVertexGLSL, noseFragmentGLSL, noseKey, NOSE_SKIN, noseUniforms, applyNoseLook, noseFormDecl, noseNormalGLSL } from './avatarnose.js'; // #2048: the nose (#2049: its shape variants)
 import { glossUniforms, applyGlossLook, glossVertex, glossFragment, glossKey } from './avatarhairgloss.js'; // #2052: gloss along the strands
+import { beardCutOf } from './config.js'; // #2166
 import { beardShell, moustacheShell, beardCore, skinProbe, beardUniforms, applyBeardLook, beardFDecl, beardColor, beardRoughness, beardKey } from './avatarbeard.js'; // #2051
 import { AVATAR_SHORT_HAIR as SHORT } from './config.js'; // #2055
 import { AVATAR_OUTERWEAR } from './config.js';
@@ -122,14 +123,15 @@ function parts(style, sleeves, gender = 0, facial = 0, legs = 0, cut = 0) {
   }
   addFace(add, sphere, P);
   // facial hair: 0 none, 1 beard, 2 mustache, 3 beard + mustache (#1340: face part cowlHide, not hair: the hair-length slider must not squash it; the head warp still moves it)
-  const f = Number(facial) || 0, flyFrom = {}, fly = (kind, g) => ((flyFrom[kind] ??= []).push(g.clone()), g); // #2040: the surfaces flyaways grow from, before placement
+  const short = facial >= 10, f = (Number(facial) || 0) % 10, flyFrom = {}, fly = (kind, g) => ((flyFrom[kind] ??= []).push(g.clone()), g); // #2040: the surfaces flyaways grow from, before placement
   if (f === 2) { // mustache only (#2012: a tapered, drooping band instead of two blocks)
     const { g, core } = beardGeometry(2, isFemale); fly('moustache', core); // #2051: on the skin; flyaways only from its dense part
     add(g, 'beard', 'head', [0, 0, 0], 0.95);
     P[P.length - 1].face = FACE_PART.cowlHide;
   }
   if (f === 1 || f === 3) { // #1097: one continuous full beard, the sculpted lips (#2002) showing through its mouth opening
-    const { g, core } = beardGeometry(f, isFemale); fly('beard', core); // #2051 (src/avatarbeard.js)
+    const { g, core } = beardGeometry(f, isFemale, short); if (!short) fly('beard', core); // #2166: a cropped beard has no flyaways
+    // #2051 (src/avatarbeard.js)
     add(g, 'beard', 'head', [0, 0, 0], 0.9);
     P[P.length - 1].face = FACE_PART.cowlHide;
     if (f === 3) P[P.length - 1].mouth = 'moustache'; // (#1122: the moustache over the opening stays, the beard below it drops)
@@ -727,10 +729,10 @@ function skirtGeometry(kind) {
 /** #2051: facial hair `f` (1 … 3) on the head's real skin (head + neck before the face warp, src/avatarbeard.js), with the dense part the
  * flyaways root on; built once per kind and figure (the probe is the slow part) and cloned, since placing moves a geometry. */
 const beards = new Map();
-function beardGeometry(f, female) {
-  const key = `${f}_${female}`;
+function beardGeometry(f, female, short = false) {
+  const key = `${f}_${female}_${short}`;
   if (!beards.has(key)) {
-    const skin = skinProbe([headGeometry(), neckGeometry(female)]), g = f === 2 ? moustacheShell(skin) : beardShell(f === 3, skin);
+    const skin = skinProbe([headGeometry(), neckGeometry(female)]), g = f === 2 ? moustacheShell(skin) : beardShell(f === 3, skin, short);
     beards.set(key, { g, core: beardCore(g, f) });
   }
   const b = beards.get(key);
@@ -1254,7 +1256,7 @@ function base(style = 0, sleeves = 0, gender = 0, facial = 0, legs = 0, cut = 0)
 
 /** A geometry for one player: the variant's shared position / normal / skin attributes and an own colour attribute. */
 export function avatarModelGeometry(lk) {
-  const b = base(lk.style, lk.sleeves, lk.gender ?? lk.figure ?? 0, lk.facial ?? lk.facialHair ?? 0, lk.legs | 0, lk.cut | 0), n = b.attributes.position.count;
+  const b = base(lk.style, lk.sleeves, lk.gender ?? lk.figure ?? 0, (Number(lk.facial ?? lk.facialHair) || 0) + (beardCutOf(lk) === 2 ? 10 : 0), lk.legs | 0, lk.cut | 0), n = b.attributes.position.count;
   const pal = [lk.skin, (lk.cut | 0) > 2 ? outerColour(lk) : lk.top, lk.pants, lk.hair, 0, lk.shoes].map((c) => new THREE.Color(c)); // #2147: a worn layer has its own colour
   pal[6] = pal[0].clone().lerp(new THREE.Color(FACE.lipTint), 0.35).multiplyScalar(0.92); // #1101: the lips, from the skin
   pal[7] = new THREE.Color(EYES.includes(lk.eyes) ? lk.eyes : EYES[0]); // #1138: the irises

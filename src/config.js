@@ -4573,6 +4573,32 @@ export const AVATAR_BEARD = { centre: [0, 0.075, 0.02], azimuth: 92, bottom: -76
   moustache: { half: 27, top: -8, bottom: -16.5, philtrum: 1, droop: 5, taper: 0.55, feather: [2.5, 1.0], thick: 0.0035, margin: 2, cols: 16, rows: 6, blend: [16, 30] },
   hair: { lane: 0.00045, cell: 0.003, len: [0.005, 0.009], lenM: [0.004, 0.008], width: 0.00013, lean: 1.2, curl: 0.8, fill: 0.9,
     converge: -0.006, y0: -30, slope: [0.25, 0.012], shade: [0.7, 1.12], base: 1, baseFrom: 0, baseShade: 0.82, graze: [0.55, 0.9, 0.85] }, budget: 1000 };
+// #2166 stubble and the cropped beard, look field `beardCut` (0 as before, 1 stubble on a clean-shaven face, 2 a short beard with its moustache), carried
+// in the `x` tag's tens (the necklace in the units; older clients skip an `x` they cannot read) while the nine digits keep `facial`:
+// stubble as 0 (none), the short beard as 3 (the full one), so older clients show a sensible fallback. All *guess* by eye, not measured.
+//  - `stubble`: shader only, in the beard's zone minus the lips' oval (`mouth` degrees of feather): the skin darkens `base` × (× `shade` + the
+//    beard's colour × `tint`), fine dots of `cell` m with radius `radius` cells (random 0.7 … 1.2×) in `fill` × the zone of the cells, drawn in
+//    the beard's colour × `dot` at `strength`; from about a pixel per cell they average to their expected coverage.
+//  - `short`: the same shell, `thick` × as thick, its hairs `len` × as long, the undercoat `base` × as dense (skin shows between the hairs), no flyaways.
+export const AVATAR_BEARD_CUT = { names: ['Normal', 'Stubb', 'Kort skägg'],
+  stubble: { mouth: 2.5, base: 0.7, shade: 0.9, tint: 0.14, cell: 0.0012, radius: 0.32, fill: 0.85, dot: 0.45, strength: 0.75 },
+  short: { thick: 0.4, len: 0.4, base: 0.5 } };
+/** The look's beard cut (#2166): 1 stubble (only without a beard or moustache), 2 short (only with a full beard, `facial` 1 or 3), else 0. */
+export function beardCutOf(look) {
+  const v = look?.beardCut, f = Number(look?.facial ?? look?.facialHair) || 0;
+  return v === 1 && f === 0 ? 1 : v === 2 && (f === 1 || f === 3) ? 2 : 0;
+}
+/** The customizer's facial hair choice (#2166): 0 none, 1 beard, 2 moustache, 3 both, 4 stubble, 5 short beard. */
+export function beardChoiceOf(look) {
+  const c = beardCutOf(look);
+  return c === 1 ? 4 : c === 2 ? 5 : Number(look?.facial ?? look?.facialHair) || 0;
+}
+/** Sets the facial hair choice `idx` (0 … 5) on a look. */
+export function setBeardChoice(look, idx) {
+  look.facial = idx === 4 ? 0 : idx === 5 ? 3 : idx;
+  look.beardCut = idx === 4 ? 1 : idx === 5 ? 2 : 0;
+  return look;
+}
 // #2061 (part of #2042) the full beard's sideburn up into the scalp's hairline (src/avatarbeard.js), all *guess* by eye in profile and
 // three-quarter from behind, not measured. Behind |azimuth| `from` [start, full] (degrees round AVATAR_BEARD.centre) the beard's top follows
 // the visible hairline (AVATAR_HAIR.hairline, mapped into the beard's angles at `r` m from AVATAR_HAIR.centre, sampled every `step` degrees
@@ -7807,7 +7833,8 @@ function encodeLookExt(look) {
   const hatV = Number.isInteger(look.hat) && look.hat > 0 && look.hat < AVATAR_HAT.names.length ? look.hat : 0, ageV = ageStepOf(look);
   if (hatV || ageV) out += `${AVATAR_HAT.tag}${hatV + 10 * ageV}`; // #1321; #2155: the age step in the tens
   if (Number.isInteger(look.phones) && look.phones > 0 && look.phones < AVATAR_PHONES.names.length) out += `${AVATAR_PHONES.tag}${look.phones}`; // #1322
-  if (Number.isInteger(look.necklace) && look.necklace > 0 && look.necklace < AVATAR_NECKLACE.names.length) out += `${AVATAR_NECKLACE.tag}${look.necklace}`; // #1323
+  const neck = Number.isInteger(look.necklace) && look.necklace > 0 && look.necklace < AVATAR_NECKLACE.names.length ? look.necklace : 0, beardV = beardCutOf(look);
+  if (neck || beardV) out += `${AVATAR_NECKLACE.tag}${neck + 10 * beardV}`; // #1323; #2166: the beard cut in the tens
   const hasRing = Number.isInteger(look.ring) && look.ring > 0 && look.ring <= 10;
   if (hasRing) out += `${AVATAR_RING.tag}${look.ring}`; // #1324
   const br = wristValue(look.bracelet), wa = wristValue(look.watch); // #1334: bracelet and watch share the metal's tag
@@ -7860,7 +7887,10 @@ function decodeLookExt(ext, lk) {
       continue;
     }
     if (tag === AVATAR_PHONES.tag) { if (v < AVATAR_PHONES.names.length) lk.phones = v; continue; } // #1322
-    if (tag === AVATAR_NECKLACE.tag) { if (v < AVATAR_NECKLACE.names.length) lk.necklace = v; continue; } // #1323
+    if (tag === AVATAR_NECKLACE.tag) { // #1323 the necklace in the units, #2166 the beard cut in the tens
+      if (v % 10 < AVATAR_NECKLACE.names.length && Math.floor(v / 10) < AVATAR_BEARD_CUT.names.length) { lk.necklace = v % 10; if (v >= 10) lk.beardCut = Math.floor(v / 10); }
+      continue;
+    }
     if (tag === AVATAR_RING.tag) { if (v >= 1 && v <= 10) lk.ring = v; continue; } // #1324
     if (tag === AVATAR_RING.metalTag) { // the metal in the units, #1334 bracelet and watch above it
       const w = Math.floor(v / 28);
