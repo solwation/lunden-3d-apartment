@@ -1,0 +1,46 @@
+TAP version 13
+# head {
+#   front: [ -0, -0.014, 0.133 ],
+#   back: [ -0, -0.033, -0.129 ],
+#   left: [ 0.113, -0.014, 0.017 ],
+#   right: [ -0.113, -0.014, 0.017 ]
+# }
+# body {
+#   front: [ 0, -0.038, -0.226 ],
+#   back: [ -0, -0.009, -0.104 ],
+#   left: [ 0.151, -0.017, -0.043 ],
+#   right: [ -0.151, -0.017, -0.043 ]
+# }
+# Subtest: \#2036 the response snaps to its peak, overshoots once and is exactly 0 after the fade
+ok 1 - \#2036 the response snaps to its peak, overshoots once and is exactly 0 after the fade
+  ---
+  duration_ms: 2.228084
+  type: 'test'
+  ...
+# Subtest: \#2036 front, side and back give different kicks; head and body hits differ
+ok 2 - \#2036 front, side and back give different kicks; head and body hits differ
+  ---
+  duration_ms: 1.027792
+  type: 'test'
+  ...
+# Subtest: \#2036 the real Avatar flinches differently from front / side / back and returns to the unhit pose
+ok 3 - \#2036 the real Avatar flinches differently from front / side / back and returns to the unhit pose
+  ---
+  duration_ms: 1046.746026
+  type: 'test'
+  ...
+# Subtest: \#2036 overlapping hits stay bounded; no kick, no change
+ok 4 - \#2036 overlapping hits stay bounded; no kick, no change
+  ---
+  duration_ms: 12.041133
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 4
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 2157.732351

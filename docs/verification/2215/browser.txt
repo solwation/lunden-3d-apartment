@@ -1,0 +1,11 @@
+browsertest: waiting for a browser slot (2 max; another browser test is running or memory is short)
+browsertest: no systemd user scope here, running without a memory ceiling
+hit-head ghost front crown peak 0.129 m, end 0.0000 m
+hit-head ghost side crown peak 0.110 m, end 0.0000 m
+hit-head ghost back crown peak 0.123 m, end 0.0000 m
+hit-head self front crown peak 0.129 m, end 0.0000 m
+hit-body ghost front crown peak 0.226 m, end 0.0000 m
+hit-body ghost side crown peak 0.155 m, end 0.0000 m
+hit-body ghost back crown peak 0.102 m, end 0.0000 m
+hit-body self side crown peak 0.156 m, end 0.0000 m
+PASS

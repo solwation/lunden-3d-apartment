@@ -1,0 +1,14 @@
+[
+  {
+    "aPhase": 0,
+    "bPhase": 0.5,
+    "unhitCrownDifferenceMetres": 0.003927197605069814,
+    "cause": "unhit controls differ only in breathing phase"
+  },
+  {
+    "aPhase": 0,
+    "bPhase": 0,
+    "unhitCrownDifferenceMetres": 0,
+    "cause": "unhit controls differ only in breathing phase"
+  }
+]

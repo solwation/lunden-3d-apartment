@@ -15,6 +15,7 @@
 import * as THREE from 'three';
 import { Ghost } from '../src/ghosts.js';
 import { HitFx, flinchGhost, flinchSelf } from '../src/avatarhit.js';
+import { newBreath } from '../src/avatarbreath.js';
 const MS = [0, 60, 100, 160, 260, 420, 1100], CW = 200, CH = 270, FPS = 60;
 const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
 renderer.setPixelRatio(1); document.body.appendChild(renderer.domElement);
@@ -27,7 +28,9 @@ const dart = new THREE.Mesh(new THREE.ConeGeometry(0.035, 0.22, 12), new THREE.M
 scene.add(dart);
 let t = 1000;
 const clock = () => t;
-const mk = (self) => { const g = new Ghost(scene, self ? 99 : 7, self ? 'Jag' : 'Spelare', self); if (g.tag) g.tag.visible = false; scene.add(g.root); g.avatar.hitFx = new HitFx(clock); return g; };
+const mk = (self) => { const g = new Ghost(scene, self ? 99 : 7, self ? 'Jag' : 'Spelare', self); if (g.tag) g.tag.visible = false; scene.add(g.root); g.avatar.hitFx = new HitFx(clock); g.avatar.breath = newBreath(0); return g; };
+// #2215: a hit/unhit pair must share its breathing phase, since chest breathing also moves the crown.
+// Keep the production breath animation and the existing 2 mm threshold; only the control fixture is deterministic.
 const remote = mk(false), mirror = mk(true), twins = new Map([[remote, mk(false)], [mirror, mk(true)]]); // a twin never hit: the unhit pose (breathing, idle sway) at the same moment
 for (const w of twins.values()) w.root.visible = false;
 const SHOOTER = { front: [0, -4], back: [0, 4], side: [-4, 0] }; // world [x, z]; the ghost (yaw 0) faces -z, its left is world -x
@@ -63,6 +66,7 @@ window.__sheet = (rows) => {
       renderer.render(scene, cam);
     });
     row.active = g.avatar.hitFx.active;
+    row.breathPhase = [g.avatar.breath.phase, w.avatar.breath.phase];
     info.push(row);
   });
   renderer.setScissorTest(false);

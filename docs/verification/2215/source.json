@@ -1,0 +1,12 @@
+{
+  "base": "1da6a3c94adf3115a0b5845bd87c9106f73db987",
+  "sha256": {
+    "tools/avatarhit.html": "2fada0f0ca97244c268a62abbccb30f27eec3560eea02f47363eadeea47946ae",
+    "tools/avatarhittest.cjs": "390733070e23781e1bbfc6132723feeb452a85641906ce5f5527349e977b0efc",
+    "tools/avatarhittest.mjs": "89e6b95125fb7adff62302d3b6462c9ea9be316bc05a3d59309ddc3b11274dac",
+    "src/avatarhit.js": "636a8f72fddaf21d3b5cf6dba70cf4d9b99c22e5acf263d565ca8991a15d774e",
+    "src/avatarbreath.js": "cdff6abfe3bd245c08371cc694063f70a7068754b2393125be8f229f7e08b49c",
+    "src/ghosts.js": "2ad62856430380566b799a8f9db702c0274e727b0beaa0320fa9cd62cec25e40",
+    "src/avatar.js": "136be929c5688ba31763f639abca56f31f8b6c46b55bc1704d61912acbab6625"
+  }
+}
