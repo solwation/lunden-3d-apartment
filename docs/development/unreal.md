@@ -124,6 +124,18 @@ missing are listed for information; Unreal-specific VS components are never chec
 - Upgrading (a new 5.8 hotfix, or 5.9 once it is stable) is a deliberate change in its own issue: update
   `ENGINE_VERSION` (and `EngineAssociation` for a minor version), rebuild, re-run the tests.
 
+## No windows on the user's desktop (user, 2026-11-21)
+
+Agents run everything hidden; the user works on the same PC. Never open a visible window:
+
+- Unreal (editor commandlets, packaged game, tests): `-unattended -nosplash` plus `-RenderOffScreen` when frames are
+  needed (screenshots, rendering tests) or `-nullrhi` when they are not. Never start the editor GUI or a game window.
+- Windows Git: `git.exe -c core.editor=true` with `-m`/`-F` (an editor once opened on the desktop).
+- PowerShell/other Windows tools from WSL: run as console processes (`powershell.exe -NoProfile -File …`); a tool that
+  would open a window gets its headless flag or is started hidden (`Start-Process -WindowStyle Hidden`).
+
+If a check genuinely needs a visible window, ask the user first.
+
 ## Where the Unreal checkout lives
 
 The global WSL rule is to work in ext4 mirrors, but the Unreal editor, UnrealBuildTool and Visual Studio are
