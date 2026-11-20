@@ -5,7 +5,10 @@ import { roofMapPixels, roofMapMean, roofColor, roofUV } from '../src/roofsurfac
 import { ROOF_SURFACE as R, SEASON } from '../src/config.js';
 import { registerSnow, registerSeasonal, applySeason } from '../src/seasons.js';
 const BASE = process.env.BASE_REV || 'c1c8fe1';
-const src = (f) => readFileSync(f, 'utf8'), at = (f) => execFileSync('git', ['show', `${BASE}:${f}`], { encoding: 'utf8' });
+// #2256: the frozen-source checks compare #2088's own commit with its base, so later deliberate edits
+// (e.g. #2204's roof-outlet condensation in campusfacades.js) do not fail them.
+const ROOF = process.env.ROOF_REV || '0c5f4a5';
+const src = (f) => readFileSync(f, 'utf8'), show = (rev, f) => execFileSync('git', ['show', `${rev}:${f}`], { encoding: 'utf8' }), at = (f) => show(BASE, f);
 
 test('map: deterministic, small, neutral seams and calm weathering that tiles', () => {
   const p = roofMapPixels(), n = R.size, pw = n / R.panels;
@@ -61,13 +64,13 @@ test('every roof batch maps before merging and creates the map before registerSn
   assert(ex.includes("add(roofs.map((g) => roofUV(g, 'felt')), roofMat)") && ex.indexOf('map: roofMap(), color: roofColor(0x4b5157)') < ex.indexOf('registerSnow(roofMat'));
   for (const s of ["roofUV(g, 'felt')); // #2088", 'school.map((b) => roofUV(roof(b)))', 'oldB.map((b) => roofUV(roof(b)))', "dormers(side('longhouse'))].map((g) => roofUV(g))"]) assert(su.includes(s), s);
   assert.equal((su.match(/map: roofMap\(\), color: roofColor\(/g) ?? []).length, 4, 'A/B/C, school, HepCat, old buildings');
-  for (const f of ['src/buildingroofs.js', 'src/roofs.js', 'src/campusfacades.js', 'src/pavilionroof.js', 'src/karpfacade.js', 'src/hepcat.js', 'src/lod.js']) assert.equal(src(f), at(f), f + ' unchanged');
+  for (const f of ['src/buildingroofs.js', 'src/roofs.js', 'src/campusfacades.js', 'src/pavilionroof.js', 'src/karpfacade.js', 'src/hepcat.js', 'src/lod.js']) assert.equal(show(ROOF, f), at(f), f + ' unchanged by #2088');
   const fn = (s, name) => s.slice(s.indexOf(`function ${name}(`), s.indexOf('\n}\n', s.indexOf(`function ${name}(`)));
-  for (const name of ['hipRoof', 'roof', 'roofSpec', 'addSurroundingRoofWalk']) assert.equal(fn(su, name), fn(at('src/surroundings.js'), name), name);
+  for (const name of ['hipRoof', 'roof', 'roofSpec', 'addSurroundingRoofWalk']) assert.equal(fn(show(ROOF, 'src/surroundings.js'), name), fn(at('src/surroundings.js'), name), name);
   // the edits replace material/UV lines only: every added line names the roof map/UVs, nothing else in the builders moved
   // (#2088's own commit; later deliberate geometry work, e.g. #2093's Hus L capping band, has its own tests)
   for (const f of ['src/sitebackdrop.js', 'src/southbackdrop.js', 'src/exterior.js', 'src/surroundings.js', 'src/schoolfacade.js']) {
-    const d = execFileSync('git', ['diff', '-U0', BASE, process.env.ROOF_REV || '0c5f4a5', '--', f], { encoding: 'utf8' }).split('\n'), plus = d.filter((l) => /^\+(?!\+\+)/.test(l)), minus = d.filter((l) => /^-(?!--)/.test(l));
+    const d = execFileSync('git', ['diff', '-U0', BASE, ROOF, '--', f], { encoding: 'utf8' }).split('\n'), plus = d.filter((l) => /^\+(?!\+\+)/.test(l)), minus = d.filter((l) => /^-(?!--)/.test(l));
     for (const l of plus) assert(/roofUV|roofMap|roofColor|SCHOOL_ROOF_LEVEL|#2088|^\+\s*\/\/|^\+\/\*\*|^\+const lin =|^\+  add\(roofs\.map|^\+  registerSnow\(roofMat/.test(l), `${f}: ${l.slice(0, 120)}`);
     assert(minus.length <= plus.length + 3, f);
   }
