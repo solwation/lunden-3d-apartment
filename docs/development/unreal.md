@@ -394,6 +394,34 @@ the supplied directory. Shipping ignores `-seconds=10`, so the test ended its ow
 headless process at the timeout. A normal user shutdown and a rendered pilot view
 are separate tests.
 
+### IoStore repeatability (#2248)
+
+Two successful Windows Shipping cooks with Epic UE 5.8.4 (CL 58902052) used the same
+stock OpenWorld level and Lunden material fixture. The second started from a fresh
+project directory, with identical project descriptor, engine-version file, Config and
+Content bytes. The SHA-256 over the sorted source checksum listing was
+`66adea0af851e638608b0a082442ab04ed6ed9bcd00bdc4b7e03efcb92f1d889`.
+The source snapshot paired the 24d416d2 fixture with the content-only descriptor and
+test from 4e1e8a4b. Both runs used the host's existing derived-data cache. UAT elapsed
+time was 163.66 s and 59.66 s respectively.
+
+| File in Lunden/Content/Paks | First cook (bytes) | Second cook (bytes) | SHA-256 |
+| --- | ---: | ---: | --- |
+| global.ucas | 3,330,560 | 3,330,560 | Identical |
+| global.utoc | 806 | 806 | Identical |
+| Lunden-Windows.pak | 11,226,745 | 11,226,745 | Different |
+| Lunden-Windows.utoc | 216,347 | 216,347 | Different |
+| Lunden-Windows.ucas | 223,615,936 | 223,619,008 | Different |
+
+The stock game executable was byte-identical in both archives. This run did not
+configure separate chunks. Matching source files and file sizes alone cannot identify
+reusable downloads across independent cook directories. Hash final files individually.
+The measurements do not isolate the cause of the differences.
+
+Run `node tools/unreal-engine/compare-cooks.mjs FIRST_PAKS SECOND_PAKS` against each
+archive's `Lunden/Content/Paks` directory. It streams each container and reports its
+relative name, size and SHA-256. [Full five-file comparison](../verification/2248/stock-cooks.json).
+
 ## Phase B results (verified 2026-11-20)
 
 These results describe the original native project before the content-only conversion (#2268). The checks ran in `C:\Users\Olof\Documents\lunden-unreal-engine` (i9-10900K, RTX 3080, 32 GB).
