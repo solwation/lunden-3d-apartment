@@ -20,6 +20,7 @@ import { lampUniforms, LAMP_FDECL, lampGlsl } from './avatarlight.js'; // #2039:
 import { SelfShadow, selfShadowUniforms, SELF_VDECL, SELF_VCODE, SELF_FDECL, selfLightsChunk, selfShadowKey } from './avatarselfshadow.js'; // #2143: the sun's self-shadow
 import { clothUniforms, clothDecl, clothNormal, installCloth } from './avatarcloth.js'; // #2034
 import { newSway, stepSway, SWAY_DECL, swayGLSL } from './avatarsway.js'; // #2014
+import { skirtKind, skirtUnder, skirtRegion, skirtTube, skirtGLSL, SKIRT_VDECL } from './avatarskirt.js'; // #2157
 import { newWind, stepWind } from './avatarwind.js'; import { siteWind } from './sitewind.js'; // #2110: outdoor wind on the sway springs
 import { newLean, stepLean } from './avatarlean.js'; // #2109
 import { chestBreath, chestUniforms, CHEST_DECL, chestGLSL, chestKey } from './avatarchest.js'; // #2108: visible breathing
@@ -636,13 +637,17 @@ function bodyParts(add, sleeves, isFemale, legs = 0, cut = 0) {
   const sphere = (r, w = 10, h = 7, ...a) => new THREE.SphereGeometry(r, w, h, ...a);
   const cap = (r, h, seg = 5) => new THREE.CapsuleGeometry(r, h, 1, seg);
   const hipScale = isFemale ? [1.2, 1, 0.78] : [1.15, 1, 0.75];
+  // #2157: a skirt / dress (src/avatarskirt.js) over the shorts; the seat and the shorts in the skirt's colour (the dress: the top's)
+  const skirt = skirtKind(legs), cloth = skirt ? skirtRegion(legs) : 'pants';
+  legs = skirtUnder(legs);
   // the seat: rounder at the back, a soft crotch instead of a flat disc
   add(shape(lathe([[0, -0.122], [0.06, -0.118], [0.11, -0.1], [0.14, -0.04], [0.142, 0.03], [0, 0.05]], 14).scale(...hipScale),
-    (v) => { if (v.z < 0) v.z *= 1 + 0.12 * bump(v.y, -0.06, 0.07); }), 'pants', 'hips');
+    (v) => { if (v.z < 0) v.z *= 1 + 0.12 * bump(v.y, -0.06, 0.07); }), cloth, 'hips');
   const upper = upperBody(sleeves, isFemale, cut);
   add(upper[0], 'top', 'torso');
   // The body surface contains its own snug neckline and hem; no stacked rings.
-  add(new THREE.BoxGeometry(0.005, 0.075, 0.004), 'pants', 'hips', [0.012, -0.045, 0.106], 0.72);
+  if (!skirt) add(new THREE.BoxGeometry(0.005, 0.075, 0.004), 'pants', 'hips', [0.012, -0.045, 0.106], 0.72);
+  else { add(skirtGeometry(skirt), cloth, 'hips'); Object.assign(add.last(), { anchor: skirtGeometry.drape, torsoCloth: cloth === 'top' }); } // (the dress: the top's folds, weave and side seams)
   // Sewn shoulders are part of the torso topology; bare forearms overlap the cuff.
   for (const s of ['L', 'R']) {
     const sh = 'shoulder' + s, sx = s === 'L' ? 1 : -1;
@@ -684,7 +689,7 @@ function bodyParts(add, sleeves, isFemale, legs = 0, cut = 0) {
   for (const s of ['L', 'R']) {
     const top = SURFACE.leg[0][0], bottom = SURFACE.leg.at(-1)[0];
     if (legs === 1) {
-      add(limbWeights(garment(ringSurface(ringRange(SURFACE.leg, top, hy)), true), s, true), 'pants', 'thigh' + s);
+      add(limbWeights(garment(ringSurface(ringRange(SURFACE.leg, top, hy)), true), s, true), cloth, 'thigh' + s);
       add(limbWeights(ringSurface(ringRange(SURFACE.leg, hy + SURFACE.clothOverlap, bottom)), s, true), 'skin', 'thigh' + s);
     } else add(limbWeights(garment(ringSurface(SURFACE.leg), true, lw), s, true), 'pants', 'thigh' + s);
     const upper = shape(sphere(0.5, 10, 4, 0, Math.PI * 2, 0, Math.PI / 2).scale(0.105, 0.18, 0.27), (v) => {
@@ -700,6 +705,23 @@ function bodyParts(add, sleeves, isFemale, legs = 0, cut = 0) {
     if (part.colour === undefined) shoePart();
   }
   function shoePart() { add.last().shoe = true; }
+}
+/** #2157: the skirt / dress tube (src/avatarskirt.js skirtTube) as a hips-local geometry skinned to the hips and both thighs, with a `shade`
+ * (the lining darker) and no baked crotch / fold shading (`sewn`); `skirtGeometry.drape` is the same vertex order at the drape's slim target,
+ * placed in the bind pose, for the part's per-vertex `faceAnchor` (read by skirtGLSL). */
+function skirtGeometry(kind) {
+  const t = skirtTube(kind), n = t.position.length / 3, ids = [NAMES.indexOf('hips'), NAMES.indexOf('thighL'), NAMES.indexOf('thighR')];
+  const si = new Uint16Array(n * 4), sw = new Float32Array(n * 4);
+  t.weights.forEach((w, i) => { for (let k = 0; k < 3; k++) { si[i * 4 + k] = ids[k]; sw[i * 4 + k] = w[k]; } });
+  const g = new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(t.position, 3));
+  g.setIndex(t.index); g.computeVertexNormals();
+  g.userData.ringSides = t.sides; g.userData.ringCount = t.rows; smoothRingSeam(g); g.userData.sewn = true;
+  g.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(si, 4)).setAttribute('skinWeight', new THREE.Float32BufferAttribute(sw, 4));
+  g.setAttribute('shade', new THREE.Float32BufferAttribute(t.shade, 1));
+  const hb = bindAt('hips');
+  skirtGeometry.drape = new THREE.BufferGeometry().setAttribute('position', new THREE.Float32BufferAttribute(t.drape, 3)).translate(hb.x, hb.y, hb.z);
+  skirtGeometry.drape.setIndex(t.index);
+  return g;
 }
 /** #2051: facial hair `f` (1 … 3) on the head's real skin (head + neck before the face warp, src/avatarbeard.js), with the dense part the
  * flyaways root on; built once per kind and figure (the probe is the slow part) and cloned, since placing moves a geometry. */
@@ -1183,7 +1205,7 @@ function base(style = 0, sleeves = 0, gender = 0, facial = 0, legs = 0, cut = 0)
       if (g.attributes.skinIndex) for (let v = i; v < i + 3; v++) for (let j = 0; j < 4; j++) {
         if (/^(hand|knee|foot)/.test(NAMES[g.attributes.skinIndex.getComponent(v,j)])) red += g.attributes.skinWeight.getComponent(v,j);
       } else if (/^(hand|knee|foot)/.test(part.bone)) red = 3;
-      suitRole.fill(part.bone === 'torso' ? 1 : part.bone === 'head' ? 2 : /^hand/.test(part.bone) ? 4 : red >= 1.5 ? 3 : 0, i, i + 3);
+      suitRole.fill(part.bone === 'torso' || part.torsoCloth ? 1 : part.bone === 'head' ? 2 : /^hand/.test(part.bone) ? 4 : red >= 1.5 ? 3 : 0, i, i + 3);
     }
     const pump = g.attributes.armPump ? new Float32Array(g.attributes.armPump.array) : new Float32Array(n * 4), shoulder = /^shoulder[LR]$/.test(part.bone) && (region === REGION.skin || region === REGION.top) ? bindAt(part.bone) : null;
     const facePt = new Float32Array(n).fill(part.face ?? 0), anchor = new Float32Array(n * 3); // (#1138, see faceShape)
@@ -1305,6 +1327,7 @@ float pumpD = uPump * ${GYM_PUMP.circumference} * armPump.w;
 objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / pumpF * dot(position.xz - armPump.xy, objectNormal.xz), objectNormal.z / pumpF));`)
       .replace('#include <begin_vertex>', `#include <begin_vertex>\ntransformed.xz = armPump.xy + (transformed.xz - armPump.xy) * (1.0 + uPump * ${GYM_PUMP.circumference} * armPump.z);\nvSuitRole = suitRole; ${wetVertex()} vSurface = vec2(region, facePart); vNose = noseBlend; vSuitAt = position; vBare = bare; vRing = step(${FACE_PART.ring}.0 - 0.5, facePart) * step(facePart, ${FACE_PART.watchStrap}.0 - 0.5); // (#1334: the rings, bracelets and watch cases are metal)\n${faceShape()}${swayShader()}${chestGLSL()}\n${flyBind(FACE_PART, bindAt('head').add(new THREE.Vector3(...HAIR.centre)))}\ntransformed.x *= 1.0 - uKiss * pucker * ${KISS.narrow.toFixed(5)};\ntransformed.z += uKiss * pucker * ${KISS.pucker.toFixed(5)};\ntransformed.y -= uMouth * mouth * ${MOUTH.drop.toFixed(5)}; // #1122: the jaw while talking`);
     sh.vertexShader = faceExprShader(sh.vertexShader, { hb: bindAt('head'), chinY: CHIN_Y, P: FACE_PART }); // #2031
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', `#include <common>\n${SKIRT_VDECL}`).replace('#include <skinning_vertex>', `${skirtGLSL({ hipY: bindAt('hips').y })}\n#include <skinning_vertex>`); // #2157: the skirt's drape and hem sway, before the build's offsets
     sh.vertexShader = sh.vertexShader.replace('#include <common>', `#include <common>\n${BUILD_DECL}`).replace('#include <skinning_vertex>', `${buildGLSL()}\n#include <skinning_vertex>`); // #2141: after the face shape and breathing, before skinning
     sh.vertexShader = sh.vertexShader.replace('#include <skinning_vertex>', `${eyeView()}\n#include <skinning_vertex>`); // #2033: after every bind-pose shape (face, expression), before skinning
     sh.vertexShader = sh.vertexShader.replace('#include <project_vertex>', `#include <project_vertex>\n${flyProject(bindAt('head').add(new THREE.Vector3(...HAIR.centre)))}`); // #2040
@@ -1364,7 +1387,7 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
     const gloss = { head: bindAt('head'), region: REGION, part: FACE_PART }; // #2052
     sh.vertexShader = glossVertex(sh.vertexShader, gloss); sh.fragmentShader = curlGloss(glossFragment(sh.fragmentShader, gloss)); // (#2054: the curls turn its strands)
   };
-  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light' + '-armfix2022' + skinKey() + '-expr2031' + '-eyes2064' + '-exert2037' + flyKey() + '-cloth2034' + '-brow2046' + sculptKey() + '-hairline2050' + noseKey() + glossKey() + beardKey() + '-curls2054' + shortHairKey() + handKey() + seamKey() + chestKey() + skinVarKey() + ageKey() + toneKey() + selfShadowKey() + buildKey(); // #2108, #2111, #2107; #2032, #2031, #2033, #2037, #2040, #2034, #2050, #2048, #2052, #2051
+  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light' + '-armfix2022' + skinKey() + '-expr2031' + '-eyes2064' + '-exert2037' + flyKey() + '-cloth2034' + '-skirt2157' + '-brow2046' + sculptKey() + '-hairline2050' + noseKey() + glossKey() + beardKey() + '-curls2054' + shortHairKey() + handKey() + seamKey() + chestKey() + skinVarKey() + ageKey() + toneKey() + selfShadowKey() + buildKey(); // #2108, #2111, #2107; #2032, #2031, #2033, #2037, #2040, #2034, #2050, #2048, #2052, #2051
   installSelfView(m); // #2080: the own camera hides head/hair; mirrors and peers keep the full figure
   return m;
 }

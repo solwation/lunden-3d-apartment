@@ -1,0 +1,72 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Avatar skirt and dress</title><link rel="icon" href="data:,">
+<script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  } }
+</script>
+<style>html,body{margin:0;background:#c4c9ce}canvas{display:block}</style></head>
+<body><script type="module">
+// #2157 component page, driven by tools/avatarskirtbrowser.cjs: the same female figure in straight trousers (before), the skirt and the
+// dress, standing, mid-stride, sitting on a seat, squatting and pedalling; the mirror preview (src/avatarpreview.js) of each; triangles.
+import * as THREE from 'three';
+import { Avatar, avatarTriangles } from '../src/avatar.js';
+import { poseOlof } from '../src/olof.js';
+import { AvatarPreview } from '../src/avatarpreview.js';
+import { decodeAvatarLook, avatarEyeHeight } from '../src/config.js';
+const code = '210000100c5e8o2w0l8j0n0b0r8t8y8';
+const W = 1200, H = 700, renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setPixelRatio(1); renderer.setSize(W, H); document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0xc4c9ce);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x7d7468, 1.3));
+const sun = new THREE.DirectionalLight(0xfff2e0, 2.4); sun.position.set(-2.2, 3.2, -2.6); scene.add(sun);
+const base = { ...decodeAvatarLook(code, 'skirt'), tall: 1, build: 1, gender: 1, figure: 1, style: 1, hair: 0x5a3a24, skin: 0xe2b28e, cut: 0, sleeves: 0, top: 0x8a3b4a, pants: 0x2f3e5c, facial: 0, hat: 0, glasses: 0 };
+const looks = [0, 3, 4].map((legs) => ({ ...base, legs }));
+const avatars = [], seats = [];
+looks.forEach((lk, i) => {
+  const a = new Avatar(lk); a.baseY = 0; a.noIdle = true; a.object.position.set((i - 1) * 0.8, 0, 0); a.object.rotation.y = 0; scene.add(a.object); avatars.push(a);
+  const seat = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.06, 0.42), new THREE.MeshStandardMaterial({ color: 0x5b4636, roughness: 0.8 }));
+  seat.position.set((i - 1) * 0.8, 0.39, 0.1); seat.visible = false; scene.add(seat); seats.push(seat);
+});
+const cam = new THREE.PerspectiveCamera(30, W / H, 0.02, 60);
+const arms = (y, z) => [{ at: [0.22, y, z], pole: [0.7, -0.6, -0.3] }, { at: [-0.22, y, z], pole: [-0.7, -0.6, -0.3] }];
+const POSES = {
+  stand: (a) => { for (let k = 0; k < 30; k++) a.update(1 / 60, {}); },
+  walk: null, // (all three together: stepped to the widest stride, see __pose)
+  sit: (a) => { a.update(1 / 60, {}); poseOlof(a, { hip: [0.5, 0], lean: 0.05, head: 0, turn: 0, feet: [[0.13, 0.05, 0.42], [-0.13, 0.05, 0.42]], hands: arms(0.6, 0.3), can: null, flat: 1 }); },
+  squat: (a) => { for (let k = 0; k < 240; k++) a.update(1 / 60, { crouch: 1 }); },
+  cycle: (a) => { a.update(1 / 60, {}); poseOlof(a, { hip: [0.95, -0.05], lean: 0.32, head: 0.2, turn: 0, feet: [[0.12, 0.66, 0.28], [-0.12, 0.24, 0.12]], hands: arms(1.05, 0.5), can: null }); },
+};
+let pose = 'stand';
+window.__pose = (name) => {
+  pose = name;
+  if (name === 'walk') { // a steady walk, then on to the frame with the knees furthest apart
+    const apart = () => { const a = avatars[0], l = a.bones.kneeL.getWorldPosition(new THREE.Vector3()), r = a.bones.kneeR.getWorldPosition(new THREE.Vector3()); return Math.abs(l.z - r.z); };
+    const step = () => { for (const a of avatars) { a.update(1 / 60, { speed: 1.4 }); a.object.updateMatrixWorld(true); } };
+    for (let k = 0; k < 90; k++) step();
+    let prev = apart(); for (let k = 0; k < 60; k++) { step(); const d = apart(); if (d < prev && prev > 0.2) break; prev = d; }
+  }
+  for (const [i, a] of avatars.entries()) { POSES[name]?.(a); seats[i].visible = name === 'sit'; }
+  scene.updateMatrixWorld(true);
+  return avatars.map((a) => { const u = a.material.userData.u; return { hip: [+u.uClothHip.value.x.toFixed(2), +u.uClothHip.value.y.toFixed(2)] }; });
+};
+// view: q (three-quarter from the figures' front left) / side
+window.__shot = (view = 'q') => {
+  const low = pose === 'sit' || pose === 'squat';
+  const eye = { q: new THREE.Vector3(1.5, low ? 1.25 : 1.45, 3.4), side: new THREE.Vector3(3.6, low ? 1.1 : 1.2, 0.6), front: new THREE.Vector3(0.0, low ? 1.2 : 1.35, 3.7) }[view];
+  cam.position.copy(eye); cam.lookAt(0, low ? 0.6 : 0.85, 0); cam.updateProjectionMatrix();
+  renderer.info.reset(); renderer.render(scene, cam); renderer.render(scene, cam);
+  return { calls: renderer.info.render.calls, tris: renderer.info.render.triangles };
+};
+// the mirror preview of each look side by side (the customizer's own class), returned as a PNG data URL
+window.__preview = () => {
+  const c = document.createElement('canvas'), out = document.createElement('canvas'), p = new AvatarPreview(c);
+  out.width = 330 * 3; out.height = 465; const g = out.getContext('2d');
+  looks.forEach((lk, i) => { p.draw(lk, { yaw: -0.35 }); g.drawImage(c, i * 330, 0, 330, 465); });
+  p.dispose();
+  return out.toDataURL('image/png');
+};
+window.__info = () => ({ tris: [0, 1, 3, 4].map((legs) => avatarTriangles(2, legs, 0)) });
+window.__ready = true;
+</script></body></html>

@@ -17,7 +17,7 @@ const smooth = (e0, e1, x) => { const t = clamp((x - e0) / (e1 - e0), 0, 1); ret
 /** The garment kinds of a look: the top ('tshirt' | 'sweater' | 'hoodie'; a vest is jersey like the T-shirt) and the trousers. */
 export function clothKinds(lk = {}) {
   const cut = lk.cut | 0, top = cut > 2 ? 'sweater' : cut === 2 ? 'hoodie' : cut === 0 && lk.sleeves ? 'sweater' : 'tshirt';
-  return { top, pants: (lk.legs | 0) === 2 ? 'trousers' : 'jeans' };
+  return { top, pants: (lk.legs | 0) >= 2 ? 'trousers' : 'jeans' }; // (#2157: a skirt / dress, legs 3 / 4, is a finer twill like the wide trousers)
 }
 
 /** Fresh uniforms for the avatar material (all zero: no folds until a look and a pose are set). */

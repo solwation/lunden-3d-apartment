@@ -9,6 +9,7 @@
 // Numbers: config.js AVATAR_SEAM (guesses). `SEAM_DETAIL.on = false` (before a material compiles) leaves it all out, for cost tests.
 import { Vector4 } from 'three';
 import { AVATAR_SEAM as M, AVATAR_SURFACE as SURFACE, AVATAR_CLOTHES, AVATAR_OUTERWEAR } from './config.js';
+import { skirtKind, skirtHem } from './avatarskirt.js'; // #2157
 import { bindAt } from './olof.js';
 
 export const SEAM_DETAIL = { on: true };
@@ -40,9 +41,10 @@ export function seamFrame() {
 export function seamLook(lk = {}) {
   const F = seamFrame(), cut = lk.cut | 0, long = !!lk.sleeves, legs = lk.legs | 0;
   const outer = cut > 2, top = outer ? 'tshirt' : cut === 1 ? 'vest' : cut === 2 ? 'hoodie' : long ? 'sweater' : 'tshirt'; // #2147: an outer layer is plain jersey-like cloth with its own hem
-  return { top, long: long || outer, jeans: legs !== 2, shorts: legs === 1, rib: top === 'sweater' || top === 'hoodie',
+  const skirt = skirtKind(legs); // #2157: a skirt is plain (no jeans topstitching); its hem is the trousers' hem line
+  return { top, long: long || outer, jeans: legs !== 2 && !skirt, shorts: legs === 1, rib: top === 'sweater' || top === 'hoodie',
     hemY: outer ? (cut === 4 ? F.torsoY + AVATAR_OUTERWEAR.coat.hem : F.hem.tee - AVATAR_OUTERWEAR.jacket.length) : top === 'hoodie' ? F.hem.hoodie : F.hem.tee, sleeveY: top === 'vest' ? 0 : long || outer ? F.sleeve.long : F.sleeve.short,
-    legY: legs === 1 ? F.leg.shorts : F.leg.long };
+    legY: skirt ? F.thighY + skirtHem(skirt) : legs === 1 ? F.leg.shorts : F.leg.long };
 }
 
 /** Fresh uniforms (all zero: no seams until a look is set). */

@@ -39,7 +39,7 @@ export function hemGap(look) {
   }
   return { min, at };
 }
-for (const gender of [0, 1]) for (const [name, o] of [['t-shirt', { sleeves: 0, cut: 0 }], ['long sleeves', { sleeves: 1, cut: 0 }], ['hoodie', { sleeves: 1, cut: 2 }], ['wide trousers', { sleeves: 1, cut: 0, legs: 2 }]]) {
+for (const gender of [0, 1]) for (const [name, o] of [['t-shirt', { sleeves: 0, cut: 0 }], ['long sleeves', { sleeves: 1, cut: 0 }], ['hoodie', { sleeves: 1, cut: 2 }], ['wide trousers', { sleeves: 1, cut: 0, legs: 2 }], ['skirt (#2157)', { sleeves: 0, cut: 0, legs: 3 }]]) {
   test(`${gender ? 'female' : 'male'} ${name}: the hem stands off the waistband`, () => {
     const { min, at } = hemGap({ ...base, gender, figure: gender, style: 1, ...o });
     console.log(`  gap ${(min * 1000).toFixed(1)} mm at ${at}`);

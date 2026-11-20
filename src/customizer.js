@@ -1,6 +1,7 @@
 import { playerLocalStorage as localStorage } from './playerprofiles.js';
 import { BUILD } from './version.js';
 import { wornLook, outerColour } from './avataroutwear.js'; // #2147
+import { skirtKind } from './avatarskirt.js'; // #2157
 import { SKIN, SKIN_TONES, HAIR, TOPS, PANTS, SHOES, AVATAR_HEIGHT, encodeAvatarLook, decodeAvatarLook, avatarLook, avatarHeightCm, EYES, AVATAR_SHAPE, avatarShape, AVATAR_BUILD, avatarBuildStep, avatarBuildWidth, AVATAR_GLASSES, AVATAR_HAT, AVATAR_PHONES, AVATAR_NECKLACE, AVATAR_EARRINGS, AVATAR_RING, AVATAR_WRIST, wristValue, AVATAR_CLOTHES, AVATAR_OUTERWEAR, outerValue, AVATAR_NOSE_FORMS, noseFormOf, AVATAR_SKIN_VARIATION, skinVarOf, AVATAR_AGE, ageStepOf } from './config.js';
 
 // #1220: the brows' colours (config.js HAIR, the hair swatches' names) and a first choice that follows the hair
@@ -112,7 +113,8 @@ export function drawAvatarPreview(canvas, look) {
   }
 
   // Pants (legs: y 165 - 240)
-  for (const s of [-1, 1]) {
+  const skirt = skirtKind(legs); // #2157: a skirt (trousers' colour) / dress (the top's) over bare legs
+  for (const s of skirt ? [] : [-1, 1]) {
     const lx = cx + s * (gender === 1 ? 12 : 13);
     const lh = legs === 1 ? 32 : 76, lwid = (gender === 1 ? 16 : 18) + (legs === 2 ? 6 : 0);
     if (legs === 1) { ctx.fillStyle = skin; ctx.fillRect(lx - 7, 190, 14, 51); } // #1244 shorts: bare legs below
@@ -125,11 +127,18 @@ export function drawAvatarPreview(canvas, look) {
   // Hips
   ctx.beginPath();
   const hipW = gender === 1 ? 46 : 48;
+  if (skirt) {
+    for (const s of [-1, 1]) { ctx.fillStyle = skin; ctx.fillRect(cx + s * (gender === 1 ? 12 : 13) - 7, 180, 14, 61); }
+    const hem = skirt === 'dress' ? 214 : 204, flare = 15;
+    ctx.fillStyle = skirt === 'dress' ? top : pants;
+    ctx.beginPath(); ctx.moveTo(cx - hipW / 2, 150); ctx.lineTo(cx + hipW / 2, 150); ctx.lineTo(cx + hipW / 2 + flare, hem); ctx.lineTo(cx - hipW / 2 - flare, hem); ctx.closePath(); ctx.fill();
+  } else {
   ctx.roundRect(cx - hipW / 2, 150, hipW, 22, [4, 4, 0, 0]);
   ctx.fill();
   // Belt
   ctx.fillStyle = '#2a2523';
   ctx.fillRect(cx - (hipW / 2 - 1), 149, hipW - 2, 5);
+  }
 
   // Torso / top (y: 92 - 150)
   ctx.fillStyle = top;

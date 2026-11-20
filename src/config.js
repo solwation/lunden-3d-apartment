@@ -7736,7 +7736,25 @@ export const AVATAR_TRAINERS = {
   soleColour: 0xe9e6df,
 };
 
-export const AVATAR_CLOTHES = { legs: { tag: 'p', names: ['Raka', 'Shorts', 'Vida'], wide: 1.45, shorts: -0.2 }, cut: { tag: 'm', names: ['T-shirt', 'Linne', 'Luvtröja'] } };
+export const AVATAR_CLOTHES = { legs: { tag: 'p', names: ['Raka', 'Shorts', 'Vida', 'Kjol', 'Klänning'], wide: 1.45, shorts: -0.2 }, cut: { tag: 'm', names: ['T-shirt', 'Linne', 'Luvtröja'] } };
+// #2157: the A-line skirt (`legs` 3, in the trousers' colour) and the simple dress (`legs` 4: the skirt in the top's colour under the chosen
+// top, read as one garment with a waist seam). They are new values of the trousers' tag `p` (p3 / p4): an older client only accepts
+// p0-p2, skips the value and shows straight trousers. Geometry (src/avatarskirt.js, hips-local bind metres: y 0 = the hip joints' height,
+// x the figure's left, z forward), all *guess* by eye: `rings` [depth fraction 0 waist … 1 hem, half-width, half-depth] after the two
+// fixed waist rows `waist` (tucked under the top's hem, ≥ 8 mm inside it, #2019); `hem` the hem's height per kind; `sides` columns round.
+// Skinning (no penetration of the thighs, tools/avatarskirttest.mjs): a vertex is the hips' at `ramp.start` and wholly the thighs' by
+// `ramp.front` (front) … `ramp.back` (back: the seat keeps the cloth longer), split left / right across the middle over ±`split` m.
+// Drape: with a thigh's forward swing (#2034's uClothHip, 0 hanging … 1 sitting) the cross-section narrows towards `drape` [half-width,
+// half-depth] (m at the waist row … hem), so a sitting or squatting figure's skirt lies on the lap instead of standing out like a tent.
+// `lining`: the inside of the last `lining[0]` rows (shade `lining[1]`), seen through the hem. `sway`: the #2014 hem spring's gain on the hem.
+export const AVATAR_SKIRT = {
+  waist: [[0.035, 0.166, 0.116], [-0.015, 0.175, 0.12]],
+  rings: [[0.08, 0.19, 0.134], [0.22, 0.205, 0.152], [0.38, 0.219, 0.165], [0.55, 0.232, 0.178], [0.72, 0.244, 0.19], [0.87, 0.253, 0.199], [1, 0.26, 0.205]],
+  hem: { skirt: -0.39, dress: -0.45 }, sides: 32,
+  ramp: { start: 0.03, front: -0.035, back: -0.2 }, split: 0.07,
+  drape: { waist: [0.185, 0.14], hem: [0.17, 0.1] },
+  lining: [2, 0.62], sway: 2.2,
+};
 // #2147: the outer layer (look fields `outer` 0 none / 1 jacket / 2 coat and `outerMode` 0 automatic / 1 always). It shares the top's tag `m`
 // (`cut` + 3 × (`outer` + 3 × `outerMode`)), so an older client, which reads only m0-m2, skips it and shows the base top (T-shirt unless the
 // seed's own). Worn = the top model `cut` 3 (jacket) / 4 (coat) in the geometry only, derived locally (src/avataroutwear.js), never sent.
