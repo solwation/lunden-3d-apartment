@@ -45,6 +45,8 @@ tools/unreal-engine/build-editor.ps1              compatibility entry point; rep
 tools/unreal-engine/run-python.ps1                runs a Python script headless (UnrealEditor-Cmd -run=pythonscript)
 tools/unreal-engine/run-tests.ps1                 runs Automation Tests headless and reads the exported report
 tools/unreal-engine/release.ps1                     runs a clean Win64 Shipping build, archives it with build-info.json and keeps the log
+tools/unreal-engine/sign-manifest.mjs             signs/fetches/uploads a release manifest's 64-byte P-256 .sig (.github/workflows/sign-manifest.yml)
+tools/unreal-engine/create-manifest-key.sh        one-time admin script: manifest key pair → signing secret + public variable, never on disk
 tools/unreal-engine/python/smoke_create_asset.py  smoke test: scratch material round trip + load the LFS fixture
 tools/unreal-engine/mcp-bridge.py                 stdio bridge: Claude Code in WSL -> editor MCP server (curl.exe)
 tools/unreal-engine/lunden-unreal.vsconfig        Visual Studio 2022 component list for Unreal C++ development
@@ -528,10 +530,66 @@ A successful exit completes the local preflight. Use `--channel stable` for the 
 only on the test channel. Run the offline delivery fixture with
 `node --test tools/unreal-engine/tests/verify-published.test.mjs`.
 
+#### Sign a release manifest in Actions
+
+The manifest key is an ECDSA P-256 pair (decision on #2248, 2026-11-20). The private key
+was never written to disk. It exists only as the secret `LUNDEN_MANIFEST_PRIVATE_KEY` in
+the protected `signing` environment, so it never reaches the build PC (#2244). The public
+SPKI PEM is the repository variable `LUNDEN_MANIFEST_PUBLIC_KEY`. Launchers embed it, and
+promotion verifies against it. A repository admin creates the pair once with
+`tools/unreal-engine/create-manifest-key.sh`, which generates the key with `openssl` in shell memory and
+pipes it straight into `gh secret set … --env signing`. Only the public key goes to `gh variable set`.
+The script refuses if either value already exists. `--dry-run` checks access and
+prints a throwaway public key without storing anything.
+
+Upload `lunden-manifest-test.json` (or `lunden-manifest.json`) from `make-manifest.mjs` to the
+versioned release, either as a draft or published without **Set as latest release**. Then run
+**Sign an Unreal release manifest** ([workflow](../../.github/workflows/sign-manifest.yml)).
+The `signing` environment only deploys from tags matching `v*`. A `workflow_dispatch` run
+deploys from the ref it was started on, so the run must start from a `vMAJOR.MINOR.PATCH`
+launcher tag whose commit contains the workflow. The release to sign is an input:
+
+```sh
+gh workflow run sign-manifest.yml --ref v0.2.1 -f tag=content-13 -f asset=lunden-manifest-test.json
+```
+
+The tag, release and asset names above are examples. Starting from a branch fails in the
+unprivileged preflight job, before the environment is requested. Only tagged code ever sees
+the key. The protected job has three steps:
+
+1. `sign-manifest.mjs fetch`, with a token and no key, finds the single release with that tag
+   (drafts included). It refuses the current latest release or an existing `.sig`, and
+   downloads the manifest after checking its size and GitHub digest.
+2. `sign-manifest.mjs sign`, with the key and no token, makes no network requests. It checks that
+   the private key matches the public variable and signs the exact bytes as a 64-byte P1363
+   signature. It keeps the signature only if the [verifier](../../tools/unreal-engine/verify-published.mjs)
+   accepts it with the public key, schema and channel rules.
+3. `sign-manifest.mjs upload`, with a token and no key, rechecks the release ID and the
+   manifest asset (ID, size, digest and update time), verifies again and uploads
+   `<asset>.sig`. It then downloads the uploaded asset and compares the bytes.
+
+The workflow never changes latest. Promotion is still a separate step. The workflow
+shares the promotion gate's concurrency group. To sign again, first delete the old `.sig`
+asset deliberately. If the repository enables immutable releases, sign before publishing
+the draft. Tests: `node --test tools/unreal-engine/tests/sign-manifest.test.mjs` (simulated
+release API, throwaway in-memory keys) and `tools/unreal-engine/tests/create-manifest-key.test.mjs`
+(fake `gh` on `PATH`; the private key reaches only its stdin). The Windows launcher test
+workflow also runs `NodeSignedManifestTests`, so a Node-produced `.sig` must pass the C# reader.
+
+**Rotation needs a launcher update.** Each launcher embeds the public key at build time and
+accepts only manifests signed by that key, including the manifest that offers a launcher
+self-update. `create-manifest-key.sh --rotate` replaces the secret and the variable together. The
+old private key is gone, and promotion and the next launcher build immediately use the new
+public key. Installed launchers then reject every new manifest. They must be reinstalled from a
+new installer that embeds the new key. A transition without reinstalling would need one
+last old-key manifest that delivers a launcher with the new key. The current tooling does
+not support that, because it holds only one key. Treat a leaked private key as compromising
+every installed launcher until users have replaced it.
+
 #### Promote an existing release to latest
 
 Publish the package files and signed channel manifest pairs under the versioned tag first,
-with **Set as latest release** cleared. In Actions, select **Verify and promote a published
+with **Set as latest release** cleared (sign each manifest with the workflow above). In Actions, select **Verify and promote a published
 Unreal release**, choose `main` and enter the exact `app-vMAJOR.MINOR.PATCH` or `content-N`
 tag. The manually dispatched workflow uses the repository's `LUNDEN_MANIFEST_PUBLIC_KEY`
 variable (the launcher's public SPKI key). The candidate must be a published full release.
@@ -792,7 +850,7 @@ to OIDC; agents must not query or change the tenant.
 | --- | --- |
 | Repository variables available to the build | `LUNDEN_MANIFEST_PUBLIC_KEY` (only the PEM-encoded SPKI public ECDSA P-256 key for #2248). The publisher identity is not a variable: it is the reviewed [`publisher-identity.json`](../../unreal/Launcher/publisher-identity.json) of the tagged commit. `LUNDEN_SIGNER_SHA256` is no longer read (#2277); delete it if it was ever set. |
 | Protected `signing` environment | Set `SIGNING_ENABLED=true` (environment or repository) and `SIGNING_EXPECTED_SUBJECT=Svep Design Center AB` alongside the approved `SIGNING_ENDPOINT`, `SIGNING_ACCOUNT` and `SIGNING_PROFILE`. `SIGNING_EXPECTED_SUBJECT` must equal the identity's `commonName`. If the public key is also set here, it must exactly match the build input. |
-| Protected environment secrets | `AZURE_TENANT_ID`, `AZURE_CLIENT_ID` and `AZURE_CLIENT_SECRET` are passed only to the signing action. |
+| Protected environment secrets | `AZURE_TENANT_ID`, `AZURE_CLIENT_ID` and `AZURE_CLIENT_SECRET` are passed only to the signing action. `LUNDEN_MANIFEST_PRIVATE_KEY` (#2248) is passed only to the manifest signing step in `sign-manifest.yml`. |
 
 Both jobs derive the release trust (`trust` output) from the tag's version, the publisher identity
 file and the manifest key; the signing job refuses a mismatch. Azure certificates are short-lived, but

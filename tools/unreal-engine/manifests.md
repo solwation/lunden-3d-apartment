@@ -39,6 +39,29 @@ and its URL. Identical bytes share one asset. The separate launcher entry maps
 Verify packages and the proposed signed manifest before promoting a release.
 This generator only writes the local draft and plan.
 
+## Sign the manifest
+
+The generator does not sign. Upload the generated manifest to its draft or published
+non-latest release. Then dispatch `.github/workflows/sign-manifest.yml` from a
+`vMAJOR.MINOR.PATCH` tag, because the `signing` environment only deploys `v*` tags:
+
+```sh
+gh workflow run sign-manifest.yml --ref v0.2.1 -f tag=app-v0.4.0 -f asset=lunden-manifest-test.json
+```
+
+Its protected job runs `sign-manifest.mjs` with the `LUNDEN_MANIFEST_PRIVATE_KEY` secret.
+It uploads the sibling `.json.sig` (64-byte P1363 ECDSA P-256 over the exact manifest
+bytes) only after the release verifier accepts it. The workflow never moves latest.
+For a local test with a throwaway key, pass the key through stdin:
+
+```sh
+LUNDEN_MANIFEST_PUBLIC_KEY="$(cat test-public.pem)" node tools/unreal-engine/sign-manifest.mjs sign \
+  --channel test --manifest lunden-manifest-test.json --private-key-stdin < throwaway-private.pem
+```
+
+Key custody, creation (`create-manifest-key.sh`) and rotation: see
+[Sign a release manifest in Actions](../../docs/development/unreal.md#sign-a-release-manifest-in-actions).
+
 For a content-only release, pass `--tag content-13 --content-version 13` and
 `--previous D:\build\old\lunden-manifest-test.json` with all other required
 inputs for the new cook. The old manifest must have a sibling `.json.sig`

@@ -1,0 +1,93 @@
+name: Sign an Unreal release manifest
+
+# Manual step between uploading a release's manifest and promoting it (#2248).
+# The protected `signing` environment only deploys from `v*` tags, so dispatch this
+# workflow from a vMAJOR.MINOR.PATCH tag that contains this file, for example:
+#   gh workflow run sign-manifest.yml --ref v0.2.1 -f tag=content-13 -f asset=lunden-manifest-test.json
+# It adds `<asset>.sig` to a draft or published non-latest release and never changes latest;
+# promotion stays in promote-unreal-release.yml.
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Draft or published non-latest release (app-vMAJOR.MINOR.PATCH, content-N or vMAJOR.MINOR.PATCH)'
+        required: true
+        type: string
+      asset:
+        description: 'Manifest asset on that release'
+        required: true
+        type: choice
+        options:
+          - lunden-manifest-test.json
+          - lunden-manifest.json
+
+permissions:
+  contents: read
+
+# Shared with the promotion gate so a signature never lands during its check.
+concurrency:
+  group: unreal-global-latest
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require dispatch from a launcher release tag in the original repository
+        env:
+          REPOSITORY: ${{ github.repository }}
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          if [ "$REPOSITORY" != solwation/lunden-3d-apartment ] || [ "$REF_TYPE" != tag ] ||
+             ! [[ "$REF_NAME" =~ ^v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$ ]]; then
+            echo "::error::Dispatch from a vMAJOR.MINOR.PATCH tag of solwation/lunden-3d-apartment (the signing environment only deploys v* tags)."
+            exit 1
+          fi
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+      - name: Test the signer and verifier with throwaway keys
+        run: node --test tools/unreal-engine/tests/sign-manifest.test.mjs tools/unreal-engine/tests/verify-published.test.mjs
+
+  sign:
+    needs: preflight
+    runs-on: ubuntu-latest
+    environment: signing
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+      - name: Fetch the manifest from the draft or non-latest release
+        id: fetch
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag }}
+          MANIFEST_ASSET: ${{ inputs.asset }}
+        run: |
+          mkdir "$RUNNER_TEMP/manifest"
+          node tools/unreal-engine/sign-manifest.mjs fetch --tag "$RELEASE_TAG" --asset "$MANIFEST_ASSET" --dir "$RUNNER_TEMP/manifest"
+      # The only step that sees the private key: no token, no network access in the tool.
+      - name: Sign the exact manifest bytes and verify the signature
+        env:
+          CHANNEL: ${{ steps.fetch.outputs.channel }}
+          MANIFEST_ASSET: ${{ steps.fetch.outputs.asset }}
+          LUNDEN_MANIFEST_PRIVATE_KEY: ${{ secrets.LUNDEN_MANIFEST_PRIVATE_KEY }}
+          LUNDEN_MANIFEST_PUBLIC_KEY: ${{ vars.LUNDEN_MANIFEST_PUBLIC_KEY }}
+        run: node tools/unreal-engine/sign-manifest.mjs sign --channel "$CHANNEL" --manifest "$RUNNER_TEMP/manifest/$MANIFEST_ASSET"
+      - name: Recheck the release and upload only the verified signature
+        env:
+          GH_TOKEN: ${{ github.token }}
+          LUNDEN_MANIFEST_PUBLIC_KEY: ${{ vars.LUNDEN_MANIFEST_PUBLIC_KEY }}
+        run: node tools/unreal-engine/sign-manifest.mjs upload --dir "$RUNNER_TEMP/manifest"
