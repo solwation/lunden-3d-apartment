@@ -11313,3 +11313,29 @@ export const ROOF_STEAM = {
 // #2205: visual guesses for painted roller / spray relief, not surveyed finish data. Metres; one shared 128² packed map.
 export const PAINT_SURFACE = { size: 128, seed: 2205, roughGrain: 0.7, roughness: 0.14, fade: [1.5, 4.5],
   wall: { tile: 0.08, depth: 0.00024 }, ceiling: { tile: 0.15, depth: 0.00045 } };
+
+/**
+ * #2183: the stairwells' (Hus A / B / C / L) second baked light and their surface detail. `src/stairdaylight.js`: each pane of glass
+ * in a stair core (street windows, sidelights, entrance glass) is a daylight source; each vertex bakes how much of it reaches it
+ * (ONE extra float attribute `dayK`, not on phones), blended in the shader by `uDay` (day share × clear sky, set each frame by main.js).
+ * Everything here is a look *guess* (no photos of the stairwells' paint or treads; Peab's geometry is untouched).
+ */
+export const STAIR_DAYLIGHT = {
+  gain: 0.8,           // how much the daylight lifts the baked colour right at a pane on a clear noon (× tint); a shoulder keeps it under white
+  ambient: 0.68,       // × the baked lamp light where no daylight reaches, in full daylight (deep in the core: the lamps' share of a bright day)
+  knee: 0.7,           // linear brightness above which the lifted colour is compressed smoothly towards `cap` (keeps pale paint from clipping)
+  cap: 0.92,           // linear: the brightest the daylight lifts any colour (sRGB ≈ 0.96; the baked lamp light alone may stay brighter, as before)
+  sharp: 2.5,          // dayK^sharp: gathers the light round the panes (a small core sums many panes, so the raw share is high almost everywhere)
+  reach: 2.5,          // m: the distance at which a pane's light has fallen to half (1 / (1 + d² / reach²))
+  facing: 0.45,        // share of a pane's light that reaches a surface turned away from it (the rest needs a facing surface)
+  overcast: 0.55,      // how much of the light an overcast sky removes (weather.overcast 0…1)
+  tint: [1.0, 1.0, 1.02], // daylight, per colour channel (× gain): barely cool, so the beige floors and ceilings keep their colour
+  wearHeight: 1.05,    // m above each floor: the band of hand / shoulder wear on the painted walls
+  wearHalf: 0.38,      // m: half the band's height (smooth edges)
+  wearAmount: 0.10,    // how much darker / dirtier the wear band is at its strongest
+  detailAmount: 0.04,  // ± brightness of the world-space detail texture (paint, concrete grain)
+  polish: 0.06,        // extra brightness of the polished patches on stair treads and floors (worn smooth)
+  texSize: 64,         // the one shared detail texture (RGBA, seeded value noise): 16 KB
+  scale: [1.7, 0.31],  // texture repeats per metre: fine grain, broad patches
+  minLevel: 1,         // quality level from which the detail texture is sampled (the daylight blend itself costs only the extra attribute)
+};

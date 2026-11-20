@@ -45,7 +45,7 @@ import { installEntrancePlantBatch } from './entranceplantbatch.js';
 import { runCheat, cheatList, isCommand } from './cheats.js';
 import { cleanHome, cleanEverything } from './cheatclean.js';
 import { buildCheatNote } from './cheatnote.js';
-import { REPORTS, CHEAT_NOTE, LOW_MEMORY, QUALITY, CLOUD_SHADOW, WINDOW_LIGHT, STANDARD, SHADOW_BOX, STARTUP, KITCHEN_TOWEL_MATERIAL, LIGHTING, VIEW_LOD, VIEW_NEAR, BIRDS, WET_GROUND, LEAF_LITTER } from './config.js';
+import { STAIR_DAYLIGHT, REPORTS, CHEAT_NOTE, LOW_MEMORY, QUALITY, CLOUD_SHADOW, WINDOW_LIGHT, STANDARD, SHADOW_BOX, STARTUP, KITCHEN_TOWEL_MATERIAL, LIGHTING, VIEW_LOD, VIEW_NEAR, BIRDS, WET_GROUND, LEAF_LITTER } from './config.js';
 import { fetchStartupJSON } from './startuprecovery.js';
 import { lowMemory, reloadOnContextRestore, freeSceneGeometryCopies } from './lowmemory.js';
 import { decideResourceProfile, resourceProfile, resourceProfileInfo } from './resourceprofile.js';
@@ -139,6 +139,7 @@ import { ROOM_PROBE } from './config.js';
 import { WarmUp } from './warmup.js';
 import { loadingStep, loadingYield } from './loadingstep.js';
 import { Quality } from './quality.js';
+import { stairDayUniforms, dayBlend } from './stairdaylight.js'; // #2183
 import { QualitySetting } from './qualitysetting.js';
 import { HitchLog } from './hitchlog.js';
 import { applySeason, registeredTrees } from './seasons.js';
@@ -3921,6 +3922,7 @@ function step(dt) {
     outdoors: player.outdoors, daylight: day.daylight, sunDir: day.sunDir, overcast: weather.overcast, lit: (lv, name) => lights.roomLit(lv, name) }); // blinds drawn up: less daylight in the room (#273)
   if (blindPanel.open) blindPanel.render();
   photoGlow(day.daylight * (1 - 0.5 * weather.overcast), lights.roomLit(1, 'Sovrum 1')); // Miele's photo reads like a lit print (#327)
+  stairDayUniforms.uDay.value = dayBlend(day.daylight, weather.overcast, !params0.has('nostairday')); // #2183: daylight through the stairwells' panes
   core.update(dt, player, camera); // the stairwell's doors, the lift, drawn only near (#415)
   garage.update(dt, player, camera, car); // its door (#358), the förråd doors, the tubes' motion sensor, drawn only near (#357)
   if (playroom.inside && !playroom.contains(player.pos.x, player.pos.z)) playroom.setInside(false); // (respawned / resumed elsewhere: the room is undrawn again)
@@ -4171,6 +4173,8 @@ quality.register('mirrors', { // the one mirror image (#50): its resolution, off
   state: (l) => (QUALITY.mirror[l] ? `${QUALITY.mirror[l]}² every ${QUALITY.mirrorEvery[l]} frame(s)` : 'off'), cost: 'a third pass over the room in a mirror' });
 quality.register('cloudShadows', { // #2102: the drifting cloud shadows' noise per lit fragment (off at the lowest level and on phones)
   apply: (l) => { day.cloudShadows = !lowMemory && l >= CLOUD_SHADOW.minLevel; }, state: () => (day.cloudShadows ? 'on' : 'off'), cost: 'two value-noise octaves per lit fragment under a partly cloudy sky' });
+quality.register('stairDetail', { // #2183: the stairwells' world-space detail texture (paint grain, wear band, polished treads); the daylight blend is always on
+  apply: (l) => { stairDayUniforms.uDetail.value = !lowMemory && l >= STAIR_DAYLIGHT.minLevel && !params0.has('nostairday') ? 1 : 0; }, state: () => (stairDayUniforms.uDetail.value ? 'on' : 'off'), cost: 'two texture reads and a derivative per fragment of the stairwell near the visitor' });
 quality.register('skyClouds', { // #2154: the sky's procedural clouds (the old cloud texture at the lowest level and on phones)
   apply: (l) => { day.skyClouds = !lowMemory && l >= CLOUD_SHADOW.sky.minLevel; }, state: () => (day.skyClouds ? 'noise' : 'texture'), cost: 'four value-noise octaves per sky pixel' });
 quality.register('windowLight', { // #2152: the windows' sky light indoors (below `minLevel` and on phones: the even global light)
