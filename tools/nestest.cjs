@@ -31,6 +31,7 @@ const ID=mode==='phone'?'pc-lime':'pc-home';
   if(!phone){await p.screenshot({path:`${out}/meny.png`});log('menu with the NES choice');}
   await tap(`#computer-${ID} [data-app=nes]`);await p.waitForFunction(id=>__app.computerHub.sessions.get(id).inWorld,ID);
   assert.deepEqual(nesReq(),[],'choosing NES alone loads nothing');
+  assert(await p.evaluate(id=>{const row=document.querySelector(`#computer-${id} [data-arcade=start]`).parentElement;return [...document.querySelectorAll(`#computer-${id} [data-pad]`)].every(b=>b.parentElement===row);},ID),'every game\'s pad (Klossar, Meteoriter, NES) sits in the Starta row');
   assert(await p.locator(`#computer-${ID} .computer-license`).isVisible(),'licence notice in the computer');
   assert.equal(await p.locator(`#computer-${ID} .computer-arcade .computer-top`).isVisible(),false,'no top list for NES');
   const started=Date.now();
@@ -42,7 +43,7 @@ const ID=mode==='phone'?'pc-lime':'pc-home';
   log('lazy same-origin load',{loaded,ms:Date.now()-started});
   await p.waitForTimeout(300);const before=(await g()).ram[0];
   if(phone){
-   for(const [pad,ms] of [['right',700],['a',150]]){const sel=`#computer-${ID} [data-pad=${pad}]`;assert(await p.locator(sel).isVisible(),pad);await p.dispatchEvent(sel,'pointerdown',{pointerType:'touch'});await p.waitForTimeout(ms);if(pad==='right')await shot('pekknappar');await p.dispatchEvent(sel,'pointerup',{pointerType:'touch'});}
+   for(const [pad,ms] of [['right',700],['a',150]]){const sel=`#computer-${ID} [data-pad-app=nes][data-pad=${pad}]`;assert(await p.locator(sel).isVisible(),pad);await p.dispatchEvent(sel,'pointerdown',{pointerType:'touch'});await p.waitForTimeout(ms);if(pad==='right')await shot('pekknappar');await p.dispatchEvent(sel,'pointerup',{pointerType:'touch'});}
    const pads=await p.evaluate(id=>[...document.querySelectorAll(`#computer-${id} [data-pad-app=nes]`)].map(b=>[b.dataset.pad,b.getBoundingClientRect().width|0,b.getBoundingClientRect().height|0,!b.hidden]),ID);
    const after=(await g()).ram[0];assert.notEqual(after,before,'the touch D-pad moved the sprite');assert(pads.every(([, w,h,v])=>v&&w>=44&&h>=44),JSON.stringify(pads));
    assert.equal(await p.evaluate(id=>__app.computerHub.arcadeGame(__app.computerHub.sessions.get(id)).held.size,ID),0,'released on pointerup');

@@ -1,0 +1,18 @@
+{
+  "stats": {
+    "frames": 241,
+    "samples": 241,
+    "emuMedian": 0.7999999998137355,
+    "emuP95": 1.6000000005587935,
+    "emuMax": 7.3999999994412065,
+    "draws": 111,
+    "drawMedian": 0.10000000055879354,
+    "drawP95": 0.20000000018626451,
+    "gpu": 0
+  },
+  "loaded": [
+    "http://localhost:8521/src/vendor/jsnes/jsnes.js",
+    "http://localhost:8521/data/nes/lightcatch/lightcatch.nes"
+  ],
+  "errors": []
+}
