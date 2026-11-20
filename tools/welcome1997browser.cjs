@@ -82,7 +82,7 @@ let phase='launch',failure;
   }
   check('zero uncaught browser errors',errors.length===0,errors);phase='complete';
  }catch(e){failure=e;console.error('FAIL phase='+phase,e.stack);}
- const manifest={phase,checks,errors,failure:failure?.stack,sha256:Object.fromEntries(['index.html','icons/welcome-lunden.svg','src/bootstrap.js','src/welcome.js','src/main.js','src/menusettings.js','src/config.js','tools/welcometest.mjs','tools/welcome1997browser.cjs'].map(p=>[p,crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex')]))};
+ const manifest={phase,checks,errors,failure:failure?.stack,sha256:Object.fromEntries(['index.html','icons/welcome-lunden.webp','src/bootstrap.js','src/welcome.js','src/main.js','src/menusettings.js','src/config.js','tools/welcometest.mjs','tools/welcome1997browser.cjs'].map(p=>[p,crypto.createHash('sha256').update(fs.readFileSync(p)).digest('hex')]))};
  fs.writeFileSync(out+'/browser.json',JSON.stringify(manifest,null,2)+'\n');console.log('HELD '+phase+'; create '+out+'/release to finish');
  // Allow direct inspection and bounded recovery on the SAME Page/browser when a fixture or layout needs correction.
  const until=Date.now()+300000;while(!fs.existsSync(out+'/release')&&Date.now()<until)await pause(500);

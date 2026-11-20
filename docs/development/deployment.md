@@ -47,9 +47,17 @@ tools/changelog_stamp.py the published changelog.json (run by stamp.sh): `t` per
 ## Välkomstbild under laddningen (#1997)
 
 `index.html` har samma välkomstlayout under laddningen och när besöket är redo:
-varm grön/beige färgskala, serifrubrik och den lätta, schematiska
-[husillustrationen](../../icons/welcome-lunden.svg). Bilden är dekorativ och visar
-inte verifierad husgeometri. Referensen är publicens `index.html`/`style.css` vid
+varm grön/beige färgskala, serifrubrik och en riktig spelbild från startpunkten
+([`icons/welcome-lunden.webp`](../../icons/welcome-lunden.webp), #2232; den
+tidigare SVG-illustrationen är borttagen). Bilden är dekorativ, ligger i `icons/` och
+följer med i `stamp.sh`-kopian och innehållshashen som SVG:n gjorde (ingen separat
+förladdning eller service worker finns). Den renderas av `tools/welcomebg.cjs`
+i exakt `START` (`src/config.js`: x 2,875, z −12, gir 180°, lutning 8°), full kvalitet,
+klart väder, kl. 12 den 10 juni, utan HUD, överlägg eller andra spelare; ta om den när
+`START`, huset eller omgivningen ändras:
+`python3 -m http.server 8700 &` och sedan
+`tools/browsertest.sh node tools/welcomebg.cjs http://localhost:8700 icons/welcome-lunden.webp 1600 900 0.7`
+(storlek och WebP-kvalitet styr filstorleken, mål ≤ ~150 KB). Referensen är publicens `index.html`/`style.css` vid
 `e9b4e7f88ecc7359bea6c3e89473605438d7e456` (hämtad origin/main; dessa filer är
 oförändrade från `8be9d8dd`). Layoutkänslan är anpassad till originalets spel,
 spelare och topplista; ingen kod har kopierats från publicens historik.

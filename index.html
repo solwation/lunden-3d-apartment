@@ -730,9 +730,10 @@
       .customizer-preview-views { margin-top: 2px; }
       .customizer-turn { margin-top: 0; }
     }
-    /* #1997: the same welcome shell is useful before and after the first complete frame. */
-    .welcome { color: #293e34; background: #eeeee3 url('icons/welcome-lunden.svg') right bottom / auto 105% no-repeat !important; overflow-y: auto; overscroll-behavior: contain; }
-    .welcome::before { content: ''; position: fixed; inset: 0; background: linear-gradient(90deg,#f2f0e5 0%,#f2f0e5f5 32%,#f2f0e5b5 63%,#f2f0e538); pointer-events: none; }
+    /* #1997: the same welcome shell is useful before and after the first complete frame. #2232: its background is the real
+       game frame at START (tools/welcomebg.cjs); the entrance is mid-picture, the text sits on the lighter left. */
+    .welcome { color: #293e34; background: #eeeee3 url('icons/welcome-lunden.webp') right bottom / auto 100% no-repeat !important; overflow-y: auto; overscroll-behavior: contain; }
+    .welcome::before { content: ''; position: fixed; inset: 0; background: linear-gradient(90deg,#f2f0e5 0%,#f2f0e5f2 30%,#f2f0e5a0 58%,#f2f0e520); pointer-events: none; }
     #loading.welcome, #overlay.welcome { display: grid; place-items: center; padding: max(32px,var(--st)) max(32px,var(--sr)) max(24px,var(--sb)) max(32px,var(--sl)); box-sizing: border-box; }
     #loading.welcome[hidden], #overlay.welcome[hidden] { display: none; }
     .welcome-layout { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(270px, 340px); column-gap: clamp(36px,8vw,140px); row-gap: 24px; width: min(1080px, 100%); margin: auto; align-items: center; }
@@ -779,8 +780,8 @@
     @media (min-width: 901px) { body:has(#overlay:not([hidden])) #corner-qr { left: auto; top: auto; right: 20px; bottom: 20px; background: #f6f5e9; color: #526348; border: 1px solid #c8d0be; } }
     @media (max-width: 720px) {
       #loading.welcome, #overlay.welcome { display: block; padding: max(32px,var(--st)) max(24px,var(--sr)) max(24px,var(--sb)) max(24px,var(--sl)); }
-      .welcome { background-size: auto 700px !important; }
-      .welcome::before { background: linear-gradient(180deg,#f2f0e5 0%,#f2f0e5f5 40%,#f2f0e5b8 80%,#f2f0e566); }
+      .welcome { background-size: auto 620px !important; background-position: 54% bottom !important; }
+      .welcome::before { background: linear-gradient(180deg,#f2f0e5 0%,#f2f0e5f5 32%,#f2f0e56e 66%,#f2f0e51c); }
       .welcome-layout { grid-template-columns: 1fr; gap: 28px; }
       .welcome-copy h1, #overlay .welcome-copy h1 { font-size: clamp(42px,10vw,60px); margin: 18px 0; }
       .welcome-copy > p { font-size: 14px; }
