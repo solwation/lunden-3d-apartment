@@ -1,0 +1,119 @@
+browsertest: no systemd user scope here, running without a memory ceiling
+PASS canonical first existing yard-0-2, original coordinates
+PASS four original batches retain all nine instances
+PASS actual original E handler mounts and physically extracts only first bicycle
+PASS held E repeat does not dismount/remount the same target
+PASS original production bicycle focus/control block excludes ridden target and labels both exits
+PASS mount is supported/clear and original rack/car collision unchanged
+PASS all other eight matrices unchanged across all four components
+PASS unpowered bicycle at rest stays still
+PASS actual keyboard drive accelerates beyond normal walking over the same elapsed time
+PASS released pedal keeps the bicycle rolling with decreasing speed
+PASS original active predicate freezes moving bicycle pose, momentum and ride state under pause
+PASS whole wheelbase stops at thin actual collision segment without tunneling
+PASS actual roof/headroom query rejects too-low clearance
+PASS actual dynamic-door segment participates in capsule validation
+PASS production place/session handler saves supported standing position with existing key
+PASS actual E handler safely dismounts
+PASS production bicycle control block restores standing picker and normal stand label
+PASS genuine browser reload resumes safely standing
+PASS reload rebuilds the original source bicycle, no mounted resume
+PASS actual touch action button mounts
+PASS real touch pointer gesture supplies existing joystick axes
+PASS existing touch joystick gesture steers the real Player bicycle
+PASS actual existing touch stand button safely dismounts
+PASS mount refuses actual insufficient headroom without extracting the bike
+PASS actual original mouse dispatch mounts the existing bicycle
+PASS actual groundAt with no reachable support rejects whole wheelbase
+PASS tilted frame overhang reaches the actual bike-room wall 5 cm ahead of the mount point (#983, #1178)
+PASS uneven wheel support follows the actual tilted support pose without clipping (#983)
+PASS no free standing place refuses dismount and preserves the earlier safe session
+PASS zero world dt preserves position, yaw and all component matrices
+PASS native original CSS short stand caption clears neighboring controls at 900x600
+PASS native original CSS short stand caption clears neighboring controls at 568x320
+PASS native original CSS short stand caption clears neighboring controls at 390x844
+PASS real spawn/death restart releases cycling without removing worn equipment
+PASS all other eight original bicycles remain fixed after every input/restart case
+PASS source-order real populated stall yard-0-2
+PASS ordinary E mounts supported yard-0-2
+PASS supported swept turn and six metre route yard-0-2
+PASS ordinary keyboard speed exceeds walking over the same elapsed time yard-0-2
+PASS ordinary camera steering preserves whole hull yard-0-2
+PASS pause freezes all components yard-0-2
+PASS ordinary touch stand safely dismounts yard-0-2
+PASS eight untouched identities retain four exact matrices yard-0-2
+PASS reload safely stands and restores source population yard-0-2
+PASS source-order real populated stall yard-0-4
+PASS ordinary E mounts supported yard-0-4
+PASS supported swept turn and six metre route yard-0-4
+PASS ordinary keyboard speed exceeds walking over the same elapsed time yard-0-4
+PASS ordinary camera steering preserves whole hull yard-0-4
+PASS pause freezes all components yard-0-4
+PASS ordinary touch stand safely dismounts yard-0-4
+PASS eight untouched identities retain four exact matrices yard-0-4
+PASS reload safely stands and restores source population yard-0-4
+PASS source-order real populated stall yard-0-5
+PASS ordinary E mounts supported yard-0-5
+PASS supported swept turn and six metre route yard-0-5
+PASS ordinary keyboard speed exceeds walking over the same elapsed time yard-0-5
+PASS ordinary camera steering preserves whole hull yard-0-5
+PASS pause freezes all components yard-0-5
+PASS ordinary touch stand safely dismounts yard-0-5
+PASS eight untouched identities retain four exact matrices yard-0-5
+PASS reload safely stands and restores source population yard-0-5
+PASS source-order real populated stall yard-0-7
+PASS ordinary E mounts supported yard-0-7
+PASS supported swept turn and six metre route yard-0-7
+PASS ordinary keyboard speed exceeds walking over the same elapsed time yard-0-7
+PASS ordinary camera steering preserves whole hull yard-0-7
+PASS pause freezes all components yard-0-7
+PASS ordinary touch stand safely dismounts yard-0-7
+PASS eight untouched identities retain four exact matrices yard-0-7
+PASS reload safely stands and restores source population yard-0-7
+PASS source-order real populated stall yard-1-0
+PASS ordinary E mounts supported yard-1-0
+PASS supported swept turn and six metre route yard-1-0
+PASS ordinary keyboard speed exceeds walking over the same elapsed time yard-1-0
+PASS ordinary camera steering preserves whole hull yard-1-0
+PASS pause freezes all components yard-1-0
+PASS ordinary touch stand safely dismounts yard-1-0
+PASS eight untouched identities retain four exact matrices yard-1-0
+PASS reload safely stands and restores source population yard-1-0
+PASS source-order real populated stall yard-1-2
+PASS ordinary E mounts supported yard-1-2
+PASS supported swept turn and six metre route yard-1-2
+PASS ordinary keyboard speed exceeds walking over the same elapsed time yard-1-2
+PASS ordinary camera steering preserves whole hull yard-1-2
+PASS pause freezes all components yard-1-2
+PASS ordinary touch stand safely dismounts yard-1-2
+PASS eight untouched identities retain four exact matrices yard-1-2
+PASS reload safely stands and restores source population yard-1-2
+PASS source-order real populated stall yard-1-4
+PASS ordinary E mounts supported yard-1-4
+PASS supported swept turn and six metre route yard-1-4
+PASS ordinary keyboard speed exceeds walking over the same elapsed time yard-1-4
+PASS ordinary camera steering preserves whole hull yard-1-4
+PASS pause freezes all components yard-1-4
+PASS ordinary touch stand safely dismounts yard-1-4
+PASS eight untouched identities retain four exact matrices yard-1-4
+PASS reload safely stands and restores source population yard-1-4
+PASS source-order real populated stall yard-1-7
+PASS ordinary E mounts supported yard-1-7
+PASS supported swept turn and six metre route yard-1-7
+PASS ordinary keyboard speed exceeds walking over the same elapsed time yard-1-7
+PASS ordinary camera steering preserves whole hull yard-1-7
+PASS pause freezes all components yard-1-7
+PASS ordinary touch stand safely dismounts yard-1-7
+PASS eight untouched identities retain four exact matrices yard-1-7
+PASS reload safely stands and restores source population yard-1-7
+PASS source-order real populated stall yard-1-8
+PASS ordinary E mounts supported yard-1-8
+PASS supported swept turn and six metre route yard-1-8
+PASS ordinary keyboard speed exceeds walking over the same elapsed time yard-1-8
+PASS ordinary camera steering preserves whole hull yard-1-8
+PASS pause freezes all components yard-1-8
+PASS ordinary touch stand safely dismounts yard-1-8
+PASS eight untouched identities retain four exact matrices yard-1-8
+PASS reload safely stands and restores source population yard-1-8
+PASS native fixture used no WebGL or page errors
+ALL PASS

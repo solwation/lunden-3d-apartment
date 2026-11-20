@@ -1,0 +1,14 @@
+{
+  "rect": {
+    "x": 664,
+    "y": 512,
+    "width": 220,
+    "height": 72
+  },
+  "style": {
+    "display": "grid",
+    "visibility": "visible",
+    "pointerEvents": "auto"
+  },
+  "hit": "action"
+}

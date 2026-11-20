@@ -1490,7 +1490,14 @@ pointer gestures without WebGL. Controlled world/focus/lock collaborators are
 explicit; it does not prove pointer lock, full World graphics or remote bike pose.
 #905 extends the native driver to every NW identity: ordinary E mount, swept
 turn and six-metre forward route, steering, pause, touch stand, safe reload and
-exact snapshots of all eight other bicycles. `BICYCLE_BASELINE=/path/to/original/streetlife.js`
+exact snapshots of all eight other bicycles. #2228 accounts for real longitudinal
+acceleration: the keyboard probe runs for 1.5 s and compares distance with walking
+over the same duration; a 0.1 s steering probe stays inside the checked six-metre
+route. A stopped bike remains still, releasing the pedal coasts/decelerates, and
+the pause snapshot is taken after that coast while momentum is nonzero. Pause
+must freeze position, component matrices, speed, yaw and ride state. This corrects
+old instantaneous-speed/stop assumptions without changing Player physics.
+`BICYCLE_BASELINE=/path/to/original/streetlife.js`
 optionally compares the original visible geometry, all instance matrices/colors and
 collision. `--small` adds an explicitly isolated StreetLife/Player render, requiring
 the shared graphics slot; it does not build World.

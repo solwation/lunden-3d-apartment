@@ -9,6 +9,8 @@ function mainKeys(){const gate=main.indexOf('if (!locked || statsOpen) return;\n
 const parts={bicycleControls:span(main,'const bicyclePickables =','function updateFocus() {'),active:span(main,'const active =',';\n')+';',stand:span(main,'function standUp() {','/** A drink run over'),use:span(main,'function use(thing) {',"actionBtn.addEventListener('click'"),buttons:span(main,"actionBtn.addEventListener('click'",'const muteBtn ='),mouse:span(main,'function click(button) {',"document.addEventListener('contextmenu'"),keys:mainKeys(),save:span(main,'const placeNow =','setInterval(keepSession, 2000);'),registry:span(worldSource,'bicycles:','edgeLines,')};
 // #1048/#1163: exercise the real session producer with its real world-save helper, not a stub.
 parts.keepWorld=span(main,'function keepWorld() {','// Phone: a restored WebGL context');
+// #2228: allow real acceleration, still within each checked six-metre route.
+const driveSeconds=1.5;
 fs.mkdirSync(out,{recursive:true});let failures=0;const lines=[];function check(ok,name){lines.push((ok?'PASS':'FAIL')+' '+name);console.log(lines.at(-1));if(!ok)failures++;}
 async function actualWorld(browser){
  const context=await browser.newContext({viewport:{width:900,height:600},hasTouch:true}),page=await context.newPage(),errors=[];page.setDefaultTimeout(10000);page.on('pageerror',e=>errors.push(e.message));
@@ -87,9 +89,24 @@ check(await page.evaluate(()=>{fns.updateBicycleControls();return fns.bicyclePic
 if(!await page.evaluate(()=>!!player.riding)){await page.keyboard.press('e');}
 check(await page.evaluate(()=>player.bikeHull(player.pos,player.riding.yaw)&&JSON.stringify(life.segments)===originalSegments),'mount is supported/clear and original rack/car collision unchanged');
 check(await page.evaluate(()=>{const m=matrices();return m.every((v,k)=>v.slice(1).every((a,i)=>JSON.stringify(a)===JSON.stringify(originalMatrices[k][i+1])));}), 'all other eight matrices unchanged across all four components');
-await page.evaluate(()=>{player.camera.rotation.y=0;for(let i=0;i<40;i++)tick(.025);});const start=await page.evaluate(()=>player.pos.toArray());fs.writeFileSync(out+'/motion-before.json',JSON.stringify(await page.evaluate(()=>({p:player.pos.toArray(),yaw:player.riding.yaw,camera:player.camera.rotation.y})),null,2));await page.keyboard.down('w');await page.evaluate(()=>{for(let i=0;i<10;i++)tick(.1);});await page.keyboard.up('w');fs.writeFileSync(out+'/motion-after.json',JSON.stringify(await page.evaluate(()=>({p:player.pos.toArray(),yaw:player.riding.yaw,camera:player.camera.rotation.y})),null,2));check(await page.evaluate(a=>Math.hypot(player.pos.x-a[0],player.pos.z-a[2])>C.PLAYER.walk*1.5,start),'actual keyboard drive travels clearly faster than normal walking');
-const stationary=await page.evaluate(()=>({p:player.pos.toArray(),m:matrices()}));await page.evaluate(()=>{for(let i=0;i<10;i++)tick(.1);});check(await page.evaluate(a=>JSON.stringify(player.pos.toArray())===JSON.stringify(a.p),stationary),'idle bicycle stays still');
-await page.evaluate(()=>{locked=false;touch.enabled=false;player.keys.add('KeyW');tick(1);player.keys.clear();});check(await page.evaluate(a=>JSON.stringify(player.pos.toArray())===JSON.stringify(a.p),stationary),'original active predicate freezes movement under pause');await page.evaluate(()=>locked=true);
+const resting=await page.evaluate(()=>player.pos.toArray());
+await page.evaluate(()=>{player.camera.rotation.y=0;for(let i=0;i<40;i++)tick(.025);});
+check(await page.evaluate(p=>JSON.stringify(player.pos.toArray())===JSON.stringify(p)&&player.riding.speed===0,resting),'unpowered bicycle at rest stays still');
+const start=await page.evaluate(()=>player.pos.toArray());fs.writeFileSync(out+'/motion-before.json',JSON.stringify(await page.evaluate(()=>({p:player.pos.toArray(),yaw:player.riding.yaw,camera:player.camera.rotation.y,speed:player.riding.speed})),null,2));
+await page.keyboard.down('w');await page.evaluate(seconds=>{for(let i=0;i<seconds*10;i++)tick(.1);},driveSeconds);await page.keyboard.up('w');
+fs.writeFileSync(out+'/motion-after.json',JSON.stringify(await page.evaluate(seconds=>({p:player.pos.toArray(),yaw:player.riding.yaw,camera:player.camera.rotation.y,speed:player.riding.speed,seconds}),driveSeconds),null,2));
+check(await page.evaluate(({p,seconds})=>Math.hypot(player.pos.x-p[0],player.pos.z-p[2])>C.PLAYER.walk*seconds*1.5,{p:start,seconds:driveSeconds}),'actual keyboard drive accelerates beyond normal walking over the same elapsed time');
+const coastBefore=await page.evaluate(()=>({p:player.pos.toArray(),speed:player.riding.speed}));
+await page.evaluate(()=>tick(.1));
+const coastAfter=await page.evaluate(()=>({p:player.pos.toArray(),speed:player.riding.speed}));
+check(coastAfter.p.some((x,i)=>x!==coastBefore.p[i])&&coastAfter.speed>0&&coastAfter.speed<coastBefore.speed,'released pedal keeps the bicycle rolling with decreasing speed');
+// Pause starts AFTER the real freewheel step, while the rider still has momentum.
+const paused=await page.evaluate(()=>({p:player.pos.toArray(),m:matrices(),speed:player.riding.speed,yaw:player.riding.yaw,ride:player.riding.ride}));
+await page.evaluate(()=>{locked=false;touch.enabled=false;player.keys.add('KeyW');tick(1);player.keys.clear();});
+const frozen=await page.evaluate(a=>JSON.stringify(player.pos.toArray())===JSON.stringify(a.p)&&JSON.stringify(matrices())===JSON.stringify(a.m)&&player.riding.speed===a.speed&&player.riding.yaw===a.yaw&&JSON.stringify(player.riding.ride)===JSON.stringify(a.ride),paused);
+check(frozen,'original active predicate freezes moving bicycle pose, momentum and ride state under pause');
+fs.writeFileSync(out+'/coast-pause.json',JSON.stringify({coastBefore,coastAfter,paused,frozen},null,2));
+await page.evaluate(()=>locked=true);
 const collision=await page.evaluate(()=>{const p=player.pos.clone(),yaw=player.riding.yaw,dx=Math.cos(yaw),dz=-Math.sin(yaw),x=p.x+dx*1.5,z=p.z+dz*1.5;const s=[x-dz*3,z+dx*3,x+dz*3,z-dx*3];world.levels[0].segments.push(s);player.keys.add('KeyW');for(let i=0;i<30;i++)tick(.1);player.keys.clear();const d=player.pos.distanceTo(p);world.levels[0].segments.pop();return{distance:d,free:player.bikeHull(player.pos,player.riding.yaw)};});check(collision.distance<1.5&&collision.free,'whole wheelbase stops at thin actual collision segment without tunneling');
 check(await page.evaluate(()=>{const p=player.pos.clone();world.roofs.above=()=>p.y+1;const blocked=!player.bikeHull(p,player.riding.yaw);world.roofs.above=()=>Infinity;return blocked;}),'actual roof/headroom query rejects too-low clearance');
 check(await page.evaluate(()=>{const p=player.pos.clone(),r=player.riding,yaw=r.yaw;world.doors=[{object:new T.Group(),segment:()=>[p.x-.8,p.z+.8,p.x+.8,p.z+.8]}];const closed=!player.bikeHull(p.clone().add(new T.Vector3(0,0,.6)),yaw);world.doors=[];return closed;}),'actual dynamic-door segment participates in capsule validation');
@@ -124,10 +141,10 @@ for(let index=0;index<9;index++){
  if(route===null)continue;
  await page.evaluate(yaw=>{camera.rotation.y=yaw-Math.PI/2;for(let i=0;i<80;i++)tick(.025);},route);
  const start=await page.evaluate(()=>player.pos.toArray());
- await page.keyboard.down('w');await page.evaluate(()=>{for(let i=0;i<10;i++)tick(.1);});await page.keyboard.up('w');
+ await page.keyboard.down('w');await page.evaluate(seconds=>{for(let i=0;i<seconds*10;i++)tick(.1);},driveSeconds);await page.keyboard.up('w');
  const distance=await page.evaluate(p=>player.pos.distanceTo(new T.Vector3(...p)),start);
- check(distance>await page.evaluate(()=>C.PLAYER.walk)*1.5,'ordinary keyboard speed exceeds walking '+identity.id);
- await page.evaluate(()=>{window.priorYaw=player.riding.yaw;camera.rotation.y+=.2;for(let i=0;i<10;i++)tick(.05);});
+ check(distance>await page.evaluate(()=>C.PLAYER.walk)*driveSeconds*1.5,'ordinary keyboard speed exceeds walking over the same elapsed time '+identity.id);
+ await page.evaluate(()=>{window.priorYaw=player.riding.yaw;camera.rotation.y+=.2;for(let i=0;i<2;i++)tick(.05);});
  check(await page.evaluate(()=>Math.abs(player.riding.yaw-priorYaw)>.1&&player.bikeHull(player.pos,player.riding.yaw)),'ordinary camera steering preserves whole hull '+identity.id);
  const paused=await page.evaluate(()=>({p:player.pos.toArray(),m:matrices()}));
  await page.evaluate(()=>{locked=false;touch.enabled=false;player.keys.add('KeyS');tick(1);player.keys.clear();});
@@ -136,7 +153,7 @@ for(let index=0;index<9;index++){
  await page.locator('#stand-btn').click();
  check(await page.evaluate(()=>!player.riding&&player.isFree(player.pos.x,player.pos.z)&&player.roomToStand()&&Math.abs(player.pos.y-player.groundAt(player.pos.x,player.pos.z,player.pos.y))<.02),'ordinary touch stand safely dismounts '+identity.id);
  check(await page.evaluate(index=>matrices().every((batch,k)=>batch.every((m,j)=>j===index||JSON.stringify(m)===JSON.stringify(ownBefore[k][j]))),index),'eight untouched identities retain four exact matrices '+identity.id);
- population.push({...identity,distance});
+ population.push({...identity,distance,seconds:driveSeconds});
  await page.reload();await setup();
  check(await page.evaluate(()=>resumed&&!player.riding&&life.bicycles.every(b=>b.atSource)&&player.roomToStand()),'reload safely stands and restores source population '+identity.id);
 }

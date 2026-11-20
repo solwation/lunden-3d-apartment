@@ -1,0 +1,22 @@
+{
+  "walking": 1.6,
+  "drive": [
+    {
+      "seconds": 1,
+      "distance": 2.127303075948814,
+      "speed": 4.215047454654233,
+      "threshold": 2.4000000000000004
+    },
+    {
+      "seconds": 1.5,
+      "distance": 4.719918583036987,
+      "speed": 5.9368,
+      "threshold": 3.5999999999999996
+    }
+  ],
+  "coast": {
+    "before": 5.9368,
+    "after": 5.694505286911999
+  },
+  "assertions": 3
+}
