@@ -1,7 +1,7 @@
 import { CinemaSurface } from './cinemasurface.js';
 import { youtubeAPI } from './cinemaplayer.js';
 import { santaState } from './santaconfig.js';
-import { SANTA_TV } from './santatvconfig.js';
+import { SANTA_TV, SANTA_TV_SYNC, santaTvPosition, santaTvDrift } from './santatvconfig.js';
 import { TVVolume } from './tvsound.js';
 
 /** Santa owns the living-room programme throughout his visit; global sound/power still apply. */
@@ -39,9 +39,9 @@ export class SantaTV {
       this.video=new YT.Player(mount,{width:'100%',height:'100%',videoId:SANTA_TV.video,
         playerVars:{autoplay:1,controls:0,playsinline:1,loop:1,playlist:SANTA_TV.video,origin:location.origin},
         events:{
-          onReady:()=>{if(this.generation!==generation)return;this.video.mute();this.video.playVideo();},
+          onReady:()=>{if(this.generation!==generation)return;this.video.mute();this.video.playVideo();this.syncAt=-Infinity;},
           onStateChange:e=>{if(this.generation!==generation)return;
-            if(e.data===0){this.video.seekTo(0,true);this.video.playVideo();return;}
+            if(e.data===0){this.syncAt=-Infinity;this.sync(true);this.video.playVideo();return;}
             if(e.data===1)this.blocked=false;
             this.surface.loading(e.data!==1,e.data===3?'Laddar Kalle Anka…':'Tryck på TV:n för att starta Kalle Anka.');},
           onAutoplayBlocked:()=>{if(this.generation===generation){this.blocked=true;this.surface.loading(true,'Tryck på TV:n för att starta Kalle Anka.');}},
@@ -63,6 +63,20 @@ export class SantaTV {
     this.tv.video(this.shared);
     if(restorePower&&!this.wasOn&&this.tv.isOpen)this.toggle();
   }
+  /** #2258: keep the clip on the shared wall clock; seek only when drift exceeds the threshold. */
+  sync(force=false,now=Date.now()) {
+    const v=this.video;
+    if(!v?.getDuration||!v.getCurrentTime)return;
+    const t=performance.now();
+    if(!force&&t-(this.syncAt??-Infinity)<SANTA_TV_SYNC.every)return;
+    this.syncAt=t;
+    let duration,current;try{duration=v.getDuration();current=v.getCurrentTime();}catch{return;}
+    const target=santaTvPosition(now,duration);
+    if(target===null||!Number.isFinite(current))return;
+    this.syncTarget=target;
+    if(!force&&(t-(this.seekedAt??-Infinity)<SANTA_TV_SYNC.settle||v.getPlayerState?.()!==1))return;
+    if(Math.abs(santaTvDrift(target,current,duration))>SANTA_TV_SYNC.maxDrift){this.seekedAt=t;v.seekTo(target,true);}
+  }
   activate() {
     if(this.active&&this.failed&&this.locked&&this.available()) { this.stop();this.start();return true; }
     if(!this.active||this.failed||!this.video?.playVideo||this.soundActivated&&!this.blocked)return false;
@@ -76,6 +90,7 @@ export class SantaTV {
     // Shared-player presence changes may restore its ordinary screen between frames.
     this.tv.videoMaterial=this.surface.aperture;this.tv.video(true);
     if(this.video?.mute){(!this.soundActivated||this.muted())?this.video.mute():this.video.unMute();}
+    this.sync();
     this.soundVolume.update(this.video,camera,this.tv.mesh,this.soundActivated&&!this.muted());
     this.surface.update(camera,renderer);
   }
