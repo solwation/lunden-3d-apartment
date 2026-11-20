@@ -5,6 +5,7 @@ import { Avatar, avatarModelGeometry } from '../src/avatar.js';
 import { avatarLook, AVATAR_FACE as F, SWIM } from '../src/config.js';
 import { glassesExtraTriangles } from '../src/avatarglasses.js'; // #2173: the new frames and lenses
 import { teethExtraTriangles } from '../src/avatarteeth.js'; // #2150: the mouth's teeth / tongue strips
+import { phoneExtraTriangles } from '../src/avatarphone.js'; // #2217: the smartphone in the right hand
 import { trainerTriangles } from './avatartrainerextra.mjs'; // #2116: #2084 added these to the figure
 import { bindAt } from '../src/olof.js';
 
@@ -12,7 +13,7 @@ test('#2063 the globe is behind the brow with no new triangles, lights or rigs',
  const g=avatarModelGeometry({...avatarLook('2063'),style:0,facial:0}),a=g.attributes,h=bindAt('head');let front=-Infinity,brow=-Infinity,eye=0;
  for(let i=0;i<a.position.count;i++){const part=a.facePart.getX(i),z=a.position.getZ(i)-h.z;if(part===26)front=Math.max(front,z);if(part===6)brow=Math.max(brow,z);if(part===3||part===26)eye++;}
  assert.ok(front<brow-.003,`corneal front ${front}, brow ${brow}`);
- assert.equal(eye/3,1248+464);assert.equal(a.position.count/3-trainerTriangles-teethExtraTriangles()-glassesExtraTriangles(),15620+464,'whole figure unchanged by the globe, apart from #2084\'s trainers and #2150\'s mouth strips');
+ assert.equal(eye/3,1248+464);assert.equal(a.position.count/3-trainerTriangles-teethExtraTriangles()-glassesExtraTriangles()-phoneExtraTriangles(),15620+464,'whole figure unchanged by the globe, apart from #2084\'s trainers, #2150\'s mouth strips and #2217\'s phone');
  assert.ok(F.accessoryFront>front+.012,'spectacles remain clear of the globe');
  assert.ok(SWIM.dive.mask.front>front,'diving glass stays in front of the inset eyes');g.dispose();
 });

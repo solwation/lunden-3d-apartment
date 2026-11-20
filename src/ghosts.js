@@ -46,6 +46,7 @@ import { GhostFar } from './ghostfar.js'; // #1966: far players as one draw call
 import { mouthPose, blendHand } from './avatarmouth.js'; // #2160
 import { cueArms, newCueArms, strokePull } from './avatarcue.js'; // #2162
 import { typeStep, typePose, typeAllowed } from './avatartype.js'; // #2174
+import { phoneShown } from './avatarphone.js'; // #2217
 import { reachPose, toFigureFrame, REACH_TOTAL } from './avatarreach.js'; // #2161
 import { lifeEvent, nearestShooter, knockPose, KNOCK_TOTAL } from './avatarknock.js'; // #2167
 import { flinch, hitDir } from './avatarhit.js';
@@ -578,6 +579,8 @@ export class Ghost { // (exported for tools/ghostprops.html)
       this.typeW = typeStep(this.typeW ?? 0, (!!this.typing || !!this.away) && ok, dt); // (#2216: away looks down at the phone too)
       const tp = typePose(this.typeW, -1, this.typeOut ??= { w: 0, hand: { at: [0, 0, 0], pole: [0, 0, 0] }, head: 0, lean: 0 });
       if (tp) { hands.R = blendHand(hands.R ?? armTarget.rest(-1), tp.hand, tp.w); mouthHead += tp.head; mouthLean += tp.lean; }
+      this.avatar.setPhone?.(this.typeW, dt); // #2217: the smartphone in that hand, its screen lighting the face (src/avatarphone.js)
+      if (phoneShown(this.typeW)) this.avatar.setGrip('R', 'flat'); // (the phone lies on the open hand)
     }
     const carryOn = !this.pose && !this.gx && !this.bikeMesh && !wet && !this.dance && !this.waveT;
     this.carryLean = easeLean(this.carryLean ?? 0, carryOn ? carry.lean : 0, dt); // #2144: the back-lean under a heavy thing, eased in and out

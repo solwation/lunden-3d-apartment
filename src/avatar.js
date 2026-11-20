@@ -41,6 +41,7 @@ import { exertUniforms, exertShader } from './avatarbreath.js'; // #2037
 import { sculptShape, jawRise, sculptShader, sculptKey, sealLipEdge } from './avatarsculpt.js'; // #2044: sculpted face forms
 import { envUniforms, envDecl, envShade, eyeEnv, envKey, curveLens } from './avatarenv.js'; // #2173
 import { roundRim, squareRim, lensShape, bar } from './avatarglasses.js'; // #2173
+import { PHONE_PART, phoneFrame, phoneMatrix, phoneParts, phoneUniforms, PHONE_VDECL, PHONE_FDECL, phoneVertexGLSL, phoneColorGLSL, phoneRoughGLSL, phoneLightGLSL, phoneKey, installPhone, screenFlicker } from './avatarphone.js'; // #2217
 import { addFlyaways, flyUniforms, flyMaterial, flyKey, FLY_VDECL, FLY_FDECL, flyBind, flyProject, flyAlpha, flyLight } from './avatarflyaway.js'; // #2040
 import { browSurface, browSlide, browUniforms, applyBrowLook, browFDecl, browColor, browRoughness } from './avatarbrow.js'; // #2046
 import { genderFaceGLSL } from './avatarfacegender.js'; // #2142
@@ -95,7 +96,7 @@ const REGION = { skin: 0, top: 1, pants: 2, hair: 3, fixed: 4, lips: 6, iris: 7,
 const FACE_PART = { head: 1, neck: 2, eye: 3, nose: 4, ear: 5, brow: 6, hair: 7, rimRound: 8, rimSquare: 9, specs: 10, cowlHide: 11, hatDome: 12, peakFront: 13, peakBack: 14, knit: 15, hatCrown: 16, hatBrim: 17, phoneBand: 18, phoneCup: 19, phoneNeck: 20, studs: 21, hoops: 22, drops: 23, pearlStuds: 24, lens: 25, iris: 26, /* #2011: iris + pupil, moved by the gaze */ lensRound: 27, lensSquare: 28, /* #2173: clear lenses */ // #1325: earrings (head bone, follow the ear) and sunglass lenses
  
   chain: 30, pearls: 31, pendant: 32, goldChain: 33,
-  finger: 100, /* #2016: 100 + side * 10 + finger * 2 + segment (src/avatargrip.js) */ ring: 40, braceletBase: 50, watchCase: 60, watchStrap: 70, watchDial: 80, watchFace: 90 }; // 50-55 #1334 bracelets, 60-95 watches (case / strap / dial / glass, + side * 3 + model - 1)
+  finger: 100, /* #2016: 100 + side * 10 + finger * 2 + segment (src/avatargrip.js) */ ring: 40, braceletBase: 50, watchCase: 60, watchStrap: 70, watchDial: 80, watchFace: 90, phone: PHONE_PART.body, phoneScreen: PHONE_PART.screen, phoneIsland: PHONE_PART.island }; // (#2217: 96-98 the smartphone) // 50-55 #1334 bracelets, 60-95 watches (case / strap / dial / glass, + side * 3 + model - 1)
   // 40 + 0-9: #1324 a ring on one of the ten fingers (the look's `ring` - 1) // #1323: necklaces (on the torso bone, not warped with the head)
 const H = 0.1; // The head bone's eye-height reference (ears, hair, moustache).
 
@@ -153,8 +154,20 @@ function parts(style, sleeves, gender = 0, facial = 0, legs = 0, cut = 0, shoe =
   addRings(add, P); // #1324
   addWrist(add, P); // #1334
   addFlyaways(add, P, flyFrom, { part: FACE_PART, centre: HAIR.centre, seamY: SEAM_Y, beardMouth: f === 3 ? 'moustache' : undefined, hairAvoid: hairlineAvoid(style) }); // #2040 (last: earlier parts keep their vertex order)
+  addSmartphone(add, P); // #2217 (after the flyaways: every earlier part keeps its vertex order)
   return P;
 }
+/** #2217: the smartphone in the right hand (src/avatarphone.js), on the hand bone: collapsed to its centre unless the typing / away pose shows it (uPhone),
+ * so there is no extra draw call; ~0.2 k triangles in the shared geometry. */
+function addSmartphone(add, P) {
+  const m = phoneMatrix(-1), anchor = phoneCentre().toArray();
+  for (const { g, part, colour } of phoneParts()) {
+    add(g.applyMatrix4(m), 'fixed', 'handR', [], 1, colour);
+    const last = P[P.length - 1]; last.face = PHONE_PART[part]; last.anchor = anchor;
+  }
+}
+/** #2217: the phone's centre in bind space (the right hand). */
+const phoneCentre = () => bindAt('handR').add(new THREE.Vector3(...phoneFrame(-1).at));
 /** #1165: glasses frames in the head bone's frame, in front of the eyes (FACE.eye): two round rims, two square ones, and the
  * bridge and temples both use. Always in the shared geometry; the vertex shader collapses the kinds that are not chosen (a point,
  * no pixels), so a look without glasses draws the same and there is no extra draw call. Thin dark bars (colour GLASSES.colour). */
@@ -1351,6 +1364,7 @@ function makeMaterial(rim, headProjection) {
   Object.assign(u, envUniforms()); // #2173
   Object.assign(u, toneUniforms()); // #2156
   Object.assign(u, makeupUniforms()); // #2170
+  Object.assign(u, phoneUniforms()); // #2217
   const m = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: SURFACE.finish.cloth, metalness: 0, transparent: false, depthWrite: true });
   m.emissive.setScalar(A.emissiveSolid);
   m.userData.u = u;
@@ -1377,7 +1391,7 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
     sh.vertexShader = sh.vertexShader.replace('#include <skinning_vertex>', `${eyeView()}\n#include <skinning_vertex>`); // #2033: after every bind-pose shape (face, expression), before skinning
     sh.vertexShader = sh.vertexShader.replace('#include <project_vertex>', `#include <project_vertex>\n${flyProject(bindAt('head').add(new THREE.Vector3(...HAIR.centre)))}`); // #2040
     sh.fragmentShader = sh.fragmentShader
-      .replace('#include <common>', `#include <common>\n${LAMP_FDECL}`) // #2039
+      .replace('#include <common>', `#include <common>\n${LAMP_FDECL}\n${PHONE_FDECL}`) // #2039, #2217
       .replace('#include <common>', '#include <common>\nuniform float uOutline, uFill, uRim, uLight;\nuniform vec3 uRimColor;\nuniform float uSuit, uSuitMaskBand; uniform sampler2D uSuitTexture; varying vec3 vSuitAt; varying float vSuitRole; varying float vBare; varying float vRing; varying vec2 vSurface; uniform vec3 uRingColor;\n' + WET_DECL + skin.decl + hand.decl + '\n' + skinVarDecl() + '\n' + toneDecl() + '\n' + makeupDecl() + '\n' + EYE_FDECL + '\n' + FLY_FDECL + '\n' + browFDecl() + '\n' + hairlineFDecl() + '\n' + shortHairFDecl() + '\n' + CURL_FDECL + '\n' + noseFragmentGLSL(bindAt('head'), FACE_PART.head).decl + '\n' + beardFDecl())
       .replace('#include <color_fragment>', `#include <color_fragment>
       if (uSuit > 0.5) {
@@ -1408,11 +1422,12 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
       ${beardColor({ hb: bindAt('head'), region: REGION.beard, skinTone: `${skinArea('cheek', SK.cheek)} ${skinArea('lipRim', SK.lipRim)} float under = ${SK.under[2].toFixed(3)} * (1.0 - smoothstep(${SK.under[0].toFixed(3)}, ${SK.under[1].toFixed(3)}, q.y)); vec3 beardTone = mix(vec3(1.0), uSkBlush, clamp(cheek + lipRim, 0.0, 1.0)) * mix(vec3(1.0), ${v3(SK.underTint)}, clamp(under, 0.0, 1.0));` })}
       ${shortHairColor({ hb: bindAt('head'), region: REGION.hair })}
       ${ageColor({ head: bindAt('head'), part: FACE_PART, region: REGION })} // #2155
+      ${phoneColorGLSL()}
       diffuseColor.rgb = mix(diffuseColor.rgb, uRingColor, vRing); // #1324: the ring's metal
       float wetSnow = 0.0; // #2018
       ${wetColor(bindAt('torso').y)}
       ${flyAlpha()}`)
-      .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>\n${surfaceRoughness()}\n${browRoughness({ region: REGION.brow, part: FACE_PART.brow, skin: SURFACE.finish.skin })}\n${beardRoughness({ region: REGION.beard, skin: SURFACE.finish.skin })}\n${ageRoughness()}\n${toneRoughness()}\n${wetRoughness()}\n${eyeWet(FACE_PART.eye, FACE_PART.iris)}`)
+      .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>\n${surfaceRoughness()}\n${browRoughness({ region: REGION.brow, part: FACE_PART.brow, skin: SURFACE.finish.skin })}\n${beardRoughness({ region: REGION.beard, skin: SURFACE.finish.skin })}\n${ageRoughness()}\n${toneRoughness()}\n${phoneRoughGLSL()}\n${wetRoughness()}\n${eyeWet(FACE_PART.eye, FACE_PART.iris)}`)
       .replace('#include <normal_fragment_maps>', `#include <normal_fragment_maps>\n${skin.normal}\n${hand.normal}`) // #2032, #2106
       .replace('#include <lights_fragment_end>', `#include <lights_fragment_end>\n${fabricLight()}\n${skin.light}\n${noseFragmentGLSL(bindAt('head'), FACE_PART.head).light}\n${flyLight({ hair: REGION.hair, beard: REGION.beard })}`) // #2032, #2040
       .replace('#include <metalnessmap_fragment>', `#include <metalnessmap_fragment>\nmetalnessFactor = vRing * ${SURFACE.finish.metalness.toFixed(3)};`)
@@ -1423,6 +1438,7 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
       ${envShade(FACE_PART)}
       outgoingLight *= uLight; // #2017: the local light level (src/avatarlight.js)
       ${lampGlsl()}
+      ${phoneLightGLSL(phoneCentre(), phoneFrame(-1), [FACE_PART.eye, FACE_PART.iris], REGION.lips)}
       outgoingLight = mix(outgoingLight, uRimColor, uOutline * edge);
       outgoingLight *= mix(vec3(1.0), uSkRim.rgb, vBare * (1.0 - uSuit) * edge * uSkRim.a); // light scattered through skin reddens its edges
       diffuseColor.a = mix(diffuseColor.a, mix(uFill, uRim, edge), uOutline);
@@ -1434,7 +1450,7 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
     const gloss = { head: bindAt('head'), region: REGION, part: FACE_PART }; // #2052
     sh.vertexShader = glossVertex(sh.vertexShader, gloss); sh.fragmentShader = curlGloss(glossFragment(sh.fragmentShader, gloss)); // (#2054: the curls turn its strands)
   };
-  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light' + '-armfix2022' + skinKey() + '-expr2031' + '-eyes2064' + '-exert2037' + flyKey() + '-cloth2034' + '-skirt2157' + '-brow2046' + sculptKey() + '-hairline2050' + noseKey() + glossKey() + beardKey() + '-curls2054' + shortHairKey() + handKey() + seamKey() + chestKey() + skinVarKey() + ageKey() + toneKey() + selfShadowKey() + buildKey() + fabricKey() + makeupKey() + envKey(); // #2173, #2170, #2108, #2111, #2107; #2032, #2031, #2033, #2037, #2040, #2034, #2050, #2048, #2052, #2051
+  m.customProgramCacheKey = () => 'avatar-outline-suit-skin-mouth-face-kiss-hat-pump-pbr-sway-v18-wet-light' + '-armfix2022' + skinKey() + '-expr2031' + '-eyes2064' + '-exert2037' + flyKey() + '-cloth2034' + '-skirt2157' + '-brow2046' + sculptKey() + '-hairline2050' + noseKey() + glossKey() + beardKey() + '-curls2054' + shortHairKey() + handKey() + seamKey() + chestKey() + skinVarKey() + ageKey() + toneKey() + selfShadowKey() + buildKey() + fabricKey() + makeupKey() + envKey() + phoneKey(); // #2217, #2173, #2170, #2108, #2111, #2107; #2032, #2031, #2033, #2037, #2040, #2034, #2050, #2048, #2052, #2051
   installSelfView(m); // #2080: the own camera hides head/hair; mirrors and peers keep the full figure
   return m;
 }
@@ -1448,7 +1464,7 @@ objectNormal = normalize(vec3(objectNormal.x / pumpF, objectNormal.y - pumpD / p
 let gripGlsl = null; // #2016 (lazily: olof.js and this module import each other)
 const GRIP_GLSL = () => gripGlsl ??= fingerGLSL(bindAt('handL'), bindAt('handR'), FACE_PART.finger);
 const HAND_VGLSL = () => handVertexGLSL(bindAt('handL'), bindAt('handR'), FACE_PART.finger); // #2106 (follows HAND_DETAIL.on)
-const FACE_SHAPE_DECL = () => 'attribute float facePart; attribute vec3 faceAnchor; uniform vec3 uEye, uNose, uHead; uniform float uGender; uniform vec2 uGaze; uniform float uBlink; uniform float uEar, uHair, uGlasses, uEarrings, uHat, uPhones, uNecklace, uRingFinger, uBracelet, uWatch, uNeck, uSuit; uniform vec2 uBrow; ' + GRIP_GLSL().decl + HAND_VGLSL().decl + SWAY_DECL + noseFormDecl() + genderFaceGLSL(); // (#2049; #2142: the gender's face form)
+const FACE_SHAPE_DECL = () => PHONE_VDECL + ' attribute float facePart; attribute vec3 faceAnchor; uniform vec3 uEye, uNose, uHead; uniform float uGender; uniform vec2 uGaze; uniform float uBlink; uniform float uEar, uHair, uGlasses, uEarrings, uHat, uPhones, uNecklace, uRingFinger, uBracelet, uWatch, uNeck, uSuit; uniform vec2 uBrow; ' + GRIP_GLSL().decl + HAND_VGLSL().decl + SWAY_DECL + noseFormDecl() + genderFaceGLSL(); // (#2049; #2142: the gender's face form)
 const CHIN_Y = RH.jaw.centre[1] - RH.jaw.radius * RH.jaw.scale[1]; // the head lengthens from its chin
 function swayShader() { // #2014 (src/avatarsway.js): hair, bun and hem sway, after the face shape
   return swayGLSL({ head: bindAt('head').toArray(), hairY: HAIR.centre[1], bun: [HAIR.bunAt[1], HAIR.bunAt[2]], torsoY: bindAt('torso').y, torso: NAMES.indexOf('torso'), hair: FACE_PART.hair, hat: 'uHat' });
@@ -1456,7 +1472,7 @@ function swayShader() { // #2014 (src/avatarsway.js): hair, bun and hem sway, af
 function faceShape() {
   const hb = bindAt('head'), W = FACE.warp, f = (v) => v.toFixed(4), P = FACE_PART;
   const lift = PHONES.hatLift.reduceRight((acc, l, i) => `(uHat < ${i}.5 ? ${f(l)} : ${acc})`, '0.0');
-  return `if (facePart > ${P.finger}.0 - 0.5) { ${HAND_VGLSL().body} ${GRIP_GLSL().body} } else if (facePart > 0.5) {
+  return `if (facePart > ${P.finger}.0 - 0.5) { ${HAND_VGLSL().body} ${GRIP_GLSL().body} } ${phoneVertexGLSL()} else if (facePart > 0.5) {
       if (abs(facePart - ${P.head}.0) < 0.5) ${noseVertexGLSL(hb)}
       if (uSuit > 0.5 && abs(facePart - ${P.head}.0) > 0.5 && abs(facePart - ${P.neck}.0) > 0.5) {
         transformed = vec3(${f(hb.x)}, ${f(hb.y)}, ${f(hb.z)});
@@ -1904,6 +1920,7 @@ export class Avatar {
     spreadBones(this.bones, this.bodyShape); // #2141
     installArmFix(this.mesh, this.material.userData.u.uArmFix); // #2022
     installCloth(this.mesh, this.material.userData.u, lk); // #2034
+    this.installPhone(this.mesh, this.bones); // #2217
     this.mesh.castShadow = this.mesh.receiveShadow = false;
     this.mesh.name = 'avatar';
     this.object.add(this.mesh);
@@ -1958,6 +1975,7 @@ export class Avatar {
     spreadBones(bones, this.bodyShape); // #2141
     installArmFix(clonedMesh, mat.userData.u.uArmFix); // #2022
     installCloth(clonedMesh, mat.userData.u, lk); // #2034
+    this.installPhone(clonedMesh, bones); // #2217
     this.riggedScene = clonedScene;
     this.object.add(this.riggedScene);
 
@@ -2317,6 +2335,15 @@ export class Avatar {
 
   /** #2016: which grip a hand closes into (src/avatargrip.js: 'relaxed', 'cylinder', 'pistol', 'pinch', 'flat'); `category` / `weapon` pick it as
    * the other players see it. The fingers ease there in `update`. */
+  /** #2217: the smartphone in the right hand (src/avatarphone.js): `w` the typing / away pose weight (0 … 1; the phone is there from
+   * AVATAR_SMARTPHONE.show), `dt` s runs the screen's clock and flicker. */
+  setPhone(w, dt = 0) {
+    const v = this.material?.userData.u.uPhone?.value;
+    if (!v) return;
+    v.x = Number.isFinite(w) ? Math.min(1, Math.max(0, w)) : 0;
+    if (v.x > 0) { v.y = (v.y + (Number.isFinite(dt) && dt > 0 ? dt : 0)) % 600; v.z = screenFlicker(v.y); }
+  }
+  installPhone(mesh, bones) { const f = phoneFrame(-1); installPhone(mesh, this.material.userData.u, bones?.handR, phoneCentre(), new THREE.Vector3(...f.z)); }
   setGrip(side, name) { (this.gripTo ??= { L: 'relaxed', R: 'relaxed' })[side] = name; }
   gripOf(side) { return this.gripTo?.[side] ?? 'relaxed'; }
   /** Eases both hands' fingers towards their grips (`update` calls it; a figure posed otherwise calls it itself) and uploads them to the material. */

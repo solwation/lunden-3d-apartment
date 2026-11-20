@@ -399,8 +399,8 @@ src/ghosts.js          other players as ghosts with a name tag (#666), inert wit
                        #676: the typing flag { t: 'k', on } the same way, the room's { t: 'k', i, on } to `onTalk` too
                        #2216 away presence (`src/awaypresence.js`, AWAY in config.js): every voluntary disconnect (tab hidden, start
                        screen, GHOSTS.idleMs still) closes with AWAY.code (4100); each connection carries the tab's token `?a=` (sessionStorage
-                       AWAY.tokenKey, never relayed). The room shows the last state as `aw: 1` (`Ghost.away`, read by #2217's phone pose; today
-                       the #2174 typing pose; `first` ignores away players) for AWAY.ms (2 min, *guess*), then `{ t: 'x', i, aw: 1 }` →
+                       AWAY.tokenKey, never relayed). The room shows the last state as `aw: 1` (`Ghost.away`: the #2174 typing pose with
+                       #2217's phone in the hand; `first` ignores away players) for AWAY.ms (2 min, *guess*), then `{ t: 'x', i, aw: 1 }` →
                        JoinNotice announces at once (grace 0). Back within the time with the same token and name: the same id, no 'j'/'x'.
                        Still no background socket. Tests: cloudflare/away.test.mjs, tools/awaypeertest.cjs (two clients, local dev worker
                        with `LUNDEN_AWAY_MS`). **Deploy the Worker first**: an old Worker ignores `?a=` and treats 4100 as a plain leave

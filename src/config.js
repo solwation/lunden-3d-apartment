@@ -9211,6 +9211,32 @@ export const MOUTH = {
 // down; lean = rad the torso bends forward; hand / pole = the right wrist and elbow-pole targets in the figure frame (x right-negative, y up, z forward),
 // a phone held in front of the chest at about 1.15 m.
 export const TYPING = { up: 0.45, down: 0.4, head: 0.5, lean: 0.07, hand: [-0.09, 1.26, 0.32], pole: [-0.9, -0.5, -0.3] };
+// #2217: the smartphone a typing (or away, #2216) remote figure holds in its right hand, and the cool light its screen casts on the face and hand
+// (src/avatarphone.js). All *guess*, tuned by eye in close-ups, not measured; a generic modern phone with NO brand, logo or trademark design.
+// size [width, height, thickness] m (a large ~6.5" phone); corner = the body's corner radius m; bezel = the black border round the screen m;
+// screenCorner m; island = the camera plate on the back [width, height, thickness, corner] m, `islandAt` its centre from the phone's top-left
+// (seen from the back) m, `lens` the three lenses' radius m, `lensGap` their spacing m; `seg` the corners' curve segments. Colours: body graphite,
+// screen glass near-black (lit by the emission), island and lenses darker. `at` = the phone's centre in the hand bone's frame (m; x out of the palm
+// for the right hand, y down the fingers, z towards the thumb), `tilt` [x, y, z] rad Euler about the hand's axes after the base frame (the screen
+// facing out of the palm, its top towards the fingertips). `show` = the pose weight from which the phone is there (it pops in mid-reach).
+// screen: `gain` the emission (linear, before tone mapping and the sRGB encoding, so small numbers), the content's colours, `scroll` rows per second, `rows` message rows over the upper
+// screen, `keys` the keyboard's [columns, rows] over its lower `kbd` share; flicker: `depth` how much the brightness dips with the changing content,
+// `hz` its rate. light: the screen's cool light on the figure (directional from the phone, in the avatar's own shader, no scene light): `rgb` its
+// colour, `gain` the strength at d0, falloff 1 / (1 + (d / d0)²) faded to 0 at `range` m, `spill` the share that reaches surfaces beside / behind
+// the screen's plane (the holding hand's fingers), the rest scales with how squarely the screen faces the surface to the power `focus` (a screen
+// throws its light forward: the face it is held up to, much less the chest beside and below it).
+// The glow is aimed at the face: × mix(low, 1, smoothstep(rise[0], rise[1], height above the phone m)) (the chin and face above the screen,
+// not the shirt below the collarbone or the holding hand), × `cloth` on clothes and hair (bare skin and the eyes take it fully).
+export const AVATAR_SMARTPHONE = {
+  size: [0.074, 0.158, 0.0082], corner: 0.0095, bezel: 0.0018, screenCorner: 0.0078, seg: 3,
+  island: [0.024, 0.046, 0.0014, 0.007], islandAt: [0.017, 0.029], lens: 0.0047, lensGap: 0.0135,
+  colours: { body: 0x2b2e33, screen: 0x040507, island: 0x1a1c20, lens: 0x07080a },
+  at: [0.026, -0.07, 0.004], tilt: [0, 0, 0], show: 0.45,
+  screen: { gain: 1.0, bg: [0.008, 0.011, 0.02], bgTop: [0.018, 0.025, 0.045], mine: [0.06, 0.2, 0.75], theirs: [0.16, 0.18, 0.23], key: [0.035, 0.04, 0.055], press: [0.55, 0.62, 0.8],
+    scroll: 0.22, rows: 7, keys: [10, 4], kbd: 0.36 },
+  flicker: { depth: 0.18, hz: 0.7 },
+  light: { rgb: [0.5, 0.72, 1.0], gain: 7, d0: 0.3, range: 0.9, spill: 0.02, focus: 8, rise: [0.08, 0.2], low: 0.1, cloth: 0.2 },
+};
 
 // #2162: how a remote figure bends over the billiard table while it aims (src/avatarcue.js). Figure frame, metres; all *guess*: shoulder = where the
 // arm starts (y of the 1.8 m figure), bridgeS = the left hand's rest on the felt that far behind the cue tip, gripS = the right hand's grip that far

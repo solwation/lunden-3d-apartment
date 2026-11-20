@@ -1,0 +1,50 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Ghost smartphone</title><link rel="icon" href="data:,">
+<script type="importmap">
+  { "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  } }
+</script>
+<style>html,body{margin:0;background:#bfc6cc}canvas{display:block}</style></head>
+<body><script type="module">
+// #2217 component page: one remote avatar (Ghost) typing in the chat (#2174's pose), close-ups of the face and hand (`face`) and over the shoulder onto
+// the screen (`screen`), by day or in the evening (`__shot(view, evening)`); `?away` makes the figure away (#2216) instead of typing. The same page served from a checkout before #2217 shows the pose without a
+// phone (the before images). Reports renderer.info: draw calls, triangles and programs. Driven by tools/ghostphonetest.cjs.
+import * as THREE from 'three';
+import { Ghost } from '../src/ghosts.js';
+const W = 900, H = 640, renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(W, H); document.body.appendChild(renderer.domElement);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+const scene = new THREE.Scene();
+const hemi = new THREE.HemisphereLight(0xffffff, 0x8a7f72, 1.6); scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xfff2e0, 2.2); sun.position.set(2, 4, 3); scene.add(sun);
+const g = new Ghost(scene, 1, 'Spelare 1');
+if (g.tag) g.tag.visible = false;
+g.root.visible = true;
+g.push({ p: [0, 0, 0], r: Math.PI, hi: '', h: '', look: [0, 0] }, 1000); g.look = [0, 0];
+const cam = new THREE.PerspectiveCamera(26, W / H, 0.02, 50);
+let t = 1000, settled = false;
+window.__shot = (view, evening) => {
+  scene.background = new THREE.Color(evening ? 0x141a28 : 0xbfc6cc);
+  hemi.intensity = evening ? 0.1 : 1.6; sun.intensity = evening ? 0.06 : 2.2; sun.color.set(evening ? 0x8090c0 : 0xfff2e0);
+  if (view === 'screen') { cam.position.set(-0.32, 1.86, -0.12); cam.lookAt(-0.05, 1.22, 0.3); }
+  else { cam.position.set(-0.4, 1.44, 1.05); cam.lookAt(-0.03, 1.44, 0.1); }
+  g.root.position.set(0, 0, 0); g.root.rotation.y = Math.PI;
+  if (!settled) {
+    g.have = false; g.typing = false; g.typeW = 0;
+    for (let k = 0; k < 30; k++) g.animate(t += 33, 1, 0, 0); // settle at rest
+    if (new URLSearchParams(location.search).has('away')) g.away = true; else g.typing = true; // ?away: #2216's away figure instead of typing
+    settled = true;
+  }
+  for (let k = 0; k < 40; k++) g.animate(t += 33, 1, 0, 0); // the pose has eased fully in
+  renderer.info.reset(); renderer.info.autoReset = false;
+  renderer.render(scene, cam);
+  const i = renderer.info, u = g.avatar.material?.userData.u.uPhone?.value;
+  const P = g.avatar.material?.userData.u, hd = g.avatar.bones.head.getWorldPosition(new THREE.Vector3()), r3 = (v) => v.toArray().map((x) => +x.toFixed(3));
+  const hq = g.avatar.bones.handR.getWorldQuaternion(new THREE.Quaternion()), ax = (x, y, z) => r3(new THREE.Vector3(x, y, z).applyQuaternion(hq));
+  const geo = P?.uPhoneAt ? { at: r3(P.uPhoneAt.value), n: r3(P.uPhoneN.value), head: r3(hd), handX: ax(1, 0, 0), handY: ax(0, 1, 0), handZ: ax(0, 0, 1) } : null;
+  return { geo, typeW: +(g.typeW ?? 0).toFixed(2), calls: i.render.calls, triangles: i.render.triangles, programs: i.programs.length, phone: u ? [+u.x.toFixed(2), +u.z.toFixed(2)] : null };
+};
+window.__ready = true;
+</script></body></html>
