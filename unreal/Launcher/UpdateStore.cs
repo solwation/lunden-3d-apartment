@@ -12,7 +12,7 @@ internal sealed record InstallState(string Channel, Installation? Active = null,
 
 // Each release is a complete Unreal installation. Both its app and its content
 // become visible with one state-file replacement. No updater path targets Saved/.
-internal sealed class UpdateStore(string root, HttpClient client, Action<string> verifyPublisher)
+internal sealed class UpdateStore(string root, HttpClient client, Action<string, ReleaseFile, bool> verifyPublisher)
 {
     string StatePath => Path.Combine(root, "state.json");
     internal string PathFor(Installation item) => Path.Combine(root, "versions", item.Directory);
@@ -36,6 +36,8 @@ internal sealed class UpdateStore(string root, HttpClient client, Action<string>
     internal async Task<Installation> Apply(ReleaseManifest manifest, byte[] bytes, byte[] signature,
         InstallState state, bool dryRun, CancellationToken ct)
     {
+        StockRuntime.Validate(manifest);
+        bool stock = manifest.EntryPoint == ReleaseManifest.StockGameExe;
         string hash = Convert.ToHexString(SHA256.HashData(bytes));
         if (state.Rejected == hash) throw new InvalidDataException("Den här versionen misslyckades vid start.");
         if (state.Active?.ManifestHash == hash) return state.Active;
@@ -55,7 +57,7 @@ internal sealed class UpdateStore(string root, HttpClient client, Action<string>
             string? existing = state.Active == null ? null : GameFile(state.Active, file.Path);
             if (await Matches(target, file, ct))
             {
-                if (ReleaseManifest.NeedsSigning(file)) verifyPublisher(target);
+                if (ReleaseManifest.NeedsSigning(file)) verifyPublisher(target, file, stock);
                 continue; // Fully validated file from a prior attempt.
             }
             bool reuse = existing != null && await Matches(existing, file, ct);
@@ -72,7 +74,7 @@ internal sealed class UpdateStore(string root, HttpClient client, Action<string>
                 downloaded += await Download(file, target, Path.Combine(staging, "partial", file.Sha256.ToUpperInvariant()), ct);
             }
             if (!await Matches(target, file, ct)) throw new InvalidDataException($"Fel kontrollsumma för {file.Path}.");
-            if (ReleaseManifest.NeedsSigning(file)) verifyPublisher(target);
+            if (ReleaseManifest.NeedsSigning(file)) verifyPublisher(target, file, stock);
         }
         Console.WriteLine(dryRun ? $"Filer som kräver hämtning: {missing} byte." : $"Hämtat: {downloaded} byte.");
         if (dryRun) return next;
@@ -93,13 +95,14 @@ internal sealed class UpdateStore(string root, HttpClient client, Action<string>
 
     internal string GameFile(Installation install, string name) => Path.Combine(PathFor(install), "game", name);
 
-    internal async Task VerifyInstalled(Installation install, ECDsa key, string channel, CancellationToken ct)
+    internal async Task<string> VerifyInstalled(Installation install, ECDsa key, string channel, CancellationToken ct)
     {
         string version = PathFor(install);
         byte[] bytes = await File.ReadAllBytesAsync(Path.Combine(version, "manifest.json"), ct);
         if (!Convert.ToHexString(SHA256.HashData(bytes)).Equals(install.ManifestHash, StringComparison.OrdinalIgnoreCase))
             throw new InvalidDataException("Installerat manifest stämmer inte med den aktiva versionen.");
         var manifest = ReleaseManifest.Read(bytes, await File.ReadAllBytesAsync(Path.Combine(version, "manifest.sig"), ct), key, channel);
+        StockRuntime.Validate(manifest);
         CheckTree(GameFile(install, ""), manifest.Files);
         foreach (var file in manifest.Files)
         {
@@ -108,6 +111,7 @@ internal sealed class UpdateStore(string root, HttpClient client, Action<string>
             // The bytes match the signed manifest and were publisher-checked before activation.
             // Starting offline must not depend on an online certificate revocation check.
         }
+        return manifest.EntryPoint;
     }
 
     static void CheckTree(string rootPath, IEnumerable<ReleaseFile> files)
@@ -141,9 +145,7 @@ internal sealed class UpdateStore(string root, HttpClient client, Action<string>
         if (state.Active == null || !Directory.Exists(versions)) return;
         // A previous launcher can exit while its game is still using older packages.
         // A directly started Shipping executable must get the same protection.
-        var games = System.Diagnostics.Process.GetProcessesByName(Path.GetFileNameWithoutExtension(ReleaseManifest.GameExe));
-        foreach (var game in games) game.Dispose();
-        if (games.Length != 0) return;
+        if (GameProcess.IsRunning(root)) return;
         foreach (string directory in Directory.GetDirectories(versions)) {
             string id = Path.GetFileName(directory);
             if (!Guid.TryParseExact(id, "N", out _) || id == state.Active.Directory || id == state.Previous?.Directory)

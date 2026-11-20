@@ -17,18 +17,23 @@ internal static class Authenticode
     {
         if (!OperatingSystem.IsWindows())
             throw new PlatformNotSupportedException("Authenticode-verifiering kräver Windows.");
-        if (expectedSigner is null || expectedSigner.Length != 64 || !Array.TrueForAll(expectedSigner.ToCharArray(), Uri.IsHexDigit))
-            throw new InvalidDataException("Utgivarens SHA-256-avtryck måste bestå av 64 hexadecimala tecken.");
-
         string fullPath = Path.GetFullPath(path);
         using var file = File.Open(fullPath, FileMode.Open, FileAccess.Read, FileShare.Read);
         var info = new TrustFileInfo { Size = (uint)Marshal.SizeOf<TrustFileInfo>(), Path = fullPath, Handle = file.SafeFileHandle.DangerousGetHandle() };
-        IntPtr infoPtr = Marshal.AllocHGlobal(Marshal.SizeOf<TrustFileInfo>());
-        Marshal.StructureToPtr(info, infoPtr, false);
+        VerifyTrust(fullPath, expectedSigner, FileChoice, info);
+    }
+
+    internal static void VerifyTrust<T>(string path, string expectedSigner, uint choice, T subject) where T : struct
+    {
+        if (expectedSigner is null || expectedSigner.Length != 64 || !Array.TrueForAll(expectedSigner.ToCharArray(), Uri.IsHexDigit))
+            throw new InvalidDataException("Utgivarens SHA-256-avtryck måste bestå av 64 hexadecimala tecken.");
+
+        IntPtr infoPtr = Marshal.AllocHGlobal(Marshal.SizeOf<T>());
+        Marshal.StructureToPtr(subject, infoPtr, false);
         var data = new TrustData
         {
-            Size = (uint)Marshal.SizeOf<TrustData>(), UiChoice = NoUi, UnionChoice = FileChoice,
-            FileInfo = infoPtr, StateAction = VerifyState, ProviderFlags = CheckChainExceptRoot
+            Size = (uint)Marshal.SizeOf<TrustData>(), UiChoice = NoUi, UnionChoice = choice,
+            SubjectInfo = infoPtr, StateAction = VerifyState, ProviderFlags = CheckChainExceptRoot
         };
         try
         {
@@ -55,7 +60,7 @@ internal static class Authenticode
                 data.StateAction = CloseState;
                 WinVerifyTrust(new IntPtr(-1), in VerifyV2, ref data);
             }
-            Marshal.DestroyStructure<TrustFileInfo>(infoPtr);
+            Marshal.DestroyStructure<T>(infoPtr);
             Marshal.FreeHGlobal(infoPtr);
         }
     }
@@ -75,7 +80,7 @@ internal static class Authenticode
         public uint Size;
         public IntPtr PolicyCallbackData, SipClientData;
         public uint UiChoice, RevocationChecks, UnionChoice;
-        public IntPtr FileInfo;
+        public IntPtr SubjectInfo;
         public uint StateAction;
         public IntPtr State, UrlReference;
         public uint ProviderFlags, UiContext;

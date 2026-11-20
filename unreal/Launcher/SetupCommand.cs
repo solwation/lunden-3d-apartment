@@ -79,7 +79,7 @@ internal static class UninstallHelper
     {
         using var maintenance = layout.MaintenanceLock();
         using var updates = setup.LockUpdates();
-        Setup.EnsureGameStopped();
+        Setup.EnsureGameStopped(layout.InstallDir);
         string id = Guid.NewGuid().ToString("N");
         string dir = Work(id);
         string helper = Path.Combine(dir, Image);

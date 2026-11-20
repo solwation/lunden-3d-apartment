@@ -18,6 +18,7 @@
   </Target>
   <ItemGroup>
     <InternalsVisibleTo Include="Lunden.Launcher.Tests" />
+    <EmbeddedResource Include="Unreal-5.8.4-win64.json" LogicalName="Lunden.Unreal-5.8.4-win64.json" />
     <EmbeddedResource Include="$(LundenManifestKey)" LogicalName="Lunden.ManifestKey.pem" Condition="'$(LundenManifestKey)' != ''" />
     <AssemblyMetadata Include="LundenSignerSha256" Value="$(LundenSignerSha256)" />
   </ItemGroup>

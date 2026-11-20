@@ -3,6 +3,7 @@
 param([string]$SignedBinary = (Get-Command dotnet.exe -ErrorAction Stop).Source)
 $ErrorActionPreference = 'Stop'
 $source = Join-Path $PSScriptRoot '../Launcher/Authenticode.cs'
+$catalogSource = Join-Path $PSScriptRoot '../Launcher/CatalogSignature.cs'
 $getFingerprint = Join-Path $PSScriptRoot '../../tools/unreal-engine/get-signer-fingerprint.ps1'
 $temp = Join-Path ([IO.Path]::GetTempPath()) ('Lunden-Authenticode-' + [Guid]::NewGuid().ToString('N'))
 New-Item -Type Directory -Path $temp | Out-Null
@@ -29,9 +30,26 @@ try {
     }
     Write-Output 'PASS release fingerprint and checksum rejection'
 
+    # Use a file from the runner's own installed catalog. No SDK/vendor DLL is distributed.
+    $os = [Environment]::SystemDirectory
+    $catalogPin = $null
+    foreach ($name in 'DirectML.dll', 'ntdll.dll', 'kernel32.dll', 'user32.dll', 'winhttp.dll', 'advapi32.dll', 'crypt32.dll', 'cmd.exe') {
+        $candidate = Join-Path $os $name
+        if (!(Test-Path -LiteralPath $candidate)) { continue }
+        $member = Get-AuthenticodeSignature -LiteralPath $candidate
+        if ($member.Status -eq 'Valid' -and $member.SignatureType -eq 'Catalog') {
+            Copy-Item -LiteralPath $candidate -Destination catalog-member.dll
+            $catalogPin = $member.SignerCertificate.GetCertHashString([Security.Cryptography.HashAlgorithmName]::SHA256)
+            Write-Output "Windows catalog fixture: $name"
+            break
+        }
+    }
+    if (!$catalogPin) { throw "No Windows-trusted OS catalog member found in $os." }
+
     $major = [int]((dotnet --version).Split('.')[0])
     if ($major -lt 9) { throw 'Install a .NET SDK version 9 or later to run this test.' }
     Copy-Item -LiteralPath $source -Destination Authenticode.cs
+    Copy-Item -LiteralPath $catalogSource -Destination CatalogSignature.cs
     Set-Content -LiteralPath Probe.csproj -Value @"
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
@@ -67,8 +85,31 @@ bytes[0x40] ^= 1; // Covered DOS stub byte. Preserve the PE headers and signatur
 File.WriteAllBytes("damaged.exe", bytes);
 Reject("damaged.exe", pin, "Windows kunde inte verifiera");
 Console.WriteLine("PASS altered signed PE rejected");
+
+var catalogPin = args[1];
+CatalogSignature.Verify("catalog-member.dll", catalogPin);
+Console.WriteLine("PASS copied member of trusted installed catalog with expected publisher");
+
+void RejectCatalog(string file, string expected)
+{
+    try { CatalogSignature.Verify(file, expected); }
+    catch (InvalidDataException) { return; }
+    throw new Exception($"Unexpected catalog acceptance for {file}");
+}
+
+var otherPin = (catalogPin[0] == '0' ? "1" : "0") + catalogPin[1..];
+RejectCatalog("catalog-member.dll", otherPin);
+Console.WriteLine("PASS catalog with unapproved publisher rejected");
+RejectCatalog(typeof(CatalogSignature).Assembly.Location, catalogPin);
+Console.WriteLine("PASS PE absent from installed catalogs rejected");
+
+bytes = File.ReadAllBytes("catalog-member.dll");
+bytes[0x40] ^= 1;
+File.WriteAllBytes("catalog-member.dll", bytes);
+RejectCatalog("catalog-member.dll", catalogPin);
+Console.WriteLine("PASS altered catalog member rejected");
 '@
-    dotnet run --project Probe.csproj -- $pin
+    dotnet run --project Probe.csproj -- $pin $catalogPin
     if ($LASTEXITCODE -ne 0) { throw "Authenticode probe failed ($LASTEXITCODE)" }
     $damagedHash = (Get-FileHash -LiteralPath damaged.exe -Algorithm SHA256).Hash
     try {

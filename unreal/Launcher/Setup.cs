@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using System.Text.Json;
 
 namespace Lunden.Launcher;
@@ -153,7 +152,7 @@ internal sealed class Setup(SetupLayout layout, ISetupRegistration shell, Action
         using (LockUpdates()) {
             if (expectedRequest != null && (!File.Exists(layout.Intent) || File.ReadAllText(layout.Intent) != Request(expectedRequest, deleteData)))
                 throw new InvalidOperationException("Begäran har ersatts av en ny installation.");
-            EnsureGameStopped();
+            EnsureGameStopped(layout.InstallDir);
             try {
                 // A shell-registration failure leaves all package and user files intact.
                 shell.Unregister(layout);
@@ -203,10 +202,8 @@ internal sealed class Setup(SetupLayout layout, ISetupRegistration shell, Action
         }
     }
 
-    internal static void EnsureGameStopped()
+    internal static void EnsureGameStopped(string installRoot)
     {
-        var games = Process.GetProcessesByName(Path.GetFileNameWithoutExtension(ReleaseManifest.GameExe));
-        foreach (var process in games) process.Dispose();
-        if (games.Length != 0) throw new IOException("Stäng spelet och försök igen.");
+        if (GameProcess.IsRunning(installRoot)) throw new IOException("Stäng spelet och försök igen.");
     }
 }

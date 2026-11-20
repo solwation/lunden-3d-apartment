@@ -1,0 +1,114 @@
+[
+  {
+    "path": "Engine/Binaries/ThirdParty/DbgHelp/dbghelp.dll",
+    "publisher": "Microsoft Corporation",
+    "fingerprint": "0F8E191824716C293476BA7BCA6A8A3859C4E4D8C9BC261ED14086C782453701",
+    "type": "Authenticode",
+    "timestamp": true,
+    "sha256": "441A7CCEE2F854352366E783FCB79FE895D09AD4C577689319E1A664F296C4A3"
+  },
+  {
+    "path": "Engine/Binaries/ThirdParty/MsQuic/v220/win64/msquic.dll",
+    "publisher": "Microsoft Corporation",
+    "fingerprint": "6DFB94C073BA075667FCC19AB327AE679D84F2A2BCF76CC21ABFC9B93FEE61A5",
+    "type": "Authenticode",
+    "timestamp": true,
+    "sha256": "27C231D80310EA9005A6B0C17054F28887272723477E7292A7F9D63B6D1579EE"
+  },
+  {
+    "path": "Engine/Binaries/ThirdParty/NVIDIA/NVaftermath/Win64/GFSDK_Aftermath_Lib.x64.dll",
+    "publisher": "NVIDIA Corporation",
+    "fingerprint": "002B328B73FA0CA93CAF662E5FC73C8B74923643F9793D839B13D078B3F30775",
+    "type": "Authenticode",
+    "timestamp": true,
+    "sha256": "CE49BE4194706417CCDC57833AEC478FAA1E08646157688C879FE616D43ABD65"
+  },
+  {
+    "path": "Engine/Binaries/ThirdParty/Ogg/Win64/VS2015/libogg_64.dll",
+    "publisher": "Epic Games Inc.",
+    "fingerprint": "62DB4DB551211D6BE39734365DB1735697B995CB663BB48429A69129800673CC",
+    "type": "Authenticode",
+    "timestamp": true,
+    "sha256": "C719A5F165E4AFE29E92A7EEE9762C2E9F301A177885AB1AB8D2C7F57D4A86BF"
+  },
+  {
+    "path": "Engine/Binaries/ThirdParty/Vorbis/Win64/VS2015/libvorbisfile_64.dll",
+    "publisher": "Epic Games Inc.",
+    "fingerprint": "62DB4DB551211D6BE39734365DB1735697B995CB663BB48429A69129800673CC",
+    "type": "Authenticode",
+    "timestamp": true,
+    "sha256": "6D0E4395BC4D0EF501C3F7F7B4E63FA0CF2AB2CA80328560B7CB10E6D5A171CF"
+  },
+  {
+    "path": "Engine/Binaries/ThirdParty/Vorbis/Win64/VS2015/libvorbis_64.dll",
+    "publisher": "Epic Games Inc.",
+    "fingerprint": "62DB4DB551211D6BE39734365DB1735697B995CB663BB48429A69129800673CC",
+    "type": "Authenticode",
+    "timestamp": true,
+    "sha256": "B8A3E31A6C2D401809BAE7AA0FD29F49C2114EECCFBA4DC5C7AC8EDDBD4B7A98"
+  },
+  {
+    "path": "Engine/Binaries/ThirdParty/Windows/XAudio2_9/x64/xaudio2_9redist.dll",
+    "publisher": "Microsoft Corporation",
+    "fingerprint": "6AF516461F62D6E1EA76A39592028A75DEEAC93CD42253A1FBD4E1105ED63049",
+    "type": "Authenticode",
+    "timestamp": true,
+    "sha256": "E6AE545B31A5453F1B1002D434CC802A6088CF05C5FAA414D7EBE00264161506"
+  },
+  {
+    "path": "Engine/Binaries/Win64/tbb12.dll",
+    "publisher": "Epic Games Inc.",
+    "fingerprint": "62DB4DB551211D6BE39734365DB1735697B995CB663BB48429A69129800673CC",
+    "type": "Authenticode",
+    "timestamp": true,
+    "sha256": "F3D83F06AD0B14F61C9BB910E824488B2F05C35CDEA6803DAC5296927CCE2485"
+  },
+  {
+    "path": "Engine/Binaries/Win64/tbbmalloc.dll",
+    "publisher": "Epic Games Inc.",
+    "fingerprint": "62DB4DB551211D6BE39734365DB1735697B995CB663BB48429A69129800673CC",
+    "type": "Authenticode",
+    "timestamp": true,
+    "sha256": "6A3606A7791A0CD16866C746114E62A6109B5BB8E32AD7C30D0CF987EB9846D0"
+  },
+  {
+    "path": "Engine/Binaries/Win64/UnrealGame-Win64-Shipping.exe",
+    "publisher": "Epic Games Inc.",
+    "fingerprint": "62DB4DB551211D6BE39734365DB1735697B995CB663BB48429A69129800673CC",
+    "type": "Authenticode",
+    "timestamp": true,
+    "sha256": "E083AD2F827B2FBAB8EB4E04D6D1D541BE3D42D4883AADDF26BAB3DF62195953"
+  },
+  {
+    "path": "Engine/Binaries/Win64/D3D12/x64/D3D12Core.dll",
+    "publisher": "Microsoft Corporation",
+    "fingerprint": "90E78625BD66AB45B9D7846F8D00AD42C0B73E36920DD98B9EEA502C954E9CC8",
+    "type": "Authenticode",
+    "timestamp": true,
+    "sha256": "0AEB09F340927C785BC2703C2F43DEA8B1023F6B41318745F06A126689B0FE17"
+  },
+  {
+    "path": "Engine/Binaries/Win64/D3D12/x64/d3d12SDKLayers.dll",
+    "publisher": "Microsoft Corporation",
+    "fingerprint": "B41C444F8CBD49D1B27CC2C76E0F3FB042BF9970B6B6F6B57FC8976514B03952",
+    "type": "Authenticode",
+    "timestamp": true,
+    "sha256": "ADBB8FD0A5D8EFAC6DA6AA51F14636ADE54D61D1A56176663B085E304AAE5DDF"
+  },
+  {
+    "path": "Engine/Binaries/Win64/DML/x64/DirectML.dll",
+    "publisher": "Microsoft Windows Publisher",
+    "fingerprint": "27FF1E764E0C7F97F14A9264024BCECE3124CE9E38836F2BFBAEA755292CBC38",
+    "type": "Catalog",
+    "timestamp": true,
+    "sha256": "F7B3FA0FD8CB4F4A12021E1E623F2FE7D8FB5BDF88BD1DCFB74C3F109340B3F2"
+  },
+  {
+    "path": "Engine/Plugins/NNE/NNERuntimeORT/Binaries/ThirdParty/Onnxruntime/Win64/onnxruntime.dll",
+    "publisher": "Microsoft Corporation",
+    "fingerprint": "B41C444F8CBD49D1B27CC2C76E0F3FB042BF9970B6B6F6B57FC8976514B03952",
+    "type": "Authenticode",
+    "timestamp": true,
+    "sha256": "EACC4D935137D67AB0CC1B896472D1DE551DFC6545ED9AD74AB842400272E036"
+  }
+]

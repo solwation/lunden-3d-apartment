@@ -15,6 +15,10 @@ internal sealed record ReleaseManifest(int FormatVersion, string Channel, DateTi
     AppRelease App, ContentRelease Content, LauncherRelease Launcher)
 {
     internal const string GameExe = "Lunden/Binaries/Win64/Lunden-Win64-Shipping.exe";
+    internal const string StockGameExe = "Engine/Binaries/Win64/UnrealGame-Win64-Shipping.exe";
+    // A previously accepted package keeps its project launcher and Lunden-only publisher rule,
+    // including when a second executable happens to have the stock engine's name.
+    internal string EntryPoint => App.Files.Any(f => f.Path == GameExe) ? GameExe : StockGameExe;
     internal static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web) {
         PropertyNameCaseInsensitive = false, RespectRequiredConstructorParameters = true,
         RespectNullableAnnotations = true, AllowDuplicateProperties = false
@@ -46,7 +50,9 @@ internal sealed record ReleaseManifest(int FormatVersion, string Channel, DateTi
                 throw new InvalidDataException("Ogiltig eller upprepad sökväg.");
             ValidateDownload(file.Url, file.Size, file.Sha256, channel);
         }
-        if (!manifest.App.Files.Any(f => f.Path == GameExe) || paths.Any(p => Ancestors(p).Any(paths.Contains)))
+        if (!manifest.App.Files.Any(f => f.Path is GameExe or StockGameExe)
+            || (manifest.EntryPoint == StockGameExe && paths.Contains(GameExe))
+            || paths.Any(p => Ancestors(p).Any(paths.Contains)))
             throw new InvalidDataException("Programmets filträd är ogiltigt.");
         ValidateDownload(manifest.Launcher.Url, manifest.Launcher.Size, manifest.Launcher.Sha256, channel);
         return manifest;

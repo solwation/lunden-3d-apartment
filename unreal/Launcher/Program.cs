@@ -38,7 +38,7 @@ internal static class Program
             string root = Path.Combine(local, "Programs", name);
             string userData = Path.Combine(local, name);
             using var http = new HttpClient {Timeout = TimeSpan.FromSeconds(20)};
-            var store = new UpdateStore(root, http, path => Authenticode.Verify(path, signer));
+            var store = new UpdateStore(root, http, (path, file, stock) => StockRuntime.Verify(path, file, stock, signer));
             using var maintenance = options.DryRun || !OperatingSystem.IsWindows() ? null : SetupLayout.Current(options.Channel).MaintenanceLock();
             using var lease = options.DryRun ? null : store.Lock();
             var state = store.Load(options.Channel);
@@ -84,7 +84,7 @@ internal static class Program
                 }
             }
             if (options.DryRun) return state.Active == null ? 1 : 0;
-            return await RunInstalled(store, state, key, userData, StartGame);
+            return await RunInstalled(store, state, key, userData, (info, _, pending) => StartGame(info, pending));
         }
         catch (Exception ex) when (ExpectedFailure(ex)) {
             Console.Error.WriteLine($"Lunden kunde inte startas. {ex.Message}");
@@ -93,14 +93,15 @@ internal static class Program
     }
 
     internal static async Task<int> RunInstalled(UpdateStore store, InstallState state, ECDsa key, string userData,
-        Func<UpdateStore, Installation, string, bool, Task<bool>> startGame)
+        Func<ProcessStartInfo, Installation, bool, Task<bool>> startGame)
     {
         if (state.Active == null) throw new InvalidOperationException("Ingen installerad version finns.");
         try { store.Prune(state); }
         catch (Exception ex) when (ExpectedFailure(ex)) { Console.Error.WriteLine($"Kunde inte rensa versioner. {ex.Message}"); }
         try {
-            await store.VerifyInstalled(state.Active, key, state.Channel, default);
-            if (await startGame(store, state.Active, userData, state.Pending)) {
+            string entry = await store.VerifyInstalled(state.Active, key, state.Channel, default);
+            Directory.CreateDirectory(userData);
+            if (await startGame(GameProcess.StartInfo(store.GameFile(state.Active, ""), entry, userData), state.Active, state.Pending)) {
                 try { store.Confirm(state); }
                 catch (Exception ex) when (ExpectedFailure(ex)) {
                     // The game is already running. Recheck it on the next launch.
@@ -114,18 +115,15 @@ internal static class Program
             Console.Error.WriteLine($"Den aktiva versionen kunde inte startas. {ex.Message}");
         }
         if (state.Previous == null) return 1;
-        await store.VerifyInstalled(state.Previous, key, state.Channel, default);
+        string previousEntry = await store.VerifyInstalled(state.Previous, key, state.Channel, default);
         store.Rollback(state);
         Console.WriteLine("Startar den föregående fungerande versionen.");
-        return await startGame(store, state.Previous, userData, false) ? 0 : 1;
+        Directory.CreateDirectory(userData);
+        return await startGame(GameProcess.StartInfo(store.GameFile(state.Previous, ""), previousEntry, userData), state.Previous, false) ? 0 : 1;
     }
 
-    static async Task<bool> StartGame(UpdateStore store, Installation version, string userData, bool pending)
+    static async Task<bool> StartGame(ProcessStartInfo info, bool pending)
     {
-        string exe = store.GameFile(version, ReleaseManifest.GameExe);
-        Directory.CreateDirectory(userData);
-        var info = new ProcessStartInfo(exe) {WorkingDirectory = store.GameFile(version, ""), UseShellExecute = false};
-        info.ArgumentList.Add("-UserDir=" + userData);
         using var game = Process.Start(info) ?? throw new IOException("Windows kunde inte starta spelet.");
         if (!pending) return true;
         var exit = game.WaitForExitAsync();

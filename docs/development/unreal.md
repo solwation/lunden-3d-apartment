@@ -451,14 +451,16 @@ The .NET 10 console launcher in `unreal/Launcher/` uses the proposed v1 manifest
 The signature is a sibling `.json.sig` file containing a 64-byte ECDSA P-256 signature
 (IEEE P1363, SHA-256) over the exact UTF-8 manifest bytes. The launcher embeds the **public**
 SPKI PEM and the expected Authenticode leaf certificate's SHA-256 fingerprint at build time.
-The publisher must hash binaries after signing. Each executable and DLL must pass both the
-manifest check and Windows Authenticode verification for the configured certificate.
+The publisher hashes binaries after signing. The launcher and project-owned executables and DLLs
+must pass Windows Authenticode verification against the configured certificate. The stock engine
+uses the separate embedded inventory described below. Every downloaded file must match the size
+and SHA-256 in the signed manifest.
 
 The [Windows launcher tests](../../.github/workflows/launcher-tests.yml) run on a
 GitHub-hosted Windows runner when the launcher, its tests or the workflow changes
 on `main`. The workflow can also be started manually. It runs the .NET 10 xUnit
 suite, including Windows file locks and real Start-menu shortcut handling, and
-the four native Authenticode checks against temporary files. Run these tests
+native signature checks against temporary files. Run these tests
 through Actions on development hosts protected by Smart App Control, which can
 block unsigned test assemblies. The workflow only needs repository read access.
 
@@ -500,13 +502,42 @@ A build without the public manifest key supports `--help` and declines updates.
 - The launcher verifies installed bytes and the cached manifest before offline play. The shipping
   executable starts in its complete package tree with `-UserDir=%LOCALAPPDATA%\Lunden` (or
   `Lunden-Test`). An immediate nonzero exit within eight seconds on the new version triggers
-  rollback when a previous installation exists. For troubleshooting, launch
-  `Lunden/Binaries/Win64/Lunden-Win64-Shipping.exe` in the active game tree with the same
-  `-UserDir` argument. `Lunden.exe --offline` bypasses the network explicitly.
+  rollback when a previous installation exists. Both supported layouts start from the archive
+  root. Legacy manifests retain `Lunden/Binaries/Win64/Lunden-Win64-Shipping.exe`. Content-only
+  manifests select `Engine/Binaries/Win64/UnrealGame-Win64-Shipping.exe` and pass
+  `..\..\..\Lunden\Lunden.uproject` as the first argument, followed by `-UserDir`. The game
+  mounts its project descriptor from the pak. `Lunden.exe --offline` skips the network.
+  Uninstallation and pruning guard both executable names and identify a running game by its
+  full path inside the current channel's installation.
 - A minimum launcher upgrade starts a verified copy of the current launcher as a helper. It
   waits for the parent to exit, acquires the installation lock, rechecks the signed replacement
   and swaps it into place. If starting the replacement fails, it restores the previous verified
   executable and starts it offline. The installed channel and manifest override survive restart.
+
+**Content-only Windows runtime.** The launcher's
+[UE 5.8.4 inventory](../../unreal/Launcher/Unreal-5.8.4-win64.json) names all 14 approved vendor
+images by case-sensitive archive path, full-file SHA-256, signing method and leaf certificate
+SHA-256. Each must appear in `app.files`. A stock update checks all 14 before activation, even
+when reusing staged or already installed bytes. Thirteen use embedded publisher signatures.
+Microsoft's `DirectML.dll` requires a trusted catalog installed on the target Windows machine, the
+bound file member and the pinned catalog signer. A missing, untrusted or different catalog
+prevents activation and preserves the prior installation. Every offline launch rechecks the signed
+manifest, inventory and actual installed bytes. The launcher's publisher pin continues to apply
+to project-owned images in `Lunden/`. An unknown engine executable or DLL rejects the stock update.
+
+For an engine update, validate the replacement vendor bytes and signatures independently, review
+the inventory and deliver it in a signed launcher first. Raise the manifest's `app.minLauncher`
+to that launcher's released version. Retain any approved previous-generation inventory needed for
+offline rollback. The original launcher only parses legacy layouts: to migrate existing installations,
+publish a signed transition manifest in the legacy layout requiring the new launcher, or use a verified
+new installer. A manifest alone cannot change the embedded trust policy.
+
+The real stock archive matched all 14 inventoried PE paths and full-file SHA-256 digests. Its pak
+contained the mounted project and the archive had no loose project descriptor. A Windows smoke
+launch of the signed Epic executable from the archive root stayed responsive for 45 seconds,
+loaded the staged DLLs and created `Saved` below the isolated `-UserDir`. This direct test did
+not exercise a signed Lunden update. The target machine must also be able to verify the DirectML
+catalog during first installation or update.
 
 **Verification on 2026-11-20.** The isolated loopback fixture covered changed-file-only updates,
 interruption and resumption, incompatible ABI, signature/publisher/hash rejection, interrupted

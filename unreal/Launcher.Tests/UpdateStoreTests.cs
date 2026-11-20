@@ -44,7 +44,8 @@ public sealed class UpdateStoreTests : IAsyncLifetime
         });
         await server.StartAsync();
         origin = new Uri(server.Urls.Single());
-        store = new(Path.Combine(temp, "install"), http, file => {
+        store = new(Path.Combine(temp, "install"), http, (file, _, stock) => {
+            Assert.False(stock);
             Assert.EndsWith(".exe", file);
             if (unsigned) throw new InvalidDataException("Testutgivaren avvisade filen.");
         });
@@ -116,8 +117,9 @@ public sealed class UpdateStoreTests : IAsyncLifetime
         // Simulate an early failure, then remove the server altogether. Starting
         // offline can still validate the intact previous files and user save.
         var starts = new List<Installation>();
-        Assert.Equal(0, await Program.RunInstalled(store, store.Load("test"), key, temp, (_, candidate, userData, pending) => {
-            Assert.Equal(temp, userData);
+        Assert.Equal(0, await Program.RunInstalled(store, store.Load("test"), key, temp, (info, candidate, pending) => {
+            Assert.Equal(["-UserDir=" + temp], info.ArgumentList);
+            Assert.Equal(store.GameFile(candidate, ReleaseManifest.GameExe), info.FileName);
             starts.Add(candidate);
             return Task.FromResult(!pending);
         }));
@@ -125,7 +127,7 @@ public sealed class UpdateStoreTests : IAsyncLifetime
         Assert.Equal(second, store.Load("test").Active);
         await Assert.ThrowsAsync<InvalidDataException>(() => Apply(v3));
         await server.StopAsync();
-        Assert.Equal(0, await Program.RunInstalled(store, store.Load("test"), key, temp, (_, candidate, _, _) => {
+        Assert.Equal(0, await Program.RunInstalled(store, store.Load("test"), key, temp, (_, candidate, _) => {
             Assert.Equal(second, candidate);
             return Task.FromResult(true);
         }));
@@ -150,7 +152,7 @@ public sealed class UpdateStoreTests : IAsyncLifetime
         var current = await Apply(update);
         string extra = store.GameFile(current, "unexpected.dll");
         await System.IO.File.WriteAllTextAsync(extra, "not part of this release");
-        Assert.Equal(0, await Program.RunInstalled(store, store.Load("test"), key, temp, (_, install, _, _) => {
+        Assert.Equal(0, await Program.RunInstalled(store, store.Load("test"), key, temp, (_, install, _) => {
             Assert.Equal(previous, install);
             return Task.FromResult(true);
         }));
