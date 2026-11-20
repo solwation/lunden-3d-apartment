@@ -1967,3 +1967,16 @@ The per-profile `lunden.stats` record gains `scooterMetres` (fractional metres r
 `scooterJumpCm` and `scooterTopKmh` (best values, `stats.js recordBest`) and `scooterTunes`, all finite non-negative numbers with a
 legacy default 0 (repaired on load). All five sync as `/boards` counters (`src/boardcatalog.js COUNTERS`), so the Worker must be deployed
 with the client for them to be accepted. The scooters themselves (where they stand, which are tuned) are not saved: a reload resets them.
+
+## NES score sources (#2239)
+
+Each reviewed iNES byte stream has one SHA-256 entry in `src/nesboards.js`. Create a reader from the exact bytes passed to jsnes, sample `nes.cpu.mem` after each emulated frame and submit its positive best via `GameBoards.submit(reader.game, reader.result())` at the end of play. Unknown hashes and browsers without Web Crypto have no reader. Each higher-is-better board uses the existing player identity, portrait and local fallback. Use a new board ID for a ROM revision whose scores are incompatible. The reviewed releases and the corresponding source for Thwaite are listed in the [cartridge provenance](../../data/nes/homebrew/README.md).
+
+| Board | Score and evidence for the exact release |
+| --- | --- |
+| Fånga ljuset | The MIT generator in `tools/retro2231/make_rom.py` increments byte $02 on target contact. OAM tiles $0201 and $0205 identify completed initialization. |
+| Thwaite | In version 0.03, `src/bg.s` adds to a low byte modulo 100 and a binary hundreds byte. The `addScore` instruction sequence at iNES file offset $08EF accesses $03D6 and $03D5. The title/restart and game-state code sets $3D (player count), $54 (practice) and $3C (state). Only ordinary single-player states 1–7 qualify. |
+| LAN Master | In Shiru's `game.asm`, `levelClear` increments $D7 and selects the clear panel at $EDAE (file offset $0143). Count levels cleared consecutively from the first. A level set through the password menu cannot credit earlier stages. Require real play on the preceding level ($B7) and a completed network ($C7). |
+| Lawn Mower | In Shiru's `game.asm`, `levelClear` increments $CA and compares it with 10 (file offset $0639). Read the number of completed lawns, excluding samples where the built-in level skip $B4 is enabled. |
+
+The Worker validates the exact digest, integer score and active play duration before accepting a result under the existing per-IP write limiter. The cartridge maxima are 255, 25,599, 50 and 10 respectively. Additional per-second limits are permissive estimates, except the light moves 32 pixels after a catch and the player can move one pixel per frame. The client measures elapsed gameplay in emulated frames at 60 Hz. Scores are **client-reported**. Tests use a real input-only catch in jsnes, RAM boundary cases for the other games and HTTP requests against the Worker.

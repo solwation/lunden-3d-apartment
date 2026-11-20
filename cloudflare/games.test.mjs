@@ -72,3 +72,26 @@ test('#1585: game rows keep the look code; invalid codes are ignored; same name 
  await env.LUNDEN.put('game:klossar',JSON.stringify([{id:'player-old-1',name:'Gammal',score:50,updated:1}]));
  assert.deepEqual((await (await call(env,'/games/klossar')).json()).map(r=>[r.name,r.score,r.avatar]),[['Gammal',50,undefined]]);
 });
+
+test('NES boards bind client-reported results to their reviewed ROM and time bound', async () => {
+  const { NES_BOARDS } = await import('../src/nesboards.js');
+  const env = { LUNDEN: kv() };
+  const body = { id: 'player-nes-1', name: 'Sam', score: 3, ms: 10000 };
+  for (const [game, { sha256, max }] of Object.entries(NES_BOARDS)) {
+    assert.equal((await post(env, game, body)).status, 400);
+    assert.equal((await post(env, game, { ...body, sha256: sha256.slice(1) })).status, 400);
+    assert.equal((await post(env, game, { ...body, sha256, ms: 1 })).status, 400);
+    assert.equal((await post(env, game, { ...body, sha256, score: max + 1 })).status, 400);
+    assert.equal((await post(env, game, { ...body, sha256 })).status, 200);
+    const rows = await (await call(env, '/games/' + game)).json();
+    assert.deepEqual(rows.map(row => [row.name, row.score]), [['Sam', 3]]);
+  }
+  assert.equal((await call(env, '/games/nes-unknown')).status, 404);
+  const url = new URL('https://w.test/games/nes-lightcatch');
+  const request = () => new Request(url, { method: 'POST', body: JSON.stringify({
+    ...body, sha256: NES_BOARDS['nes-lightcatch'].sha256,
+  }), headers: { Origin: 'https://solwation.github.io', 'CF-Connecting-IP': '192.0.2.113' } });
+  let response;
+  for (let i = 0; i < 31; i++) response = await worker.fetch(request(), env);
+  assert.equal(response.status, 429);
+});

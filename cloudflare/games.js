@@ -1,4 +1,5 @@
 import { GAME_BOARDS as G, BLOCKS, METEORS, avatarCodeValid } from '../src/config.js';
+import { NES_BOARDS, maxNesScore } from '../src/nesboards.js';
 import { rowKey } from '../src/rowkey.js';
 
 // #1577: global top lists for the computer games, one KV key per game ('game:<game>': all rows { id, name, score, updated, avatar? },
@@ -6,7 +7,7 @@ import { rowKey } from '../src/rowkey.js';
 // /scores (#198/#677: '' = "Anonym", an anonymous post never strips an earlier name). Klossar and Meteoriter are posted by the
 // client when a round ends, so their scores are only bounded by what the rules can give in the stated round time (*guess*
 // limits in src/config.js GAME_BOARDS); Ormstriden rows are written by the players' room from the server arena (snake.js).
-export const GAMES = Object.keys(G.games);
+export const GAMES = [...Object.keys(G.games), ...Object.keys(NES_BOARDS)];
 const ID = /^[A-Za-z0-9-]{6,64}$/;
 export const cleanGameName = (name) => typeof name === 'string' ? name.replace(/[\u0000-\u001f<>&"]/g, '').trim().slice(0, 20) : '';
 const int = (v, lo, hi) => Number.isInteger(v) && v >= lo && v <= hi;
@@ -24,6 +25,9 @@ export const publicRows = (rows) => Promise.all(rows.map(async ({ id, name, scor
 
 /** The highest score the rules allow for a single-player round, or -1 when the stated round is impossible. */
 export function maxScore(game, b) {
+  if (Object.hasOwn(NES_BOARDS, game)) {
+    return int(b.ms, 1, G.maxMs) ? maxNesScore(game, b.sha256, b.ms) : -1;
+  }
   if (!int(b.ms, G.minMs, G.maxMs)) return -1;
   const seconds = b.ms / 1000;
   if (game === 'klossar') {

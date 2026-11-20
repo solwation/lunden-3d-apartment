@@ -4,7 +4,7 @@ import { youtubeSearchFetch, cinemaPostersFetch } from './youtubesearch.js';
 import { playroomPostersFetch } from './playroomposters.js';
 import { layoutFetch } from './layout.js';
 import { crashFetch } from './crash.js';
-import { gamesFetch, cleanLook, publicRows } from './games.js';
+import { GAMES, gamesFetch, cleanLook, publicRows } from './games.js';
 import { PlayerRoom, refuse, CLOSE } from './players.js';
 import { boardsFetch } from './boards.js';
 export { PlayerRoom };
@@ -306,7 +306,7 @@ const worker = {
       const one = url.searchParams.get('id');
       if (id === 'scores' && one) await env.LUNDEN.put('scores', JSON.stringify((await getList(env, 'scores')).filter((r) => r.id !== one && r.name !== one)));
       else if (all || id === 'scores') await env.LUNDEN.delete('scores');
-      if (id === 'games') for (const g of ['ormstriden', 'klossar', 'meteoriter']) await env.LUNDEN.delete(`game:${g}`); // #1577
+      if (id === 'games') for (const g of GAMES) await env.LUNDEN.delete(`game:${g}`); // #1577
       return json({ ok: true }, 200, h);
     }
     return fail(404, 'not found', h);
