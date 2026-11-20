@@ -12,7 +12,7 @@ import { pumpWire } from './gympump.js';
 import { updateFace } from './avatarface.js'; // #2031
 import { updateBreath, BreathPuffs } from './avatarbreath.js'; // #2037
 import * as THREE from 'three';
-import { FALL, SELF_STAND, TOAST, SOUNDS, KISS, HUG, REACT, REST, SEAT_LEGS } from './config.js';
+import { CUE_ARM, FALL, SELF_STAND, TOAST, SOUNDS, KISS, HUG, REACT, REST, SEAT_LEGS } from './config.js';
 import { chooseGazeTarget } from './avatargaze.js';
 import { AVATAR_GAZE } from './config.js';
 import { makesSteps, strideFor } from './spatialsound.js';
@@ -40,6 +40,7 @@ import { AvatarLight } from './avatarlight.js'; // #2017: the avatars' light fol
 import { AvatarShadows } from './avatarshadow.js'; // #2010: soft contact shadows, one draw call
 import { GhostFar } from './ghostfar.js'; // #1966: far players as one draw call
 import { mouthPose, blendHand } from './avatarmouth.js'; // #2160
+import { cueArms, newCueArms, strokePull } from './avatarcue.js'; // #2162
 import { stepBikeRide, bikeGrip, bikeSeat } from './bikeride.js';
 import { ghostProp, ghostJetpack, ghostBike, ghostItem } from './ghostprops.js'; // what an armed player holds: their weapon's own model (#667, #1126)
 
@@ -318,6 +319,36 @@ export class Ghost { // (exported for tools/ghostprops.html)
     }
   }
 
+  /** #2162: the arms of a figure aiming at the billiard table (billiards.js hands over `cueRig`, the world-space cue frame, while it draws their cue):
+   * writes the bridge (L) and stroke (R) hand targets into `hands`, eased in and out; the forward stroke runs here when the cue vanishes after a charge.
+   * Returns the torso lean to add (rad, negative = forward). Nothing happens, and nothing is allocated, for a figure that is not aiming. */
+  poseCue(t, dt, hands) {
+    const k = this.cueK ??= { w: 0, tip: [0, 0, 0], u: [0, 0, 0], pull: 0, shot: -1, v: null };
+    const rig = this.cueRig, aiming = !!rig && !!this.cue && this.hi === 'cue' && t - rig.t < 400;
+    if (aiming) {
+      k.tip[0] = rig.tip[0]; k.tip[1] = rig.tip[1]; k.tip[2] = rig.tip[2]; k.u[0] = rig.u[0]; k.u[1] = rig.u[1]; k.u[2] = rig.u[2];
+      k.pull = rig.pull; k.shot = -1; k.seen = true;
+    } else if (k.seen) { // the cue vanished: after a charge that is the stroke (the table then draws it); after nothing it is only the end of aiming
+      k.seen = false;
+      if (k.pull > 0.02) k.shot = t;
+    }
+    let pull = k.pull;
+    if (!aiming && k.shot >= 0) { const sp = strokePull(k.pull, (t - k.shot) / 1000); if (sp === null) k.shot = -1; else pull = sp; }
+    const on = aiming || k.shot >= 0;
+    k.w = on ? Math.min(1, k.w + dt * CUE_ARM.ease) : Math.max(0, k.w - dt * CUE_ARM.ease);
+    if (!k.w) return 0;
+    const o = this.avatar.object; o.updateWorldMatrix(true, false);
+    const v = k.v ??= { tip: new THREE.Vector3(), end: new THREE.Vector3(), a: [0, 0, 0], u: [0, 0, 0], arms: newCueArms() };
+    o.worldToLocal(v.tip.set(k.tip[0], k.tip[1], k.tip[2]));
+    o.worldToLocal(v.end.set(k.tip[0] + k.u[0], k.tip[1] + k.u[1], k.tip[2] + k.u[2])).sub(v.tip);
+    const len = v.end.length() || 1; // (the figure's own scale: its frame is in unscaled metres, the cue is not)
+    v.a[0] = v.tip.x; v.a[1] = v.tip.y; v.a[2] = v.tip.z; v.u[0] = v.end.x / len; v.u[1] = v.end.y / len; v.u[2] = v.end.z / len;
+    const arms = cueArms(v.a, v.u, pull / o.scale.y, v.arms);
+    hands.L = blendHand(hands.L ?? armTarget.rest(1), arms.L, k.w);
+    hands.R = blendHand(hands.R ?? armTarget.rest(-1), arms.R, k.w);
+    return arms.lean * k.w;
+  }
+
   /** #2160: start a sip / bite / toast move now (`t` as animate's clock); unknown kinds are ignored by mouthPose. */
   startMouth(kind, t = performance.now()) { this.mouth = { kind, start: t }; }
 
@@ -460,8 +491,9 @@ export class Ghost { // (exported for tools/ghostprops.html)
       hands.R = armTarget.up(-1, (G.wave - this.waveT) * 11);
     }
     if (this.heldCat.object) Object.assign(hands, this.heldCat.hands());
-    this.avatar.setGrip('R', gripFor(showItem ? this.hi : '', this.prop ? this.h : '')); // #2016: the fingers close round what is held (no new wire field: `hi` / `h`)
+    this.avatar.setGrip('R', gripFor(showItem || this.cueK?.w > 0.5 ? this.hi : '', this.prop ? this.h : '')); // #2016: the fingers close round what is held (no new wire field: `hi` / `h`)
     Object.assign(hands, this.hands);
+    const cueLean = this.poseCue(t, dt, hands); // #2162: aiming at the billiard table: bent over it, the bridge hand near the tip, the stroke hand on the butt
     let mouthHead = 0, mouthLean = 0; // #2160: a sip / bite / toast: the right wrist to the mouth (or the glass up), the head tipped back
     if (this.mouth) {
       const mp = mouthPose(this.mouth.kind, (t - this.mouth.start) / 1000, -1, this.mouthOut ??= { w: 0, hand: { at: [0, 0, 0], pole: [0, 0, 0] }, head: 0, lean: 0 });
@@ -514,6 +546,7 @@ export class Ghost { // (exported for tools/ghostprops.html)
     this.avatar.collectPose = false;
     if (this.carryLean && this.avatar.pendingPose && !amount && !air) this.avatar.pendingPose.lean += this.carryLean; // #2144
     if (mouthLean && this.avatar.pendingPose && !amount && !air) this.avatar.pendingPose.lean += mouthLean; // #2160
+    if (cueLean && this.avatar.pendingPose && !amount && !air && !this.pose) this.avatar.pendingPose.lean += cueLean; // #2162
     poseOlof(this.avatar, this.avatar.pendingPose);
     this.heldCat.update(this.avatar, this.root);
     if (this.tag) {

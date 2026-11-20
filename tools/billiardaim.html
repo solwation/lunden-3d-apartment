@@ -1,0 +1,48 @@
+<!doctype html><html><meta charset="utf-8"><link rel="icon" href="data:,"><title>Billiard aiming figure</title><script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script><style>body{margin:0;background:#20252b}canvas{display:block}</style><script type="module">
+// #2162 component page: a real Ghost (a remote player) and the real Billiards table; the table hands the figure its cue frame like main.js wires it
+// (billiards.peers). `window.__aim.pose(power, rig)` steps the figure for a while and returns the world positions of the hands and the cue line.
+// Driven by tools/billiardaimtest.cjs.
+let vnow = 1000; performance.now = () => vnow; // a virtual clock: the table stamps its cue frames with it and the figure reads it, so a step is 33 ms however fast the loop runs
+import * as T from 'three';
+import { Ghost } from '../src/ghosts.js';
+import { Billiards } from '../src/billiards.js';
+const W = 1000, H = 640, scene = new T.Scene(); scene.background = new T.Color(0x20252b);
+scene.add(new T.HemisphereLight(0xffffff, 0x445566, 2.2), new T.AmbientLight(0xffffff, 1)); const sun = new T.DirectionalLight(0xfff2df, 2); sun.position.set(2, 4, 3); scene.add(sun);
+const renderer = new T.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true }); renderer.setSize(W, H); renderer.setPixelRatio(1); document.body.append(renderer.domElement);
+const camera = new T.PerspectiveCamera(42, W / H, 0.05, 50);
+const b = new Billiards(); b.active = true; b.object.rotation.y = Math.PI / 2; b.object.position.set(0.4, 0, -0.2); scene.add(b.object); // (a yawed table, like the playroom's, to prove the world conversion)
+const ghost = new Ghost(scene, 7, 'Spelare', false); ghost.root.visible = true;
+b.peers = () => [ghost];
+const up = new T.Vector3(0, 1, 0), ball = new T.Vector3(), dirL = new T.Vector3(1, 0, 0.12).normalize();
+let stand = [0, 0, 0], time = 1000; const dt = 0.033;
+const dirW = () => dirL.clone().applyAxisAngle(up, b.object.rotation.y);
+function place(dist) { // the player's feet `dist` m behind the cue ball along the aim, facing along it
+  b.object.updateMatrixWorld(true); const bl = b.physics.balls[0]; ball.set(bl.x, b.c.height + b.c.ballR, bl.z); b.object.localToWorld(ball);
+  const d = dirW(); stand = [ball.x - d.x * dist, 0, ball.z - d.z * dist]; ghost.push({ p: stand, r: Math.atan2(-d.x, -d.z), hi: 'cue', look: [0, -0.5], cq: [dirL.x, dirL.z, 0.01] }, time);
+}
+function step(n, power, cue = true) {
+  for (let i = 0; i < n; i++) {
+    const d = dirW(); time += 33; vnow = time;
+    ghost.push({ p: stand, r: Math.atan2(-d.x, -d.z), hi: 'cue', look: [0, -0.5], cq: cue ? [dirL.x, dirL.z, power] : null }, time);
+    scene.updateMatrixWorld(true); b.update(dt, null, false); ghost.draw(time, camera.position); scene.updateMatrixWorld(true);
+  }
+}
+const world = (v) => v.toArray().map((x) => Math.round(x * 1000) / 1000);
+function state() {
+  const L = ghost.avatar.hand('L', new T.Vector3()), R = ghost.avatar.hand('R', new T.Vector3()), m = b.remoteCues[0];
+  const tip = m?.visible ? m.position.clone() : null; if (tip) b.object.localToWorld(tip);
+  const q = m ? new T.Vector3(0, 1, 0).applyQuaternion(m.quaternion).transformDirection(b.object.matrixWorld) : null; // the cue's axis (butt direction), world
+  const off = (p) => { if (!tip) return null; const w = p.clone().sub(tip), along = w.dot(q); return { along: Math.round(along * 1000) / 1000, off: Math.round(w.addScaledVector(q, -along).length() * 1000) / 1000 }; };
+  return { L: world(L), R: world(R), cueVisible: !!m?.visible, cueTip: tip && world(tip), cueAxis: q && world(q), Lc: off(L), Rc: off(R), pull: m?.userData.pull ?? 0, rig: !!ghost.cueRig, w: ghost.cueK?.w ?? 0,
+    lean: ghost.avatar.pendingPose?.lean ?? null, headY: world(ghost.avatar.bones.head.getWorldPosition(new T.Vector3())) };
+}
+function view(kind) { // a 3/4 view from the figure's left and above (kind 'side'), or from the front (the other player's view, 'front')
+  const d = dirW(), c = ball.clone().addScaledVector(d, -0.45); c.y = 1;
+  const side = new T.Vector3(-d.z, 0, d.x); // (the figure's left)
+  if (kind === 'side') camera.position.copy(c).addScaledVector(side, 2.3).addScaledVector(d, 0.2).setY(1.55);
+  else camera.position.copy(c).addScaledVector(d, 2.4).addScaledVector(side, -0.6).setY(1.5);
+  camera.lookAt(c.x, 1.0, c.z); camera.updateProjectionMatrix(); renderer.render(scene, camera);
+}
+window.__aim = { place, step, state, view, ghost, b, renderer, calls: () => renderer.info.render.calls, setRig: (on) => { b.peers = on ? () => [ghost] : () => []; }, ready: true };
+place(0.8); step(40, 0.01);
+</script></html>

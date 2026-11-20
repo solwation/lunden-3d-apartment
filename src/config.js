@@ -9056,6 +9056,15 @@ export const MOUTH = {
   toast: { dur: 1.6, up: 0.25, down: 0.3, head: 0.1, lean: 0.0, hand: [-0.2, 1.5, 0.5], pole: [-0.8, -0.4, -0.3] },
 };
 
+// #2162: how a remote figure bends over the billiard table while it aims (src/avatarcue.js). Figure frame, metres; all *guess*: shoulder = where the
+// arm starts (y of the 1.8 m figure), bridgeS = the left hand's rest on the felt that far behind the cue tip, gripS = the right hand's grip that far
+// from the tip along the cue (it moves with the pull-back), reach = the longest wrist-to-shoulder distance asked of an arm (beyond it the hand falls
+// short of the cue), comfort = the distance at which the body starts leaning on top of the base bend, lean = forward torso bend (rad): base + k per
+// metre beyond comfort, capped at max (a bounded bend so the figure never folds); hold = seconds the weight eases in / out; shot = extra seconds the
+// forward stroke stays after the table sees the cue vanish.
+export const CUE_ARM = { shoulderY: 1.42, shoulderX: 0.2, bridgeS: 0.22, gripS: 0.8, reach: 0.78, comfort: 0.5, leanBase: 0.3, leanK: 0.55, leanMax: 0.85, ease: 7, shot: 0.05,
+  poleL: [0.55, -0.7, -0.4], poleR: [-0.7, -0.4, -0.5] };
+
 // #2153: room acoustics. One shared reverb send bus feeds two ConvolverNodes (crossfaded between zones) with procedural impulse
 // responses (decaying noise, no files). All values are *guess*: no acoustic measurements exist; chosen to be audible but modest.
 // rt60 = seconds to -60 dB; damp = [lowpass Hz at t=0, Hz at rt60] (the tail darkens); pre = pre-delay s; wet = send level into the

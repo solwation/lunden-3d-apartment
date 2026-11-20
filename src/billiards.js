@@ -224,6 +224,13 @@ export class Billiards {
     const c=this.c;mesh.position.copy(origin).addScaledVector(dir,-c.ballR*2-back);
     this.axis.set(-dir.x,.12,-dir.z).normalize();mesh.quaternion.setFromUnitVectors(this.up,this.axis);
   }
+  /** #2162: the world-space cue frame of an aiming player's cue (rest tip behind the ball, tip-to-butt axis, pull-back in m) for their figure's arms (Ghost.animate). */
+  giveCueRig(g,origin,pull) {
+    const r=g.cueRig??={tip:[0,0,0],u:[0,0,0],pull:0,t:0},d=this.remoteDir,c=this.c;
+    this.axis.copy(d).multiplyScalar(-c.ballR*2).add(origin);this.object.localToWorld(this.axis);r.tip[0]=this.axis.x;r.tip[1]=this.axis.y;r.tip[2]=this.axis.z;
+    this.axis.set(-d.x,.12,-d.z).normalize().applyAxisAngle(this.up,this.object.rotation.y);r.u[0]=this.axis.x;r.u[1]=this.axis.y;r.u[2]=this.axis.z;
+    r.pull=pull;r.t=performance.now();
+  }
   /** #1637: one cue per other player aiming at the table (their [dx, dz, power] from the player state), hidden while balls roll. */
   updateRemoteCues(dt,origin) {
     let n=0;const c=this.c,still=!this.physics.moving&&!this.inShot&&this.strokeT<=0;
@@ -233,6 +240,7 @@ export class Billiards {
       if(!m){m=this.remoteCues[n]=new T.Mesh(this.cue.geometry,this.cue.material);m.name='billiard-cue-remote';m.userData.pull=0;this.object.add(m);}
       const goal=q[2]>0?q[2]*c.chargePull:0;m.userData.pull+=(goal-m.userData.pull)*Math.min(1,dt*8); // eased between the 5 Hz states
       m.visible=true;this.placeCue(m,origin,this.remoteDir.set(q[0],0,q[1]).normalize(),m.userData.pull);n++;
+      this.giveCueRig(g,origin,m.userData.pull);
     }
     for(let i=n;i<this.remoteCues.length;i++)this.remoteCues[i].visible=false;
   }
