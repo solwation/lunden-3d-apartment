@@ -2,7 +2,7 @@
 // tools/browsertest.sh node tools/edgesbackportbrowser.cjs SITE OUT
 const fs = require('node:fs'), path = require('node:path'), kit = require('./testkit.cjs');
 const [base = 'http://localhost:8171', out = 'docs/verification/1871'] = process.argv.slice(2);
-const three = process.env.THREE_DIR || '/home/devcontainers/.cache/three-0.170.0';
+const three = process.env.THREE_DIR || path.join(__dirname, '..', 'node_modules', 'three');
 const instrumentation = `
 import { EdgesGeometry as Backport } from './vendor/three/EdgesGeometry.js';
 const edgeProbe = window.__edgeProbe = { calls: 0, components: 0, baselineMs: 0, backportMs: 0, mismatches: 0 };

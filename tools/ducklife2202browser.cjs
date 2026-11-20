@@ -4,7 +4,7 @@ const base=process.argv[2]||'http://localhost:8422',out=process.argv[3]||'docs/v
 (async()=>{const browser=await kit.launch(['--autoplay-policy=no-user-gesture-required']),result={source:'6965828e baseline; working tree #2202',environment:'Chromium SwiftShader, 1280x800 DPR1 captures, quality3',phases:[],errors:[]};
 try{for(const phase of (process.argv[4]?[process.argv[4]]:['before','after'])){
  const ctx=await browser.newContext({viewport:kit.SMALL,deviceScaleFactor:1});
- await ctx.route('https://cdn.jsdelivr.net/npm/three@0.170.0/**',r=>r.fulfill({path:path.join('/home/devcontainers/kvarteret-lunden/node_modules/three',new URL(r.request().url()).pathname.split('three@0.170.0/')[1]),contentType:'text/javascript'}));
+ await ctx.route('https://cdn.jsdelivr.net/npm/three@0.170.0/**',r=>r.fulfill({path:path.join(process.env.THREE_DIR||path.join(__dirname,'..','node_modules','three'),new URL(r.request().url()).pathname.split('three@0.170.0/')[1]),contentType:'text/javascript'}));
  if(phase==='before')for(const f of ['ducks.js','duckbrain.js','duckmotion.js','duckhabitat.js','duckkiss.js','audio.js','main.js'])await ctx.route(new RegExp(`/src/${f.replace('.','\\.')}(\\?.*)?$`),r=>r.fulfill({path:path.join(process.env.BEFORE_DIR,f),contentType:'text/javascript'}));
  const page=await ctx.newPage();page.on('pageerror',e=>result.errors.push({phase,error:e.message}));
  await page.goto(`${base}/?life&cloud=&month=9&day=20&time=19&freeze&weather=clear&test=lazy`,{waitUntil:'commit'});

@@ -16,7 +16,7 @@ fs.mkdirSync(out,{recursive:true});
   page.on('pageerror',e=>report.errors.push(e.stack));
   await page.route('**/src/bootstrap.js',r=>r.fulfill({contentType:'text/javascript',body:'// builder-only experiment'}));
   await page.route('**/src/trigrid-candidate.js',r=>r.fulfill({contentType:'text/javascript',body:candidate}));
-  await page.route('https://cdn.jsdelivr.net/npm/three@0.170.0/**',r=>r.fulfill({path:path.join(process.env.THREE_DIR||'/home/devcontainers/.cache/three-0.170.0',r.request().url().split('three@0.170.0/')[1]),contentType:'text/javascript'}));
+  await page.route('https://cdn.jsdelivr.net/npm/three@0.170.0/**',r=>r.fulfill({path:path.join(process.env.THREE_DIR||path.join(__dirname,'..','node_modules','three'),r.request().url().split('three@0.170.0/')[1]),contentType:'text/javascript'}));
   await page.goto(base,{waitUntil:'domcontentloaded'});
   report.geometry=await page.evaluate(async(captureOnly)=>{
    const T=await import('three'),{TriGrid}=await import('/src/trigrid.js'),{TriGrid:Candidate}=await import('/src/trigrid-candidate.js');

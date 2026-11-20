@@ -2,8 +2,8 @@
 import {register} from 'node:module';
 import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
-import {pathToFileURL} from 'node:url';
-const root=pathToFileURL((process.env.THREE_DIR||'/home/devcontainers/.cache/three-0.170.0')+'/').href;
+import {pathToFileURL, fileURLToPath} from 'node:url';
+const root=pathToFileURL((process.env.THREE_DIR||fileURLToPath(new URL('../node_modules/three',import.meta.url)))+'/').href;
 register('data:text/javascript,'+encodeURIComponent(`const root=${JSON.stringify(root)};export async function resolve(s,c,n){if(s==='three')return{url:root+'build/three.module.js',shortCircuit:true};if(s.startsWith('three/addons/'))return{url:root+'examples/jsm/'+s.slice(13),shortCircuit:true};return n(s,c);}`));
 globalThis.location={search:process.argv.includes('--off')?'?buildcache=off':''};
 const {groundY,renderedTerrainY}=await import('../src/surroundings.js');

@@ -1,7 +1,9 @@
 // Regression test for #1878: Update notice reappearing after reload due to stale HTML in HTTP cache.
 import http from 'node:http';
 import assert from 'node:assert/strict';
-import { chromium } from '/home/devcontainers/kvarteret-lunden/node_modules/playwright/index.mjs';
+// #2272: Playwright and the browser come from PLAYWRIGHT_MODULE / CHROME_PATH like the other browser tests (no machine-specific paths).
+const playwright = await import(process.env.PLAYWRIGHT_MODULE || 'playwright');
+const { chromium } = playwright.chromium ? playwright : playwright.default;
 import { prepareStartup } from '../src/startup.js';
 
 let passed = 0;
@@ -82,7 +84,7 @@ function check(ok, msg) {
   const base = `http://127.0.0.1:${server.address().port}`;
 
   const browser = await chromium.launch({
-    executablePath: '/home/devcontainers/.local/bin/google-chrome',
+    executablePath: process.env.CHROME_PATH || undefined,
     headless: true,
     args: ['--no-sandbox']
   });

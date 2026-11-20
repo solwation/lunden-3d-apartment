@@ -55,7 +55,7 @@ function startServer() {
   const server = await startServer();
 
   const browser = await chromium.launch({
-    executablePath: process.env.CHROME_PATH || '/home/devcontainers/.local/bin/chromium',
+    executablePath: process.env.CHROME_PATH || undefined,
     args: ['--no-sandbox', '--use-angle=swiftshader', '--enable-unsafe-swiftshader']
   });
 
