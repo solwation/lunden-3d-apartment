@@ -8050,6 +8050,10 @@ export const AVATAR_SKIRT = {
   // Seated back hem: the drape target's back half (z < 0) is lifted by `backLift` m (at the hem) and slimmed to the thigh's own half-depth + `backMargin` m, and its
   // drape follows the thigh's swing `backBoost` times faster (a seated thigh reads only ~0.25), so the back hem rests on the seat. Sag: a fully flexed thigh (#2034's swing `from` … `to`: a squat, a chair seat, the pedal's top) shortens the lower rows (`rowFrom` … `rowTo` m below the hip joint) by up to `drop` m (lifted in the bind pose), so on a squat the hem rides up and bunches on the lap instead of ringing the knees.
   sag: { drop: 0.15, from: 0.6, to: 0.95, rowFrom: 0.25, rowTo: 0.4 },
+  // #2214 Tuck: with BOTH thighs flexed AND apart (a crouch: AVATAR_CLOTH.spread; not a chair seat, a pedal stroke or a one-legged step) the back panel, which follows the thighs from the hip crease down, was carried
+  // forward under the thighs and showed between the knees as a thin strap of hem. Its lower rows (`rowFrom` … `rowTo` m below the hip joint) are lifted a further `drop` m in the
+  // bind pose, so they stay with the hips behind the seat (the thigh weights there are small). *guess*, by eye.
+  tuck: { drop: 0.3, rowFrom: 0.1, rowTo: 0.3 },
 };
 // #2147: the outer layer (look fields `outer` 0 none / 1 jacket / 2 coat and `outerMode` 0 automatic / 1 always). It shares the top's tag `m`
 // (`cut` + 3 × (`outer` + 3 × `outerMode`)), so an older client, which reads only m0-m2, skips it and shows the base top (T-shirt unless the
@@ -10842,6 +10846,8 @@ export const AVATAR_CHEST = {
  * weave kinds 0 jersey, 1 knit, 2 fleece, 3 denim twill, 4 fine twill; `weave[kind]` = [column width m, row height m, colour contrast]. */
 export const AVATAR_CLOTH = {
   bend: [0.35, 1.7], hip: [0.35, 1.45],
+  // #2214 `spread`: a thigh's outward splay (sine of its angle away from the body's middle plane) that counts as 0 … 1 "knees apart" (uClothHip.z / .w; a crouch ~0.40, a chair seat ~0.03-0.11 *measured on the rig*; the band is a *guess*).
+  spread: [0.22, 0.34],
   elbow: { w: 0.07, tilt: 2.6, stretch: 0.35, amp: 2 }, knee: { w: 0.08, tilt: 2.2, stretch: 0.5, amp: 1.5 },
   belly: { y: 0.95, w: 0.055, rate: 120, rest: 0.08, pose: 0.9 }, lap: { y: 0.73, w: 0.09, rate: 95, slant: 0.7, rest: 0.05, pose: 1 },
   ankle: { y: 0.17, w: 0.05, rate: 150, rest: 0.4, pose: 0.5 }, wrist: { w: 0.03, rate: 170, rest: 0.3 },

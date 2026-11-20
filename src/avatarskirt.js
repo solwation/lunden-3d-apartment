@@ -62,6 +62,14 @@ export function hemSag(y, swing, cos = 1) { // cos: the vertex's direction from 
   return K.sag.drop * smooth(K.sag.from, K.sag.to, swing) * smooth(K.sag.rowFrom, K.sag.rowTo, -y) * (1 - smooth(0.15, -0.5, cos));
 }
 
+/** #2214: the extra lift (m) of a back vertex at hips-local height y when BOTH thighs are flexed and apart (`swingMin` / `spreadMin` = the smaller of the two thighs' swing and knees-apart signals, uClothHip.xy / .zw): the back panel follows the thighs
+ * from the hip crease down, so on a squat its hem was carried forward under the thighs and showed between the knees as a thin strap. Lifted in the bind pose (after the drape,
+ * before skinning) so those rows stay with the hips behind the seat. The front is not touched (hemSag shortens it). */
+export function hemTuck(y, swingMin, spreadMin, cos = 1) {
+  const T = K.tuck;
+  return T.drop * smooth(K.sag.from, K.sag.to, swingMin) * spreadMin * smooth(T.rowFrom, T.rowTo, -y) * smooth(0.15, -0.5, cos);
+}
+
 /** The thighs' share of a vertex at (x, y, z): 0 at the waist (`ramp.start`), 1 by `ramp.front` in front … `ramp.back` behind. */
 export function thighShare(x, y, z) {
   const front = 0.5 + 0.5 * z / (Math.hypot(x, z) || 1);
@@ -127,6 +135,8 @@ if (facePart < 0.5 && dot(faceAnchor, faceAnchor) > 0.0) { // #2157 (src/avatars
   transformed.xz += kn * max(0.0, dot(kn, uSwayHem.xz)) * ${f(K.sway)} * kS * kS * uSwayOn.z; // (a flare: only outward)
   // a fully flexed thigh (a squat) shortens the skirt: hemSag's twin
   transformed.y += ${f(K.sag.drop)} * smoothstep(${f(K.sag.from)}, ${f(K.sag.to)}, kA) * smoothstep(${f(K.sag.rowFrom)}, ${f(K.sag.rowTo)}, ${f(sh)} - kq.y) * (1.0 - kB);
+  // #2214: with both thighs flexed and apart the back panel's lower rows stay with the hips instead of running under the thighs: hemTuck's twin
+  transformed.y += ${f(K.tuck.drop)} * smoothstep(${f(K.sag.from)}, ${f(K.sag.to)}, min(uClothHip.x, uClothHip.y)) * min(uClothHip.z, uClothHip.w) * smoothstep(${f(K.tuck.rowFrom)}, ${f(K.tuck.rowTo)}, ${f(sh)} - kq.y) * kB;
 }
 #endif`;
 }

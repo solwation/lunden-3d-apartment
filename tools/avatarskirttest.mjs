@@ -6,7 +6,7 @@
 // Plus the look code: p3 / p4 roundtrip, older clients fall back to straight trousers. node --test tools/avatarskirttest.mjs
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { skirtTube, skirtWeights, skirtKind, skirtUnder, skirtRegion, olderClientLegs, skirtRings, drapePoint, skirtHem, skirtGLSL, hemSag } from '../src/avatarskirt.js';
+import { skirtTube, skirtWeights, skirtKind, skirtUnder, skirtRegion, olderClientLegs, skirtRings, drapePoint, skirtHem, skirtGLSL, hemSag, hemTuck } from '../src/avatarskirt.js';
 import { AVATAR_SURFACE as SURFACE, AVATAR_SKIRT as K, AVATAR_CLOTH, AVATAR_CLOTHES, encodeAvatarLook, decodeAvatarLook, SKIN, TOPS, PANTS, SHOES, HAIR } from '../src/config.js';
 
 const THIGH_X = 0.085, THIGH = 0.44, EASE = 0.006, CREASE = -0.14; // olof.js's thigh joints / length; the shorts' ease and fold (SURFACE.trouser)
@@ -37,12 +37,13 @@ const POSES = [['stand', 0, 0, 0, 0], ['walk', 0.45, -0.3, 0, 0], ['walk mirrore
 const kneeUp = (b) => app(b.R, [0, -THIGH, 0])[1];
 
 /** The posed skirt: every vertex draped (bind space) then skinned. */
-function posed(kind, pose, rigid = false, noSag = false) {
+function posed(kind, pose, rigid = false, noSag = false, noTuck = false) {
   const [, fl, fr, ol, or] = pose, L = thigh(fl, ol, 1), Rt = thigh(fr, or, -1), t = skirtTube(kind);
   const out = [];
   for (let i = 0; i < t.position.length / 3; i++) {
     const p0 = t.position.slice(i * 3, i * 3 + 3), d = t.drape.slice(i * 3, i * 3 + 3), w = rigid ? [1, 0, 0] : t.weights[i];
     const p = drapePoint(p0, d, L.swing, Rt.swing);
+    if (!noSag && !noTuck) p[1] += hemTuck(p0[1], Math.min(L.swing, Rt.swing), smooth(AVATAR_CLOTH.spread[0], AVATAR_CLOTH.spread[1], Math.sin(Math.min(ol, or))), p0[2] / (Math.hypot(p0[0], p0[2]) || 1)); // #2214
     if (!noSag) p[1] += hemSag(p0[1], (p0[0] >= 0 ? L : Rt).swing, p0[2] / (Math.hypot(p0[0], p0[2]) || 1)); // the shader's shortening on raised thighs (bind pose; side: the split's half)
     const sk = (b) => add(app(b.R, sub(p, b.J)), b.J);
     const a = sk(L), b = sk(Rt);
@@ -184,4 +185,41 @@ test('#2157 sitting: the back hem stays above the seat (the thighs\' underside) 
     const low = worst, seat = 0;
     assert.ok(low >= -0.025, `${kind} ${name}: the back hem is ${(-low * 1000).toFixed(0)} mm below the seat at ${at}`);
   }
+});
+
+// #2214: the thin strap of back hem between the knees on a crouch. The rig's real crouch (measured on Avatar.update({ crouch: 1 }): thighs 1.62 rad
+// forward, the knees ~0.40 (sine) apart; a chair seat ~0.03-0.11 apart).
+const CROUCH = ['crouch', 1.62, 1.62, 0.41, 0.41];
+const spreadOf = (pose) => smooth(AVATAR_CLOTH.spread[0], AVATAR_CLOTH.spread[1], Math.sin(Math.min(pose[3], pose[4])));
+/** The furthest forward (m) any back-half hem vertex (the hips-carried back panel, bind z < 0) reaches in the posed skirt. */
+const backHemReach = (s) => {
+  const n = s.t.sides + 1, r = s.t.rows - 1; let reach = -Infinity;
+  for (let j = 0; j < s.t.sides; j++) if (s.t.position[(r * n + j) * 3 + 2] < -0.02) reach = Math.max(reach, s.v[r * n + j][2]);
+  return reach;
+};
+
+test('#2214 crouch: the back hem no longer runs forward under the thighs (a thin strap between the knees)', () => {
+  assert.ok(spreadOf(CROUCH) > 0.99);
+  for (const kind of ['skirt', 'dress']) {
+    const before = backHemReach(posed(kind, CROUCH, false, false, true)), after = backHemReach(posed(kind, CROUCH));
+    assert.ok(before > 0.2, `${kind}: the strap existed before (${before.toFixed(3)} m forward of the hips)`);
+    assert.ok(after < 0.15 && after < before - 0.12, `${kind}: the back hem stays behind the lap (${after.toFixed(3)} m)`);
+    const d = deepest(posed(kind, CROUCH));
+    assert.ok(d.min >= 0.85, `${kind}: no thigh through the cloth: ${d.min.toFixed(3)} at ${d.at}`);
+  }
+});
+
+test('#2214 chair seat, walking, running and cycling are untouched by the tuck (knees together, or not both thighs flexed)', () => {
+  for (const name of ['stand', 'walk', 'run', 'sit', 'sit, knees together', 'cycle top', 'cycle mirrored', 'cycle mid', 'swim kick', 'gym step-up', 'jump tuck']) {
+    const pose = POSES.find((p) => p[0] === name), L = thigh(pose[1], pose[3], 1), R = thigh(pose[2], pose[4], -1);
+    assert.equal(hemTuck(-0.39, Math.min(L.swing, R.swing), spreadOf(pose), -1), 0, name);
+  }
+  assert.equal(hemTuck(-0.39, 1, 1, 1), 0, 'the front panel is never tucked');
+  assert.ok(hemTuck(-0.39, 1, 1, -1) > K.tuck.drop - 1e-9);
+});
+
+test('#2214 GLSL: the tuck is gated on both thighs\' swing and splay and on the back half', () => {
+  const g = skirtGLSL({ hipY: 0.9, hips: 0, thighs: [] });
+  assert.match(g, /min\(uClothHip\.x, uClothHip\.y\)\) \* min\(uClothHip\.z, uClothHip\.w\)/);
+  assert.match(g, /\* kB;/);
 });

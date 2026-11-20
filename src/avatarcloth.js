@@ -64,10 +64,13 @@ export function clothSignal(B, out = {}) {
   const j = out.j ??= [{}, {}, {}, {}];
   joint(B.elbowL, B.handL, [0, 1], j[0]); joint(B.elbowR, B.handR, [0, 1], j[1]); // (the elbow's crease is in front, +z)
   joint(B.kneeL, B.footL, [0, -1], j[2]); joint(B.kneeR, B.footR, [0, -1], j[3]); // (the knee's behind)
+  out.spread = out.spread || [0, 0];
   out.hip = [B.thighL, B.thighR].map((t, i) => {
     const k = i ? B.kneeR : B.kneeL, c = k.position, q = t.quaternion;
     const tx = 2 * (q.y * c.z - q.z * c.y), ty = 2 * (q.z * c.x - q.x * c.z), tz = 2 * (q.x * c.y - q.y * c.x);
     const dy = c.y + q.w * ty + (q.z * tx - q.x * tz), dz = c.z + q.w * tz + (q.x * ty - q.y * tx);
+    const dx = c.x + q.w * tx + (q.y * tz - q.z * ty); // (the knee's sideways offset from the hip joint; outward = away from the middle)
+    out.spread[i] = smooth(C.spread[0], C.spread[1], (i ? -dx : dx) / (Math.hypot(dx, dy, dz) || 1)); // #2214: knees apart (a crouch), not a seat
     return smooth(C.hip[0], C.hip[1], Math.atan2(dz, -dy)); // forward swing from hanging (sitting ~1.6 rad, a deep squat more)
   });
   return out;
@@ -79,7 +82,7 @@ export function applyClothSignal(s, u) {
   u.uClothBend.value.set(eL.bend, eR.bend, kL.bend, kR.bend);
   u.uClothArm.value.set(eL.x, eL.z, eR.x, eR.z);
   u.uClothLeg.value.set(kL.x, kL.z, kR.x, kR.z);
-  u.uClothHip.value.set(s.hip[0], s.hip[1], 0, 0);
+  u.uClothHip.value.set(s.hip[0], s.hip[1], s.spread?.[0] ?? 0, s.spread?.[1] ?? 0); // (z / w: #2214 the thighs' splay)
 }
 
 const NEED = ['shoulderL', 'elbowL', 'handL', 'shoulderR', 'elbowR', 'handR', 'thighL', 'kneeL', 'footL', 'thighR', 'kneeR', 'footR'];
