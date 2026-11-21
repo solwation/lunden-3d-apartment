@@ -59,6 +59,21 @@ public sealed class PlayerBridgeTests
         Assert.Null(PresenceFrame.Read(Frame(name: "not\na\nname")));
     }
 
+    [Fact]
+    public void ListenerReceivesValidJsonThroughTheStockStringTableEscapes()
+    {
+        const string name = "Åsa ' \" " + @"literal\n" + " and a tab\t";
+        var source = JsonSerializer.SerializeToElement(new { t = "j", i = "1234abcd", n = name, unrelated = "omitted" });
+        string payload = PlayerRoom.EventPayload(source);
+        string text = PresencePacket.Write("1\tself", "1\tj\t1234abcd\t" + payload);
+        using var table = new MemoryStream(Encoding.UTF8.GetBytes(text));
+        var row = PresencePacket.Read(table, "Events")!.Split('\t');
+        Assert.Equal(4, row.Length);
+        using var result = JsonDocument.Parse(row[3]);
+        Assert.Equal(name, result.RootElement.GetProperty("n").GetString());
+        Assert.False(result.RootElement.TryGetProperty("unrelated", out _));
+    }
+
     static int nextPacket;
 
     static async Task<string> Sync(PlayerBridge bridge, string body)
@@ -147,7 +162,7 @@ public sealed class PlayerBridgeTests
             {
                 using var web = new ClientWebSocket();
                 web.Options.SetRequestHeader("Origin", "https://solwation.github.io");
-                await web.ConnectAsync(new Uri(endpoint + "?n=Webb"), ct);
+                await web.ConnectAsync(new Uri(endpoint + "?n=" + Uri.EscapeDataString(@"Webb\n")), ct);
                 var welcome = await WaitFor(web, e => e.GetProperty("t").GetString() == "w", ct);
                 Assert.Empty(welcome.GetProperty("ps").EnumerateArray());
                 string webId = welcome.GetProperty("i").GetString()!;
@@ -160,8 +175,16 @@ public sealed class PlayerBridgeTests
                 await web.SendAsync(Encoding.UTF8.GetBytes("""{"p":[1,0.45,1],"r":3.14,"pose":1,"look":[0.4,-0.3],"av":"1203101"}""").AsMemory(), WebSocketMessageType.Text, true, ct);
                 rows = await Until(() => Sync(bridge, Frame()), r => r.Length == 2, ct);
                 var peer = rows[1].Split('\t');
-                Assert.Equal(new[] { webId, "Webb", "1203101", "100", "100", "45" }, peer[..6]);
+                Assert.Equal(new[] { webId, @"Webb%5Cn", "1203101", "100", "100", "45" }, peer[..6]);
                 Assert.Equal("1", peer[10]);
+                using (var stream = File.Open(Path.Combine(bridge.DirectoryPath, "peers.csv"), FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete)) {
+                    var eventRows = PresencePacket.Read(stream, "Events")!.Split('\n').Select(row => row.Split('\t')).ToArray();
+                    Assert.All(eventRows, row => Assert.Equal(4, row.Length));
+                    Assert.Contains(eventRows, row => row[1] == "w" && row[2] == nativeId);
+                    var movement = eventRows.Last(row => row[1] == "s" && row[2] == webId);
+                    using var payload = JsonDocument.Parse(movement[3]);
+                    Assert.Equal("1203101", payload.RootElement.GetProperty("av").GetString());
+                }
                 Assert.InRange(double.Parse(peer[11], CultureInfo.InvariantCulture), -22.93, -22.90);
                 await Sync(bridge, "away");
                 await WaitFor(web, e => e.TryGetProperty("aw", out var value) && value.GetInt32() == 1, ct);

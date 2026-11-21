@@ -81,6 +81,10 @@ internal sealed class PlayerRoom(Uri endpoint, string capFile) : IAsyncDisposabl
 {
     readonly object gate = new();
     readonly Dictionary<string, RoomPeer> peers = [];
+    readonly Queue<string> events = new();
+    int eventNumber;
+    internal string Events() { lock (gate) return string.Join('\n', events); }
+
     readonly CancellationTokenSource stop = new();
     readonly string awayToken = Convert.ToHexString(RandomNumberGenerator.GetBytes(12)).ToLowerInvariant();
     static readonly int[] RetrySeconds = [2, 5, 15, 30, 60, 300];
@@ -119,9 +123,21 @@ internal sealed class PlayerRoom(Uri endpoint, string capFile) : IAsyncDisposabl
         }
     }
 
-    internal void Away() { lock (gate) { if (frame != null) generation++; frame = null; peers.Clear(); ownId = ""; } }
+    internal void Away() { lock (gate) { if (frame != null) generation++; frame = null; peers.Clear(); events.Clear(); ownId = ""; } }
     PresenceFrame? Active() { lock (gate) return Environment.TickCount64 - touched < MissingGameMs && Environment.TickCount64 - changed < StillnessMs ? frame : null; }
     void ClearPeers() { lock (gate) { peers.Clear(); ownId = ""; } }
+
+    internal static string EventPayload(JsonElement message)
+    {
+        // Only the co-presence fields are exposed. The room's welcome contains other gameplay
+        // state as well; the local roster already represents its initial players.
+        var exposed = new Dictionary<string, JsonElement>();
+        foreach (var property in message.EnumerateObject())
+            if (property.Name is "t" or "i" or "n" or "p" or "r" or "look" or "av" or "ax" or "c" or "pose" or "aw")
+                exposed[property.Name] = property.Value;
+        return JsonSerializer.Serialize(exposed)
+            .Replace(@"\\", @"\u005C").Replace(@"\n", @"\u000A").Replace(@"\r", @"\u000D").Replace(@"\t", @"\u0009");
+    }
 
     void Received(string text, long connectionGeneration)
     {
@@ -140,7 +156,13 @@ internal sealed class PlayerRoom(Uri endpoint, string capFile) : IAsyncDisposabl
                 if (k.Length is 0 or > 80 || k.Any(char.IsControl) || k == ownId || (!peers.ContainsKey(k) && peers.Count >= 30)) return;
                 peers[k] = (peers.GetValueOrDefault(k) ?? new RoomPeer()).Update(row);
             }
-            switch (tag.GetString())
+            string? kind = tag.GetString();
+            if (kind is not ("w" or "j" or "s" or "x")) return;
+            if (kind == "w") events.Clear();
+            if (events.Count == 64) events.Dequeue();
+            string json = EventPayload(m);
+            events.Enqueue($"{++eventNumber}\t{kind}\t{id}\t{json}");
+            switch (kind)
             {
                 case "w":
                     peers.Clear(); ownId = id;

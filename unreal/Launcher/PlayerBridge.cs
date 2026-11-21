@@ -17,24 +17,31 @@ internal static class PresencePacket
     internal static string DecodeName(string name) =>
         name.Replace("%22", "\"").Replace("%27", "'").Replace("%5C", "\\").Replace("%25", "%");
 
-    internal static string Write(string packet)
+    internal static string Write(string packet, string? events = null) =>
+        "Key,SourceString\n" + Row("Packet", packet) + (events == null ? "" : Row("Events", events));
+
+    static string Row(string key, string packet)
     {
         foreach (var (plain, escaped) in Escapes) packet = packet.Replace(plain, escaped);
-        return "Key,SourceString\n\"Packet\",\"" + packet.Replace("\"", "\"\"") + "\"\n";
+        return "\"" + key + "\",\"" + packet.Replace("\"", "\"\"") + "\"\n";
     }
 
-    internal static string? Read(Stream stream)
+    internal static string? Read(Stream stream, string key = "Packet")
     {
         using var parser = new TextFieldParser(stream, Encoding.UTF8, true, true);
         parser.SetDelimiters(",");
         parser.TrimWhiteSpace = false;
         var header = parser.ReadFields();
         if (header == null || header.Length < 2 || header[0] != "Key" || header[1] != "SourceString") return null;
-        var row = parser.ReadFields();
-        if (row == null || row.Length != header.Length || row[0] != "Packet" || !parser.EndOfData) return null;
-        string value = row[1];
-        foreach (var (plain, escaped) in Escapes.Reverse()) value = value.Replace(escaped, plain);
-        return value;
+        while (!parser.EndOfData) {
+            var row = parser.ReadFields();
+            if (row == null || row.Length != header.Length) return null;
+            if (row[0] != key) continue;
+            string value = row[1];
+            foreach (var (plain, escaped) in Escapes.Reverse()) value = value.Replace(escaped, plain);
+            return value;
+        }
+        return null;
     }
 }
 
@@ -74,7 +81,6 @@ internal sealed class PlayerBridge : IAsyncDisposable
     {
         string output = Path.Combine(DirectoryPath, "peers.csv");
         string temporary = output + ".tmp";
-        long lastConsumed = 0;
         string? lastOutput = null;
         var ct = stop.Token;
         while (!ct.IsCancellationRequested)
@@ -86,9 +92,15 @@ internal sealed class PlayerBridge : IAsyncDisposable
                 var inputs = new DirectoryInfo(DirectoryPath).EnumerateFiles("game-*.csv")
                     .Select(file => (file, order: PacketNumber(file.Name)))
                     .Where(item => item.order > 0).OrderBy(item => item.order);
-                foreach (var (file, order) in inputs)
+                foreach (var (file, _) in inputs)
                 {
-                    if (order <= lastConsumed) { File.Delete(file.FullName); continue; }
+                    // A fresh component may start at one again after a map change. File existence,
+                    // not a process-wide sequence watermark, acknowledges each consumed packet.
+                    var age = DateTime.UtcNow - file.LastWriteTimeUtc;
+                    if (age > TimeSpan.FromSeconds(3)) {
+                        try { File.Delete(file.FullName); } catch (IOException) { }
+                        continue;
+                    }
                     string? packet = null;
                     try {
                         if (file.Length is > 0 and <= 4096) {
@@ -96,9 +108,9 @@ internal sealed class PlayerBridge : IAsyncDisposable
                             packet = PresencePacket.Read(stream);
                         }
                     }
-                    catch (IOException) { continue; }
+                    catch (IOException) { break; }
                     catch (MalformedLineException) { }
-                    if (packet == null && DateTime.UtcNow - file.LastWriteTimeUtc < TimeSpan.FromSeconds(2)) continue;
+                    if (packet == null && age < TimeSpan.FromSeconds(2)) break;
                     string? snapshot = null;
                     if (packet == "away")
                     {
@@ -111,15 +123,15 @@ internal sealed class PlayerBridge : IAsyncDisposable
                     }
                     if (snapshot != null)
                     {
-                        if (snapshot != lastOutput)
+                        string table = PresencePacket.Write(snapshot, room.Events());
+                        if (table != lastOutput)
                         {
-                            await File.WriteAllTextAsync(temporary, PresencePacket.Write(snapshot), new UTF8Encoding(true), ct);
+                            await File.WriteAllTextAsync(temporary, table, new UTF8Encoding(true), ct);
                             File.Move(temporary, output, true);
-                            lastOutput = snapshot;
+                            lastOutput = table;
                         }
                     }
                     File.Delete(file.FullName);
-                    lastConsumed = order;
                 }
             }
             catch (Exception e) when (e is IOException or UnauthorizedAccessException or MalformedLineException)
