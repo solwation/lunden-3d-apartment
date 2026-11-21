@@ -1,0 +1,73 @@
+{
+  "engine": "5.8.4-58902052+++UE5+Release-5.8",
+  "map": "/Game/Lunden/Maps/L_Lunden",
+  "streamedInMemory": [],
+  "naniteOffInMemory": 3357,
+  "hiddenCollisionActors": 527,
+  "lamps": 36,
+  "cameras": [
+    {
+      "xyz": [
+        287.5,
+        -1200.0,
+        162.0
+      ],
+      "yaw": 89.99999999999999,
+      "pitch": 8.000000000000002,
+      "roll": -0.0,
+      "horizontalFov": 104.50486755371094,
+      "width": 1440,
+      "height": 810,
+      "id": "start",
+      "lighting": "day",
+      "hour": 14,
+      "date": {
+        "year": 2026,
+        "month": 6,
+        "day": 21
+      }
+    },
+    {
+      "xyz": [
+        1250.0,
+        2600.0,
+        562.0
+      ],
+      "yaw": -170.0,
+      "pitch": -13.999999999999996,
+      "roll": 2.0487018772555777e-16,
+      "horizontalFov": 104.50486755371094,
+      "width": 1440,
+      "height": 810,
+      "id": "courtyard",
+      "lighting": "day",
+      "hour": 14,
+      "date": {
+        "year": 2026,
+        "month": 6,
+        "day": 21
+      }
+    },
+    {
+      "xyz": [
+        5200.0,
+        9200.0,
+        162.0
+      ],
+      "yaw": 145.00000000000003,
+      "pitch": -14.0,
+      "roll": -8.194807509022311e-16,
+      "horizontalFov": 104.50486755371094,
+      "width": 1440,
+      "height": 810,
+      "id": "river",
+      "lighting": "day",
+      "hour": 14,
+      "date": {
+        "year": 2026,
+        "month": 6,
+        "day": 21
+      }
+    }
+  ]
+}
