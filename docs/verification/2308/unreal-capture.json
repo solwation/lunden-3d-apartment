@@ -1,0 +1,52 @@
+{
+  "engine": "5.8.4-58902052+++UE5+Release-5.8",
+  "map": "/Game/Lunden/Maps/L_Lunden",
+  "streamedInMemory": [],
+  "naniteOffInMemory": 3373,
+  "hiddenCollisionActors": 1124,
+  "lamps": 36,
+  "cameras": [
+    {
+      "xyz": [
+        1250.0,
+        2600.0,
+        562.0
+      ],
+      "yaw": -170.0,
+      "pitch": -13.999999999999996,
+      "roll": 2.0487018772555777e-16,
+      "horizontalFov": 104.50486755371094,
+      "width": 1440,
+      "height": 810,
+      "id": "courtyard",
+      "lighting": "day",
+      "hour": 14,
+      "date": {
+        "year": 2026,
+        "month": 6,
+        "day": 21
+      }
+    },
+    {
+      "xyz": [
+        229.99999999999997,
+        1610.0000000000002,
+        162.0
+      ],
+      "yaw": 89.99999999999999,
+      "pitch": -10.0,
+      "roll": 1.614809932057922e-15,
+      "horizontalFov": 104.50486755371094,
+      "width": 1440,
+      "height": 810,
+      "id": "patio-lawn",
+      "lighting": "day",
+      "hour": 14,
+      "date": {
+        "year": 2026,
+        "month": 6,
+        "day": 21
+      }
+    }
+  ]
+}

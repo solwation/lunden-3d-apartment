@@ -12,6 +12,13 @@ Every tree and hedge that the export lists in measurements.json `vegetation` mus
    box centre; a hedge of another zone is that zone's imported actor (by id) when the zone is streamed, else
    build_vegetation.py's tagged copy. Its height class (round(box height / hedgeClassM)) must equal the web's.
 3. The vegetation sub-level is listed in world-levels.json and loaded and visible; leaf instances use MI_LundenLeaf.
+4. Trunk collision (#2308), as the web (src/farwalk.js; measurements.json `vegetation.trees[].blocks`): every blocking
+   trunk has exactly one hidden blocking cube on its foot (within 1 cm) whose diamond half-width is the web's (1 mm),
+   and no other trunk has one. Samples (`TRUNK_SAMPLES`: the first blocking trunk of each kind and two trunks inside
+   the home block, by id): the character is placed 1.5 m from the foot on the ground and walks at a diamond face
+   (diagonally) towards a point 1.5 m past the foot. A blocking trunk must stop the capsule centre at the face's
+   distance plus the capsule radius (5 cm); a home-block trunk must let it pass. Any of the four diagonals may serve
+   (a neighbouring trunk, bench or slope can block one approach).
 
 Run like the other world tests: copy this file to unreal/Lunden/Content/Python/ (untracked) and
     run-tests.ps1 -Filter Editor.Python.Lunden.test_vegetation
@@ -76,6 +83,119 @@ def instance_transform(comp, i):
     if isinstance(r, tuple):
         r = r[-1] if isinstance(r[-1], u.Transform) else r[0]
     return r
+
+
+TRUNK_SAMPLES = 2  # trunks inside the home block to walk through; plus the first blocking trunk of each kind
+
+
+def trunk_checks(world, result, failures):
+    """#2308: the trunk cubes against the web's rule, then walk samples."""
+    if "trunkCollision" not in VEG:
+        failures.append("measurements.json has no vegetation.trunkCollision: export again (#2308)")
+        return
+    cubes = {}
+    for a in u.GameplayStatics.get_all_actors_with_tag(world, "derived:trunk-collision"):
+        tree = next((str(t)[5:] for t in a.tags if str(t).startswith("tree:")), None)
+        cubes.setdefault(tree, []).append(a)
+    blocking = [t for t in VEG["trees"] if t.get("blocks") is not None]
+    bad = []
+    for t in VEG["trees"]:
+        mine = cubes.pop(t["id"], [])
+        if t.get("blocks") is None:
+            if mine:
+                bad.append(f"{t['id']}: has a trunk cube, but the web does not block it")
+            continue
+        if len(mine) != 1:
+            bad.append(f"{t['id']}: {len(mine)} trunk cubes")
+            continue
+        loc, scale = mine[0].get_actor_location(), mine[0].get_actor_scale3d()
+        fx, fy, _ = t["foot"]["unreal"]
+        half = scale.x * 100 / 2 ** 0.5 / 100  # m: the cube's half-diagonal
+        if math.hypot(loc.x - fx, loc.y - fy) > 1 or abs(half - t["blocks"]) > 0.001 or abs(mine[0].get_actor_rotation().yaw - 45) > 0.01:
+            bad.append(f"{t['id']}: cube at ({loc.x:.1f}, {loc.y:.1f}) half-width {half:.4f} m, want ({fx}, {fy}) {t['blocks']} m")
+    bad += [f"trunk cube for unknown tree {k}" for k in cubes]
+    failures.extend(bad)
+    result["trunkCubes"] = {"blocking": len(blocking), "problems": len(bad)}
+    u.log(f"LUNDEN_VEGETATION_TRUNKS {len(blocking)} blocking trunks with the web's diamond, {len(bad)} problems")
+
+    pawn = u.GameplayStatics.get_player_character(world, 0)
+    pc = pawn.get_controller()
+    capsule = pawn.get_component_by_class(u.CapsuleComponent)
+    cap_r, cap_h = capsule.get_scaled_capsule_radius(), capsule.get_scaled_capsule_half_height()
+    kinds = sorted({t["kind"] for t in blocking})
+    samples = [next(t for t in sorted(blocking, key=lambda t: t["id"]) if t["kind"] == k) for k in kinds]
+    samples += sorted((t for t in VEG["trees"] if t.get("blocks") is None), key=lambda t: t["id"])[:TRUNK_SAMPLES]
+
+    def press(key, down):
+        u.SystemLibrary.execute_console_command(world, ("Input.+key " + key + " 1") if down else ("Input.-key " + key), pc)
+
+    def wait(seconds):
+        now = u.GameplayStatics.get_time_seconds(world)
+        while u.GameplayStatics.get_time_seconds(world) - now < seconds:
+            yield
+
+    def ground(x, y, top):
+        hit = u.SystemLibrary.line_trace_single(world, u.Vector(x, y, top), u.Vector(x, y, top - 2000),
+                                                u.TraceTypeQuery.ECC_VISIBILITY, False, [pawn], u.DrawDebugTrace.NONE, True)
+        if isinstance(hit, tuple):
+            hit = hit[-1] if hit[0] else None
+        parts = hit.to_tuple() if hit else None
+        return parts[5].z if parts and parts[0] else None
+
+    result["trunkWalks"] = []
+    for t in samples:
+        fx, fy, fz = t["foot"]["unreal"]
+        blocks = t.get("blocks")
+        want = blocks * 100 / 2 ** 0.5 + cap_r if blocks is not None else None
+        tries = []
+        for dx, dy in ((1, 1), (-1, 1), (1, -1), (-1, -1)):
+            dx, dy = dx / 2 ** 0.5, dy / 2 ** 0.5
+            sx, sy = fx - dx * 150, fy - dy * 150
+            floor = ground(sx, sy, fz + 200)
+            if floor is None:
+                tries.append({"dir": [dx, dy], "outcome": "no ground"})
+                continue
+            pawn.set_actor_location(u.Vector(sx, sy, floor + cap_h + 5), False, True)
+            pawn.get_movement_component().stop_movement_immediately()
+            pc.set_control_rotation(u.Rotator(roll=0, pitch=0, yaw=math.degrees(math.atan2(dy, dx))))
+            yield from wait(0.3)
+            tx, ty = fx + dx * 150, fy + dy * 150
+            press("W", True)
+            began = u.GameplayStatics.get_time_seconds(world)
+            nearest, progress, reached = float("inf"), began, False
+            try:
+                while True:
+                    p = pawn.get_actor_location()
+                    dist = math.hypot(tx - p.x, ty - p.y)
+                    now = u.GameplayStatics.get_time_seconds(world)
+                    if dist <= 10:
+                        reached = True
+                        break
+                    if dist < nearest - 1:
+                        nearest, progress = dist, now
+                    if now - progress > 0.6 or now - began > 6:
+                        break
+                    pc.set_control_rotation(u.Rotator(roll=0, pitch=0, yaw=math.degrees(math.atan2(ty - p.y, tx - p.x))))
+                    yield
+            finally:
+                press("W", False)
+            p = pawn.get_actor_location()
+            along = -((p.x - fx) * dx + (p.y - fy) * dy)  # capsule centre's distance before the foot along the approach
+            side = abs((p.x - fx) * dy - (p.y - fy) * dx)
+            ok = (not reached and abs(along - want) <= 5 and side <= 5) if want is not None else reached
+            tries.append({"dir": [round(dx, 3), round(dy, 3)], "reached": reached, "beforeFootCm": round(along, 2),
+                          "sideCm": round(side, 2), "ok": ok})
+            if ok:
+                break
+        ok = any(x.get("ok") for x in tries)
+        row = {"id": t["id"], "kind": t["kind"], "blocks": blocks, "expectStopCm": round(want, 2) if want else None,
+               "tries": tries, "ok": ok}
+        result["trunkWalks"].append(row)
+        last = next((x for x in tries if x.get("ok")), tries[-1])
+        u.log(f"LUNDEN_VEGETATION_TRUNK_WALK {t['id']} ({t['kind']}, web {'blocks ' + str(blocks) + ' m' if blocks else 'does not block'}): "
+              f"{last}, want {'stop at ' + format(want, '.1f') + ' cm' if want else 'pass'}")
+        if not ok:
+            failures.append(f"trunk walk {t['id']} ({t['kind']}): {tries}")
 
 
 @u.AutomationScheduler.add_latent_command
@@ -201,6 +321,8 @@ def vegetation_test():
                     failures.append(f"hedge {h['id']}: height class {row['heightClass']} ({height:.3f} m), web {h['heightClass']}")
             result["hedges"].append(row)
             u.log(f"LUNDEN_VEGETATION_HEDGE {h['id']} ({where}): {row}")
+
+        yield from trunk_checks(world, result, failures)
 
         out = Path(u.Paths.project_saved_dir()) / "vegetation-result.json"
         result["failures"] = failures

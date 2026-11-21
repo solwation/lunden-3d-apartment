@@ -378,7 +378,8 @@ function materialInfo(m) {
   if (m.side === THREE.DoubleSide) key += '_ds';
   return { key, info: { type, color: '#' + color, roughness: r4(rough), metalness: r4(metal), opacity: transparent ? r4(m.opacity) : 1,
     emissive: emissive ? hex(m.emissive) : null, vertexColors: !!m.vertexColors, textured, doubleSided: m.side === THREE.DoubleSide,
-    hint: m.userData?.roomProbe ?? (m.userData?.skin ? 'tile' : null) } };
+    hint: m.userData?.roomProbe ?? (m.userData?.skin ? 'tile' : null),
+    map: m.map?.name || null } }; // #2308: the colour map's name (e.g. src/grass.js's 'shared-grass-detail' on the lawns)
 }
 
 /** A plain float geometry with position / normal / uv / colour and the index (no custom or quantised attributes). */
@@ -960,10 +961,27 @@ function vegetationData(roots, hedgeIds, leafKeys) {
     lobeReach: LOBE_REACH, treeClassM: TREE_CLASS_M, hedgeClassM: HEDGE_CLASS_M, byWebName: byWeb, look: vegetationLook(leafKeys),
     notExported: { trees: missing.length, why: 'their foot lies beyond the drawn terrain (SITE.backgroundGround): no zone takes them' },
     looseLobes: loose,
+    trunkCollision: trunkCollision(),
     trees: trees.map((t) => { const h = t.top - t.foot.y; return { id: t.trunk.userData.id, kind: t.foot.kind, foot: P(t.trunk.position),
-      crownR: r4(t.r), lobes: t.lobes, height: r4(h), heightClass: Math.round(h / TREE_CLASS_M) }; }),
+      crownR: r4(t.r), lobes: t.lobes, height: r4(h), heightClass: Math.round(h / TREE_CLASS_M), blocks: trunkBlocks(t.foot) }; }),
     hedges,
   };
+}
+
+/** #2308: how the web stops the walker at a trunk (src/farwalk.js): outside the home block (OUTDOOR) and within WALK,
+ *  a diamond with half-width WALK.trunk[kind] (else .tree) round the foot; trunks inside the home block do not block. */
+function trunkCollision() {
+  return { source: 'src/farwalk.js farSegments (trunks); src/config.js WALK.trunk, OUTDOOR, WALK', shape: 'diamond',
+    halfWidth: { ...C.WALK.trunk }, defaultKind: 'tree', homeBlock: { ...C.OUTDOOR },
+    walk: { x0: C.WALK.x0, x1: C.WALK.x1, z0: C.WALK.z0, z1: C.WALK.z1 } };
+}
+
+/** The half-width (m) of the diamond the web blocks the walker with at this foot, or null where it does not block. */
+function trunkBlocks(f) {
+  const O = C.OUTDOOR, W = C.WALK, r = W.trunk[f.kind] ?? W.trunk.tree;
+  if (f.x > O.x0 && f.x < O.x1 && f.z > O.z0 && f.z < O.z1) return null;
+  if (f.x + r < W.x0 || f.x - r > W.x1 || f.z + r < W.z0 || f.z - r > W.z1) return null;
+  return r;
 }
 
 /** #2281: what the export's plain materials lose on the leaves: the crowns' colour comes per instance from the season

@@ -21,6 +21,10 @@ shared meshes); that level belongs to the importer and is never edited here. Thi
    InstancedFoliageActor with one instance per imported actor on that actor's transform. Hedges the export lists in a zone
    that world-levels.json does not stream (L1007's own patio hedge in `l1007-uteplats`) are copied in as a plain
    StaticMeshActor tagged with the hedge's id; hedges of streamed zones (Hus L's patio hedges in `hus-l`) stay there.
+   #2308: every trunk the web stops the walker at (measurements.json `vegetation.trees[].blocks`, src/farwalk.js:
+   outside the home block, a diamond of half-width WALK.trunk[kind] round the foot) gets a hidden BlockAll engine cube
+   in the same level, turned 45 degrees so its corners lie on the diamond's, from the foot up to the tree's height.
+   Trunks inside the home block do not block, as on the web.
 3. `vegetation-index.json` next to the level: each mesh copy's role (trunk, crown, hedge, other) and instance count, read
    by tests/test_vegetation.py.
 
@@ -406,10 +410,37 @@ def build(veg, found, copied):
         actor.tags = [u.Name(t) for t in (h["id"], "kind:structure", "zone:" + h["zone"], "derived:vegetation-copy")]
         actor.set_actor_transform(transform, False, False)
     index["copies"] = [{"id": h["id"], "zone": h["zone"]} for h, _, _ in copied]
+    index["trunkCollision"] = trunk_collision(veg, spawner)
     if not u.EditorLoadingAndSavingUtils.save_map(world, TARGET):
         raise RuntimeError("Cannot save " + TARGET)
     u.EditorLoadingAndSavingUtils.new_blank_map(False)
     return index
+
+
+def trunk_collision(veg, spawner):
+    """#2308: the web's trunk diamonds (src/farwalk.js) as hidden BlockAll cubes: a square of half-diagonal `blocks` m,
+    corners on the axes (yaw 45 degrees), from the foot to the tree's height. Returns the count per kind."""
+    if "trunkCollision" not in veg:
+        u.log_warning("LUNDEN_VEGETATION measurements.json has no vegetation.trunkCollision (export before #2308): no trunk collision")
+        return {}
+    cube = eal.load_asset("/Engine/BasicShapes/Cube.Cube")  # 100 cm, simple box collision
+    counts = {}
+    for t in veg["trees"]:
+        r = t.get("blocks")
+        if r is None:
+            continue
+        x, y, z = t["foot"]["unreal"]
+        side, height = r * 100 * 2 ** 0.5, max(t["height"], 0.01) * 100
+        actor = spawner.spawn_actor_from_class(u.StaticMeshActor, u.Vector(x, y, z + height / 2), u.Rotator(roll=0, pitch=0, yaw=45))
+        actor.set_actor_label("Trunk collision " + t["id"])
+        comp = actor.static_mesh_component
+        comp.set_static_mesh(cube)
+        comp.set_collision_profile_name("BlockAll")
+        actor.set_actor_scale3d(u.Vector(side / 100, side / 100, height / 100))
+        actor.set_actor_hidden_in_game(True)
+        actor.tags = [u.Name(n) for n in ("kind:collision", "derived:trunk-collision", "tree:" + t["id"], "trunkKind:" + t["kind"])]
+        counts[t["kind"]] = counts.get(t["kind"], 0) + 1
+    return counts
 
 
 def main(argv):
@@ -443,7 +474,8 @@ def main(argv):
         stamp_path.write_text(json.dumps({"inputs": wanted, "files": files}, indent=1, sort_keys=True) + "\n", encoding="utf-8")
         counts = {k: v["instances"] for k, v in index["meshes"].items()}
         u.log(f"LUNDEN_VEGETATION_BUILD {TARGET}: {len(found)} instances in {len(index['meshes'])} foliage types {counts}; "
-              f"{len(copied)} hedge copies {[h['id'] for h, _, _ in copied]}; {len(files)} packages")
+              f"{len(copied)} hedge copies {[h['id'] for h, _, _ in copied]}; trunk collision {index.get('trunkCollision')}; "
+              f"{len(files)} packages")
     u.log("LUNDEN_VEGETATION_BUILD_OK")
 
 

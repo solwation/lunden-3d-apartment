@@ -7,6 +7,8 @@ Every entry under `materials` becomes one asset in /Game/Lunden/Materials/:
                          drawn in UV metres by one Custom HLSL node (the export keeps the web's metre UVs, but its
                          canvas textures do not travel, so the pattern is rebuilt here from the web's sizes and colours);
   - "graph": "glass"     the translucent glazing master M_LundenGlass;
+  - "graph": "grass"     the lawn master M_LundenGrass (#2308): src/grass.js's detail map rebuilt procedurally in UV
+                         metres (a grey ground with short random blade strokes, tinted by the lawn's colour);
   - "parent": <master>   a MaterialInstanceConstant with the entry's `params`.
 Colours are sRGB hex as the web writes them (converted to linear). Opaque materials get the Nanite usage flag and
 instances a persisted Nanite usage override, so prepare_nanite_materials.py finds nothing to change (#2276). Each asset
@@ -51,6 +53,80 @@ float g = sin(UV.x * 210.0 + sin(UV.y * 6.0 + h * 40.0) * 2.0 + h * 17.0);
 face *= 1.0 + Grain * g;
 return float4(lerp(face, JointColor.rgb, joint), lerp(Roughness, JointRoughness, joint));
 """
+# #2308: src/grass.js grassTexture in UV metres (the lawns keep the web's metre UVs, grassUV). The ground is grey
+# Ground.x - noise * Ground.y (sRGB levels); blade strokes, one per Cell (m) with a random angle, length within
+# BladeLength (m) and grey within BladeRange, StrokeWidth (m) wide; blue is tinted by StrawTint / BladeTint as on the
+# canvas. The map multiplies the lawn's Color (and the vertex colour by VertexColorWeight), as three.js multiplies
+# map and colour. Strokes fade into their mean where a cell spans less than about two pixels (no shimmer far away).
+# Soft drier / lusher patches as src/grassdetail.js applyGrassPatches: a value-noise field (PatchCells lattices per Tile
+# m, equal weights) times PatchContrast, shaped s * |s|^0.3, multiplies the linear colour by 1 + dry * Dry - lush * Lush.
+# Tussocks as GRASS.tufts: TuftCount per Tile, one per cell at a random place with a radius within TuftRadius (m), each a
+# soft dark base (TuftShade) as the canvas's radial gradient (its blades are left to the stroke layer).
+GRASS_HLSL = r"""
+float2 cellSize = float2(Cell, Cell);
+float2 base = floor(UV / cellSize);
+float fw = max(length(ddx(UV)), length(ddy(UV)));
+float blade = 0.0, bladeV = 0.0;
+for (int i = -1; i <= 1; i++) {
+  for (int j = -1; j <= 1; j++) {
+    float2 c = base + float2(i, j);
+    float3 h = frac(sin(float3(dot(c, float2(127.1, 311.7)), dot(c, float2(269.5, 183.3)), dot(c, float2(419.2, 371.9)))) * 43758.5453);
+    float2 a = (c + h.xy) * cellSize;
+    float ang = h.z * 6.2831853;
+    float len = lerp(BladeLength.x, BladeLength.y, frac(h.x * 7.13 + h.y * 3.17));
+    float2 b = a + float2(cos(ang), sin(ang)) * len;
+    float2 pa = UV - a, ba = b - a;
+    float t = saturate(dot(pa, ba) / max(dot(ba, ba), 1e-8));
+    float d = length(pa - ba * t);
+    float w = 1.0 - smoothstep(StrokeWidth * 0.5, StrokeWidth * 0.5 + fw, d);
+    if (w > blade) { blade = w; bladeV = lerp(BladeRange.x, BladeRange.y, frac(h.y * 13.7 + h.z * 5.3)); }
+  }
+}
+float n = frac(sin(dot(floor(UV / (StrokeWidth * 1.4)), float2(12.9898, 78.233))) * 43758.5453);
+float groundV = Ground.x - n * Ground.y;
+float meanGround = Ground.x - 0.5 * Ground.y;
+float nearW = saturate(1.0 - fw / (Cell * 0.5));
+float3 groundRGB = lerp(meanGround, groundV, nearW) * float3(1.0, 1.0, StrawTint);
+float3 bladeRGB = bladeV * float3(1.0, 1.0, BladeTint);
+float3 srgb = lerp(groundRGB, bladeRGB, blade * nearW);
+float3 lin = pow(saturate(srgb), 2.2);
+float field = 0.0;
+for (int k = 0; k < 2; k++) {
+  float cells = k == 0 ? PatchCells.x : PatchCells.y;
+  float2 q = UV / Tile * cells;
+  float2 q0 = floor(q), qf = frac(q);
+  float2 e = qf * qf * (3.0 - 2.0 * qf);
+  float o = k * 17.0;
+  float v00 = frac(sin(dot(q0 + o, float2(127.1, 311.7))) * 43758.5453) * 2.0 - 1.0;
+  float v10 = frac(sin(dot(q0 + float2(1, 0) + o, float2(127.1, 311.7))) * 43758.5453) * 2.0 - 1.0;
+  float v01 = frac(sin(dot(q0 + float2(0, 1) + o, float2(127.1, 311.7))) * 43758.5453) * 2.0 - 1.0;
+  float v11 = frac(sin(dot(q0 + float2(1, 1) + o, float2(127.1, 311.7))) * 43758.5453) * 2.0 - 1.0;
+  field += 0.5 * lerp(lerp(v00, v10, e.x), lerp(v01, v11, e.x), e.y);
+}
+float tc = Tile / sqrt(max(TuftCount, 1.0));
+float2 tb = floor(UV / tc);
+float shade = 0.0;
+for (int ti = -1; ti <= 1; ti++) {
+  for (int tj = -1; tj <= 1; tj++) {
+    float2 c = tb + float2(ti, tj);
+    float3 h = frac(sin(float3(dot(c, float2(41.3, 289.1)), dot(c, float2(173.9, 61.7)), dot(c, float2(97.4, 223.3)))) * 43758.5453);
+    float r = lerp(TuftRadius.x, TuftRadius.y, h.z) * 0.8;
+    float d = length(UV - (c + h.xy) * tc);
+    shade = max(shade, TuftShade * (1.0 - smoothstep(0.0, r, d)));
+  }
+}
+lin *= pow(1.0 - shade, 2.2);
+float sp = clamp(field * PatchContrast, -1.0, 1.0);
+sp = sp * pow(abs(sp), 0.3);
+lin *= 1.0 + max(0.0, -sp) * Dry.rgb - max(0.0, sp) * Lush.rgb;
+float3 vc = lerp(float3(1.0, 1.0, 1.0), VertexColor.rgb, VertexColorWeight);
+return float4(lin * Color.rgb * vc, Roughness);
+"""
+GRASS_SCALARS = {"Cell": 0.0334, "StrokeWidth": 0.0044, "StrawTint": 0.94, "BladeTint": 0.91, "VertexColorWeight": 0.0,
+                 "Roughness": 1.0, "Tile": 1.6, "PatchContrast": 1.5, "TuftCount": 22.0, "TuftShade": 0.14}
+GRASS_VECTORS = {"Color": "#609548", "Ground": (0.957, 0.094, 0.0), "BladeRange": (0.745, 0.957, 0.0),
+                 "BladeLength": (0.0125, 0.0438, 0.0), "PatchCells": (8.0, 17.0, 0.0), "Dry": (0.26, 0.17, 0.02),
+                 "Lush": (0.19, 0.09, 0.22), "TuftRadius": (0.044, 0.0875, 0.0)}
 TILED_SCALARS = {"Joint": 0.003, "Bond": 0.0, "Stagger": 0.0, "Variation": 0.0, "Grain": 0.0, "Roughness": 0.8,
                  "JointRoughness": 0.95}
 TILED_VECTORS = {"Size": (0.2, 0.2, 0.0), "Color": "#ffffff", "JointColor": "#b9bbbb"}
@@ -78,7 +154,8 @@ def vector(value):
 
 
 def spec_hash(path, spec):
-    return hashlib.sha256(json.dumps([path, spec, TILED_HLSL], sort_keys=True).encode("utf-8")).hexdigest()[:16]
+    parts = [path, spec, TILED_HLSL] + ([GRASS_HLSL] if spec.get("graph") == "grass" else [])  # other hashes unchanged
+    return hashlib.sha256(json.dumps(parts, sort_keys=True).encode("utf-8")).hexdigest()[:16]
 
 
 # ---------------------------------------------------------------- graphs
@@ -151,6 +228,46 @@ def tiled_graph(m, spec):
     mel.connect_material_property(metal, "", unreal.MaterialProperty.MP_METALLIC)
 
 
+def grass_graph(m, spec):
+    custom = mel.create_material_expression(m, unreal.MaterialExpressionCustom, -500, 0)
+    names = ["UV", "VertexColor"] + list(GRASS_VECTORS) + list(GRASS_SCALARS)
+    inputs = []
+    for name in names:
+        ci = unreal.CustomInput()
+        ci.set_editor_property("input_name", name)
+        inputs.append(ci)
+    custom.set_editor_property("inputs", inputs)
+    custom.set_editor_property("output_type", unreal.CustomMaterialOutputType.CMOT_FLOAT4)
+    custom.set_editor_property("description", "LundenGrass")
+    custom.set_editor_property("code", GRASS_HLSL.strip())
+    uv = mel.create_material_expression(m, unreal.MaterialExpressionTextureCoordinate, -900, -300)
+    vc = mel.create_material_expression(m, unreal.MaterialExpressionVertexColor, -900, -200)
+    if not mel.connect_material_expressions(uv, "", custom, "UV") or not mel.connect_material_expressions(vc, "", custom, "VertexColor"):
+        raise RuntimeError("could not connect UV / VertexColor")
+    y = 0
+    for name, value in GRASS_VECTORS.items():
+        if not mel.connect_material_expressions(vector_param(m, name, value, -900, y), "", custom, name):
+            raise RuntimeError("could not connect " + name)
+        y += 150
+    for name, value in GRASS_SCALARS.items():
+        if not mel.connect_material_expressions(scalar_param(m, name, value, -900, y), "", custom, name):
+            raise RuntimeError("could not connect " + name)
+        y += 100
+    rgb = mel.create_material_expression(m, unreal.MaterialExpressionComponentMask, -250, 0)
+    for c, on in (("r", True), ("g", True), ("b", True), ("a", False)):
+        rgb.set_editor_property(c, on)
+    rough = mel.create_material_expression(m, unreal.MaterialExpressionComponentMask, -250, 200)
+    for c, on in (("r", False), ("g", False), ("b", False), ("a", True)):
+        rough.set_editor_property(c, on)
+    mel.connect_material_expressions(custom, "", rgb, "")
+    mel.connect_material_expressions(custom, "", rough, "")
+    mel.connect_material_property(rgb, "", unreal.MaterialProperty.MP_BASE_COLOR)
+    mel.connect_material_property(rough, "", unreal.MaterialProperty.MP_ROUGHNESS)
+    metal = mel.create_material_expression(m, unreal.MaterialExpressionConstant, -250, 350)
+    metal.set_editor_property("r", 0.0)
+    mel.connect_material_property(metal, "", unreal.MaterialProperty.MP_METALLIC)
+
+
 def glass_graph(m, spec):
     m.set_editor_property("blend_mode", unreal.BlendMode.BLEND_TRANSLUCENT)
     m.set_editor_property("translucency_lighting_mode", unreal.TranslucencyLightingMode.TLM_SURFACE)
@@ -160,7 +277,8 @@ def glass_graph(m, spec):
     mel.connect_material_property(scalar_param(m, "Specular", 0.5, -400, 350), "", unreal.MaterialProperty.MP_SPECULAR)
 
 
-GRAPHS = {"constant": constant_graph, "surface": surface_graph, "tiled": tiled_graph, "glass": glass_graph}
+GRAPHS = {"constant": constant_graph, "surface": surface_graph, "tiled": tiled_graph, "glass": glass_graph,
+          "grass": grass_graph}
 
 
 # ---------------------------------------------------------------- assets

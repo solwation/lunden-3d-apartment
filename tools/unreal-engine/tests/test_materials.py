@@ -23,7 +23,11 @@ MASTER_PARAMS = {
     "surface": {"BaseColor", "Roughness", "Metallic"},
     "tiled": {"Size", "Color", "JointColor", "Joint", "Bond", "Stagger", "Variation", "Grain", "Roughness", "JointRoughness"},
     "glass": {"BaseColor", "Opacity", "Roughness", "Specular"},
+    "grass": {"Color", "Ground", "BladeRange", "BladeLength", "Cell", "StrokeWidth", "StrawTint", "BladeTint",
+              "VertexColorWeight", "Roughness", "Tile", "PatchCells", "PatchContrast", "Dry", "Lush", "TuftCount", "TuftRadius",
+              "TuftShade"},
 }
+GRASS_MAP = "shared-grass-detail"  # src/grass.js grassTexture's name; measurements.json materials[].map since #2308
 
 
 def glb_json(path):
@@ -90,6 +94,23 @@ def main(argv):
             errors.append(f"{path}: needs `source` and `assumption`")
         if re.search(r"guess", (spec.get("source") or "") + (spec.get("note") or ""), re.I) and not spec.get("assumption"):
             errors.append(f"{path}: source says guess but the assumption is empty")
+
+    # 5. #2308: every lawn key of the export (its colour map is the grass detail map, in any zone) has a rule to a grass
+    # instance whose Color is the key's own colour
+    mpath = os.path.join(export_dir, "measurements.json")
+    if os.path.isfile(mpath):
+        with open(mpath, encoding="utf-8") as f:
+            export_materials = json.load(f).get("materials", {})
+        lawns = {k: v for k, v in export_materials.items() if v.get("map") == GRASS_MAP}
+        for key, info in sorted(lawns.items()):
+            rule = next((r for rx, mx, r in rule_rx if rx.search(key) and mx is None), None)
+            target = mats.get(rule["material"].split(".")[0]) if rule else None
+            parent = mats.get(target.get("parent")) if target else None
+            if not parent or parent.get("graph") != "grass":
+                errors.append(f"lawn key {key} (map {GRASS_MAP}) has no rule to a grass material")
+            elif target["params"].get("Color", "").lower() != info["color"].lower():
+                errors.append(f"lawn key {key}: {rule['material']} Color {target['params'].get('Color')} is not the key's {info['color']}")
+        print(f"lawn keys (map {GRASS_MAP}): {len(lawns)}, each on a grass material with its own colour")
 
     # 1. coverage, per (key, mesh) so mesh selectors count
     nodes = scope_nodes(export_dir, table["scope"])

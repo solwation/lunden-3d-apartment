@@ -1,0 +1,42 @@
+{
+  "veg-1440-high-run1": {
+    "engine": "5.8.4-58902052+++UE5+Release-5.8",
+    "configuration": "Development",
+    "gpu": "NVIDIA GeForce RTX 3080",
+    "cpu": "GenuineIntel|Intel(R) Core(TM) i9-10900K CPU @ 3.70GHz",
+    "rhi": "D3D12",
+    "width": 2560,
+    "height": 1440,
+    "frames": 1705,
+    "seconds": 15.009,
+    "meanFps": 113.6,
+    "onePercentLowFps": 51.18,
+    "p99FrameMs": 12.366,
+    "meanFrameMs": 8.803,
+    "meanGameThreadMs": 3.153,
+    "meanRenderThreadMs": 8.801,
+    "meanGpuMs": 7.77,
+    "map": "/Game/Lunden/Generated/VegetationPerf/L_Perf_courtyard",
+    "quality": "High"
+  },
+  "veg-1440-high-run2": {
+    "engine": "5.8.4-58902052+++UE5+Release-5.8",
+    "configuration": "Development",
+    "gpu": "NVIDIA GeForce RTX 3080",
+    "cpu": "GenuineIntel|Intel(R) Core(TM) i9-10900K CPU @ 3.70GHz",
+    "rhi": "D3D12",
+    "width": 2560,
+    "height": 1440,
+    "frames": 1827,
+    "seconds": 15.003,
+    "meanFps": 121.78,
+    "onePercentLowFps": 100.43,
+    "p99FrameMs": 9.395,
+    "meanFrameMs": 8.212,
+    "meanGameThreadMs": 2.521,
+    "meanRenderThreadMs": 8.211,
+    "meanGpuMs": 7.823,
+    "map": "/Game/Lunden/Generated/VegetationPerf/L_Perf_courtyard",
+    "quality": "High"
+  }
+}

@@ -2032,7 +2032,7 @@ canvas textures do not travel. `tools/unreal-engine/material-map.json` therefore
 - `materials`: every hand-made asset in `/Game/Lunden/Materials/`. Three masters cover the building and ground
   surfaces: `M_LundenSurface` (plain opaque PBR), `M_LundenTiled` (tiles, slabs, planks, boards, bricks and fine
   aggregate drawn by one Custom HLSL node in the export's metre UVs) and `M_LundenGlass` (translucent glazing, so its
-  meshes use the raster path, #2276). The `MI_Lunden*` instances take their sizes and colours from the web's
+  meshes use the raster path, #2276). Since #2308 `M_LundenGrass` draws the lawns (see [Vegetation](#vegetation-trees-shrubs-and-hedges-2281)). The `MI_Lunden*` instances take their sizes and colours from the web's
   `COLORS`, `FINISH`, `PATIO.paving` and `SCREEN_WALL`. `MI_LundenFacadeBrick`, `MI_LundenAsphalt` and
   `MI_LundenRoofSeam` are prepared for the exterior and ground zones (#2279, #2280) and no export key uses them yet.
   Each entry names its web `source` and an `assumption`; `build_materials.py` writes both into the asset metadata
@@ -2219,15 +2219,26 @@ month's darkest and lightest leaf colour (`SEASON.trees`, `src/seasons.js`'s per
   (`InstancedFoliageActor.add_instances`), plus a tagged `StaticMeshActor` copy of each hedge whose zone level
   world-levels.json does not stream (L1007's patio hedge). `vegetation-index.json` records each copy's role and count.
   The mesh names carry the role (`SM_Veg_trunk_*`, `SM_Veg_crown_*`, `SM_Veg_hedge_*`, `SM_Veg_other_*`).
-- The trees have no collision yet (the web blocks on trunks; later). The courtyard perennials keep Interchange's
-  instance and do not sway.
+- **Trunk collision (#2308).** The web stops the walker at a trunk only outside the home block (`src/farwalk.js`: a
+  diamond of half-width `WALK.trunk[kind]`, big 0.45, tree 0.3, birch 0.2, young 0.15 m, *guess* in the web; trunks
+  inside `OUTDOOR` do not block). The export writes that rule (`vegetation.trunkCollision`) and each tree's half-width
+  or null (`trees[].blocks`); the builder puts a hidden `BlockAll` engine cube on every blocking foot, turned 45° so its
+  corners are the diamond's, up to the tree's height (448 of 507 trees at 8750af3c; tagged `derived:trunk-collision`,
+  `tree:<id>`). `test_vegetation.py` checks every cube against the export and walks the character diagonally at a
+  sample of trunks (the first blocking trunk of each kind and two home-block trunks).
+- The courtyard perennials keep Interchange's instance and do not sway.
 - **Folder (decision, can be overturned in one sentence):** the issue planned `Maps/Zones/Vegetation`; the level is
   generated from the import like #2278–#2280's derived levels, references unversioned meshes and would store a new LFS
   copy at every export change, so it lives in `Generated/VegetationWorld/`. Only the two materials are versioned.
 
-**Grass.** The web has no grass geometry: its lawns are the ground meshes with `src/grass.js`'s seasonal detail texture,
-which #2280's zones import with Interchange's green instance. A lawn look is a `material-map.json` rule (#2282's file)
-for the lawn keys; not done here.
+**Grass (#2308).** The web has no grass geometry: its lawns are the ground meshes with `src/grass.js`'s detail map. The
+export names each material's colour map (`measurements.json` `materials[].map`, `shared-grass-detail` on the lawns), and
+`material-map.json` maps the two lawn keys (`std_609548_r100_m0_tex`, GRASS.summer; `std_5f8a3e_r100_m0_tex`, the street
+lawns) to `MI_LundenGrassLawn` / `MI_LundenGrassStreet` of the master `M_LundenGrass` ([Surface materials](#surface-materials-2282)):
+the canvas map rebuilt in UV metres (blade strokes, dry and lush patches, tussock bases) from `GRASS`'s numbers,
+checked by `tests/grass-material.test.mjs` (Node, against `src/config.js`) and `test_materials.py` (every lawn key of
+the export on a grass instance with its own colour). No grass foliage: the web has none. The lawn colour is the export
+month's; seasons, bark, the perennials' sway and a weather-driven wind are follow-ups.
 
 ```text
 copy tools\unreal-engine\tests\test_vegetation.py unreal\Lunden\Content\Python\   (untracked copy, delete afterwards)
@@ -2235,7 +2246,8 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-tests.ps1 -Filter Editor.Python.Lunden.test_vegetation
 ```
 
-Results, pictures and the courtyard frame-time measurement: [#2281 verification](../verification/2281/README.md).
+Results, pictures and the courtyard frame-time measurement: [#2281 verification](../verification/2281/README.md); grass,
+trunk collision and the frame time after them: [#2308 verification](../verification/2308/README.md).
 
 ### Generated assets: rebuilt, not versioned (decided)
 

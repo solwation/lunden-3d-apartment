@@ -1,0 +1,162 @@
+{
+ "trunkCubes": {
+  "blocking": 448,
+  "problems": 0
+ },
+ "trunkWalks": [
+  {
+   "id": "mesh_tree-trunks-0-0_l0_x10306_z12841_ym44",
+   "kind": "big",
+   "blocks": 0.45,
+   "expectStopCm": 53.82,
+   "tries": [
+    {
+     "dir": [
+      0.707,
+      0.707
+     ],
+     "reached": false,
+     "beforeFootCm": 53.92,
+     "sideCm": 0.0,
+     "ok": true
+    }
+   ],
+   "ok": true
+  },
+  {
+   "id": "mesh_tree-birches-0-1_l0_x845_z13803_ym129",
+   "kind": "birch",
+   "blocks": 0.2,
+   "expectStopCm": 36.14,
+   "tries": [
+    {
+     "dir": [
+      0.707,
+      0.707
+     ],
+     "reached": false,
+     "beforeFootCm": 36.24,
+     "sideCm": 0.0,
+     "ok": true
+    }
+   ],
+   "ok": true
+  },
+  {
+   "id": "mesh_tree-trunks-0-0_l0_x1149_z11415_ym153",
+   "kind": "tree",
+   "blocks": 0.3,
+   "expectStopCm": 43.21,
+   "tries": [
+    {
+     "dir": [
+      0.707,
+      0.707
+     ],
+     "reached": false,
+     "beforeFootCm": 43.31,
+     "sideCm": 0.0,
+     "ok": true
+    }
+   ],
+   "ok": true
+  },
+  {
+   "id": "mesh_tree-birches-0-1_l0_x161_z13387_ym62",
+   "kind": "weepingBirch",
+   "blocks": 0.3,
+   "expectStopCm": 43.21,
+   "tries": [
+    {
+     "dir": [
+      0.707,
+      0.707
+     ],
+     "reached": false,
+     "beforeFootCm": 43.31,
+     "sideCm": 0.0,
+     "ok": true
+    }
+   ],
+   "ok": true
+  },
+  {
+   "id": "mesh_tree-trunks-0-0_l0_x914_z11668_ym236",
+   "kind": "willow",
+   "blocks": 0.3,
+   "expectStopCm": 43.21,
+   "tries": [
+    {
+     "dir": [
+      0.707,
+      0.707
+     ],
+     "reached": false,
+     "beforeFootCm": 43.31,
+     "sideCm": 0.0,
+     "ok": true
+    }
+   ],
+   "ok": true
+  },
+  {
+   "id": "mesh_tree-trunks-0-1_l0_x1252_zm1973_y195",
+   "kind": "young",
+   "blocks": 0.15,
+   "expectStopCm": 32.61,
+   "tries": [
+    {
+     "dir": [
+      0.707,
+      0.707
+     ],
+     "reached": false,
+     "beforeFootCm": 32.71,
+     "sideCm": 0.0,
+     "ok": true
+    }
+   ],
+   "ok": true
+  },
+  {
+   "id": "mesh_tree-birches-0-0_l0_x1727_z4226_y141",
+   "kind": "birch",
+   "blocks": null,
+   "expectStopCm": null,
+   "tries": [
+    {
+     "dir": [
+      0.707,
+      0.707
+     ],
+     "reached": true,
+     "beforeFootCm": -140.55,
+     "sideCm": 0.0,
+     "ok": true
+    }
+   ],
+   "ok": true
+  },
+  {
+   "id": "mesh_tree-birches-0-0_l0_x1783_z4099_y134",
+   "kind": "birch",
+   "blocks": null,
+   "expectStopCm": null,
+   "tries": [
+    {
+     "dir": [
+      0.707,
+      0.707
+     ],
+     "reached": true,
+     "beforeFootCm": -140.55,
+     "sideCm": 0.0,
+     "ok": true
+    }
+   ],
+   "ok": true
+  }
+ ],
+ "export": "8750af3cb8877ba07bc074dbe9c1470d8842132c",
+ "engine": "5.8.4-58902052+++UE5+Release-5.8"
+}

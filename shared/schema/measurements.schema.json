@@ -84,7 +84,7 @@
     "site": { "type": "object", "required": ["geo", "planNorthDeg", "source"] },
     "materials": {
       "type": "object",
-      "description": "material key → the web material's look (no web material has a name; the key is built from type, colour, roughness, metalness, opacity, emissive, vertex colours, textures, sides). Unreal maps keys to hand-made materials.",
+      "description": "material key → the web material's look (no web material has a name; the key is built from type, colour, roughness, metalness, opacity, emissive, vertex colours, textures, sides). Unreal maps keys to hand-made materials. Since #2308 `map` names the colour map (e.g. 'shared-grass-detail' on the lawns, src/grass.js) or is null.",
       "additionalProperties": { "type": "object", "required": ["type", "color", "roughness", "metalness", "opacity", "emissive", "vertexColors", "textured", "doubleSided", "hint"] }
     },
     "ground": {
@@ -116,7 +116,9 @@
       "type": "object", "required": ["source", "lobeReach", "treeClassM", "hedgeClassM", "trees", "hedges"],
       "description": "#2281: every exported tree (trunk node id, foot, crown radius, lobe count, height above the foot and height class) and hedge (node id, zone, box centre and size, height class); tools/unreal-engine/tests/test_vegetation.py finds each in Unreal. Optional: absent in exports without the vegetation zone.",
       "properties": {
-        "trees": { "type": "array", "items": { "type": "object", "required": ["id", "kind", "foot", "crownR", "lobes", "height", "heightClass"], "properties": { "foot": { "$ref": "#/$defs/point" } } } },
+        "trees": { "type": "array", "items": { "type": "object", "required": ["id", "kind", "foot", "crownR", "lobes", "height", "heightClass"], "properties": { "foot": { "$ref": "#/$defs/point" },
+          "blocks": { "type": ["number", "null"], "description": "#2308: half-width (m) of the diamond the web stops the walker with at this trunk (src/farwalk.js), null where the web does not block (inside the home block)" } } } },
+        "trunkCollision": { "type": "object", "required": ["source", "shape", "halfWidth", "homeBlock", "walk"], "description": "#2308: the web's trunk blocking rule (src/farwalk.js; WALK.trunk by kind, OUTDOOR, WALK); build_vegetation.py builds it, test_vegetation.py walks into sampled trunks" },
         "hedges": { "type": "array", "items": { "type": "object", "required": ["id", "zone", "name", "centre", "size", "height", "heightClass"], "properties": { "centre": { "$ref": "#/$defs/point" } } } }
       }
     },
