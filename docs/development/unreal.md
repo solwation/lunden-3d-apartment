@@ -105,6 +105,13 @@ tools/unreal-engine/tests/save-v0.sav         frozen version-0 save (no SaveVers
 tools/unreal-engine/tests/save_isolation.py   the other PIE tests start without the save slot and put it back (#2311);
                                    save_isolation_test.py checks it without Unreal (plain python3)
 unreal/Lunden/Content/Lunden/Save/            SG_LundenSave, BFL_LundenSave, BPC_LundenSave (LFS; made by build_save.py)
+tools/unreal-engine/python/build_ui.py        the menu, settings, compass and frame rate /Game/Lunden/UI/ (#2286)
+tools/unreal-engine/ui-extensions.json        menu buttons (#2291) and volume rows with sound classes (#2287) the UI builds from
+tools/unreal-engine/tests/test_ui.py          PIE test: compass = web for 9 yaws, menu, Esc, every setting, restart
+tools/unreal-engine/tests/compass-rule.test.mjs  test_ui's compass rows against the web's src/compass.js (Node)
+tools/unreal-engine/tests/capture_ui.py       PIE screenshots of the HUD, start/settings/pause menu (GPU, -RenderOffScreen)
+unreal/Lunden/Content/Lunden/UI/              BFL_LundenSettings, WBP_LundenHud, WBP_LundenMenu, BPC_LundenUI, SM_LundenVolumes,
+                                   Input/IA_LundenMenu, IMC_LundenUI, IMC_LundenInvertY (LFS; made by build_ui.py)
 tools/unreal-engine/python/build_lighting.py  sky, sun/moon clock, weather post process and the lamps (#2283): Lighting/ assets and
                                    the generated sub-level Generated/Lighting/Level_lighting
 tools/unreal-engine/tests/test_lighting.py    PIE test: lamp ids = export ids, lamp events, sun/moon cases, rain/snow toggles, PC clock
@@ -548,7 +555,7 @@ into `AddControllerYaw/PitchInput`. Two engine settings from the 5.8 template ar
 `InputYawScale=2.5` multiplied the yaw) and `Sensitivity=1` on the MouseX / MouseY `AxisConfig` (the template's 0.07
 reached the look actions too). The pilot therefore turned at 0.175 times the web's rate with the pitch inverted; now
 one count is 0.0745° on both axes. Not yet ported: the web's pitch limit of ±1.45 rad (Unreal keeps its default
-±89.9°) and an inverted-Y setting.
+±89.9°). The mouse speed and inverted-Y settings are #2286's ([Menu, settings and compass](#menu-settings-and-compass-2286)).
 
 **Fall damage** (`src/player.js` landing, `src/falldamage.js`, `src/combat.js` `fall`). A fall starts when the
 character enters Falling (take-off of a jump, or the ledge it walked off) and its drop is that capsule height minus
@@ -668,6 +675,76 @@ an editor that stopped mid-test is kept as the user's file at the next start. Th
 `tools/unreal-engine/tests/` through `sys.path` (only the `test_*.py` file is copied into `Content/Python/`);
 `python3 tools/unreal-engine/tests/save_isolation_test.py` checks the file handling. `test_save.py` keeps its own
 handling and still rewrites the slot on purpose. The game's save behaviour is unchanged.
+
+## Menu, settings and compass (#2286)
+
+The web's start overlay and settings dialog (`index.html` `#overlay`, `#settings-dialog`, `src/menusettings.js`), its
+compass (`src/compass.js`) and frame rate (`src/fps.js`) become a start and pause menu, a settings page, a compass and
+an FPS text in the Windows game. #2286 owns `/Game/Lunden/UI/`, `build_ui.py`, `tests/test_ui.py`,
+`tests/compass-rule.test.mjs`, `tests/capture_ui.py`, the format of `ui-extensions.json` and the `UI` row of
+`player-extensions.json`.
+
+- **`BPC_LundenUI`** rides on `BP_LundenPlayerController`. At BeginPlay, for the local player, it creates `WBP_LundenHud`
+  (Z 0) and `WBP_LundenMenu` (Z 10, collapsed), adds `IMC_LundenUI` (Esc → `IA_LundenMenu`, which also triggers while
+  paused) at priority 2, applies the saved settings and opens the start menu. `IA_LundenMenu` opens the pause menu
+  while playing and steps back while the menu is open. A 0.25 s timer gives every newly possessed pawn the mouse
+  settings. **Start menu and automation:** `StartMenuWanted()` is false when the command line contains `-run=`
+  (run-python), `Automation RunTests` (run-tests) or `-LundenNoStartMenu`, so other areas' PIE tests and captures are
+  not paused behind a start menu; the packaged game and a plain PIE session get it.
+- **Menu** (`WBP_LundenMenu`). `Open(Start)` shows "Välkommen till Lunden." / Spela or "Paus" / Fortsätt, the name field
+  (from `BFL_LundenSave.GetPlayerName`), Inställningar, the `menuButtons` rows and Avsluta; it pauses the game, sets
+  UI-only input with keyboard focus on the first button and shows the mouse cursor. `Close()` saves the trimmed name
+  when it changed and gives control back. Keyboard: Tab/arrows move the focus, Enter/Space press, Esc (`OnKeyDown`)
+  goes back one step (settings → main page → play), as the web's Esc starts the game from the start screen.
+- **Settings** (saved at once through `BFL_LundenSave.SetSetting`, applied at once and again at every start by
+  `BFL_LundenSettings`):
+
+  | Key | Values | Effect |
+  | --- | --- | --- |
+  | `graphics.quality` | 0–4 = Lägsta, Låg, Medel, Hög, Ultra (`QUALITY.names`) | Unreal overall scalability Low … Cinematic; absent: the engine's own level. No Auto mode (decided) |
+  | `graphics.resolution` | `WxH` | `GameUserSettings` screen resolution; the button steps through the monitor's full-screen modes (else the convenient window sizes) |
+  | `hud.fps` | `true`/`false` (default true, the web always shows it) | the FPS text, 0.5 s windows (`HUD_FPS.everyMs`) |
+  | `mouse.sensitivity` | factor 0.25–3 (default 1) | `BP_LundenPlayer.LookDegrees` = the export's `mouseSens` in degrees × factor (*assumption*: the web has no speed setting) |
+  | `mouse.invertY` | `true`/`false` | `IMC_LundenInvertY` (MouseY → #2284's `IA_LundenLookY`, negated) at priority 1; it consumes MouseY before `IMC_LundenPlayer` |
+  | one key per `volumes` row | 0–1 (default 1) | a SoundMix override in `SM_LundenVolumes` for the row's sound class and its children |
+
+  The game also keeps Unreal's own `GameUserSettings.ini`, but the save slot is the source: every start re-applies it.
+- **Compass** (`WBP_LundenHud`, top right, 64 px). Bearing = `PlanNorth` + 90 + control yaw, normalised to 0–360: the
+  web's `DAY.planNorth − yaw` with the web yaw = −90 − Unreal yaw (`coordinates.mjs`). `PlanNorth` is the export's
+  `site.planNorthDeg`. The rose (red north needle) turns by −bearing and the upright letters N, Ö, S, V sit at
+  (sin, −cos)(cardinal − bearing) × 24 px, as the web's rose. Event Tick updates it (Slate does not tick widgets under
+  `-nullrhi`, so `test_ui` calls `UpdateCompass` itself; the GPU capture shows Tick running).
+- **Extension list** `tools/unreal-engine/ui-extensions.json` (`formatVersion` 1, decided here). `menuButtons`
+  `{name, label, widget, owner, what}`: a button `Ext<name>` on the main page, between Inställningar and Avsluta, that
+  creates `widget` (a UserWidget class) with the menu's player as owner at Z 20 over the open menu; the widget removes
+  itself when done and the menu keeps the input. #2291 adds its appearance button here. `volumes`
+  `{key, label, soundClass, owner, what}`: a slider; with a `soundClass` the volume is applied to that class.
+  `audio.master` uses the engine's `/Engine/EngineSounds/Master` (the default class); `audio.music` and
+  `audio.effects` have no class until #2287 sets its own (making them children of Master keeps the master volume over
+  them). A changed list rebuilds the UI (two runs, below).
+- **Not ported (later in G08):** minimap, measuring tool, inventory bar, chat (#2293), gamepad, touch; the web's
+  instruction list, player switch, presence and leaderboard on the start screen; auto graphics level and 30/60 FPS
+  target; hiding the compass under event badges (no badges yet).
+
+```text
+git lfs lock unreal/Lunden/Content/Lunden/UI/BFL_LundenSettings.uasset unreal/Lunden/Content/Lunden/UI/WBP_LundenHud.uasset unreal/Lunden/Content/Lunden/UI/WBP_LundenMenu.uasset unreal/Lunden/Content/Lunden/UI/BPC_LundenUI.uasset
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/build_ui.py [<measurements.json>] [--force | --check]
+copy tools\unreal-engine\tests\test_ui.py unreal\Lunden\Content\Python\   (untracked copy, delete afterwards)
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-tests.ps1 -Filter Editor.Python.Lunden.test_ui
+THREE_DIR=<node_modules/three> node tools/unreal-engine/tests/compass-rule.test.mjs [Saved/ui-result.json]
+```
+
+**Two runs per rebuild.** Python cannot clear a widget tree, and an asset deleted in an editor session cannot be
+created again in that session. A run whose inputs (script, `ui-extensions.json`, export values) differ from
+`UI/build-stamp.json` therefore deletes the four Blueprint files and ends with `LUNDEN_UI_RUN_AGAIN`; the next run
+builds them from nothing and ends with `LUNDEN_UI_OK`. Unchanged inputs log `unchanged, nothing saved`; `--check` also
+compares `Lunden.SpecHash` on `BPC_LundenUI`. A fresh project needs one more run, because Unreal lists a new input
+action's event node only after an editor restart. Other builder findings (5.8.4): text blocks and boxes are not
+Blueprint variables by default and Python cannot change that, so every text the graphs rewrite sits in an
+`InvalidationBox` (a variable class) read with `GetContent`; `Assign On Clicked` gives every new event the same name
+unless the Blueprint is compiled between them; `IMC.default_key_mappings.mappings` holds the mappings in 5.8.
+
+Results: [docs/verification/2286/](../verification/2286/README.md).
 
 ## Lighting, sky and weather (#2283)
 

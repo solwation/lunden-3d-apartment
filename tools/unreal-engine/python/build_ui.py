@@ -853,6 +853,9 @@ def menu(extensions):
         widget.set_editor_property("max_value", high)
         widget.set_editor_property("step_size", step)
         widget.set_editor_property("value", high)
+        widget.set_editor_property("slider_bar_color", linear((0.35, 0.42, 0.48, 1.0)))  # the default bar is white
+        widget.set_editor_property("slider_handle_color", linear(BLUE))
+        pad(widget, 0, 2, 0, 6)
         return widget
 
     section("GraphicsTitle", "Grafik")

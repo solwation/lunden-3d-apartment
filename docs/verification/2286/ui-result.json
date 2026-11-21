@@ -1,0 +1,297 @@
+{
+  "engine": "5.8.4-58902052+++UE5+Release-5.8",
+  "planNorth": 58.0,
+  "baseLookDegrees": 0.07448451336700701,
+  "start": {
+    "startMenuWanted": false,
+    "open": false,
+    "paused": false,
+    "cursor": false,
+    "page": 0,
+    "visible": "<SlateVisibility.COLLAPSED: 1>",
+    "title": "Välkommen till Lunden."
+  },
+  "compass": [
+    {
+      "unrealYaw": -90.0,
+      "webYaw": 0.0,
+      "bearing": 58.0,
+      "webBearing": 58.0,
+      "name": "nordost",
+      "webName": "nordost",
+      "roseAngle": -58.0,
+      "letterN": [
+        -20.35,
+        -12.72
+      ],
+      "letterNWeb": [
+        -20.35,
+        -12.72
+      ]
+    },
+    {
+      "unrealYaw": 0.0,
+      "webYaw": -90.0,
+      "bearing": 148.0,
+      "webBearing": 148.0,
+      "name": "sydost",
+      "webName": "sydost",
+      "roseAngle": -148.0,
+      "letterN": [
+        -12.72,
+        20.35
+      ],
+      "letterNWeb": [
+        -12.72,
+        20.35
+      ]
+    },
+    {
+      "unrealYaw": 90.0,
+      "webYaw": -180.0,
+      "bearing": 238.0,
+      "webBearing": 238.0,
+      "name": "sydväst",
+      "webName": "sydväst",
+      "roseAngle": -238.0,
+      "letterN": [
+        20.35,
+        12.72
+      ],
+      "letterNWeb": [
+        20.35,
+        12.72
+      ]
+    },
+    {
+      "unrealYaw": 180.0,
+      "webYaw": 90.0,
+      "bearing": 328.0,
+      "webBearing": 328.0,
+      "name": "nordväst",
+      "webName": "nordväst",
+      "roseAngle": -328.0,
+      "letterN": [
+        12.72,
+        -20.35
+      ],
+      "letterNWeb": [
+        12.72,
+        -20.35
+      ]
+    },
+    {
+      "unrealYaw": -148.0,
+      "webYaw": 58.0,
+      "bearing": 0.0,
+      "webBearing": 0.0,
+      "name": "norr",
+      "webName": "norr",
+      "roseAngle": -0.0,
+      "letterN": [
+        0.0,
+        -24.0
+      ],
+      "letterNWeb": [
+        -0.0,
+        -24.0
+      ]
+    },
+    {
+      "unrealYaw": -32.0,
+      "webYaw": -58.0,
+      "bearing": 116.0,
+      "webBearing": 116.0,
+      "name": "sydost",
+      "webName": "sydost",
+      "roseAngle": -116.0,
+      "letterN": [
+        -21.57,
+        10.52
+      ],
+      "letterNWeb": [
+        -21.57,
+        10.52
+      ]
+    },
+    {
+      "unrealYaw": 37.3,
+      "webYaw": -127.3,
+      "bearing": 185.3,
+      "webBearing": 185.3,
+      "name": "söder",
+      "webName": "söder",
+      "roseAngle": -185.3,
+      "letterN": [
+        2.22,
+        23.9
+      ],
+      "letterNWeb": [
+        2.22,
+        23.9
+      ]
+    },
+    {
+      "unrealYaw": 123.4,
+      "webYaw": 146.6,
+      "bearing": 271.4,
+      "webBearing": 271.4,
+      "name": "väster",
+      "webName": "väster",
+      "roseAngle": -271.4,
+      "letterN": [
+        23.99,
+        -0.59
+      ],
+      "letterNWeb": [
+        23.99,
+        -0.59
+      ]
+    },
+    {
+      "unrealYaw": -170.5,
+      "webYaw": 80.5,
+      "bearing": 337.5,
+      "webBearing": 337.5,
+      "name": "norr",
+      "webName": "norr",
+      "roseAngle": -337.5,
+      "letterN": [
+        9.18,
+        -22.17
+      ],
+      "letterNWeb": [
+        9.18,
+        -22.17
+      ]
+    }
+  ],
+  "hudTicked": {
+    "framesCounted": 0,
+    "fpsWindows": 0
+  },
+  "menu": {
+    "open": {
+      "open": true,
+      "paused": true,
+      "cursor": true,
+      "page": 0,
+      "visible": "<SlateVisibility.VISIBLE: 0>",
+      "title": "Välkommen till Lunden."
+    },
+    "settings": {
+      "open": true,
+      "paused": true,
+      "cursor": true,
+      "page": 1,
+      "visible": "<SlateVisibility.VISIBLE: 0>",
+      "title": "Välkommen till Lunden."
+    },
+    "back": {
+      "open": true,
+      "paused": true,
+      "cursor": true,
+      "page": 0,
+      "visible": "<SlateVisibility.VISIBLE: 0>",
+      "title": "Välkommen till Lunden."
+    },
+    "play": {
+      "open": false,
+      "paused": false,
+      "cursor": false,
+      "page": 0,
+      "visible": "<SlateVisibility.COLLAPSED: 1>",
+      "title": "Välkommen till Lunden."
+    },
+    "savedName": "Testspelare 2286",
+    "escOpens": {
+      "open": true,
+      "paused": true,
+      "cursor": true,
+      "page": 0,
+      "visible": "<SlateVisibility.VISIBLE: 0>",
+      "title": "Paus"
+    },
+    "escFromSettings": {
+      "open": true,
+      "paused": true,
+      "cursor": true,
+      "page": 0,
+      "visible": "<SlateVisibility.VISIBLE: 0>",
+      "title": "Paus"
+    },
+    "escCloses": {
+      "open": false,
+      "paused": false,
+      "cursor": false,
+      "page": 0,
+      "visible": "<SlateVisibility.COLLAPSED: 1>",
+      "title": "Paus"
+    },
+    "clickBound": {
+      "BtnPlay": true,
+      "BtnSettings": true,
+      "BtnQuit": true,
+      "BtnQuality": true,
+      "BtnResolution": true,
+      "BtnFps": true,
+      "BtnInvert": true,
+      "BtnBack": true
+    }
+  },
+  "settings": {
+    "qualityBefore": 0,
+    "qualityAfterOneClick": 1,
+    "quality": 1,
+    "resolution": [
+      1280,
+      960
+    ],
+    "fpsVisibility": "<SlateVisibility.COLLAPSED: 1>",
+    "showFps": false,
+    "lookDegrees": 0.14896902673401402,
+    "invertContext": 1,
+    "saved": {
+      "graphics.quality": "1",
+      "graphics.resolution": "1280x960",
+      "hud.fps": "false",
+      "mouse.sensitivity": "2.0",
+      "mouse.invertY": "true",
+      "audio.master": "0.4",
+      "audio.music": "0.65",
+      "audio.effects": "missing"
+    },
+    "labels": {
+      "BtnQualityLabel": "Grafiknivå: Låg",
+      "BtnResolutionLabel": "Upplösning: 1280x960",
+      "BtnFpsLabel": "Visa bildfrekvens: AV",
+      "SensLabel": "Musens känslighet: 2,00×",
+      "BtnInvertLabel": "Invertera musens höjdled: PÅ",
+      "VolumeLabel0": "Huvudvolym: 40 %",
+      "VolumeLabel1": "Musik: 65 %",
+      "VolumeLabel2": "Ljudeffekter: 100 %"
+    }
+  },
+  "restart": {
+    "quality": 1,
+    "resolution": [
+      1280,
+      960
+    ],
+    "lookDegrees": 0.14896902673401402,
+    "invertContext": 1,
+    "showFps": false,
+    "fpsVisibility": "<SlateVisibility.COLLAPSED: 1>",
+    "name": "Testspelare 2286",
+    "labels": {
+      "BtnQualityLabel": "Grafiknivå: Låg",
+      "BtnResolutionLabel": "Upplösning: 1280x960",
+      "BtnFpsLabel": "Visa bildfrekvens: AV",
+      "SensLabel": "Musens känslighet: 2,00×",
+      "BtnInvertLabel": "Invertera musens höjdled: PÅ",
+      "VolumeLabel0": "Huvudvolym: 40 %",
+      "VolumeLabel1": "Musik: 65 %",
+      "VolumeLabel2": "Ljudeffekter: 100 %"
+    }
+  }
+}
