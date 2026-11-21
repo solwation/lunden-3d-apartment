@@ -10,8 +10,9 @@ which compose_world.py streams next to them:
   the lift shaft), of Hus A/B/C's stairwells, which open onto the garage on våning −1 (src/corehouse.js; their doors
   stay as exported, closed), and of the garage (src/garage.js: floor, walls, ramps, doors), placed on the imported actor's transform
   and hidden in game. Each copy is complex-as-simple with double-sided triangles and Nanite off, so the capsule follows
-  the full mesh: the imported meshes have no simple shapes and their complex collision is single-sided (#2299); it
-  was also the simplified Nanite fallback until importer version 5 (#2298). Copies leave the imported meshes alone;
+  the full mesh: the imported meshes have no simple shapes (their complex collision was also single-sided until
+  importer version 6, #2299, and the simplified Nanite fallback until version 5, #2298). Copies leave the imported
+  meshes alone;
 - not the portik's glazed door leaf into the stairwell (doors that open are #2285), so the way in stays open.
 
 The street from START west to the portik and the portik's floor are the ground's collision level (build_site.py,

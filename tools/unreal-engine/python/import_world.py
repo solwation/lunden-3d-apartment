@@ -21,13 +21,15 @@ Import (default):
      seasonTo:<MMDD>] (season_tags; read at run time by /Game/Lunden/Seasons/BPC_LundenSeasons, #2295);
      `collision` nodes become hidden-in-game BlockAll actors whose (shared unit cube) mesh has one simple box;
      material keys listed in tools/unreal-engine/material-map.json are replaced by hand-made materials;
+     every mesh's complex collision is double-sided (Interchange leaves it single-sided, #2299);
      prepare_nanite_materials.prepare_zone moves meshes with unsupported material slots to the raster path and
      rebuilds their render data at once (the fingerprint must equal what a fresh editor computes, #2297), and keeps
      every Nanite mesh's fallback (collision, traces, non-Nanite drawing) at all its triangles (#2298);
   4. saves, writes import-stamp.json (export hashes, a content fingerprint and the SHA-256 of every package file);
   5. checks (also run by --check without importing): fixture markers within 1 cm of measurements.json `fixture`,
      arrow tips (north -> Unreal -Y, east -> +X) within 1 cm, every door/window/light/furniture/interactive id present
-     as an actor name, label and tag, every collision actor's single simple box, and (--check) the stamp's package
+     as an actor name, label and tag, every collision actor's single simple box, every mesh's double-sided complex
+     collision, and (--check) the stamp's package
      hashes and content fingerprint; logs LUNDEN_IMPORT_OK / LUNDEN_CHECK_OK.
 Any failure raises, so run-python.ps1 exits non-zero.
 """
@@ -45,7 +47,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from prepare_nanite_materials import prepare_zone, static_mesh_editor
 
 SUPPORTED_FORMAT_VERSION = 1
-IMPORTER_VERSION = 5  # bump when the importer's output changes for the same export (forces a re-import)
+IMPORTER_VERSION = 6  # bump when the importer's output changes for the same export (forces a re-import)
 GENERATED_ROOT = "/Game/Lunden/Generated"
 TOLERANCE_CM = 1.0
 ID_KINDS = ("door", "window", "light", "furniture", "interactive")
@@ -257,6 +259,28 @@ def apply_collision(by_id, extras):
     return count
 
 
+def zone_meshes(zone):
+    for p in eal.list_assets(f"{GENERATED_ROOT}/{zone}/StaticMeshes", recursive=True, include_folder=False):
+        mesh = eal.load_asset(p)
+        if isinstance(mesh, unreal.StaticMesh):
+            yield p, mesh
+
+
+def apply_double_sided(zone):
+    """Interchange leaves complex collision single-sided: a trace or a complex-as-simple body from behind a face went
+    through it (the A/B entrance glass, #2299). The web counts every face from both sides, so every mesh gets
+    double-sided complex collision. The flag lives on the BodySetup and is saved with the mesh."""
+    count = 0
+    for p, mesh in zone_meshes(zone):
+        body = mesh.get_editor_property("body_setup")
+        if body is None:
+            raise RuntimeError(f"{p} has no BodySetup after the import")
+        if not body.get_editor_property("double_sided_geometry"):
+            body.set_editor_property("double_sided_geometry", True)
+            count += 1
+    return count
+
+
 def apply_materials(zone, table):
     """Replace imported material instances whose key matches a rule in material-map.json by the hand-made material."""
     # optional "mesh": a regex on the StaticMesh asset name (= the id of the first export node using it, #2282), for
@@ -325,6 +349,7 @@ def import_zone(zone, glb_path, glb_entry, manifest, table, map_sha):
         raise RuntimeError(f"{zone}: {len(missing)} nodes have no actor after import, e.g. {missing[:5]}")
     collisions = apply_collision(by_id, extras)
     materials = apply_materials(zone, table)
+    double = apply_double_sided(zone)
     prepare_zone(zone)
     if not unreal.EditorLoadingAndSavingUtils.save_map(world, level_path(zone)):
         raise RuntimeError(f"could not save {level_path(zone)}")
@@ -342,7 +367,7 @@ def import_zone(zone, glb_path, glb_entry, manifest, table, map_sha):
         f.write("\n")
     unreal.log(f"LUNDEN_IMPORT zone {zone}: imported {glb_entry['path']} ({glb_entry['sha256'][:12]}) -> {folder}: "
                f"{n_actors} actors, {n_assets} assets, {len(files)} files, {stamp['bytes']} bytes, {collisions} collision boxes, "
-               f"{materials} material slots mapped, fingerprint {fingerprint[:16]}")
+               f"{materials} material slots mapped, {double} meshes made double-sided, fingerprint {fingerprint[:16]}")
     return stamp
 
 
@@ -416,6 +441,16 @@ def check_collision(zone, glb_path):
         unreal.log(f"LUNDEN_IMPORT_COLLISION zone {zone}: {len(want)} collision actors, each a hidden BlockAll mesh with one simple box")
 
 
+def check_double_sided(zone):
+    """Every mesh's complex collision is double-sided (#2299), also after a restart."""
+    meshes = list(zone_meshes(zone))
+    single = [p for p, mesh in meshes if not (mesh.get_editor_property("body_setup")
+                                              and mesh.get_editor_property("body_setup").get_editor_property("double_sided_geometry"))]
+    if single:
+        raise RuntimeError(f"{zone}: {len(single)} of {len(meshes)} meshes have single-sided complex collision, e.g. {single[:3]}: run import_world.py")
+    unreal.log(f"LUNDEN_IMPORT_DOUBLE_SIDED zone {zone}: {len(meshes)} meshes with double-sided complex collision")
+
+
 def check_stamp(zone, glb_entry, map_sha):
     ok, why = stamp_current(zone, glb_entry, map_sha)
     if not ok:
@@ -480,6 +515,7 @@ def main(argv):
         load_level(zone)
         check_ids(zone, glb_path)
         check_collision(zone, glb_path)
+        check_double_sided(zone)
         if zone == "fixture":
             check_fixture(measurements)
         log_measures(zone, measure)

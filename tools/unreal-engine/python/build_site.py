@@ -7,8 +7,8 @@ gard (the courtyard) and omgivning (the terrain, streets and the Höje å valley
 import_world.py and are never edited here. The terrain is the web's own triangle mesh (`site-terrain-*`, cut by zone),
 not an Unreal Landscape, so the ground is the web's ground vertex for vertex.
 
-The imported meshes cannot carry the player: their BodySetup has no simple shape and Interchange leaves the complex
-collision single-sided (#2299); until importer version 5 it was also the simplified Nanite fallback (#2298). This builder
+The imported meshes cannot carry the player: their BodySetup has no simple shape (their complex collision was also
+single-sided until importer version 6, #2299, and the simplified Nanite fallback until version 5, #2298). This builder
 therefore writes /Game/Lunden/Generated/SiteWorld/Level_site_collision, which compose_world.py streams next to the
 zones: for every walkable node that the export lists in measurements.json `ground.collision` (terrain, asphalt,
 paving, park paths, the road bridge's asphalt, the timber bridge, the bus platform) a copy of its imported mesh with

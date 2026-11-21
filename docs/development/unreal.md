@@ -1737,7 +1737,14 @@ What 5.8.4 does, and what the importer does about it:
   [the #2246 route](../verification/2246/route.md)). The importer therefore uses a new `StaticMeshEditorSubsystem`
   instance (`static_mesh_editor()` in `prepare_nanite_materials.py`), and the import and `--check` fail unless every
   collision actor is a hidden `BlockAll` mesh with one simple box (`LUNDEN_IMPORT_COLLISION`). Visible meshes keep
-  Interchange's default collision; what the player collides with is #2246.
+  Interchange's default collision (no simple shapes, so the player's capsule passes them; what the player collides
+  with is the derived collision levels). Interchange leaves their complex collision **single-sided**: a trace from
+  behind a face went through it (the A/B entrance glass, #2299). Since importer version 6 every imported mesh's
+  `BodySetup` has `double_sided_geometry` on, saved with the mesh; the import and `--check` fail on a single-sided mesh
+  (`LUNDEN_IMPORT_DOUBLE_SIDED`). The fingerprint does not cover the flag, so version 6 left every zone's fingerprint
+  unchanged and derived builds that record it keep skipping. Measured on all nine zones (export of 66b1b6fb): 3,490
+  meshes, package bytes +0.05 % (hus-l 119.77 → 119.83 MB), import not slower (l1007 59 s, hus-l 23 s with a warm DDC)
+  ([#2299 verification](../verification/2299/README.md)).
 - **Materials.** `tools/unreal-engine/material-map.json` rules (a regex on the key, first match wins, optionally
   narrowed by a `mesh` regex on the StaticMesh name) replace the imported instances on the mesh slots by hand-made
   materials ([Surface materials](#surface-materials-2282)). Other keys keep Interchange's glTF material instance
@@ -1909,7 +1916,8 @@ street façade, and thin rails and parts of the garage shell were gone. The impo
 version 5 ([Full Nanite fallback](#import-into-unreal-verified-2026-11-20), #2298), so the test leaves Nanite on: all 32
 rays within 0.000 cm ([#2298 verification](../verification/2298/README.md)). Second, Interchange leaves complex
 collision single-sided, so the A/B entrance glass (raster meshes, so not a Nanite effect) was not hit from the side its
-faces turn away from; the test still makes it double-sided in memory, without saving (#2299). A one-shot commandlet
+faces turn away from. The importer makes it double-sided since version 6 (#2299), so the test changes nothing in memory
+and fails on a single-sided imported mesh. A one-shot commandlet
 capture with Nanite on draws Hus L's round stair drum and brick façade as loose panels
 ([picture](../verification/2279/unreal-start-nanite-fallback.jpg)), also with the full fallback, so the captures switch
 Nanite off in memory; then they match the web. See the [#2279 verification](../verification/2279/README.md).
