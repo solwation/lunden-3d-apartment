@@ -273,6 +273,31 @@ def tiled_graph(m, spec):
     mel.connect_material_property(metal, "", unreal.MaterialProperty.MP_METALLIC)
 
 
+def grass_code(spec):
+    return GRASS_HLSL.strip().replace("AUTUMN_MIX", ", ".join(map(str, spec["autumnMix"])))
+
+
+def seasonal_grass(material, spec):
+    """Check the saved base-colour path. UE resolves the collection parameter's GUID to its name on load."""
+    rgb = mel.get_material_property_input_node(material, unreal.MaterialProperty.MP_BASE_COLOR)
+    if not isinstance(rgb, unreal.MaterialExpressionComponentMask):
+        return False
+    sources = mel.get_inputs_for_material_expression(material, rgb)
+    if len(sources) != 1 or not isinstance(sources[0], unreal.MaterialExpressionCustom):
+        return False
+    shader = sources[0]
+    if shader.get_editor_property("code").splitlines() != grass_code(spec).splitlines():
+        return False
+    pins = dict(zip(mel.get_material_expression_input_names(shader), mel.get_inputs_for_material_expression(material, shader)))
+    month, autumn = pins.get("Month"), pins.get("Autumn")
+    calendar = eal.load_asset(CALENDAR)
+    return (calendar is not None and isinstance(month, unreal.MaterialExpressionCollectionParameter)
+            and month.get_editor_property("collection") == calendar
+            and str(month.get_editor_property("parameter_name")) == "Month"
+            and isinstance(autumn, unreal.MaterialExpressionVectorParameter)
+            and str(autumn.get_editor_property("parameter_name")) == "Autumn")
+
+
 def grass_graph(m, spec):
     custom = mel.create_material_expression(m, unreal.MaterialExpressionCustom, -500, 0)
     names = ["UV", "VertexColor", "Month", "Autumn"] + list(GRASS_VECTORS) + list(GRASS_SCALARS)
@@ -284,9 +309,12 @@ def grass_graph(m, spec):
     custom.set_editor_property("inputs", inputs)
     custom.set_editor_property("output_type", unreal.CustomMaterialOutputType.CMOT_FLOAT4)
     custom.set_editor_property("description", "LundenGrass")
-    custom.set_editor_property("code", GRASS_HLSL.strip().replace("AUTUMN_MIX", ", ".join(map(str, spec["autumnMix"]))))
+    custom.set_editor_property("code", grass_code(spec))
+    calendar = eal.load_asset(CALENDAR)
+    if not calendar:
+        raise RuntimeError("Run build_seasons.py before building the seasonal grass master")
     month = mel.create_material_expression(m, unreal.MaterialExpressionCollectionParameter, -900, -500)
-    month.set_editor_property("collection", eal.load_asset(CALENDAR))
+    month.set_editor_property("collection", calendar)
     month.set_editor_property("parameter_name", "Month")
     autumn = vector_param(m, "Autumn", spec["autumn"], -900, -430)
     if not mel.connect_material_expressions(month, "", custom, "Month") or not mel.connect_material_expressions(autumn, "", custom, "Autumn"):
@@ -459,6 +487,8 @@ def check(table):
                 usage = usage and mel.has_material_usage_override(asset, NANITE)
             if not usage:
                 problems.append(f"{path}: no persisted Nanite usage")
+        if spec.get("graph") == "grass" and not seasonal_grass(asset, spec):
+            problems.append(f"{path}: incorrect seasonal grass code or disconnected Month/Autumn input")
         if spec.get("graph") == backdrop_material.GRAPH and not backdrop_material.check(asset, spec, uses_vertex_color):
             problems.append(f"{path}: incorrect backdrop texture, vertex-colour wiring, or face settings")
         if spec.get("graph") == "river":
@@ -496,6 +526,7 @@ def build_entries(materials, force=False):
         existing = eal.load_asset(path) if eal.does_asset_exist(path) else None
         want = spec_hash(path, spec)
         if (existing is not None and not force and eal.get_metadata_tag(existing, "Lunden.SpecHash") == want
+                and (spec.get("graph") != "grass" or seasonal_grass(existing, spec))
                 and (spec.get("graph") != backdrop_material.GRAPH or backdrop_material.check(existing, spec, uses_vertex_color))):
             unreal.log(f"LUNDEN_MATERIAL {path}: kept (spec {want})")
             kept += 1

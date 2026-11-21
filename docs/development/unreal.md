@@ -93,7 +93,7 @@ tools/unreal-engine/tests/test_vegetation.py  PIE test on L_Lunden: every export
 tools/unreal-engine/tests/capture_vegetation.py  GPU views of the vegetation in L_Lunden with all listed sublevels loaded
 tools/unreal-engine/tests/prepare_vegetation_profile.py  scratch map for the courtyard frame-time measurement (#2281)
 tools/unreal-engine/tests/check_fond.py      commandlet: every backdrop node of fond.glb in Level_fond at the web's place, 5 cm (#2323)
-unreal/Lunden/Content/Lunden/Vegetation/      M_LundenFoliage, MI_LundenLeaf (LFS; made by build_vegetation.py)
+unreal/Lunden/Content/Lunden/Vegetation/      M_LundenFoliage, MI_LundenLeaf and MI_LundenPerennial (LFS)
 tools/unreal-engine/tests/test_exterior.py    PIE test: the export's 32 measurement rays through Hus L, A/B/C and the garage, 1 cm (#2279)
 tools/unreal-engine/tests/capture_exterior.py GPU views of the composed L_Lunden exterior
 unreal/Lunden/Content/Lunden/Maps/L_Lunden.umap  the persistent world map (LFS); written only by compose_world.py
@@ -2941,28 +2941,26 @@ foot of `src/surroundings.js` `treeFeet` whose trunk instance is exported (507: 
 (`aoTrees`), its lobes (each lobe goes to the tree whose foot is horizontally nearest in crown radii, within 1.5), its
 height (the highest top of the trunk's and its lobes' boxes above the foot) and `heightClass = round(height / 2 m)`;
 and every hedge in any zone (`patio-hedge`/`boxwood` by object or material name; 9: Hus L's seven, L1007's, the
-boxwood) with box centre, size and `heightClass = round(height / 0.25 m)`. `look` carries the leaf keys, the export
-month's darkest and lightest leaf colour (`SEASON.trees`, `src/seasons.js`'s per-tree spread) and `SITE_WIND`.
+boxwood) with box centre, size and `heightClass = round(height / 0.25 m)`. `look` carries the leaf material keys,
+the twelve crown colour and cover rows from `SEASON.trees`, the blossom months, and wind settings from
+`SITE_WIND` and `WIND.power`. The GLB embeds the ordinary and birch bark colour and roughness textures, with
+the web's UV repeat. Interchange keeps these materials on the generated trunks.
 
-**Builder.** `build_vegetation.py` (after `import_world.py --zones vegetation,l1007-uteplats`):
+**Builder.** Run `build_seasons.py` and import the `vegetation` and `l1007-uteplats` zones before `build_vegetation.py`.
 
-- `/Game/Lunden/Vegetation/` (versioned, LFS): `M_LundenFoliage`, two-sided and masked, colour between `LeafDark` and
-  `LeafLight` per instance (`PerInstanceRandom`, as the web gives every tree its own tone) times the vertex AO; its
-  opacity mask draws the leaf atlas's cut-out procedurally in the cards' UVs (the canvas atlas does not travel: cell
-  (1, 0) is the opaque core, the others round clusters of small pointed leaves thinning to the edge); its world position
-  offset sways after `src/sitewind.js` (direction, gust envelope, flutter, clamped to `maxDisplacement`).
-  `MI_LundenLeaf` takes the numbers from `look`; `Power` 0.5 is a *guess* until a weather drives it. Spec-hash skip as
-  `build_materials.py` (`Lunden.SpecHash`); lock both `.uasset` before a build that changes them. The master's spec
-  also holds the GUIDs of the collection parameters it reads (`WindX`, `WindY` in `MPC_LundenWeather`, `Month` in
-  `MPC_LundenVegetation`, read with `export_text` because the struct's `Id` is protected; #2383). A master built
-  against other GUIDs compiles but reads nothing (its wind expressions lost their names after a collection rebuild), so
-  a changed GUID now rebuilds it and `--check` fails on it.
-- `Generated/VegetationWorld/` (not versioned, cleared on disk at each build): a copy of each imported vegetation mesh
-  with Nanite off (#2298) and `MI_LundenLeaf` on the `look.leafKeys` slots, one `FoliageType_InstancedStaticMesh` per
-  copy, and `Level_vegetation_foliage`: an `InstancedFoliageActor` with one instance per imported actor
-  (`InstancedFoliageActor.add_instances`), plus a tagged `StaticMeshActor` copy of each hedge whose zone level
-  world-levels.json does not stream (L1007's patio hedge). `vegetation-index.json` records each copy's role and count.
-  The mesh names carry the role (`SM_Veg_trunk_*`, `SM_Veg_crown_*`, `SM_Veg_hedge_*`, `SM_Veg_other_*`).
+- `M_LundenFoliage` reads the month that `BPC_LundenSeasons.ApplySeason` publishes to `MPC_LundenVegetation`.
+  `MI_LundenLeaf` gives deciduous crowns the month's colour and cover, with per-instance variation. A zero-cover
+  month masks the whole crown, including its opaque core. `MI_LundenPerennial` keeps the courtyard shrubs green
+  throughout the year. The leaf-card cut-out, colour variation and sway amplitude are visual calibration (*guess*).
+- The foliage master reads `WindX` and `WindY` from `MPC_LundenWeather`. The downwind vector in m/s drives the
+  web's wind-power curve, gust envelope and flutter, with the offset capped at `maxDisplacement`. The builder
+  records the GUIDs of both wind parameters and `Month` in `Lunden.SpecHash`. If a collection changes those GUIDs,
+  the check reports a stale master and the builder reconnects it. [Wind binding verification](../verification/2383/README.md).
+- `Generated/VegetationWorld/` contains the generated mesh copies, foliage types and `Level_vegetation_foliage`.
+  Nanite is disabled on the copies (#2298). The foliage type enables world-position offset on crowns and the 12
+  evergreen courtyard perennials. Pergola vines retain their seasonal colour and stay still. The level includes a
+  tagged copy of each hedge whose source zone is absent from `world-levels.json` (L1007's patio hedge).
+  `vegetation-index.json` records the source, role, leaf slots and instance count for each mesh.
 - **Trunk collision (#2308).** The web stops the walker at a trunk only outside the home block (`src/farwalk.js`: a
   diamond of half-width `WALK.trunk[kind]`, big 0.45, tree 0.3, birch 0.2, young 0.15 m, *guess* in the web; trunks
   inside `OUTDOOR` do not block). The export writes that rule (`vegetation.trunkCollision`) and each tree's half-width
@@ -2970,10 +2968,8 @@ month's darkest and lightest leaf colour (`SEASON.trees`, `src/seasons.js`'s per
   corners are the diamond's, up to the tree's height (448 of 507 trees at 8750af3c; tagged `derived:trunk-collision`,
   `tree:<id>`). `test_vegetation.py` checks every cube against the export and walks the character diagonally at a
   sample of trunks (the first blocking trunk of each kind and two home-block trunks).
-- The courtyard perennials keep Interchange's instance and do not sway.
-- **Folder (decision, can be overturned in one sentence):** the issue planned `Maps/Zones/Vegetation`; the level is
-  generated from the import like #2278–#2280's derived levels, references unversioned meshes and would store a new LFS
-  copy at every export change, so it lives in `Generated/VegetationWorld/`. Only the two materials are versioned.
+- The builder regenerates this level from the import under `Generated/VegetationWorld/`. The three assets under
+  `/Game/Lunden/Vegetation/` are versioned. Lock the individual packages a rebuild needs to write.
 
 **Courtyard rails, entrance letters and hedges (#2325).** The export carries the RGBA rail texture from
 `src/surroundings.js` on the A/B/C loggias and the courtyard-edge fence. The glTF uses the web's
@@ -2999,8 +2995,14 @@ export names each material's colour map (`measurements.json` `materials[].map`, 
 lawns) to `MI_LundenGrassLawn` / `MI_LundenGrassStreet` of the master `M_LundenGrass` ([Surface materials](#surface-materials-2282)):
 the canvas map rebuilt in UV metres (blade strokes, dry and lush patches, tussock bases) from `GRASS`'s numbers,
 checked by `tests/grass-material.test.mjs` (Node, against `src/config.js`) and `test_materials.py` (every lawn key of
-the export on a grass instance with its own colour). No grass foliage: the web has none. The lawn colour is the export
-month's; seasons, bark, the perennials' sway and a weather-driven wind are follow-ups.
+the export on a grass instance with its own colour). The lawn master uses `MPC_LundenVegetation.Month` and
+the web's twelve `GRASS.autumnMix` values to mix each instance's summer colour towards `GRASS.autumn`.
+The shader approximates the canvas detail and its response to lighting (*guess*).
+
+For the optional offscreen perennial motion check, set `LUNDEN_VEGETATION_RENDER=1` and run the same PIE test
+with D3D12 and `-RenderOffScreen`. It frames one of the courtyard's actual foliage instances from above, lets
+`BP_LundenSky` drive 0 and 13 m/s, then compares its depth silhouette across game frames. The change in wind must
+exceed the calm control. `Saved/vegetation-result.json` includes the pixel counts under `perennialMotion`.
 
 ```text
 copy tools\unreal-engine\tests\test_vegetation.py unreal\Lunden\Content\Python\   (untracked copy, delete afterwards)
