@@ -12,6 +12,20 @@ TAG = "lunden:curtain-light"
 APPLY = "UpdateCurtainLight"
 
 
+# Native emissive units for the calibrated Lunden exposure. Estimated from RGB crops of the
+# actual 0–64x linear-emission sweep (#2322), without changing the printed sRGB image or its UV.
+# The violet bedroom print retains a much weaker reflected contribution under its room lamps.
+DAY_GAIN = (15.0, 12.5, 8.0)
+LAMP_GAIN = (11.5, 13.5, 15.0)
+VIOLET_LAMP_GAIN = (55.0, 27.0, 66.0)
+
+
+def native_colours(row):
+    lamp_gain = VIOLET_LAMP_GAIN if row["id"] == "f-curtain-bedroom4" else LAMP_GAIN
+    return ([v * gain for v, gain in zip(row["daylight"], DAY_GAIN)],
+            [v * gain for v, gain in zip(row["lamp"], lamp_gain)])
+
+
 def emission(g, day, dusk, supply, lit, daylight_colour, lamp_colour):
     # Native DuskLight = Daylight * (1 - 0.6 * overcast). The blind's daylight factor uses 0.5.
     sky = g.op("Add_DoubleDouble", A=day, B=g.op("Multiply_DoubleDouble", A="0.8333333333333333",
@@ -63,6 +77,10 @@ def controller():
         bp = assets.load_asset(PATH)
         if assets.get_metadata_tag(bp, "Lunden.SpecHash") == signature:
             return bp.generated_class()
+        # Remove event calls before deleting their implementation. The graph helper compiles
+        # between those operations when rebuilding a warm checkout.
+        events = u.BlueprintGraphEditor.get_graph_editor_by_name(bp, "EventGraph")
+        events.remove_nodes(list(events.list_all_nodes()))
         if APPLY in map(str, bp_lib.list_graph_names(bp)):
             bp_lib.remove_function_graph(bp, APPLY)
     else:
@@ -144,8 +162,9 @@ def main():
             a.set_actor_label(row["id"] + " light")
             a.tags = [u.Name(TAG), u.Name(row["id"])]
             changed = True
+        day, lamp = native_colours(row)
         for name, expected in {"LampTags": [u.Name("lamp:" + i) for i in row["lamps"]], "Panels": panels,
-                               "DaylightColour": u.Vector(*row["daylight"]), "LampColour": u.Vector(*row["lamp"])}.items():
+                               "DaylightColour": u.Vector(*day), "LampColour": u.Vector(*lamp)}.items():
             actual = a.get_editor_property(name)
             if (list(actual) if isinstance(expected, list) else actual) != expected:
                 a.set_editor_property(name, expected)

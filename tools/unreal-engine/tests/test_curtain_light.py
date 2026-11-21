@@ -1,9 +1,13 @@
 """UE 5.8.4 commandlet test for #2322. Run after sync-import, without saving the editor world."""
 import json
 import math
+import sys
 from pathlib import Path
 
 import unreal as u
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "python"))
+from build_curtains import native_colours
 
 project = Path(u.Paths.convert_relative_path_to_full(u.Paths.project_dir()))
 rows = json.loads((project / "Import/measurements.json").read_text(encoding="utf-8"))["furnishing"]["curtains"]
@@ -27,7 +31,8 @@ def verify(daylight, oc, supply, enabled=(), hidden=()):
         lamp.set_actor_hidden_in_game(i in hidden)
     for row in rows:
         lit = supply > .5 and any(i in enabled and i not in hidden for i in row["lamps"])
-        want = [d * daylight * (1 - .5 * oc) + (l if lit else 0) for d, l in zip(row["daylight"], row["lamp"])]
+        day, lamp = native_colours(row)
+        want = [d * daylight * (1 - .5 * oc) + (l if lit else 0) for d, l in zip(day, lamp)]
         driver = by_tag[row["id"]]
         assert driver in controls
         driver.call_method("UpdateCurtainLight")

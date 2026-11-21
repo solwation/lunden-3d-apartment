@@ -1,5 +1,5 @@
 // #2307: mean colour of matching crops in web / Unreal picture pairs, the numeric side of the lighting comparison.
-//   PLAYWRIGHT_MODULE=… node tools/unreal-engine/tests/crop-stats.cjs DIR crops.json [--check-lighting] [--check-stairs]
+//   PLAYWRIGHT_MODULE=… node tools/unreal-engine/tests/crop-stats.cjs DIR crops.json [--check-lighting] [--check-stairs] [--check-curtains]
 // crops.json: { "<shot>": { "<crop>": [x0, y0, x1, y1] (fractions of the width / height) } }. For each shot it reads
 // DIR/web-<shot>.jpg and DIR/unreal-<shot>.(jpg|png) and prints, per crop, the mean sRGB (0-255), the mean relative
 // luminance of the linear colour (Rec. 709, 0-1) and the warmth R/B of the mean, for both, and Unreal / web luminance.
@@ -43,6 +43,20 @@ async function main() {
   }
   } finally { await browser.close(); }
   fs.writeFileSync(path.join(dir, 'crop-stats.json'), JSON.stringify({crops, stats: out}, null, 1) + '\n');
+  if (process.argv.includes('--check-curtains')) {
+    for (const shot of ['living-room-day', 'living-room-evening', 'upper-floor-evening']) {
+      const web = out[shot]?.web.curtain, ue = out[shot]?.unreal.curtain;
+      if (!web || !ue) throw Error('Missing curtain crop: ' + shot);
+      const ratio = ue.luminance / web.luminance;
+      if (!(ratio >= .8 && ratio <= 1.25)) throw Error(`${shot}: curtain luminance ratio ${ratio.toFixed(3)} outside 0.8–1.25`);
+      // Hue regression: mean print R/G and B/G at each camera, each within 10% of the web (guess).
+      for (const [channel, name] of [[0, 'R/G'], [2, 'B/G']]) {
+        const colourRatio = (ue.srgb[channel] / ue.srgb[1]) / (web.srgb[channel] / web.srgb[1]);
+        if (!(colourRatio >= .9 && colourRatio <= 1.1)) throw Error(`${shot}: curtain ${name} ratio ${colourRatio.toFixed(3)} outside 0.9–1.1`);
+      }
+    }
+    console.log('Curtain luminance and print hue pass for both living-room views and the upper floor.');
+  }
   if (process.argv.includes('--check-pendant')) {
     const shot = out['living-room-evening'];
     for (const crop of ['left-wall', 'upper-left', 'upper-right', 'lower-left', 'lower-right']) {

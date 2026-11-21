@@ -1303,8 +1303,15 @@ the export and the pictures section of `notices.mjs`.
   `Daylight` and `DuskLight` from the existing weather collection, gates its warm contribution at
   `PowerAvailable > 0.5`, and reads `IsOn` on its visible room lamps, including the seasonal fixtures. The
   capture scripts refresh it after setting the lamps and month. Earlier exports omit the optional curtain rows.
+  UE 5.8.4 imports each panel's sRGB print as both `BaseColorTexture` and `EmissiveTexture`. At the game's calibrated
+  exposure, rendering the raw web emission coefficients still left the three curtain crops at 0.44, 0.21 and 0.44
+  times their web luminance. `build_curtains.py` scales the two RGB coefficients separately in native emissive units.
+  The conversions are visual estimates (*guess*) from 24 GPU shots at 0–64 times the raw emission. The living-room
+  print supplies the shared day and lamp reference; the violet print has its own evening fit. The four remaining
+  textiles use the shared conversion. See [the three camera pairs, ratios and colour measurements](../verification/2322/README.md).
   Run `node tools/unreal-engine/tests/curtain-light.mjs unreal/Lunden/Import --blueprint` for the GLB and web math
   and `run-python.ps1 tools/unreal-engine/tests/test_curtain_light.py` after a full UE sync for the materials and switches.
+  Pass `--check-curtains` to the crop check below to verify both luminance and print hue against the web.
   For comparable measurements, run `tests/crop-stats.cjs <paired-image-directory> tests/furnishing-crops.json` from
   `tools/unreal-engine/` on the shared daylight and evening camera pairs. Record the lighting revision and exposure
   with the ratios. In [the #2313 calibration](../verification/2313/README.md) the
