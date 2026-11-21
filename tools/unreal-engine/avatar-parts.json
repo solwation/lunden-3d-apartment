@@ -108,7 +108,7 @@
   { "name": "SKM_LundenLookPiece_043", "any": [
     { "glasses": [ 1]}], "parts": 2, "vertices": 1440, "sha256": "951b04ec75bc829f667b7921d8ee557338a65879a1c2871840f3e90193c937ee"},
   { "name": "SKM_LundenLookPiece_044", "any": [
-    { "glasses": [ 2, 3]}], "parts": 2, "vertices": 1536, "sha256": "61efaad87acc12effb14d99320c96e7b73cccadfafd2e351f10eb097dd579c9d"},
+    { "glasses": [ 2, 3]}], "parts": 2, "vertices": 1536, "sha256": "e605c4e93c62cbb946af803937aec2e2d40db0c8e62f49327d8728aba8ff05db"},
   { "name": "SKM_LundenLookPiece_045", "any": [
     { "glasses": [ 3]}], "parts": 2, "vertices": 72, "sha256": "9eac8200bace684980d303e625629c7549c5a7cda369737255fa6efb06272dcc"},
   { "name": "SKM_LundenLookPiece_046", "any": [

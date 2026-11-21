@@ -80,10 +80,12 @@ const RANGE = Object.fromEntries(AXES.map((a) => [a, [0, ...Array.from({ length:
 const SHOWN = { glasses: C.AVATAR_GLASSES.names.length, earrings: C.AVATAR_EARRINGS.names.length, hat: C.AVATAR_HAT.names.length,
   phones: C.AVATAR_PHONES.names.length, necklace: C.AVATAR_NECKLACE.names.length, ring: 11, bracelet: 7, watch: 7 };
 
+const RIM_SQUARE = 9; // src/avatar.js FACE_PART.rimSquare
+
 /** The shader's choice for a part (src/avatar.js faceShape), as {uniform: kept values}; null = always shown. */
 function shownBy(part) {
   const range = (from, to) => Array.from({ length: to - from + 1 }, (_, i) => from + i);
-  const P = { rimRound: 8, rimSquare: 9, specs: 10, hatDome: 12, peakFront: 13, peakBack: 14, knit: 15, hatCrown: 16, hatBrim: 17,
+  const P = { rimRound: 8, rimSquare: RIM_SQUARE, specs: 10, hatDome: 12, peakFront: 13, peakBack: 14, knit: 15, hatCrown: 16, hatBrim: 17,
     phoneBand: 18, phoneCup: 19, phoneNeck: 20, studs: 21, lens: 25, lensRound: 27, lensSquare: 28, aviator: 29, chain: 30,
     pearls: 31, pendant: 32, ring: 40, braceletBase: 50 };
   if (part >= 100) return null; // fingers
@@ -204,6 +206,10 @@ const NAMES = ['hips', 'torso', 'head', 'shoulderL', 'elbowL', 'handL', 'shoulde
 function glb(piece) {
   const geos = piece.parts.map((s) => partsSeen.get(s).geo), n = geos.reduce((t, g) => t + g.attributes.position.count, 0);
   const pos = new Float32Array(n * 3), nor = new Float32Array(n * 3), col = new Float32Array(n * 4), uv = new Float32Array(n * 2), uv1 = new Float32Array(n * 2), uv2 = new Float32Array(n * 2), jo = new Uint16Array(n * 4), we = new Float32Array(n * 4);
+  // The two square rims can have different internal geometry signatures across V8 versions (#2368).
+  // Keep the exported vertex order left-to-right regardless of how those signatures sort.
+  const squareRims = geos[0].attributes.facePart.getX(0) === RIM_SQUARE;
+  if (squareRims) geos.sort((a, b) => a.attributes.position.getX(0) - b.attributes.position.getX(0));
   let o = 0;
   for (const g of geos) {
     const k = g.attributes.position.count, at = g.attributes;
@@ -217,6 +223,11 @@ function glb(piece) {
       uv2[(o + i) * 2] = at.color.array[i * 3 + 2]; //                              a vertex colour would be rounded to 8 bits
     }
     o += k;
+  }
+  // squareRim's superellipse Math.pow can differ by one double ULP, leaving tiny components in otherwise
+  // axial spline normals. Write positive zero there; positions and all other parts keep their original bytes.
+  if (squareRims) {
+    for (let i = 0; i < nor.length; i++) if (Math.abs(nor[i]) < 1e-10) nor[i] = 0;
   }
   const min = [0, 1, 2].map((c) => Math.min(...pos.filter((_, i) => i % 3 === c))), max = [0, 1, 2].map((c) => Math.max(...pos.filter((_, i) => i % 3 === c)));
   const chunks = [], views = [], accessors = [];
