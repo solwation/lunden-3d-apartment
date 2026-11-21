@@ -334,6 +334,7 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
   };
   const visit = (o, ctx) => {
     if (extra.skip.has(o)) return skip('garage cars and bicycles (furnishing, later)');
+    if (o.name === 'entrance-plants-far') return skip('distance stand-in of the entrance plants (web LOD; the near plants are exported)');
     if (!o.visible) return skip('hidden');
     const why = webOnly(o);
     if (why) return o.isMesh || o.isLine || o.isPoints ? skip(why) : undefined;
@@ -528,7 +529,10 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
   if (wanted.includes('fixture')) roots.fixture = { root: fixtureScene(W, D, unique), triangles: 0 };
 
   // ---- the buildings' measurement rays (#2279), cast on exactly what is exported ----
-  const buildings = [], ray = new THREE.Raycaster();
+  // Geometry, not face culling: every face counts from both sides here and in the Unreal test (it sets double-sided
+  // collision on the measured meshes), so a ray stops at the first surface whichever way it faces.
+  const buildings = [], ray = new THREE.Raycaster(), sides = [...materials.values()].map((m) => [m, m.side]);
+  for (const [m] of sides) m.side = THREE.DoubleSide;
   for (const pr of buildingProbes(W)) {
     const root = roots[pr.zone]?.root;
     if (!root) continue;
@@ -547,6 +551,7 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
       hit: hit ? { web: [r4(hit.point.x), r4(hit.point.y), r4(hit.point.z)], unreal: webToUnrealRounded([hit.point.x, hit.point.y, hit.point.z]),
         distanceCm: roundCm(hit.distance * 100), node, materialKey: key } : null });
   }
+  for (const [m, side] of sides) m.side = side;
 
   // ---- GLB per zone ----
   const exporter = new GLTFExporter();
