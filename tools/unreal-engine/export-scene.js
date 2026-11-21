@@ -1073,7 +1073,13 @@ function measurementData({ world, planCopy, W, D, byZone, lightsInfo, materialTa
   const atomAbove = (o) => { for (; o; o = o.parent) if (atomOf.has(o)) return atomOf.get(o); return null; };
   for (const l of world.lamps ?? []) {
     const a = atomAbove(l.object), p = l.object.getWorldPosition(new THREE.Vector3());
-    lights.push({ id: a?.id ?? null, kind: 'lamp', name: l.name ?? null, level: l.level ?? levelOf(p.y), room: l.room ?? null, position: P(p.x, p.y + (l.height ?? 0), p.z) });
+    // #2307: the small lamp's pool light(s) as src/lights.js FloorLamp builds them (LIGHTING.floorLamp under each anchor's
+    // or the spec's `light`); several anchors (the bench light's strip) are summed into one intensity for one Unreal light.
+    // `auto`: it follows the dusk (Lights.updateAuto) unless its spec says `auto: false`.
+    const pools = (l.anchors ?? [{ light: l.light }]).map((x) => ({ ...C.LIGHTING.floorLamp, ...(x.light ?? {}) }));
+    const hex = (c) => (typeof c === 'number' ? '#' + c.toString(16).padStart(6, '0') : null);
+    lights.push({ id: a?.id ?? null, kind: 'lamp', name: l.name ?? null, level: l.level ?? levelOf(p.y), room: l.room ?? null, position: P(p.x, p.y + (l.height ?? 0), p.z),
+      intensity: r4(pools.reduce((sum, x) => sum + (x.intensity ?? 0), 0)), distance: pools[0].range ?? null, color: hex(pools[0].color), auto: l.auto !== false });
   }
   for (const l of lightsInfo.lamps) lights.push({ id: null, kind: 'room', name: null, level: l.level, room: l.room, position: P(l.pos.x, l.pos.y, l.pos.z),
     intensity: l.intensity, distance: l.distance, color: l.color });
@@ -1127,12 +1133,20 @@ function measurementData({ world, planCopy, W, D, byZone, lightsInfo, materialTa
         light: { sunOvercast: C.LIGHTING.sky.overcast.sun, sunClear: C.LIGHTING.sky.clear.sun, moonlight: C.DAY.moonlight, moonFloor: C.DAY.moonFloor,
           moonExp: C.DAY.moonExp, sunCut: C.WEATHER.sunCut, fogFar: C.WEATHER.fogFar,
           ambientOvercast: C.LIGHTING.sky.overcast.ambient, ambientClear: C.LIGHTING.sky.clear.ambient, nightAmbient: C.DAY.nightAmbient,
-          hemiSky: '#' + C.LIGHTING.sky.hemi.sky.toString(16).padStart(6, '0'), hemiGround: '#' + C.LIGHTING.sky.hemi.ground.toString(16).padStart(6, '0') },
+          hemiSky: '#' + C.LIGHTING.sky.hemi.sky.toString(16).padStart(6, '0'), hemiGround: '#' + C.LIGHTING.sky.hemi.ground.toString(16).padStart(6, '0'),
+          // #2307: the tone-mapping exposure DayCycle blends overcast -> clear, the dusk rule of the small lamps (LIGHTING.auto:
+          // on below `on` daylight, off above `off`, fading over `fade` s) and the moon disc's size and earthshine
+          exposureOvercast: C.LIGHTING.sky.overcast.exposure, exposureClear: C.LIGHTING.sky.clear.exposure,
+          duskOn: C.LIGHTING.auto.on, duskOff: C.LIGHTING.auto.off, duskFade: C.LIGHTING.auto.fade,
+          moonRadius: C.DAY.moonRadius, moonEarthshine: C.DAY.moonEarthshine },
+        // #2307: the sky's cloud cover follows the weather's overcast (src/cloudshadow.js skyCloudState: the noise threshold
+        // goes from `clearThr` over a clear sky to thr[0] -> thr[1] with overcast, reaching the shadows' from `ramp`)
+        clouds: { clearThr: C.CLOUD_SHADOW.sky.clearThr, thr: C.CLOUD_SHADOW.thr, ramp: C.CLOUD_SHADOW.sky.ramp },
         rain: { speed: C.WEATHER.speed, len: C.WEATHER.len, radius: C.WEATHER.radius, height: C.WEATHER.height, drops: C.WEATHER.drops,
           slantPerMs: C.WEATHER.slant.perMs, slantMax: C.WEATHER.slant.max },
         snow: { speed: C.WEATHER.snow.speed, sway: C.WEATHER.snow.sway, size: C.WEATHER.snow.size, flakes: C.WEATHER.snow.flakes,
           driftPerMs: C.WEATHER.snowDrift.perMs, driftMax: C.WEATHER.snowDrift.max },
-        source: 'src/config.js#DAY, LIGHTING.sky, WEATHER; src/daycycle.js sunDirection, src/moon.js moonState' } },
+        source: 'src/config.js#DAY, LIGHTING.sky, LIGHTING.auto, CLOUD_SHADOW, WEATHER; src/daycycle.js sunDirection, src/moon.js moonState' } },
     materials: materialTable,
     fixture: { points: fixturePoints(W, D).map((p) => ({ id: p.id, name: p.name, ...P(...p.web) })),
       arrows: [{ id: 'fixture_arrow_north', direction: 'north', web: [0, 0, -1], unreal: webToUnrealRounded([0, 0, -1]) },

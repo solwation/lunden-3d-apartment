@@ -7,11 +7,18 @@
 // the angle between the two directions must each be within the tolerance (degrees). The moon uses src/moon.js moonState
 // turned into a direction the way DayCycle.update does it (daycycle.js keeps skyDirection private, so its eight lines
 // are repeated below); it is reported and checked with the same tolerance.
+// #2307: when the result has them, also the sky's state for the stars, the moon disc, the clouds and the small lamps,
+// against the web's own functions (within 0.001): Night = 1 - daylight (daycycle.js uNight), MoonPh = (sin e, -cos e, lit
+// fraction) of moonState's elongation (uMoonPh), CloudCover = the sky's cloud threshold from cloudshadow.js skyCloudState for
+// the weather's overcast (forced rain 1, snow x 0.7, weather.js) scaled 0 (clear) ... 1 (overcast), DuskLight = daylight x
+// (1 - 0.6 x the weather's overcast) (main.js), and the `dusk` run played through Lights.updateAuto's rule (LIGHTING.auto;
+// lights.js keeps it in a class with the scene, so its five lines are repeated below) with the same hand switches.
 import { readFile } from 'node:fs/promises';
 import * as THREE from 'three';
 import { sunDirection, dayOfYear } from '../../src/daycycle.js';
 import { moonState } from '../../src/moon.js';
-import { DAY } from '../../src/config.js';
+import { DAY, LIGHTING, CLOUD_SHADOW } from '../../src/config.js';
+import { skyCloudState } from '../../src/cloudshadow.js';
 import { webToUnreal } from './coordinates.mjs';
 
 const args = process.argv.slice(2);
@@ -38,6 +45,14 @@ const angles = ([x, y, z]) => ({ el: Math.asin(Math.max(-1, Math.min(1, z / Math
 const wrap = (d) => ((d + 540) % 360) - 180;
 const between = (a, b) => Math.acos(Math.max(-1, Math.min(1, (a[0] * b[0] + a[1] * b[1] + a[2] * b[2]) / Math.hypot(...a) / Math.hypot(...b)))) * DEG;
 
+const smooth = (a, b, x) => THREE.MathUtils.smoothstep(x, a, b);
+const daylightAt = (y, m, d, h) => smooth(-0.08, 0.18, sunDirection(h, dayOfYear(y, m, d)).y); // DayCycle.daylight
+const moonAt = (y, m, d, h) => moonState(Date.UTC(y, m - 1, d) + (h - (summerTime(dayOfYear(y, m, d)) ? 2 : 1)) * 36e5, DAY.lat, DAY.lon);
+const S = CLOUD_SHADOW.sky, full = CLOUD_SHADOW.thr[1];
+const coverOf = (oc) => (S.clearThr - skyCloudState(oc).thr) / (S.clearThr - full);
+const extra = [];
+const near = (what, got, want) => { const ok = got !== undefined && Math.abs(got - want) <= 1e-3; extra.push({ what, got, want, ok }); };
+
 let worst = 0, failed = 0;
 const rows = [];
 for (const c of result.sun ?? []) {
@@ -58,6 +73,35 @@ for (const c of result.sun ?? []) {
   }
 }
 if (!rows.length) { console.error(`${file}: no sun cases`); process.exit(3); }
+
+for (const c of result.sun ?? []) {
+  if (c.night === undefined) continue;
+  const at = `${c.year}-${c.month}-${c.day} ${c.hour} h`, moon = moonAt(c.year, c.month, c.day, c.hour);
+  near(`${at} night`, c.night, 1 - daylightAt(c.year, c.month, c.day, c.hour));
+  [Math.sin(moon.elong), -Math.cos(moon.elong), moon.illum].forEach((v, i) => near(`${at} moonPh[${i}]`, c.moonPh?.[i], v));
+  near(`${at} cloudCover (clear)`, c.cloudCover, coverOf(0));
+}
+for (const w of result.weather ?? []) {
+  if (w.cloudCover === undefined) continue;
+  const raw = w.rain || w.snow ? 1 : 0, oc = w.rain ? 1 : w.snow ? 0.7 : 0; // forced weather; day.overcast: snow x 0.7
+  near(`${w.event} -> rain ${w.rain} snow ${w.snow}: cloudCover`, w.cloudCover, coverOf(oc));
+  near(`${w.event} -> rain ${w.rain} snow ${w.snow}: duskLight`, w.duskLight, daylightAt(w.year, w.month, w.day, w.hour) * (1 - 0.6 * raw));
+}
+if (result.dusk?.length) { // Lights.updateAuto (#234) with the same run
+  const A = LIGHTING.auto, on = { A: false, B: false, C: false }, auto = { A: true, B: false, C: true };
+  let dark;
+  for (const r of result.dusk) {
+    if (r.hand) on[r.hand[0]] = r.hand[1] === 'TurnOn' ? true : r.hand[1] === 'TurnOff' ? false : !on[r.hand[0]];
+    const input = daylightAt(2026, 6, 21, r.hour) * (1 - 0.6 * r.rain);
+    near(`dusk step ${r.step} duskLight`, r.duskLight, input);
+    const first = dark === undefined, now = first ? input < (A.on + A.off) / 2 : dark ? input < A.off : input < A.on;
+    if (now !== dark) { dark = now; for (const k in on) if (auto[k]) on[k] = dark; }
+    for (const k in on) extra.push({ what: `dusk step ${r.step} lamp ${k} on`, got: r.lamps[k].isOn, want: on[k], ok: r.lamps[k].isOn === on[k] });
+  }
+}
+for (const e of extra) if (!e.ok) failed++;
+if (extra.length) console.log(`${extra.filter((e) => e.ok).length}/${extra.length} sky, cloud and dusk-lamp values as the web's` +
+  (extra.some((e) => !e.ok) ? ': FAIL ' + JSON.stringify(extra.filter((e) => !e.ok)) : ''));
 for (const r of rows) console.log(`${r.ok ? 'ok  ' : 'FAIL'} ${r.date} ${String(r.hour).padStart(5)} h ${r.body.padEnd(4)} elevation web ${r.webElevation.toFixed(3).padStart(8)} unreal ${r.unrealElevation.toFixed(3).padStart(8)}  azimuth web ${r.webAzimuth.toFixed(3).padStart(8)} unreal ${r.unrealAzimuth.toFixed(3).padStart(8)}  angle ${r.dAngle.toFixed(4)}°`);
 console.log(`${failed ? 'FAIL' : 'PASS'}: ${rows.length} directions, worst difference ${worst.toFixed(4)}° (tolerance ${tolerance}°)`);
 process.exit(failed ? 1 : 0);

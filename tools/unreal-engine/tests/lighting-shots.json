@@ -1,0 +1,12 @@
+{
+  "about": "#2307: the lighting comparison shots, rendered by capture_lighting.py (Unreal) and capture-web-lighting.cjs (web) with the shared cameras of unreal/Lunden/Tests/views.json. lamps: all = every lamp on (the web's &lights), none = all off, dusk = only the small lamps that follow the dusk, as each side's own rule sets them for the hour. The night shot's date puts a waxing moon (43 % lit) in the open sky at the left of START's picture.",
+  "shots": [
+    { "name": "living-room-day", "camera": "living-room", "date": [2026, 6, 21], "hour": 14, "lamps": "none", "weather": "clear" },
+    { "name": "living-room-evening", "camera": "living-room", "date": [2026, 6, 21], "hour": 22, "lamps": "all", "weather": "clear" },
+    { "name": "upper-floor-evening", "camera": "upper-floor", "date": [2026, 6, 21], "hour": 22, "lamps": "all", "weather": "clear" },
+    { "name": "living-room-dusk", "camera": "living-room", "date": [2026, 6, 21], "hour": 22, "lamps": "dusk", "weather": "clear" },
+    { "name": "start-day", "camera": "start", "date": [2026, 6, 21], "hour": 14, "lamps": "none", "weather": "clear" },
+    { "name": "start-overcast", "camera": "start", "date": [2026, 6, 21], "hour": 14, "lamps": "none", "weather": "rain" },
+    { "name": "start-night", "camera": "start", "date": [2026, 11, 16], "hour": 18.25, "lamps": "dusk", "weather": "clear" }
+  ]
+}

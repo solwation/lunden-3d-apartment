@@ -7,7 +7,10 @@ scene.json comes from `node tools/unreal-engine/pilot-scene.mjs measurements.jso
 the web). Unlike capture_l1007.py there is no temporary rig: the world's BP_LundenSky (Generated/Lighting/Level_lighting,
 composed into L_Lunden) is set to views.json's date and each preset's hour with UseClock off, UpdateSky runs, and the
 lamps are switched with their TurnOn / TurnOff events (views.json `lampsOn`). Weather shots switch Rain or Snow on and
-set Wet to 1 (a soaked street). Nothing is saved; the zones' meshes render with Nanite off in memory (a one-shot
+set Wet to 1 (a soaked street). #2307 adds the shots of lighting-shots.json (their own date and hour; lamps `all`, `none`
+or `dusk`: only the lamps tagged auto:dusk, on when the sky's DuskLight is below the middle of the web's dusk thresholds,
+the lamp Blueprint's first reading, which test_lighting checks in play). Each shot's exposure is manual: bias 0 at 14:00
+as the #2246/#2279 pairs, -0.7 otherwise. Nothing is saved; the zones' meshes render with Nanite off in memory (a one-shot
 commandlet capture draws Nanite meshes as coarse loose panels otherwise, also with the full fallback of importer
 version 5, #2279/#2298). Logs LUNDEN_LIGHTING_CAPTURE_OK.
 """
@@ -25,17 +28,21 @@ from prepare_nanite_materials import static_mesh_editor  # noqa: E402
 
 MAP = "/Game/Lunden/Maps/L_Lunden"
 VIEWS = json.loads((Path(__file__).resolve().parents[3] / "unreal/Lunden/Tests/views.json").read_text(encoding="utf-8"))
-# (name, camera id, lighting preset, weather): the five shared pairs, then rain and snow outside and through windows.
-SHOTS = [("start", "start", "day", None), ("living-room", "living-room", "day", None), ("patio", "patio", "day", None),
-         ("stairs", "stairs", "evening", None), ("upper-floor", "upper-floor", "evening", None),
-         ("start-rain", "start", "day", "Rain"), ("living-room-rain", "living-room", "day", "Rain"),
-         ("patio-snow", "patio", "day", "Snow"), ("upper-floor-rain", "upper-floor", "evening", "Rain")]
+# #2283: the five shared pairs, then rain and snow outside and through windows (views.json's date and lighting presets).
+LEGACY = [("start", "start", "day", None), ("living-room", "living-room", "day", None), ("patio", "patio", "day", None),
+          ("stairs", "stairs", "evening", None), ("upper-floor", "upper-floor", "evening", None),
+          ("start-rain", "start", "day", "Rain"), ("living-room-rain", "living-room", "day", "Rain"),
+          ("patio-snow", "patio", "day", "Snow"), ("upper-floor-rain", "upper-floor", "evening", "Rain")]
+DATE = [VIEWS["date"][k] for k in ("year", "month", "day")]
+SHOTS = [{"name": n, "camera": c, "date": DATE, "hour": VIEWS["lighting"][p]["hour"], "weather": (w or "clear").lower(),
+          "lamps": "all" if VIEWS["lighting"][p]["lampsOn"] else "none"} for n, c, p, w in LEGACY]
+SHOTS += json.loads((Path(__file__).resolve().parent / "lighting-shots.json").read_text(encoding="utf-8"))["shots"]
 
 
 def run(scene_path, out_dir, names=None):
     scene = json.loads(Path(scene_path).read_text(encoding="utf-8"))
     cams = {c["id"]: c for c in scene["cameras"]}
-    wanted = names.split(",") if names else [s[0] for s in SHOTS]
+    wanted = names.split(",") if names else [s["name"] for s in SHOTS]
     if not u.EditorLoadingAndSavingUtils.load_map(MAP):
         raise RuntimeError(f"Cannot load {MAP}: run compose_world.py first")
     world = u.get_editor_subsystem(u.UnrealEditorSubsystem).get_editor_world()
@@ -64,27 +71,36 @@ def run(scene_path, out_dir, names=None):
     u.SystemLibrary.execute_console_command(world, "r.Shadow.Virtual.Enable 0")
     os.makedirs(out_dir, exist_ok=True)
     observed = []
-    for name, cam_id, preset_name, weather in [s for s in SHOTS if s[0] in wanted]:
-        cam, preset = cams[cam_id], VIEWS["lighting"][preset_name]
-        for k, v in (("UseClock", False), ("TimeScale", 0.0), ("Year", VIEWS["date"]["year"]), ("Month", VIEWS["date"]["month"]),
-                     ("Day", VIEWS["date"]["day"]), ("Hour", float(preset["hour"])), ("Rain", 1.0 if weather == "Rain" else 0.0),
-                     ("Snow", 1.0 if weather == "Snow" else 0.0), ("Wet", 1.0 if weather == "Rain" else 0.0)):
+    dusk_mid = (lamps[0].get_editor_property("DuskOn") + lamps[0].get_editor_property("DuskOff")) / 2
+    for shot in [s for s in SHOTS if s["name"] in wanted]:
+        name, cam, weather = shot["name"], cams[shot["camera"]], shot["weather"]
+        (year, month, day), hour = shot["date"], float(shot["hour"])
+        for k, v in (("UseClock", False), ("TimeScale", 0.0), ("Year", year), ("Month", month), ("Day", day), ("Hour", hour),
+                     ("Rain", 1.0 if weather == "rain" else 0.0), ("Snow", 1.0 if weather == "snow" else 0.0),
+                     ("Wet", 1.0 if weather == "rain" else 0.0)):
             # NEVER notify: a property change in the editor world re-runs the construction script, which resets the lights
             sky.set_editor_property(k, v, u.PropertyAccessChangeNotifyMode.NEVER)
         sky.call_method("UpdateSky")
+        dark = sky.get_editor_property("DuskLight") < dusk_mid
+        lit = 0
         for lamp in lamps:
-            lamp.call_method("TurnOn" if preset["lampsOn"] else "TurnOff")
+            on = shot["lamps"] == "all" or (shot["lamps"] == "dusk" and dark and "auto:dusk" in [str(t) for t in lamp.tags])
+            lamp.call_method("TurnOn" if on else "TurnOff")
+            lit += on
         skylight.recapture_sky()
         direction = sky.get_editor_property("SunDirection")
+        bias = 0.0 if hour == 14 else -0.7
         obs = render_view(world, out_dir, name, u.Vector(*cam["xyz"]), u.Rotator(roll=0, pitch=cam["pitch"], yaw=cam["yaw"]),
-                          scene["width"], scene["height"], scene["horizontalFov"], -0.7 if preset["lampsOn"] else 0, excluded, lumen=True)
+                          scene["width"], scene["height"], scene["horizontalFov"], bias, excluded, lumen=True)
         forward = u.MathLibrary.get_forward_vector(sun.get_world_rotation())
         off = math.degrees(math.acos(max(-1, min(1, -(forward.x * direction.x + forward.y * direction.y + forward.z * direction.z)))))
         if math.dist(obs["xyz"], cam["xyz"]) > 0.01 or any(abs(obs[k] - cam[k]) > 0.001 for k in ("pitch", "yaw")) or off > 0.01:
             raise RuntimeError(f"Camera or sun mismatch in {name}: sun {off:.3f}° off")
-        observed.append({**obs, "name": name, "camera": cam_id, "lighting": preset_name, "hour": preset["hour"], "weather": weather or "clear",
+        observed.append({**obs, "name": name, "camera": shot["camera"], "date": shot["date"], "hour": hour, "weather": weather,
+                         "lamps": shot["lamps"], "lampsLit": lit, "exposureBias": bias,
                          "sunElevation": sky.get_editor_property("SunElevation"), "sunLux": sun.intensity,
-                         "lampsOn": preset["lampsOn"], "date": VIEWS["date"]})
+                         "daylight": sky.get_editor_property("Daylight"), "duskLight": sky.get_editor_property("DuskLight"),
+                         "cloudCover": sky.get_editor_property("CloudCover"), "moonIllumination": sky.get_editor_property("MoonIllumination")})
         u.log(f"LUNDEN_LIGHTING_CAPTURE {name}: sun elevation {sky.get_editor_property('SunElevation'):.3f}°, sun {sun.intensity:.3f} lux")
     (Path(out_dir) / "capture.json").write_text(json.dumps({"engine": u.SystemLibrary.get_engine_version(), "map": MAP,
         "naniteOffInMemory": fallback, "hiddenCollisionActors": len(excluded), "lamps": len(lamps), "shots": observed}, indent=2) + "\n")

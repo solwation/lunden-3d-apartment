@@ -6,12 +6,15 @@ Versioned assets (one owner, #2283; take `git lfs lock` on each before a run tha
   Lighting/BP_LundenSky            the day/time driver: sun and moon after src/daycycle.js and src/moon.js, sky
                                    atmosphere, real-time sky light, height fog, volumetric clouds, post process
                                    (exposure range and the precipitation blendable), rain/snow/wet/wind state
-  Lighting/BP_LundenLamp           one lamp: a point light with TurnOn / TurnOff / Toggle events (#2285 calls them)
-  Lighting/MPC_LundenWeather       what the precipitation material reads: Rain, Snow, Wet, wind, light level, the
-                                   indoor boxes and the web's drop/flake numbers
+  Lighting/BP_LundenLamp           one lamp: a point light with TurnOn / TurnOff / Toggle events (#2285 calls them);
+                                   a small lamp with Auto on follows the dusk like src/lights.js updateAuto (#2307)
+  Lighting/MPC_LundenWeather       what the materials and lamps read: Rain, Snow, Wet, wind, light level, the indoor
+                                   boxes and the web's drop/flake numbers; DuskLight, Night, CloudCover(age) and the sun and
+                                   moon directions and the moon's phase (#2307)
   Lighting/M_LundenPrecipitation   post-process material: rain streaks and snowflakes on cylinders round the eye,
                                    hidden inside the buildings' boxes and behind opaque geometry (so they show outside
-                                   and through windows), and wet outdoor surfaces (darker, with a sky sheen)
+                                   and through windows), and wet outdoor surfaces (darker, with a sky sheen); on the sky
+                                   itself the web's stars and the moon disc with its phase (#2307)
 Generated level (rebuilt, not versioned, like build_l1007.py's): /Game/Lunden/Generated/Lighting/Level_lighting with one
 BP_LundenSky and one BP_LundenLamp per measurements.json `lights` entry, tagged
 [lamp:<id>, kind:<lamp|room>, level:<n>, room:<room>] and named `Lamp_<id>`.
@@ -45,7 +48,8 @@ MPC = DIR + "/MPC_LundenWeather"
 PRECIP = DIR + "/M_LundenPrecipitation"
 LEVEL_FOLDER = "/Game/Lunden/Generated/Lighting"
 LEVEL = LEVEL_FOLDER + "/Level_lighting"
-CLOUD_MATERIAL = "/Engine/EngineSky/VolumetricClouds/m_SimpleVolumetricCloud_Inst"
+CLOUD_SOURCE = "/Engine/EngineSky/VolumetricClouds/m_SimpleVolumetricCloud"  # Epic's simple volumetric cloud material
+CLOUDS = DIR + "/M_LundenClouds"  # its copy with Cloud_GlobalCoverage read from MPC_LundenWeather CloudCoverage (#2307)
 SPEC_TAG = "Lunden.SpecHash"
 
 TOOLS = u.AssetToolsHelpers.get_asset_tools()
@@ -60,9 +64,12 @@ LEVEL_DIR = CONTENT / "Lunden/Generated/Lighting"
 STAMP = LEVEL_DIR / "build-stamp.json"
 
 # Unreal calibration of the web's relative light units (assumptions, by eye against the web's reference pictures): the
-# web's clear-day sun (LIGHTING.sky.clear.sun) is SUN_LUX in Unreal, every other web intensity scales with it. Room lights:
-# candela = ROOM_CANDELA x the web intensity (half the pilot's 7, which washed the 22:00 rooms out once all 36 lights
-# were on); lamps without a web intensity get LAMP_CANDELA. SKY_SCALE: the real-time sky light's intensity on a clear
+# web's clear-day sun (LIGHTING.sky.clear.sun) is SUN_LUX in Unreal, every other web intensity scales with it. Lamps
+# (#2307): candela = CANDELA_PER_WEB x the web intensity the export gives every light (the rooms' ceiling and pendant
+# points from src/lights.js, the small lamps' pool lights from LIGHTING.floorLamp and their specs), attenuation radius =
+# the web's range. CANDELA_PER_WEB is set by mean luminance and colour of matching wall/ceiling crops of the 22:00 pairs
+# (docs/verification/2307/), *guess* (the web's lamps are four pool lights plus a shader wash, not 36 point lights).
+# SKY_SCALE: the real-time sky light's intensity on a clear
 # day; the atmosphere it captures dims with the sun under rain, so UpdateSky divides by the sun's cut and keeps the web's
 # hemisphere light (x (1 - 0.3 overcast), daycycle.js). FOG_GREY: the height fog's own inscattering under overcast
 # (the web greys the sky and fog, OVERCAST), in the exposure the captures use.
@@ -76,10 +83,17 @@ FOG_GREY = 0.6
 AMBIENT_REF = 0.6
 AMBIENT_CUBE = DIR + "/T_LundenHemisphere"
 SUN_LUX = 8.0
-ROOM_CANDELA = 3.5
-LAMP_CANDELA = 2.0
-LAMP_COLOUR = "#ffd9a8"  # LIGHTING small-lamp warm white (src/lights.js), *guess* where the export has no colour
-LAMP_RADIUS = 650.0      # cm, the pilot's attenuation radius
+CANDELA_PER_WEB = 1.0
+LAMP_COLOUR = "#ffd59a"  # LIGHTING.floorLamp colour, where the export has none
+LAMP_RANGE = 5.0         # m, LIGHTING.floorLamp range, where the export has none
+# weather.js: `day.overcast = overcast x (kind === 'snow' ? 0.7 : 1)`, snow clouds are lighter
+SNOW_OVERCAST = 0.7
+# The sky's stars and moon disc (#2307, daycycle.js skyFrag, transcribed in PRECIP_HLSL) are drawn in display units: their
+# web value x EyeAdaptationInverse, so they read as on the web at any exposure. Hidden by (1 - 0.85 x CloudCover): the
+# web mixes its clouds over them by 0.85 x the cloud's density, and Unreal's volumetric clouds cover the sky in
+# proportion to CloudCover. Engine cloud material: its coverage parameter goes from CLOUD_RANGE[0] (the web's clear
+# threshold) to CLOUD_RANGE[1] (overcast), *guess* by eye.
+CLOUD_RANGE = (-1.0, 1.0)
 # Exposure range of the world's post process (EV100), *guess*: day exteriors and lamp-lit evening rooms both read.
 EXPOSURE = {"min": -4.0, "max": 3.0, "bias": 0.0}
 # Wet surfaces soak in about 10 minutes of rain and dry in about 30 (web: src/wetground.js integrates a film; *guess*).
@@ -96,6 +110,8 @@ def load_measurements(path):
     sky = (m.get("site") or {}).get("sky")
     if not sky or "hemiGround" not in sky.get("light", {}) or "rain" not in sky:
         raise RuntimeError("measurements.json site.sky is missing: re-export with this commit (export-scene.js #2283)")
+    if "duskOn" not in sky["light"] or "clouds" not in sky or any("auto" not in l for l in m["lights"] if l["kind"] == "lamp"):
+        raise RuntimeError("measurements.json lacks the dusk, cloud and lamp numbers: re-export with this commit (export-scene.js #2307)")
     ids = [l.get("id") for l in m["lights"]]
     if not all(ids) or len(set(ids)) != len(ids):
         raise RuntimeError("measurements.json lights need unique ids: re-export with this commit")
@@ -120,10 +136,11 @@ def indoor_boxes(m):
 def lamp_rows(m):
     rows = []
     for l in m["lights"]:
-        room = l["kind"] == "room"
-        candela = ROOM_CANDELA * (l.get("intensity") or 1.0) if room else LAMP_CANDELA
         rows.append({"id": l["id"], "kind": l["kind"], "level": l["level"], "room": l.get("room"), "name": l.get("name"),
-                     "xyz": l["position"]["unreal"], "candela": candela, "colour": l.get("color") or LAMP_COLOUR})
+                     "xyz": l["position"]["unreal"], "candela": CANDELA_PER_WEB * (l.get("intensity") or 0.0),
+                     "radius": 100.0 * (l.get("distance") or LAMP_RANGE), "colour": l.get("color") or LAMP_COLOUR,
+                     # the ceiling lamps (the room switches) are by hand only; a small lamp follows the dusk unless `auto: false`
+                     "auto": l["kind"] == "lamp" and l.get("auto", True)})
     return rows
 
 
@@ -132,6 +149,7 @@ def spec_of(m):
     boxes, soffit = indoor_boxes(m)
     return {"sky": sky, "boxes": boxes, "soffit": soffit, "lamps": lamp_rows(m), "sunLux": SUN_LUX,
             "exposure": EXPOSURE, "wet": WET_RATE, "skyScale": SKY_SCALE, "fogGrey": FOG_GREY, "ambientRef": AMBIENT_REF, "fog": FOG,
+            "snowOvercast": SNOW_OVERCAST, "cloudRange": CLOUD_RANGE,
             "script": hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
 
 
@@ -415,7 +433,7 @@ illum = (1 - cosd(bm) * cosd(dl)) / 2
 """
 LIGHT = """
 day = smooth(-0.08, 0.18, sunsinEl)
-oc = max(Rain, Snow)
+oc = max(Rain, Snow * SnowOvercast)                      # weather.js: day.overcast, snow clouds are lighter
 clear = day * (1 - oc)
 ambient = ((AmbientOvercast + (AmbientClear - AmbientOvercast) * clear) * day + NightAmbient * 0.5) * (1 - 0.25 * oc)
 sunRel = SunOvercast + (SunClear - SunOvercast) * clear
@@ -432,6 +450,22 @@ streak = 0.06 + 0.54 * day
 windX = 0 - WindSpeed * sind(WindFromDeg - PlanNorth)
 windY = WindSpeed * cosd(WindFromDeg - PlanNorth)
 """
+# #2307: what the small lamps follow (main.js: lights.updateAuto(day.daylight x (1 - 0.6 x weather.overcast)), the weather's
+# own overcast, before the snow's 0.7), the night (daycycle.js uNight), the moon's phase vector for the disc (uMoonPh: sin e,
+# -cos e, lit fraction; e = elongation, moon.js) and the sky's cloud threshold (cloudshadow.js skyCloudState) as a cover
+# 0 (clear) ... 1 (overcast) and the engine cloud material's coverage for it.
+EXTRA = """
+duskLight = day * (1 - 0.6 * max(Rain, Snow))
+night = 1 - day
+ce = cosd(bm) * cosd(dl)
+sinE = sqrt(max(0, 1 - ce * ce))
+negCosE = 0 - ce
+ocl = min(oc, 1)
+cthr = ThrA + (ThrB - ThrA) * ocl
+skyThr = ClearThr + (cthr - ClearThr) * smooth(0, Ramp, ocl)
+cover = (ClearThr - skyThr) / (ClearThr - ThrB)
+coverage = CloudLo + (CloudHi - CloudLo) * cover
+"""
 
 
 # ------------------------------------------------------------------------------------------------- assets -----
@@ -443,8 +477,11 @@ def build_mpc(spec):
                "RainSpeed": r["speed"] * 100, "RainLength": r["len"] * 100, "RainRadius": r["radius"] * 100,
                "RainHeight": r["height"] * 100, "SlantPerMs": r["slantPerMs"], "SlantMax": r["slantMax"],
                "SnowSpeed": s["speed"] * 100, "SnowSway": s["sway"] * 100, "SnowSize": s["size"] * 100,
-               "DriftPerMs": s["driftPerMs"], "DriftMax": s["driftMax"] * 100}
-    vectors = {}
+               "DriftPerMs": s["driftPerMs"], "DriftMax": s["driftMax"] * 100,
+               # #2307: DuskLight (what the small lamps follow) -1 = the sky has not run yet (the lamps wait); the clouds; the moon disc
+               "DuskLight": -1.0, "Night": 0.0, "CloudCover": 0.0, "CloudCoverage": 0.0,
+               "MoonRadius": spec["sky"]["light"]["moonRadius"], "Earthshine": spec["sky"]["light"]["moonEarthshine"]}
+    vectors = {"SunDir": u.LinearColor(0, 0, 1, 0), "MoonDir": u.LinearColor(0, 0, -1, 0), "MoonPh": u.LinearColor(0, 1, 1, 0)}
     for i, box in enumerate(spec["boxes"]):
         vectors[f"Box{i}Min"] = u.LinearColor(*box["min"], 1)
         vectors[f"Box{i}Max"] = u.LinearColor(*box["max"], 1)
@@ -476,6 +513,31 @@ if (Wet > 0.001 && depth < 1e6) {
     float fres = 0.04 + 0.96 * pow(1.0 - saturate(dot(-v, N)), 5.0);
     col = col * (1.0 - k) + Light * 0.5 * fres * up * Wet;
   }
+}
+// #2307: the web's moon disc with its phase, its halo and the stars (daycycle.js skyFrag, transcribed in the web's axes: x
+// east, y up, z south) on the sky itself, in display units (x EAI); the clouds cover them as the web mixes its clouds in
+if (depth >= 1e6) {
+  float3 dw = float3(v.x, v.z, v.y), sw = float3(SunDir.x, SunDir.z, SunDir.y), mw = float3(MoonDir.x, MoonDir.z, MoonDir.y);
+  float clear = 1.0 - 0.85 * CloudCover, sR = sin(MoonRadius);
+  float m = max(dot(dw, mw), 0.0);
+  if (m > cos(MoonRadius * 1.6)) {
+    float3 pd = dw - mw * m, su = sw - mw * dot(sw, mw);
+    float3 uu = su / max(length(su), 1e-4), vv = cross(mw, uu);
+    float2 xy = float2(dot(pd, uu), dot(pd, vv)) / sR;
+    float rr = length(xy), z = sqrt(max(1.0 - rr * rr, 0.0));
+    float lit = smoothstep(-0.04, 0.08, xy.x * MoonPh.x + z * MoonPh.y);
+    float3 e1 = normalize(cross(float3(0.0, 1.0, 0.0), mw));
+    float2 mp = float2(dot(pd, e1), dot(pd, cross(mw, e1))) / sR;
+    float mare = 0.80 + 0.20 * smoothstep(-0.5, 0.6, sin(mp.x * 2.6 + 1.1) * sin(mp.y * 2.1 - 0.4) + 0.5 * sin(mp.x * 5.0 - mp.y * 3.5));
+    float disc = (1.0 - smoothstep(0.9, 1.0, rr)) * step(-0.05, mw.y);
+    float3 surf = float3(0.92, 0.94, 1.0) * mare * (0.85 + 0.15 * z) * EAI;
+    col = lerp(col, surf, disc * lit * (0.3 + 0.7 * Night) * clear);
+    col = lerp(col, float3(0.92, 0.94, 1.0) * Earthshine * EAI, disc * (1.0 - lit) * Night * 0.9 * clear);
+  }
+  col += float3(0.25, 0.28, 0.35) * pow(m, 400.0) * Night * MoonPh.z * MoonPh.z * EAI * clear;
+  float3 q = floor(dw * 260.0);
+  float star = step(0.9975, frac(sin(dot(q, float3(12.9898, 78.233, 37.719))) * 43758.5453)) * Night * smoothstep(0.02, 0.2, dw.y);
+  col += star * (0.6 + 0.4 * frac(sin(dot(q + 1.0, float3(12.9898, 78.233, 37.719))) * 43758.5453)) * EAI * clear;
 }
 float hv = length(v.xy);
 float amt = max(Rain, Snow);
@@ -544,7 +606,8 @@ def build_precip_material(spec, mpc):
     custom = MEL.create_material_expression(mat, u.MaterialExpressionCustom, -400, 0)
     names = ["Scene", "WPos", "Cam", "N", "Time", "Light", "Rain", "Snow", "Wet", "Wind", "Soffit", "Radius", "Height",
              "Speed", "Length", "SlantPerMs", "SlantMax", "SnowSpeed", "Sway", "Size", "DriftPerMs", "DriftMax",
-             "B0n", "B0x", "B1n", "B1x", "B2n", "B2x", "B3n", "B3x"]
+             "B0n", "B0x", "B1n", "B1x", "B2n", "B2x", "B3n", "B3x",
+             "EAI", "SunDir", "MoonDir", "MoonPh", "Night", "CloudCover", "MoonRadius", "Earthshine"]
     inputs = []
     for name in names:
         ci = u.CustomInput()
@@ -591,8 +654,48 @@ def build_precip_material(spec, mpc):
     for i in range(4):
         for suffix, short in (("Min", "n"), ("Max", "x")):
             wire(param(f"Box{i}{suffix}"), f"B{i}{short}")
+    wire(expr(u.MaterialExpressionEyeAdaptationInverse), "EAI")
+    for name in ("SunDir", "MoonDir", "MoonPh", "Night", "CloudCover", "MoonRadius", "Earthshine"):
+        wire(param(name), name)
     MEL.connect_material_property(custom, "", u.MaterialProperty.MP_EMISSIVE_COLOR)
     MEL.recompile_material(mat)
+    return mat
+
+
+def build_clouds(mpc):
+    """M_LundenClouds: a copy of Epic's simple volumetric cloud material whose global coverage (a scalar parameter, -0.2 by
+    default) is the weather collection's CloudCoverage, which UpdateSky sets from the web's cloud rule. A copy, because the
+    sky's cloud cover must follow the weather at run time without a dynamic material instance (captures and tests call
+    UpdateSky in an editor world, where BeginPlay never ran)."""
+    if ASSETS.does_asset_exist(CLOUDS):
+        ASSETS.delete_asset(CLOUDS)
+    source = u.load_asset(CLOUD_SOURCE)  # (engine content is not in a commandlet's asset registry: copy the loaded object)
+    mat = TOOLS.duplicate_asset(CLOUDS.rsplit("/", 1)[1], DIR, source) if source else None
+    if not mat:
+        raise RuntimeError("Could not copy " + CLOUD_SOURCE)
+    exprs = list(MEL.get_material_expressions(mat))
+    old = [e for e in exprs if isinstance(e, u.MaterialExpressionScalarParameter)
+           and str(e.get_editor_property("parameter_name")) == "Cloud_GlobalCoverage"]
+    if len(old) != 1:
+        raise RuntimeError(f"{CLOUD_SOURCE}: expected one Cloud_GlobalCoverage parameter, found {len(old)}")
+    x, y = MEL.get_material_expression_node_position(old[0])
+    new = MEL.create_material_expression(mat, u.MaterialExpressionCollectionParameter, x, y + 80)
+    new.set_editor_property("collection", mpc)
+    new.set_editor_property("parameter_name", "CloudCoverage")
+    moved = 0
+    for e in exprs:
+        if e == old[0]:
+            continue
+        for name, src in zip(MEL.get_material_expression_input_names(e), MEL.get_inputs_for_material_expression(mat, e)):
+            if src == old[0]:
+                if not MEL.connect_material_expressions(new, "", e, str(name)):
+                    raise RuntimeError(f"Could not rewire {e.get_name()}.{name} to CloudCoverage")
+                moved += 1
+    if not moved:
+        raise RuntimeError("Cloud_GlobalCoverage feeds nothing in " + CLOUD_SOURCE)
+    MEL.delete_material_expression(mat, old[0])
+    MEL.recompile_material(mat)
+    u.log(f"LUNDEN_LIGHTING clouds: Cloud_GlobalCoverage -> MPC CloudCoverage on {moved} input(s)")
     return mat
 
 
@@ -626,16 +729,45 @@ def hemisphere_cube(spec):
     return cube
 
 
-def build_lamp():
+def build_lamp(spec, mpc):
+    """BP_LundenLamp: IsOn and the events #2285's switches call, plus the web's small-lamp behaviour (src/lights.js
+    FloorLamp / Lights.updateAuto, #2307): K is how far on it is (the light's intensity is Candela x K); TurnOn, TurnOff and
+    Toggle set it at once. Tick reads the sky's DuskLight from MPC_LundenWeather (-1 until the sky has run) and keeps Dusk
+    (-1 unknown, 0 light, 1 dark) with the web's hysteresis: dark below DuskOn, light again above DuskOff, the first
+    reading split at their middle. Only a change of Dusk switches a lamp with Auto, so one switched by hand stays until
+    the next dusk or dawn; the first reading sets it at once, later ones fade over DuskFade seconds."""
     bp = load_or_create_blueprint(LAMP, u.Actor)
     comps = components(bp, {"Light": u.PointLightComponent})
     light = comps["Light"]
     light.set_editor_property("mobility", u.ComponentMobility.MOVABLE)
     light.set_editor_property("intensity_units", u.LightUnits.CANDELAS)
-    light.set_editor_property("attenuation_radius", LAMP_RADIUS)
+    light.set_editor_property("attenuation_radius", 100.0 * LAMP_RANGE)
     light.set_editor_property("cast_shadows", False)  # one shadow-casting light (the sun/moon), as the web
-    variables(bp, {"IsOn": ("bool", False)})
+    sky = spec["sky"]["light"]
+    variables(bp, {"IsOn": ("bool", False), "Auto": ("bool", False), "Candela": ("real", 0.0), "K": ("real", 0.0),
+                   "Dusk": ("real", -1.0), "DuskOn": ("real", sky["duskOn"]), "DuskOff": ("real", sky["duskOff"]),
+                   "DuskFade": ("real", sky["duskFade"])})
     G = Graph(bp)
+
+    def show(chain):
+        """K at once from IsOn, then the light's intensity and visibility."""
+        env = Expr(G, {"IsOn": (G.get("IsOn"), "IsOn")})
+        k = G.place(G.g.add_set_member_variable_node("K"))
+        env.feed(k, "K", env.run("k = select(IsOn, 1, 0)")["k"])
+        chain.then(k)
+        apply_k(chain)
+
+    def apply_k(chain):
+        env = Expr(G, {"K": (G.get("K"), "K"), "Candela": (G.get("Candela"), "Candela")})
+        power = G.call("LightComponent:SetIntensity")
+        connect(G.get("Light"), "Light", power, "self")
+        env.feed(power, "NewIntensity", env.run("c = Candela * K")["c"])
+        chain.then(power)
+        vis = G.call("SceneComponent:SetVisibility")
+        connect(G.get("Light"), "Light", vis, "self")
+        env.feed(vis, "bNewVisibility", env.run("v = K > 0.0001")["v"])
+        chain.then(vis)
+
     for name, value in (("TurnOn", True), ("TurnOff", False), ("Toggle", None)):
         start = G.custom(name)
         chain = Chain(start)
@@ -647,22 +779,61 @@ def build_lamp():
         else:
             constant(setter, "IsOn", "true" if value else "false")
         chain.then(setter)
-        show = G.call("SceneComponent:SetVisibility")
-        connect(G.get("Light"), "Light", show, "self")
-        connect(G.get("IsOn"), "IsOn", show, "bNewVisibility")
-        chain.then(show)
-    begin = G.event("BeginPlay", "ReceiveBeginPlay")
-    show = G.call("SceneComponent:SetVisibility")
-    connect(G.get("Light"), "Light", show, "self")
-    connect(G.get("IsOn"), "IsOn", show, "bNewVisibility")
-    Chain(begin).then(show)
+        show(chain)
+    show(Chain(G.event("BeginPlay", "ReceiveBeginPlay")))
+
+    # Tick: the dusk (Lights.updateAuto), then the fade (FloorLamp.update)
+    tick = G.event("Tick", "ReceiveTick")
+    daylight = G.call("KismetMaterialLibrary:GetScalarParameterValue", ParameterName="DuskLight")
+    constant(daylight, "Collection", mpc.get_path_name())
+    env = {n: (G.get(n), n) for n in ("Dusk", "DuskOn", "DuskOff", "K", "IsOn", "DuskFade")}
+    env.update({"day": (daylight, "ReturnValue"), "dt": (tick, "DeltaSeconds")})
+    E = Expr(G, env)
+    v = E.run("""
+d = select(Dusk >= 0, select(Dusk > 0.5, select(day < DuskOff, 1, 0), select(day < DuskOn, 1, 0)), select(day < (DuskOn + DuskOff) / 2, 1, 0))
+valid = day >= 0
+changed = (d - Dusk) * (d - Dusk) > 0.25
+first = Dusk < 0
+""")
+    fade = E.run("""
+kNew = select(IsOn, min(1, K + dt / DuskFade), max(0, K - dt / DuskFade))
+moving = (kNew - K) * (kNew - K) > 0.0000000001
+""")
+    b_valid, b_changed, b_auto, b_first, b_moving = (G.place(G.g.add_branch_node()) for _ in range(5))
+    for branch, cond in ((b_valid, v["valid"]), (b_changed, v["changed"]), (b_first, v["first"]), (b_moving, fade["moving"])):
+        E.feed(branch, "Condition", cond)
+    connect(G.get("Auto"), "Auto", b_auto, "Condition")
+    connect(tick, "then", daylight, "execute")  # (an impure call: in the exec chain, its value read once per tick)
+    connect(daylight, "then", b_valid, "execute")
+    connect(b_valid, "then", b_changed, "execute")
+    connect(b_changed, "then", b_auto, "execute")
+    # Auto: on with the dark; the first reading also sets K at once (web: `f.set(dark)`), later ones fade (`f.room.on = dark`)
+    on = G.place(G.g.add_set_member_variable_node("IsOn"))
+    E.feed(on, "IsOn", E.run("dk = d > 0.5")["dk"])
+    connect(b_auto, "then", on, "execute")
+    connect(on, "then", b_first, "execute")
+    at_once = G.place(G.g.add_set_member_variable_node("K"))
+    E.feed(at_once, "K", v["d"])
+    connect(b_first, "then", at_once, "execute")
+    record = G.place(G.g.add_set_member_variable_node("Dusk"))  # after the lamp: `d` and `first` read the old Dusk
+    E.feed(record, "Dusk", v["d"])
+    for src, pin in ((b_auto, "else"), (b_first, "else"), (at_once, "then")):
+        connect(src, pin, record, "execute")
+    shown = Chain(record)  # the light follows a K set at once
+    apply_k(shown)
+    for src, pin in ((b_valid, "else"), (b_changed, "else"), (shown.node, shown.pin)):
+        connect(src, pin, b_moving, "execute")
+    step = G.place(G.g.add_set_member_variable_node("K"))
+    E.feed(step, "K", fade["kNew"])
+    connect(b_moving, "then", step, "execute")
+    apply_k(Chain(step))
     BP.compile_blueprint(bp)
     if G.g.list_nodes_with_errors():
         raise RuntimeError("BP_LundenLamp failed to compile: " + ", ".join(n.get_name() for n in G.g.list_nodes_with_errors()))
     return bp
 
 
-def build_sky(spec, mpc, precip):
+def build_sky(spec, mpc, precip, clouds):
     bp = load_or_create_blueprint(SKY, u.Actor)
     comps = components(bp, {"Sun": u.DirectionalLightComponent, "Moon": u.DirectionalLightComponent,
                             "Atmosphere": u.SkyAtmosphereComponent, "SkyLight": u.SkyLightComponent,
@@ -675,15 +846,15 @@ def build_sky(spec, mpc, precip):
         c.set_editor_property("atmosphere_sun_light_index", 0 if name == "Sun" else 1)
         c.set_editor_property("cast_shadows", True)
     comps["Moon"].set_editor_property("light_color", u.Color(r=196, g=210, b=255, a=255))  # daycycle.js MOON tint, *guess*
+    # the moon's disc is the post process's (with its phase, #2307), not the atmosphere's round light disk
+    comps["Moon"].set_editor_property("atmosphere_sun_disk_color_scale", u.LinearColor(0, 0, 0, 1))
     sky = comps["SkyLight"]
     sky.set_editor_property("mobility", u.ComponentMobility.MOVABLE)
     sky.set_editor_property("real_time_capture", True)
     sky.set_editor_property("source_type", u.SkyLightSourceType.SLS_CAPTURED_SCENE)
     fog = comps["Fog"]
     fog.set_editor_property("fog_density", FOG["clear"])
-    cloud_material = u.load_asset(CLOUD_MATERIAL)
-    if cloud_material:
-        comps["Clouds"].set_editor_property("material", cloud_material)
+    comps["Clouds"].set_editor_property("material", clouds)
     weather = comps["Weather"]
     weather.set_editor_property("unbound", True)
     pp = weather.get_editor_property("settings")
@@ -716,6 +887,7 @@ def build_sky(spec, mpc, precip):
         "WetSoak": ("real", WET_RATE["soak"]), "WetDry": ("real", WET_RATE["dry"]),
         "SunDirection": ("vector", None), "MoonDirection": ("vector", None),
         "SunElevation": ("real", 0.0), "MoonIllumination": ("real", 0.0), "Daylight": ("real", 0.0),
+        "CloudCover": ("real", 0.0), "DuskLight": ("real", 0.0),
     })
     G = Graph(bp)
 
@@ -738,12 +910,16 @@ def build_sky(spec, mpc, precip):
     connect(j2000, "ReturnValue", span, "B")
     days = G.call("KismetMathLibrary:GetTotalDays")
     connect(span, "ReturnValue", days, "A")
-    E = Expr(G, {**getters, "doy": (doy, "ReturnValue"), "days": (days, "ReturnValue")})
+    clouds = spec["sky"]["clouds"]
+    E = Expr(G, {**getters, "doy": (doy, "ReturnValue"), "days": (days, "ReturnValue"), "SnowOvercast": SNOW_OVERCAST,
+                 "ClearThr": float(clouds["clearThr"]), "ThrA": float(clouds["thr"][0]), "ThrB": float(clouds["thr"][1]),
+                 "Ramp": float(clouds["ramp"]), "CloudLo": float(CLOUD_RANGE[0]), "CloudHi": float(CLOUD_RANGE[1])})
     E.run(SUN)
     E.run(SKYDIR.format(p="sun", dec="dec", ha="ha"))
     E.run(MOON)
     E.run(SKYDIR.format(p="moon", dec="mdec", ha="mha"))
-    env = E.run(LIGHT)
+    E.run(LIGHT)
+    env = E.run(EXTRA)
 
     def vector(prefix):
         node = G.call("KismetMathLibrary:MakeVector")
@@ -795,11 +971,26 @@ def build_sky(spec, mpc, precip):
     E.feed(density, "Value", env["fog"])
     chain.then(density)
     for name, value in (("Rain", env["Rain"]), ("Snow", env["Snow"]), ("Wet", env["Wet"]), ("WindX", env["windX"]),
-                        ("WindY", env["windY"]), ("Streak", env["streak"])):
+                        ("WindY", env["windY"]), ("Streak", env["streak"]), ("DuskLight", env["duskLight"]),
+                        ("Night", env["night"]), ("CloudCover", env["cover"]), ("CloudCoverage", env["coverage"])):
         setp = G.call("KismetMaterialLibrary:SetScalarParameterValue", ParameterName=name)
         constant(setp, "Collection", mpc.get_path_name())
         E.feed(setp, "ParameterValue", value)
         chain.then(setp)
+    phase = G.call("KismetMathLibrary:MakeVector")
+    for axis, key in (("X", "sinE"), ("Y", "negCosE"), ("Z", "illum")):
+        E.feed(phase, axis, env[key])
+    for name, node in (("SunDir", sun_vec), ("MoonDir", moon_vec), ("MoonPh", phase)):
+        colour = G.call("KismetMathLibrary:Conv_VectorToLinearColor")
+        connect(node, "ReturnValue", colour, "InVec")
+        setv = G.call("KismetMaterialLibrary:SetVectorParameterValue", ParameterName=name)
+        constant(setv, "Collection", mpc.get_path_name())
+        connect(colour, "ReturnValue", setv, "ParameterValue")
+        chain.then(setv)
+    for name, key in (("CloudCover", "cover"), ("DuskLight", "duskLight")):
+        s = G.place(G.g.add_set_member_variable_node(name))
+        E.feed(s, name, env[key])
+        chain.then(s)
     BP.compile_blueprint(bp)
     update = bp.generated_class().get_path_name() + ":UpdateSky"
 
@@ -905,9 +1096,14 @@ def build_level(spec, sky_bp, lamp_bp):
         tags = [f"lamp:{row['id']}", f"kind:{row['kind']}", f"level:{row['level']}"]
         if row["room"]:
             tags.append(f"room:{row['room']}")
+        if row["auto"]:
+            tags.append("auto:dusk")
         lamp.tags = [u.Name(t) for t in tags]
+        lamp.set_editor_property("Candela", row["candela"])
+        lamp.set_editor_property("Auto", row["auto"])
         light = lamp.get_component_by_class(u.PointLightComponent)
         light.set_intensity(row["candela"])
+        light.set_editor_property("attenuation_radius", row["radius"])
         r, g, b = bytes.fromhex(row["colour"].lstrip("#"))
         colour = u.LinearColor()
         colour.set_from_srgb(u.Color(r=r, g=g, b=b, a=255))
@@ -931,7 +1127,7 @@ def main(argv):
     m = load_measurements(rest[0] if rest else PROJECT / "Import/measurements.json")
     spec = spec_of(m)
     want = spec_hash(spec)
-    assets = (SKY, LAMP, MPC, PRECIP, AMBIENT_CUBE)
+    assets = (SKY, LAMP, MPC, PRECIP, CLOUDS, AMBIENT_CUBE)
     have = ASSETS.does_asset_exist(SKY) and ASSETS.get_metadata_tag(ASSETS.load_asset(SKY), SPEC_TAG) == want
     complete = all(ASSETS.does_asset_exist(p) for p in assets)
     stamp = json.loads(STAMP.read_text(encoding="utf-8")) if STAMP.exists() else {}
@@ -952,10 +1148,11 @@ def main(argv):
     else:
         mpc = build_mpc(spec)
         precip = build_precip_material(spec, mpc)
-        lamp_bp = build_lamp()
-        sky_bp = build_sky(spec, mpc, precip)
+        lamp_bp = build_lamp(spec, mpc)
+        clouds = build_clouds(mpc)
+        sky_bp = build_sky(spec, mpc, precip, clouds)
         ASSETS.set_metadata_tag(sky_bp, SPEC_TAG, want)
-        for asset in (mpc, precip, lamp_bp, sky_bp, u.load_asset(AMBIENT_CUBE)):
+        for asset in (mpc, precip, clouds, lamp_bp, sky_bp, u.load_asset(AMBIENT_CUBE)):
             save(asset)
         u.log("LUNDEN_LIGHTING assets saved: " + ", ".join(assets))
     if level_ok and not force:
