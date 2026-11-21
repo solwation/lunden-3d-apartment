@@ -13,8 +13,20 @@ Assets (one owner, #2291):
                                                        the tags in the encoder's order, without the wire tags d and s
                            LookField(Name) -> Value    one field of the table (skinDigit, hair, height, glasses ...)
                          The code round-trips exactly because the tags are kept as numbers, not re-derived.
+                           ApplyLook(Code) -> Applied  dresses BP_LundenAvatar: Figure (the core piece, ABP_LundenLook)
+                                                       on Body, the pieces the look's rules pick (a pooled component
+                                                       each, leader pose Figure), the region colours, the web's scale
+                                                       (FigureScale, HeadScale); sets LookCode/HeightScale/WidthScale on
+                                                       the avatar and updates its hit zones. Body stays animating, hidden.
+  Looks/Pieces/          SKM_LundenLookPiece_NNN, the web's own figure cut into pieces (avatar-parts.json), from
+                         GLBs written by `node tools/unreal-engine/avatar-parts.mjs --out unreal/Lunden/Saved/avatar-parts`
+  Looks/SK_LundenLook    their skeleton (the web rig's 15 bones; not Rig/Web's, which stays editor-only)
+  Looks/M_LundenLook     UV0 = (colour region, shade), UV1/UV2 = a fixed colour; one vector parameter per region
+  Looks/IK_LundenLook, RTG_LundenMannequinToWeb, ABP_LundenLook
+                         the figure follows Body (the Mannequin) by retargeting at run time; the head bone scales
 
-Run (Windows checkout; lock every .uasset under Avatar/Looks first):
+Run (Windows checkout; lock every .uasset under Avatar/Looks first; the GLBs in Saved/avatar-parts must match
+avatar-parts.json):
     powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/build_avatar_looks.py [--force | --check]
 A run whose inputs are unchanged (metadata Lunden.SpecHash on BPC_LundenLook) saves nothing; --check fails when an
 asset is missing or was built from other inputs. Logs LUNDEN_AVATAR_LOOKS_OK.
@@ -28,10 +40,25 @@ import unreal as u
 
 LOOKS = "/Game/Lunden/Avatar/Looks"
 COMPONENT = LOOKS + "/BPC_LundenLook"
+COMPONENT_CLASS = COMPONENT + ".BPC_LundenLook_C"
+PIECES = LOOKS + "/Pieces"
+MATERIAL = LOOKS + "/M_LundenLook"
+RTG = LOOKS + "/RTG_LundenMannequinToWeb"
+ABP = LOOKS + "/ABP_LundenLook"
+ABP_CLASS = ABP + ".ABP_LundenLook_C"
+AVATAR_CLASS = "/Game/Lunden/Avatar/Rig/BP_LundenAvatar.BP_LundenAvatar_C"
+LOOK_SKELETON = LOOKS + "/SK_LundenLook"  # the web rig's bones (models/avatar-rigged.glb), the looks' own copy
+IK_LOOK = LOOKS + "/IK_LundenLook"
+MANNY_MESH = "/Game/Lunden/Avatar/Rig/Mannequin/SKM_Manny_Simple"
+IK_WEB = "/Game/Lunden/Avatar/Rig/IK_LundenWeb"
+IK_MANNY = "/Game/Lunden/Avatar/Rig/IK_LundenMannequin"
+GLB_TAG = "Lunden.GlbHash"
 SPEC_TAG = "Lunden.SpecHash"
 PROJECT = Path(u.Paths.convert_relative_path_to_full(u.Paths.project_dir()))
 REPO = PROJECT.parents[1]
 DATA_FILE = REPO / "tools/unreal-engine/avatar-looks.json"
+PARTS_FILE = REPO / "tools/unreal-engine/avatar-parts.json"
+GLB_DIR = PROJECT / "Saved/avatar-parts"  # node tools/unreal-engine/avatar-parts.mjs --out <this folder>
 MACROS = "/Engine/EditorBlueprintResources/StandardMacros.StandardMacros:"
 M = "KismetMathLibrary:"
 S = "KismetStringLibrary:"
@@ -39,6 +66,7 @@ A = "KismetArrayLibrary:"
 MAP = "BlueprintMapLibrary:"
 
 ASSETS = u.EditorAssetLibrary
+REG = u.AssetRegistryHelpers.get_asset_registry()
 BP = u.BlueprintEditorLibrary
 GRAPH = u.BlueprintGraphEditor
 TOOLS = u.AssetToolsHelpers.get_asset_tools()
@@ -48,6 +76,12 @@ STRING = BP.get_basic_type_by_name("string")
 STRINGS = BP.get_array_type(STRING)
 INTS = BP.get_array_type(INT)
 TAGMAP = BP.get_map_type(STRING, INT)
+REAL = BP.get_basic_type_by_name("real")
+BOOLS = BP.get_array_type(BOOL)
+REALS = BP.get_array_type(REAL)
+VECTOR = BP.get_struct_type(u.Vector.static_struct())
+COLOURS = BP.get_array_type(BP.get_struct_type(u.LinearColor.static_struct()))
+COLOUR = BP.get_struct_type(u.LinearColor.static_struct())
 report = {"engine": u.SystemLibrary.get_engine_version()}
 
 
@@ -107,6 +141,7 @@ class Fn:
         for pin, src in ins.items():
             if src is None:
                 continue
+            pin = "self" if pin == "self_" else pin  # the target pin (a keyword argument cannot be called self)
             if hasattr(src, "try_create_connection"):
                 link(src, inp(node, pin))
             else:
@@ -155,8 +190,10 @@ class Fn:
         link(self.cur, exec_in[0])
         return node
 
-    def finish(self, **outs):
-        ret = self.result if self.result else self.place(self.g.add_return_node())
+    def finish(self, fresh=False, **outs):
+        """Wire the exec chain into a return node: the function's own, or with `fresh` another one (a return node's
+        literal outputs are shared by every path into it)."""
+        ret = self.result if self.result and not fresh else self.place(self.g.add_return_node())
         self.wire(ret, outs)
         link(self.cur, BP.find_execute_pin(ret))
         return ret
@@ -231,7 +268,59 @@ VARS = {
     "FieldNames": STRINGS, "FieldDigit": INTS, "FieldTag": STRINGS, "FieldMult": INTS, "FieldRadix": INTS, "FieldNone": INTS,
     "LookCode": STRING, "LookValid": BOOL, "Digits": STRING, "Tags": TAGMAP,
 }
-FUNCTIONS = ("ParseLook", "EncodeLook", "LookField")
+FUNCTIONS = ("ParseLook", "EncodeLook", "LookField", "LookValues", "EnsureFigure", "ChoosePieces", "ColourLook", "ScaleLook",
+             "ApplyLook")
+
+
+def figure_vars():
+    mesh = BP.get_object_reference_type(u.SkeletalMesh)
+    comp = BP.get_object_reference_type(u.SkeletalMeshComponent)
+    out = {
+        "Figure": comp, "PieceComps": BP.get_array_type(comp), "Mat": BP.get_object_reference_type(u.MaterialInstanceDynamic),
+        "PieceMeshes": BP.get_array_type(mesh), "CoreMesh": mesh, "BoxPiece": INTS, "BoxAllowed": BOOLS, "SlotCount": INT,
+        "AxisFields": STRINGS, "AxisMax": INTS, "AxisOffset": INTS, "BeardCutAxis": INT,
+        "SkinColours": COLOURS, "TopColours": COLOURS, "PantsColours": COLOURS, "ShoeColours": COLOURS, "HairColours": COLOURS,
+        "EyeColours": COLOURS, "BrowColours": COLOURS, "LipstickColours": COLOURS, "LipTint": COLOUR, "SkinBase": INT,
+        "LipSkinMix": REAL, "LipDark": REAL, "LipstickMix": REAL,
+        "SeededTall": REALS, "HeightPivot": REAL, "HeightTop": REAL, "HeightAdult": REAL, "HeadPow": REAL,
+        "FigureScale": VECTOR, "HeadScale": REAL,
+    }
+    out.update({"Colour" + n: COLOUR for n in REGION_PARAMS})
+    return out
+
+
+def figure_defaults(looks, parts):
+    """The rules and palettes as the component's defaults (avatar-parts.json, avatar-looks.json)."""
+    axes = [(a, parts["ranges"][a]) for a in parts["axes"]] + list(parts["shown"].items())
+    offsets, total = [], 0
+    for _, values in axes:
+        if values != list(range(len(values))):
+            raise RuntimeError(f"choice values are not 0..n-1: {axes}")
+        offsets.append(total)
+        total += len(values)
+    names = [p["name"] for p in parts["pieces"]]
+    box_piece, allowed = [], []
+    for i, piece in enumerate(parts["pieces"]):
+        for box in piece["any"]:
+            box_piece.append(i)
+            for (axis, values) in axes:
+                allowed += [v in box.get(axis, values) for v in values]
+    pal = looks["palettes"]
+    lin = lambda hexes: [srgb_linear(h) for h in hexes]  # noqa: E731
+    h = parts["heightRule"]
+    return {
+        "PieceMeshes": [ASSETS.load_asset(PIECES + "/" + n) for n in names], "CoreMesh": ASSETS.load_asset(PIECES + "/" + parts["core"]),
+        "BoxPiece": box_piece, "BoxAllowed": allowed, "SlotCount": total,
+        "AxisFields": [a for a, _ in axes], "AxisMax": [len(v) - 1 for _, v in axes], "AxisOffset": offsets,
+        "BeardCutAxis": [a for a, _ in axes].index("beardCut"),
+        "SkinColours": lin([c["colour"] for c in pal["skin"]]), "TopColours": lin(pal["top"]), "PantsColours": lin(pal["pants"]),
+        "ShoeColours": lin(pal["shoes"]), "HairColours": lin(pal["hair"]), "EyeColours": lin(pal["eyes"]),
+        "BrowColours": lin(parts["brows"]), "LipstickColours": lin(parts["lips"]["lipstick"]), "LipTint": srgb_linear(parts["lips"]["tint"]),
+        "SkinBase": next(d["max"] for d in looks["digits"] if d["name"] == "skinDigit") + 1,
+        "LipSkinMix": parts["lips"]["skinMix"], "LipDark": parts["lips"]["dark"], "LipstickMix": parts["lips"]["lipstickMix"],
+        "SeededTall": h["seededTall"], "HeightPivot": h["pivot"], "HeightTop": h["top"], "HeightAdult": float(h["adult"]),
+        "HeadPow": h["headPow"], "FigureScale": u.Vector(1, 1, 1), "HeadScale": 1.0,
+    }
 
 
 def data_defaults(data):
@@ -378,27 +467,481 @@ def look_field(bp, ndigits):
     link(fn.cur, BP.find_execute_pin(ret))
 
 
-def build_component(data):
+def build_component(data, parts):
     bp = blueprint(COMPONENT, u.ActorComponent)
     remove_functions(bp, FUNCTIONS)
-    variables(bp, VARS)
+    variables(bp, {**VARS, **figure_vars()})
     BP.compile_blueprint(bp)
     ndigits = len(data["digits"])
     encode_look(bp)
     look_field(bp, ndigits)
     BP.compile_blueprint(bp)
     parse_look(bp, ndigits)
+    avatar_cls = u.load_class(None, AVATAR_CLASS)
+    # each compiled before the next, which calls it
+    for step in (look_values, ensure_figure, choose_pieces, colour_look, lambda b: scale_look(b, avatar_cls)):
+        step(bp)
+        BP.compile_blueprint(bp)
+    apply_look(bp, avatar_cls)
     compiled(bp, list(FUNCTIONS))
     default = u.get_default_object(bp.generated_class())
-    for name, v in data_defaults(data).items():
+    for name, v in {**data_defaults(data), **figure_defaults(data, parts)}.items():
         default.set_editor_property(name, v)
     return bp
 
 
-def spec_hash(data_text):
+# The figure: the web's own pieces (avatar-parts.json) --------------------------------------------------------------
+
+MATS = u.MaterialEditingLibrary
+REGION_PARAMS = ("Skin", "Top", "Pants", "Hair", "Shoes", "Lips", "Iris", "Beard", "Brow", "Leather")
+# UV0 = (region, shade), UV1 = (red, green), UV2 = (blue, -) of a fixed colour; regions as src/avatar.js REGION
+SHADER = """int r = (int)round(UV.x);
+float3 c = r == 0 ? Skin : r == 1 ? Top : r == 2 ? Pants : r == 3 ? Hair : r == 5 ? Shoes : r == 6 ? Lips
+  : r == 7 ? Iris : r == 8 ? Beard : r == 9 ? Brow : r == 10 ? Leather : float3(Fixed.xy, FixedB.x);
+return r == 4 ? float3(Fixed.xy, FixedB.x) : c * UV.y;"""
+
+
+def srgb_linear(hex_colour):
+    """#rrggbb (sRGB) as linear RGB, as three.js's Color(hex) does with colour management."""
+    out = []
+    for i in (1, 3, 5):
+        c = int(hex_colour[i:i + 2], 16) / 255
+        out.append(c / 12.92 if c < 0.04045 else ((c + 0.055) / 1.055) ** 2.4)
+    return u.LinearColor(out[0], out[1], out[2], 1.0)
+
+
+def build_material():
+    if ASSETS.does_asset_exist(MATERIAL):
+        ASSETS.delete_asset(MATERIAL)
+    folder, name = MATERIAL.rsplit("/", 1)
+    mat = TOOLS.create_asset(name, folder, u.Material, u.MaterialFactoryNew())
+    mat.set_editor_property("used_with_skeletal_mesh", True)
+    custom = MATS.create_material_expression(mat, u.MaterialExpressionCustom, -400, 0)
+    custom.set_editor_property("code", SHADER)
+    custom.set_editor_property("output_type", u.CustomMaterialOutputType.CMOT_FLOAT3)
+    names = ["UV", "Fixed", "FixedB"] + list(REGION_PARAMS)
+    inputs = []
+    for n in names:
+        ci = u.CustomInput()
+        ci.set_editor_property("input_name", n)
+        inputs.append(ci)
+    custom.set_editor_property("inputs", inputs)
+    for i, n in enumerate(names):
+        if n in ("UV", "Fixed", "FixedB"):
+            tc = MATS.create_material_expression(mat, u.MaterialExpressionTextureCoordinate, -800, i * 80)
+            tc.set_editor_property("coordinate_index", ("UV", "Fixed", "FixedB").index(n))
+            MATS.connect_material_expressions(tc, "", custom, n)
+        else:
+            par = MATS.create_material_expression(mat, u.MaterialExpressionVectorParameter, -800, i * 80)
+            par.set_editor_property("parameter_name", n)
+            par.set_editor_property("default_value", u.LinearColor(0.5, 0.5, 0.5, 1))
+            MATS.connect_material_expressions(par, "", custom, n)
+    MATS.connect_material_property(custom, "", u.MaterialProperty.MP_BASE_COLOR)
+    rough = MATS.create_material_expression(mat, u.MaterialExpressionConstant, -400, 300)
+    rough.set_editor_property("r", 0.8)  # *assumption*: the web's MeshStandardMaterial roughness for the figure
+    MATS.connect_material_property(rough, "", u.MaterialProperty.MP_ROUGHNESS)
+    MATS.recompile_material(mat)
+    return mat
+
+
+def import_glb(src, skeleton):
+    """One piece GLB as a SkeletalMesh in Pieces/ (onto `skeleton`, or making a new one); returns the import's paths."""
+    pipe = u.InterchangeGenericAssetsPipeline()
+    if skeleton:
+        pipe.get_editor_property("common_skeletal_meshes_and_animations_properties").set_editor_property("skeleton", skeleton)
+    meshes = pipe.get_editor_property("mesh_pipeline")
+    meshes.set_editor_property("create_physics_asset", False)
+    # no welding: parts meet at shared points (a trouser leg's inner seam and the other leg's) that follow other bones
+    meshes.set_editor_property("threshold_position", 0.0)
+    pipe.get_editor_property("animation_pipeline").set_editor_property("import_animations", False)
+    pipe.get_editor_property("material_pipeline").set_editor_property("import_materials", False)
+    common = pipe.get_editor_property("common_meshes_properties")
+    common.set_editor_property("force_all_mesh_as_type", u.InterchangeForceMeshType.IFMT_SKELETAL_MESH)
+    common.set_editor_property("recompute_normals", False)
+    common.set_editor_property("use_full_precision_u_vs", True)
+    stack = u.InterchangePipelineStackOverride()
+    stack.add_pipeline(pipe)
+    task = u.AssetImportTask()
+    task.filename = str(src)
+    task.destination_path = PIECES
+    task.automated = True
+    task.save = False
+    task.replace_existing = True
+    task.options = stack
+    TOOLS.import_asset_tasks([task])
+    return [str(p) for p in task.imported_object_paths]
+
+
+def import_pieces(parts, mat):
+    """Every piece GLB on the looks' skeleton (made from the core piece, so nothing the game loads reaches the editor-only
+    web rig in Rig/Web/); a piece whose GLB hash is unchanged is kept."""
+    order = sorted(parts["pieces"], key=lambda p: p["name"] != parts["core"])
+    if not ASSETS.does_asset_exist(LOOK_SKELETON) and ASSETS.does_directory_exist(PIECES):
+        ASSETS.delete_directory(PIECES)  # pieces on another skeleton: import them all again
+    made = []
+    for piece in order:
+        dst = PIECES + "/" + piece["name"]
+        made.append(dst)
+        if ASSETS.does_asset_exist(dst) and ASSETS.get_metadata_tag(ASSETS.load_asset(dst), GLB_TAG) == piece["sha256"] \
+                and ASSETS.does_asset_exist(LOOK_SKELETON):
+            continue
+        src = GLB_DIR / (piece["name"] + ".glb")
+        if not src.exists() or hashlib.sha256(src.read_bytes()).hexdigest() != piece["sha256"]:
+            raise RuntimeError(f"{src} is missing or stale: run node tools/unreal-engine/avatar-parts.mjs --out {GLB_DIR}")
+        if piece["name"] == parts["core"] and not ASSETS.does_asset_exist(LOOK_SKELETON):
+            paths = import_glb(src, None)
+            skels = [str(d.package_name) for d in REG.get_assets_by_path(PIECES, recursive=True)
+                     if str(d.asset_class_path.asset_name) == "Skeleton"]
+            if len(skels) != 1 or not ASSETS.rename_asset(skels[0], LOOK_SKELETON):
+                raise RuntimeError(f"The core piece made no single skeleton: {skels} ({paths})")
+        else:
+            paths = import_glb(src, ASSETS.load_asset(LOOK_SKELETON))
+        mesh = ASSETS.load_asset(dst)
+        if not mesh or mesh.skeleton.get_path_name() != ASSETS.load_asset(LOOK_SKELETON).get_path_name():
+            raise RuntimeError(f"{piece['name']} did not import onto {LOOK_SKELETON}: {paths}")
+        slots = mesh.get_editor_property("materials")
+        for slot in slots:
+            slot.set_editor_property("material_interface", mat)
+        mesh.set_editor_property("materials", slots)
+        ASSETS.set_metadata_tag(mesh, GLB_TAG, piece["sha256"])
+    wanted = set(made)
+    for path in [str(d.package_name) for d in REG.get_assets_by_path(PIECES, recursive=True)]:
+        if path not in wanted:
+            ASSETS.delete_asset(path)
+    return made
+
+
+def build_ik_rig(core):
+    """IK_LundenLook: #2290's IK_LundenWeb (its chains, read only) on the looks' skeleton."""
+    if ASSETS.does_asset_exist(IK_LOOK):
+        ASSETS.delete_asset(IK_LOOK)
+    rig = ASSETS.duplicate_asset(IK_WEB, IK_LOOK)
+    ctl = u.IKRigController.get_controller(rig)
+    if not ctl.set_skeletal_mesh(core):
+        raise RuntimeError("IK_LundenLook: could not use the core piece")
+    return rig
+
+
+def build_retargeter(core):
+    """The Mannequin's motion (BP_LundenAvatar's Body) onto the web rig, at run time (#2290's rigs, read only)."""
+    if ASSETS.does_asset_exist(RTG):
+        rtg = ASSETS.load_asset(RTG)
+    else:
+        folder, name = RTG.rsplit("/", 1)
+        rtg = TOOLS.create_asset(name, folder, u.IKRetargeter, u.IKRetargetFactory())
+    ctl = u.IKRetargeterController.get_controller(rtg)
+    src, dst = ASSETS.load_asset(IK_MANNY), ASSETS.load_asset(IK_LOOK)
+    ctl.set_ik_rig(u.RetargetSourceOrTarget.SOURCE, src)
+    ctl.set_ik_rig(u.RetargetSourceOrTarget.TARGET, dst)
+    ctl.set_preview_mesh(u.RetargetSourceOrTarget.SOURCE, ASSETS.load_asset(MANNY_MESH))
+    ctl.set_preview_mesh(u.RetargetSourceOrTarget.TARGET, core)
+    ctl.remove_all_ops()
+    ctl.add_default_ops()
+    ctl.assign_ik_rig_to_all_ops(u.RetargetSourceOrTarget.SOURCE, src)
+    ctl.assign_ik_rig_to_all_ops(u.RetargetSourceOrTarget.TARGET, dst)
+    ctl.auto_map_chains(u.AutoMapChainType.CLEAR, True)
+    web_chains = [str(c.get_editor_property("chain_name")) for c in u.IKRigController.get_controller(dst).get_retarget_chains()]
+    for chain_name in web_chains:
+        ctl.set_source_chain(chain_name, chain_name)
+    # The web rig's arms hang down, the Mannequin stands in an A pose: align the web rig to the Mannequin's pose.
+    ctl.auto_align_all_bones(u.RetargetSourceOrTarget.TARGET, u.RetargetAutoAlignMethod.CHAIN_TO_CHAIN)
+    report["retarget"] = web_chains
+    return rtg
+
+
+def anim_node(ed, name, x, y, **props):
+    node = ed.create_node_from_name(name, u.Vector2D(x, y), [])
+    if not node:
+        raise RuntimeError("No anim node " + name)
+    if props:
+        data = node.get_editor_property("node")
+        for key, v in props.items():
+            data.set_editor_property(key, v)
+        node.set_editor_property("node", data)
+    return node
+
+
+def build_anim(rtg, core):
+    """ABP_LundenLook: the web rig follows its attached parent (Body) through RTG, the head scaled by HeadScale."""
+    if ASSETS.does_asset_exist(ABP):
+        ASSETS.delete_asset(ABP)
+    factory = u.AnimBlueprintFactory()
+    factory.set_editor_property("target_skeleton", ASSETS.load_asset(LOOK_SKELETON))
+    factory.set_editor_property("parent_class", u.AnimInstance)
+    factory.set_editor_property("preview_skeletal_mesh", core)
+    folder, name = ABP.rsplit("/", 1)
+    abp = TOOLS.create_asset(name, folder, u.AnimBlueprint, factory)
+    variables(abp, {"HeadScale": VECTOR})
+    BP.compile_blueprint(abp)
+    u.get_default_object(abp.generated_class()).set_editor_property("HeadScale", u.Vector(1, 1, 1))
+    ed = GRAPH.get_graph_editor_by_name(abp, "AnimGraph")
+    root = [n for n in ed.list_all_nodes() if n.get_class().get_name() == "AnimGraphNode_Root"][0]
+    names = [str(n) for n in ed.list_available_nodes([])]
+    found = [n for n in names if n.replace(" ", "").lower().endswith("retargetposefrommesh")]
+    if not found:
+        raise RuntimeError("No Retarget Pose From Mesh node: " + str([n for n in names if "etarget" in n][:20]))
+    follow = anim_node(ed, found[0], -900, 0, retarget_from=u.RetargetSourceMode.PARENT_SKELETAL_MESH_COMPONENT,
+                       ik_retargeter_asset=rtg)
+    to_cs = ed.create_node_from_name("Animation|ConvertSpaces|LocalToComponent", u.Vector2D(-600, 0), [])
+    link(out(follow, "Pose"), inp(to_cs, "LocalPose"))
+    ref = u.BoneReference()
+    ref.set_editor_property("bone_name", "head")
+    head = anim_node(ed, "Animation|SkeletalControls|Transform(Modify)Bone", -300, 0, bone_to_modify=ref,
+                     scale_mode=u.BoneModificationMode.BMM_REPLACE, scale_space=u.BoneControlSpace.BCS_BONE_SPACE,
+                     translation_mode=u.BoneModificationMode.BMM_IGNORE, rotation_mode=u.BoneModificationMode.BMM_IGNORE)
+    link(out(to_cs, "ComponentPose"), inp(head, "ComponentPose"))
+    getter = ed.add_get_member_variable_node("HeadScale", "")
+    link(out(getter, "HeadScale"), inp(head, "Scale"))
+    to_ls = ed.create_node_from_name("Animation|ConvertSpaces|ComponentToLocal", u.Vector2D(0, 0), [])
+    link(out(head, "Pose"), inp(to_ls, "ComponentPose"))
+    link(out(to_ls, "Pose"), inp(root, "Result"))
+    BP.compile_blueprint(abp)
+    broken = [n.get_name() for n in ed.list_nodes_with_errors()]
+    if broken:
+        raise RuntimeError("ABP_LundenLook failed to compile: " + str(broken))
+    return abp
+
+
+def cast(fn, obj, cls):
+    """An impure cast of `obj` to `cls` (a class object) on the exec chain; returns its typed output pin."""
+    node = fn.place(fn.g.create_node_from_name("Utilities|Casting|CastToActor", u.Vector2D(0, 0), []))
+    if not fn.g.retarget_node_class(node, u.Actor.static_class(), cls):
+        raise RuntimeError("Could not make a cast to " + cls.get_name())
+    link(obj, inp(node, "Object"))
+    fn.then(node)
+    return [p for p in BP.list_output_pins(node) if str(p.get_pin_name()).startswith("As")][0]
+
+
+def other_get(fn, obj, name, cls_path):
+    node = fn.place(fn.g.add_get_member_variable_node(name, cls_path))
+    link(obj, inp(node, "self"))
+    return out(node, name)
+
+
+def other_set(fn, obj, name, cls_path, src):
+    node = fn.place(fn.g.add_set_member_variable_node(name, cls_path))
+    link(obj, inp(node, "self"))
+    fn.wire(node, {name: src})
+    return fn.then(node)
+
+
+def get_at(fn, array, index):
+    return fn.f(A + "Array_Get", pin="Item", TargetArray=array, Index=index)
+
+
+def mine(name):
+    return COMPONENT_CLASS + ":" + name
+
+
+def look_values(bp):
+    """LookValues() -> Slots: per choice of the rules (avatar-parts.json axes + shown) the slot of its value, the value
+    as the web's figure reads it (an unknown value is 0; the beard's cut needs a fitting facial hair, beardCutOf)."""
+    fn = Fn(bp, "LookValues", [], [("Slots", INTS)])
+    fn.local("Out", INTS)
+    loop = fn.macro("ForEachLoop", Array=fn.get("AxisFields"))
+    fn.cur = out(loop, "LoopBody")
+    i = out(loop, "Array Index")
+    v = fn.f(mine("LookField"), pin="Value", Name=out(loop, "Array Element"))
+    ok = fn.all(fn.f(M + "GreaterEqual_IntInt", A=v, B=0), fn.f(M + "LessEqual_IntInt", A=v, B=get_at(fn, fn.get("AxisMax"), i)))
+    value = fn.f(M + "SelectInt", A=v, B=0, bPickA=ok)
+    fn.exec_call(A + "Array_Add", TargetArray=fn.lget("Out"), NewItem=fn.f(M + "Add_IntInt", A=value, B=get_at(fn, fn.get("AxisOffset"), i)))
+    fn.cur = out(loop, "Completed")
+    cut, facial = fn.f(mine("LookField"), pin="Value", Name="beardCut"), fn.f(mine("LookField"), pin="Value", Name="facial")
+    eq = lambda a, b: fn.f(M + "EqualEqual_IntInt", A=a, B=b)  # noqa: E731
+    one = fn.all(eq(cut, 1), eq(facial, 0))
+    two = fn.all(eq(cut, 2), fn.any(eq(facial, 1), eq(facial, 3)))
+    norm = fn.f(M + "SelectInt", A=1, B=fn.f(M + "SelectInt", A=2, B=0, bPickA=two), bPickA=one)
+    axis = fn.get("BeardCutAxis")
+    fn.exec_call(A + "Array_Set", TargetArray=fn.lget("Out"), Index=axis,
+                 Item=fn.f(M + "Add_IntInt", A=norm, B=get_at(fn, fn.get("AxisOffset"), axis)), bSizeToFit=False)
+    fn.finish(Slots=fn.lget("Out"))
+
+
+def ensure_figure(bp):
+    """EnsureFigure() -> Ok: the web figure (Figure, the core piece) on BP_LundenAvatar's Body, which it follows."""
+    avatar_cls = u.load_class(None, AVATAR_CLASS)
+    fn = Fn(bp, "EnsureFigure", [], [("Ok", BOOL)])
+    owner = fn.f("ActorComponent:GetOwner")
+    avatar = cast(fn, owner, avatar_cls)
+    has, new = fn.branch(fn.f("/Script/Engine.KismetSystemLibrary:IsValid", Object=fn.get("Figure")))
+    fn.cur = has
+    fn.finish(Ok=True)
+    fn.cur = new
+    add = fn.exec_call("Actor:AddComponentByClass", self_=avatar, Class="/Script/Engine.SkeletalMeshComponent",
+                       bManualAttachment=True,
+                       RelativeTransform=fn.f(M + "MakeTransform", Scale="1,1,1"))
+    comp = cast(fn, out(add, "ReturnValue"), u.SkeletalMeshComponent.static_class())
+    fn.set("Figure", comp)
+    body = other_get(fn, avatar, "Body", AVATAR_CLASS)
+    fn.exec_call("SceneComponent:K2_AttachToComponent", self_=comp, Parent=body, SocketName="None",
+                 LocationRule="SnapToTarget", RotationRule="SnapToTarget", ScaleRule="KeepRelative", bWeldSimulatedBodies=False)
+    # The retargeter carries the Mannequin's global directions over, so the figure faces as Body does: no turn.
+    fn.exec_call("SceneComponent:K2_SetRelativeRotation", self_=comp, NewRotation="0,0,0", bSweep=False, bTeleport=True)
+    fn.exec_call("SkeletalMeshComponent:SetSkeletalMeshAsset", self_=comp, NewMesh=fn.get("CoreMesh"))
+    fn.exec_call("SkeletalMeshComponent:SetAnimInstanceClass", self_=comp, NewClass=ABP_CLASS)
+    # Body keeps animating out of sight: the figure reads its bones every frame.
+    other_set(fn, body, "VisibilityBasedAnimTickOption", "/Script/Engine.SkinnedMeshComponent", "AlwaysTickPoseAndRefreshBones")
+    fn.exec_call("SceneComponent:SetVisibility", self_=body, bNewVisibility=False, bPropagateToChildren=False)
+    made = fn.exec_call("PrimitiveComponent:CreateDynamicMaterialInstance", self_=comp, ElementIndex=0,
+                        SourceMaterial=MATERIAL + "." + MATERIAL.rsplit("/", 1)[1], OptionalName="None")
+    fn.set("Mat", out(made))
+    fn.finish(Ok=True)
+
+
+def choose_pieces(bp):
+    """ChoosePieces(): the pieces the look's rules pick (BoxAllowed: per alternative of a piece, one flag per slot).
+    The piece components are a pool (a component may only destroy components of its own): each look reuses them in
+    order, makes more when it needs more and leaves the rest without a mesh."""
+    fn = Fn(bp, "ChoosePieces", [])
+    fn.local("Shown", BOOLS)
+    fn.local("Ok", BOOL, "true")
+    fn.local("Slots", INTS)
+    fn.local("Used", INT, "0")
+    fn.local("Comp", BP.get_object_reference_type(u.SkeletalMeshComponent))
+    fn.set("Slots", out(fn.exec_call(mine("LookValues")), "Slots"), local=True)
+    fn.exec_call(A + "Array_Resize", TargetArray=fn.lget("Shown"), Size=fn.f(A + "Array_Length", TargetArray=fn.get("PieceMeshes")))
+    boxes = fn.macro("ForEachLoop", Array=fn.get("BoxPiece"))
+    fn.cur = out(boxes, "LoopBody")
+    b = out(boxes, "Array Index")
+    fn.set("Ok", True, local=True)
+    axes = fn.macro("ForEachLoop", Array=fn.lget("Slots"))
+    fn.cur = out(axes, "LoopBody")
+    at = fn.f(M + "Add_IntInt", A=fn.f(M + "Multiply_IntInt", A=b, B=fn.get("SlotCount")), B=out(axes, "Array Element"))
+    fn.set("Ok", fn.all(fn.lget("Ok"), get_at(fn, fn.get("BoxAllowed"), at)), local=True)
+    fn.cur = out(axes, "Completed")
+    yes, _ = fn.branch(fn.lget("Ok"))
+    fn.cur = yes
+    fn.exec_call(A + "Array_Set", TargetArray=fn.lget("Shown"), Index=out(boxes, "Array Element"), Item=True, bSizeToFit=False)
+    fn.cur = out(boxes, "Completed")
+    pieces = fn.macro("ForEachLoop", Array=fn.get("PieceMeshes"))
+    fn.cur = out(pieces, "LoopBody")
+    mesh = out(pieces, "Array Element")
+    shown = get_at(fn, fn.lget("Shown"), out(pieces, "Array Index"))
+    extra = fn.all(shown, fn.f(M + "Not_PreBool", A=fn.f("/Script/Engine.KismetMathLibrary:EqualEqual_ObjectObject", A=mesh, B=fn.get("CoreMesh"))))
+    yes, _ = fn.branch(extra)
+    fn.cur = yes
+    pooled, fresh = fn.branch(fn.f(M + "Less_IntInt", A=fn.lget("Used"), B=fn.f(A + "Array_Length", TargetArray=fn.get("PieceComps"))))
+    fn.cur = pooled
+    fn.set("Comp", get_at(fn, fn.get("PieceComps"), fn.lget("Used")), local=True)
+    pooled_end = fn.cur
+    fn.cur = fresh
+    owner = fn.f("ActorComponent:GetOwner")
+    add = fn.exec_call("Actor:AddComponentByClass", self_=owner, Class="/Script/Engine.SkeletalMeshComponent",
+                       bManualAttachment=True,
+                       RelativeTransform=fn.f(M + "MakeTransform", Scale="1,1,1"))
+    comp = cast(fn, out(add, "ReturnValue"), u.SkeletalMeshComponent.static_class())
+    fn.set("Comp", comp, local=True)
+    fn.exec_call("SceneComponent:K2_AttachToComponent", self_=comp, Parent=fn.get("Figure"), SocketName="None",
+                 LocationRule="SnapToTarget", RotationRule="SnapToTarget", ScaleRule="SnapToTarget", bWeldSimulatedBodies=False)
+    fn.exec_call("SkinnedMeshComponent:SetLeaderPoseComponent", self_=comp, NewLeaderBoneComponent=fn.get("Figure"),
+                 bForceUpdate=True, bInFollowerShouldTickPose=False)
+    fn.exec_call(A + "Array_Add", TargetArray=fn.get("PieceComps"), NewItem=comp)
+    common = fn.exec_call("SkeletalMeshComponent:SetSkeletalMeshAsset", self_=fn.lget("Comp"), NewMesh=mesh)
+    link(pooled_end, BP.find_execute_pin(common))
+    fn.exec_call("PrimitiveComponent:SetMaterial", self_=fn.lget("Comp"), ElementIndex=0, Material=fn.get("Mat"))
+    fn.set("Used", fn.f(M + "Add_IntInt", A=fn.lget("Used"), B=1), local=True)
+    fn.cur = out(pieces, "Completed")
+    spare = fn.macro("ForEachLoop", Array=fn.get("PieceComps"))
+    fn.cur = out(spare, "LoopBody")
+    unused, _ = fn.branch(fn.f(M + "GreaterEqual_IntInt", A=out(spare, "Array Index"), B=fn.lget("Used")))
+    fn.cur = unused
+    fn.exec_call("SkeletalMeshComponent:SetSkeletalMeshAsset", self_=out(spare, "Array Element"), NewMesh=None)
+    fn.cur = out(spare, "Completed")
+    fn.finish()
+
+
+def colour_look(bp):
+    """ColourLook(): the material's region colours from the look's palettes (as avatarModelGeometry's `pal`)."""
+    fn = Fn(bp, "ColourLook", [])
+    field = lambda n: fn.f(mine("LookField"), pin="Value", Name=n)  # noqa: E731
+    skin_ext = field("skinExt")
+    skin_i = fn.f(M + "SelectInt", A=fn.f(M + "Add_IntInt", A=fn.f(M + "Subtract_IntInt", A=fn.get("SkinBase"), B=1), B=skin_ext),
+                  B=field("skinDigit"), bPickA=fn.f(M + "Greater_IntInt", A=skin_ext, B=0))
+    u_top = field("uTop")
+    top_i = fn.f(M + "SelectInt", A=u_top, B=field("topDigit"), bPickA=fn.f(M + "GreaterEqual_IntInt", A=u_top, B=0))
+    skin = get_at(fn, fn.get("SkinColours"), skin_i)
+    hair = get_at(fn, fn.get("HairColours"), field("hair"))
+    shoes = get_at(fn, fn.get("ShoeColours"), field("shoes"))
+    brows_i = field("brows")
+    brow_known = fn.all(fn.f(M + "GreaterEqual_IntInt", A=brows_i, B=0),
+                        fn.f(M + "Less_IntInt", A=brows_i, B=fn.f(A + "Array_Length", TargetArray=fn.get("BrowColours"))))
+    brow = fn.f(M + "SelectColor", A=get_at(fn, fn.get("BrowColours"), brows_i), B=hair, bPickA=brow_known)
+    lips = fn.f(M + "Multiply_LinearColorFloat", A=fn.f(M + "LinearColorLerp", A=skin, B=fn.get("LipTint"), Alpha=fn.get("LipSkinMix")),
+                B=fn.get("LipDark"))
+    stick = field("lipstick")
+    has_stick = fn.all(fn.f(M + "Greater_IntInt", A=stick, B=0),
+                       fn.f(M + "Less_IntInt", A=stick, B=fn.f(A + "Array_Length", TargetArray=fn.get("LipstickColours"))))
+    lips = fn.f(M + "SelectColor", A=fn.f(M + "LinearColorLerp", A=lips, B=get_at(fn, fn.get("LipstickColours"), stick),
+                                          Alpha=fn.get("LipstickMix")), B=lips, bPickA=has_stick)
+    colours = {"Skin": skin, "Top": get_at(fn, fn.get("TopColours"), top_i), "Pants": get_at(fn, fn.get("PantsColours"), field("pants")),
+               "Hair": hair, "Shoes": shoes, "Lips": lips, "Iris": get_at(fn, fn.get("EyeColours"), field("eyes")),
+               "Beard": hair, "Brow": brow, "Leather": shoes}
+    for name, colour in colours.items():
+        fn.exec_call("MaterialInstanceDynamic:SetVectorParameterValue", self_=fn.get("Mat"), ParameterName=name, Value=colour)
+        fn.set("Colour" + name, colour)
+    fn.finish()
+
+
+def scale_look(bp, avatar_cls):
+    """ScaleLook(): the web's scale (src/avatar.js): a chosen height scales the figure whole (avatarProportions' body)
+    and its head bone (head); without one the seeded `tall` (wire tag s) stretches its height, else 1."""
+    fn = Fn(bp, "ScaleLook", [])
+    field = lambda n: fn.f(mine("LookField"), pin="Value", Name=n)  # noqa: E731
+    cm = field("height")
+    has = fn.f(M + "GreaterEqual_IntInt", A=cm, B=0)
+    cmf = fn.f(M + "Conv_IntToDouble", InInt=cm)
+    child = fn.f(M + "Less_DoubleDouble", A=cmf, B=fn.get("HeightAdult"))
+    head = fn.f(M + "SelectFloat", A=fn.f(M + "MultiplyMultiply_FloatFloat", Base=fn.f(M + "Divide_DoubleDouble", A=fn.get("HeightAdult"), B=cmf),
+                                          Exp=fn.get("HeadPow")), B=1.0, bPickA=child)
+    body = fn.f(M + "Divide_DoubleDouble", A=fn.f(M + "Divide_DoubleDouble", A=cmf, B=100.0),
+                B=fn.f(M + "Add_DoubleDouble", A=fn.get("HeightPivot"), B=fn.f(M + "Multiply_DoubleDouble", A=fn.get("HeightTop"), B=head)))
+    ti = field("tallIndex")
+    tall_known = fn.all(fn.f(M + "GreaterEqual_IntInt", A=ti, B=0),
+                        fn.f(M + "Less_IntInt", A=ti, B=fn.f(A + "Array_Length", TargetArray=fn.get("SeededTall"))))
+    tall = fn.f(M + "SelectFloat", A=get_at(fn, fn.get("SeededTall"), ti), B=1.0, bPickA=tall_known)
+    sx = fn.f(M + "SelectFloat", A=body, B=1.0, bPickA=has)
+    sz = fn.f(M + "SelectFloat", A=body, B=tall, bPickA=has)
+    fn.set("FigureScale", fn.f(M + "MakeVector", X=sx, Y=sx, Z=sz))
+    fn.set("HeadScale", fn.f(M + "SelectFloat", A=head, B=1.0, bPickA=has))
+    world = fn.f(M + "Multiply_VectorVector", A=fn.get("FigureScale"),
+                 B=fn.f("Actor:GetActorScale3D", self_=fn.f("ActorComponent:GetOwner")))
+    fn.exec_call("SceneComponent:SetWorldScale3D", self_=fn.get("Figure"), NewScale=world)
+    anim = fn.f("SkeletalMeshComponent:GetAnimInstance", self_=fn.get("Figure"))
+    valid, _ = fn.branch(fn.f("/Script/Engine.KismetSystemLibrary:IsValid", Object=anim))
+    fn.cur = valid
+    typed = cast(fn, anim, u.load_class(None, ABP_CLASS))
+    hs = fn.get("HeadScale")
+    other_set(fn, typed, "HeadScale", ABP_CLASS, fn.f(M + "MakeVector", X=hs, Y=hs, Z=hs))
+    fn.finish()
+
+
+def apply_look(bp, avatar_cls):
+    """ApplyLook(Code) -> Applied: parse, dress and scale; BP_LundenAvatar keeps the code and its hit-zone scales."""
+    fn = Fn(bp, "ApplyLook", [("Code", STRING)], [("Applied", BOOL)])
+    ok = fn.exec_call(mine("ParseLook"), Code=fn.params["Code"])
+    good, bad = fn.branch(out(ok, "Valid"))
+    fn.cur = bad
+    fn.finish(Applied=False)
+    fn.cur = good
+    fig = fn.exec_call(mine("EnsureFigure"))
+    has, _ = fn.branch(out(fig, "Ok"))
+    fn.cur = has
+    fn.exec_call(mine("ChoosePieces"))
+    fn.exec_call(mine("ColourLook"))
+    fn.exec_call(mine("ScaleLook"))
+    avatar = cast(fn, fn.f("ActorComponent:GetOwner"), avatar_cls)
+    other_set(fn, avatar, "LookCode", AVATAR_CLASS, fn.get("LookCode"))
+    scale = fn.get("FigureScale")
+    other_set(fn, avatar, "HeightScale", AVATAR_CLASS, fn.f(M + "BreakVector", pin="Z", InVec=scale))
+    other_set(fn, avatar, "WidthScale", AVATAR_CLASS, fn.f(M + "BreakVector", pin="X", InVec=scale))
+    fn.exec_call(AVATAR_CLASS + ":UpdateHitZones", self_=avatar)
+    fn.finish(fresh=True, Applied=True)
+
+
+def spec_hash(data_text, parts_text):
     h = hashlib.sha256()
     # line endings normalised, so a CRLF (autocrlf) checkout hashes the script like LF (#2309)
-    for part in (Path(__file__).read_bytes().replace(b"\r\n", b"\n"), data_text.encode(),
+    for part in (Path(__file__).read_bytes().replace(b"\r\n", b"\n"), data_text.encode(), parts_text.encode(),
                  u.SystemLibrary.get_engine_version().encode()):
         h.update(hashlib.sha256(part).digest())
     return h.hexdigest()
@@ -408,8 +951,10 @@ def main(argv):
     force, check = "--force" in argv, "--check" in argv
     data_text = DATA_FILE.read_text(encoding="utf-8")
     data = json.loads(data_text)
-    spec = spec_hash(data_text)
-    assets = [COMPONENT]
+    parts_text = PARTS_FILE.read_text(encoding="utf-8").replace("\r\n", "\n")
+    parts = json.loads(parts_text)
+    spec = spec_hash(data_text, parts_text)
+    assets = [COMPONENT, MATERIAL, LOOK_SKELETON, IK_LOOK, RTG, ABP] + [PIECES + "/" + p["name"] for p in parts["pieces"]]
     missing = [p for p in assets if not ASSETS.does_asset_exist(p)]
     have = ASSETS.get_metadata_tag(ASSETS.load_asset(COMPONENT), SPEC_TAG) if not missing else None
     if check:
@@ -422,7 +967,13 @@ def main(argv):
         log(f"unchanged, nothing saved (spec {spec[:12]})")
         u.log("LUNDEN_AVATAR_LOOKS_OK")
         return
-    bp = build_component(data)
+    mat = build_material()
+    import_pieces(parts, mat)
+    core = ASSETS.load_asset(PIECES + "/" + parts["core"])
+    build_ik_rig(core)
+    rtg = build_retargeter(core)
+    build_anim(rtg, core)
+    bp = build_component(data, parts)
     ASSETS.set_metadata_tag(bp, SPEC_TAG, spec)
     for path in assets:
         if not ASSETS.save_asset(path, only_if_is_dirty=False):

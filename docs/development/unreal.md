@@ -123,6 +123,12 @@ tools/unreal-engine/tests/test_avatar_rig.py  PIE test: hit zones = web contract
 tools/unreal-engine/tests/capture_avatar_rig.py  PIE pictures of the poses and the hit zones (GPU, -RenderOffScreen)
 unreal/Lunden/Content/Lunden/Avatar/          Rig/ (Mannequin, web retarget source, IK Rigs, retargeter, BP_LundenAvatar) and
                                    Animation/ (template clips, AS_LundenSit, ABP_LundenAvatar) (LFS; made by build_avatar_rig.py)
+tools/unreal-engine/python/build_avatar_looks.py  the looks /Game/Lunden/Avatar/Looks/: BPC_LundenLook, pieces, material, retargeter (#2291)
+tools/unreal-engine/avatar-looks.mjs          writes/checks avatar-looks.json: the look code's digits, tags, fields and palettes (Node)
+tools/unreal-engine/avatar-parts.mjs          writes/checks avatar-parts.json and the piece GLBs: the web's figure in pieces (Node)
+tools/unreal-engine/avatar-looks.html, capture-avatar-looks.cjs  the web side of the look picture pairs (browser)
+tools/unreal-engine/tests/test_avatar_looks.py  editor test: code round trip, malformed codes, pieces/colours/scale/height = web
+tools/unreal-engine/tests/capture_avatar_looks.py  PIE pictures of looks, front on (GPU, -RenderOffScreen)
 tools/unreal-engine/python/build_ui.py        the menu, settings, compass and frame rate /Game/Lunden/UI/ (#2286)
 tools/unreal-engine/ui-extensions.json        menu buttons (#2291) and volume rows with sound classes (#2287) the UI builds from
 tools/unreal-engine/tests/test_ui.py          PIE test: compass = web for 9 yaws, menu, Esc, every setting, restart
@@ -1131,6 +1137,60 @@ stairs and slopes (`avatarfootik.js`, `avatarstairs.js`), turning steps, idle sw
 sitting pose; its hit zones are right). The template walk is a brisk 3 m/s stride, so at the web's 1.6 m/s the steps
 are longer and slower than the web's (`AVATAR_GAIT.stepHz`); stride warping would need another Epic plugin.
 Results: [docs/verification/2290/](../verification/2290/README.md).
+
+## Avatars: looks (#2291)
+
+G15's second half: a web look code gives the same figure in Unreal. #2291 owns `/Game/Lunden/Avatar/Looks/`,
+`build_avatar_looks.py`, `avatar-looks.mjs`/`.json`, `avatar-parts.mjs`/`.json`, `avatar-looks.html`,
+`capture-avatar-looks.cjs`, `tests/test_avatar_looks.py`, `tests/capture_avatar_looks.py` and the `Look` row of
+`avatar-extensions.json`.
+
+- **The code, bit for bit.** `avatar-looks.mjs` imports `src/config.js` and writes `avatar-looks.json`: the digit
+  ranges, the extension tags in the encoder's order (the wire tags `d`, `s` are read, never written) and a field table
+  (digit or tag, multiplier, radix, value when absent; 55 fields), checked against the web's own `decodeAvatarLook` /
+  `encodeAvatarLook` for 4000 random looks, 16 fixed samples and 16 malformed codes. `BPC_LundenLook` keeps the digits
+  and the raw tag values, so `ParseLook` + `EncodeLook` give the web's re-encoding exactly (a 7-digit code gains `00`);
+  `LookField(Name)` reads one field. Exact for every code a web client writes; a hand-written extension the web's
+  decoder would normalise (a zero or out-of-range tag value) is kept as written.
+- **The web's own figure, in pieces.** `avatar-parts.mjs` runs the web's figure builder (`avatarModelGeometry`, three.js
+  in Node) for 735 looks and records every part it merges (a loader hook wraps `mergeGeometries`; nothing in `src/`
+  changes). A part's rule is the set of looks it is built for (style, sleeves, gender, facial hair and its cut, trouser
+  and top model, shoe model, socks), found from every pair of choices plus a counter-check of each value a part was not
+  seen with, and verified to reproduce the builder's part list for all 735 looks; the accessory a vertex shader keeps
+  (glasses, earrings, hat, headphones, necklace, ring, bracelet, watch) mirrors `faceShape` in `src/avatar.js`.
+  Parts with one rule form a piece: 97 GLBs (164k vertices, 14 MB) on the bones and bind of `models/avatar-rigged.glb`,
+  UV0 = (colour region, shade), UV1/UV2 = a fixed colour. `avatar-parts.json` keeps the rules, the GLB hashes and,
+  per sample, the web's pieces, region colours (read back from the builder's output), scale and bind-pose height.
+- **Assets.** `Pieces/SKM_LundenLookPiece_NNN` on `SK_LundenLook` (the looks' own skeleton: `Rig/Web/` stays
+  editor-only, which `build_avatar_rig.py` enforces), `M_LundenLook` (one vector parameter per region, a Custom node
+  picks it), `IK_LundenLook` (a copy of #2290's `IK_LundenWeb`), `RTG_LundenMannequinToWeb`, `ABP_LundenLook`
+  (Retarget Pose From Mesh from the parent component, then the head bone scaled by `HeadScale`).
+- **`Look.ApplyLook(Code)`** on `BP_LundenAvatar`: parses the code (an invalid code changes nothing and returns false),
+  attaches `Figure` (the core piece, always shown) to `Body`, which keeps animating hidden, shows the pieces the rules
+  pick (a pooled `SkeletalMeshComponent` each, leader pose `Figure`; spare ones get no mesh), sets the region colours
+  as `avatarModelGeometry` does (lips from the skin and `lipTint`, then a lipstick; brows and beard), scales the figure
+  as the web (`avatarProportions(height)`: body and head bone; without a height the wire's seeded `tall`, else 1) and
+  sets the avatar's `LookCode`, `HeightScale`, `WidthScale` and hit zones. #2292 calls it for other players.
+- **Not carried** (the web shapes them in its vertex shader; Unreal keeps the bind shape): face and head sliders, the
+  gender's face form, body build, hair length and tucking under a hat, finger poses and ring bends, cloth, age,
+  freckles, make-up other than lipstick, patterns, metal colours, clear lenses (see-through on the web) and the phone.
+  A legacy code without a height takes 1 where the web uses the player's seeded `tall`. 10–21 draw calls per figure.
+- **Open** (seen in the pictures, not yet solved): the head-bone scale of a child (`HeadScale` is right, but the
+  enlarged head does not show), a dark sliver on the inner thigh and a grey patch at one foot.
+
+```text
+node tools/unreal-engine/avatar-looks.mjs [--check]
+node tools/unreal-engine/avatar-parts.mjs [--check] --out <Windows clone>/unreal/Lunden/Saved/avatar-parts
+git lfs lock <every .uasset under unreal/Lunden/Content/Lunden/Avatar/Looks/>
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/build_avatar_looks.py [--force | --check]
+copy tools\unreal-engine\tests\test_avatar_looks.py unreal\Lunden\Content\Python\   (untracked copy, delete afterwards)
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-tests.ps1 -Filter Editor.Python.Lunden.test_avatar_looks
+```
+
+`test_avatar_looks` round-trips the samples (all 55 fields), answers the malformed codes as the web and, on a
+`BP_LundenAvatar`, checks every sample's pieces, region colours (within 0.002), scale and bind-pose height (within
+1 cm) against the web. After `build_avatar_rig.py` rebuilds `BP_LundenAvatar`, rebuild the looks with `--force` (the
+component calls the avatar's functions). Results: [docs/verification/2291/](../verification/2291/README.md).
 
 ## Pilot camera references (#2246)
 

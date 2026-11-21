@@ -1,5 +1,12 @@
 {
  "formatVersion": 1,
  "what": "#2290: components other issues add to /Game/Lunden/Avatar/Rig/BP_LundenAvatar (build_avatar_rig.py adds each row's component and removes rows it added earlier that are gone). #2291 adds its look component here as the row named \"Look\"; never open BP_LundenAvatar.",
- "components": []
+ "components": [
+  {
+   "name": "Look",
+   "class": "/Game/Lunden/Avatar/Looks/BPC_LundenLook.BPC_LundenLook_C",
+   "owner": "#2291",
+   "what": "The look: ApplyLook(Code) dresses the figure in the web's own pieces (avatar-parts.json), colours and scales it, and sets LookCode, HeightScale and WidthScale."
+  }
+ ]
 }

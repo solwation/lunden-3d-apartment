@@ -1,0 +1,36 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Avatar look (web side of #2291)</title><link rel="icon" href="data:,">
+<script type="importmap">
+  { "imports": {
+    "three": "../../node_modules/three/build/three.module.js",
+    "three/addons/": "../../node_modules/three/examples/jsm/"
+  } }
+</script>
+<style>html,body{margin:0;background:#bfc6cc}canvas{display:block}</style></head>
+<body><script type="module">
+// #2291: one web figure for a look code (?code=), at rest and facing the camera, on the camera of
+// tools/unreal-engine/tests/capture_avatar_looks.py (4.2 m in front, 0.95 m up, pitched 2° down, 40° horizontal field of view,
+// 600 × 800), for web vs Unreal picture pairs. ?walk=1 shows it mid-stride (the web's own walk at 1.6 m/s).
+import * as THREE from 'three';
+import { Avatar } from '../../src/avatar.js';
+import { decodeAvatarLook } from '../../src/config.js';
+const W = 600, H = 800, q = new URLSearchParams(location.search);
+const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+renderer.setSize(W, H); document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0xbfc6cc);
+scene.add(new THREE.HemisphereLight(0xffffff, 0x8a7f72, 1.6));
+const sun = new THREE.DirectionalLight(0xfff2e0, 2.2); sun.position.set(2, 4, -3); scene.add(sun);
+const avatar = new Avatar(decodeAvatarLook(q.get('code') ?? '012340100', 'capture'));
+scene.add(avatar.object); // faces -z
+const hfov = 40 * Math.PI / 180, vfov = 2 * Math.atan(Math.tan(hfov / 2) * H / W);
+const cam = new THREE.PerspectiveCamera(vfov * 180 / Math.PI, W / H, 0.05, 50);
+cam.position.set(0, 0.95, -4.2);
+cam.lookAt(0, 0.95 - 4.2 * Math.tan(2 * Math.PI / 180), 0);
+window.__shot = (frames = 40) => {
+  const walk = q.get('walk') === '1';
+  for (let i = 0; i < frames; i++) avatar.update(1 / 30, walk ? { speed: 1.6 } : {});
+  renderer.render(scene, cam);
+  return true;
+};
+window.__ready = true;
+</script></body></html>

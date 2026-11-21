@@ -1,0 +1,236 @@
+{
+ "formatVersion": 1,
+ "what": "The web figure (src/avatar.js avatarModelGeometry) in pieces on the models/avatar-rigged.glb skeleton, for Unreal (#2291). Written by tools/unreal-engine/avatar-parts.mjs.",
+ "axes": [ "style", "sleeves", "gender", "facial", "beardCut", "legs", "cut", "shoeModel", "socks"
+ ],
+ "ranges": { "style": [ 0, 1, 2, 3, 4], "sleeves": [ 0, 1], "gender": [ 0, 1], "facial": [ 0, 1, 2, 3], "beardCut": [ 0, 1, 2], "legs": [ 0, 1, 2, 3, 4], "cut": [ 0, 1, 2], "shoeModel": [ 0, 1, 2, 3], "socks": [ 0, 1, 2, 3]
+ },
+ "shown": { "glasses": [ 0, 1, 2, 3, 4], "earrings": [ 0, 1, 2, 3, 4], "hat": [ 0, 1, 2, 3, 4], "phones": [ 0, 1, 2], "necklace": [ 0, 1, 2, 3, 4], "ring": [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "bracelet": [ 0, 1, 2, 3, 4, 5, 6], "watch": [ 0, 1, 2, 3, 4, 5, 6]
+ },
+ "regions": { "skin": 0, "top": 1, "pants": 2, "hair": 3, "fixed": 4, "shoes": 5, "lips": 6, "iris": 7, "beard": 8, "brow": 9, "leather": 10
+ },
+ "heightRule": { "base": 175, "pivot": 1.52, "top": 0.23, "adult": 160, "headPow": 0.6, "seededTall": [ 0.95, 0.975, 1, 1.025, 1.05]
+ },
+ "lips": { "tint": "#b0605a", "skinMix": 0.35, "dark": 0.92, "lipstick": [ "#000000", "#c4506c", "#a3152a", "#62183a", "#b07a6c"], "lipstickMix": 0.85
+ },
+ "brows": [ "#2b2118", "#4a3320", "#7a5532", "#b79052", "#d9c28a", "#8a8c90", "#6b2d1f", "#15151a"
+ ],
+ "core": "SKM_LundenLookPiece_096",
+ "looksChecked": 735,
+ "partsFound": 381,
+ "pieces": [
+  { "name": "SKM_LundenLookPiece_000", "any": [
+    { "bracelet": [ 1]}], "parts": 1, "vertices": 54, "sha256": "28c67df254723b47dfb238877bfa6eecaa81844866c189f50a6b082b301d98e4"},
+  { "name": "SKM_LundenLookPiece_001", "any": [
+    { "bracelet": [ 2]}], "parts": 1, "vertices": 324, "sha256": "43a1f9dfba0eeaf3b9ba7e33df2904b4477e68d55805db15e00429821f4e3a2c"},
+  { "name": "SKM_LundenLookPiece_002", "any": [
+    { "bracelet": [ 3]}], "parts": 1, "vertices": 54, "sha256": "f9c55407650736c9a6e49b247689cafdb7b29ccb2d758dac0f7954ba18a19e66"},
+  { "name": "SKM_LundenLookPiece_003", "any": [
+    { "bracelet": [ 4]}], "parts": 1, "vertices": 54, "sha256": "28c507a5a245835c82778f1855247eb114f906a8378f0e528b697a2fe3a2221e"},
+  { "name": "SKM_LundenLookPiece_004", "any": [
+    { "bracelet": [ 5]}], "parts": 1, "vertices": 324, "sha256": "bd1f469a87b278f3791a90c6d56f92cde2b72a6802c94b1a5be9313ed1e6f903"},
+  { "name": "SKM_LundenLookPiece_005", "any": [
+    { "bracelet": [ 6]}], "parts": 1, "vertices": 54, "sha256": "9dc4250b1085797903f93f7589344dae2fb979acd9df38f0c7598b419728fe9a"},
+  { "name": "SKM_LundenLookPiece_006", "any": [
+    { "cut": [ 2]}], "parts": 2, "vertices": 468, "sha256": "3d53397b50840508b80d9c2c4bcf708079f284becde9278aded53531a566899f"},
+  { "name": "SKM_LundenLookPiece_007", "any": [
+    { "earrings": [ 1]}], "parts": 2, "vertices": 216, "sha256": "24a8e85891da2d5fdfa0a5e984d4b1a0004283f0b3307a7593ee8c3fd459df25"},
+  { "name": "SKM_LundenLookPiece_008", "any": [
+    { "earrings": [ 2]}], "parts": 2, "vertices": 672, "sha256": "758ad11a1f3b0cd86efeb1ce19a9da12bead0ce550b2f37d88f1ef8c33e7b9b5"},
+  { "name": "SKM_LundenLookPiece_009", "any": [
+    { "earrings": [ 3]}], "parts": 4, "vertices": 672, "sha256": "bbbd0de84293337cd0dfc1fe204341979e6fde90cbe858cafbb1d7ab676542c0"},
+  { "name": "SKM_LundenLookPiece_010", "any": [
+    { "earrings": [ 4]}], "parts": 2, "vertices": 216, "sha256": "43132dea4d649cf69ae6591c1d8c83aea8cc757e7320eef2a384284adb1b7dcd"},
+  { "name": "SKM_LundenLookPiece_011", "any": [
+    { "facial": [ 1], "beardCut": [ 0]}], "parts": 1, "vertices": 360, "sha256": "46b5e16a61d01a9082ad561202515cdfd8d6e2f9221c9167da1e00224ca9fadb"},
+  { "name": "SKM_LundenLookPiece_012", "any": [
+    { "facial": [ 2], "beardCut": [ 0]}], "parts": 2, "vertices": 600, "sha256": "b91def5c95fd2bd019260808a90d3fd1422814936a171638aaa281deb5c201e7"},
+  { "name": "SKM_LundenLookPiece_013", "any": [
+    { "facial": [ 3], "beardCut": [ 0]}], "parts": 1, "vertices": 360, "sha256": "bf5821e9810f1d0d259a4a492ff50c5711e72610aac38a9d5e3e15c4e00112f2"},
+  { "name": "SKM_LundenLookPiece_014", "any": [
+    { "gender": [ 0], "cut": [ 0]}], "parts": 1, "vertices": 1488, "sha256": "116f8b1d4b7efc393e132ee024ad6253afd4aff642ac3000c7f24742687445b8"},
+  { "name": "SKM_LundenLookPiece_015", "any": [
+    { "gender": [ 0], "cut": [ 1]}], "parts": 3, "vertices": 4224, "sha256": "8b43288eb3e36c80103a0338d775085b88891524286bcdab9a0a5317612e285a"},
+  { "name": "SKM_LundenLookPiece_016", "any": [
+    { "gender": [ 0], "cut": [ 2]}], "parts": 3, "vertices": 3792, "sha256": "9e4ee1f98aa31dfcb0796440197f7de42217960c137a02a087169ef39c302643"},
+  { "name": "SKM_LundenLookPiece_017", "any": [
+    { "gender": [ 0], "facial": [ 1], "beardCut": [ 0]}], "parts": 1, "vertices": 2304, "sha256": "fdb6848ae9c5368e61dee04e4bafd0cbc2c01197239e03afd937ee142631338f"},
+  { "name": "SKM_LundenLookPiece_018", "any": [
+    { "gender": [ 0], "facial": [ 1], "beardCut": [ 2]}], "parts": 1, "vertices": 2304, "sha256": "0ae7950e381f96e7364f45ec611382f6c817717c3fd00b3eb00cfc091b7f3298"},
+  { "name": "SKM_LundenLookPiece_019", "any": [
+    { "gender": [ 0], "facial": [ 3], "beardCut": [ 0]}], "parts": 1, "vertices": 2532, "sha256": "eea994e39d0f53711d7de3deeeb35e2c03cf678c6464250014b1dd3a99d4781d"},
+  { "name": "SKM_LundenLookPiece_020", "any": [
+    { "gender": [ 0], "facial": [ 3], "beardCut": [ 2]}], "parts": 1, "vertices": 2532, "sha256": "92b25639935f3525a34b49a5d335b23d36fc3863dfc8da29a4065f44d82e4f24"},
+  { "name": "SKM_LundenLookPiece_021", "any": [
+    { "gender": [ 0], "legs": [ 0, 1, 2, 3]}], "parts": 1, "vertices": 420, "sha256": "b8dff76ecda0483425491d5c1add315691d4fd013358aa73136a59403fa1c1eb"},
+  { "name": "SKM_LundenLookPiece_022", "any": [
+    { "gender": [ 0], "legs": [ 4]}], "parts": 1, "vertices": 420, "sha256": "a2f5bb96c8f6d317509a3fe70c3636ece80b233c5aa460d896f1f9c0ff45e9b8"},
+  { "name": "SKM_LundenLookPiece_023", "any": [
+    { "gender": [ 0], "necklace": [ 1, 3]}], "parts": 1, "vertices": 648, "sha256": "07f478ee84002e6570af893d0a625b3fa0daac3f61c88e834e26376a16133dbf"},
+  { "name": "SKM_LundenLookPiece_024", "any": [
+    { "gender": [ 0], "necklace": [ 2]}], "parts": 1, "vertices": 1920, "sha256": "dd9883a59ff9ab2177057c16fe62ac2ab0a0fbba46aa84145ab5bbc81515a8ac"},
+  { "name": "SKM_LundenLookPiece_025", "any": [
+    { "gender": [ 0], "necklace": [ 3]}], "parts": 1, "vertices": 228, "sha256": "b3ba3890dea1eeda84b946e3a24d1c5b7901c007e161030e467264be1414e946"},
+  { "name": "SKM_LundenLookPiece_026", "any": [
+    { "gender": [ 0], "necklace": [ 4]}], "parts": 1, "vertices": 720, "sha256": "dae154614eba424b3f5e9669b899f8b41a53d14bae58d6062b35b575ccd391b6"},
+  { "name": "SKM_LundenLookPiece_027", "any": [
+    { "gender": [ 0]}], "parts": 1, "vertices": 288, "sha256": "5eecdbbd481fbed5fc3f2227fe1079a1b47e1b6f4136ad3a9e44c07717a9a40b"},
+  { "name": "SKM_LundenLookPiece_028", "any": [
+    { "gender": [ 1], "cut": [ 0]}], "parts": 1, "vertices": 1488, "sha256": "b4315dd2fb2caae52a44fc9b097acdf3340089a92b99b102aa38a97f5e102014"},
+  { "name": "SKM_LundenLookPiece_029", "any": [
+    { "gender": [ 1], "cut": [ 1]}], "parts": 3, "vertices": 4224, "sha256": "88c7b6d0ab9db57f9b099af93cf9caf3e26464e7e3d954aaeb6cf4a25a3dcfc6"},
+  { "name": "SKM_LundenLookPiece_030", "any": [
+    { "gender": [ 1], "cut": [ 2]}], "parts": 3, "vertices": 3792, "sha256": "e33c76ba12452bc377d3024cdac8a8d6050f773fe2b5a78730dcc90b7b14fc83"},
+  { "name": "SKM_LundenLookPiece_031", "any": [
+    { "gender": [ 1], "facial": [ 1], "beardCut": [ 0]}], "parts": 1, "vertices": 2304, "sha256": "4b71fe7a3fecc3923fac6df7ff5461eed3ead06a61fb2776131754b01071b45a"},
+  { "name": "SKM_LundenLookPiece_032", "any": [
+    { "gender": [ 1], "facial": [ 1], "beardCut": [ 2]}], "parts": 1, "vertices": 2304, "sha256": "032aa71a382d8fc2c191808aae9bc87f1674c856faffae03492e52efd3550bf4"},
+  { "name": "SKM_LundenLookPiece_033", "any": [
+    { "gender": [ 1], "facial": [ 3], "beardCut": [ 0]}], "parts": 1, "vertices": 2532, "sha256": "ec257157653817fea4d52cce21d0f3c753a05235f1ee61114e15ac0907b370c5"},
+  { "name": "SKM_LundenLookPiece_034", "any": [
+    { "gender": [ 1], "facial": [ 3], "beardCut": [ 2]}], "parts": 1, "vertices": 2532, "sha256": "980ae2ee5fbd98047adbc0cbdb613657d7b5d02b07f68873d68780e24fed4e86"},
+  { "name": "SKM_LundenLookPiece_035", "any": [
+    { "gender": [ 1], "legs": [ 0, 1, 2, 3]}], "parts": 1, "vertices": 420, "sha256": "2f1a687ea28244a24ece805ce63ed50ebb0557122ca6801a0a79f10bb4a0dfc0"},
+  { "name": "SKM_LundenLookPiece_036", "any": [
+    { "gender": [ 1], "legs": [ 4]}], "parts": 1, "vertices": 420, "sha256": "6770b40b1cfe1c6da2cd2b7cebf8dc2e5d623b41162e0e4f0d43f20504e31082"},
+  { "name": "SKM_LundenLookPiece_037", "any": [
+    { "gender": [ 1], "necklace": [ 1, 3]}], "parts": 1, "vertices": 648, "sha256": "63d9ca6649db4f6cce28f31acffab3371390a606bb73c52385494b2ebb1301f6"},
+  { "name": "SKM_LundenLookPiece_038", "any": [
+    { "gender": [ 1], "necklace": [ 2]}], "parts": 1, "vertices": 1800, "sha256": "a5bd1f14f9b03eb521e038e01f9dc88f93d29f145e6e603824013e65dfc731b4"},
+  { "name": "SKM_LundenLookPiece_039", "any": [
+    { "gender": [ 1], "necklace": [ 3]}], "parts": 1, "vertices": 228, "sha256": "13d7bac094f8cb118747d051935e5afb88c538b17c38116b14633cba717493b8"},
+  { "name": "SKM_LundenLookPiece_040", "any": [
+    { "gender": [ 1], "necklace": [ 4]}], "parts": 1, "vertices": 720, "sha256": "8ffecf1f21c6c7217414d60815b0b4c6839b36c7b31f131818237a68198c3521"},
+  { "name": "SKM_LundenLookPiece_041", "any": [
+    { "gender": [ 1]}], "parts": 1, "vertices": 288, "sha256": "accfc4207f7d559b13c50c89c4d520a402993a726bbbb6f6719e11f64addcead"},
+  { "name": "SKM_LundenLookPiece_042", "any": [
+    { "glasses": [ 1, 2, 3, 4]}], "parts": 3, "vertices": 180, "sha256": "8189388f55cf90ad4167a7cff3f231d0cbd266a0b2817cf931e15a7fefb8d7db"},
+  { "name": "SKM_LundenLookPiece_043", "any": [
+    { "glasses": [ 1]}], "parts": 2, "vertices": 1440, "sha256": "951b04ec75bc829f667b7921d8ee557338a65879a1c2871840f3e90193c937ee"},
+  { "name": "SKM_LundenLookPiece_044", "any": [
+    { "glasses": [ 2, 3]}], "parts": 2, "vertices": 1536, "sha256": "61efaad87acc12effb14d99320c96e7b73cccadfafd2e351f10eb097dd579c9d"},
+  { "name": "SKM_LundenLookPiece_045", "any": [
+    { "glasses": [ 3]}], "parts": 2, "vertices": 72, "sha256": "9eac8200bace684980d303e625629c7549c5a7cda369737255fa6efb06272dcc"},
+  { "name": "SKM_LundenLookPiece_046", "any": [
+    { "glasses": [ 4]}], "parts": 5, "vertices": 420, "sha256": "46a357cfc64bacd9af31f35c45090b33227bb58dfbfcec541aa08784e6dfabc0"},
+  { "name": "SKM_LundenLookPiece_047", "any": [
+    { "hat": [ 1, 2]}], "parts": 3, "vertices": 864, "sha256": "45e5c2b2ec4adf48bdfe53462a7f5a056b006bafd65702d97f7dfd3718adf906"},
+  { "name": "SKM_LundenLookPiece_048", "any": [
+    { "hat": [ 1]}], "parts": 2, "vertices": 96, "sha256": "5b4b40392d24ed547c843b48040165b75927c1415bd4e995358f4191c8c2fef6"},
+  { "name": "SKM_LundenLookPiece_049", "any": [
+    { "hat": [ 2]}], "parts": 2, "vertices": 96, "sha256": "6322e7503d296a2858cea58f5b12d0db999ec5ea74ea3e3d203f0faceedd49ad"},
+  { "name": "SKM_LundenLookPiece_050", "any": [
+    { "hat": [ 3]}], "parts": 7, "vertices": 1440, "sha256": "0908693a752e75a571225f51db5e2d699d9fef2ca4f8bdf2a919595056e42ec4"},
+  { "name": "SKM_LundenLookPiece_051", "any": [
+    { "hat": [ 4]}], "parts": 5, "vertices": 1056, "sha256": "2e8a309b9541dbd85df824c5292b6d5662cf4759ae681e6402f6b5fdf4285345"},
+  { "name": "SKM_LundenLookPiece_052", "any": [
+    { "legs": [ 0, 1, 2]}], "parts": 1, "vertices": 36, "sha256": "15383e879bfbde0244720080b5d0ecda7e4830ef2c96ff97d71a2e7909599b20"},
+  { "name": "SKM_LundenLookPiece_053", "any": [
+    { "legs": [ 0]}], "parts": 2, "vertices": 2448, "sha256": "6b3d013700e54971a1110641377c9f893dfd56c5e4e7eb61fb6b23fc5a91db00"},
+  { "name": "SKM_LundenLookPiece_054", "any": [
+    { "legs": [ 1, 3, 4], "shoeModel": [ 0, 2, 3], "socks": [ 1]}], "parts": 2, "vertices": 576, "sha256": "9fee791742f11213ccbc9602ff667c1a833fc0cfa9fd7e2c699bf7e112bea1f0"},
+  { "name": "SKM_LundenLookPiece_055", "any": [
+    { "legs": [ 1, 3, 4], "shoeModel": [ 0, 2, 3], "socks": [ 2]}], "parts": 2, "vertices": 576, "sha256": "4a71a39518e0509dc6a929236596f9b5c2db6a515796cbeaa8758defa806dc20"},
+  { "name": "SKM_LundenLookPiece_056", "any": [
+    { "legs": [ 1, 3, 4], "shoeModel": [ 0, 2, 3], "socks": [ 3]}], "parts": 2, "vertices": 576, "sha256": "c858c68ee7432a93c1406acfda9b7d47cddced2931e26f1b233e20ea40833e3d"},
+  { "name": "SKM_LundenLookPiece_057", "any": [
+    { "legs": [ 1, 3, 4]}], "parts": 2, "vertices": 2016, "sha256": "af769e3ebbaacb73d72a262d9949a9f7de9e98bfc788477d1ba00d0c007df52e"},
+  { "name": "SKM_LundenLookPiece_058", "any": [
+    { "legs": [ 1, 3]}], "parts": 2, "vertices": 720, "sha256": "ee5ffac03688fa4c0efd75a867923a1953581a17ee64ec46ae4b12cfc9d44c11"},
+  { "name": "SKM_LundenLookPiece_059", "any": [
+    { "legs": [ 2]}], "parts": 2, "vertices": 2448, "sha256": "ed4704b7c092ec9d193ef104292c63863307dd308707c94cd3f476d586ebbc9c"},
+  { "name": "SKM_LundenLookPiece_060", "any": [
+    { "legs": [ 3]}], "parts": 1, "vertices": 1920, "sha256": "0a92cc3322d7719ef2ed4af652074ff4ab61575bad26e6e32dcc2e4ac2789804"},
+  { "name": "SKM_LundenLookPiece_061", "any": [
+    { "legs": [ 4]}], "parts": 3, "vertices": 2640, "sha256": "32692bf710498fcb8e3e595a1928416ee45c0e3dd7c2de4df3a3433d18fa6a83"},
+  { "name": "SKM_LundenLookPiece_062", "any": [
+    { "phones": [ 1]}], "parts": 5, "vertices": 1680, "sha256": "5731f59b5229b57b924572601b3574ca3d79df2529ad29b5b7e8cf7966ce93b2"},
+  { "name": "SKM_LundenLookPiece_063", "any": [
+    { "phones": [ 2]}], "parts": 5, "vertices": 1776, "sha256": "6c91d703aa951b5a905e50bebf03059e3b163e3ccd846291e437567bc739b00b"},
+  { "name": "SKM_LundenLookPiece_064", "any": [
+    { "ring": [ 1]}], "parts": 1, "vertices": 144, "sha256": "4d7d3804428237eeb77a98a4c9a23946f0778c91ca7b2c4805ad5f2ae9dee96d"},
+  { "name": "SKM_LundenLookPiece_065", "any": [
+    { "ring": [ 10]}], "parts": 1, "vertices": 144, "sha256": "e8bbfe95bceaed1abb3f5fe3f2e430a5a816f2bc982735922317604c687c3976"},
+  { "name": "SKM_LundenLookPiece_066", "any": [
+    { "ring": [ 2]}], "parts": 1, "vertices": 144, "sha256": "7ba210575c6e1815697b489fe0c32093cc65cd1f804a660134f7115979fd1d38"},
+  { "name": "SKM_LundenLookPiece_067", "any": [
+    { "ring": [ 3]}], "parts": 1, "vertices": 144, "sha256": "ce5a21b0c70278e8689b47efbb2171ea7cf135cb75334a3019c73cce2d64d86b"},
+  { "name": "SKM_LundenLookPiece_068", "any": [
+    { "ring": [ 4]}], "parts": 1, "vertices": 144, "sha256": "dfbe5111ac86cd76df6489ab5d8d5d62941e76eab7137017b1e3ab8645ca5486"},
+  { "name": "SKM_LundenLookPiece_069", "any": [
+    { "ring": [ 5]}], "parts": 1, "vertices": 144, "sha256": "f9c0e6f54357fde1fd69d680a7ef25004216351e8a9e7d14c14a129794b97a9f"},
+  { "name": "SKM_LundenLookPiece_070", "any": [
+    { "ring": [ 6]}], "parts": 1, "vertices": 144, "sha256": "03f93300208dcfdeed5b42aadced5a30d224b23ca910b8b48df6e770e7e4a754"},
+  { "name": "SKM_LundenLookPiece_071", "any": [
+    { "ring": [ 7]}], "parts": 1, "vertices": 144, "sha256": "998cec4006b7ef1bef754d125e9ce7a849afb4b4879607b8cf2246ee2c951f58"},
+  { "name": "SKM_LundenLookPiece_072", "any": [
+    { "ring": [ 8]}], "parts": 1, "vertices": 144, "sha256": "6f8aa125d2afac93d0eb80b864b3a98b3ded3b5b4956a8a24a124803ff3294ac"},
+  { "name": "SKM_LundenLookPiece_073", "any": [
+    { "ring": [ 9]}], "parts": 1, "vertices": 144, "sha256": "23479468121ce5be5b1a16bf82bbd2732a37a0bccd9de7ec959669ba9a18f7b4"},
+  { "name": "SKM_LundenLookPiece_074", "any": [
+    { "shoeModel": [ 0, 1]}], "parts": 2, "vertices": 420, "sha256": "dd97b04d17792b571d33bf966e0610c790053e1900647c4aba37e13e8ba2e560"},
+  { "name": "SKM_LundenLookPiece_075", "any": [
+    { "shoeModel": [ 0]}], "parts": 10, "vertices": 1416, "sha256": "35e2cb5b73507166aa8c21b7388ef10f635d3fbcc261cb9009ff940b5d01d362"},
+  { "name": "SKM_LundenLookPiece_076", "any": [
+    { "shoeModel": [ 1]}], "parts": 6, "vertices": 2256, "sha256": "0377f747d0360246dc521f30f2a87dcf25043ce14cfc72866e4e87f14d6b827f"},
+  { "name": "SKM_LundenLookPiece_077", "any": [
+    { "shoeModel": [ 2]}], "parts": 7, "vertices": 1110, "sha256": "d094bdaa4e868a488afdf912459c0510ce7a9b59a2e288afcda9e9b32343ecc1"},
+  { "name": "SKM_LundenLookPiece_078", "any": [
+    { "shoeModel": [ 3]}], "parts": 10, "vertices": 2328, "sha256": "e51dd276e318f83019e993b9c4357eb784731b4051299482a6d156435c4154be"},
+  { "name": "SKM_LundenLookPiece_079", "any": [
+    { "sleeves": [ 0], "cut": [ 0]}], "parts": 2, "vertices": 1872, "sha256": "0faf3fb58d5554f086c54076471644bef34cecfd8b1fecdc148d00cbb8f3a712"},
+  { "name": "SKM_LundenLookPiece_080", "any": [
+    { "sleeves": [ 0], "cut": [ 2]},
+    { "sleeves": [ 1], "cut": [ 0, 2]}], "parts": 2, "vertices": 720, "sha256": "1808ee18692263fd7fe1b3b1f3e756bcaf1668accd19328f26c132402104509a"},
+  { "name": "SKM_LundenLookPiece_081", "any": [
+    { "sleeves": [ 0], "gender": [ 0], "cut": [ 0]}], "parts": 2, "vertices": 1152, "sha256": "21165f57e0c69f337bb14e13cabd217f186625f30a516364454d2b31d8fe4e7f"},
+  { "name": "SKM_LundenLookPiece_082", "any": [
+    { "sleeves": [ 0], "gender": [ 1], "cut": [ 0]}], "parts": 2, "vertices": 1152, "sha256": "431ebb8f868e483d21dc86edf236c29f1f8ce103f31c47b75df083e5e7fdc348"},
+  { "name": "SKM_LundenLookPiece_083", "any": [
+    { "sleeves": [ 1], "gender": [ 0], "cut": [ 0]}], "parts": 2, "vertices": 2304, "sha256": "3b2edba4ba633ee2d9bd129a93f4e2a606e9c5f3c63befd308ff05804c4e2956"},
+  { "name": "SKM_LundenLookPiece_084", "any": [
+    { "sleeves": [ 1], "gender": [ 1], "cut": [ 0]}], "parts": 2, "vertices": 2304, "sha256": "b4d27c3df2a409e035190b2c83bc60d4490af68bd52b0ba77482229cfa307829"},
+  { "name": "SKM_LundenLookPiece_085", "any": [
+    { "style": [ 0]}], "parts": 35, "vertices": 5172, "sha256": "1d308f26226df384c339e3c0a680a4895d7b1473e1dd625083a85c21b8a80f55"},
+  { "name": "SKM_LundenLookPiece_086", "any": [
+    { "style": [ 1]}], "parts": 56, "vertices": 8352, "sha256": "0d23d3dd28af7b9ca52c8d95d4d760bb22658739c116131af2358dfb4772b16d"},
+  { "name": "SKM_LundenLookPiece_087", "any": [
+    { "style": [ 2]}], "parts": 20, "vertices": 6648, "sha256": "82f2afd85ac77bd17a6df0f9b2b7dfeb6cf62f52a69ff34c9d128945a76205ce"},
+  { "name": "SKM_LundenLookPiece_088", "any": [
+    { "style": [ 3]}], "parts": 8, "vertices": 6276, "sha256": "7b7dc270b55056edc53e2f81e5eddd56676c278c39ee7e96dfe8dcab2cc07715"},
+  { "name": "SKM_LundenLookPiece_089", "any": [
+    { "style": [ 4]}], "parts": 6, "vertices": 23640, "sha256": "9b989677f78c3913e62e9800d39fbcd016c66b96381b71b73f9db13284fd8f76"},
+  { "name": "SKM_LundenLookPiece_090", "any": [
+    { "watch": [ 1]}], "parts": 4, "vertices": 210, "sha256": "860bf925964c9d079f83a3f223f61ff6cab477f7b9f3c8b94481368765f4bae4"},
+  { "name": "SKM_LundenLookPiece_091", "any": [
+    { "watch": [ 2]}], "parts": 3, "vertices": 96, "sha256": "2ef637865cf85d672764a5c03ed6af71b1580d8e714a252cf29b7e85d82544a9"},
+  { "name": "SKM_LundenLookPiece_092", "any": [
+    { "watch": [ 3]}], "parts": 4, "vertices": 234, "sha256": "6e142b4e4a933533bb10e5bdab8539f9f4ebce6c936fb6178fd91605ed9f8765"},
+  { "name": "SKM_LundenLookPiece_093", "any": [
+    { "watch": [ 4]}], "parts": 4, "vertices": 210, "sha256": "6329a87db812ac40d0d92c3eecbdcec763da7561fd77131682baf8f9acc9fc06"},
+  { "name": "SKM_LundenLookPiece_094", "any": [
+    { "watch": [ 5]}], "parts": 3, "vertices": 96, "sha256": "f8a0a7c3356b8bcd5d27e6b494b96f5685a1639dfe238a0e2646a58b72a2fa95"},
+  { "name": "SKM_LundenLookPiece_095", "any": [
+    { "watch": [ 6]}], "parts": 4, "vertices": 234, "sha256": "570a2180af10f6c3e6beb6535583294b9a25ae40f9d39cb1bf74079a6a3de596"},
+  { "name": "SKM_LundenLookPiece_096", "any": [
+    {}], "parts": 47, "vertices": 17988, "sha256": "3bed98179b00eefcdcc9b7fe7e9fdc3cc689dc0327e9a6ee6f9e20e1305b116c"}
+ ],
+ "samples": [
+  { "what": "legacy 7 digits", "code": "1233541", "values": { "style": 4, "sleeves": 1, "gender": 0, "facial": 0, "beardCut": 0, "legs": 0, "cut": 0, "shoeModel": 0, "socks": 0, "glasses": 0, "earrings": 0, "hat": 0, "phones": 0, "necklace": 0, "ring": 0, "bracelet": 0, "watch": 0}, "pieces": [ "SKM_LundenLookPiece_014", "SKM_LundenLookPiece_021", "SKM_LundenLookPiece_027", "SKM_LundenLookPiece_052", "SKM_LundenLookPiece_053", "SKM_LundenLookPiece_074", "SKM_LundenLookPiece_075", "SKM_LundenLookPiece_080", "SKM_LundenLookPiece_083", "SKM_LundenLookPiece_089", "SKM_LundenLookPiece_096"], "scale": null, "heightCm": null, "linear": { "skin": [ 0.745404, 0.423268, 0.254152], "top": [ 0.045186, 0.254152, 0.076185], "pants": [ 0.152926, 0.102242, 0.059511], "hair": [ 0.254152, 0.262251, 0.278894], "shoes": [ 0.013702, 0.042311, 0.107023], "lips": [ 0.585549, 0.290779, 0.184905], "iris": [ 0.155926, 0.084376, 0.036889], "brow": [ 0.254152, 0.262251, 0.278894]}, "colours": { "skin": "#e0ae8a", "top": "#3c8a4e", "pants": "#6d5a45", "hair": "#8a8c90", "shoes": "#1f3a5c", "iris": "#6e5236", "beard": "#8a8c90", "brow": "#8a8c90"}},
+  { "what": "legacy 9 digits", "code": "012340100", "values": { "style": 0, "sleeves": 1, "gender": 0, "facial": 0, "beardCut": 0, "legs": 0, "cut": 0, "shoeModel": 0, "socks": 0, "glasses": 0, "earrings": 0, "hat": 0, "phones": 0, "necklace": 0, "ring": 0, "bracelet": 0, "watch": 0}, "pieces": [ "SKM_LundenLookPiece_014", "SKM_LundenLookPiece_021", "SKM_LundenLookPiece_027", "SKM_LundenLookPiece_052", "SKM_LundenLookPiece_053", "SKM_LundenLookPiece_074", "SKM_LundenLookPiece_075", "SKM_LundenLookPiece_080", "SKM_LundenLookPiece_083", "SKM_LundenLookPiece_085", "SKM_LundenLookPiece_096"], "scale": null, "heightCm": null, "linear": { "skin": [ 0.879622, 0.584078, 0.391572], "top": [ 0.462077, 0.038204, 0.028426], "pants": [ 0.07036, 0.102242, 0.187821], "hair": [ 0.693872, 0.539479, 0.254152], "shoes": [ 0.013702, 0.042311, 0.107023], "lips": [ 0.665812, 0.386943, 0.267082], "iris": [ 0.155926, 0.084376, 0.036889], "brow": [ 0.693872, 0.539479, 0.254152]}, "colours": { "skin": "#f1c9a8", "top": "#b5372f", "pants": "#4b5a78", "hair": "#d9c28a", "shoes": "#1f3a5c", "iris": "#6e5236", "beard": "#d9c28a", "brow": "#d9c28a"}},
+  { "what": "9 digits, all maxima", "code": "495374113", "values": { "style": 4, "sleeves": 1, "gender": 1, "facial": 3, "beardCut": 0, "legs": 0, "cut": 0, "shoeModel": 0, "socks": 0, "glasses": 0, "earrings": 0, "hat": 0, "phones": 0, "necklace": 0, "ring": 0, "bracelet": 0, "watch": 0}, "pieces": [ "SKM_LundenLookPiece_013", "SKM_LundenLookPiece_028", "SKM_LundenLookPiece_033", "SKM_LundenLookPiece_035", "SKM_LundenLookPiece_041", "SKM_LundenLookPiece_052", "SKM_LundenLookPiece_053", "SKM_LundenLookPiece_074", "SKM_LundenLookPiece_075", "SKM_LundenLookPiece_080", "SKM_LundenLookPiece_084", "SKM_LundenLookPiece_089", "SKM_LundenLookPiece_096"], "scale": null, "heightCm": null, "linear": { "skin": [ 0.147027, 0.057805, 0.029557], "top": [ 0.693872, 0.168269, 0.027321], "pants": [ 0.104616, 0.116971, 0.138432], "hair": [ 0.007499, 0.007499, 0.01033], "shoes": [ 0.013702, 0.042311, 0.107023], "lips": [ 0.22772, 0.072232, 0.050597], "iris": [ 0.155926, 0.084376, 0.036889], "beard": [ 0.007499, 0.007499, 0.01033], "brow": [ 0.007499, 0.007499, 0.01033]}, "colours": { "skin": "#6b4430", "top": "#d9722e", "pants": "#5b6068", "hair": "#15151a", "shoes": "#1f3a5c", "iris": "#6e5236", "beard": "#15151a", "brow": "#15151a"}},
+  { "what": "chosen height 188", "code": "310231011188", "values": { "style": 1, "sleeves": 0, "gender": 1, "facial": 1, "beardCut": 0, "legs": 0, "cut": 0, "shoeModel": 0, "socks": 0, "glasses": 0, "earrings": 0, "hat": 0, "phones": 0, "necklace": 0, "ring": 0, "bracelet": 0, "watch": 0}, "pieces": [ "SKM_LundenLookPiece_011", "SKM_LundenLookPiece_028", "SKM_LundenLookPiece_031", "SKM_LundenLookPiece_035", "SKM_LundenLookPiece_041", "SKM_LundenLookPiece_052", "SKM_LundenLookPiece_053", "SKM_LundenLookPiece_074", "SKM_LundenLookPiece_075", "SKM_LundenLookPiece_079", "SKM_LundenLookPiece_082", "SKM_LundenLookPiece_086", "SKM_LundenLookPiece_096"], "scale": { "x": 1.0742857142857143, "y": 1.0742857142857143, "head": 1}, "heightCm": 190.982, "linear": { "skin": [ 0.323143, 0.132868, 0.056128], "top": [ 0.462077, 0.038204, 0.028426], "pants": [ 0.025187, 0.030713, 0.051269], "hair": [ 0.473531, 0.278894, 0.084376], "shoes": [ 0.051269, 0.03434, 0.024158], "lips": [ 0.333037, 0.11712, 0.066487], "iris": [ 0.155926, 0.084376, 0.036889], "beard": [ 0.473531, 0.278894, 0.084376], "brow": [ 0.473532, 0.278894, 0.084376]}, "colours": { "skin": "#9a6643", "top": "#b5372f", "pants": "#2c3140", "hair": "#b79052", "shoes": "#40342b", "iris": "#6e5236", "beard": "#b79052", "brow": "#b79052"}},
+  { "what": "chosen height 100", "code": "000000000100", "values": { "style": 0, "sleeves": 0, "gender": 0, "facial": 0, "beardCut": 0, "legs": 0, "cut": 0, "shoeModel": 0, "socks": 0, "glasses": 0, "earrings": 0, "hat": 0, "phones": 0, "necklace": 0, "ring": 0, "bracelet": 0, "watch": 0}, "pieces": [ "SKM_LundenLookPiece_014", "SKM_LundenLookPiece_021", "SKM_LundenLookPiece_027", "SKM_LundenLookPiece_052", "SKM_LundenLookPiece_053", "SKM_LundenLookPiece_074", "SKM_LundenLookPiece_075", "SKM_LundenLookPiece_079", "SKM_LundenLookPiece_081", "SKM_LundenLookPiece_085", "SKM_LundenLookPiece_096"], "scale": { "x": 0.5479662925449309, "y": 0.5479662925449309, "head": 1.3257816069359947}, "heightCm": 103.232, "linear": { "skin": [ 0.879622, 0.584078, 0.391572], "top": [ 0.028426, 0.152926, 0.462077], "pants": [ 0.025187, 0.030713, 0.051269], "hair": [ 0.024158, 0.015209, 0.009134], "shoes": [ 0.023153, 0.0185, 0.016807], "lips": [ 0.665812, 0.386943, 0.267082], "iris": [ 0.155926, 0.084376, 0.036889], "brow": [ 0.024158, 0.015209, 0.009134]}, "colours": { "skin": "#f1c9a8", "top": "#2f6db5", "pants": "#2c3140", "hair": "#2b2118", "shoes": "#2a2523", "iris": "#6e5236", "beard": "#2b2118", "brow": "#2b2118"}},
+  { "what": "chosen height 200", "code": "444321113200", "values": { "style": 1, "sleeves": 1, "gender": 1, "facial": 3, "beardCut": 0, "legs": 0, "cut": 0, "shoeModel": 0, "socks": 0, "glasses": 0, "earrings": 0, "hat": 0, "phones": 0, "necklace": 0, "ring": 0, "bracelet": 0, "watch": 0}, "pieces": [ "SKM_LundenLookPiece_013", "SKM_LundenLookPiece_028", "SKM_LundenLookPiece_033", "SKM_LundenLookPiece_035", "SKM_LundenLookPiece_041", "SKM_LundenLookPiece_052", "SKM_LundenLookPiece_053", "SKM_LundenLookPiece_074", "SKM_LundenLookPiece_075", "SKM_LundenLookPiece_080", "SKM_LundenLookPiece_084", "SKM_LundenLookPiece_086", "SKM_LundenLookPiece_096"], "scale": { "x": 1.1428571428571428, "y": 1.1428571428571428, "head": 1}, "heightCm": 203.172, "linear": { "skin": [ 0.147027, 0.057805, 0.029557], "top": [ 0.194618, 0.078187, 0.434154], "pants": [ 0.016807, 0.020289, 0.027321], "hair": [ 0.194618, 0.090842, 0.031896], "shoes": [ 0.013702, 0.042311, 0.107023], "lips": [ 0.22772, 0.072232, 0.050597], "iris": [ 0.155926, 0.084376, 0.036889], "beard": [ 0.194618, 0.090842, 0.031896], "brow": [ 0.194618, 0.090842, 0.031896]}, "colours": { "skin": "#6b4430", "top": "#7a4fb0", "pants": "#23272e", "hair": "#7a5532", "shoes": "#1f3a5c", "iris": "#6e5236", "beard": "#7a5532", "brow": "#7a5532"}},
+  { "what": "eyes and freckles", "code": "310231011177c437", "values": { "style": 1, "sleeves": 0, "gender": 1, "facial": 1, "beardCut": 0, "legs": 0, "cut": 0, "shoeModel": 0, "socks": 0, "glasses": 0, "earrings": 0, "hat": 0, "phones": 0, "necklace": 0, "ring": 0, "bracelet": 0, "watch": 0}, "pieces": [ "SKM_LundenLookPiece_011", "SKM_LundenLookPiece_028", "SKM_LundenLookPiece_031", "SKM_LundenLookPiece_035", "SKM_LundenLookPiece_041", "SKM_LundenLookPiece_052", "SKM_LundenLookPiece_053", "SKM_LundenLookPiece_074", "SKM_LundenLookPiece_075", "SKM_LundenLookPiece_079", "SKM_LundenLookPiece_082", "SKM_LundenLookPiece_086", "SKM_LundenLookPiece_096"], "scale": { "x": 1.0114285714285713, "y": 1.0114285714285713, "head": 1}, "heightCm": 179.808, "linear": { "skin": [ 0.323143, 0.132868, 0.056128], "top": [ 0.462077, 0.038204, 0.028426], "pants": [ 0.025187, 0.030713, 0.051269], "hair": [ 0.473531, 0.278894, 0.084376], "shoes": [ 0.051269, 0.03434, 0.024158], "lips": [ 0.333037, 0.11712, 0.066487], "iris": [ 0.049707, 0.158961, 0.391572], "beard": [ 0.473531, 0.278894, 0.084376], "brow": [ 0.473532, 0.278894, 0.084376]}, "colours": { "skin": "#9a6643", "top": "#b5372f", "pants": "#2c3140", "hair": "#b79052", "shoes": "#40342b", "iris": "#3f6fa8", "beard": "#b79052", "brow": "#b79052"}},
+  { "what": "extended skin tone and red top", "code": "410231011177u90", "values": { "style": 1, "sleeves": 0, "gender": 1, "facial": 1, "beardCut": 0, "legs": 0, "cut": 0, "shoeModel": 0, "socks": 0, "glasses": 0, "earrings": 0, "hat": 0, "phones": 0, "necklace": 0, "ring": 0, "bracelet": 0, "watch": 0}, "pieces": [ "SKM_LundenLookPiece_011", "SKM_LundenLookPiece_028", "SKM_LundenLookPiece_031", "SKM_LundenLookPiece_035", "SKM_LundenLookPiece_041", "SKM_LundenLookPiece_052", "SKM_LundenLookPiece_053", "SKM_LundenLookPiece_074", "SKM_LundenLookPiece_075", "SKM_LundenLookPiece_079", "SKM_LundenLookPiece_082", "SKM_LundenLookPiece_086", "SKM_LundenLookPiece_096"], "scale": { "x": 1.0114285714285713, "y": 1.0114285714285713, "head": 1}, "heightCm": 179.808, "linear": { "skin": [ 0.072272, 0.033105, 0.022174], "top": [ 0.102242, 0.014444, 0.022174], "pants": [ 0.025187, 0.030713, 0.051269], "hair": [ 0.473531, 0.278894, 0.084376], "shoes": [ 0.051269, 0.03434, 0.024158], "lips": [ 0.183016, 0.057461, 0.046182], "iris": [ 0.155926, 0.084376, 0.036889], "beard": [ 0.473531, 0.278894, 0.084376], "brow": [ 0.473532, 0.278894, 0.084376]}, "colours": { "skin": "#4c3329", "top": "#5a2029", "pants": "#2c3140", "hair": "#b79052", "shoes": "#40342b", "iris": "#6e5236", "beard": "#b79052", "brow": "#b79052"}},
+  { "what": "body build and face sliders", "code": "310231011177k7e6n22", "values": { "style": 1, "sleeves": 0, "gender": 1, "facial": 1, "beardCut": 0, "legs": 0, "cut": 0, "shoeModel": 0, "socks": 0, "glasses": 0, "earrings": 0, "hat": 0, "phones": 0, "necklace": 0, "ring": 0, "bracelet": 0, "watch": 0}, "pieces": [ "SKM_LundenLookPiece_011", "SKM_LundenLookPiece_028", "SKM_LundenLookPiece_031", "SKM_LundenLookPiece_035", "SKM_LundenLookPiece_041", "SKM_LundenLookPiece_052", "SKM_LundenLookPiece_053", "SKM_LundenLookPiece_074", "SKM_LundenLookPiece_075", "SKM_LundenLookPiece_079", "SKM_LundenLookPiece_082", "SKM_LundenLookPiece_086", "SKM_LundenLookPiece_096"], "scale": { "x": 1.0114285714285713, "y": 1.0114285714285713, "head": 1}, "heightCm": 179.808, "linear": { "skin": [ 0.323143, 0.132868, 0.056128], "top": [ 0.462077, 0.038204, 0.028426], "pants": [ 0.025187, 0.030713, 0.051269], "hair": [ 0.473531, 0.278894, 0.084376], "shoes": [ 0.051269, 0.03434, 0.024158], "lips": [ 0.333037, 0.11712, 0.066487], "iris": [ 0.155926, 0.084376, 0.036889], "beard": [ 0.473531, 0.278894, 0.084376], "brow": [ 0.473532, 0.278894, 0.084376]}, "colours": { "skin": "#9a6643", "top": "#b5372f", "pants": "#2c3140", "hair": "#b79052", "shoes": "#40342b", "iris": "#6e5236", "beard": "#b79052", "brow": "#b79052"}},
+  { "what": "glasses, earrings, hat, age", "code": "310231011177g34q53", "values": { "style": 1, "sleeves": 0, "gender": 1, "facial": 1, "beardCut": 0, "legs": 0, "cut": 0, "shoeModel": 0, "socks": 0, "glasses": 4, "earrings": 3, "hat": 3, "phones": 0, "necklace": 0, "ring": 0, "bracelet": 0, "watch": 0}, "pieces": [ "SKM_LundenLookPiece_009", "SKM_LundenLookPiece_011", "SKM_LundenLookPiece_028", "SKM_LundenLookPiece_031", "SKM_LundenLookPiece_035", "SKM_LundenLookPiece_041", "SKM_LundenLookPiece_042", "SKM_LundenLookPiece_046", "SKM_LundenLookPiece_050", "SKM_LundenLookPiece_052", "SKM_LundenLookPiece_053", "SKM_LundenLookPiece_074", "SKM_LundenLookPiece_075", "SKM_LundenLookPiece_079", "SKM_LundenLookPiece_082", "SKM_LundenLookPiece_086", "SKM_LundenLookPiece_096"], "scale": { "x": 1.0114285714285713, "y": 1.0114285714285713, "head": 1}, "heightCm": 181.956, "linear": { "skin": [ 0.323143, 0.132868, 0.056128], "top": [ 0.462077, 0.038204, 0.028426], "pants": [ 0.025187, 0.030713, 0.051269], "hair": [ 0.473531, 0.278894, 0.084376], "shoes": [ 0.051269, 0.03434, 0.024158], "lips": [ 0.333037, 0.11712, 0.066487], "iris": [ 0.155926, 0.084376, 0.036889], "beard": [ 0.473531, 0.278894, 0.084376], "brow": [ 0.473532, 0.278894, 0.084376]}, "colours": { "skin": "#9a6643", "top": "#b5372f", "pants": "#2c3140", "hair": "#b79052", "shoes": "#40342b", "iris": "#6e5236", "beard": "#b79052", "brow": "#b79052"}},
+  { "what": "headphones, boots and socks", "code": "310231011177f92", "values": { "style": 1, "sleeves": 0, "gender": 1, "facial": 1, "beardCut": 0, "legs": 0, "cut": 0, "shoeModel": 1, "socks": 2, "glasses": 0, "earrings": 0, "hat": 0, "phones": 2, "necklace": 0, "ring": 0, "bracelet": 0, "watch": 0}, "pieces": [ "SKM_LundenLookPiece_011", "SKM_LundenLookPiece_028", "SKM_LundenLookPiece_031", "SKM_LundenLookPiece_035", "SKM_LundenLookPiece_041", "SKM_LundenLookPiece_052", "SKM_LundenLookPiece_053", "SKM_LundenLookPiece_063", "SKM_LundenLookPiece_074", "SKM_LundenLookPiece_076", "SKM_LundenLookPiece_079", "SKM_LundenLookPiece_082", "SKM_LundenLookPiece_086", "SKM_LundenLookPiece_096"], "scale": { "x": 1.0114285714285713, "y": 1.0114285714285713, "head": 1}, "heightCm": 179.808, "linear": { "skin": [ 0.323143, 0.132868, 0.056128], "top": [ 0.462077, 0.038204, 0.028426], "pants": [ 0.025187, 0.030713, 0.051269], "hair": [ 0.473531, 0.278894, 0.084376], "shoes": [ 0.051269, 0.03434, 0.024158], "lips": [ 0.333037, 0.11712, 0.066487], "iris": [ 0.155926, 0.084376, 0.036889], "beard": [ 0.473531, 0.278894, 0.084376], "brow": [ 0.473532, 0.278894, 0.084376]}, "colours": { "skin": "#9a6643", "top": "#b5372f", "pants": "#2c3140", "hair": "#b79052", "shoes": "#40342b", "iris": "#6e5236", "beard": "#b79052", "brow": "#b79052"}},
+  { "what": "necklace, ring, bracelet, watch", "code": "310231011177x3i7z126", "values": { "style": 1, "sleeves": 0, "gender": 1, "facial": 1, "beardCut": 0, "legs": 0, "cut": 0, "shoeModel": 0, "socks": 0, "glasses": 0, "earrings": 0, "hat": 0, "phones": 0, "necklace": 3, "ring": 7, "bracelet": 3, "watch": 4}, "pieces": [ "SKM_LundenLookPiece_002", "SKM_LundenLookPiece_011", "SKM_LundenLookPiece_028", "SKM_LundenLookPiece_031", "SKM_LundenLookPiece_035", "SKM_LundenLookPiece_037", "SKM_LundenLookPiece_039", "SKM_LundenLookPiece_041", "SKM_LundenLookPiece_052", "SKM_LundenLookPiece_053", "SKM_LundenLookPiece_071", "SKM_LundenLookPiece_074", "SKM_LundenLookPiece_075", "SKM_LundenLookPiece_079", "SKM_LundenLookPiece_082", "SKM_LundenLookPiece_086", "SKM_LundenLookPiece_093", "SKM_LundenLookPiece_096"], "scale": { "x": 1.0114285714285713, "y": 1.0114285714285713, "head": 1}, "heightCm": 179.808, "linear": { "skin": [ 0.323143, 0.132868, 0.056128], "top": [ 0.462077, 0.038204, 0.028426], "pants": [ 0.025187, 0.030713, 0.051269], "hair": [ 0.473531, 0.278894, 0.084376], "shoes": [ 0.051269, 0.03434, 0.024158], "lips": [ 0.333037, 0.11712, 0.066487], "iris": [ 0.155926, 0.084376, 0.036889], "beard": [ 0.473531, 0.278894, 0.084376], "brow": [ 0.473532, 0.278894, 0.084376]}, "colours": { "skin": "#9a6643", "top": "#b5372f", "pants": "#2c3140", "hair": "#b79052", "shoes": "#40342b", "iris": "#6e5236", "beard": "#b79052", "brow": "#b79052"}},
+  { "what": "brows, skirt and makeup", "code": "310231011177v6p273", "values": { "style": 1, "sleeves": 0, "gender": 1, "facial": 1, "beardCut": 0, "legs": 3, "cut": 0, "shoeModel": 0, "socks": 0, "glasses": 0, "earrings": 0, "hat": 0, "phones": 0, "necklace": 0, "ring": 0, "bracelet": 0, "watch": 0}, "pieces": [ "SKM_LundenLookPiece_011", "SKM_LundenLookPiece_028", "SKM_LundenLookPiece_031", "SKM_LundenLookPiece_035", "SKM_LundenLookPiece_041", "SKM_LundenLookPiece_057", "SKM_LundenLookPiece_058", "SKM_LundenLookPiece_060", "SKM_LundenLookPiece_074", "SKM_LundenLookPiece_075", "SKM_LundenLookPiece_079", "SKM_LundenLookPiece_082", "SKM_LundenLookPiece_086", "SKM_LundenLookPiece_096"], "scale": { "x": 1.0114285714285713, "y": 1.0114285714285713, "head": 1}, "heightCm": 179.808, "linear": { "skin": [ 0.323143, 0.132868, 0.056128], "top": [ 0.462077, 0.038204, 0.028426], "pants": [ 0.025187, 0.030713, 0.051269], "hair": [ 0.473531, 0.278894, 0.084376], "shoes": [ 0.051269, 0.03434, 0.024158], "lips": [ 0.36127, 0.023942, 0.029653], "iris": [ 0.155926, 0.084376, 0.036889], "beard": [ 0.473531, 0.278894, 0.084376], "brow": [ 0.147027, 0.026241, 0.013702]}, "colours": { "skin": "#9a6643", "top": "#b5372f", "pants": "#2c3140", "hair": "#b79052", "shoes": "#40342b", "iris": "#6e5236", "beard": "#b79052", "brow": "#6b2d1f"}},
+  { "what": "hoodie, open jacket, stripes", "code": "310231011177m32", "values": { "style": 1, "sleeves": 0, "gender": 1, "facial": 1, "beardCut": 0, "legs": 0, "cut": 2, "shoeModel": 0, "socks": 0, "glasses": 0, "earrings": 0, "hat": 0, "phones": 0, "necklace": 0, "ring": 0, "bracelet": 0, "watch": 0}, "pieces": [ "SKM_LundenLookPiece_006", "SKM_LundenLookPiece_011", "SKM_LundenLookPiece_030", "SKM_LundenLookPiece_031", "SKM_LundenLookPiece_035", "SKM_LundenLookPiece_041", "SKM_LundenLookPiece_052", "SKM_LundenLookPiece_053", "SKM_LundenLookPiece_074", "SKM_LundenLookPiece_075", "SKM_LundenLookPiece_080", "SKM_LundenLookPiece_086", "SKM_LundenLookPiece_096"], "scale": { "x": 1.0114285714285713, "y": 1.0114285714285713, "head": 1}, "heightCm": 179.808, "linear": { "skin": [ 0.323143, 0.132868, 0.056128], "top": [ 0.462077, 0.038204, 0.028426], "pants": [ 0.025187, 0.030713, 0.051269], "hair": [ 0.473531, 0.278894, 0.084376], "shoes": [ 0.051269, 0.03434, 0.024158], "lips": [ 0.333037, 0.11712, 0.066487], "iris": [ 0.155926, 0.084376, 0.036889], "beard": [ 0.473531, 0.278894, 0.084376], "brow": [ 0.473532, 0.278894, 0.084376]}, "colours": { "skin": "#9a6643", "top": "#b5372f", "pants": "#2c3140", "hair": "#b79052", "shoes": "#40342b", "iris": "#6e5236", "beard": "#b79052", "brow": "#b79052"}},
+  { "what": "everything at once", "code": "012340100177c267u26k6e2o2w2l2j2n12b2r2t2y2h2a2g12q21f51x1i2z33v1p11m22", "values": { "style": 0, "sleeves": 1, "gender": 0, "facial": 0, "beardCut": 0, "legs": 1, "cut": 1, "shoeModel": 1, "socks": 1, "glasses": 2, "earrings": 1, "hat": 1, "phones": 1, "necklace": 1, "ring": 2, "bracelet": 1, "watch": 1}, "pieces": [ "SKM_LundenLookPiece_000", "SKM_LundenLookPiece_007", "SKM_LundenLookPiece_015", "SKM_LundenLookPiece_021", "SKM_LundenLookPiece_023", "SKM_LundenLookPiece_027", "SKM_LundenLookPiece_042", "SKM_LundenLookPiece_044", "SKM_LundenLookPiece_047", "SKM_LundenLookPiece_048", "SKM_LundenLookPiece_052", "SKM_LundenLookPiece_057", "SKM_LundenLookPiece_058", "SKM_LundenLookPiece_062", "SKM_LundenLookPiece_066", "SKM_LundenLookPiece_074", "SKM_LundenLookPiece_076", "SKM_LundenLookPiece_085", "SKM_LundenLookPiece_090", "SKM_LundenLookPiece_096"], "scale": { "x": 1.0114285714285713, "y": 1.0114285714285713, "head": 1}, "heightCm": 182.208, "linear": { "skin": [ 0.913099, 0.679542, 0.55834], "top": [ 0.102242, 0.014444, 0.022174], "pants": [ 0.07036, 0.102242, 0.187821], "hair": [ 0.693872, 0.539479, 0.254152], "shoes": [ 0.013702, 0.042311, 0.107023], "lips": [ 0.572084, 0.134791, 0.182487], "iris": [ 0.078187, 0.194618, 0.042311], "brow": [ 0.068478, 0.033105, 0.014444]}, "colours": { "skin": "#f5d7c5", "top": "#5a2029", "pants": "#4b5a78", "hair": "#d9c28a", "shoes": "#1f3a5c", "iris": "#4f7a3a", "beard": "#d9c28a", "brow": "#4a3320"}},
+  { "what": "wire code with build and seeded scale", "code": "012340100d2s4", "values": { "style": 0, "sleeves": 1, "gender": 0, "facial": 0, "beardCut": 0, "legs": 0, "cut": 0, "shoeModel": 0, "socks": 0, "glasses": 0, "earrings": 0, "hat": 0, "phones": 0, "necklace": 0, "ring": 0, "bracelet": 0, "watch": 0}, "pieces": [ "SKM_LundenLookPiece_014", "SKM_LundenLookPiece_021", "SKM_LundenLookPiece_027", "SKM_LundenLookPiece_052", "SKM_LundenLookPiece_053", "SKM_LundenLookPiece_074", "SKM_LundenLookPiece_075", "SKM_LundenLookPiece_080", "SKM_LundenLookPiece_083", "SKM_LundenLookPiece_085", "SKM_LundenLookPiece_096"], "scale": { "x": 1, "y": 1.05, "head": 1}, "heightCm": 188.938, "linear": { "skin": [ 0.879622, 0.584078, 0.391572], "top": [ 0.462077, 0.038204, 0.028426], "pants": [ 0.07036, 0.102242, 0.187821], "hair": [ 0.693872, 0.539479, 0.254152], "shoes": [ 0.013702, 0.042311, 0.107023], "lips": [ 0.665812, 0.386943, 0.267082], "iris": [ 0.155926, 0.084376, 0.036889], "brow": [ 0.693872, 0.539479, 0.254152]}, "colours": { "skin": "#f1c9a8", "top": "#b5372f", "pants": "#4b5a78", "hair": "#d9c28a", "shoes": "#1f3a5c", "iris": "#6e5236", "beard": "#d9c28a", "brow": "#d9c28a"}}
+ ]
+}
