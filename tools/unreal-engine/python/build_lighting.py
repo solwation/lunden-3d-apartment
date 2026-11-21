@@ -41,6 +41,9 @@ import sys
 
 import unreal as u
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from season_tags import season_tags
+
 DIR = "/Game/Lunden/Lighting"
 SKY = DIR + "/BP_LundenSky"
 LAMP = DIR + "/BP_LundenLamp"
@@ -168,7 +171,7 @@ def lamp_rows(m):
     rows = []
     for l in m["lights"]:
         rows.append({"id": l["id"], "kind": l["kind"], "level": l["level"], "room": l.get("room"), "name": l.get("name"),
-                     "xyz": l["position"]["unreal"], "candela": CANDELA_PER_WEB * (l.get("intensity") or 0.0),
+                     "seasonTags": season_tags({}, l), "xyz": l["position"]["unreal"], "candela": CANDELA_PER_WEB * (l.get("intensity") or 0.0),
                      "radius": 100.0 * (l.get("distance") or LAMP_RANGE), "colour": l.get("color") or LAMP_COLOUR,
                      # the ceiling lamps (the room switches) are by hand only; a small lamp follows the dusk unless `auto: false`
                      "auto": l["kind"] == "lamp" and l.get("auto", True)})
@@ -1174,7 +1177,7 @@ def build_level(spec, sky_bp, lamp_bp):
             tags.append(f"room:{row['room']}")
         if row["auto"]:
             tags.append("auto:dusk")
-        lamp.tags = [u.Name(t) for t in tags]
+        lamp.tags = [u.Name(t) for t in tags + row["seasonTags"]]
         lamp.set_editor_property("Candela", row["candela"])
         lamp.set_editor_property("Auto", row["auto"])
         light = lamp.get_component_by_class(u.PointLightComponent)

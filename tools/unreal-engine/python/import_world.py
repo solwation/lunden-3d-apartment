@@ -45,6 +45,7 @@ import unreal
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from prepare_nanite_materials import prepare_zone, static_mesh_editor
+from season_tags import season_tags
 
 SUPPORTED_FORMAT_VERSION = 1
 IMPORTER_VERSION = 6  # bump when the importer's output changes for the same export (forces a re-import)
@@ -199,20 +200,6 @@ def stamp_current(zone, glb_entry, map_sha):
 
 
 # ---------------------------------------------------------------- import
-def season_tags(extras, ex):
-    """#2295: the season window of a node with `seasonal` extras, or of its nearest seasonal ancestor (the Christmas
-    tree's 165 parts), as tags. The window is month * 100 + day, the key src/christmas.js inChristmas compares."""
-    for _ in range(64):  # the parent chain is short; the bound only guards against a malformed export
-        if ex is None or "seasonal" in ex:
-            break
-        ex = extras.get(ex.get("parent")) if ex.get("parent") else None
-    if not ex or "seasonal" not in ex:
-        return []
-    s = ex["seasonal"]
-    return ["seasonal", f"season:{s['what']}", f"seasonFrom:{s['from'][0] * 100 + s['from'][1]}",
-            f"seasonTo:{s['to'][0] * 100 + s['to'][1]}"]
-
-
 def apply_tags(extras):
     """Name, label and tag every actor with its node's id and extras; return actors by id."""
     by_id = {}

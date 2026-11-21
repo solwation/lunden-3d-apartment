@@ -6,7 +6,7 @@ import { crownRadius } from './xmastree.js';
 // The Christmas season (#571): the tree (a FURNITURE piece, src/xmastree.js) stands from XMAS_TREE.season.from to .to
 // inclusive (1 Dec – 6 Jan) by the game's date (the day cycle: today on a new visit, the kitchen calendar's choice),
 // and is hidden, unpickable, without collision and without light the rest of the year. While it stands, the furniture
-// whose CURRENT pose overlaps its crown (the palm and the ZZ plant at the default spot) is hidden for the time being —
+// whose CURRENT pose overlaps its crown (the armchair corner at the default spot) is hidden for the time being —
 // a visibility layer only: no pose, revision or saved arrangement changes. What stands on such a piece (pieces on its
 // surfaces, loose things on it) goes with it, its lamps give no light, its collision and E targets go away. The tree is
 // an ordinary movable piece in Möblera om: a confirmed move is saved like any other (rearrange.js), the layer follows it.
@@ -48,6 +48,33 @@ function polyDist(poly, x, z) {
     best = Math.min(best, Math.hypot(ax + dx * t - x, az + dz * t - z));
   }
   return !pos || !neg ? 0 : best; // inside (either winding): every edge on the same side
+}
+
+/** The pieces (not rugs, not the tree) on the tree's level whose current pose reaches into its crown. */
+function overlapping(t, pieces) {
+  const at = new V().setFromMatrixPosition(t.object.matrixWorld), floor = at.y, margin = 0.02;
+  const top = floor + X.crown.top + X.star.size * 1.7;
+  return pieces.filter((p) => {
+    if (p === t || p.level !== t.level || p.item.type === 'rug' || p.pendant || !p.object.visible) return false; // (a pendant is a fixture: never hidden, #1106)
+    const b = solidBounds(p.object);
+    if (b.isEmpty() || b.min.y > top) return false;
+    const fp = p.object.userData.footprint;
+    let d;
+    if (fp?.length) d = Math.min(...fp.map((r) => polyDist([[r.x0, r.z0], [r.x1, r.z0], [r.x1, r.z1], [r.x0, r.z1]].map(([x, z]) => { const v = p.object.localToWorld(new V(x, 0, z)); return [v.x, v.z]; }), at.x, at.z)));
+    else d = Math.hypot(Math.max(b.min.x - at.x, 0, at.x - b.max.x), Math.max(b.min.z - at.z, 0, at.z - b.max.z));
+    // the crown narrows upwards: a thing high up (a picture) only counts where the crown is still that wide
+    return d < crownRadius(Math.max(b.min.y - floor, X.crown.bottom)) + margin;
+  });
+}
+
+/** Pieces under the crown together with the supported pieces and loose items that move with them. */
+export function christmasCoverage(rearrange, tree) {
+  const pieces = new Set();
+  for (const p of overlapping(tree, rearrange.pieces)) {
+    for (const q of rearrange.groupFor(p)) if (q !== tree) pieces.add(q);
+  }
+  const loose = new Set([...pieces].flatMap((p) => rearrange.looseOn(p)));
+  return { pieces, loose };
 }
 
 export class ChristmasSeason {
@@ -93,23 +120,6 @@ export class ChristmasSeason {
     return any;
   }
 
-  /** The pieces (not rugs, not the tree) on the tree's level whose current pose reaches into its crown. */
-  overlapping() {
-    const t = this.tree, at = new V().setFromMatrixPosition(t.object.matrixWorld), floor = at.y, margin = 0.02;
-    const top = floor + X.crown.top + X.star.size * 1.7;
-    return this.rearrange.pieces.filter((p) => {
-      if (p === t || p.level !== t.level || p.item.type === 'rug' || p.pendant || !p.object.visible) return false; // (a pendant is a fixture: never hidden, #1106)
-      const b = solidBounds(p.object);
-      if (b.isEmpty() || b.min.y > top) return false;
-      const fp = p.object.userData.footprint;
-      let d;
-      if (fp?.length) d = Math.min(...fp.map((r) => polyDist([[r.x0, r.z0], [r.x1, r.z0], [r.x1, r.z1], [r.x0, r.z1]].map(([x, z]) => { const v = p.object.localToWorld(new V(x, 0, z)); return [v.x, v.z]; }), at.x, at.z)));
-      else d = Math.hypot(Math.max(b.min.x - at.x, 0, at.x - b.max.x), Math.max(b.min.z - at.z, 0, at.z - b.max.z));
-      // the crown narrows upwards: a thing high up (a picture) only counts where the crown is still that wide
-      return d < crownRadius(Math.max(b.min.y - floor, X.crown.bottom)) + margin;
-    });
-  }
-
   /** Re-judge which pieces the tree hides (after a date change, a furniture move, F). Never during a move in Möblera om:
    * the hidden pieces stay as they are until it is confirmed or cancelled. */
   recompute() {
@@ -119,9 +129,7 @@ export class ChristmasSeason {
     const R = this.rearrange, gone = [];
     if (this.active && R.world.furnitureOn) {
       R.scene.updateMatrixWorld(true);
-      const pieces = new Set();
-      for (const p of this.overlapping()) for (const q of R.groupFor(p)) if (q !== this.tree) pieces.add(q);
-      const loose = new Set([...pieces].flatMap((p) => R.looseOn(p)));
+      const { pieces, loose } = christmasCoverage(R, this.tree);
       for (const p of pieces) { this.list.push({ object: p.object, was: p.object.visible }); gone.push(p); }
       for (const h of loose) this.list.push({ object: h.model, was: h.model.visible });
       for (const { object } of this.list) { object.visible = false; object.userData.seasonHidden = true; }

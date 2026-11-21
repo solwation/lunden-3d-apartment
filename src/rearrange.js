@@ -1,3 +1,4 @@
+import { FurnitureGroups, shown, within, physicalBounds } from './furnituregroups.js';
 import { playerLocalStorage as localStorage } from './playerprofiles.js';
 import { MATERIAL_VERSION, validMaterialChoice } from './materialcatalog.js';
 import { isPrivateCode, layoutWriteCredential } from './privatecodes.js';
@@ -16,22 +17,6 @@ const crossesLevels = (piece) => ['pictures', 'painting', 'kposters'].includes(p
 const levelAt = (y) => LEVELS.findIndex(l => y > l.floor && y < l.floor + l.ceiling);
 const usesSupport = (piece) => piece.item.type === 'laptop' || piece.item.type === 'symfonisk' || (piece.item.type === 'tv' && piece.item.mount !== 'wall');
 const V = THREE.Vector3, Q = THREE.Quaternion, M = THREE.Matrix4;
-const shown = (o) => { for (; o; o = o.parent) if (!o.visible) return false; return true; };
-const within = (o, root) => { for (; o; o = o.parent) if (o === root) return true; return false; };
-// Actual solid geometry, excluding invisible targets and light overlays (notably TV Ambilight).
-function physicalBounds(root, hiddenRoot = false) {
-  const visible = o => { for (; o && o !== root; o = o.parent) if (!o.visible) return false; return true; };
-  root.updateWorldMatrix(true, true);
-  const bounds = new THREE.Box3();
-  root.traverse(o => {
-    if (!o.isMesh || !(hiddenRoot ? visible(o) : shown(o)) || o.userData.surface !== undefined) return;
-    const materials = Array.isArray(o.material) ? o.material : [o.material];
-    if (materials.every(m => m.blending === THREE.AdditiveBlending || m.blending === THREE.CustomBlending)) return;
-    if (o.isInstancedMesh) { o.computeBoundingBox(); bounds.union(o.boundingBox.clone().applyMatrix4(o.matrixWorld)); }
-    else { o.geometry.computeBoundingBox(); bounds.union(o.geometry.boundingBox.clone().applyMatrix4(o.matrixWorld)); }
-  });
-  return bounds;
-}
 const read = (key, fallback) => { try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; } };
 function worldPose(o, matrix) {
   o.parent?.updateWorldMatrix(true, false);
@@ -41,10 +26,10 @@ function worldPose(o, matrix) {
 const matrixOf = (pose) => new M().compose(new V(...pose.pos), new Q(...pose.quat), new V(1, 1, 1));
 const poseOf = (matrix) => { const p = new V(), q = new Q(); matrix.decompose(p, q, new V()); return { pos: p.toArray(), quat: q.toArray() }; };
 
-export class Rearrange {
+export class Rearrange extends FurnitureGroups {
   constructor({ scene, camera, world, player, life, carryables, marks, busy, changed, status, materialOnly = [] }, url = cloudUrl()) {
-    Object.assign(this, { scene, camera, world, player, life, carryables, marks, busy, changed, status, url });
-    this.pieces = world.furniture.movable;
+    super(world, carryables);
+    Object.assign(this, { scene, camera, player, life, marks, busy, changed, status, url });
     this.materialPieces = [...this.pieces, ...materialOnly];
     if (new Set(this.materialPieces.map(p => p.id)).size !== this.materialPieces.length) throw Error('Duplicate material ids');
     this.byId = new Map(this.pieces.map((p) => [p.id, p]));
@@ -79,39 +64,12 @@ export class Rearrange {
     this.cancel(); this.enabled = !!on; this.say(on ? 'Sikta på en möbel, tavla eller spegel och välj den.' : 'Ommöblering avslutad'); return true;
   }
   say(text) { this.message = text; this.status?.(text); }
-  supports(piece) {
-    if (piece.item.type === 'rug' || piece.picture) return [];
-    return [...this.world.furniture.surfaces, ...(this.world.furniture.rearrangeSurfaces ?? [])].filter((s) => within(s, piece.object) && shown(s.parent)).map((s) => new THREE.Box3().setFromObject(s));
-  }
-  onTop(o, surfaces) {
-    if (!surfaces.length) return false;
-    o.updateWorldMatrix(true, true);
-    const b = physicalBounds(o), c = b.getCenter(new V()), origin = new V().setFromMatrixPosition(o.matrixWorld);
-    const inside = (s, p) => p.x >= s.min.x && p.x <= s.max.x && p.z >= s.min.z && p.z <= s.max.z;
-    // Tall/asymmetric plants can overhang: their base origin still rests on the support.
-    return surfaces.some((s) => Math.abs(b.min.y - s.max.y) < REARRANGE.supportGap
-      && (inside(s, c) || (Math.abs(origin.y - b.min.y) < REARRANGE.supportGap && inside(s, origin))));
-  }
   closestSupport(object, surfaces) {
     const b = physicalBounds(object), center = b.getCenter(new V()), at = object.getWorldPosition(new V());
     const inside = (s, p) => p.x >= s.min.x && p.x <= s.max.x && p.z >= s.min.z && p.z <= s.max.z;
     return surfaces.filter(s => Math.abs(b.min.y - s.max.y) < REARRANGE.supportGap &&
       (inside(s, center) || (Math.abs(at.y - b.min.y) < REARRANGE.supportGap && inside(s, at))))
       .sort((a, b2) => Math.abs(b.min.y - a.max.y) - Math.abs(b.min.y - b2.max.y))[0];
-  }
-  groupFor(piece) {
-    const group = [piece];
-    for (let i = 0; i < group.length; i++) {
-      const surfaces = this.supports(group[i]);
-      for (const p of this.pieces) if (!group.includes(p) && p.level === piece.level && !p.picture && shown(p.object) && this.onTop(p.object, surfaces)) group.push(p);
-    }
-    return group;
-  }
-  looseOn(piece) {
-    const surfaces = this.supports(piece);
-    return this.carryables().filter((h) => h.model && !h.held && !h.broken && shown(h.model) && !within(h.model, piece.object)
-      && (!h.item || h.item.place.at === 'world')
-      && (this.onTop(h.model, surfaces) || (!h.placed && h.furnitureHome && within(h.furnitureHome, piece.object))));
   }
   begin(piece) {
     if (!this.enabled || this.saving || this.busy() || !piece || piece.materialOnly || !shown(piece.object)) return false;

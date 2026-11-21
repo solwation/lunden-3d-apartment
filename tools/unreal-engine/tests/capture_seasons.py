@@ -41,6 +41,7 @@ def main(scene_path, out_dir):
     actors = u.get_editor_subsystem(u.EditorActorSubsystem).get_all_level_actors()
     excluded = [a for a in actors if "kind:collision" in [str(t) for t in a.tags]]
     seasonal = [a for a in actors if "seasonal" in [str(t) for t in a.tags]]
+    seasonal_lights = [a for a in seasonal if a.get_component_by_class(u.PointLightComponent)]
     sun, sky, ambient, lamps = _rig["rig"](scene)
     _rig["set_time"](sun, sky, ambient, lamps, scene["lighting"]["day"])
     u.SystemLibrary.execute_console_command(world, "r.Shadow.Virtual.Enable 0")
@@ -50,13 +51,18 @@ def main(scene_path, out_dir):
     shots = []
     for name, date in DATES.items():
         seasons.call_method("ApplySeason", date)
-        hidden = sorted({a.get_editor_property("hidden") for a in seasonal})
+        # The editor uses its own hidden flag for a point light's contribution to the scene.
+        for light in seasonal_lights:
+            light.set_is_temporarily_hidden_in_editor(light.get_editor_property("hidden"))
+        hidden_roots = sorted(str(a.tags[0]) for a in seasonal if a.get_editor_property("hidden")
+                              and "kind:furniture" in [str(t) for t in a.tags])
         # an editor-world capture draws hidden-in-game actors, so it hides what the game hides (as for collision)
         gone = [a for a in seasonal if a.get_editor_property("hidden")]
         render_view(world, out_dir, f"unreal-living-room-{name}", u.Vector(*VIEW["xyz"]),
                     u.Rotator(roll=0, pitch=VIEW["pitch"], yaw=VIEW["yaw"]), scene["width"], scene["height"],
                     scene["horizontalFov"], 0, excluded + gone, lumen=True)
-        shots.append({"name": name, "date": "%04d-%02d-%02d" % date, "seasonalActors": len(seasonal), "hidden": hidden})
+        shots.append({"name": name, "date": "%04d-%02d-%02d" % date, "seasonalActors": len(seasonal), "hidden": sorted({a.get_editor_property("hidden") for a in seasonal}),
+                      "hiddenRoots": hidden_roots})
         u.log(f"LUNDEN_SEASONS_CAPTURE {json.dumps(shots[-1])}")
     (Path(out_dir) / "capture.json").write_text(json.dumps({"engine": u.SystemLibrary.get_engine_version(),
         "view": VIEW, "shots": shots}, indent=2) + "\n")

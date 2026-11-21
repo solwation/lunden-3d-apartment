@@ -679,9 +679,12 @@ The web shows the Christmas tree only from `XMAS_TREE.season.from` to `.to`, inc
 `/Game/Lunden/Seasons/`, `build_seasons.py`, `tests/test_seasons.py`, `tests/season-dates.json`,
 `tests/season-rule.test.mjs`, `tests/capture_seasons.py` and the `Seasons` row of `player-extensions.json`.
 
-- **Data.** The exporter marks the tree `extras.seasonal = {what, from, to}` from `src/config.js`. `import_world.py`
-  (`season_tags`) tags the tree and its 165 parts `seasonal`, `season:christmas`, `seasonFrom:1201`, `seasonTo:106`
-  (month × 100 + day, the key `inChristmas` compares). No window is copied into a graph.
+- **Data.** The exporter marks the tree `extras.seasonal = {what, from, to}` from `src/config.js`. It uses the web's
+  `christmasCoverage` at the exported poses, including supported furniture and loose items. At the default position
+  it marks the armchair, ottoman, floor lamp and tray table with the complementary window (7 Jan – 30 Nov).
+  `import_world.py` (`season_tags`) tags each root and its descendants with `seasonal`, the window name
+  (`season:christmas` or `season:outsideChristmas`) and its inclusive start/end (month × 100 + day). The separate point-light actors for the floor lamp and
+  the tree receive their furniture's tags when `build_lighting.py` generates `Level_lighting`.
 - **Rule, in one place.** `BPC_LundenSeasons` (ActorComponent, built by `build_seasons.py`) has `InSeason(Year, Month,
   Day, From, To)`: key = month × 100 + min(day, days in the month); inside when From ≤ key ≤ To, or for a window that
   wraps the new year (From > To) when key ≥ From or key ≤ To. `TagValue(Actor, Prefix)` reads a window tag.
@@ -691,9 +694,8 @@ The web shows the Christmas tree only from `XMAS_TREE.season.from` to `.to`, inc
 - **When.** BeginPlay runs `ApplySeason` once with the PC's local date (`Now`), as the web takes today on a new visit.
   The component sits on `BP_LundenPlayerController` through `player-extensions.json` (row `Seasons`), so `L_Lunden` and
   the pilot map get it without opening a level. Tests call `ApplySeason` with a fixed date (the test hook).
-- **Not ported (G20).** While the tree stands, the web also hides the furniture whose pose overlaps its crown (the
-  armchair corner at the default spot); in Unreal that furniture stands inside the tree in December. The kitchen calendar's
-  date choice, sub-levels streamed in after BeginPlay (all are `always` today), the tree's lights and the rest of G20
+- **Not ported (G20).** The web recalculates coverage when the player rearranges furniture. Unreal uses the poses at export. The kitchen calendar's
+  date choice, sub-levels streamed in after BeginPlay (all are `always` today), the tree's animated light string and the rest of G20
   (New Year, Santa, fireworks) are not ported.
 
 ```text

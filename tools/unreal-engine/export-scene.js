@@ -9,6 +9,8 @@
 import * as THREE from 'three';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 import * as C from '../../src/config.js';
+import { christmasCoverage } from '../../src/christmas.js';
+import { FurnitureGroups } from '../../src/furnituregroups.js';
 import { buildWorld } from '../../src/world.js';
 import { groundY, renderedTerrainY, treeFeet, aoTrees } from '../../src/surroundings.js';
 import { gridGround } from '../../src/elevation.js';
@@ -484,13 +486,14 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
   // zones stays the same. Not given main.js's bullet marks or hoop (the ball only keeps them for play; the hoop outside
   // is not exported). One node each for the bowl (its fruit as parts), the holder (with the web's saved-layout id) and
   // the ball, which is its own node although the web hangs it in the holder (it leaves the holder in play).
-  const loose = { root: new THREE.Group(), of: new Map(), error: null };
+  const loose = { root: new THREE.Group(), of: new Map(), carryables: [], error: null };
   try {
     const [{ FruitBowl }, { Basketball }] = await Promise.all([import('../../src/fruit.js'), import('../../src/basket.js')]);
     const camera = new THREE.PerspectiveCamera();
     const bowl = new FruitBowl(loose.root, camera);
     const ball = new Basketball(loose.root, camera, { marks: null, hoop: {}, world });
     const holder = ball.holderMovable();
+    loose.carryables.push(bowl.carryable, ball);
     loose.of.set(bowl.group, { type: 'fruitbowl', name: 'fruktskålen', webId: null, source: 'src/config.js#FRUIT' });
     loose.of.set(holder.object, { type: holder.item.type, name: holder.name, webId: holder.id, source: 'src/config.js#BASKET.ball' });
     loose.of.set(ball.model, { type: 'basketball', name: ball.name, webId: null, source: 'src/config.js#BASKET.ball' });
@@ -528,6 +531,22 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
   for (const m of world.furniture.movable ?? []) if (!furnitureOf.has(m.object)) furnitureOf.set(m.object, m);
   const furnitureRoots = new Set(world.furniture.object.children);
   const furnitureIndex = (item) => C.FURNITURE.indexOf(item);
+  const tree = world.furniture.movable.find((p) => p.item.type === 'xmastree');
+  const seasons = new Map();
+  if (tree) {
+    const { from, to } = C.XMAS_TREE.season;
+    seasons.set(tree.object, { what: 'christmas', from, to });
+    // The installed Seasons component understands inclusive windows. A leap year supplies all possible month/day keys.
+    const adjacentDay = ([month, day], shift) => {
+      const date = new Date(Date.UTC(2000, month - 1, day + shift));
+      return [date.getUTCMonth() + 1, date.getUTCDate()];
+    };
+    const outside = { what: 'outsideChristmas', from: adjacentDay(to, 1), to: adjacentDay(from, -1) };
+    const groups = new FurnitureGroups(world, () => loose.carryables);
+    const covered = christmasCoverage(groups, tree);
+    for (const piece of covered.pieces) seasons.set(piece.object, outside);
+    for (const handle of covered.loose) seasons.set(handle.model, outside);
+  }
   const lampOf = new Map();
   for (const l of world.lamps ?? []) if (l?.object) lampOf.set(l.object, l);
   const lightGroupKids = new Set(lightsInfo.group ? lightsInfo.group.children : []);
@@ -662,7 +681,6 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
       a.name = m?.name ?? null; a.webId = m?.id ?? null;
       a.id = unique(`furn_${slug(item?.type ?? a.name) || 'item'}_${lv}_${pos(c)}`);
       a.source = fi >= 0 ? `src/config.js#FURNITURE[${fi}]` : null;
-      if (item?.type === 'xmastree') a.seasonal = { what: 'christmas', from: C.XMAS_TREE.season.from, to: C.XMAS_TREE.season.to }; // (src/christmas.js shows it only then)
     } else if (a.kind === 'light') {
       a.name = a.lamp?.name ?? a.object.name ?? null;
       a.id = unique(`light_${slug(a.name) || (a.fixture ? 'fixture' : 'lamp')}_${lv}_${pos(c)}`);
@@ -776,7 +794,8 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
       node.name = a.id;
       node.userData = { id: a.id, kind: a.kind, zone: zoneId, level: a.level, source: a.source ?? null, name: a.name ?? null,
         webId: a.webId ?? null, materialKeys: [...keys].sort() };
-      if (a.seasonal) node.userData.seasonal = a.seasonal;
+      const season = seasons.get(a.object);
+      if (season) node.userData.seasonal = season;
       node.traverse((m) => { // #2289: which nodes and meshes show each furnishing texture
         if (!m.isMesh) return;
         for (const mat of Array.isArray(m.material) ? m.material : [m.material]) {
@@ -885,7 +904,7 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
   }
 
   // ---- measurement data ----
-  const measurements = measurementData({ world, planCopy, W, D, byZone, lightsInfo, materialTable, commit, ZONES, wanted, lifts: extra.lifts ?? [],
+  const measurements = measurementData({ world, planCopy, W, D, byZone, lightsInfo, seasons, materialTable, commit, ZONES, wanted, lifts: extra.lifts ?? [],
     coreDoors: extra.coreDoors ?? [], garage: extra.garage ?? null });
   measurements.buildings = buildings;
   if (wanted.includes('hus-l') || wanted.includes('kvarteret')) measurements.site.facadeLighting = facadeLightingData(world, wanted);
@@ -1125,7 +1144,7 @@ function fixtureScene(W, D, unique) {
   return root;
 }
 
-function measurementData({ world, planCopy, W, D, byZone, lightsInfo, materialTable, commit, ZONES, wanted, lifts, coreDoors = [], garage = null }) {
+function measurementData({ world, planCopy, W, D, byZone, lightsInfo, seasons, materialTable, commit, ZONES, wanted, lifts, coreDoors = [], garage = null }) {
   const P = (x, y, z) => ({ web: [r4(x), r4(y), r4(z)], unreal: webToUnrealRounded([x, y, z]) });
   const atomOf = new Map();
   for (const list of byZone.values()) for (const a of list) if (a.instance === undefined) atomOf.set(a.object, a);
@@ -1168,7 +1187,7 @@ function measurementData({ world, planCopy, W, D, byZone, lightsInfo, materialTa
     const emitter = anchors?.length === 1 ? anchors[0].pos : null;
     const position = emitter ? P(emitter.x, emitter.y, emitter.z) : P(p.x, p.y + (l.height ?? 0), p.z);
     lights.push({ id: a?.id ?? null, kind: 'lamp', name: l.name ?? null, level: l.level ?? levelOf(p.y), room: l.room ?? null,
-      objectPosition: P(p.x, p.y, p.z), position,
+      objectPosition: P(p.x, p.y, p.z), position, seasonal: seasons.get(a?.object),
       intensity: r4(pools.reduce((sum, x) => sum + (x.intensity ?? 0), 0)), distance: pools[0].range ?? null, color: hex(pools[0].color), auto: l.auto !== false });
   }
   for (const l of lightsInfo.lamps) lights.push({ id: null, kind: 'room', name: null, level: l.level, room: l.room, position: P(l.pos.x, l.pos.y, l.pos.z),

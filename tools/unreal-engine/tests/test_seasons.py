@@ -1,13 +1,13 @@
 """#2295: seasonal pieces in Play In Editor on L_Lunden follow the web's date rule (src/christmas.js inChristmas).
 
-1. Editor world: the imported Christmas tree and all its parts carry the season tags import_world.py writes
-   (seasonal, season:christmas, seasonFrom/seasonTo = the export's window as month * 100 + day).
+1. Editor world: the tree and its parts have the Christmas window. The four furnishings covered by the tree in
+   the web's default layout and all their parts have the complementary window (#2303).
 2. PIE with the world's GameMode: BP_LundenPlayerController carries BPC_LundenSeasons (player-extensions.json), and its
    BeginPlay left the tree as the rule says for the PC's local date today.
 3. For every row of tools/unreal-engine/tests/season-dates.json (checked against the web's own function by
    season-rule.test.mjs) the test hook ApplySeason(year, month, day) shows the tree with collision on the Christmas
    dates and hides it without collision on the others (summer, the days around the window, the new-year wrap);
-   InSeason gives the same answer, and furniture without the tag is never touched.
+   the covered furniture always has the opposite visibility and collision. Other furniture retains its state.
 
 Run like the other PIE tests: copy this file to unreal/Lunden/Content/Python/ (untracked) and
     run-tests.ps1 -Filter Editor.Python.Lunden.test_seasons
@@ -45,19 +45,36 @@ if not u.EditorLoadingAndSavingUtils.load_map(MAP):
     raise RuntimeError(f"Cannot load {MAP}: run compose_world.py first")
 editor_actors = u.get_editor_subsystem(u.EditorActorSubsystem).get_all_level_actors()
 roots = [a for a in editor_actors if "kind:furniture" in tags(a) and "seasonal" in tags(a)]
-if not roots:
-    raise RuntimeError("No seasonal furniture in L_Lunden: re-import l1007 with import_world.py (importer version 3)")
+TREE, CORNER = "season:christmas", "season:outsideChristmas"
+expected_types = {TREE: ["xmastree"], CORNER: ["armchair", "floorlamp", "ottoman", "randerstable"]}
+types = {TREE: [], CORNER: []}
+actor_ids = {TREE: set(), CORNER: set()}
 windows = {}
 for root in roots:
     rid = tags(root)[0]
-    parts = [a for a in editor_actors if f"parent:{rid}" in tags(a)]
-    untagged = [tags(p)[0] for p in parts if "seasonal" not in tags(p)]
+    labels = set(tags(root)).intersection(expected_types)
+    if len(labels) != 1:
+        raise RuntimeError(f"{rid}: expected one season group, found {tags(root)}")
+    group = labels.pop()
+    types[group].append(rid.split("_")[1])
     window = (tag_value(root, "seasonFrom:"), tag_value(root, "seasonTo:"))
-    if untagged or None in window or "season:christmas" not in tags(root):
-        raise RuntimeError(f"{rid}: window {window}, tags {tags(root)}, untagged parts {untagged[:5]}")
-    windows[rid] = window
-    u.log(f"LUNDEN_SEASONS_TEST {rid}: window {window[0]}..{window[1]}, {len(parts)} parts tagged")
-FROM, TO = next(iter(windows.values()))
+    if None in window or windows.setdefault(group, window) != window:
+        raise RuntimeError(f"{rid}: inconsistent or missing {group} window {window}")
+    parts = [a for a in editor_actors if f"parent:{rid}" in tags(a)]
+    if not parts:
+        raise RuntimeError(f"{rid}: no imported furniture parts")
+    # Level_lighting has its own point-light actor with the furniture's stable id.
+    lamps = [a for a in editor_actors if f"lamp:{rid}" in tags(a)]
+    if rid.split("_")[1] in ("xmastree", "floorlamp") and len(lamps) != 1:
+        raise RuntimeError(f"Missing or duplicate light for {rid}: rebuild Level_lighting and compose L_Lunden")
+    for actor in [root, *parts, *lamps]:
+        if not {"seasonal", group, f"seasonFrom:{window[0]}", f"seasonTo:{window[1]}"}.issubset(tags(actor)):
+            raise RuntimeError(f"{rid}: missing {group} window on {tags(actor)}")
+        actor_ids[group].add(tags(actor)[0])
+    u.log(f"LUNDEN_SEASONS_TEST {rid}: {group}, window {window[0]}..{window[1]}, {len(parts)} parts tagged")
+if {group: sorted(names) for group, names in types.items()} != expected_types:
+    raise RuntimeError(f"Seasonal furniture {types}; expected web default {expected_types}. Re-import l1007 and compose L_Lunden.")
+FROM, TO = windows[TREE]
 untouched_ids = [tags(a)[0] for a in editor_actors if "kind:furniture" in tags(a) and "seasonal" not in tags(a)][:5]
 
 
@@ -97,35 +114,42 @@ def seasons_test():
         seasonal = list(u.GameplayStatics.get_all_actors_with_tag(game, "seasonal"))
         all_actors = u.GameplayStatics.get_all_actors_of_class(game, u.Actor)
         untouched = [a for a in all_actors if a.tags and str(a.tags[0]) in untouched_ids]
-        if len(seasonal) < 2 or len(untouched) != len(untouched_ids):
-            raise RuntimeError(f"PIE world has {len(seasonal)} seasonal actors and {len(untouched)} of {untouched_ids}")
+        if not untouched or len(untouched) != len(untouched_ids):
+            raise RuntimeError(f"PIE found {len(untouched)} untouched actors of {untouched_ids}")
+        initial = [(a.get_editor_property("hidden"), a.get_actor_enable_collision()) for a in untouched]
+        groups = {group: [a for a in seasonal if group in tags(a)] for group in actor_ids}
+        for group, actors in groups.items():
+            if {tags(a)[0] for a in actors} != actor_ids[group]:
+                raise RuntimeError(f"Seasonal actor IDs in PIE differ from the imported {group} roots and parts")
 
-        def state():
-            hidden = {a.get_editor_property("hidden") for a in seasonal}
-            solid = {a.get_actor_enable_collision() for a in seasonal}
-            if len(hidden) != 1 or len(solid) != 1:
-                raise RuntimeError(f"Seasonal actors disagree: hidden {hidden}, collision {solid}")
-            return hidden.pop(), solid.pop()
+        def state(group, should_show):
+            states = {(a.get_editor_property("hidden"), a.get_actor_enable_collision()) for a in groups[group]}
+            if states != {(not should_show, should_show)}:
+                raise RuntimeError(f"{group}: hidden/collision {states}; should show {should_show}")
+            return states.pop()
 
         today = datetime.date.today()
         want = web_rule(today.year, today.month, today.day, FROM, TO)
-        hidden, solid = state()
-        u.log(f"LUNDEN_SEASONS_TEST today {today} (BeginPlay, local date): hidden {hidden}, collision {solid}, web {want}")
-        result["today"] = {"date": str(today), "hidden": hidden, "collision": solid, "web": want}
-        if hidden == want or solid != want:
-            raise RuntimeError(f"BeginPlay on {today}: hidden {hidden}, collision {solid}; the web shows it: {want}")
+        hidden, solid = state(TREE, want)
+        corner_hidden, corner_solid = state(CORNER, not want)
+        result["today"] = {"date": str(today), "hidden": hidden, "collision": solid, "web": want,
+                           "cornerHidden": corner_hidden, "cornerCollision": corner_solid}
+        u.log(f"LUNDEN_SEASONS_TEST BeginPlay {json.dumps(result['today'])}")
 
         for row in DATES:
             y, m, d = (int(v) for v in row["date"].split("-"))
             seasons.call_method("ApplySeason", (y, m, d))
             yield
-            hidden, solid = state()
+            hidden, solid = state(TREE, row["christmas"])
+            corner_hidden, corner_solid = state(CORNER, not row["christmas"])
             rule = seasons.call_method("InSeason", (y, m, d, FROM, TO))
-            others = sorted({a.get_editor_property("hidden") for a in untouched})
-            entry = {**row, "hidden": hidden, "collision": solid, "inSeason": rule, "untouchedHidden": others}
+            after = [(a.get_editor_property("hidden"), a.get_actor_enable_collision()) for a in untouched]
+            others = sorted({hidden for hidden, _ in after})
+            entry = {**row, "hidden": hidden, "collision": solid, "inSeason": rule, "untouchedHidden": others,
+                     "cornerHidden": corner_hidden, "cornerCollision": corner_solid}
             result["dates"].append(entry)
             u.log(f"LUNDEN_SEASONS_TEST {json.dumps(entry)}")
-            if hidden == row["christmas"] or solid != row["christmas"] or rule != row["christmas"] or others != [False]:
+            if rule != row["christmas"] or after != initial or others != [False]:
                 raise RuntimeError(f"{row['date']}: {entry}, the web: christmas {row['christmas']}")
         (Path(u.Paths.project_saved_dir()) / "seasons-result.json").write_text(json.dumps(result, indent=2) + "\n")
         u.log(f"LUNDEN_SEASONS_TEST {len(seasonal)} seasonal actors, {len(DATES)} dates agree with the web")
