@@ -16,7 +16,9 @@ Import (default):
      with its transform. Interchange's glTF conversion IS the target axis mapping (Unreal X = 100*x, Y = 100*z,
      Z = 100*y), measured with the fixture zone, so no axis correction exists anywhere;
   3. post-processing: actor object names and labels = the node's stable id; tags = [id, kind:<kind>, zone:<zone>,
-     level:<n>, webId:<id>, source:<pointer>, parent:<id>] from the node extras (read from the GLB itself);
+     level:<n>, webId:<id>, source:<pointer>, parent:<id>] from the node extras (read from the GLB itself); a node
+     with `seasonal` extras and all its descendants also get [seasonal, season:<what>, seasonFrom:<MMDD>,
+     seasonTo:<MMDD>] (season_tags; read at run time by /Game/Lunden/Seasons/BPC_LundenSeasons, #2295);
      `collision` nodes become hidden-in-game BlockAll actors whose (shared unit cube) mesh has one simple box;
      material keys listed in tools/unreal-engine/material-map.json are replaced by hand-made materials;
   4. saves, writes import-stamp.json (export hashes, a content fingerprint and the SHA-256 of every package file);
@@ -39,7 +41,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from prepare_nanite_materials import prepare_zone
 
 SUPPORTED_FORMAT_VERSION = 1
-IMPORTER_VERSION = 2  # bump when the importer's output changes for the same export (forces a re-import)
+IMPORTER_VERSION = 3  # bump when the importer's output changes for the same export (forces a re-import)
 GENERATED_ROOT = "/Game/Lunden/Generated"
 TOLERANCE_CM = 1.0
 ID_KINDS = ("door", "window", "light", "furniture", "interactive")
@@ -191,6 +193,20 @@ def stamp_current(zone, glb_entry, map_sha):
 
 
 # ---------------------------------------------------------------- import
+def season_tags(extras, ex):
+    """#2295: the season window of a node with `seasonal` extras, or of its nearest seasonal ancestor (the Christmas
+    tree's 165 parts), as tags. The window is month * 100 + day, the key src/christmas.js inChristmas compares."""
+    for _ in range(64):  # the parent chain is short; the bound only guards against a malformed export
+        if ex is None or "seasonal" in ex:
+            break
+        ex = extras.get(ex.get("parent")) if ex.get("parent") else None
+    if not ex or "seasonal" not in ex:
+        return []
+    s = ex["seasonal"]
+    return ["seasonal", f"season:{s['what']}", f"seasonFrom:{s['from'][0] * 100 + s['from'][1]}",
+            f"seasonTo:{s['to'][0] * 100 + s['to'][1]}"]
+
+
 def apply_tags(extras):
     """Name, label and tag every actor with its node's id and extras; return actors by id."""
     by_id = {}
@@ -201,6 +217,7 @@ def apply_tags(extras):
             continue
         node_id = ex.get("id", label)
         tags = [node_id] + [f"{k}:{ex[k]}" for k in ("kind", "zone", "level", "webId", "source", "parent") if ex.get(k) is not None]
+        tags += season_tags(extras, ex)
         actor.tags = [unreal.Name(t) for t in tags]
         if actor.get_name() != node_id:
             actor.rename(node_id)  # Interchange names actors <zone>_node_<index>; the id is stable between exports

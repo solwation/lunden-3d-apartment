@@ -1,0 +1,30 @@
+{
+  "engine": "5.8.4-58902052+++UE5+Release-5.8",
+  "view": {
+    "xyz": [
+      290,
+      1100,
+      162
+    ],
+    "yaw": -100,
+    "pitch": -6
+  },
+  "shots": [
+    {
+      "name": "summer",
+      "date": "2026-07-15",
+      "seasonalActors": 166,
+      "hidden": [
+        true
+      ]
+    },
+    {
+      "name": "christmas",
+      "date": "2026-12-24",
+      "seasonalActors": 166,
+      "hidden": [
+        false
+      ]
+    }
+  ]
+}

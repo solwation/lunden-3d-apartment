@@ -53,7 +53,8 @@ changes. A duplicate gets `_2`, `_3` … in scene order. Moving an object change
 moved objects must be updated with the move. Furniture also carries the web's saved-layout id (`webId`). Child
 nodes of an object are `part`s named `<id>__<n>`; ids use only letters, digits, `_` and `-` (Unreal object names
 cannot contain dots). Each glTF mesh is named after the first node that uses it. In Unreal the id is the actor's
-object name and label and its first tag (further tags `kind:`, `zone:`, `level:`, `webId:`, `source:`, `parent:`), and
+object name and label and its first tag (further tags `kind:`, `zone:`, `level:`, `webId:`, `source:`, `parent:`, and for seasonal pieces `seasonal`,
+`season:`, `seasonFrom:`, `seasonTo:`), and
 the StaticMesh asset of a mesh is named by that first node's id (docs/development/unreal.md).
 
 ## Axes and units

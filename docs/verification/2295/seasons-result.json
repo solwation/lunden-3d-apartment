@@ -1,0 +1,115 @@
+{
+  "engine": "5.8.4-58902052+++UE5+Release-5.8",
+  "map": "/Game/Lunden/Maps/L_Lunden",
+  "window": [
+    1201,
+    106
+  ],
+  "dates": [
+    {
+      "date": "2026-07-15",
+      "christmas": false,
+      "why": "summer",
+      "hidden": true,
+      "collision": false,
+      "inSeason": false,
+      "untouchedHidden": [
+        false
+      ]
+    },
+    {
+      "date": "2026-11-30",
+      "christmas": false,
+      "why": "the day before the window",
+      "hidden": true,
+      "collision": false,
+      "inSeason": false,
+      "untouchedHidden": [
+        false
+      ]
+    },
+    {
+      "date": "2026-12-01",
+      "christmas": true,
+      "why": "first day",
+      "hidden": false,
+      "collision": true,
+      "inSeason": true,
+      "untouchedHidden": [
+        false
+      ]
+    },
+    {
+      "date": "2026-12-24",
+      "christmas": true,
+      "why": "Christmas Eve",
+      "hidden": false,
+      "collision": true,
+      "inSeason": true,
+      "untouchedHidden": [
+        false
+      ]
+    },
+    {
+      "date": "2026-12-31",
+      "christmas": true,
+      "why": "the last day before the new-year wrap",
+      "hidden": false,
+      "collision": true,
+      "inSeason": true,
+      "untouchedHidden": [
+        false
+      ]
+    },
+    {
+      "date": "2027-01-01",
+      "christmas": true,
+      "why": "after the wrap",
+      "hidden": false,
+      "collision": true,
+      "inSeason": true,
+      "untouchedHidden": [
+        false
+      ]
+    },
+    {
+      "date": "2027-01-06",
+      "christmas": true,
+      "why": "last day (Epiphany)",
+      "hidden": false,
+      "collision": true,
+      "inSeason": true,
+      "untouchedHidden": [
+        false
+      ]
+    },
+    {
+      "date": "2027-01-07",
+      "christmas": false,
+      "why": "the day after the window",
+      "hidden": true,
+      "collision": false,
+      "inSeason": false,
+      "untouchedHidden": [
+        false
+      ]
+    },
+    {
+      "date": "2028-02-29",
+      "christmas": false,
+      "why": "leap day",
+      "hidden": true,
+      "collision": false,
+      "inSeason": false,
+      "untouchedHidden": [
+        false
+      ]
+    }
+  ],
+  "today": {
+    "date": "2026-11-21",
+    "hidden": true,
+    "collision": false,
+    "web": false
+  }
+}

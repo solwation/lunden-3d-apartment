@@ -87,6 +87,11 @@ tools/unreal-engine/python/build_player.py    the production player in /Game/Lun
 tools/unreal-engine/player-extensions.json    components other issues add to the player and its controller (#2284 owns the format)
 tools/unreal-engine/tests/test_player.py      PIE test: eye heights, speeds, jump, fall damage against measurements.json
 unreal/Lunden/Content/Lunden/Player/          BP_LundenPlayer, BP_LundenPlayerController, BP_LundenGameMode, Input/ (LFS)
+tools/unreal-engine/python/build_seasons.py   the season rule /Game/Lunden/Seasons/BPC_LundenSeasons (#2295)
+tools/unreal-engine/tests/test_seasons.py     PIE test on L_Lunden: the Christmas tree shown/hidden per season-dates.json
+tools/unreal-engine/tests/season-rule.test.mjs  season-dates.json against the web's own inChristmas (Node)
+tools/unreal-engine/tests/capture_seasons.py  GPU views of the tree corner on a summer and a Christmas date (nothing saved)
+unreal/Lunden/Content/Lunden/Seasons/         BPC_LundenSeasons (LFS; made by build_seasons.py)
 ```
 
 The rendering values in `Config/DefaultEngine.ini` are **assumptions** modelled on what a UE 5.x Blank C++ template
@@ -532,6 +537,41 @@ when the assets are missing, the hash differs or a pilot asset is still in its o
 the character's event graph from scratch and rewrites the defaults.
 
 Results: [docs/verification/2284/](../verification/2284/README.md).
+
+## Seasons (#2295)
+
+The web shows the Christmas tree only from `XMAS_TREE.season.from` to `.to`, inclusive across the new year (1 Dec –
+6 Jan; `src/christmas.js` `inChristmas`). This is the minimal part of G20 (Later in the
+[porting plan](unreal-inventory.md)): what the web hides out of season is hidden in Unreal too. #2295 owns
+`/Game/Lunden/Seasons/`, `build_seasons.py`, `tests/test_seasons.py`, `tests/season-dates.json`,
+`tests/season-rule.test.mjs`, `tests/capture_seasons.py` and the `Seasons` row of `player-extensions.json`.
+
+- **Data.** The exporter marks the tree `extras.seasonal = {what, from, to}` from `src/config.js`. `import_world.py`
+  (`season_tags`) tags the tree and its 165 parts `seasonal`, `season:christmas`, `seasonFrom:1201`, `seasonTo:106`
+  (month × 100 + day, the key `inChristmas` compares). No window is copied into a graph.
+- **Rule, in one place.** `BPC_LundenSeasons` (ActorComponent, built by `build_seasons.py`) has `InSeason(Year, Month,
+  Day, From, To)`: key = month × 100 + min(day, days in the month); inside when From ≤ key ≤ To, or for a window that
+  wraps the new year (From > To) when key ≥ From or key ≤ To. `TagValue(Actor, Prefix)` reads a window tag.
+  `ApplySeason(Year, Month, Day)` shows every `seasonal` actor with collision inside its window and hides it without
+  collision outside it; an actor without readable window tags is left alone. A new seasonal item needs only the
+  export's `seasonal` extras.
+- **When.** BeginPlay runs `ApplySeason` once with the PC's local date (`Now`), as the web takes today on a new visit.
+  The component sits on `BP_LundenPlayerController` through `player-extensions.json` (row `Seasons`), so `L_Lunden` and
+  the pilot map get it without opening a level. Tests call `ApplySeason` with a fixed date (the test hook).
+- **Not ported (G20).** While the tree stands, the web also hides the furniture whose pose overlaps its crown (the
+  armchair corner at the default spot); in Unreal that furniture stands inside the tree in December. The kitchen calendar's
+  date choice, sub-levels streamed in after BeginPlay (all are `always` today), the tree's lights and the rest of G20
+  (New Year, Santa, fireworks) are not ported.
+
+```text
+git lfs lock unreal/Lunden/Content/Lunden/Seasons/BPC_LundenSeasons.uasset
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/build_seasons.py [--force | --check]
+THREE_DIR=<node_modules/three> node tools/unreal-engine/tests/season-rule.test.mjs [--export unreal/Lunden/Import]
+copy tools\unreal-engine\tests\test_seasons.py unreal\Lunden\Content\Python\   (untracked copy, delete afterwards)
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-tests.ps1 -Filter Editor.Python.Lunden.test_seasons
+```
+
+Results: [docs/verification/2295/](../verification/2295/README.md).
 
 ## Pilot camera references (#2246)
 
@@ -1242,6 +1282,8 @@ What 5.8.4 does, and what the importer does about it:
   metadata on a StaticMesh (`INTERCHANGE.<node>.id` …, `EditorAssetLibrary.get_metadata_tag_values`), for the first
   node of a shared mesh, never on actors. The importer therefore reads the extras from the GLB and writes actor tags
   `[<id>, kind:<kind>, zone:<zone>, level:<n>, webId:<id>, source:<pointer>, parent:<id>]` (absent values left out).
+  A node with `seasonal` extras and all its parts also get `seasonal`, `season:<what>`, `seasonFrom:<MMDD>` and
+  `seasonTo:<MMDD>` (importer version 3; [Seasons](#seasons-2295)).
   Tags and object names survive packaging (labels are editor-only); Blueprints find objects with *Get All Actors
   With Tag* on the id.
 - **Collision.** `collision` nodes (the web's wall rectangles and floor plates, one shared unit cube) get a single
