@@ -9,8 +9,15 @@ function viewUrl(base, view) {
   const light = spec.lighting[view.lighting];
   const at = [view.x, view.z, view.yawDeg, view.pitchDeg, view.feetY];
   const url = new URL(base);
+  // A winter lawn comparison can select the production snow-cover control (?snow=0 for bare ground).
+  const snow = url.searchParams.get('snow');
   url.search = new URLSearchParams({shot: '', at: at.join(','), quality: '4', res: 'full', cloud: '',
     time: light.hour, ...spec.date, weather: spec.weather, freeze: '', ...(light.lampsOn ? {lights: ''} : {})});
+  if (snow !== null) {
+    const cover = Number(snow);
+    assert.ok(snow.trim() && Number.isFinite(cover) && cover >= 0 && cover <= 1, 'Snow cover must be between 0 and 1');
+    url.searchParams.set('snow', snow);
+  }
   return url.href;
 }
 
@@ -18,7 +25,7 @@ async function capture(page, view, base, out, axes) {
   const light = spec.lighting[view.lighting];
   console.log('Render ' + view.id + ': ' + viewUrl(base, view));
   const {state, image} = await page.evaluate(({view, light, eyeHeight}) => {
-    const {camera, player, quality, day, lights, visitLights, patio, weather, renderer, scene, step, frame, testMode, isPhoneDevice} = window.__app;
+    const {camera, player, quality, day, lights, visitLights, patio, weather, snowState, renderer, scene, step, frame, testMode, isPhoneDevice} = window.__app;
     // Same player spawn and camera convention as ?at=. Keep the loaded geometry and texture cache between views.
     player.spawn(view.x, view.z, view.yawDeg * Math.PI / 180);
     player.pos.y = view.feetY;
@@ -45,6 +52,7 @@ async function capture(page, view, base, out, axes) {
       feet: player.pos.toArray(), yaw: camera.rotation.y * 180 / Math.PI, pitch: camera.rotation.x * 180 / Math.PI,
       verticalFov: camera.fov, aspect: camera.aspect, quality: quality.level,
       day: [day.year, day.month, day.date, day.hour, day.paused], lights: lights.forced, weather: weather.force,
+      snowCover: snowState.cover, snowSource: snowState.source,
       desktop: !isPhoneDevice() && !testMode, contextLost: gl.isContextLost(), draws: renderer.info.render.calls};
     return {state, image: renderer.domElement.toDataURL('image/jpeg', 0.92).split(',')[1]};
   }, {view, light, eyeHeight: spec.standingEyeHeightM});
@@ -54,6 +62,11 @@ async function capture(page, view, base, out, axes) {
   near(state.yaw, view.yawDeg); near(state.pitch, view.pitchDeg); near(state.verticalFov, spec.verticalFovDeg);
   near(state.aspect, spec.viewport.width / spec.viewport.height);
   assert.deepEqual(state.day, [spec.date.year, spec.date.month, spec.date.day, light.hour, true]);
+  const snow = new URL(base).searchParams.get('snow');
+  if (snow !== null) {
+    assert.equal(state.snowCover, Number(snow));
+    assert.equal(state.snowSource, 'forced');
+  }
   assert.equal(state.lights, light.lampsOn); assert.equal(state.weather, spec.weather);
   assert.equal(state.quality, 4); assert.ok(state.desktop && !state.contextLost && state.draws > 0);
   await fs.writeFile(path.join(out, view.id + '.jpg'), Buffer.from(image, 'base64'));
