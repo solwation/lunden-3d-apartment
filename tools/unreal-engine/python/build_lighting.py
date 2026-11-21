@@ -46,6 +46,7 @@ from season_tags import season_tags
 import player_parts as pp
 import stair_lamp
 import sky_clouds
+import neutral_tonemap  # #2396: the web's NeutralToneMapping in place of Unreal's tonemapper
 
 DIR = "/Game/Lunden/Lighting"
 SKY = DIR + "/BP_LundenSky"
@@ -118,7 +119,10 @@ CLOUD_RANGE = (-1.0, 1.0)
 # log2(clear / overcast) with the blend weight log(web exposure / overcast) / log(clear / overcast), so the game's
 # exposure is the web's. Histogram auto exposure (EV100 -4 ... 3, #2283) was compared and rejected: metered on each view it
 # made the 22:00 living room with only the dusk lamps 2.2 x and the night street 30 x the web's mean luminance
-# (docs/verification/2313/). EXPOSURE_BIAS is a *guess* set by the 14:00 START and living-room pairs.
+# (docs/verification/2313/). EXPOSURE_BIAS is a *guess* set by the 14:00 START and living-room pairs. #2396 replaced Unreal's
+# tonemapper with the web's NeutralToneMapping (neutral_tonemap.py) and measured it again on #2386's lighting: the
+# geometric mean of ten frame ratios (Unreal / web; living room, upper floor, stairs, START by day, rain and night, the
+# fruit-bowl and basketball views) is 1.03, i.e. -0.05 EV, within the noise, so it stays (docs/verification/2396/).
 EXPOSURE_BIAS = -2.55
 # The web's hemisphere light (LIGHTING.sky overcast.hemi 2.0 -> clear.hemi 1.5, x daylight, + DAY.nightAmbient, x (1 - 0.3
 # overcast)) reaches every surface, also deep in the rooms, unshadowed; Unreal's captured sky light reaches the rooms
@@ -199,6 +203,7 @@ def spec_of(m):
             "stairBounds": m["stair"].get("lightBounds"),
             "skyShader": hashlib.sha256(Path(sky_clouds.__file__).read_bytes()).hexdigest(),
             "stairShader": hashlib.sha256(Path(stair_lamp.__file__).read_bytes()).hexdigest(),
+            "tonemap": hashlib.sha256(Path(neutral_tonemap.__file__).read_bytes()).hexdigest(),
             "script": hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
 
 
@@ -1023,7 +1028,7 @@ moving = (kNew - K) * (kNew - K) > 0.0000000001
     return bp
 
 
-def build_sky(spec, mpc, precip, clouds):
+def build_sky(spec, mpc, precip, clouds, tonemap):
     bp = load_or_create_blueprint(SKY, u.Actor)
     comps = components(bp, {"Sun": u.DirectionalLightComponent, "Moon": u.DirectionalLightComponent,
                             "Atmosphere": u.SkyAtmosphereComponent, "SkyLight": u.SkyLightComponent,
@@ -1048,7 +1053,9 @@ def build_sky(spec, mpc, precip, clouds):
     weather = comps["Weather"]
     weather.set_editor_property("unbound", True)
     pp = weather.get_editor_property("settings")
-    pp.set_editor_property("weighted_blendables", u.WeightedBlendables(array=[u.WeightedBlendable(weight=1.0, object=precip)]))
+    # #2396: the rain/snow/sky pass (before the tonemapper) and the web's tone mapping (in place of Unreal's)
+    pp.set_editor_property("weighted_blendables", u.WeightedBlendables(array=[u.WeightedBlendable(weight=1.0, object=precip),
+                                                                              u.WeightedBlendable(weight=1.0, object=tonemap)]))
     for key, value in (("auto_exposure_method", u.AutoExposureMethod.AEM_MANUAL), ("auto_exposure_apply_physical_camera_exposure", False),
                        ("auto_exposure_bias", EXPOSURE_BIAS)):
         pp.set_editor_property("override_" + key, True)
@@ -1392,7 +1399,7 @@ def main(argv):
     m = load_measurements(rest[0] if rest else PROJECT / "Import/measurements.json")
     spec = spec_of(m)
     want = spec_hash(spec)
-    assets = (SKY, LAMP, MPC, PRECIP, CLOUDS, AMBIENT_CUBE)
+    assets = (SKY, LAMP, MPC, PRECIP, CLOUDS, AMBIENT_CUBE, neutral_tonemap.MATERIAL)
     stair_assets = [stair_lamp.path_for(row) for row in spec["lamps"] if row["stairVisibility"]]
     have = ASSETS.does_asset_exist(SKY) and ASSETS.get_metadata_tag(ASSETS.load_asset(SKY), SPEC_TAG) == want
     cloud_material_ok = ASSETS.does_asset_exist(PRECIP) and precip_matches(spec)
@@ -1426,9 +1433,10 @@ def main(argv):
         precip = build_precip_material(spec, mpc)
         lamp_bp = build_lamp(spec, mpc)
         clouds, clouds_built = build_clouds(mpc)
-        sky_bp = build_sky(spec, mpc, precip, clouds)
+        tonemap = neutral_tonemap.build()
+        sky_bp = build_sky(spec, mpc, precip, clouds, tonemap)
         ASSETS.set_metadata_tag(sky_bp, SPEC_TAG, want)
-        saved = [mpc, precip, lamp_bp, sky_bp, u.load_asset(AMBIENT_CUBE)] + ([clouds] if clouds_built else [])
+        saved = [mpc, precip, tonemap, lamp_bp, sky_bp, u.load_asset(AMBIENT_CUBE)] + ([clouds] if clouds_built else [])
         for asset in saved:
             save(asset)
         u.log("LUNDEN_LIGHTING assets saved: " + ", ".join(a.get_path_name().split(".")[0] for a in saved))

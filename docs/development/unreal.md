@@ -149,6 +149,8 @@ tools/unreal-engine/python/build_lighting.py  sky, sun/moon clock, weather post 
 tools/unreal-engine/tests/test_lighting.py    PIE test: lamp ids = export ids, lamp events, sun/moon cases, rain/snow toggles, PC clock
 tools/unreal-engine/check-sun.mjs             Unreal's sun and moon (lighting-result.json) against the web's daycycle.js/moon.js, 1°
 tools/unreal-engine/tests/capture_lighting.py GPU views of L_Lunden with its own lighting: day, evening, rain and snow (nothing saved)
+tools/unreal-engine/python/neutral_tonemap.py  M_LundenNeutralTonemap: three.js r170 NeutralToneMapping in place of Unreal's tonemapper (#2396)
+tools/unreal-engine/tests/neutral_tonemap_probe.py + check-neutral-tonemap.cjs  its curve against three.js itself, within 1/255 (#2396)
 unreal/Lunden/Content/Lunden/Lighting/        BP_LundenSky, BP_LundenLamp, MPC_LundenWeather, M_LundenPrecipitation,
                                    T_LundenHemisphere (LFS; made by build_lighting.py), T_PilotClearSky (the #2246
                                    pilot map’s sky cubemap)
@@ -1080,6 +1082,20 @@ sky's brightness and the locked exposure.
     the 22:00 living room 0.83 and upper floor 1.21 with all lamps (#2307: 0.76, 1.15), the dusk-lamp living room 0.88,
     the clear sky 1.20. `CANDELA_PER_WEB` went from 1 to 2.8 to keep the evening rooms there under the darker exposure.
     START's whole pictures are about 2.3 × the web, because its façades and paving still render near-white.
+  - **Tone mapping (#2396).** The web renders with `THREE.NeutralToneMapping` (Khronos PBR Neutral) and writes sRGB;
+    Unreal's default filmic tonemapper crushed the darks and paled the brights. `M_LundenNeutralTonemap`
+    (`python/neutral_tonemap.py`, built by `build_lighting.py`) replaces the tonemapper (`BL_ReplacingTonemapper`, a blendable
+    of the `Weather` component) with three.js r170's `NeutralToneMapping` and `sRGBTransferOETF`, transcribed: the
+    exposed colour is `PostProcessInput0` × `EyeAdaptation` (the input arrives without Unreal's pre-exposure; also
+    dividing by `View.PreExposure` made it ignore the exposure). Not carried: bloom, vignette, film grain, colour
+    grading and local exposure, none of which the web has. Cost: one full-screen pass of a few ALU per pixel in place of
+    the tonemapper's own pass (no LUT). `tests/neutral_tonemap_probe.py` + `tests/check-neutral-tonemap.cjs` render 50
+    emissive patches (0–10 grey, colours up to 6) and compare them with three.js 0.170.0 itself: within 1/255, and the
+    exposure falls by 2.000 EV between bias 0 and −2. `EXPOSURE_BIAS` was measured again under it and stays
+    ([#2396 pairs](../verification/2396/README.md)). Captures must show the displayed picture: `render_view` and
+    `capture_lighting` take `SCS_FINAL_COLOR_LDR` into an RGBA8 target at `target_gamma` 2.2 (as the viewport; at
+    gamma 1 Unreal's tonemapper writes linear values) and always keep a view state (without one Unreal skips every
+    post-process material, so before #2396 the non-Lumen captures had no weather pass either).
 - **Overcast, clouds, stars and the moon's phase (#2307).** The sky's overcast is the web's `day.overcast`:
   `max(Rain, 0.7 × Snow)` (`weather.js`: snow clouds are lighter). The clouds are `M_LundenClouds`, a copy of Epic's
   `m_SimpleVolumetricCloud` whose `Cloud_GlobalCoverage` parameter reads `MPC_LundenWeather` `CloudCoverage`, so the
