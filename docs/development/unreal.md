@@ -2729,10 +2729,26 @@ Not split: each backdrop mesh is one node. The box (±3 km, y −100…300 m) is
 | `fond` | 42 | 212,516 | 23.3 MB |
 
 Every node's GLB centre equals the web's world-box centre in its id within 0.71 cm (export at `a1c78bf1` + #2323).
-**Still open in #2323 (Windows):** `import_world.py --zones fond`, a `world-levels.json` row for
-`/Game/Lunden/Generated/fond/Level_fond` (added only together with the imported level, since `compose_world.py` stops on
-a listed level that does not exist), materials (the façades' brick keys follow #2318's facade mechanism; the lawn key
-`std_609548_r100_m0_tex` already has its rule), picture pairs with the web and the courtyard view's frame budget (#2246).
+The composed world streams `/Game/Lunden/Generated/fond/Level_fond` (world-levels.json, commit `cb0ca795`).
+The seven roof draws use the eight-strip canvas and linear tints from `src/roofsurface.js`; the campus and south roofs
+also multiply their exported vertex colours. The east and north façades, campus, Karp and HepCat use the web's separate
+masonry or shopfront canvases. The arched windows on the white building at the right of the [river
+view](../verification/2321/unreal-river.jpg) belong to the nearer Villa in `omgivning`. Its material key is shared
+with unrelated paving and brickwork. The mesh-specific rule restores `oldFacadeTexture()` on that building alone.
+The exported roof and façade UVs set the pattern scale.
+
+The six source PNGs in `tools/unreal-engine/backdrop-textures` store the original sRGB canvases with the same image
+orientation as Three's glTF exporter. After editing a source canvas, regenerate them with
+`tools/browsertest.sh node tools/unreal-engine/export-backdrop-textures.mjs` using the project's Playwright and
+Three installations. The same command with `--check` compares all six images and the seven roof tints against
+the web. Run `python3 tools/unreal-engine/tests/test_materials.py <full export>` to check the actual mesh mappings
+and vertex-colour coverage. On Windows, `import_world.py --zones fond,omgivning` builds the texture and material
+packages under `/Game/Lunden/Generated/BackdropMaterials` before assigning the mesh slots; `--check` checks their
+graphs, sampling, sidedness, per-instance parameters and Nanite settings without writing to disk.
+
+**Pending native verification for #2323.** Reimport both zones and capture the START, courtyard, patio and river
+web/Unreal pairs with the restored surfaces. Use the same courtyard view and quality settings for the frame budget
+comparison. The earlier native captures and timings predate this material change.
 
 ### Generated assets: rebuilt, not versioned (decided)
 

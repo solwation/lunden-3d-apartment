@@ -27,9 +27,13 @@ Logs LUNDEN_MATERIAL <path>: created|updated|kept and finally LUNDEN_MATERIALS_O
 import hashlib
 import json
 import os
+from pathlib import Path
 import sys
 
 import unreal
+
+sys.path.insert(0, str(Path(__file__).parent))
+import backdrop_material  # noqa: E402
 
 eal = unreal.EditorAssetLibrary
 mel = unreal.MaterialEditingLibrary
@@ -189,6 +193,8 @@ def spec_hash(path, spec):
     parts = [path, spec, TILED_GRID + TILED_FINISH] + ([GRASS_HLSL] if spec.get("graph") == "grass" else [])  # other hashes unchanged
     if spec.get("graph") == "tiled":
         parts.append(BRICK_FILTER)
+    if spec.get("graph") == backdrop_material.GRAPH:
+        parts.extend([backdrop_material.canvas_hash(spec), Path(backdrop_material.__file__).read_text(encoding="utf-8")])
     if spec.get("graph") == GLTF_VC:  # a copy of an engine material: a new engine version rebuilds it
         parts.append(unreal.SystemLibrary.get_engine_version())
     return hashlib.sha256(json.dumps(parts, sort_keys=True).encode("utf-8")).hexdigest()[:16]
@@ -384,7 +390,10 @@ def build_master(path, spec, existing):
         m = existing
         mel.delete_all_material_expressions(m)
         m.set_editor_property("blend_mode", unreal.BlendMode.BLEND_OPAQUE)
-    GRAPHS[spec.get("graph", "constant")](m, spec)
+    if spec.get("graph") == backdrop_material.GRAPH:
+        backdrop_material.build(m, spec, vector_param, scalar_param)
+    else:
+        GRAPHS[spec.get("graph", "constant")](m, spec)
     if spec.get("graph") != "glass":
         mel.set_base_material_usage(m, NANITE, True)
     mel.recompile_material(m)
@@ -447,6 +456,8 @@ def check(table):
                 usage = usage and mel.has_material_usage_override(asset, NANITE)
             if not usage:
                 problems.append(f"{path}: no persisted Nanite usage")
+        if spec.get("graph") == backdrop_material.GRAPH and not backdrop_material.check(asset, spec, uses_vertex_color):
+            problems.append(f"{path}: incorrect backdrop texture, vertex-colour wiring, or face settings")
         if spec.get("graph") == GLTF_VC and not uses_vertex_color(asset, VC_OUTPUTS[spec["output"]]):
             problems.append(f"{path}: {spec['output']} is not multiplied by the vertex colour")
         if "parent" in spec:
@@ -473,18 +484,14 @@ def check(table):
     unreal.log(f"LUNDEN_MATERIALS_CHECK_OK {len(table['materials'])} materials")
 
 
-def main(argv):
-    force = "--force" in argv
-    with open(os.path.join(repo_root(), "tools", "unreal-engine", "material-map.json"), encoding="utf-8") as f:
-        table = json.load(f)
-    if "--check" in argv:
-        return check(table)
-    entries = sorted(table["materials"].items(), key=lambda kv: ("parent" in kv[1], kv[0]))  # masters first
+def build_entries(materials, force=False):
+    entries = sorted(materials.items(), key=lambda kv: ("parent" in kv[1], kv[0]))  # masters first
     made = kept = 0
     for path, spec in entries:
         existing = eal.load_asset(path) if eal.does_asset_exist(path) else None
         want = spec_hash(path, spec)
-        if existing is not None and not force and eal.get_metadata_tag(existing, "Lunden.SpecHash") == want:
+        if (existing is not None and not force and eal.get_metadata_tag(existing, "Lunden.SpecHash") == want
+                and (spec.get("graph") != backdrop_material.GRAPH or backdrop_material.check(existing, spec, uses_vertex_color))):
             unreal.log(f"LUNDEN_MATERIAL {path}: kept (spec {want})")
             kept += 1
             continue
@@ -496,6 +503,25 @@ def main(argv):
         made += 1
         unreal.log(f"LUNDEN_MATERIAL {path}: {'updated' if existing else 'created'} (spec {want})")
     unreal.log(f"LUNDEN_MATERIALS_OK {made} written, {kept} kept")
+
+
+def prepare_backdrops(table, check_only):
+    """The generated materials are import dependencies of fond and the Villa in omgivning."""
+    materials = table["materials"]
+    masters = {path for path, spec in materials.items() if spec.get("graph") == backdrop_material.GRAPH}
+    subset = {path: spec for path, spec in materials.items() if path in masters or spec.get("parent") in masters}
+    if check_only:
+        check({"materials": subset})
+    else:
+        build_entries(subset)
+
+
+def main(argv):
+    with open(os.path.join(repo_root(), "tools", "unreal-engine", "material-map.json"), encoding="utf-8") as f:
+        table = json.load(f)
+    if "--check" in argv:
+        return check(table)
+    build_entries(table["materials"], "--force" in argv)
 
 
 if __name__ == "__main__":

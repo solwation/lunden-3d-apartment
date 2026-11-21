@@ -541,7 +541,7 @@ const dims = (b) => (b.style ? S[b.style] ?? S : S); // the style's bay, storey 
 
 /** Old S:t Lars style bay: brick, a white string course at the floor line, a tall white-framed
  * window with a round-arched top (v = 0 is the bottom of the canvas). */
-function oldFacadeTexture() {
+export function oldFacadeTexture() {
   const { bay, storey } = S.old;
   const pw = 208, ph = Math.round((pw * storey) / bay), c = document.createElement('canvas');
   c.width = pw; c.height = ph;
@@ -631,7 +631,7 @@ function dormers(list) {
 }
 
 /** Plain brick, 2 × 2 m per tile (the wall along the street, #126). */
-function brickTexture() {
+export function brickTexture() {
   const pw = 256, c = document.createElement('canvas');
   c.width = c.height = pw;
   const g = c.getContext('2d');

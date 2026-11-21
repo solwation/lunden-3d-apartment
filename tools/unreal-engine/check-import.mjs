@@ -28,11 +28,16 @@ const textSha = (abs) => sha256(Buffer.from(fs.readFileSync(abs).toString('latin
 /** What the importer and the derived-level builders are built from: a change makes the last sync stale. */
 export function builderInputs(root = ROOT) {
   const py = path.join(root, 'tools/unreal-engine/python');
+  const canvases = 'tools/unreal-engine/backdrop-textures';
   const files = [
+    ...fs.readdirSync(path.join(root, canvases)).filter((f) => f.endsWith('.png')).map((f) => `${canvases}/${f}`),
     ...fs.readdirSync(py).filter((f) => f.endsWith('.py')).map((f) => `tools/unreal-engine/python/${f}`),
     'tools/unreal-engine/world-levels.json', 'tools/unreal-engine/material-map.json',
   ].filter((p) => fs.existsSync(path.join(root, p))).sort();
-  return sha256(files.map((p) => `${textSha(path.join(root, p))}  ${p}\n`).join(''));
+  return sha256(files.map((p) => {
+    const abs = path.join(root, p);
+    return `${p.endsWith('.png') ? sha256File(abs) : textSha(abs)}  ${p}\n`;
+  }).join(''));
 }
 
 /** The importer's own version, material-map hash and the locked engine, read from the checkout. */

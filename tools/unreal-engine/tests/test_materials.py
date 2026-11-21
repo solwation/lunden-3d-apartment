@@ -33,6 +33,7 @@ ROOT = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)),
 MASTER_PARAMS = {
     "surface": {"BaseColor", "Roughness", "Metallic"},
     "tiled": {"FilterBrick", "Size", "Color", "JointColor", "Joint", "Bond", "Stagger", "Variation", "Grain", "Roughness", "JointRoughness"},
+    "backdrop-texture": {"BaseColor", "Roughness", "Metallic"},
     "glass": {"BaseColor", "Opacity", "Roughness", "Specular"},
     "grass": {"Color", "Ground", "BladeRange", "BladeLength", "Cell", "StrokeWidth", "StrawTint", "BladeTint",
               "VertexColorWeight", "Roughness", "Tile", "PatchCells", "PatchContrast", "Dry", "Lush", "TuftCount", "TuftRadius",
@@ -171,7 +172,8 @@ def vertex_color_check(export_dir, table, rule_rx, errors):
             spec = mats.get(target, {})
             parent = mats.get(spec.get("parent"), {}) if "parent" in spec else spec
             weight = spec.get("params", {}).get("VertexColorWeight", 0)
-            if not (parent.get("graph") == GLTF_VC or (parent.get("graph") == "grass" and weight > 0)):
+            backdrop_vc = parent.get("graph") == "backdrop-texture" and parent.get("vertexColors") is True
+            if not (parent.get("graph") == GLTF_VC or backdrop_vc or (parent.get("graph") == "grass" and weight > 0)):
                 errors.append(f"vertex-coloured key {where}: rule material {target} does not multiply the vertex colour in")
         if not unruled:
             continue  # every mesh using the key gets a rule's material
@@ -221,6 +223,13 @@ def main(argv):
                 errors.append(f"{path}: {parent.get('graph')} master has no parameter(s) {sorted(unknown)}")
         elif spec.get("graph", "constant") not in ("constant", GLTF_VC, *MASTER_PARAMS):
             errors.append(f"{path}: unknown graph {spec.get('graph')}")
+        if spec.get("graph") == "backdrop-texture":
+            canvas = spec.get("canvas", "")
+            if not re.fullmatch(r"[A-Za-z]+", canvas) or not os.path.isfile(os.path.join(
+                    ROOT, "tools", "unreal-engine", "backdrop-textures", canvas + ".png")):
+                errors.append(f"{path}: missing backdrop canvas {canvas}")
+            if not all(isinstance(spec.get(key), bool) for key in ("vertexColors", "twoSided")):
+                errors.append(f"{path}: backdrop must specify vertexColors and twoSided")
         # 4. source / assumption
         if not spec.get("source") or "assumption" not in spec:
             errors.append(f"{path}: needs `source` and `assumption`")

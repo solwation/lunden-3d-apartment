@@ -46,6 +46,7 @@ import unreal
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from prepare_nanite_materials import prepare_zone, static_mesh_editor
 from season_tags import season_tags
+from build_materials import prepare_backdrops
 
 SUPPORTED_FORMAT_VERSION = 1
 IMPORTER_VERSION = 6  # bump when the importer's output changes for the same export (forces a re-import)
@@ -614,6 +615,8 @@ def main(argv):
     unreal.log(f"LUNDEN_IMPORT export from {manifest['sourceCommit']} (dirty: {manifest['sourceDirty']}), engine {unreal.SystemLibrary.get_engine_version()}"
                f"{', check only' if check_only else ''}{', forced' if force else ''}")
     entries = [e for e in manifest["files"] if e["kind"] == "glb" and (not zones or e["zone"] in zones)]
+    if any(e["zone"] in ("fond", "omgivning") for e in entries):
+        prepare_backdrops(table, check_only)
     for entry in entries:
         zone, glb_path = entry["zone"], os.path.join(export_dir, entry["path"])
         if check_only:
