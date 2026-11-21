@@ -6,7 +6,9 @@
      Otherwise it takes, in order: -ExportFrom <folder>; the "Unreal export" workflow's artifact for this source hash
      (unreal-export-<hash>, needs an authenticated gh); a local export (needs Playwright in node_modules). Every export
      is checked with check-export.mjs before it replaces unreal/Lunden/Import/.
-  2. import_world.py: unchanged zones are skipped by their import stamps; only changed zones are imported again.
+  2. build_seasons.py, then import_world.py. The season assets (MPC_LundenVegetation, BPC_LundenSeasons) come first
+     because the river, lawn and leaf materials read the collection (#2380); the step saves nothing when the committed
+     assets match the script. Unchanged zones are skipped by their import stamps; only changed zones are imported again.
   3. The derived levels, each skipping itself when its inputs are unchanged: build_l1007.py, build_exterior.py,
      build_site.py, build_lighting.py, build_facade.py, build_vegetation.py, build_interaction.py.
   4. compose_world.py --check (the world map L_Lunden must match world-levels.json and START; it is never saved here).
@@ -19,7 +21,7 @@
 .PARAMETER ExportFrom
   A folder holding an export (an unzipped workflow artifact, or tools/unreal-engine/export-world.mjs --out from WSL).
 .PARAMETER ImportOnly
-  Steps 1, 2 and 5 only. The sync stamp is marked partial, so release.ps1 still refuses until a full run.
+  Steps 1, 2 (with the seasons) and 5 only. The sync stamp is marked partial, so release.ps1 still refuses until a full run.
 .PARAMETER Zones
   Import only these zones (comma separated); implies -ImportOnly.
 .PARAMETER Repo
@@ -170,7 +172,9 @@ if ((Test-Export $importDir) -eq 0) {
     }
 }
 
-# 2. the zones (unchanged ones are skipped by import_world.py itself)
+# 2. the season collection the imported materials read (#2380; skips itself when unchanged), then the zones
+#    (unchanged ones are skipped by import_world.py itself)
+Invoke-UnrealStep 'seasons' 'build_seasons.py'
 $zoneArgs = @()
 if ($Zones) { $zoneArgs = @('--zones', $Zones) }
 Invoke-UnrealStep 'import' 'import_world.py' $zoneArgs

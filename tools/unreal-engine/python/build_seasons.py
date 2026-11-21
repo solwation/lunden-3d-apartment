@@ -191,7 +191,9 @@ def tag_value(bp):
 def vegetation_calendar(check):
     asset = ASSETS.load_asset(VEGETATION) if ASSETS.does_asset_exist(VEGETATION) else None
     if asset:
-        if "Month" not in [str(v.parameter_name) for v in asset.get_editor_property("scalar_parameters")]:
+        # #2380: struct fields are read through get_editor_property on 5.8 (no .parameter_name attribute)
+        names = [str(v.get_editor_property("parameter_name")) for v in asset.get_editor_property("scalar_parameters")]
+        if "Month" not in names:
             raise RuntimeError(VEGETATION + " has no Month parameter")
         return asset
     if check:

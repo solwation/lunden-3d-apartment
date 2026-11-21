@@ -63,7 +63,7 @@ tools/unreal-engine/sources.mjs               the export's source list (import c
 tools/unreal-engine/check-export.mjs          staleness + schema check of an export, no Unreal or browser needed
 tools/unreal-engine/check-import.mjs          release gate (#2305): the local import against the export (zone stamps, sync stamp)
 tools/unreal-engine/export-ci.mjs             export workflow helpers (#2305): export key, zone-by-zone comparison, tracking issue
-tools/unreal-engine/sync-import.ps1           Windows helper (#2305): export → import_world.py → derived levels → compose --check → checks
+tools/unreal-engine/sync-import.ps1           Windows helper (#2305): export → build_seasons.py → import_world.py → derived levels → compose --check → checks
 .github/workflows/unreal-export.yml           exports, checks and compares on pushes that change the export's sources (#2305)
 tools/unreal-engine/json-schema.mjs            small dependency-free JSON Schema validator for shared/schema/ (and GLB JSON reader)
 tools/unreal-engine/notices.mjs               writes/checks unreal/Lunden/THIRD_PARTY_NOTICES.md from the web's attribution files
@@ -109,7 +109,7 @@ tools/unreal-engine/python/build_seasons.py   the season rule /Game/Lunden/Seaso
 tools/unreal-engine/tests/test_seasons.py     PIE test on L_Lunden: the Christmas tree shown/hidden per season-dates.json
 tools/unreal-engine/tests/season-rule.test.mjs  season-dates.json against the web's own inChristmas (Node)
 tools/unreal-engine/tests/capture_seasons.py  GPU views of the tree corner on June 21 and December 24
-unreal/Lunden/Content/Lunden/Seasons/         BPC_LundenSeasons (LFS; made by build_seasons.py)
+unreal/Lunden/Content/Lunden/Seasons/         BPC_LundenSeasons, MPC_LundenVegetation (LFS; made by build_seasons.py)
 tools/unreal-engine/python/build_save.py      the save file /Game/Lunden/Save/: SG_LundenSave, BFL_LundenSave, BPC_LundenSave (#2288)
 tools/unreal-engine/tests/test_save.py        PIE test: v0 migration, place/facing/settings/name/look/id over a restart
 tools/unreal-engine/tests/save-v0.sav         frozen version-0 save (no SaveVersion, no PlayerId) for the migration test
@@ -712,8 +712,13 @@ The web shows the Christmas tree only from `XMAS_TREE.season.from` to `.to`, inc
   date choice, sub-levels streamed in after BeginPlay (all are `always` today), the tree's animated light string and the rest of G20
   (New Year, Santa, fireworks) are not ported.
 
+Both season assets are committed (#2380): `MPC_LundenVegetation` (the `Month` the crowns, lawns and river read) and
+`BPC_LundenSeasons`. `sync-import.ps1` runs `build_seasons.py` before the import, so a fresh checkout needs no manual
+step; after a change to `build_seasons.py`, rebuild and commit both with their locks.
+
 ```text
 git lfs lock unreal/Lunden/Content/Lunden/Seasons/BPC_LundenSeasons.uasset
+git lfs lock unreal/Lunden/Content/Lunden/Seasons/MPC_LundenVegetation.uasset
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/build_seasons.py [--force | --check]
 THREE_DIR=<node_modules/three> node tools/unreal-engine/tests/season-rule.test.mjs [--export unreal/Lunden/Import]
 copy tools\unreal-engine\tests\test_seasons.py unreal\Lunden\Content\Python\   (untracked copy, delete afterwards)
@@ -2255,8 +2260,10 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\unreal-engine\sync
    or a local export (needs Playwright in the checkout: `npm install --no-save playwright@1.58.2 three@0.170.0` and
    `npx playwright install chromium`), and checks it before it replaces `Import/`. With none of these it stops and
    names all three;
-2. `import_world.py`: zones whose GLB is unchanged are skipped by their import stamps, so only changed zones cost
-   import time;
+2. `build_seasons.py`, then `import_world.py`. The season assets come first because the river, lawn and leaf
+   materials read `MPC_LundenVegetation` (#2380); the step saves nothing while the committed `MPC_LundenVegetation`
+   and `BPC_LundenSeasons` match the script. Zones whose GLB is unchanged are skipped by their import stamps, so only
+   changed zones cost import time;
 3. the derived levels in build order, each skipping itself when its inputs are unchanged: `build_l1007.py`,
    `build_exterior.py`, `build_site.py`, `build_lighting.py`, `build_vegetation.py`, `build_interaction.py`;
 4. `compose_world.py --check` (never saves the map; a moved START needs the map owner's locked run);
@@ -2266,7 +2273,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\unreal-engine\sync
 Any failing step stops with exit 1 and its name; each Unreal step's log is under `unreal/Lunden/Saved/Logs`. A builder
 that has to save a versioned asset (for example `BP_LundenSky` when the lamps changed) needs its LFS lock and leaves
 the worktree changed; commit it before a release. `-ImportOnly`/`-Zones` run steps 1, 2 and 5 only and mark the sync
-stamp partial.
+stamp partial; they still run the seasons step.
 
 #### Build PC preparation (#2377)
 
