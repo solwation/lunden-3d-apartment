@@ -1,0 +1,66 @@
+{
+  "engine": "5.8.4-58902052+++UE5+Release-5.8",
+  "map": "/Game/Lunden/Maps/L_Lunden",
+  "inMemory": [],
+  "vegetationParameters": {
+    "months": [
+      1.0,
+      6.0,
+      10.0
+    ],
+    "windXY": [
+      [
+        0.0,
+        -0.0
+      ],
+      [
+        0.0,
+        5.0
+      ],
+      [
+        -13.0,
+        7.960204409454693e-16
+      ]
+    ]
+  },
+  "perennialMotion": {
+    "component": "SM_Veg_other_mesh_courtyard-shrubs_l0_xm2215_z3806_ym267",
+    "size": 128,
+    "windSpeedsMps": [
+      0,
+      13
+    ],
+    "calmPlantPixels": [
+      1256,
+      1256,
+      1256
+    ],
+    "windPlantPixels": [
+      1251,
+      1309,
+      1248,
+      1194,
+      1283
+    ],
+    "calmChangedPixels": 0,
+    "windChangedPixels": 691
+  },
+  "crownMaterials": [
+    "/Game/Lunden/Vegetation/MI_LundenLeaf"
+  ],
+  "perennialWindInstances": 12,
+  "trunkCubes": {
+    "blocking": 448,
+    "problems": 0
+  },
+  "failures": [],
+  "trees": 507,
+  "hedges": 9,
+  "foliageInstances": 4163,
+  "automation": {
+    "succeeded": 0,
+    "succeededWithWarnings": 1,
+    "failed": 0,
+    "notRun": 0
+  }
+}

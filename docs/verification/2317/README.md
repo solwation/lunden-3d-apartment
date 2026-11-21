@@ -35,3 +35,16 @@ The calm samples produced zero displacement, and the two nonzero wind vectors mo
 respective axes. The winter crown mask removed the central card while the perennial retained full cover. All twelve
 grass tints also matched their configured blend between the summer and autumn colours. Card density, colour spread
 and sway amplitude remain visual calibration (*guess*).
+
+
+## Wind in Unreal PIE
+
+The composed `L_Lunden` ran in UE 5.8.4 on Windows with D3D12 and offscreen rendering. All 12 courtyard perennials
+used the wind material with world-position offset enabled. The season component published months 1, 6 and 10, and
+the sky published ground-plane wind vectors of (0, 0), (0, 5) and (−13, 0) m/s for the three test settings.
+
+The test framed a live perennial from above and read its 128 × 128 depth silhouette. In still air the three samples
+each contained 1,256 plant pixels, with no pixel changing. At 13 m/s the five samples contained 1,251, 1,309,
+1,248, 1,194 and 1,283 plant pixels. **691 pixels** changed between the two most different windy frames. The test
+also found all 4,163 foliage instances and checked 507 trees and nine hedges in the composed map. No extra level
+was streamed by the test. Automation passed with one warning about a timed-out HTTP connectivity check. [PIE measurements](perennial-motion.json).
