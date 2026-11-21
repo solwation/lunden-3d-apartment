@@ -32,12 +32,19 @@ def game_bias(sky):
     return base + pps["Exposure"].get_editor_property("blend_weight") * (top - base)
 
 
+def update_sky_for_capture(world, sky):
+    sky.call_method("UpdateSky")
+    # A commandlet editor world never ticks the facade controller's fade.
+    for facade in u.GameplayStatics.get_all_actors_with_tag(world, "lunden:facade-controller"):
+        facade.call_method("SettleFacade")
+
+
 class MapLight:
     """The map's own BP_LundenSky and lamps."""
     kind = "map"
 
-    def __init__(self, sky, lamps):
-        self.sky, self.lamps = sky, lamps
+    def __init__(self, world, sky, lamps):
+        self.world, self.sky, self.lamps = world, sky, lamps
         self.skylight = sky.get_component_by_class(u.SkyLightComponent)
         # A real-time sky capture is refreshed by the main view, which a commandlet capture does not render: capture the
         # sky once per view instead (in memory, never saved; the game keeps the real-time capture).
@@ -50,7 +57,7 @@ class MapLight:
                      ("Hour", hour), ("Rain", 0.0), ("Snow", 0.0), ("Wet", 0.0)):
             # NEVER notify: a property change in the editor world re-runs the construction script, which resets the lights
             self.sky.set_editor_property(k, v, u.PropertyAccessChangeNotifyMode.NEVER)
-        self.sky.call_method("UpdateSky")
+        update_sky_for_capture(self.world, self.sky)
         for lamp in self.lamps:
             lamp.call_method("TurnOn" if preset["lampsOn"] else "TurnOff")
         self.skylight.recapture_sky()
@@ -84,7 +91,7 @@ def light_for(world):
         return PilotRig(actors)
     if len(skies) != 1:
         raise RuntimeError(f"{world.get_name()} has {len(skies)} lunden:sky actors; load its composed lighting level")
-    return MapLight(skies[0], [a for a in actors if any(t.startswith("lamp:") for t in tags(a))])
+    return MapLight(world, skies[0], [a for a in actors if any(t.startswith("lamp:") for t in tags(a))])
 
 
 def count_lights(world, light):

@@ -26,7 +26,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "python"))
 from screenshot_level import render_view, spawn  # noqa: E402
 from prepare_nanite_materials import static_mesh_editor  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from capture_light import game_bias  # noqa: E402,F401  (#2306: one helper for the capture scripts' light)
+from capture_light import game_bias, update_sky_for_capture  # noqa: E402
 
 MAP = "/Game/Lunden/Maps/L_Lunden"
 VIEWS = json.loads((Path(__file__).resolve().parents[3] / "unreal/Lunden/Tests/views.json").read_text(encoding="utf-8"))
@@ -123,9 +123,7 @@ def run(scene_path, out_dir, names=None, exposure="game", trial=None, bias_offse
             sky.set_editor_property(k, v, u.PropertyAccessChangeNotifyMode.NEVER)
         for k, v in (trial or {}).items():
             sky.set_editor_property(k, v, u.PropertyAccessChangeNotifyMode.NEVER)
-        sky.call_method("UpdateSky")
-        for facade in u.GameplayStatics.get_all_actors_with_tag(world, "lunden:facade-controller"):
-            facade.call_method("SettleFacade")  # the commandlet editor world never ticks the wall-light fade
+        update_sky_for_capture(world, sky)
         dark = sky.get_editor_property("DuskLight") < dusk_mid
         lit = 0
         for lamp in lamps:
