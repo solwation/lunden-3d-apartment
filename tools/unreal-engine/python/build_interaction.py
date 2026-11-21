@@ -43,6 +43,9 @@ import sys
 
 import unreal as u
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import garage_control
+
 ASSETS = u.EditorAssetLibrary
 BP = u.BlueprintEditorLibrary
 GRAPH = u.BlueprintGraphEditor
@@ -66,11 +69,12 @@ PROJECT = Path(u.Paths.convert_relative_path_to_full(u.Paths.project_dir()))
 USE_BOX = 6.0       # cm, half size of a switch's / tap's use box (the web picks the switch plate / tap lever)
 LEAF_HALF = 2.5     # cm, half thickness of a door leaf's / sash's blocking box (the pilot's)
 KIND_MOVE, KIND_SWITCH, KIND_TAP, KIND_BUTTON = 0, 1, 2, 3  # a button: only its state and ChangeCount (no motion)
+KIND_GARAGE_BUTTON = 4
 BUTTON_BOX = 4.0    # cm, half size of a lift button's use box (LIFT_PANEL.radius 3.4 cm, ring x 1.32; pitch 12-15 cm)
 BUTTON_SECONDS = 0.22  # LIFT_PANEL.pressMs
 SPEC_TAG = "Lunden.SpecHash"
 # the class depends only on this script (line endings normalised, so a CRLF checkout does not rebuild it)
-SPEC = hashlib.sha256(Path(__file__).read_bytes().replace(b"\r\n", b"\n")).hexdigest()
+SPEC = hashlib.sha256((Path(__file__).read_bytes() + Path(garage_control.__file__).read_bytes()).replace(b"\r\n", b"\n")).hexdigest()
 
 
 # ---------------------------------------------------------------------------------------------- graph helpers ----
@@ -259,7 +263,11 @@ def build_listener():
 def check():
     """--check: both classes carry this script's hash, compile without errors, and the door's Apply calls the listener."""
     problems = []
-    for path in (LISTENER, DOOR):
+    graphs_for = {LISTENER: [EVENT], DOOR: ["EventGraph"]}
+    measurements = PROJECT / "Import/measurements.json"
+    if measurements.is_file() and any(d.get("control") for d in json.loads(measurements.read_text(encoding="utf-8"))["doors"]):
+        graphs_for[garage_control.PATH] = ["EventGraph", garage_control.VEHICLE, garage_control.STEP, garage_control.VISITOR]
+    for path, graphs in graphs_for.items():
         bp = ASSETS.load_asset(path) if ASSETS.does_asset_exist(path) else None
         if not bp:
             problems.append(path + " is missing")
@@ -267,7 +275,6 @@ def check():
         if ASSETS.get_metadata_tag(bp, SPEC_TAG) != SPEC:
             problems.append(f"{path}: spec {ASSETS.get_metadata_tag(bp, SPEC_TAG)} != {SPEC}")
         BP.compile_blueprint(bp)
-        graphs = ["EventGraph"] if path == DOOR else [EVENT]
         for name in graphs:
             ed = GRAPH.get_graph_editor_by_name(bp, name)
             if not ed:
@@ -298,6 +305,7 @@ def build_class(listener):
                    "TargetOpen": BP.get_basic_type_by_name("bool"), "Wanted": BP.get_basic_type_by_name("bool"),
                    "Seconds": BP.get_basic_type_by_name("real"), "Kind": BP.get_basic_type_by_name("int"),
                    "ChangeCount": BP.get_basic_type_by_name("int"), "Id": BP.get_basic_type_by_name("string"),
+                   "GarageGate": BP.get_object_reference_type(u.Actor), "LinearTravel": BP.get_basic_type_by_name("bool"),
                    "LampTags": names, "PartnerTags": names, "Water": BP.get_object_reference_type(u.Actor)})
     lamp = ASSETS.load_asset(LAMP)
     if not lamp:
@@ -346,7 +354,19 @@ def build_class(listener):
     connect(gr.get("Kind"), "Kind", is_switch, "A")
     value(is_switch, "B", KIND_SWITCH)
     b_switch = gr.branch()
-    connect(listeners, "Completed", b_switch, "execute")
+    garage_button = gr.call("KismetMathLibrary:EqualEqual_IntInt")
+    connect(gr.get("Kind"), "Kind", garage_button, "A")
+    value(garage_button, "B", KIND_GARAGE_BUTTON)
+    selected = gr.branch()
+    connect(listeners, "Completed", selected, "execute")
+    connect(garage_button, "ReturnValue", selected, "Condition")
+    gate, typed = gr.cast(bp)
+    connect(selected, "then", gate, "execute")
+    connect(gr.get("GarageGate"), "GarageGate", gate, "Object")
+    press = gr.call(bp.generated_class().get_path_name() + ":ToggleDoor")
+    connect(gate, "then", press, "execute")
+    connect(gate, typed, press, "self")
+    connect(selected, "else", b_switch, "execute")
     connect(is_switch, "ReturnValue", b_switch, "Condition")
 
     # switch: every lamp:<id> actor on or off
@@ -405,9 +425,37 @@ def build_class(listener):
     connect(root, "ReturnValue", move, "Component")
     connect(loc, "ReturnValue", move, "TargetRelativeLocation")
     connect(rot_pick, "ReturnValue", move, "TargetRelativeRotation")
-    connect(gr.get("Seconds"), "Seconds", move, "OverTime")
-    for name in ("bEaseIn", "bEaseOut", "bForceShortestRotationPath"):
-        value(move, name, "true")
+    # The web reverses these leaves at their constant speed from their current angle.
+    def quat(node, pin):
+        q = gr.call("KismetMathLibrary:Conv_RotatorToQuaternion")
+        connect(node, pin, q, "InRot")
+        return q
+
+    def arc(q1, q2):
+        delta = gr.call("KismetMathLibrary:Quat_AngularDistance")
+        connect(q1, "ReturnValue", delta, "A")
+        connect(q2, "ReturnValue", delta, "B")
+        return delta
+
+    gr.row()
+    remaining = arc(quat(gr.call("Actor:K2_GetActorRotation"), "ReturnValue"), quat(rot_pick, "ReturnValue"))
+    total = arc(quat(gr.get("OpenRotation"), "OpenRotation"), quat(gr.get("ClosedRotation"), "ClosedRotation"))
+    ratio = gr.call("KismetMathLibrary:SafeDivide")
+    connect(remaining, "ReturnValue", ratio, "A")
+    connect(total, "ReturnValue", ratio, "B")
+    duration = gr.call("KismetMathLibrary:Multiply_DoubleDouble")
+    connect(gr.get("Seconds"), "Seconds", duration, "A")
+    connect(ratio, "ReturnValue", duration, "B")
+    seconds = gr.call("KismetMathLibrary:SelectFloat")
+    connect(gr.get("LinearTravel"), "LinearTravel", seconds, "bPickA")
+    connect(duration, "ReturnValue", seconds, "A")
+    connect(gr.get("Seconds"), "Seconds", seconds, "B")
+    connect(seconds, "ReturnValue", move, "OverTime")
+    ease = gr.call("KismetMathLibrary:Not_PreBool")
+    connect(gr.get("LinearTravel"), "LinearTravel", ease, "A")
+    for name in ("bEaseIn", "bEaseOut"):
+        connect(ease, "ReturnValue", move, name)
+    value(move, "bForceShortestRotationPath", "true")
     BP.compile_blueprint(bp)
     bad = gr.g.list_nodes_with_errors()
     if bad:
@@ -492,7 +540,7 @@ def box(actors, parent, label, tag, centre, extent, rotation=None):
 def interactable(actors, cls, row_id, kind, location, rotation, **props):
     a = actors.spawn_actor_from_class(cls, u.Vector(*location), rotation)
     a.set_actor_label(row_id + " interact")
-    a.tags = [u.Name("interact:" + row_id), u.Name("kind:" + ("move", "switch", "tap", "liftbutton")[kind])]
+    a.tags = [u.Name("interact:" + row_id), u.Name("kind:" + ("move", "switch", "tap", "liftbutton", "garagebutton")[kind])]
     a.root_component.set_mobility(u.ComponentMobility.MOVABLE)
     a.set_editor_property("Id", row_id)
     a.set_editor_property("Kind", kind)
@@ -623,7 +671,7 @@ def leaf_centre(parts):
     return [(p + q) / 2 for p, q in zip(lo, hi)]
 
 
-def build_entrances(cls, m):
+def build_entrances(cls, m, controller):
     """#2314: the doors of the other zones (measurements.json doors outside l1007). A row with `parts` names the leaf's
     exported nodes (makeDoor's frame bars, fill and handle; the garage door's sections), otherwise the leaf is the node
     `id` (a world door). Each zone's imported level is copied (as Level_l1007_interaction is) and the leaf hangs on an
@@ -666,7 +714,7 @@ def build_entrances(cls, m):
                         raise RuntimeError(f"Imported hinge differs from the export: {d['id']} {here} {xyz}")
                 hinge = interactable(actors, cls, d["id"], KIND_MOVE, xyz, yaw(heading), OpenRotation=yaw(d["open"]["unrealYaw"]),
                                      ClosedRotation=yaw(d["closed"]["unrealYaw"]), OpenLocation=u.Vector(*xyz),
-                                     ClosedLocation=u.Vector(*xyz), TargetOpen=opened, Seconds=d["seconds"])
+                                     ClosedLocation=u.Vector(*xyz), TargetOpen=opened, Seconds=d["seconds"], LinearTravel=bool(d.get("leafType")))
                 for leaf in parts:
                     movable(leaf)
                     attach(leaf, hinge)
@@ -681,13 +729,23 @@ def build_entrances(cls, m):
                 opened = u.Quat(*q).rotator()
                 hinge = interactable(actors, cls, d["id"], KIND_MOVE, pivot, closed, OpenRotation=opened, ClosedRotation=closed,
                                      OpenLocation=u.Vector(*pivot), ClosedLocation=u.Vector(*pivot),
-                                     TargetOpen=d["initiallyOpen"], Seconds=d["seconds"])
+                                     TargetOpen=d["initiallyOpen"], Seconds=d["seconds"], LinearTravel=bool(d.get("control")))
                 for leaf in parts:
                     movable(leaf)
                     attach(leaf, hinge)
                 bottom, w = d["checkClosed"]["unreal"], 100 * d["width"]
                 box(actors, hinge, d["id"] + " collision", "door-leaf:" + d["id"],
                     [(p + b) / 2 for p, b in zip(pivot, bottom)], (LEAF_HALF, w / 2, abs(pivot[2] - bottom[2]) / 2))
+                if "control" in d:
+                    garage_control.spawn(actors, controller, hinge, d)
+                    for button in d["control"]["buttons"]:
+                        xyz = button["position"]["unreal"]
+                        b = interactable(actors, cls, button["id"], KIND_GARAGE_BUTTON, xyz, yaw(0), GarageGate=hinge)
+                        leaf = by_id[button["part"]]
+                        movable(leaf)
+                        attach(leaf, b)
+                        # Only the yellow cap picks the switch; the adjacent post stays static.
+                        box(actors, b, button["id"] + " use", "garagebutton:" + button["id"], xyz, (2.0, 4.0, 4.0))
             else:
                 raise RuntimeError(f"{d['id']}: no Unreal door for kind {d['kind']} outside L1007")
             if extra_tags:
@@ -733,7 +791,8 @@ def main(argv):
             raise RuntimeError("Could not delete the previous " + level)
     cls = build_class(build_listener())
     build_level(cls, m)
-    build_entrances(cls, m)
+    control = garage_control.controller(cls, SPEC) if any(d.get("control") for d in m["doors"]) else None
+    build_entrances(cls, m, control)
     build_lift_level(cls, m)
     u.log("LUNDEN_INTERACTION_OK")
 

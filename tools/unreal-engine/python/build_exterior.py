@@ -67,7 +67,8 @@ def package_files():
 def door_parts():
     """#2314: the exported nodes of the leaves that open (measurements.json doors with `parts`), by zone."""
     doors = json.loads(MEASUREMENTS.read_text(encoding="utf-8"))["doors"]
-    return {z: sorted(p for d in doors if d["zone"] == z for p in d.get("parts", [])) for z in SOURCES}
+    return {z: sorted(p for d in doors if d["zone"] == z for p in [*d.get("parts", []),
+                   *(b["part"] for b in d.get("control", {}).get("buttons", []))]) for z in SOURCES}
 
 
 def inputs():

@@ -1222,18 +1222,13 @@ each leaf's nodes on a `BP_LundenSwingDoor` at the hinge or pivot with a blockin
 let the player through. Every contract of the [L1007 doors](#doors-windows-switches-and-taps-2285) holds: E, by id,
 `ChangeCount`, the change event.
 
-*Decisions (can be overturned):* the web's garage door rolls its sections up a track and in under the ceiling and is
-worked from two yellow buttons (and opens itself for the car, closing after 25 s); in Unreal the closed door tips up
-about its top edge into the same open place under the ceiling (the same end state, a different motion), it opens and
-closes with E on the door itself, and the buttons, the automatic closing and the car are not ported. Hus L's portik
-door blocks while closed (before #2314 it stood closed but had no collision).
+The web rolls the garage door's sections up a track and in under the ceiling. Unreal tips its sections together about
+the upper edge to reach the same open space. E on the gate and either yellow button operate the same gate.
 
 **Houses checked (equivalent houses rule).** Hus A, B and C: each entrance (the same corehouse.js door, all three
 fixed). Hus L: the portik's stairwell door (same makeDoor; was closed but walk-through), the loftgång's stairwell door
 (same makeDoor; was blocking and not usable) and the portik's small room (a `world.doors` row that was not usable):
-all three fixed. Not in scope: the flats' doors in the A/B/C stairwells (#653: makeDoor leaves merged into one mesh
-each, which open onto a dark cell on the web) and the garage's steel, cage and park doors, which still stand as
-exported.
+all three fixed. The additional leaves are covered by #2328 below.
 
 Checks: `test_interaction` (every door: hinge within 1 cm, yaw / angle within 1°, the garage door's check point within
 1 cm, E from outside opens and E at the open leaf closes it, the change event once per change),
@@ -1469,6 +1464,39 @@ with scripts on the Windows development PC**; signing and publishing happen late
   [Epic documents the Zen data location and overrides](https://dev.epicgames.com/documentation/en-us/unreal-engine/using-zen-storage-server-as-cooked-output-store-for-unreal-engine).
 - Another Windows PC can take over by following the install steps above, cloning the repository, running
   `git config lfs.fetchexclude ""` + `git lfs pull` and `check-environment.ps1`.
+
+#### Apartment and garage doors (#2328)
+
+The 56 apartment leaves in the three stairwells (19 in A, 12 in B, 25 in C) use `CoreHouse.doors`, including the
+dark entrance cells the web already builds behind them. Each floor has a separate interaction ID. The 37 storage
+cages, 30 steel doors and two park doors select their actual `Garage.cageDoors` mesh instance. A park leaf moves
+its separate glass pane with its frame. The two yellow gate caps use the actual positions of `GarageDoor.targets`.
+All leaves and both buttons use the existing `BP_LundenSwingDoor` events, IDs and change counts.
+
+The `garage-control` actor counts the 25 seconds only while the overhead door is fully open. A visitor's feet inside
+the opening reset the timer. A visitor or active car obstructing a closing gate makes it reverse at its current angle.
+The #2357 vehicle builder can use the generated controller's `SetVehicleState(InOpening, WantsDoor, RequestOpen)` with
+the route state from `src/car.js`. Its visible moving car supplies `inOpening()`. The route holds the timer while
+`wantsDoor()` is true, asks to open when departing from the garage or the gate lies 0–90 m ahead, and clears all
+three flags when it disappears. The vehicle itself belongs to #2357.
+
+WSL checks on the complete export are `node tools/unreal-engine/tests/check-door-export.mjs` (with the web's Three
+package) and `python3 tools/unreal-engine/tests/garage-rules.py`. The closed and open latch checks use web builder
+positions and allow 1 cm and 1°. On Windows run a full `sync-import.ps1`. Register the three editor tests using
+the existing temporary-copy convention in a local Windows checkout:
+
+```powershell
+$tests = 'test_interaction', 'test_exterior_route', 'test_facades'
+foreach ($name in $tests) {
+    Copy-Item "tools/unreal-engine/tests/$name.py" unreal/Lunden/Content/Python/
+    .\tools\unreal-engine\run-tests.ps1 -Filter "Editor.Python.Lunden.$name"
+    if ($LASTEXITCODE -ne 0) { throw "$name failed" }
+}
+```
+
+This runs the native automation filters `Editor.Python.Lunden.test_interaction`, `Editor.Python.Lunden.test_exterior_route` and
+`Editor.Python.Lunden.test_facades` on the composed world. The interaction test checks every leaf's two poses,
+the listener event counts, both buttons through E, timeout, obstruction and the vehicle hook.
 
 ### Building a local Shipping archive
 

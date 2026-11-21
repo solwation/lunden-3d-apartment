@@ -10,7 +10,8 @@
    angle (within 1 degree). A second OpenDoor changes nothing: ChangeCount rises exactly once per change. CloseDoor
    brings each back to its closed pose. Wardrobe pairs: opening one panel closes its open partner (src/doors.js).
 3. Player use: the production controller's E aimed at the front door (as the pilot's door test) opens it. #2314: E
-   from outside opens each door outside L1007 and E aimed at the open leaf closes it again.
+   from outside opens each original entrance and a representative of each new leaf type/house, then closes it.
+   The two yellow buttons operate the gate; test its timeout, reversal, real opening bounds and the vehicle hook.
 4. A switch turns its room's real lamps (#2283's BP_LundenLamp actors tagged lamp:<id> in Level_lighting) on and off
    and leaves another room's lamp off; a tap shows and hides its water.
 5. The four lifts' 49 buttons (Level_lift_buttons) sit within 1 cm of the export and light once on two presses.
@@ -65,6 +66,7 @@ OUTSIDE = [i for i, d in DOORS.items() if d["zone"] != "l1007"]
 OVERHEAD = {d["id"]: d for d in M["doors"] if d["kind"] == "overhead"}  # #2314: the garage door, tipped up like a sash
 SASHES = {s["id"]: s for w in M["windows"] for s in w.get("sashes", [])}
 SASHES.update(OVERHEAD)
+GARAGE_BUTTONS = [b for d in OVERHEAD.values() for b in d.get("control", {}).get("buttons", [])]
 SWITCHES = M["interaction"]["switches"]
 TAPS = M["interaction"]["taps"]
 LIFT_BUTTONS = M["interaction"].get("liftButtons", [])
@@ -86,7 +88,7 @@ def quat_angle(a, b):
 @u.AutomationScheduler.add_latent_command
 def run():
     try:
-        stop = time.monotonic() + 120
+        stop = time.monotonic() + 180
         pc = None
         while not pc or pc.get_class().get_name() != "BP_LundenPlayerController_C":
             if time.monotonic() > stop:
@@ -119,7 +121,7 @@ def run():
             return [state == "true" for got_id, state in
                     (str(r).rsplit("=", 1) for r in listener.get_editor_property("Received")) if got_id == i]
         # 1. coverage
-        every = list(DOORS) + list(SASHES) + [s["id"] for s in SWITCHES] + [t["id"] for t in TAPS] + [b["id"] for b in LIFT_BUTTONS]
+        every = list(DOORS) + list(SASHES) + [s["id"] for s in SWITCHES] + [t["id"] for t in TAPS] + [b["id"] for b in LIFT_BUTTONS + GARAGE_BUTTONS]
         act = {i: by_id(i) for i in every}
         cls = u.load_class(None, DOOR)
         total = len(u.GameplayStatics.get_all_actors_of_class(game, cls))
@@ -142,6 +144,13 @@ def run():
                 want = row["open" if opened else "closed"]["unrealYaw"]
                 if yaw_diff(rot.yaw, want) > 1:
                     problems.append(f"{i} yaw {rot.yaw} vs {want}")
+                if "checkClosed" in row:
+                    angle = math.radians(rot.yaw)
+                    latch = [loc[0] + 100 * row["width"] * math.cos(angle), loc[1] + 100 * row["width"] * math.sin(angle), loc[2]]
+                    error = math.dist(latch, row["checkOpen" if opened else "checkClosed"]["unreal"])
+                    if error > 1:
+                        problems.append(f"{i}: latch {error:.2f} cm from the web")
+
             elif row:
                 want = row["openCentre" if opened else "closedCentre"]["unreal"]
                 centre = xyz(box_of(i).get_actor_location())
@@ -237,12 +246,21 @@ def run():
             yield from seconds(settle)
             if count(act[i]) != n + 1 or act[i].get_editor_property("TargetOpen") != want_open:
                 problems.append(f"E did not {'open' if want_open else 'close'} {i} once ({n} -> {count(act[i])})")
-            return check(i, want_open)
+            return check(i, want_open) if i in DOORS or i in SASHES else count(act[i])
 
-        # #2314: E from outside opens every door outside L1007, E aimed at its open leaf closes it
+        # All moving leaves have both physical poses checked above. Aim E at every original entrance plus each new
+        # house/leaf type; the representative clicks keep this native route within the automation timeout.
         evidence["outsideWithE"] = {}
+        selected, sampled = [], set()
         for i in OUTSIDE:
             d = DOORS[i]
+            kind = (d.get("house"), d.get("leafType"))
+            if not d.get("leafType") or kind not in sampled:
+                selected.append(i)
+                sampled.add(kind)
+        for i in selected:
+            d = DOORS[i]
+            reach = 30 if d.get("leafType") else 100
             hx, hy, hz = d["hinge"]["unreal"]
             w = 100 * d["width"]
             c, o = (math.radians(d[k]["unrealYaw"]) for k in ("closed", "open"))
@@ -251,11 +269,11 @@ def run():
             n = (do[0] - dot * dc[0], do[1] - dot * dc[1])
             n = (n[0] / math.hypot(*n), n[1] / math.hypot(*n))  # the side the leaf opens to (outside)
             leaf = (hx + w / 2 * dc[0], hy + w / 2 * dc[1])
-            cam = (leaf[0] + 100 * n[0], leaf[1] + 100 * n[1], hz + 110)
+            cam = (leaf[0] + reach * n[0], leaf[1] + reach * n[1], hz + 110)
             opened = yield from press_e(cam, u.Rotator(roll=0, pitch=0, yaw=math.degrees(math.atan2(leaf[1] - cam[1], leaf[0] - cam[0]))),
                                         i, True, d["seconds"] + 0.4)
             leaf = (hx + w / 2 * do[0], hy + w / 2 * do[1])
-            cam = (leaf[0] + 100 * dc[0], leaf[1] + 100 * dc[1], hz + 110)
+            cam = (leaf[0] + reach * dc[0], leaf[1] + reach * dc[1], hz + 110)
             closed = yield from press_e(cam, u.Rotator(roll=0, pitch=0, yaw=math.degrees(math.atan2(leaf[1] - cam[1], leaf[0] - cam[0]))),
                                         i, False, d["seconds"] + 0.4)
             evidence["outsideWithE"][i] = {"opened": opened, "closed": closed}
@@ -320,6 +338,69 @@ def run():
         for what, i in sample.items():
             if what in ("switch", "tap") and heard(i) != [True, False]:
                 problems.append(f"{what} {i}: event {heard(i)} after on + repeated on + off (expected [True, False])")
+        if GARAGE_BUTTONS:
+            gate_id, row = next(iter(OVERHEAD.items()))
+            gate = act[gate_id]
+            control, = u.GameplayStatics.get_all_actors_with_tag(game, "garage-control")
+            control.set_actor_tick_enabled(False)  # the following calls supply exact game time and occupancy
+            state = lambda: gate.get_editor_property("TargetOpen")
+            advance = lambda dt, visitor=False: control.call_method("AdvanceGarage", args=(dt, visitor))
+            vehicle = lambda inside, hold, request: control.call_method("SetVehicleState", args=(inside, hold, request))
+            bounds = row["control"]["opening"]
+            middle_y = (bounds["z0"] + bounds["z1"]) * 50
+            x, top = bounds["x"] * 100, bounds["top"] * 100
+            margin = (bounds["radius"] + bounds["xMargin"]) * 100
+            for feet, expected in [((x, middle_y, top - 1), True), ((x + margin + 1, middle_y, top - 1), False),
+                                   ((x, bounds["z1"] * 100 + 1, top - 1), False), ((x, middle_y, top + 1), False)]:
+                if bool(control.call_method("VisitorInOpening", args=(u.Vector(*feet),))) != expected:
+                    problems.append(f"opening predicate at {feet}, expected {expected}")
+            for b in GARAGE_BUTTONS:
+                if math.dist(xyz(act[b["id"]].get_actor_location()), b["position"]["unreal"]) > 1:
+                    problems.append(f"{b['id']}: button moved")
+            outside, inside = GARAGE_BUTTONS
+            x, y, z = outside["position"]["unreal"]
+            yield from press_e((x - 45, y, z), u.Rotator(roll=0, pitch=0, yaw=0), outside["id"], True, .1)
+            if not state():
+                problems.append("the outside button did not open the gate")
+            yield from seconds(row["seconds"] + .1)
+            advance(row["control"]["autoSeconds"] - .1)
+            if not state():
+                problems.append("closed before timeout")
+            advance(1, True)
+            advance(row["control"]["autoSeconds"] - .1)
+            if not state():
+                problems.append("visitor failed to reset the full timer")
+            advance(.2)
+            if state():
+                problems.append("did not close at timeout")
+            yield from seconds(.4)
+            advance(.1, True)
+            if not state():
+                problems.append("closing gate did not reverse for the visitor")
+            yield from seconds(.8)
+            vehicle(False, True, False)
+            advance(30)
+            if not state():
+                problems.append("did not hold for approaching car")
+            x, y, z = inside["position"]["unreal"]
+            yield from press_e((x + 45, y, z), u.Rotator(roll=0, pitch=0, yaw=180), inside["id"], True, .1)
+            if state():
+                problems.append("the inside button did not close the gate")
+            yield from seconds(.4)
+            vehicle(True, False, False)
+            advance(.1)
+            if not state():
+                problems.append("did not reverse for the car in the opening")
+            gate.call_method("CloseDoor")
+            yield from seconds(row["seconds"] + .1)
+            vehicle(False, False, True)
+            advance(.1)
+            if not state():
+                problems.append("car route did not open the closed gate")
+            vehicle(False, False, False)
+            control.set_actor_tick_enabled(True)
+            evidence["garageButtons"] = {b["id"]: count(act[b["id"]]) for b in GARAGE_BUTTONS}
+
         wrong = {}
         for i in every:
             got = heard(i)

@@ -470,11 +470,11 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     const core = new Core();
     Object.assign(extra, { garage, core }); // #2300: the footstep sensor and the outdoor sprint need them (export-player.js)
     extra.lifts = [['l', core.lift]]; // #2285: the lifts' button panels (src/liftpanel.js targets)
-    extra.coreDoors = core.doors.map((t, i) => ['l', t, `src/core.js Core.doors[${i}]`]); // #2314: the stairwell doors that open
+    extra.coreDoors = core.doors.map((t, i) => ['l', t, `src/core.js Core.doors[${i}]`, false, core]); // #2314: the stairwell doors that open
     for (const spec of [C.CORE_A, C.CORE_B, C.CORE_C]) {
       const house = new CoreHouse(spec), letter = spec.house.slice(-1).toLowerCase();
       core.attach(house); extra.lifts.push([letter, house.lift]);
-      extra.coreDoors.push([letter, house.doors[0], `src/corehouse.js CoreHouse(${spec.house}).doors[0] (the entrance)`]);
+      house.doors.forEach((t, i) => extra.coreDoors.push([letter, t, `src/corehouse.js CoreHouse(${spec.house}).doors[${i}]`, i > 0, house]));
     }
     extra.objects.push(garage.object, garage.door.object, garage.parkObject, core.object); // (not garage.blackout: a web-only mask)
     for (const o of [garage.object, garage.door.object, garage.parkObject]) extra.group.set(o, 'garage');
@@ -1379,24 +1379,71 @@ function entranceDoors({ coreDoors, garage, byZone, atomOf, P }) {
     root.traverse((o) => { const a = atomOf.get(o); if (a?.id) ids.push(a); });
     return ids;
   };
-  for (const [house, t, source] of coreDoors) {
+  for (const [house, t, source, flat, core] of coreDoors) {
     const d = t?.door;
     if (!d?.pivot) continue;
     const atoms = partsUnder(d.pivot);
-    if (!atoms.length) continue; // the door's zone is not exported
+    if (!atoms.length) {
+      if (flat && byZone.has('kvarteret')) throw Error(source + ': missing apartment leaf in kvarteret');
+      continue;
+    }
     const parent = new THREE.Quaternion();
     d.pivot.parent.getWorldQuaternion(parent);
     if (Math.abs(parent.w) < 1 - 1e-9) throw new Error(`${source}: the door's group is rotated; the rows assume it is not`);
     const at = new THREE.Vector3();
     d.pivot.parent.localToWorld(at.set(d.hx, 0, d.hz));
-    const yaw = (a) => Math.atan2(-(d.dir[1] * Math.cos(a) + d.out[1] * Math.sin(a)), d.dir[0] * Math.cos(a) + d.out[0] * Math.sin(a));
-    // unrealYaw = the hinge -> latch direction in Unreal, as on the other swing rows (makeDoor's leaf runs along its
-    // pivot's local +x, so it is -deg(rotation.y); a SwingDoor's leaf runs along local +z, hence 90 - deg there)
-    const rot = (a) => ({ webRotationY: r4(yaw(a)), unrealYaw: roundCm(((-yaw(a) * 180 / Math.PI) % 360 + 540) % 360 - 180) });
+    // Sample the web builder at both stops, including the latch, then restore its original pose for the GLBs.
+    const sample = angle => {
+      d.angle = angle; core.placeDoor(d);
+      const yaw = d.pivot.rotation.y, latch = d.pivot.localToWorld(new THREE.Vector3(d.w, d.y, 0));
+      return { rotation: { webRotationY: r4(yaw), unrealYaw: roundCm((-yaw * 180 / Math.PI + 540) % 360 - 180) },
+        latch: P(latch.x, latch.y, latch.z) };
+    };
+    const start = d.angle, closed = sample(0), open = sample(d.max);
+    d.angle = start; core.placeDoor(d);
     const lv = levelOf(d.y + 0.05);
-    rows.push({ id: `door_hus${house}_l${lv}_${tag('x', at.x)}_${tag('z', at.z)}`, zone: atoms[0].zone, kind: 'swing', level: lv, source,
-      name: t.name ?? null, house, hinge: P(at.x, d.y, at.z), width: r4(d.w), height: 2.18,
-      closed: rot(0), open: rot(d.max), initiallyOpen: d.target > 0, seconds: r4(d.max / 3), parts: atoms.map((a) => a.id) });
+    const id = `door_hus${house}_l${lv}_${tag('x', at.x)}_${tag('z', at.z)}` + (flat ? '_' + tag('y', d.y) : '');
+    rows.push({ id, zone: atoms[0].zone, kind: 'swing', level: lv, source,
+      ...(flat ? { leafType: 'flat' } : {}), name: t.name ?? null, house, hinge: P(at.x, d.y, at.z), width: r4(d.w), height: 2.18,
+      closed: closed.rotation, open: open.rotation, checkClosed: closed.latch, checkOpen: open.latch, initiallyOpen: d.target > 0, seconds: r4(d.max / 3), parts: atoms.map((a) => a.id) });
+  }
+  if (garage) {
+    // One garage mesh draws many leaves. The instance index picks the moving part, including its separate glass.
+    const batches = new Map();
+    for (const list of byZone.values()) for (const a of list) if (a.instance !== undefined && a.id) {
+      if (!batches.has(a.object)) batches.set(a.object, new Map());
+      batches.get(a.object).set(a.instance, a);
+    }
+    for (const t of garage.targets) {
+      const d = t.door;
+      if (!d?.inst) continue;
+      const leaf = batches.get(d.inst)?.get(d.index);
+      if (!leaf) {
+        if (byZone.has('kvarteret')) throw Error('Missing garage door instance: ' + t.name);
+        continue;
+      }
+      const park = !!d.rect?.door?.park, parts = [leaf.id];
+      if (park) {
+        const glass = batches.get(garage.parkGlass)?.get(d.index);
+        if (!glass || glass.zone !== leaf.zone) throw Error('Garage park leaf missing its glass: ' + leaf.id);
+        parts.push(glass.id);
+      }
+      const baseY = leaf.box.min.y;
+      const sample = a => {
+        d.angle = a; garage.place(d);
+        const yaw = d.pivot.rotation.y;
+        return { rotation: { webRotationY: r4(yaw), unrealYaw: roundCm((-yaw * 180 / Math.PI + 540) % 360 - 180) },
+          latch: P(d.segment[2], baseY, d.segment[3]) };
+      };
+      const start = d.angle, closed = sample(0), open = sample(d.max);
+      d.angle = start; garage.place(d);
+      const kind = park ? 'park' : d.steel ? 'steel' : 'cage';
+      rows.push({ id: `door_garage_${kind}_${tag('x', d.hx)}_${tag('z', d.hz)}`, kind: 'swing',
+        zone: leaf.zone, level: leaf.level, name: t.name, leafType: kind, source: 'src/garage.js Garage.cageDoors and Garage.place',
+        hinge: P(d.hx, baseY, d.hz), height: r4(leaf.box.max.y - baseY), width: r4(d.w),
+        closed: closed.rotation, open: open.rotation, checkClosed: closed.latch, checkOpen: open.latch,
+        initiallyOpen: d.target > 0, seconds: r4(d.max / C.GARAGE.storage.speed), parts });
+    }
   }
   if (garage?.door?.panels) {
     const g = garage.door, GD = C.SITE.terrain.garageDoor, F = C.GARAGE.floor, zc = (GD.z0 + GD.z1) / 2;
@@ -1410,6 +1457,13 @@ function entranceDoors({ coreDoors, garage, byZone, atomOf, P }) {
         axis: { web: [0, 0, 1], unreal: [0, 1, 0] }, angleDeg: 90,
         checkClosed: P(g.xd, F, zc), checkOpen: P(g.xd + GD.h, F + GD.h, zc),
         initiallyOpen: g.t >= 1, seconds: C.GARAGE.door.seconds, sections: C.GARAGE.door.sections,
+        control: { autoSeconds: C.GARAGE.door.auto, opening: g.opening,
+          buttons: g.targets.map((t, i) => {
+            const atom = atomOf.get(t.pickable);
+            if (!atom?.id || atom.zone !== atoms[0].zone) throw Error('Garage button missing from overhead door zone');
+            const position = t.pickable.getWorldPosition(new THREE.Vector3());
+            return { id: 'button_garage_' + (i ? 'inside' : 'outside'), part: atom.id, position: P(position.x, position.y, position.z) };
+          }) },
         parts: atoms.map((a) => a.id),
         check: 'checkClosed = the closed door\'s bottom edge centre; checkOpen = the same edge with the door tipped up under the ceiling (the web\'s open sections span g.xd … g.xd + h at the ceiling)' });
     }

@@ -1455,6 +1455,7 @@ export class GarageDoor {
   constructor(inside) {
     const D = G.door, N = D.sections, w = GD.z1 - GD.z0;
     this.object = new THREE.Group();
+    this.opening = { x: GD.x, radius: 0.6, xMargin: 0.3, z0: GD.z0 - 0.2, z1: GD.z1 + 0.2, top: F + GD.h };
     this.sh = GD.h / N; this.xd = GD.x + 0.1;
     const panel = new THREE.BoxGeometry(0.045, this.sh - 0.004, w - 0.02).translate(0, this.sh / 2, 0);
     { const uv = panel.attributes.uv; for (let i = 0; i < uv.count; i++) uv.setXY(i, uv.getX(i), uv.getY(i)); }
@@ -1510,7 +1511,10 @@ export class GarageDoor {
   }
 
   /** Someone / something in the opening (a strip either side of the door line)? */
-  inOpening(x, z, y, r = 0.6) { return Math.abs(x - GD.x) < r + 0.3 && z > GD.z0 - 0.2 && z < GD.z1 + 0.2 && y < F + GD.h; }
+  inOpening(x, z, y, r = this.opening.radius) {
+    const b = this.opening;
+    return Math.abs(x - b.x) < r + b.xMargin && z > b.z0 && z < b.z1 && y < b.top;
+  }
 
   update(dt, player, car) {
     const p = player.pos;
