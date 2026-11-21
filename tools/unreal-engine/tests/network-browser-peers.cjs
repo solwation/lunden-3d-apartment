@@ -59,12 +59,16 @@ async function peer(browser, fixtureOrigin, mobile, name, p) {
 }
 
 // Draw the two received avatars at their actual feet with their normal Ghost name sprites.
-async function capturePeer(page, filename) {
-  await page.evaluate(async () => {
+async function capturePeer(page, filename, touch) {
+  const image = await page.evaluate(async touch => {
     const T = await import('three');
     const { ghosts } = window.peer;
     const others = [...ghosts.others.values()];
-    if (!ghosts.connected || others.length !== 2 || others.some(g => g.away || !g.root.visible)) {
+    const names = new Set(others.map(g => g.name));
+    if (matchMedia('(pointer: coarse)').matches !== touch || (navigator.maxTouchPoints > 0) !== touch)
+      throw Error('Capture is running in the wrong browser profile.');
+    if (!ghosts.connected || others.length !== 2 || !names.has('Klara') || !names.has(touch ? 'Dator' : 'Telefon')
+        || others.some(g => g.away || !g.root.visible || !g.avatar.object.visible)) {
       throw new Error('Capture requires two visible, connected peers.');
     }
     const [left, right] = others.map(g => g.feet);
@@ -87,17 +91,62 @@ async function capturePeer(page, filename) {
     sun.position.y += 4;
     scene.add(sun);
     scene.add(new T.GridHelper(12, 24, 0x859097, 0xa4adb1));
-    const renderer = new T.WebGLRenderer({antialias: true, preserveDrawingBuffer: true});
-    renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-    renderer.setSize(innerWidth, innerHeight);
-    renderer.toneMapping = T.ACESFilmicToneMapping;
-    renderer.domElement.dataset.peerCapture = '';
-    document.body.style.margin = '0';
-    document.body.append(renderer.domElement);
-    ghosts.update();
-    renderer.render(scene, camera);
-  });
-  await page.locator('canvas[data-peer-capture]').screenshot({path: filename});
+    // Use one drawing-buffer pixel per viewport CSS pixel on both profiles.
+    const renderer = new T.WebGLRenderer({antialias: true});
+    try {
+      renderer.setSize(innerWidth, innerHeight, false);
+      renderer.toneMapping = T.ACESFilmicToneMapping;
+      ghosts.update();
+      renderer.render(scene, camera);
+      const frame = document.createElement('canvas');
+      frame.width = renderer.domElement.width;
+      frame.height = renderer.domElement.height;
+      const ctx = frame.getContext('2d', {willReadFrequently: true});
+      ctx.drawImage(renderer.domElement, 0, 0);
+
+      // Compare the saved frame to a second rendering with just this avatar's body hidden.
+      // The real name sprite, other peer, grid, camera and lighting stay in both images.
+      const sample = document.createElement('canvas');
+      const reference = sample.getContext('2d', {willReadFrequently: true});
+      const coverage = [];
+      for (const ghost of others) {
+        const projected = h => ghost.feet.clone().addScaledVector(camera.up, h * ghost.avatar.look.tall).project(camera);
+        const low = projected(.65), high = projected(1.45);
+        const y = Math.floor((1 - high.y) * frame.height / 2);
+        const height = Math.ceil((high.y - low.y) * frame.height / 2), width = Math.ceil(height * .55);
+        const x = Math.floor((1 + low.x) * frame.width / 2 - width / 2);
+        if (!(height >= 12 && x >= 0 && y >= 0 && x + width <= frame.width && y + height <= frame.height))
+          throw Error(ghost.name + ' is outside the captured view');
+        sample.width = width;
+        sample.height = height;
+        const actual = ctx.getImageData(x, y, width, height).data;
+        const body = ghost.avatar.object;
+        try {
+          body.visible = false;
+          renderer.render(scene, camera);
+          reference.drawImage(renderer.domElement, x, y, width, height, 0, 0, width, height);
+        } finally { body.visible = true; }
+        const background = reference.getImageData(0, 0, width, height).data;
+        let changed = 0;
+        for (let i = 0; i < actual.length; i += 4) {
+          if (Math.max(Math.abs(actual[i] - background[i]), Math.abs(actual[i+1] - background[i+1]),
+                       Math.abs(actual[i+2] - background[i+2])) >= 12) changed++;
+        }
+        if (changed < .05 * width * height)
+          throw Error(ghost.name + ' contributed only ' + changed + ' visible body pixels in its projected torso');
+        coverage.push({name: ghost.name, changed, samples: width * height});
+      }
+      if (renderer.getContext().isContextLost()) throw Error('WebGL context lost during peer capture');
+      return {png: frame.toDataURL('image/png'), coverage, width: frame.width, height: frame.height};
+    } finally {
+      renderer.dispose();
+      renderer.forceContextLoss();
+    }
+  }, touch);
+  const prefix = 'data:image/png;base64,';
+  assert.ok(image.png.startsWith(prefix), 'No rendered peer PNG');
+  await fs.writeFile(filename, Buffer.from(image.png.slice(prefix.length), 'base64'));
+  console.log(touch ? 'Touch' : 'Desktop', image.width + 'x' + image.height, JSON.stringify(image.coverage));
 }
 
 async function run() {
@@ -122,7 +171,15 @@ async function run() {
     async function signal(stage, expected = []) {
       const file = path.join(folder, 'live-step.json');
       await fs.writeFile(file + '.tmp', JSON.stringify({ stage, x, web: expected }));
-      await fs.rename(file + '.tmp', file);
+      // Windows can briefly deny replacement while PIE is reading the previous step.
+      const until = Date.now() + 3000;
+      while (true) {
+        try { await fs.rename(file + '.tmp', file); break; }
+        catch (error) {
+          if (!['EPERM', 'EACCES', 'EBUSY'].includes(error.code) || Date.now() >= until) throw error;
+          await sleep(20);
+        }
+      }
     }
     async function observed(stage) {
       try { return JSON.parse(await fs.readFile(path.join(folder,'live-observed.json'),'utf8')).stage === stage; }
@@ -197,8 +254,8 @@ async function run() {
       };
       const captureBoth = async () => {
         try {
-          await capturePeer(desktop, stem + '-desktop.png');
-          await capturePeer(mobile, stem + '-touch.png');
+          await capturePeer(desktop, stem + '-desktop.png', false);
+          await capturePeer(mobile, stem + '-touch.png', true);
         } finally { capturing = false; }
       };
       await Promise.all([tickWhileCapturing(), captureBoth()]);

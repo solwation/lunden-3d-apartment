@@ -150,6 +150,7 @@ public sealed class PlayerBridgeTests
             CreateNoWindow = true,
             RedirectStandardOutput = true
         };
+        start.Environment["LUNDEN_DEV_LOOPBACK"] = "1";
         start.ArgumentList.Add("cloudflare/dev.mjs");
         start.ArgumentList.Add(port.ToString(CultureInfo.InvariantCulture));
         using var worker = Process.Start(start)!;

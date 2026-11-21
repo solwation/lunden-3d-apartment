@@ -53,4 +53,4 @@ http.createServer(async (req, res) => {
   const r = await worker.fetch(request, env);
   if (r.status === 101 && r.webSocket) bridge(req, socket, r.webSocket);
   else { socket.end(`HTTP/1.1 ${r.status} Refused\r\nConnection: close\r\n\r\n`); }
-}).listen(port, () => console.log(`lunden worker on http://localhost:${port}`));
+}).listen(port, process.env.LUNDEN_DEV_LOOPBACK === '1' ? '127.0.0.1' : undefined, () => console.log(`lunden worker on http://localhost:${port}`));
