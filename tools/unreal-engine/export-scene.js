@@ -550,22 +550,6 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
   for (const m of world.furniture.movable ?? []) if (!furnitureOf.has(m.object)) furnitureOf.set(m.object, m);
   const furnitureRoots = new Set(world.furniture.object.children);
   const furnitureIndex = (item) => C.FURNITURE.indexOf(item);
-  const tree = world.furniture.movable.find((p) => p.item.type === 'xmastree');
-  const seasons = new Map();
-  if (tree) {
-    const { from, to } = C.XMAS_TREE.season;
-    seasons.set(tree.object, { what: 'christmas', from, to });
-    // The installed Seasons component understands inclusive windows. A leap year supplies all possible month/day keys.
-    const adjacentDay = ([month, day], shift) => {
-      const date = new Date(Date.UTC(2000, month - 1, day + shift));
-      return [date.getUTCMonth() + 1, date.getUTCDate()];
-    };
-    const outside = { what: 'outsideChristmas', from: adjacentDay(to, 1), to: adjacentDay(from, -1) };
-    const groups = new FurnitureGroups(world, () => loose.carryables);
-    const covered = christmasCoverage(groups, tree);
-    for (const piece of covered.pieces) seasons.set(piece.object, outside);
-    for (const handle of covered.loose) seasons.set(handle.model, outside);
-  }
   const lampOf = new Map();
   for (const l of world.lamps ?? []) if (l?.object) lampOf.set(l.object, l);
   const lightGroupKids = new Set(lightsInfo.group ? lightsInfo.group.children : []);
@@ -713,6 +697,24 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
       a.source = pw ? `data/plan.json#/floors/${pw.li}/walls/${pw.i}` : ZONES.find((z) => z.id === a.zone)?.split ? (GROUP_SOURCE[a.group] ?? null) : null;
       a.id = unique(`${pw ? 'wall' : 'mesh'}_${slug(a.name) ? slug(a.name) + '_' : ''}${lv}_${pos(c)}_${tag('y', c.y)}`);
     }
+  }
+
+  // Coverage refreshes geometry bounds, so assign historical node IDs before checking furniture support.
+  const tree = world.furniture.movable.find((p) => p.item.type === 'xmastree');
+  const seasons = new Map();
+  if (tree) {
+    const { from, to } = C.XMAS_TREE.season;
+    seasons.set(tree.object, { what: 'christmas', from, to });
+    // The installed Seasons component understands inclusive windows. A leap year supplies all possible month/day keys.
+    const adjacentDay = ([month, day], shift) => {
+      const date = new Date(Date.UTC(2000, month - 1, day + shift));
+      return [date.getUTCMonth() + 1, date.getUTCDate()];
+    };
+    const outside = { what: 'outsideChristmas', from: adjacentDay(to, 1), to: adjacentDay(from, -1) };
+    const groups = new FurnitureGroups(world, () => loose.carryables);
+    const covered = christmasCoverage(groups, tree);
+    for (const piece of covered.pieces) seasons.set(piece.object, outside);
+    for (const handle of covered.loose) seasons.set(handle.model, outside);
   }
 
   const { dayOfYear, sunDirection } = await import('../../src/daycycle.js');
