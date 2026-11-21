@@ -165,7 +165,9 @@ def avatar_rig_test():
                 yield
             got = {k: anim.get_editor_property(k) for k in ("Speed", "Moving", "Airborne", "Sitting")}
             pelvis, fl, fr, head = bone("pelvis"), bone("foot_l"), bone("foot_r"), bone("head")
+            knee = bone("calf_l")
             entry = {"vars": {k: (round(v, 2) if isinstance(v, float) else v) for k, v in got.items()},
+                     "kneeX": round(knee.x - pelvis.x, 1),
                      "pelvisZ": round(pelvis.z, 1), "feetZ": [round(fl.z, 1), round(fr.z, 1)],
                      "headXZ": [round(head.x, 1), round(head.z, 1)]}
             result["states"][name] = entry
@@ -183,6 +185,8 @@ def avatar_rig_test():
             ("crouched feet stay on the ground", max(s["crouch"]["feetZ"]) <= max(s["stand"]["feetZ"]) + 3.0, str(s["crouch"]["feetZ"])),
             ("crouched head leans forward", s["crouch"]["headXZ"][0] > s["stand"]["headXZ"][0] + 10, f"{s['crouch']['headXZ']} vs {s['stand']['headXZ']}"),
             ("sitting lowers the pelvis", s["sit"]["pelvisZ"] < s["stand"]["pelvisZ"] - 25, str(s["sit"]["pelvisZ"])),
+            ("seated and crouched knees point forward", s["sit"]["kneeX"] > 20 and s["crouch"]["kneeX"] > 20,
+             f"knee ahead of the pelvis: sit {s['sit']['kneeX']}, crouch {s['crouch']['kneeX']} cm"),
             ("the jump pose differs from standing", abs(s["jump"]["feetZ"][0] - s["stand"]["feetZ"][0]) + abs(s["jump"]["pelvisZ"] - s["stand"]["pelvisZ"]) > 3,
              f"{s['jump']} vs {s['stand']}"),
         ]

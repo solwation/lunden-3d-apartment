@@ -418,6 +418,9 @@ def retarget():
         if target in web_chains:
             ctl.set_source_chain(target, target)
             mapped[target] = target
+    # The imported web rig faces -Y and the Mannequin +Y; the retargeter carries the chains' global directions over,
+    # so AS_LundenSit faces -Y. ABP_LundenAvatar turns it about the pelvis (the sit branch), test_avatar_rig.py checks
+    # that the seated knees end up ahead of the pelvis.
     # The web rig's arms hang straight down; the Mannequin stands in an A pose. Align the target's chains to the source.
     ctl.auto_align_all_bones(TARGET, u.RetargetAutoAlignMethod.CHAIN_TO_CHAIN)
     ops = [str(ctl.get_op_name(i)) for i in range(ctl.get_num_retarget_ops())]
@@ -439,6 +442,7 @@ def retarget():
     sit = ASSETS.load_asset(SIT)
     sit.set_preview_skeletal_mesh(ASSETS.load_asset(MESH))
     save(SIT)
+
 
 
 # 4. Speeds: the clips' own ground speed ---------------------------------------------------------------------------
@@ -957,7 +961,7 @@ def abp_anim_graph(abp):
                        effector_location_space=u.BoneControlSpace.BCS_BONE_SPACE, effector_target=target,
                        joint_target_location_space=u.BoneControlSpace.BCS_COMPONENT_SPACE, allow_stretching=False)
         link(out(last, "Pose"), inp(ik, "ComponentPose"))
-        value(ik, "JointTargetLocation", "(X=%.1f,Y=%.1f,Z=%.1f)" % pole)
+        value(ik, "JointTargetLocation", "%.1f,%.1f,%.1f" % pole)  # K2 pin default text: X,Y,Z
         last = ik
     to_ls = g.named("Animation|ConvertSpaces|ComponentToLocal", -300, 100)
     link(out(last, "Pose"), inp(to_ls, "ComponentPose"))
@@ -971,9 +975,19 @@ def abp_anim_graph(abp):
     data = air.get_editor_property("node")
     data.set_editor_property("child_upate_mode", u.BlendListChildUpdateMode.RESET_CHILD_ON_ACTIVATE)  # the jump restarts
     air.set_editor_property("node", data)
-    sit = anim_node(g, "Animation|Sequences|SequencePlayer", 0, 400, sequence=ASSETS.load_asset(SIT), loop_animation=True)
-    seated = anim_node(g, "Animation|Blends|BlendPosesbybool", 300, 100)
-    link(out(sit, "Pose"), inp(seated, "BlendPose_0"))
+    sit = anim_node(g, "Animation|Sequences|SequencePlayer", -600, 700, sequence=ASSETS.load_asset(SIT), loop_animation=True)
+    sit_cs = g.named("Animation|ConvertSpaces|LocalToComponent", -300, 700)
+    link(out(sit, "Pose"), inp(sit_cs, "LocalPose"))
+    turn = anim_node(g, "Animation|SkeletalControls|Transform(Modify)Bone", 0, 700, bone_to_modify=bone("pelvis"),
+                     rotation_mode=u.BoneModificationMode.BMM_ADDITIVE,
+                     rotation_space=u.BoneControlSpace.BCS_COMPONENT_SPACE,
+                     translation_mode=u.BoneModificationMode.BMM_IGNORE, scale_mode=u.BoneModificationMode.BMM_IGNORE)
+    link(out(sit_cs, "ComponentPose"), inp(turn, "ComponentPose"))
+    value(turn, "Rotation", "0,180,0")  # K2 pin default text: Pitch,Yaw,Roll  # the retargeted pose faces -Y (see retarget())
+    sit_ls = g.named("Animation|ConvertSpaces|ComponentToLocal", 300, 700)
+    link(out(turn, "Pose"), inp(sit_ls, "ComponentPose"))
+    seated = anim_node(g, "Animation|Blends|BlendPosesbybool", 600, 100)
+    link(out(sit_ls, "Pose"), inp(seated, "BlendPose_0"))
     link(out(air, "Pose"), inp(seated, "BlendPose_1"))
     link(var("Sitting", 0, 700), inp(seated, "bActiveValue"))
     value(seated, "BlendTime_0", 0.3)
