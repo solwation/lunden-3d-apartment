@@ -4302,7 +4302,7 @@ function besta(item, lights) {
   g.userData.things = things.map((t) => ({ ...t, back: 'vitrinskåpet' }));
   // the pool light a little way out in front of the cabinet, below the spots (the group is turned by rot + π)
   const yaw = THREE.MathUtils.degToRad(item.rot ?? 0) + Math.PI;
-  lights.push({ object: spotHeads, shade: lens, glows: [washMat, insideMat], height: -0.4, level: item.level, name: 'spotsen',
+  lights.push({ object: spotHeads, shade: lens, glows: [washMat, insideMat], cabinetDoorMaterial: walnut, height: -0.4, level: item.level, name: 'spotsen',
     light: item.light, offset: [Math.sin(yaw) * 0.4, Math.cos(yaw) * 0.4] });
   g.userData.footprint = [{ x0: -W / 2, x1: W / 2, z0: 0, z1: D }];
   g.position.y = item.y;

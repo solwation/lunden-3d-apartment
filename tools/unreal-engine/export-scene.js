@@ -1277,7 +1277,7 @@ function measurementData({ world, planCopy, W, D, byZone, lightsInfo, seasons, m
     const row = { id: a?.id ?? null, kind: 'lamp', name: l.name ?? null, level: l.level ?? levelOf(p.y), room: l.room ?? null,
       objectPosition: P(p.x, p.y, p.z), position, ...(profile ? { stairVisibility: profile } : {}), seasonal: seasons.get(a?.object),
       intensity: r4(pools.reduce((sum, x) => sum + (x.intensity ?? 0), 0)), distance: pools[0].range ?? null, color: hex(pools[0].color), auto: l.auto !== false };
-    if (wanted.includes('l1007') && l.name === 'spotsen') {
+    if (wanted.includes('l1007') && l.cabinetDoorMaterial) {
       // BESTÅ's real switchable additive fans are renderer surfaces, so they stay out of the collision GLB.
       // Preserve their positions, original canvas UVs and linear tint for the native furnishing material.
       const fans = [], map = l.glows[0].map;
@@ -1295,7 +1295,7 @@ function measurementData({ world, planCopy, W, D, byZone, lightsInfo, seasons, m
         fans.push({ corners, opacity: m.userData.on, colour: m.color.toArray() });
       });
       if (fans.length !== 5) throw Error('Missing display-cabinet light fans');
-      row.cabinetWashes = { fans, maskPng: map.image.toDataURL('image/png').split(',')[1] };
+      row.cabinetWashes = { fans, veneerKey: materialInfo(l.cabinetDoorMaterial).key, maskPng: map.image.toDataURL('image/png').split(',')[1] };
     }
     lights.push(row);
     lightsInfo.exportedFloorRooms?.set(row, lightsInfo.floorRooms.get(l));

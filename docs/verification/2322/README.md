@@ -54,3 +54,11 @@ Grinden kontrollerar projektets luminansintervall 0,8–1,25. Som kulörkontroll
 | Soffa | 1,136 | 0,796 | Dagvärdet klarar intervallet. Kvällsvärdet ligger strax under 0,8. Tyget har mindre färgskillnad mellan rött och blått i båda utsnitten. |
 
 Pendellampans koppar och vitrinskåpets glas saknar avgränsade mätfält i dessa bilder.
+
+## Vitrinskåpets ljusfält
+
+Webbens tre främre spottar ritar var sitt 50 × 100 cm stort ljusfält över luckorna. De två LED-listerna i glasfacken använder samma 128 × 256 pixlar stora sRGB-mask på 56 × 63,4 cm. Exporten mäter de fyra hörnen på varje originalyta efter att möbeln har placerats, sparar dess linjära färg och behåller hela masken. Dessa ytor följer samma automatiska eller manuella lampa som punktljuset.
+
+![Samma kvällsbild av vitrinskåpet, vänster med enbart de fem bildfälten bortkopplade och höger med ordinarie ljus.](cabinet-web-spots.png)
+
+Båda bilderna visar utsnittet x = 955, y = 173, bredd 260 och höjd 185 i den ordinarie vardagsrumskameran (1 440 × 810). Klockan är 22. Punktlampan, rummets övriga belysning och exponeringen är desamma. Luckans linjära medelluminans steg från 0,0960 till 0,1584 när bildfälten åter visades. Mitt i de tre främre käglorna steg den från 0,0596 / 0,0666 / 0,0457 till 0,2446 / 0,2607 / 0,2170. Fälten mättes i 6 × 10 pixlar runt (1010, 260), (1067, 244) och (1145, 221). Med släckta lampor klockan 14 gav de båda webbrenderingarna byteidentiska bilder.
