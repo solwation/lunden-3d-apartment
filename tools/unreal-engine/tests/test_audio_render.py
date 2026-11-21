@@ -3,7 +3,9 @@
 This is the one Lunden test that needs an audio device, so it is NOT run by run-tests.ps1 (which passes -nosound). It
 refuses to start unless the engine's final output gain is zero, so nothing reaches the speakers: the mixer multiplies
 every buffer it hands the device by au.LinearGainScalarForFinalOutut (AudioMixerCore FOutputBuffer::MixNextBuffer),
-while the submix recording below is taken before that. Start the editor like run-tests.ps1 but without -nosound and with
+while the submix recording below is taken before that. Start the editor like run-tests.ps1 but without -nosound, with
+-RenderOffScreen instead of -nullrhi (#2320: without a drawn game viewport the listener never follows the player's
+camera, so the positioned window voice is heard from elsewhere) and with
 
     -dpcvars=au.LinearGainScalarForFinalOutut=0
     -ini:Engine:[Audio]:UnfocusedVolumeMultiplier=1.0
@@ -11,10 +13,13 @@ while the submix recording below is taken before that. Start the editor like run
 
 (the hidden editor never has the focus, and without the last two every source is rendered at volume 0).
 
-Each step MetaSound is played once on its own (the player's loops stopped, the player on the road at START, where the
-room is 'open'), recording the main submix to Saved/audio-render/step_<profile>.wav; then the wind and the bed at 9 m/s
-outdoors on the grass and indoors on the parquet (wind_out.wav, wind_in.wav, bed_out.wav, bed_in.wav). The comparison
-with the web's synthesis is tests/audio-render-compare.py. Logs LUNDEN_AUDIO_RENDER lines and LUNDEN_AUDIO_RENDER_OK.
+Each step MetaSound is played three times on its own (the player's loops stopped, the player on the road at START, where the
+room is 'open'), recording the main submix to Saved/audio-render/step_<profile>.wav (and _2, _3); then the wind and the bed at 9 m/s
+outdoors on the grass and indoors on the parquet (wind_out.wav, wind_in.wav, bed_out.wav, bed_in.wav), the rain alone
+at both places (rain_out.wav, rain_in.wav) and one open sash's wind 1 m in front of the camera on the road, dry (window.wav,
+#2320: the component's own WindowSound, WindowAttenuation and Gain/LpHz, as SyncWindowVoice spawns it). The parameters
+used go to render-params.json. The comparison with the web's synthesis is tests/audio-render-compare.py. Logs
+LUNDEN_AUDIO_RENDER lines and LUNDEN_AUDIO_RENDER_OK.
 """
 import json
 from pathlib import Path
@@ -39,6 +44,7 @@ CONTROL = {c["name"]: c for c in M["spawn"]["surface"]["control"]}
 OUT = PROJECT / "Saved/audio-render"
 OUT.mkdir(parents=True, exist_ok=True)
 DIR = "/Game/Lunden/Audio"
+TAKES = 3  # plays per step profile: one take's level varies with the random variation and crackle trough
 
 editor = u.get_editor_subsystem(u.UnrealEditorSubsystem)
 levels = u.get_editor_subsystem(u.LevelEditorSubsystem)
@@ -113,7 +119,10 @@ def render():
         sounds = dict(zip((str(n) for n in comp.get_editor_property("Profiles")), comp.get_editor_property("StepSounds")))
         for profile in sorted(A["footsteps"]["profiles"]):
             sound = sounds[profile]
-            yield from record("step_" + profile, 0.6, lambda s=sound: u.GameplayStatics.play_sound2d(game, s, volume))
+            for take in range(TAKES):  # each play draws its own variation and crackle trough (#2320)
+                yield from record("step_" + profile + (f"_{take + 1}" if take else ""), 0.6,
+                                  lambda s=sound: u.GameplayStatics.play_sound2d(game, s, volume))
+        params = {"stepVolume": volume, "rain": {}, "window": {}}
         put(comp, "WindSpeed", 9.0)
         put(comp, "Hour", 8.0)
         put(comp, "Month", 6)
@@ -132,12 +141,33 @@ def render():
             put(comp, "Rain", 1.0)
             yield from seconds(0.6)
             rain = u.GameplayStatics.spawn_sound2d(game, comp.get_editor_property("BedSound"))
+            params["rain"][where] = {}
             for name in ("RainGain", "RainCutoff", "Base", "BaseHz", "Roof", "Metal", "Leaf", "Water"):
-                rain.set_float_parameter(name, comp.get_editor_property(name))
+                params["rain"][where][name] = comp.get_editor_property(name)
+                rain.set_float_parameter(name, params["rain"][where][name])
             yield from seconds(1.5)
             yield from record(f"rain_{where}", 2.0)
             rain.stop()
             put(comp, "Rain", 0.0)
+        # #2320: one open sash's voice inside the web's 1.2 m full-level distance. On the road the room is 'open', so no
+        # reverb is active and the recording compares with the web's dry path (its room send depends on the room).
+        yield from stand(road)
+        yield from seconds(1.0)
+        cam = u.GameplayStatics.get_player_camera_manager(game, 0)
+        eye, ahead = cam.get_camera_location(), u.MathLibrary.get_forward_vector(cam.get_camera_rotation())
+        at = u.Vector(eye.x + 100 * ahead.x, eye.y + 100 * ahead.y, eye.z + 100 * ahead.z)
+        u.log(f"LUNDEN_AUDIO_RENDER camera {eye} window voice at {at}")
+        params["window"] = {"Gain": comp.get_editor_property("WindowGain"), "LpHz": comp.get_editor_property("WindowLpHz"),
+                            "volume": 0.6 * A["masterGain"], "distanceCm": 100.0}
+        voice = u.GameplayStatics.spawn_sound_at_location(
+            game, comp.get_editor_property("WindowSound"), at, volume_multiplier=params["window"]["volume"],
+            attenuation_settings=comp.get_editor_property("WindowAttenuation"))
+        for name in ("Gain", "LpHz"):
+            voice.set_float_parameter(name, params["window"][name])
+        yield from seconds(1.5)
+        yield from record("window", 2.0)
+        voice.stop()
+        (OUT / "render-params.json").write_text(json.dumps(params, indent=1) + "\n", encoding="utf-8")
         u.log("LUNDEN_AUDIO_RENDER_OK")
     finally:
         levels.editor_request_end_play()

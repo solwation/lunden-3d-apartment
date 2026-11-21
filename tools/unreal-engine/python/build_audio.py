@@ -20,7 +20,8 @@ Assets (one owner, #2287), all in /Game/Lunden/Audio/:
 
 The web parameters come from tools/unreal-engine/audio-params.json, which tools/unreal-engine/export-audio.mjs reads from the
 web's modules, and from the #2245 export (unreal/Lunden/Import/measurements.json vegetation.trees: the tree feet of
-src/surroundings.js treeFeet). The local step output trim is calibrated against #2287. The formulas of windsound.js / ambientbed.js are kept below as text and compiled into
+src/surroundings.js treeFeet). Every path carries the web's unmuted master gain (audio-params.json masterGain);
+the engine's own mixing laws are set to Web Audio's in Config/DefaultEngine.ini (#2320). The formulas of windsound.js / ambientbed.js are kept below as text and compiled into
 Blueprint math nodes (as build_lighting.py does), so the graph is a literal transcription; tests/test_audio.py compares
 it with the web's own answers stored in audio-params.json.
 
@@ -58,10 +59,6 @@ CLASSES = {  # name: (parent, 2D reverb send) -- the web sends every effect to t
 }
 ZONES = ("soft", "bright", "concrete", "courtyard")
 REVERB_TAG = "LundenRoom"
-# guess (#2320): mean deficit in the nine real Windows #2287 silent submix recordings,
-# relative to the web synth before its master. Convert to linear amplitude once per local step.
-# docs/verification/2287/audio-render.json. The comparison also applies the web master below.
-STEP_OUTPUT_TRIM_DB = 9.6
 SAMPLE_RATE = 48000.0  # the MetaSound default on Windows; only used to turn the web's biquad Q into a bandwidth
 ASSETS = u.EditorAssetLibrary
 BP = u.BlueprintEditorLibrary
@@ -303,7 +300,8 @@ def wind_bed(P):
     noise = ms.noise()
     body = ms.biquad(noise, LOWPASS, v["LpHz"], ms.q_to_bandwidth(ms.f("Power", 10.0, ms.f("Divide", v["LpQ"], 20.0))))
     band = ms.biquad(noise, BANDPASS, v["BandHz"], ms.q_to_bandwidth(v["BandQ"]))
-    ms.finish(ms.mix(ms.gain(body, v["Gain"]), ms.gain(band, v["BandGain"])))
+    # The web connects the wind bed straight to its master (#2320).
+    ms.finish(ms.gain(ms.mix(ms.gain(body, v["Gain"]), ms.gain(band, v["BandGain"])), P["masterGain"]))
     return ms
 
 
@@ -317,7 +315,9 @@ def ambient_bed(P):
         ("RiverGain", 0.0), ("RiverHz", 900.0), ("RiverQ", 0.6), ("CityGain", 0.0), ("CityHz", 200.0))}
     river = ms.biquad(ms.noise(), BANDPASS, v["RiverHz"], ms.q_to_bandwidth(v["RiverQ"]))
     city = ms.biquad(ms.noise(), LOWPASS, v["CityHz"], ms.q_to_bandwidth(lowpass_q(0.7)))
-    ms.finish(ms.mix(ms.gain(river, v["RiverGain"]), ms.gain(city, v["CityGain"]), rain_audio(ms, P)))
+    # River and city go straight to the web's master (#2320); RainGain already carries it (UpdateBeds).
+    beds = ms.gain(ms.mix(ms.gain(river, v["RiverGain"]), ms.gain(city, v["CityGain"])), P["masterGain"])
+    ms.finish(ms.mix(beds, rain_audio(ms, P)))
     return ms
 
 
@@ -918,7 +918,7 @@ def defaults(bp, P, trees, sounds, wind, bed, reverbs):
     names = step_names(P)
     d.set_editor_property("Profiles", [u.Name(n) for n in names])
     d.set_editor_property("StepSounds", [sounds[n] for n in names])
-    d.set_editor_property("StepVolume", F["gain"] * P["masterGain"] * 10 ** (STEP_OUTPUT_TRIM_DB / 20))
+    d.set_editor_property("StepVolume", F["gain"] * P["masterGain"])  # sfx.step's out(null, FOOTSTEPS.gain) -> master
     d.set_editor_property("LeafMonths", [int(m) for m in F["leafMonths"]])
     d.set_editor_property("StrideWalk", 100.0 * F["strideWalk"])
     d.set_editor_property("StrideRun", 100.0 * F["strideRun"])

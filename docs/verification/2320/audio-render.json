@@ -1,0 +1,286 @@
+{
+ "steps": {
+  "grass": {
+   "unreal": {
+    "rmsDb": -45.93,
+    "peakDb": -33.38,
+    "lengthMs": 156.2,
+    "centroidHz": 62.9,
+    "below200Hz": 0.979
+   },
+   "web": {
+    "rmsDb": -44.94,
+    "peakDb": -33.14,
+    "lengthMs": 157.7,
+    "centroidHz": 68.6,
+    "below200Hz": 0.978
+   },
+   "channels": 2,
+   "takes": 3,
+   "levelUnrealDb": -45.7,
+   "levelWebDb": -44.93,
+   "levelDiffDb": -0.77,
+   "centroidRatio": 0.917
+  },
+  "gravel": {
+   "unreal": {
+    "rmsDb": -43.76,
+    "peakDb": -31.04,
+    "lengthMs": 143.2,
+    "centroidHz": 125.8,
+    "below200Hz": 0.92
+   },
+   "web": {
+    "rmsDb": -42.47,
+    "peakDb": -29.08,
+    "lengthMs": 141.0,
+    "centroidHz": 138.7,
+    "below200Hz": 0.923
+   },
+   "channels": 2,
+   "takes": 3,
+   "levelUnrealDb": -42.64,
+   "levelWebDb": -42.49,
+   "levelDiffDb": -0.15,
+   "centroidRatio": 0.907
+  },
+  "hard": {
+   "unreal": {
+    "rmsDb": -36.31,
+    "peakDb": -25.89,
+    "lengthMs": 103.1,
+    "centroidHz": 102.8,
+    "below200Hz": 0.988
+   },
+   "web": {
+    "rmsDb": -36.61,
+    "peakDb": -24.15,
+    "lengthMs": 103.7,
+    "centroidHz": 97.9,
+    "below200Hz": 0.987
+   },
+   "channels": 2,
+   "takes": 3,
+   "levelUnrealDb": -36.57,
+   "levelWebDb": -36.59,
+   "levelDiffDb": 0.02,
+   "centroidRatio": 1.05
+  },
+  "leaves": {
+   "unreal": {
+    "rmsDb": -46.27,
+    "peakDb": -30.49,
+    "lengthMs": 142.2,
+    "centroidHz": 635.1,
+    "below200Hz": 0.734
+   },
+   "web": {
+    "rmsDb": -46.13,
+    "peakDb": -30.43,
+    "lengthMs": 143.7,
+    "centroidHz": 724.9,
+    "below200Hz": 0.723
+   },
+   "channels": 2,
+   "takes": 3,
+   "levelUnrealDb": -45.97,
+   "levelWebDb": -46.01,
+   "levelDiffDb": 0.05,
+   "centroidRatio": 0.876
+  },
+  "snow": {
+   "unreal": {
+    "rmsDb": -48.06,
+    "peakDb": -34.38,
+    "lengthMs": 168.9,
+    "centroidHz": 214.1,
+    "below200Hz": 0.854
+   },
+   "web": {
+    "rmsDb": -46.33,
+    "peakDb": -31.46,
+    "lengthMs": 150.4,
+    "centroidHz": 297.4,
+    "below200Hz": 0.801
+   },
+   "channels": 2,
+   "takes": 3,
+   "levelUnrealDb": -46.89,
+   "levelWebDb": -46.55,
+   "levelDiffDb": -0.34,
+   "centroidRatio": 0.72
+  },
+  "snowCold": {
+   "unreal": {
+    "rmsDb": -45.48,
+    "peakDb": -29.06,
+    "lengthMs": 159.1,
+    "centroidHz": 833.1,
+    "below200Hz": 0.597
+   },
+   "web": {
+    "rmsDb": -45.87,
+    "peakDb": -31.74,
+    "lengthMs": 161.5,
+    "centroidHz": 760.1,
+    "below200Hz": 0.639
+   },
+   "channels": 2,
+   "takes": 3,
+   "levelUnrealDb": -45.37,
+   "levelWebDb": -45.69,
+   "levelDiffDb": 0.32,
+   "centroidRatio": 1.096
+  },
+  "stair": {
+   "unreal": {
+    "rmsDb": -36.71,
+    "peakDb": -23.88,
+    "lengthMs": 210.5,
+    "centroidHz": 131.8,
+    "below200Hz": 0.988
+   },
+   "web": {
+    "rmsDb": -36.79,
+    "peakDb": -23.8,
+    "lengthMs": 212.2,
+    "centroidHz": 130.9,
+    "below200Hz": 0.988
+   },
+   "channels": 2,
+   "takes": 3,
+   "levelUnrealDb": -36.46,
+   "levelWebDb": -36.75,
+   "levelDiffDb": 0.28,
+   "centroidRatio": 1.007
+  },
+  "wet": {
+   "unreal": {
+    "rmsDb": -40.04,
+    "peakDb": -24.73,
+    "lengthMs": 154.0,
+    "centroidHz": 352.5,
+    "below200Hz": 0.833
+   },
+   "web": {
+    "rmsDb": -39.47,
+    "peakDb": -25.57,
+    "lengthMs": 158.4,
+    "centroidHz": 332.3,
+    "below200Hz": 0.846
+   },
+   "channels": 2,
+   "takes": 3,
+   "levelUnrealDb": -40.34,
+   "levelWebDb": -39.81,
+   "levelDiffDb": -0.54,
+   "centroidRatio": 1.061
+  },
+  "wood": {
+   "unreal": {
+    "rmsDb": -37.55,
+    "peakDb": -26.35,
+    "lengthMs": 120.9,
+    "centroidHz": 75.3,
+    "below200Hz": 0.996
+   },
+   "web": {
+    "rmsDb": -36.89,
+    "peakDb": -26.51,
+    "lengthMs": 117.9,
+    "centroidHz": 80.7,
+    "below200Hz": 0.996
+   },
+   "channels": 2,
+   "takes": 3,
+   "levelUnrealDb": -37.45,
+   "levelWebDb": -36.82,
+   "levelDiffDb": -0.63,
+   "centroidRatio": 0.933
+  }
+ },
+ "beds": {
+  "wind_out": {
+   "rmsDb": -36.21,
+   "peakDb": -23.88,
+   "lengthMs": 1300.0,
+   "centroidHz": 2562.0,
+   "below200Hz": 0.103
+  },
+  "wind_in": {
+   "rmsDb": -49.64,
+   "peakDb": -38.07,
+   "lengthMs": 1300.0,
+   "centroidHz": 407.3,
+   "below200Hz": 0.167
+  },
+  "bed_out": {
+   "rmsDb": -46.4,
+   "peakDb": -34.72,
+   "lengthMs": 1300.0,
+   "centroidHz": 254.0,
+   "below200Hz": 0.406
+  },
+  "bed_in": {
+   "rmsDb": -60.05,
+   "peakDb": -49.89,
+   "lengthMs": 1300.0,
+   "centroidHz": 118.6,
+   "below200Hz": 0.89
+  },
+  "rain_out": {
+   "unreal": {
+    "rmsDb": -33.51,
+    "peakDb": -21.8,
+    "lengthMs": 1300.0,
+    "centroidHz": 4274.8,
+    "below200Hz": 0.0
+   },
+   "web": {
+    "rmsDb": -32.93,
+    "peakDb": -21.43,
+    "lengthMs": 1300.0,
+    "centroidHz": 4391.5,
+    "below200Hz": 0.0
+   },
+   "levelDiffDb": -0.58,
+   "centroidRatio": 0.973
+  },
+  "rain_in": {
+   "unreal": {
+    "rmsDb": -48.47,
+    "peakDb": -36.19,
+    "lengthMs": 1300.0,
+    "centroidHz": 654.2,
+    "below200Hz": 0.017
+   },
+   "web": {
+    "rmsDb": -48.86,
+    "peakDb": -36.25,
+    "lengthMs": 1300.0,
+    "centroidHz": 657.2,
+    "below200Hz": 0.019
+   },
+   "levelDiffDb": 0.39,
+   "centroidRatio": 0.995
+  },
+  "window": {
+   "unreal": {
+    "rmsDb": -38.14,
+    "peakDb": -26.47,
+    "lengthMs": 1300.0,
+    "centroidHz": 661.3,
+    "below200Hz": 0.152
+   },
+   "web": {
+    "rmsDb": -38.14,
+    "peakDb": -26.54,
+    "lengthMs": 1300.0,
+    "centroidHz": 665.0,
+    "below200Hz": 0.137
+   },
+   "levelDiffDb": 0.0,
+   "centroidRatio": 0.994
+  }
+ }
+}

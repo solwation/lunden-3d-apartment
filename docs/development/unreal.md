@@ -893,7 +893,7 @@ sound classes of the three `volumes` rows of `ui-extensions.json`.
   `StrideWalk` (62 cm), or every `StrideRun` (95 cm) while `Running` (Shift). The step asks #2300's
   `BPC_LundenStepSurface.FeetInfo` for the class and runs the transcribed `PickStep` (stair in a core, snow, wet hard
   ground, autumn leaves on grass or gravel, else the surface). Then it plays that profile's MetaSound with
-  `PlaySound2D` at `FOOTSTEPS.gain`, and records `StepCount`, `LastProfile` and `LastStepSound`. The weather comes from
+  `PlaySound2D` at `FOOTSTEPS.gain` × the web master, and records `StepCount`, `LastProfile` and `LastStepSound`. The weather comes from
   the world's `BP_LundenSky` (`WindSpeed`, `Wet`, `Month`, `Hour`; `UseSky` off lets a test set them). `SnowCover` (0)
   and `Temperature` (10 °C, the web's `weather.temp ?? 10`) wait for snow cover and temperature to be ported, so no
   snow steps sound yet.
@@ -927,7 +927,13 @@ sound classes of the three `volumes` rows of `ui-extensions.json`.
   without a class plays in the engine's Master, outside the Huvudvolym slider.
 - **Decided here (can be overturned in one sentence).** No `Maps/Zones/Audio` sub-level: the web's beds follow the
   listener and its rooms come from the surface data, so the sources live on the player and `L_Lunden` is untouched.
-  The local step gain uses the web master at its unmuted setting. The engine's Master and Effects sliders still scale it.
+  Every path carries the web's unmuted master gain (0.8): the step volume, the wind bed and the river/city bed in
+  their MetaSounds, `RainGain` and the window voices. The engine's Master and Effects sliders still scale them.
+  `DefaultEngine.ini` sets Web Audio's mixing laws (#2320): a mono 2D source reaches both channels at full level
+  (`MonoChannelUpmixMethod=FullVolume`; the engine's unset default is Linear, 0.5 each), a positioned source pans
+  with the equal-power law (`PanningMethod=EqualPower`, the web's `PannerNode` `equalpower`), and no platform headroom
+  is taken (`[Audio] PlatformHeadroomDB=0`; `BaseWindowsEngine.ini` has −3 dB). Sources: `AudioMixerChannelMaps.cpp`,
+  the pan law in `AudioMixerDevice.cpp` and the headroom in `AudioMixerSource.cpp` `UpdateVolume`.
 - **Builder findings (5.8.4).** The MetaSound builder works headless (`MetaSoundBuilderSubsystem` +
   `MetaSoundEditorSubsystem.build_to_asset`). `BuildToAsset` only creates assets: the builder's own overwrite refuses a
   saved asset, and a package deleted in the session cannot be created again. `build_audio.py` therefore removes the old
@@ -936,9 +942,9 @@ sound classes of the three `volumes` rows of `ui-extensions.json`.
   Blueprint, a pure node runs again for every reader, so the moved distance is stored before `LastPos` moves on. A PIE
   test sets component variables with `PropertyAccessChangeNotifyMode.NEVER`, because the editor's change notification
   rebuilds the actor's components and leaves a stale copy.
-- **Not ported:** the open window's wind (`sfx.wind`, with #2285's windows), rain sound and the other weather sounds,
-  snow-cover and temperature steps, other players' steps, landing sounds (#2293), music, radios and animals (later),
-  sound occlusion (#2181; no positional sounds yet) and the playroom zone.
+- **Not ported:** the other weather sounds (hail, thunder), snow-cover and temperature steps (#2331), other
+  players' steps, landing sounds (#2293), music, radios and animals (later), sound occlusion (#2181; the window voices
+  are positioned but, like the web's, never occluded) and the playroom zone.
 
 ```text
 THREE_DIR=<node_modules/three> node tools/unreal-engine/export-audio.mjs [--check]
@@ -957,10 +963,13 @@ files. It needs an audio device, so it is started like run-tests without `-nosou
 `au.LinearGainScalarForFinalOutut` is 0. The mixer multiplies every buffer it hands the device by that value
 (AudioMixerCore `FOutputBuffer::MixNextBuffer`), while the submix recording is taken earlier. The hidden editor never
 has the focus, so `UnfocusedVolumeMultiplier=1.0` and `bAllowBackgroundAudio=True` are also needed; without them every
-source renders at volume 0:
+source renders at volume 0. It runs with `-RenderOffScreen` (the GPU, no window) rather than `-nullrhi`: without a
+drawn game viewport the engine never moves the listener to the player's camera, so a positioned source such as a
+window voice is heard from the wrong place (#2320 measured it 19 dB low and panned hard left). The same command with
+`test_window_audio` instead runs that test with a live mixer:
 
 ```text
-UnrealEditor-Cmd.exe <uproject> -EnablePlugins=PythonAutomationTest "-ExecCmds=Automation RunTests Editor.Python.Lunden.test_audio_render; Quit" "-TestExit=Automation Test Queue Empty" -unattended -nosplash -nop4 -nullrhi -dpcvars=au.LinearGainScalarForFinalOutut=0 -ini:Engine:[Audio]:UnfocusedVolumeMultiplier=1.0 -ini:EditorPerProjectUserSettings:[/Script/UnrealEd.LevelEditorMiscSettings]:bAllowBackgroundAudio=True
+UnrealEditor-Cmd.exe <uproject> -EnablePlugins=PythonAutomationTest "-ExecCmds=Automation RunTests Editor.Python.Lunden.test_audio_render; Quit" "-TestExit=Automation Test Queue Empty" -unattended -nosplash -nop4 -RenderOffScreen -dpcvars=au.LinearGainScalarForFinalOutut=0 -ini:Engine:[Audio]:UnfocusedVolumeMultiplier=1.0 -ini:EditorPerProjectUserSettings:[/Script/UnrealEd.LevelEditorMiscSettings]:bAllowBackgroundAudio=True
 python3 tools/unreal-engine/tests/audio-render-compare.py unreal/Lunden/Saved/audio-render <out>
 ```
 
@@ -971,17 +980,18 @@ stair tread `stair`, gravel, grass, road, garage. Wet road gave `wet`, and grass
 Each point also got the web's room zone. Indoors the wind and bed are the web's indoor model of the outdoor values. The
 silent render matches the web's synthesis in length (within 6 %; snow and snowCold +10 … 12 %) and in spectral centroid (−8 … +11 %, snow
 −45 % and leaves −18 % from the crackle approximation). The spectrograms show the same shapes, squeak and stair ring.
-The original #2287 recordings were 9.6 ± 0.5 dB below the web synth before the web master. That is engine output: −3 dB Windows platform headroom and the
-centre pan of a mono source, the rest not traced. The relative levels between surfaces match within ±1 dB. `build_audio.py`
+The original #2287 recordings were 9.6 ± 0.5 dB below the web synth before the web master: −6.0 dB from the engine's
+unset mono up-mix (Linear, 0.5 per channel, where Web Audio copies a mono source to both channels) and −3.0 dB
+Windows platform headroom, the rest within one take's variation. #2320 sets the web's mixing laws instead (see
+*Decided here*). The relative levels between surfaces match within ±1 dB. `build_audio.py`
 is idempotent, `--check` passes, and `test_player`, `test_ui` and `build_player.py --check` still pass. Evidence:
 [docs/verification/2287/](../verification/2287/README.md).
 
-**Footstep output calibration (#2320, guess).** The builder applies +9.6 dB to the local step path, from the
-nine original Windows measurements above, and multiplies by the same unmuted master gain as Web Audio (0.8).
-At the default slider positions the new StepVolume is approximately 0.918, previously 0.38.
-The dry reference now includes the web master and the comparison rejects a difference over ±2 dB for any profile.
-Rebuild the Audio assets and run the silent render above to measure the new output. Snowfall in BP_LundenSky describes
-falling flakes. Ground accumulation and temperature for snow footsteps are tracked in #2331.
+**Output level (#2320).** With the web's mixing laws in `DefaultEngine.ini` and the web's master in every path, the
+silent render matches the web's synthesis: every footstep profile within ±0.8 dB (power mean of three takes per side),
+the rain within ±0.6 dB outdoors and indoors, and an open sash's wind 1 m ahead 0.0 dB, centred.
+`audio-render-compare.py` fails on any difference over ±2 dB. Evidence: [docs/verification/2320/](../verification/2320/README.md).
+Snow steps are built and level-matched but do not sound yet: snow cover and temperature wait for #2331.
 
 The audio builder also mixes the web rain hiss and four rain-surface bands into the dry ambient bed. The
 sky's Rain controls gain and an indoor listener receives 30% gain and a 900 Hz cutoff. Rain fades above the web
