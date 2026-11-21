@@ -1286,6 +1286,7 @@ function measurementData({ world, planCopy, W, D, byZone, lightsInfo, seasons, m
       player: { eye: C.PLAYER.eye, crouchEye: C.PLAYER.crouchEye ?? null, radius: C.PLAYER.radius, walk: C.PLAYER.walk, run: C.PLAYER.run,
         runOutdoor: C.PLAYER.runOutdoor ?? null, stepUp: C.PLAYER.stepUp ?? null, headroom: C.PLAYER.headroom ?? null, jump: C.PLAYER.jump ?? null,
         crouchSpeed: C.PLAYER.crouchSpeed ?? null, mouseSens: C.PLAYER.mouseSens ?? null,
+        pitchLimit: C.PLAYER.pitchLimit,
         source: 'src/config.js#PLAYER' },
       // #2284: the fall-damage rule and its results from the web's own src/falldamage.js, so Unreal's player matches them
       // without a hand-copied formula. `samples` are free drops (gap = drop) in metres and the lives each one costs.

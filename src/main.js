@@ -1675,7 +1675,7 @@ function look(dyaw, dpitch) {
   if (reactionCam.active && Math.hypot(dyaw, dpitch) > 0.05) stopReactionCam(true);
   const k = binoculars.lookScale(); dyaw *= k; dpitch *= k; // #1706: slower while the binoculars are raised
   camera.rotation.y -= dyaw;
-  camera.rotation.x = THREE.MathUtils.clamp(camera.rotation.x - dpitch, -1.45, 1.45);
+  camera.rotation.x = THREE.MathUtils.clamp(camera.rotation.x - dpitch, -PLAYER.pitchLimit, PLAYER.pitchLimit);
   rest.clampLook(camera); // sitting / lying: only so far
 }
 

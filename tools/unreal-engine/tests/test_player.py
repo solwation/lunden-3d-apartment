@@ -145,8 +145,8 @@ def player_test():
             raise RuntimeError(f"Unexpected possession {names}")
         movement = pawn.character_movement
 
-        def key(name, down):
-            u.SystemLibrary.execute_console_command(game, "Input." + ("+key " if down else "-key ") + name + (" 1" if down else ""), pc)
+        def key(name, down, value=1):
+            u.SystemLibrary.execute_console_command(game, "Input." + ("+key " if down else "-key ") + name + (f" {value}" if down else ""), pc)
 
         def seconds(t):
             start = u.GameplayStatics.get_time_seconds(game)
@@ -228,6 +228,20 @@ def player_test():
             if len(moving) < 20:
                 raise RuntimeError(f"{axis} moved the view in only {len(moving)} of 30 frames: {deltas}")
             check(f"look{axis}DegPerCount", moving[len(moving) // 2], per_count, 0.001)
+        # Cross both stops through Enhanced Input and compare the controller and rendered view with the web limit.
+        cam = u.GameplayStatics.get_player_camera_manager(game, 0)
+        limit = math.degrees(P["pitchLimit"])
+        for sign, end in ((1, "max"), (-1, "min")):
+            bound = sign * limit
+            check(f"standingPitch{end}", cam.get_editor_property("view_pitch_" + end), bound, 0.0001)
+            pc.set_control_rotation(u.Rotator(roll=0, pitch=bound - sign * per_count, yaw=0))
+            key("MouseY", True, sign)
+            for _ in range(8):
+                yield
+            key("MouseY", False)
+            yield from seconds(0.1)
+            for source, pitch in (("control", pc.get_control_rotation().pitch), ("camera", cam.get_camera_rotation().pitch)):
+                check(f"{source}Pitch{end}", (pitch + 180) % 360 - 180, bound, 0.001)
         pc.set_control_rotation(u.Rotator(roll=0, pitch=0, yaw=0))
         yield from seconds(0.2)
 

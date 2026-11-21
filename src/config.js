@@ -5136,6 +5136,8 @@ export const OUTDOOR_GYM = {
 // The standing body has its own inner near plane `near` (m along the view axis; the sitting body keeps 0.30).
 export const SELF_STAND = { back: 0.2, crouchBack: 0.1, near: 0.12 };
 
+const LOOK_PITCH_LIMIT = 1.45; // radians above or below level
+
 export const REST = {
   sitEye: 0.72, lieEye: 0.22, move: 0.5,
   // #1150: visual rest anchors, guesses based on the shared Olof skeleton (metres before avatar scaling).
@@ -5151,7 +5153,7 @@ export const REST = {
   // seat surface and `avatarLegsReach` in front of the hip (*guesses*; the leg is 0.85 m long and the hip sits 0.07 m forward, so it is almost straight).
   avatarLegsUp: 0.08, avatarLegsReach: 0.9,
   sit: { yaw: 1.7, pitch: [-1.1, 0.8] },
-  lie: { yaw: 1.3, pitch: [0.15, 1.45], startPitch: 1.45 }, // lying on your back, looking at the ceiling
+  lie: { yaw: 1.3, pitch: [0.15, LOOK_PITCH_LIMIT], startPitch: LOOK_PITCH_LIMIT }, // lying on your back, looking at the ceiling
   reach: { sit: 1.7, lie: 0.8 }, // how far from the eye you can reach things while sitting (leaning forward) / lying (#184, #472)
   // #2269: a seat under a low roof (our car's front seats: car.spot marks them `closed`, and a figure whose seat's floor is the car's
   // cabin, ghosts.js seatFeet). `roof` m: the roof's inner surface above the seat point (carmodel.js seats y 0.54; the GLB's roof
@@ -5245,6 +5247,7 @@ export const PLAYER = {
   turnSpeed: 1.9, // rad/s for the arrow keys
   crouchEye: 0.95,   // eye height on your haunches (Ctrl / the touch button, #70)
   crouchSpeed: 0.5,  // walking speed factor while crouching
+  pitchLimit: LOOK_PITCH_LIMIT,
   mouseSens: 0.0013, // rad per pixel of mouse/touchpad movement under pointer lock (was 0.0022, too twitchy, #46)
   stepUp: 0.45,
   headroom: 1.85,

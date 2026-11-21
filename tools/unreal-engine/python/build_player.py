@@ -6,6 +6,7 @@ Assets (one owner, #2284):
   Player/BP_LundenPlayer            Character: walk, sprint, crouch, jump, mouse look, fall damage
   Player/BP_LundenPlayerController  PlayerController (the pilot's door controller: E / left mouse use a pilot door
                                     until #2285 hooks its own door use in through player-extensions.json)
+  Player/BP_LundenCameraManager     PlayerCameraManager: standing view pitch limits from spawn.player.pitchLimit
   Player/BP_LundenGameMode          GameMode: the pawn and controller above
   Player/Input/IMC_LundenPlayer, Player/Input/IA_Lunden*   Enhanced Input mapping and actions
   Player/BPC_LundenStepSurface, Player/BPC_LundenRest      #2300 components (player_parts.py), on the character through
@@ -42,6 +43,7 @@ DIR = "/Game/Lunden/Player"
 INPUT = DIR + "/Input"
 CHARACTER = DIR + "/BP_LundenPlayer"
 CONTROLLER = DIR + "/BP_LundenPlayerController"
+CAMERA_MANAGER = DIR + "/BP_LundenCameraManager"
 GAME_MODE = DIR + "/BP_LundenGameMode"
 MAPPING = INPUT + "/IMC_LundenPlayer"
 DOOR = "/Game/Lunden/Blueprints/PilotDoors/BP_LundenSwingDoor"
@@ -95,9 +97,11 @@ def player_values(measurements):
     """Export values (web metres, m/s, rad) as Unreal centimetres, cm/s and degrees."""
     spawn = measurements["spawn"]
     p, f = spawn["player"], spawn["fall"]
-    for key in ("eye", "crouchEye", "radius", "walk", "run", "runOutdoor", "stepUp", "headroom", "jump", "crouchSpeed", "mouseSens"):
+    for key in ("eye", "crouchEye", "radius", "walk", "run", "runOutdoor", "stepUp", "headroom", "jump", "crouchSpeed", "mouseSens", "pitchLimit"):
         if p.get(key) is None:
             raise RuntimeError(f"measurements.json spawn.player.{key} is missing: re-export with this commit")
+    if not 0 < p["pitchLimit"] < math.pi / 2:
+        raise RuntimeError("spawn.player.pitchLimit must be in radians between zero and a quarter turn")
     for key in ("surface", "rest", "respawn"):
         if not spawn.get(key):
             raise RuntimeError(f"measurements.json spawn.{key} is missing: re-export with this commit (#2300, export-player.js)")
@@ -108,6 +112,7 @@ def player_values(measurements):
     # crouched body height).
     crouched_half = 50 * (p["crouchEye"] + p["headroom"] - p["eye"])
     return {
+        "pitch_limit": math.degrees(p["pitchLimit"]),
         "radius": 100 * p["radius"], "half_height": half, "crouched_half_height": crouched_half,
         "base_eye_height": 100 * p["eye"] - half - FLOOR_CLEARANCE,
         "crouched_eye_height": 100 * p["crouchEye"] - crouched_half - FLOOR_CLEARANCE,
@@ -267,6 +272,20 @@ def input_assets():
         mapping.map_key(actions[name], key)
     save(mapping)
     return actions, mapping
+
+
+def configure_camera(controller, limit):
+    exists = ASSETS.does_asset_exist(CAMERA_MANAGER)
+    camera = ASSETS.load_asset(CAMERA_MANAGER) if exists else new_blueprint(CAMERA_MANAGER, u.PlayerCameraManager)
+    if not exists:
+        BP.compile_blueprint(camera)
+    default = u.get_default_object(camera.generated_class())
+    bounds = {"view_pitch_min": -limit, "view_pitch_max": limit}
+    if not exists or any(not math.isclose(default.get_editor_property(k), v, abs_tol=1e-5) for k, v in bounds.items()):
+        for key, value in bounds.items():
+            default.set_editor_property(key, value)
+        save(camera)
+    u.get_default_object(controller.generated_class()).set_editor_property("player_camera_manager_class", camera.generated_class())
 
 
 def controller_asset():
@@ -615,6 +634,15 @@ def check_defaults(values):
     wrong = {k: (got[k], want[k]) for k in want if abs(float(got[k]) - float(want[k])) > 0.01}
     if wrong:
         raise RuntimeError(f"BP_LundenPlayer defaults differ from the export: {wrong}")
+    controller = u.get_default_object(u.load_class(None, CONTROLLER + ".BP_LundenPlayerController_C"))
+    manager_class = controller.get_editor_property("player_camera_manager_class")
+    if not manager_class or manager_class != u.load_class(None, CAMERA_MANAGER + ".BP_LundenCameraManager_C"):
+        raise RuntimeError("BP_LundenPlayerController does not use BP_LundenCameraManager")
+    camera = u.get_default_object(manager_class)
+    for key, want_limit in (("view_pitch_min", -values["pitch_limit"]), ("view_pitch_max", values["pitch_limit"])):
+        got_limit = camera.get_editor_property(key)
+        if not math.isclose(got_limit, want_limit, abs_tol=1e-4):
+            raise RuntimeError(f"BP_LundenCameraManager.{key} is {got_limit} deg, expected {want_limit} from spawn.player.pitchLimit")
     mode = u.get_default_object(u.load_class(None, GAME_MODE + ".BP_LundenGameMode_C"))
     if (mode.get_editor_property("default_pawn_class") != cls or mode.get_editor_property("player_controller_class")
             != u.load_class(None, CONTROLLER + ".BP_LundenPlayerController_C")):
@@ -638,7 +666,7 @@ def main(argv):
                                      sort_keys=True).encode()).hexdigest()
 
     migrate(check_only)
-    present = all(ASSETS.does_asset_exist(p) for p in (CHARACTER, CONTROLLER, GAME_MODE, MAPPING))
+    present = all(ASSETS.does_asset_exist(p) for p in (CHARACTER, CONTROLLER, CAMERA_MANAGER, GAME_MODE, MAPPING))
     char = ASSETS.load_asset(CHARACTER) if present else None
     stored = ASSETS.get_metadata_tag(char, SPEC_TAG) if char else ""
     if check_only:
@@ -678,6 +706,7 @@ def main(argv):
     character_defaults(char, values)
     extensions(char, "character", rows)
     extensions(controller, "controller", rows)
+    configure_camera(controller, values["pitch_limit"])
     save(controller)
     mode = ASSETS.load_asset(GAME_MODE) if ASSETS.does_asset_exist(GAME_MODE) else new_blueprint(GAME_MODE, u.GameModeBase)
     BP.compile_blueprint(mode)

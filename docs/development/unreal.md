@@ -102,8 +102,8 @@ tools/unreal-engine/player-extensions.json    components other issues add to the
 tools/unreal-engine/python/player_parts.py    #2300 part of build_player.py: BPC_LundenStepSurface, BPC_LundenRest, the sprint and death functions
 tools/unreal-engine/tests/test_player.py      PIE test: eye heights, speeds (indoor/outdoor sprint), jump, fall damage, blackout and wake
 tools/unreal-engine/tests/test_player_world.py  PIE test on L_Lunden (#2300): surface classes at the web's control points, sprint, rest, death
-unreal/Lunden/Content/Lunden/Player/          BP_LundenPlayer, BP_LundenPlayerController, BP_LundenGameMode, BPC_LundenStepSurface,
-                                   BPC_LundenRest, Input/ (LFS)
+unreal/Lunden/Content/Lunden/Player/          BP_LundenPlayer, BP_LundenPlayerController, BP_LundenGameMode, BP_LundenCameraManager,
+                                   BPC_LundenStepSurface, BPC_LundenRest, Input/ (LFS)
 tools/unreal-engine/python/build_seasons.py   the season rule /Game/Lunden/Seasons/BPC_LundenSeasons (#2295)
 tools/unreal-engine/tests/test_seasons.py     PIE test on L_Lunden: the Christmas tree shown/hidden per season-dates.json
 tools/unreal-engine/tests/season-rule.test.mjs  season-dates.json against the web's own inChristmas (Node)
@@ -589,8 +589,17 @@ into `AddControllerYaw/PitchInput`. Two engine settings from the 5.8 template ar
 `bEnableLegacyInputScales=False` (with it on, `BaseGame.ini` `InputPitchScale=-2.5` inverted the pitch and
 `InputYawScale=2.5` multiplied the yaw) and `Sensitivity=1` on the MouseX / MouseY `AxisConfig` (the template's 0.07
 reached the look actions too). The pilot therefore turned at 0.175 times the web's rate with the pitch inverted; now
-one count is 0.0745° on both axes. Not yet ported: the web's pitch limit of ±1.45 rad (Unreal keeps its default
-±89.9°). The mouse speed and inverted-Y settings are #2286's ([Menu, settings and compass](#menu-settings-and-compass-2286)).
+one count is 0.0745° on both axes. The mouse speed and inverted-Y settings are #2286's ([Menu, settings and compass](#menu-settings-and-compass-2286)).
+
+**Pitch limits (#2370).** Web mouse and touch look use `PLAYER.pitchLimit` in radians. The scene export carries it
+as `spawn.player.pitchLimit`. From a fresh export, `build_player.py` converts it to degrees and sets
+`ViewPitchMin/Max` on `BP_LundenCameraManager`. The production controller selects this camera class at spawn.
+Unreal's normal rotation update clamps free look and a restored save to ±83.079° (±1.45 rad). Sitting and lying
+temporarily apply their own exported ranges. Standing up restores the camera's original limits.
+With the local web server running, `node tools/unreal-engine/tests/player-pitch.cjs <web-url> <measurements.json>`
+checks pointer-locked mouse input against the export at both stops and when turning away from each one. The builder's `--check` verifies the controller binding
+and both camera defaults. After rebuilding the Player assets, run `test_player` for both mouse stops, `test_save`
+for an older out-of-range facing and `test_player_world` for the sofa, bed and standing view.
 
 **Fall damage** (`src/player.js` landing, `src/falldamage.js`, `src/combat.js` `fall`). A fall starts when the
 character enters Falling (take-off of a jump, or the ledge it walked off) and its drop is that capsule height minus

@@ -317,16 +317,19 @@ function restData(world, idOf) {
       const look = sp.lookPos, eye = sp.pos, dx = look ? look.x - eye.x : 0, dz = look ? look.z - eye.z : 0;
       const startYaw = look ? Math.atan2(-dx, -dz) : sp.yaw; // Rest.begin
       const startPitch = sp.kind === 'lie' ? lim.startPitch : look ? Math.atan2(look.y - eye.y, Math.hypot(dx, dz)) : 0;
+      const pitchDeg = webPitchToUnrealPitch(deg(startPitch));
       const aim = sp.aimPos ?? sp.pos;
       spots.push({ item: id, name: t.name, verb: t.verbText ?? null, index, kind: sp.kind, eye: P(eye.x, eye.y, eye.z), aim: P(aim.x, aim.y, aim.z),
-        yaw: roundCm(webYawToUnrealYaw(deg(sp.yaw))), startYaw: roundCm(webYawToUnrealYaw(deg(startYaw))), startPitch: roundCm(webPitchToUnrealPitch(deg(startPitch))) });
+        yaw: roundCm(webYawToUnrealYaw(deg(sp.yaw))), startYaw: roundCm(webYawToUnrealYaw(deg(startYaw))),
+        // A bed faces its upper stop exactly. Measured seat directions are rounded like their yaw.
+        startPitch: sp.kind === 'lie' ? pitchDeg : roundCm(pitchDeg) });
     });
   }
   const R = C.REST;
   return {
     source: 'src/rest.js (Rest, restTarget, chooseSpot), src/config.js REST, HOLD.reach; src/main.js sitOrLie / standUp',
     move: R.move, sitEye: roundCm(R.sitEye * 100), lieEye: roundCm(R.lieEye * 100), reach: roundCm(C.HOLD.reach * 100),
-    limits: Object.fromEntries(['sit', 'lie'].map((k) => [k, { yaw: roundCm(deg(R[k].yaw)), pitch: R[k].pitch.map((p) => roundCm(deg(p))) }])),
+    limits: Object.fromEntries(['sit', 'lie'].map((k) => [k, { yaw: roundCm(deg(R[k].yaw)), pitch: R[k].pitch.map(deg) }])),
     spots, skipped,
   };
 }

@@ -199,6 +199,27 @@ def world_test():
         if bad or row["stoodUp"]["spot"] != -1 or row["stoodUp"]["offCm"] > 5 or "WALKING" not in row["stoodUp"]["mode"].upper():
             raise RuntimeError(f"Rest differs from src/rest.js: {row}, want limits {want_limits}")
 
+        # Both rest kinds replace the standing range temporarily. The sofa above used E on an aimed spot.
+        def check_pitch_range(label, expected):
+            actual = [cam.get_editor_property("view_pitch_min"), cam.get_editor_property("view_pitch_max")]
+            result[label] = actual
+            if any(abs(a - b) > 0.001 for a, b in zip(actual, expected)):
+                raise RuntimeError(f"{label}: pitch limits {actual}, expected {expected}")
+
+        limit = math.degrees(P["pitchLimit"])
+        check_pitch_range("stoodFromSofa", [-limit, limit])
+        bed = next(i for i, s in enumerate(spots) if s["kind"] == "lie")
+        rest.call_method("BeginRest", (bed,))
+        yield from seconds(R["move"] + 0.4)
+        check_pitch_range("lying", R["limits"]["lie"]["pitch"])
+        if abs((pc.get_control_rotation().pitch - spots[bed]["startPitch"] + 180) % 360 - 180) > 0.01:
+            raise RuntimeError("The lying view did not reach the exported bed pitch")
+        rest.call_method("StandUp")
+        yield from seconds(0.2)
+        check_pitch_range("stoodFromBed", [-limit, limit])
+        if abs((pc.get_control_rotation().pitch + 180) % 360 - 180) > 0.01:
+            raise RuntimeError("Standing from the bed did not level the view")
+
         # 4. death -------------------------------------------------------------------------------------------------------
         put(start["unreal"], start["unrealYaw"])
         yield from seconds(0.5)

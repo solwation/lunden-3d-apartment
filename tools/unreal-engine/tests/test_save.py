@@ -18,6 +18,7 @@ Writes Saved/save-result.json and logs LUNDEN_SAVE_TEST lines, then LUNDEN_SAVE_
 The test deletes and rewrites the editor's own slot (unreal/Lunden/Saved/SaveGames/LundenSave.sav).
 """
 import json
+import math
 from pathlib import Path
 import re
 import shutil
@@ -205,6 +206,19 @@ def save_test():
             raise RuntimeError(f"Settings after the restart: {settings}, unknown {missing}")
         if same != {"name": NAME, "look": LOOK, "id": first_id}:
             raise RuntimeError(f"Name, look or id changed over the restart: {same}")
+
+        # An older save could look past the web limit. Exercise the same RestorePlace used at startup.
+        measurements = json.loads((PROJECT / "Import/measurements.json").read_text(encoding="utf-8"))
+        limit = math.degrees(measurements["spawn"]["player"]["pitchLimit"])
+        legacy = disk()
+        legacy.set_editor_property("PlaceRotation", u.Rotator(roll=0, pitch=-(90 + limit) / 2, yaw=facing.yaw))
+        if not u.GameplayStatics.save_game_to_slot(legacy, SLOT, 0) or not state["save"].call_method("RestorePlace"):
+            raise RuntimeError("Could not restore the old out-of-range facing")
+        yield from settle(0.2)
+        restored = pc.get_control_rotation()
+        result["legacyPitch"] = pyr(restored)
+        if angle(restored.pitch, -limit) > 0.001 or angle(restored.yaw, facing.yaw) > 0.01:
+            raise RuntimeError(f"Old save restored {restored}, expected pitch {-limit} and yaw {facing.yaw}")
 
         # A save from another map is not applied
         other = disk()
