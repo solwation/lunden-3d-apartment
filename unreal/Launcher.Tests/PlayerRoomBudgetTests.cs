@@ -60,6 +60,52 @@ public sealed class PlayerRoomBudgetTests
     }
 
     [Fact]
+    public async Task ServerRestartReplacesTheRosterAndSendsTheLatestMovement()
+    {
+        using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(12));
+        var ct = deadline.Token;
+        var disconnect = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var resumed = new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously);
+        int attempts = 0;
+        var (server, endpoint) = await Open(async socket => {
+            int attempt = Interlocked.Increment(ref attempts);
+            string welcome = attempt == 1
+                ? """{"t":"w","i":"self-old","ps":[{"i":"peer-old","n":"Bord","p":[1,0,1],"r":0}]}"""
+                : """{"t":"w","i":"self-new","ps":[{"i":"peer-new","n":"Stol","p":[2,0,2],"r":0}]}""";
+            await socket.SendAsync(Encoding.UTF8.GetBytes(welcome).AsMemory(), WebSocketMessageType.Text, true, ct);
+            var buffer = new byte[512];
+            var frame = await socket.ReceiveAsync(buffer.AsMemory(), ct);
+            if (attempt == 1) {
+                await disconnect.Task.WaitAsync(ct);
+                await socket.CloseOutputAsync((WebSocketCloseStatus)1012, "restart", ct);
+            } else {
+                resumed.TrySetResult(Encoding.UTF8.GetString(buffer, 0, frame.Count));
+                await socket.ReceiveAsync(buffer.AsMemory(), ct);
+            }
+        });
+        using var host = server;
+        var dir = Directory.CreateTempSubdirectory();
+        try {
+            await using var room = new PlayerRoom(endpoint, Path.Combine(dir.FullName,"cap"));
+            while (!room.Sync(Frame(0)).Contains("peer-old",StringComparison.Ordinal)) await Task.Delay(30,ct);
+            disconnect.SetResult();
+            // Move while the transport is down. Keep the game active to exercise the reconnection path.
+            while (!resumed.Task.IsCompleted) { room.Sync(Frame(250)); await Task.Delay(30,ct); }
+            using var json = System.Text.Json.JsonDocument.Parse(await resumed.Task);
+            Assert.Equal(2.5, json.RootElement.GetProperty("p")[0].GetDouble());
+            string snapshot;
+            do {
+                snapshot = room.Sync(Frame(250));
+                if (!snapshot.Contains("peer-new",StringComparison.Ordinal)) await Task.Delay(30,ct);
+            } while (!snapshot.Contains("peer-new",StringComparison.Ordinal));
+            Assert.StartsWith("1\tself-new",snapshot);
+            Assert.DoesNotContain("peer-old",snapshot);
+            Assert.Equal(2,snapshot.Split('\n').Length);
+            Assert.Equal(2,attempts);
+        } finally { await host.StopAsync(); dir.Delete(true); }
+    }
+
+    [Fact]
     public async Task RapidGameTicksRespectRateSizeAndStillnessBudget()
     {
         var frames = new ConcurrentQueue<(TimeSpan At, string Text)>();

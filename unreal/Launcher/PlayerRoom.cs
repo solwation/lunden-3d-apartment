@@ -82,7 +82,7 @@ internal sealed class PlayerRoom(Uri endpoint, string capFile) : IAsyncDisposabl
     readonly object gate = new();
     readonly Dictionary<string, RoomPeer> peers = [];
     readonly Queue<string> events = new();
-    int eventNumber;
+    long eventNumber;
     internal string Events() { lock (gate) return string.Join('\n', events); }
 
     readonly CancellationTokenSource stop = new();
@@ -125,7 +125,7 @@ internal sealed class PlayerRoom(Uri endpoint, string capFile) : IAsyncDisposabl
 
     internal void Away() { lock (gate) { if (frame != null) generation++; frame = null; peers.Clear(); events.Clear(); ownId = ""; } }
     PresenceFrame? Active() { lock (gate) return Environment.TickCount64 - touched < MissingGameMs && Environment.TickCount64 - changed < StillnessMs ? frame : null; }
-    void ClearPeers() { lock (gate) { peers.Clear(); ownId = ""; } }
+    void ClearPeers() { lock (gate) { peers.Clear(); events.Clear(); ownId = ""; } }
 
     internal static string EventPayload(JsonElement message)
     {
