@@ -416,8 +416,11 @@ toolset plugins are enabled for Editor, and AndroidFileServer stays disabled in
 Editor. Shipping uses the plugins compiled into Epic's stock UnrealGame.
 Changing the runtime plugin set makes UAT generate a temporary native target.
 The script checks HEAD and worktree cleanliness again after UAT. Each invocation
-creates a separate directory under the output root containing `BuildCookRun.log`,
-`stage/` and `archive/Windows/`. UAT can also use the engine's ordinary ignored
+creates a separate directory under the output root containing `BuildCookRun.log`
+and `archive/Windows/`. All invocations stage at the one fixed path
+`<OutputRoot>\stage`, which the script empties before UAT; a named mutex lets only
+one release build per PC run at a time (see [Pak repeatability](#pak-repeatability-2248)).
+UAT can also use the engine's ordinary ignored
 intermediate files in the project.
 
 A completed archive contains the Shipping executable and `build-info.json` beside
@@ -438,8 +441,8 @@ Windows clone (UE 5.8.4, content-only project) both exited 0 in 58 s and 31 s, e
 26 archived files, 22 are byte-identical across the two runs, including every `.ucas`/`.utoc` container and all
 executables. The other differences are `build-info.json` (time), UAT's two `Manifest_*UFSFiles_Win64.txt` (file
 timestamps and order) and `Lunden-Windows.pak`. Extracting both paks with `UnrealPak -Extract` gives the same 1,730
-files with identical SHA-256, so the pak differs only in entry order. For updates (#2248) this means the small
-chunk-0 pak (about 11 MB) is re-sent with every release, even when its content is unchanged.
+files with identical SHA-256. The pak did not differ in entry order, as first assumed, but in its path-hash seed;
+[Pak repeatability](#pak-repeatability-2248) has the cause and the fix.
 With an untracked file in the checkout, the script stops with `Release requires a clean Git worktree` (exit 1) and
 creates no build directory.
 
@@ -543,6 +546,25 @@ The stock game executable was byte-identical in both archives. This run did not
 configure separate chunks. Matching source files and file sizes alone cannot identify
 reusable downloads across independent cook directories. Hash final files individually.
 The measurements do not isolate the cause of the differences.
+
+#### Pak repeatability (#2248)
+
+UnrealPak seeds the pak index's path-hash table with `FCrc::StrCrc32` of the lowercase
+**full output `.pak` path** (`FPakFile::EncodePakEntriesIntoIndex` in
+`Engine/Source/Runtime/PakFile/Private/PakFile.cpp`). It stores that seed in the primary index, so the
+runtime reads any value. Before the fix, `release.ps1` staged every build in its own GUID directory. The two
+#2244 paks from `c70a0bd2` had the same entry list, offsets, sizes, SHA-1 values and data in
+`UnrealPak -List`. Only three byte ranges after the last entry differed: the seed and the path-hash index hash in the
+primary index, 20,756 bytes of the path-hash index (1,730 × 12-byte hash entries) and the footer's index hash.
+The stored seeds `0xe6fc0ff4` and `0x15851533` equal the CRC-32 of each run's staged pak path.
+
+`release.ps1` now stages at `<OutputRoot>\stage` for every build. Two runs of commit `74dd7a82` in a fresh
+Windows worktree (exit 0, 75 s and 33 s) gave the same `Lunden-Windows.pak` SHA-256
+`bf2fdbc5e700fd2b9a4aacd7c8eefe7d441abf4408d439622859988865d0af8d` (11,226,745 bytes); all five containers
+and 23 of the 26 archived files were identical. Only `build-info.json` and UAT's two `Manifest_*UFSFiles_Win64.txt`
+differed, and `make-manifest.mjs` ignores all three. Keep the same `-OutputRoot` (the default
+`%LOCALAPPDATA%\Lunden\Builds`) for successive releases. A different root changes the seed and re-sends the
+roughly 11 MB chunk-0 pak, even when its content is unchanged.
 
 Run `node tools/unreal-engine/compare-cooks.mjs FIRST_PAKS SECOND_PAKS` against each
 archive's `Lunden/Content/Paks` directory. It streams each container and reports its
