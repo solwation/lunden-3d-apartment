@@ -309,7 +309,7 @@ def controller_asset():
 
 # 3. Character graph and defaults -----------------------------------------------------------------------------------
 
-def character_graph(char, mapping):
+def character_graph(char, mapping, shared_room=False):
     graph = GRAPH.get_graph_editor_by_name(char, "EventGraph")
     graph.remove_nodes(list(graph.list_all_nodes()))
     names = {str(n) for n in BP.list_member_variable_names(char)} if hasattr(BP, "list_member_variable_names") else set()
@@ -321,6 +321,10 @@ def character_graph(char, mapping):
     BP.compile_blueprint(char)
     # #2300: UpdateSprint, Die, Revive and UpdateBlackout (player_parts.py), before the events that call them
     player_parts.character_functions(char, STEP_SURFACE, REST)
+
+    if shared_room:
+        import build_network_shared as shared
+        shared.life.player_graphs(char, shared.SHARED)
 
     def call(owner_and_name, x, y):
         node = graph.add_call_function_node("/Script/" + owner_and_name)
@@ -500,11 +504,22 @@ def character_graph(char, mapping):
     # LastFallFatal first: the pure nodes are evaluated again after Lives is set, so `dead` is read before that
     chain = [("LastFallFatal", dead), ("LastFallDrop", drop), ("LastFallDamage", damage), ("Deaths", deaths), ("Lives", new_lives)]
     previous, pin = landed, "then"
+    if shared_room:
+        # Use the room's confirmed lives and wake for an online fall. A standalone pawn keeps the local rule.
+        offer = _self_call(graph, char.generated_class().get_path_name(), "OfferRoomLanding", 1750, y)
+        connect(landed, "then", offer, "execute")
+        connect(drop, "ReturnValue", offer, "DropCm")
+        connect(harmed, "ReturnValue", offer, "Qualifies")
+        offered = graph.add_branch_node()
+        BP.set_node_pos(offered, u.IntPoint(2050, y))
+        connect(offer, "then", offered, "execute")
+        connect(offer, "Offered", offered, "Condition")
+        previous, pin = offered, "else"
     for index, (name, value) in enumerate(chain):
         setter = put(name, 2400 + index * 300, y)
         connect(previous, pin, setter, "execute")
         connect(value, "ReturnValue", setter, name)
-        previous = setter
+        previous, pin = setter, "then"
     # #2300: a death blacks out and wakes outdoors (src/fall.js hurt -> wake); Die() is also #2293's hook
     fatal = graph.add_branch_node()
     BP.set_node_pos(fatal, u.IntPoint(2400 + len(chain) * 300, y))
@@ -521,6 +536,8 @@ def character_graph(char, mapping):
     blackout = _self_call(graph, me, "UpdateBlackout", 600, y)
     connect(sprint, "then", blackout, "execute")
     connect(tick, "DeltaSeconds", blackout, "DeltaSeconds")
+    if shared_room:
+        connect(blackout, "then", _self_call(graph, me, "UpdateRoomLife", 900, y), "execute")
 
     player_parts.compiled(char)  # every graph: the event graph and #2300's functions
 
@@ -566,6 +583,9 @@ def network_dependencies(rows, measurements_file, check_only):
     flags = ["--check"] if check_only else []
     build_network_peers.main(flags)
     build_network.main([str(measurements_file), *flags])
+    if any(row["owner"] == "#2293" for row in rows):
+        import build_network_shared
+        build_network_shared.main([str(measurements_file), *flags])
 
 
 def extensions(bp, target, rows):
@@ -676,7 +696,9 @@ def main(argv):
     values = player_values(measurements)
     rows = load_rows(ext_file)
     check_only = "--check" in flags
-    spec = hashlib.sha256(json.dumps({"values": values, "rows": rows, "script": Path(__file__).read_text(encoding="utf-8"),
+    shared_life = ((Path(__file__).parent / "shared_room_life.py").read_text(encoding="utf-8")
+                   if any(row["owner"] == "#2293" for row in rows) else "")
+    spec = hashlib.sha256(json.dumps({"sharedLife": shared_life, "values": values, "rows": rows, "script": Path(__file__).read_text(encoding="utf-8"),
                                       "parts": (Path(__file__).parent / "player_parts.py").read_text(encoding="utf-8")},
                                      sort_keys=True).encode()).hexdigest()
 
@@ -703,7 +725,12 @@ def main(argv):
     controller = controller_asset()
     # #2300: the components first: the character's graph casts to them and the extension rows load them
     if ASSETS.does_asset_exist(CHARACTER):
-        player_parts.clear_character(ASSETS.load_asset(CHARACTER))
+        existing_character = ASSETS.load_asset(CHARACTER)
+        # Drop #2293's callers before clear_character removes Die and the network rebuild replaces SendLanding.
+        for method in ("OfferRoomLanding", "UpdateRoomLife"):
+            if BP.find_graph(existing_character, method):
+                BP.remove_function_graph(existing_character, method)
+        player_parts.clear_character(existing_character)
     # Each component keeps its own hash (its export data and player_parts.py), so a change elsewhere does not rewrite
     # the large BPC_LundenStepSurface (its raster is about 1.6 MB of the export) in Git LFS again.
     parts_text = (Path(__file__).parent / "player_parts.py").read_text(encoding="utf-8")
@@ -720,7 +747,7 @@ def main(argv):
         save(part)
     network_dependencies(rows, measurements_file, False)
     char = ASSETS.load_asset(CHARACTER) if ASSETS.does_asset_exist(CHARACTER) else new_blueprint(CHARACTER, u.Character)
-    character_graph(char, mapping)
+    character_graph(char, mapping, any(row["owner"] == "#2293" for row in rows))
     character_defaults(char, values)
     extensions(char, "character", rows)
     extensions(controller, "controller", rows)

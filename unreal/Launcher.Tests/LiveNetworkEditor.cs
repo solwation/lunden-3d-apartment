@@ -9,6 +9,7 @@ internal sealed class LiveNetworkEditor : IDisposable
 {
     readonly Process editor;
     readonly string report;
+    readonly string log;
     readonly string staged;
     readonly bool ownsScript;
 
@@ -31,6 +32,7 @@ internal sealed class LiveNetworkEditor : IDisposable
         }
         try {
             report = Path.Combine(userDir, "Automation");
+            log = Path.Combine(userDir, "network-live.log");
             Directory.CreateDirectory(report);
             var info = new ProcessStartInfo(executable) {
                 UseShellExecute = false, CreateNoWindow = true, WindowStyle = ProcessWindowStyle.Hidden, WorkingDirectory = root
@@ -39,7 +41,7 @@ internal sealed class LiveNetworkEditor : IDisposable
             foreach (string arg in new[] {
                 Path.Combine(project,"Lunden.uproject"), "-EnablePlugins=PythonAutomationTest",
                 "-ExecCmds=Automation RunTests Editor.Python.Lunden.test_network_live; Quit", "-TestExit=Automation Test Queue Empty",
-                "-ReportExportPath="+report, "-abslog="+Path.Combine(userDir,"network-live.log"), "-UserDir="+userDir,
+                "-ReportExportPath="+report, "-abslog="+log, "-UserDir="+userDir,
                 "-unattended", capture == null ? "-nullrhi" : "-RenderOffScreen", "-nosplash", "-nosound", "-nop4", bridge.GameArgument
             }) info.ArgumentList.Add(arg);
             editor = Process.Start(info) ?? throw new IOException("Could not start headless Unreal.");
@@ -52,7 +54,7 @@ internal sealed class LiveNetworkEditor : IDisposable
     internal async Task Ready(string folder, CancellationToken ct)
     {
         while (!File.Exists(Path.Combine(folder,"live-ready"))) {
-            if (editor.HasExited) throw new InvalidOperationException("The editor exited before the network component was ready.");
+            if (editor.HasExited) throw new InvalidOperationException($"The editor exited {editor.ExitCode} before the room was ready. Private log: {log}");
             await Task.Delay(200,ct);
         }
     }
@@ -64,7 +66,7 @@ internal sealed class LiveNetworkEditor : IDisposable
         var result = summary.RootElement;
         if (editor.ExitCode != 0 || result.GetProperty("failed").GetInt32() != 0 || result.GetProperty("notRun").GetInt32() != 0 ||
             result.GetProperty("succeeded").GetInt32() + result.GetProperty("succeededWithWarnings").GetInt32() < 1)
-            throw new InvalidOperationException("The headless three-client PIE automation did not pass.");
+            throw new InvalidOperationException($"The three-client editor exited {editor.ExitCode}; private automation report: {report}");
     }
 
     public void Dispose()

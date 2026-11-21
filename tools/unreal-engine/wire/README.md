@@ -59,7 +59,7 @@ closing parenthesis in that argument are escaped as `%25`, `%20`, `%2C` and `%29
 Offline launches omit the argument. An online launch joins only after the first valid game packet. The
 launcher deletes its transient files on exit. The UTC month of a room cap is saved across launches.
 
-Both directions use Unreal string tables with an entry named `Packet`. The return table also carries `Events`. The optional editor-only `DevNotes` column
+Both directions use Unreal string tables with an entry named `Packet`. The return table also carries `Events` and the optional `Shared` room snapshot. The optional editor-only `DevNotes` column
 and Unicode BOM are accepted. Unreal escapes its string-table cells before CSV quoting. Inside a packet,
 the name field escapes percent, backslash, apostrophe and double quote as `%25`, `%5C`, `%27` and `%22`;
 decode percent last. Personal save ids do not go to the room.
@@ -92,3 +92,27 @@ Windows checkout, reserve the shared editor slot and set `LUNDEN_TEST_UE_EDITOR`
 `UnrealEditor-Cmd.exe` before running the same filtered .NET test with Playwright and Three.js available.
 The harness stages the automation script, starts a headless null-RHI editor with a temporary user directory
 and the local bridge, then checks both browsers and the interpolated actors actually present in PIE.
+
+
+## Chat, doors and life
+
+`shared-room.json` gives the four outgoing commands. They use the same numbered CSV offers as presence.
+The launcher accepts text, typing, registered door changes and the local pawn's measured free drop. The
+room applies its normal chat and life rules. The Windows client keeps chat history in memory and in the current launch's transient files. Older games can continue reading only the original presence keys.
+
+The `Shared` table entry starts with six tab-separated fields. These give the format version (1),
+own room id, remaining lives, maximum lives, door revision and comma-separated open door ids.
+Subsequent lines carry typing names or sequenced results. The game applies a received door change to
+the same #2285 interactable the player operates, suppresses its outgoing echo and checks newly
+streamed levels. Enter opens the HUD chat. Enter sends, and Escape returns to the game.
+
+Build `build_network_shared.py <measurements.json>` after the interaction and presence assets, then
+`build_player.py <measurements.json>`. Run `Editor.Python.Lunden.test_network_shared` for the
+HUD, a real door and two measured landings in PIE. The launcher and the Blueprint use the same
+fixtures in `shared-avatar-poses.json` for standing, crouched, seated and older avatar packets.
+
+Set `LUNDEN_TEST_SHARED_ROOM=1` for the three-client command above to additionally send actual web and
+native chat, open and close a swing door, join with a fresh touch profile while it stands open and
+confirm the same two free drops in the room. With `LUNDEN_TEST_UE_CAPTURE` pointing to a fresh
+absolute PNG in the headless rendered run, the harness also captures the actual HUD, including both
+test chat lines, beside the original PNG using the suffix `-shared-chat.png`.

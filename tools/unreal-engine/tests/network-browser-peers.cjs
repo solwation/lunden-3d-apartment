@@ -8,6 +8,7 @@ const assert = require('node:assert/strict');
 const { chromium, devices } = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const [port, folder, mode] = process.argv.slice(2);
 const live = mode === 'pie';
+const shared = process.env.LUNDEN_TEST_SHARED_ROOM === '1' ? require('./network-shared-peers.cjs') : null;
 const capture = process.env.LUNDEN_TEST_UE_CAPTURE;
 const workerOrigin = 'http://127.0.0.1:' + port;
 const source = path.resolve(__dirname, '../../../src');
@@ -53,8 +54,10 @@ async function peer(browser, fixtureOrigin, mobile, name, p) {
     const ghosts = new Ghosts({ scene, camera, url: origin, name: () => name, state: () => ({ ...state, p: [...state.p] }), score: () => 0,
       weapon: () => '', active: () => true });
     window.peer = { ghosts, state };
-    setInterval(() => ghosts.update(), 40);
+
   }, { origin: workerOrigin, name, p });
+  if (shared) await shared.install(page, name);
+  await page.evaluate(() => setInterval(() => window.peer.ghosts.update(), 40));
   return page;
 }
 
@@ -276,6 +279,8 @@ async function run() {
         }
       }
     }
+    if (shared) await shared.run({ desktop, mobile, folder, live, nextFile, signal, step,
+      lateMobile: () => peer(browser, fixtureOrigin, true, 'Mobilgäst', [1.5,0,.5]) });
     if (live) await signal('done');
     console.log('Desktop and touch phone observed both moves, the away state and one returning avatar. Positions within 5 cm.');
   } finally {

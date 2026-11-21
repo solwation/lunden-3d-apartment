@@ -132,6 +132,18 @@ public sealed partial class PlayerBridgeTests
         }
     }
 
+    static async Task DeleteFixtureDirectory(DirectoryInfo directory)
+    {
+        // On Windows the editor and crash reporter can still be releasing the log handle immediately
+        // after the automation process exits. Retry only this run's private, randomly named directory.
+        for (int attempt = 0; ; attempt++)
+        {
+            try { Directory.Delete(directory.FullName, recursive: true); return; }
+            catch (DirectoryNotFoundException) { return; }
+            catch (IOException) when (attempt < 40) { await Task.Delay(250); }
+        }
+    }
+
     [Fact]
     public async Task LauncherAndWebPeerExchangeMovementAndResumeOneIdentityOnLocalWorker()
     {
@@ -155,6 +167,7 @@ public sealed partial class PlayerBridgeTests
         start.ArgumentList.Add(port.ToString(CultureInfo.InvariantCulture));
         using var worker = Process.Start(start)!;
         var dir = Directory.CreateTempSubdirectory("lunden-players-");
+        bool verified = false;
         try
         {
             Assert.Contains("localhost", await worker.StandardOutput.ReadLineAsync(ct));
@@ -200,26 +213,39 @@ public sealed partial class PlayerBridgeTests
                 await using var bridge = PlayerBridge.Open(dir.FullName, endpoint);
                 using var editor = engine == null ? null : new LiveNetworkEditor(engine, Root(), dir.FullName, bridge);
                 if (editor != null) await editor.Ready(bridge.DirectoryPath, ct);
-                var test = new ProcessStartInfo("node") { WorkingDirectory = Root(), UseShellExecute = false, CreateNoWindow = true };
+                var test = new ProcessStartInfo("node") { WorkingDirectory = Root(), UseShellExecute = false, CreateNoWindow = true,
+                    RedirectStandardOutput = true, RedirectStandardError = true };
                 test.ArgumentList.Add("tools/unreal-engine/tests/network-browser-peers.cjs");
                 test.ArgumentList.Add(port.ToString(CultureInfo.InvariantCulture));
                 test.ArgumentList.Add(bridge.DirectoryPath);
                 if (editor != null) test.ArgumentList.Add("pie");
                 using var browserTest = Process.Start(test)!;
+                var stdout = browserTest.StandardOutput.ReadToEndAsync(ct);
+                var stderr = browserTest.StandardError.ReadToEndAsync(ct);
                 try {
                     await browserTest.WaitForExitAsync(ct);
-                    Assert.Equal(0, browserTest.ExitCode);
+                    await Task.WhenAll(stdout, stderr);
+                    Assert.True(browserTest.ExitCode == 0, $"Browser fixture exited {browserTest.ExitCode}: {await stderr}");
+                    Console.WriteLine((await stdout).TrimEnd());
                     if (editor != null) await editor.Verify(ct);
                 } finally {
                     if (!browserTest.HasExited) browserTest.Kill(entireProcessTree: true);
+                    await browserTest.WaitForExitAsync();
                 }
             }
+            verified = true;
         }
         finally
         {
-            if (!worker.HasExited) worker.Kill();
+            if (!worker.HasExited) worker.Kill(entireProcessTree: true);
             await worker.WaitForExitAsync();
-            dir.Delete(true);
+            if (verified) await DeleteFixtureDirectory(dir);
+            else if (engine != null) Console.Error.WriteLine("Private Unreal failure report retained at " + dir.FullName);
+            else {
+                // Cleanup must not replace a failed behavior assertion with a file-sharing exception.
+                try { await DeleteFixtureDirectory(dir); }
+                catch (IOException) { Console.Error.WriteLine("Temporary test files retained at " + dir.FullName); }
+            }
         }
     }
 }

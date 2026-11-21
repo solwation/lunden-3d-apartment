@@ -1,0 +1,11 @@
+{
+  "source": "Public avatar poses accepted by cloudflare/players.js cleanState. Feet in cm, yaw/pitch/head turn in degrees on Unreal; metres/radians on web.",
+  "poses": [
+    {"case":"short-standing","appearance":"000000000100","feet":[125,-250,50],"yaw":-90,"pitch":0,"headYaw":0,"crouch":false,"pose":0,"web":{"p":[1.25,0.5,-2.5],"r":0,"av":"000000000100","look":[0,0]}},
+    {"case":"standard-standing","appearance":"000000000175","feet":[125,-250,50],"yaw":-90,"pitch":0,"headYaw":0,"crouch":false,"pose":0,"web":{"p":[1.25,0.5,-2.5],"r":0,"av":"000000000175","look":[0,0]}},
+    {"case":"tall-standing","appearance":"000000000200","feet":[125,-250,50],"yaw":-90,"pitch":0,"headYaw":0,"crouch":false,"pose":0,"web":{"p":[1.25,0.5,-2.5],"r":0,"av":"000000000200","look":[0,0]}},
+    {"case":"crouched","appearance":"000000000175","feet":[125,-250,50],"yaw":-90,"pitch":0,"headYaw":0,"crouch":true,"pose":0,"web":{"p":[1.25,0.5,-2.5],"r":0,"av":"000000000175","c":true,"look":[0,0]}},
+    {"case":"seated","appearance":"000000000175","feet":[125,-250,50],"yaw":-90,"pitch":14.324,"headYaw":-28.648,"crouch":false,"pose":1,"web":{"p":[1.25,0.5,-2.5],"r":0,"av":"000000000175","look":[0.5,0.25],"pose":1}},
+    {"case":"legacy","appearance":"","feet":[125,-250,50],"yaw":-90,"pitch":0,"headYaw":0,"crouch":false,"pose":0,"web":{"p":[1.25,0.5,-2.5],"r":0}}
+  ]
+}

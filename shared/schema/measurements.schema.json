@@ -61,6 +61,7 @@
           "id": { "type": ["string", "null"], "description": "node id in the zone GLB (null: the door is in a zone not exported); with `parts` (#2314) the interactable's id, and the leaf is those nodes" },
           "kind": { "enum": ["swing", "sliding", "wardrobe", "overhead"], "description": "src/doors.js: swing = SwingDoor (hinge + angles), sliding / wardrobe = sliding panels (centre + size); #2314: overhead = the garage door (pivot, axis, angleDeg, checkClosed/checkOpen like a window sash)" },
           "parts": { "type": "array", "items": { "type": "string" }, "description": "#2314: the GLB nodes of a leaf exported as several nodes (Hus L's stairwell doors, the entrances of Hus A/B/C, the garage door's sections)" },
+          "wireId": { "type": "string", "pattern": "^[wLABCgq](0|[1-9][0-9]{0,2})$", "description": "Optional public room id from the matching DoorSync registration (#2293)" },
           "leafType": { "enum": ["flat", "steel", "park", "cage"], "description": "#2328: moving leaf from CoreHouse or Garage.cageDoors" },
           "checkClosed": { "$ref": "#/$defs/point" },
           "checkOpen": { "$ref": "#/$defs/point" },

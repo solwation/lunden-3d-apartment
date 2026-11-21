@@ -19,6 +19,9 @@ import save_isolation  # noqa: E402
 
 ROOM = Path(os.environ["LUNDEN_NETWORK_LIVE_DIR"])
 capture_path = os.environ.get("LUNDEN_TEST_UE_CAPTURE")
+shared_enabled = os.environ.get("LUNDEN_TEST_SHARED_ROOM") == "1"
+if shared_enabled:
+    import live_shared_room
 if capture_path:
     import capture_network_peers
 MODE = json.loads((TESTS.parent / "world-levels.json").read_text(encoding="utf-8"))["gameMode"]
@@ -64,10 +67,12 @@ def live_test():
         for method, value in (("SetPlayerName", "Klara"), ("SetLookCode", "120310101175u1")):
             if not lib.call_method(method, (value, world)):
                 raise RuntimeError("Could not prepare the test profile: " + method)
+        if shared_enabled:
+            live_shared_room.setup(actors)
         if capture_path:
             capture_network_peers.setup(actors)
         levels.editor_request_begin_play()
-        deadline = time.monotonic() + 150
+        deadline = time.monotonic() + (210 if shared_enabled else 150)
         while time.monotonic() < deadline:
             game = editor.get_game_world()
             pc = u.GameplayStatics.get_player_controller(game, 0) if game else None
@@ -96,6 +101,12 @@ def live_test():
             stage = step["stage"]
             if stage == "done":
                 return
+            if shared_enabled and isinstance(stage, str) and stage.startswith("shared-"):
+                if stage != last:
+                    yield from live_shared_room.run(stage, ROOM, game, pawn, capture_path)
+                    last = stage
+                yield
+                continue
             if stage != last:
                 if stage == "away":
                     net.call_method("SetPresenceAway", (True,))

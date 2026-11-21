@@ -58,6 +58,13 @@
       "class": "/Game/Lunden/Network/BPC_LundenNetwork.BPC_LundenNetwork_C",
       "owner": "#2292",
       "what": "exchanges only public presence, appearance and movement with the launcher through private session files"
+    },
+    {
+      "target": "character",
+      "name": "SharedRoom",
+      "class": "/Game/Lunden/Network/Shared/BPC_LundenSharedRoom.BPC_LundenSharedRoom_C",
+      "owner": "#2293",
+      "what": "chat, shared registered doors and room life on the player's existing presence connection"
     }
   ]
 }

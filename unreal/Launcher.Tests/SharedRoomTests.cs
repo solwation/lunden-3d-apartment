@@ -34,6 +34,54 @@ public sealed partial class PlayerBridgeTests
     }
 
     [Fact]
+    public async Task PublicAvatarPosesMatchWebAfterRoomNormalization()
+    {
+        var fixture = Path.Combine(Root(), "tools/unreal-engine/wire/shared-avatar-poses.json");
+        using var data = JsonDocument.Parse(File.ReadAllText(fixture));
+        var rows = new List<string>();
+        foreach (var row in data.RootElement.GetProperty("poses").EnumerateArray())
+        {
+            var feet = row.GetProperty("feet");
+            var pawn = Frame(appearance: row.GetProperty("appearance").GetString()!, x: feet[0].GetDouble(),
+                y: feet[1].GetDouble(), z: feet[2].GetDouble(), yaw: row.GetProperty("yaw").GetDouble(),
+                pitch: row.GetProperty("pitch").GetDouble(), crouched: row.GetProperty("crouch").GetBoolean(),
+                pose: row.GetProperty("pose").GetInt32(), headYaw: row.GetProperty("headYaw").GetDouble());
+            rows.Add(PresenceFrame.Read(pawn)!.Message);
+        }
+        var info = new ProcessStartInfo("node") { WorkingDirectory = Root(), CreateNoWindow = true,
+            UseShellExecute = false, RedirectStandardInput = true, RedirectStandardError = true };
+        info.ArgumentList.Add("tools/unreal-engine/tests/shared-avatar-poses.mjs");
+        using var node = Process.Start(info)!;
+        await node.StandardInput.WriteAsync(JsonSerializer.Serialize(rows));
+        node.StandardInput.Close();
+        string errors = await node.StandardError.ReadToEndAsync();
+        await node.WaitForExitAsync();
+        Assert.True(node.ExitCode == 0, errors);
+    }
+
+    [Fact]
+    public void TypingSnapshotDropsFlagsOnMessageLeaveAndDisconnect()
+    {
+        var room = new SharedRoom();
+        void Receive(string json)
+        {
+            using var message = JsonDocument.Parse(json);
+            var data = message.RootElement;
+            room.Receive(data.GetProperty("t").GetString()!, data, id => id);
+        }
+        Receive("""{"t":"k","i":"Gäst","on":true}""");
+        Assert.Contains("\ntyping\tGäst", room.Snapshot("local"));
+        Receive("""{"t":"m","i":"Gäst","m":"Hej","n":"Gäst"}""");
+        Assert.DoesNotContain("\ntyping\t", room.Snapshot("local"));
+        Receive("""{"t":"k","i":"Gäst","on":true}""");
+        Receive("""{"t":"x","i":"Gäst"}""");
+        Assert.DoesNotContain("\ntyping\t", room.Snapshot("local"));
+        Receive("""{"t":"k","i":"Gäst","on":true}""");
+        room.Reset();
+        Assert.DoesNotContain("\ntyping\t", room.Snapshot(""));
+    }
+
+    [Fact]
     public async Task SharedChatDoorsAndFallUseTheSameLocalWorkerConnection()
     {
         using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(30));

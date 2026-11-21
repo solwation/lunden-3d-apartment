@@ -477,11 +477,11 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     const core = new Core();
     Object.assign(extra, { garage, core }); // #2300: the footstep sensor and the outdoor sprint need them (export-player.js)
     extra.lifts = [['l', core.lift]]; // #2285: the lifts' button panels (src/liftpanel.js targets)
-    extra.coreDoors = core.doors.map((t, i) => ['l', t, `src/core.js Core.doors[${i}]`, false, core]); // #2314: the stairwell doors that open
+    extra.coreDoors = core.doors.map((t, i) => ['l', t, `src/core.js Core.doors[${i}]`, false, core, `L${i}`]); // #2314: the stairwell doors that open
     for (const spec of [C.CORE_A, C.CORE_B, C.CORE_C]) {
       const house = new CoreHouse(spec), letter = spec.house.slice(-1).toLowerCase();
       core.attach(house); extra.lifts.push([letter, house.lift]);
-      house.doors.forEach((t, i) => extra.coreDoors.push([letter, t, `src/corehouse.js CoreHouse(${spec.house}).doors[${i}]`, i > 0, house]));
+      house.doors.forEach((t, i) => extra.coreDoors.push([letter, t, `src/corehouse.js CoreHouse(${spec.house}).doors[${i}]`, i > 0, house, `${letter.toUpperCase()}${i}`]));
     }
     extra.objects.push(garage.object, garage.door.object, garage.parkObject, core.object); // (not garage.blackout: a web-only mask)
     for (const o of [garage.object, garage.door.object, garage.parkObject]) extra.group.set(o, 'garage');
@@ -1371,6 +1371,7 @@ const SWING_SECONDS = 1 / (3 * 0.6), SLIDE_SECONDS = 1 / (3 * 0.7); // src/doors
 function interactionData({ world, doors, windows, atomOf, P }) {
   world.doors.forEach((d, i) => {
     const row = doors[i];
+    if (['swing', 'sliding', 'cabinet'].includes(d.kind)) row.wireId = `w${i}`; // src/main.js DoorSync.register
     row.initiallyOpen = d.target === 1;
     row.seconds = r4(d.kind === 'swing' ? SWING_SECONDS : SLIDE_SECONDS);
     if (d.kind === 'swing') return;
@@ -1423,7 +1424,7 @@ function entranceDoors({ coreDoors, garage, byZone, atomOf, P }) {
     root.traverse((o) => { const a = atomOf.get(o); if (a?.id) ids.push(a); });
     return ids;
   };
-  for (const [house, t, source, flat, core] of coreDoors) {
+  for (const [house, t, source, flat, core, wireId] of coreDoors) {
     const d = t?.door;
     if (!d?.pivot) continue;
     const atoms = partsUnder(d.pivot);
@@ -1447,7 +1448,7 @@ function entranceDoors({ coreDoors, garage, byZone, atomOf, P }) {
     d.angle = start; core.placeDoor(d);
     const lv = levelOf(d.y + 0.05);
     const id = `door_hus${house}_l${lv}_${tag('x', at.x)}_${tag('z', at.z)}` + (flat ? '_' + tag('y', d.y) : '');
-    rows.push({ id, zone: atoms[0].zone, kind: 'swing', level: lv, source,
+    rows.push({ id, wireId, zone: atoms[0].zone, kind: 'swing', level: lv, source,
       ...(flat ? { leafType: 'flat' } : {}), name: t.name ?? null, house, hinge: P(at.x, d.y, at.z), width: r4(d.w), height: 2.18,
       closed: closed.rotation, open: open.rotation, checkClosed: closed.latch, checkOpen: open.latch, initiallyOpen: d.target > 0, seconds: r4(d.max / 3), parts: atoms.map((a) => a.id) });
   }
@@ -1458,6 +1459,7 @@ function entranceDoors({ coreDoors, garage, byZone, atomOf, P }) {
       if (!batches.has(a.object)) batches.set(a.object, new Map());
       batches.get(a.object).set(a.instance, a);
     }
+    const wireIds = new Map(garage.targets.filter(t => t.kind === 'cabinet' && t.door).map((t, i) => [t, `g${i}`]));
     for (const t of garage.targets) {
       const d = t.door;
       if (!d?.inst) continue;
@@ -1482,7 +1484,7 @@ function entranceDoors({ coreDoors, garage, byZone, atomOf, P }) {
       const start = d.angle, closed = sample(0), open = sample(d.max);
       d.angle = start; garage.place(d);
       const kind = park ? 'park' : d.steel ? 'steel' : 'cage';
-      rows.push({ id: `door_garage_${kind}_${tag('x', d.hx)}_${tag('z', d.hz)}`, kind: 'swing',
+      rows.push({ id: `door_garage_${kind}_${tag('x', d.hx)}_${tag('z', d.hz)}`, kind: 'swing', wireId: wireIds.get(t),
         zone: leaf.zone, level: leaf.level, name: t.name, leafType: kind, source: 'src/garage.js Garage.cageDoors and Garage.place',
         hinge: P(d.hx, baseY, d.hz), height: r4(leaf.box.max.y - baseY), width: r4(d.w),
         closed: closed.rotation, open: open.rotation, checkClosed: closed.latch, checkOpen: open.latch,
@@ -1495,7 +1497,7 @@ function entranceDoors({ coreDoors, garage, byZone, atomOf, P }) {
     for (const list of byZone.values()) for (const a of list) if (a.object === g.panels && a.id) atoms.push(a);
     atoms.sort((a, b) => a.instance - b.instance);
     if (atoms.length) {
-      rows.push({ id: `door_garage_l0_${tag('x', GD.x)}_${tag('z', zc)}`, zone: atoms[0].zone, kind: 'overhead', level: 0,
+      rows.push({ id: `door_garage_l0_${tag('x', GD.x)}_${tag('z', zc)}`, wireId: 'q0', zone: atoms[0].zone, kind: 'overhead', level: 0,
         source: 'src/garage.js GarageDoor, src/config.js#SITE.terrain.garageDoor, GARAGE.door', name: 'garageporten',
         width: r4(GD.z1 - GD.z0), height: GD.h, pivot: P(g.xd, F + GD.h, zc),
         axis: { web: [0, 0, 1], unreal: [0, 1, 0] }, angleDeg: 90,

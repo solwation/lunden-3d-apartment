@@ -13,6 +13,7 @@ internal sealed class SharedRoom
     internal sealed record Command(string Json, string? LocalChat = null);
     readonly Queue<Command> outgoing = new();
     readonly Queue<(long At, string Row)> events = new();
+    readonly Dictionary<string, (string Name, long Until)> typing = new();
     double chatTokens = 3;
     long refilled = Environment.TickCount64;
     readonly SortedSet<string> doors = new(StringComparer.Ordinal);
@@ -76,7 +77,7 @@ internal sealed class SharedRoom
 
     internal void Reset()
     {
-        outgoing.Clear(); events.Clear(); doors.Clear(); life = maxLife = -1; doorRevision++;
+        outgoing.Clear(); events.Clear(); doors.Clear(); typing.Clear(); life = maxLife = -1; doorRevision++;
         chatTokens = 3; refilled = Environment.TickCount64;
     }
 
@@ -90,7 +91,14 @@ internal sealed class SharedRoom
     internal string Snapshot(string own)
     {
         while (events.TryPeek(out var oldest) && Environment.TickCount64 - oldest.At >= 60_000) events.Dequeue();
-        return string.Join('\n', new[] { $"1\t{own}\t{life}\t{maxLife}\t{doorRevision}\t{string.Join(',', doors)}" }.Concat(events.Select(e => e.Row)));
+        long now = Environment.TickCount64;
+        foreach (var id in typing.Where(pair => pair.Value.Until <= now).Select(pair => pair.Key).ToArray())
+            typing.Remove(id);
+        var rows = new List<string> { $"1\t{own}\t{life}\t{maxLife}\t{doorRevision}\t{string.Join(',', doors)}" };
+        if (typing.Count > 0)
+            rows.Add("typing\t" + PresencePacket.EncodeName(string.Join(", ", typing.Values.Select(v => v.Name))));
+        rows.AddRange(events.Select(e => e.Row));
+        return string.Join('\n', rows);
     }
 
     internal void Receive(string kind, JsonElement m, Func<string, string> peerName)
@@ -116,13 +124,18 @@ internal sealed class SharedRoom
                 if (Number(m, "o") == 1) doors.Add(id); else doors.Remove(id);
                 doorRevision++;
                 break;
+            case "x": typing.Remove(id); break;
             case "m" when id.Length > 0:
+                typing.Remove(id);
                 string text = Clean(Text(m, "m", 512));
                 if (text.Length > 0) Add("m", id, Text(m, "n", 20), text);
                 break;
             case "mx": Add("mx"); break;
             case "k" when id.Length > 0 && m.TryGetProperty("on", out var on) && on.ValueKind is JsonValueKind.True or JsonValueKind.False:
-                Add("k", id, peerName(id), on.GetBoolean() ? "1" : "0"); break;
+                string name = peerName(id);
+                if (on.GetBoolean()) typing[id] = (name.Length > 0 ? name : "Anonym", Environment.TickCount64 + 15_000); // CHAT.typingStale
+                else typing.Remove(id);
+                Add("k", id, name, on.GetBoolean() ? "1" : "0"); break;
             case "life" when Number(m, "l") is int l && l >= 0 && l <= maxLife:
                 life = l; break;
             case "fall": case "hurt":
