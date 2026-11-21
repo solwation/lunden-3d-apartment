@@ -16,6 +16,13 @@
       "class": "/Game/Lunden/Save/BPC_LundenSave.BPC_LundenSave_C",
       "owner": "#2288",
       "what": "puts the player back at the saved place and facing at game start and saves the place every 2 s and at the end, in the user's save folder (build_save.py)"
+    },
+    {
+      "target": "controller",
+      "name": "UI",
+      "class": "/Game/Lunden/UI/BPC_LundenUI.BPC_LundenUI_C",
+      "owner": "#2286",
+      "what": "the compass, the frame rate, the start and pause menu (Esc) and the saved graphics, mouse and volume settings (build_ui.py)"
     }
   ]
 }

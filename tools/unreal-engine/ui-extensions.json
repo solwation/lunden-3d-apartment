@@ -1,0 +1,29 @@
+{
+  "formatVersion": 1,
+  "owner": "#2286",
+  "about": "What tools/unreal-engine/python/build_ui.py adds to the menu (/Game/Lunden/UI/). Other issues add their own rows here instead of opening the UI Blueprints, then rebuild the UI. menuButtons: a button on the start/pause menu's main page (between Inställningar and Avsluta) that opens `widget` (a UserWidget class path ending in _C) over the open menu with the menu's player as owner; the widget removes itself (RemoveFromParent) when it is done and the menu keeps the mouse and keyboard. name: a unique identifier (the button is Ext<name>); label: the Swedish button text. volumes: one slider on the settings page per row, saved as `key` (0..1, default 1) in the save slot; when soundClass names a SoundClass the volume is applied to it (and its children) through the SoundMix /Game/Lunden/UI/SM_LundenVolumes, at game start and on every change; null keeps the slider and the saved value until the class exists. owner: the issue that owns the row and its asset; what: one line. docs/development/unreal.md#menu-settings-and-compass-2286",
+  "menuButtons": [],
+  "volumes": [
+    {
+      "key": "audio.master",
+      "label": "Huvudvolym",
+      "soundClass": "/Engine/EngineSounds/Master.Master",
+      "owner": "#2286",
+      "what": "every sound: the engine's default sound class, which sounds without their own class use and #2287's classes can have as parent"
+    },
+    {
+      "key": "audio.music",
+      "label": "Musik",
+      "soundClass": null,
+      "owner": "#2287",
+      "what": "music and radios; #2287 sets its music sound class here"
+    },
+    {
+      "key": "audio.effects",
+      "label": "Ljudeffekter",
+      "soundClass": null,
+      "owner": "#2287",
+      "what": "doors, steps, animals and other effects; #2287 sets its effects sound class here"
+    }
+  ]
+}
