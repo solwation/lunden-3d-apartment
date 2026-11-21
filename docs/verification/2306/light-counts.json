@@ -1,0 +1,63 @@
+{
+ "L_Lunden": {
+  "light": "map",
+  "day": {
+   "directional": 1,
+   "sky": 1,
+   "owners": [
+    "Lunden Sky.Sun",
+    "Lunden Sky.SkyLight"
+   ]
+  },
+  "dayBias": -1.96503746509552,
+  "evening": {
+   "directional": 1,
+   "sky": 1,
+   "owners": [
+    "Lunden Sky.Moon",
+    "Lunden Sky.SkyLight"
+   ]
+  },
+  "eveningBias": -2.462862008455037,
+  "missingLevels": [
+   "/Game/Lunden/Generated/Interaction/Level_l1007_interaction: missing streaming level (builder: import_world.py --zones l1007, then build_interaction.py)",
+   "/Game/Lunden/Generated/Interaction/Level_hus-l_interaction: missing streaming level (builder: import_world.py --zones hus-l, then build_interaction.py)",
+   "/Game/Lunden/Generated/Interaction/Level_kvarteret_interaction: missing streaming level (builder: import_world.py --zones kvarteret, then build_interaction.py)",
+   "/Game/Lunden/Generated/FacadeLighting/Level_facade_lighting: missing streaming level (builder: build_facade.py (after build_lighting.py))",
+   "/Game/Lunden/Generated/VegetationWorld/Level_vegetation_foliage: missing streaming level (builder: build_vegetation.py (after import_world.py --zones vegetation,l1007-uteplats))",
+   "/Game/Lunden/Generated/Interaction/Level_lift_buttons: missing streaming level (builder: build_interaction.py)"
+  ],
+  "before2306Day": {
+   "directional": 2,
+   "sky": 2,
+   "owners": [
+    "DirectionalLight.LightComponent0",
+    "SkyLight.SkyLightComponent0",
+    "Lunden Sky.Sun",
+    "Lunden Sky.SkyLight"
+   ]
+  },
+  "before2306Rejected": "L_Lunden has unexpected lighting: {'directional': 2, 'sky': 2, 'owners': ['DirectionalLight.LightComponent0', 'SkyLight.SkyLightComponent0', 'Lunden Sky.Sun', 'Lunden Sky.SkyLight']}, extra components ['DirectionalLight.LightComponent0', 'SkyLight.SkyLightComponent0']"
+ },
+ "Pilot_L1007": {
+  "light": "pilot",
+  "day": {
+   "directional": 1,
+   "sky": 1,
+   "owners": [
+    "Lunden Pilot Sun.LightComponent0",
+    "Lunden Pilot Sky.SkyLightComponent0"
+   ]
+  },
+  "dayBias": 0,
+  "evening": {
+   "directional": 1,
+   "sky": 1,
+   "owners": [
+    "Lunden Pilot Sun.LightComponent0",
+    "Lunden Pilot Sky.SkyLightComponent0"
+   ]
+  },
+  "eveningBias": -0.7
+ }
+}
