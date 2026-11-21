@@ -1,0 +1,442 @@
+{
+ "engine": "5.8.4-58902052+++UE5+Release-5.8",
+ "samples": [
+  {
+   "what": "legacy 7 digits",
+   "code": "1233541",
+   "valid": true,
+   "encoded": "123354100",
+   "web": "123354100",
+   "fieldsWrong": {}
+  },
+  {
+   "what": "legacy 9 digits",
+   "code": "012340100",
+   "valid": true,
+   "encoded": "012340100",
+   "web": "012340100",
+   "fieldsWrong": {}
+  },
+  {
+   "what": "9 digits, all maxima",
+   "code": "495374113",
+   "valid": true,
+   "encoded": "495374113",
+   "web": "495374113",
+   "fieldsWrong": {}
+  },
+  {
+   "what": "chosen height 188",
+   "code": "310231011188",
+   "valid": true,
+   "encoded": "310231011188",
+   "web": "310231011188",
+   "fieldsWrong": {}
+  },
+  {
+   "what": "chosen height 100",
+   "code": "000000000100",
+   "valid": true,
+   "encoded": "000000000100",
+   "web": "000000000100",
+   "fieldsWrong": {}
+  },
+  {
+   "what": "chosen height 200",
+   "code": "444321113200",
+   "valid": true,
+   "encoded": "444321113200",
+   "web": "444321113200",
+   "fieldsWrong": {}
+  },
+  {
+   "what": "eyes and freckles",
+   "code": "310231011177c437",
+   "valid": true,
+   "encoded": "310231011177c437",
+   "web": "310231011177c437",
+   "fieldsWrong": {}
+  },
+  {
+   "what": "extended skin tone and red top",
+   "code": "410231011177u90",
+   "valid": true,
+   "encoded": "410231011177u90",
+   "web": "410231011177u90",
+   "fieldsWrong": {}
+  },
+  {
+   "what": "body build and face sliders",
+   "code": "310231011177k7e6n22",
+   "valid": true,
+   "encoded": "310231011177k7e6n22",
+   "web": "310231011177k7e6n22",
+   "fieldsWrong": {}
+  },
+  {
+   "what": "glasses, earrings, hat, age",
+   "code": "310231011177g34q53",
+   "valid": true,
+   "encoded": "310231011177g34q53",
+   "web": "310231011177g34q53",
+   "fieldsWrong": {}
+  },
+  {
+   "what": "headphones, boots and socks",
+   "code": "310231011177f92",
+   "valid": true,
+   "encoded": "310231011177f92",
+   "web": "310231011177f92",
+   "fieldsWrong": {}
+  },
+  {
+   "what": "necklace, ring, bracelet, watch",
+   "code": "310231011177x3i7z126",
+   "valid": true,
+   "encoded": "310231011177x3i7z126",
+   "web": "310231011177x3i7z126",
+   "fieldsWrong": {}
+  },
+  {
+   "what": "brows, skirt and makeup",
+   "code": "310231011177v6p273",
+   "valid": true,
+   "encoded": "310231011177v6p273",
+   "web": "310231011177v6p273",
+   "fieldsWrong": {}
+  },
+  {
+   "what": "hoodie, open jacket, stripes",
+   "code": "310231011177m32",
+   "valid": true,
+   "encoded": "310231011177m32",
+   "web": "310231011177m32",
+   "fieldsWrong": {}
+  },
+  {
+   "what": "everything at once",
+   "code": "012340100177c267u26k6e2o2w2l2j2n12b2r2t2y2h2a2g12q21f51x1i2z33v1p11m22",
+   "valid": true,
+   "encoded": "012340100177c267u26k6e2o2w2l2j2n12b2r2t2y2h2a2g12q21f51x1i2z33v1p11m22",
+   "web": "012340100177c267u26k6e2o2w2l2j2n12b2r2t2y2h2a2g12q21f51x1i2z33v1p11m22",
+   "fieldsWrong": {}
+  },
+  {
+   "what": "wire code with build and seeded scale",
+   "code": "012340100d2s4",
+   "valid": true,
+   "encoded": "012340100",
+   "web": "012340100",
+   "fieldsWrong": {}
+  }
+ ],
+ "edgeCases": [
+  {
+   "code": "",
+   "valid": false,
+   "encoded": "",
+   "unrealValid": false,
+   "unrealEncoded": ""
+  },
+  {
+   "code": "12345",
+   "valid": false,
+   "encoded": "",
+   "unrealValid": false,
+   "unrealEncoded": ""
+  },
+  {
+   "code": "1234567890",
+   "valid": false,
+   "encoded": "",
+   "unrealValid": false,
+   "unrealEncoded": ""
+  },
+  {
+   "code": "512340100",
+   "valid": false,
+   "encoded": "",
+   "unrealValid": false,
+   "unrealEncoded": ""
+  },
+  {
+   "code": "0123401001",
+   "valid": false,
+   "encoded": "",
+   "unrealValid": false,
+   "unrealEncoded": ""
+  },
+  {
+   "code": "012340100099",
+   "valid": false,
+   "encoded": "",
+   "unrealValid": false,
+   "unrealEncoded": ""
+  },
+  {
+   "code": "012340100201",
+   "valid": false,
+   "encoded": "",
+   "unrealValid": false,
+   "unrealEncoded": ""
+  },
+  {
+   "code": "abc",
+   "valid": false,
+   "encoded": "",
+   "unrealValid": false,
+   "unrealEncoded": ""
+  },
+  {
+   "code": "01234a100",
+   "valid": false,
+   "encoded": "",
+   "unrealValid": false,
+   "unrealEncoded": ""
+  },
+  {
+   "code": "012340100,c1",
+   "valid": false,
+   "encoded": "",
+   "unrealValid": false,
+   "unrealEncoded": ""
+  },
+  {
+   "code": "0123-0100",
+   "valid": false,
+   "encoded": "",
+   "unrealValid": false,
+   "unrealEncoded": ""
+  },
+  {
+   "code": "O12340100",
+   "valid": false,
+   "encoded": "",
+   "unrealValid": false,
+   "unrealEncoded": ""
+  },
+  {
+   "code": "012340100C1",
+   "valid": false,
+   "encoded": "",
+   "unrealValid": false,
+   "unrealEncoded": ""
+  },
+  {
+   "code": "012340100c1234",
+   "valid": true,
+   "encoded": "012340100",
+   "unrealValid": true,
+   "unrealEncoded": "012340100"
+  },
+  {
+   "code": "012340100c",
+   "valid": true,
+   "encoded": "012340100",
+   "unrealValid": true,
+   "unrealEncoded": "012340100"
+  },
+  {
+   "code": "012340100c1x",
+   "valid": true,
+   "encoded": "012340100",
+   "unrealValid": true,
+   "unrealEncoded": "012340100"
+  }
+ ],
+ "figures": [
+  {
+   "code": "1233541",
+   "pieces": 11,
+   "scale": [
+    1.0,
+    1.0
+   ],
+   "head": 1.0,
+   "topCm": 179.269,
+   "webCm": null,
+   "wrong": []
+  },
+  {
+   "code": "012340100",
+   "pieces": 11,
+   "scale": [
+    1.0,
+    1.0
+   ],
+   "head": 1.0,
+   "topCm": 179.941,
+   "webCm": null,
+   "wrong": []
+  },
+  {
+   "code": "495374113",
+   "pieces": 13,
+   "scale": [
+    1.0,
+    1.0
+   ],
+   "head": 1.0,
+   "topCm": 179.269,
+   "webCm": null,
+   "wrong": []
+  },
+  {
+   "code": "310231011188",
+   "pieces": 13,
+   "scale": [
+    1.0742857142857143,
+    1.0742857142857143
+   ],
+   "head": 1.0,
+   "topCm": 190.982,
+   "webCm": 190.982,
+   "wrong": []
+  },
+  {
+   "code": "000000000100",
+   "pieces": 11,
+   "scale": [
+    0.5479662925449309,
+    0.5479662925449309
+   ],
+   "head": 1.3257816069359947,
+   "topCm": 98.602,
+   "webCm": 103.232,
+   "wrong": []
+  },
+  {
+   "code": "444321113200",
+   "pieces": 13,
+   "scale": [
+    1.1428571428571428,
+    1.1428571428571428
+   ],
+   "head": 1.0,
+   "topCm": 203.172,
+   "webCm": 203.172,
+   "wrong": []
+  },
+  {
+   "code": "310231011177c437",
+   "pieces": 13,
+   "scale": [
+    1.0114285714285713,
+    1.0114285714285713
+   ],
+   "head": 1.0,
+   "topCm": 179.808,
+   "webCm": 179.808,
+   "wrong": []
+  },
+  {
+   "code": "410231011177u90",
+   "pieces": 13,
+   "scale": [
+    1.0114285714285713,
+    1.0114285714285713
+   ],
+   "head": 1.0,
+   "topCm": 179.808,
+   "webCm": 179.808,
+   "wrong": []
+  },
+  {
+   "code": "310231011177k7e6n22",
+   "pieces": 13,
+   "scale": [
+    1.0114285714285713,
+    1.0114285714285713
+   ],
+   "head": 1.0,
+   "topCm": 179.808,
+   "webCm": 179.808,
+   "wrong": []
+  },
+  {
+   "code": "310231011177g34q53",
+   "pieces": 17,
+   "scale": [
+    1.0114285714285713,
+    1.0114285714285713
+   ],
+   "head": 1.0,
+   "topCm": 181.956,
+   "webCm": 181.956,
+   "wrong": []
+  },
+  {
+   "code": "310231011177f92",
+   "pieces": 14,
+   "scale": [
+    1.0114285714285713,
+    1.0114285714285713
+   ],
+   "head": 1.0,
+   "topCm": 179.808,
+   "webCm": 179.808,
+   "wrong": []
+  },
+  {
+   "code": "310231011177x3i7z126",
+   "pieces": 18,
+   "scale": [
+    1.0114285714285713,
+    1.0114285714285713
+   ],
+   "head": 1.0,
+   "topCm": 179.808,
+   "webCm": 179.808,
+   "wrong": []
+  },
+  {
+   "code": "310231011177v6p273",
+   "pieces": 14,
+   "scale": [
+    1.0114285714285713,
+    1.0114285714285713
+   ],
+   "head": 1.0,
+   "topCm": 179.808,
+   "webCm": 179.808,
+   "wrong": []
+  },
+  {
+   "code": "310231011177m32",
+   "pieces": 13,
+   "scale": [
+    1.0114285714285713,
+    1.0114285714285713
+   ],
+   "head": 1.0,
+   "topCm": 179.808,
+   "webCm": 179.808,
+   "wrong": []
+  },
+  {
+   "code": "012340100177c267u26k6e2o2w2l2j2n12b2r2t2y2h2a2g12q21f51x1i2z33v1p11m22",
+   "pieces": 20,
+   "scale": [
+    1.0114285714285713,
+    1.0114285714285713
+   ],
+   "head": 1.0,
+   "topCm": 182.208,
+   "webCm": 182.208,
+   "wrong": []
+  },
+  {
+   "code": "012340100d2s4",
+   "pieces": 11,
+   "scale": [
+    1.0,
+    1.05
+   ],
+   "head": 1.0,
+   "topCm": 188.938,
+   "webCm": 188.938,
+   "wrong": []
+  }
+ ],
+ "failures": []
+}
