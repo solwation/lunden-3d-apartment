@@ -533,14 +533,21 @@ def build_mpc(spec):
     for i, box in enumerate(spec["boxes"]):
         vectors[f"Box{i}Min"] = u.LinearColor(*box["min"], 1)
         vectors[f"Box{i}Max"] = u.LinearColor(*box["max"], 1)
-    def entry(kind, name, value):
-        e = kind()
-        e.set_editor_property("parameter_name", name)
-        e.set_editor_property("default_value", value)
-        return e
+    def entries(prop, kind, values):
+        # #2381: keep each existing parameter struct (and so its GUID) by name; materials that read the collection
+        # (M_LundenClouds, M_LundenFoliage, the facade) resolve their parameters by that GUID, so new structs on every
+        # rebuild left them pointing at nothing
+        old = {str(e.get_editor_property("parameter_name")): e for e in mpc.get_editor_property(prop)}
+        out = []
+        for name, value in values.items():
+            e = old.get(name) or kind()
+            e.set_editor_property("parameter_name", name)
+            e.set_editor_property("default_value", value)
+            out.append(e)
+        mpc.set_editor_property(prop, out)
 
-    mpc.set_editor_property("scalar_parameters", [entry(u.CollectionScalarParameter, k, float(v)) for k, v in scalars.items()])
-    mpc.set_editor_property("vector_parameters", [entry(u.CollectionVectorParameter, k, v) for k, v in vectors.items()])
+    entries("scalar_parameters", u.CollectionScalarParameter, {k: float(v) for k, v in scalars.items()})
+    entries("vector_parameters", u.CollectionVectorParameter, vectors)
     return mpc
 
 
@@ -742,7 +749,14 @@ def build_clouds(mpc):
     sky's cloud cover must follow the weather at run time without a dynamic material instance (captures and tests call
     UpdateSky in an editor world, where BeginPlay never ran)."""
     if ASSETS.does_asset_exist(CLOUDS):
-        ASSETS.delete_asset(CLOUDS)
+        # #2381: keep a copy that already reads CloudCoverage from this collection; an unattended editor refuses to delete
+        # and re-create it (a read-only or referenced package), and its graph depends only on Epic's material and the MPC
+        kept = ASSETS.load_asset(CLOUDS)
+        if clouds_match(kept, mpc):
+            u.log("LUNDEN_LIGHTING clouds: kept " + CLOUDS)
+            return kept, False
+        if not ASSETS.delete_asset(CLOUDS):
+            raise RuntimeError(f"Could not replace the stale {CLOUDS} (lock it with git lfs lock)")
     source = u.load_asset(CLOUD_SOURCE)  # (engine content is not in a commandlet's asset registry: copy the loaded object)
     mat = TOOLS.duplicate_asset(CLOUDS.rsplit("/", 1)[1], DIR, source) if source else None
     if not mat:
@@ -770,7 +784,22 @@ def build_clouds(mpc):
     MEL.delete_material_expression(mat, old[0])
     MEL.recompile_material(mat)
     u.log(f"LUNDEN_LIGHTING clouds: Cloud_GlobalCoverage -> MPC CloudCoverage on {moved} input(s)")
-    return mat
+    return mat, True
+
+
+def clouds_match(mat, mpc):
+    """M_LundenClouds as build_clouds leaves it: no Cloud_GlobalCoverage scalar, and a CloudCoverage collection parameter
+    of this MPC that feeds at least one input."""
+    if not isinstance(mat, u.Material):
+        return False
+    exprs = list(MEL.get_material_expressions(mat))
+    if any(isinstance(e, u.MaterialExpressionScalarParameter) and str(e.get_editor_property("parameter_name")) == "Cloud_GlobalCoverage"
+           for e in exprs):
+        return False
+    coverage = [e for e in exprs if isinstance(e, u.MaterialExpressionCollectionParameter)
+                and str(e.get_editor_property("parameter_name")) == "CloudCoverage"
+                and e.get_editor_property("collection") and e.get_editor_property("collection").get_path_name() == mpc.get_path_name()]
+    return any(src in coverage for e in exprs for src in MEL.get_inputs_for_material_expression(mat, e))
 
 
 def ambient_ref(spec):
@@ -1388,12 +1417,13 @@ def main(argv):
         mpc = build_mpc(spec)
         precip = build_precip_material(spec, mpc)
         lamp_bp = build_lamp(spec, mpc)
-        clouds = build_clouds(mpc)
+        clouds, clouds_built = build_clouds(mpc)
         sky_bp = build_sky(spec, mpc, precip, clouds)
         ASSETS.set_metadata_tag(sky_bp, SPEC_TAG, want)
-        for asset in (mpc, precip, clouds, lamp_bp, sky_bp, u.load_asset(AMBIENT_CUBE)):
+        saved = [mpc, precip, lamp_bp, sky_bp, u.load_asset(AMBIENT_CUBE)] + ([clouds] if clouds_built else [])
+        for asset in saved:
             save(asset)
-        u.log("LUNDEN_LIGHTING assets saved: " + ", ".join(assets))
+        u.log("LUNDEN_LIGHTING assets saved: " + ", ".join(a.get_path_name().split(".")[0] for a in saved))
     if level_ok and not force:
         u.log(f"LUNDEN_LIGHTING_LEVEL {LEVEL} unchanged, nothing saved")
     else:

@@ -1116,7 +1116,10 @@ on the existing point lights (#2369). The lights that reach these two regions ha
 `build_lighting.py` builds every mask before it spawns the lamps and assigns it as the lamp's last step (#2381):
 saving a material while lamps were alive killed their component handles, and each Blueprint property set on a lamp
 remakes its light. `BP_LundenLamp` sets the disabled brightness (1, full light where light functions are off) on its
-template, because an instance value did not survive the level's reload.
+template, because an instance value did not survive the level's reload. A rebuild keeps `MPC_LundenWeather`'s
+parameter structs by name, so their GUIDs stay put: the materials that read the collection (`M_LundenClouds`,
+`M_LundenPrecipitation`, `M_LundenFoliage`, the facade) resolve parameters by GUID, not by name. `M_LundenClouds` is
+kept when it already reads `CloudCoverage` from the collection and re-copied from Epic's material only otherwise.
 Rerun `build_lighting.py` with the new measurements before taking the four paired captures.
 [Stair verification and capture gate](../verification/2369/README.md).
 
