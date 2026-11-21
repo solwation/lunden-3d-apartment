@@ -1299,9 +1299,25 @@ the export and the pictures section of `notices.mjs`.
   `src/woodgrain.js` pixel for pixel after flipping Y. The saved coffee-table material instance carries the GLB's
   linear tint (0.565, 0.332, 0.153) and UV scale (2, 6). The visible brown BESTÅ doors use a solid walnut colour.
   On the web three additive light fans fall across the door fronts at night, with two more inside the glass cabinet.
-  The Unreal level represents the cabinet with one point light. Its export now takes the web emitter's actual position,
-  40 cm in front of the fitting at the same height. Single-emitter fittings share this path. The fitting origin
-  stays available for stable light IDs. The curtains also differ: `Curtain.glow` multiplies their printed pattern by
+  The export keeps the web emitter 40 cm in front of the fitting, whose origin supplies the stable ID. The
+  lamp's optional `cabinetWashes` row also carries the five measured quads, UVs, original 128 × 256 sRGB
+  mask, linear tint, opacity and the veneer material key. `build_cabinet_washes.py` places five non-colliding
+  stock UE planes in the generated interaction level. Their additive material follows the lamp's actual
+  fade and mains supply. Its light stays in the same location. The individual point calibration, 7.95 cd
+  for this fitting, comes from a paired test with the five rendered fans hidden. The desktop draws and
+  blends the tone-mapped sRGB fan. UE adds the fan in scene-linear space. The native intensity, tint and edge
+  conversion are visual estimates (*guess*) measured in the same cameras.
+  The four solid walnut leaves share one native child material. They have no base-colour texture or vertex
+  multiplication, and the web room-probe code gives them no environment map. In the native day shot the
+  imported glTF `SpecularFactor` of 1 left sRGB (57, 58, 60) even on a black diffuse surface. With the
+  same material at zero specular, that floor fell to (4, 4, 4). A local diffuse RGB fit under the calibrated
+  exposure preserves the walnut hue. Only these four door components use the override. Run
+  `node tools/unreal-engine/tests/cabinet-washes.mjs unreal/Lunden/Import` after export and
+  `run-python.ps1 tools/unreal-engine/tests/test_cabinet_washes.py` after sync. Check the cabinet front and
+  three illuminated cone centres against the matching web views with `crop-stats.cjs`,
+  `tools/unreal-engine/tests/cabinet-crops.json` and `--check-cabinet`. The paired cameras and results
+  are recorded in [the furnishing verification](../verification/2322/README.md).
+  On the web `Curtain.glow` multiplies the curtains’ printed pattern by
   changing daylight and room-lamp emission on the web. L1007 exports the same sRGB print, sampler and UV transform
   for base colour and emission. The GLB's fallback factor is the cloth's linear RGB at full daylight with the room
   lamps off. The six rows in `furnishing.curtains` give each fabric's two linear RGB coefficients, its mesh IDs

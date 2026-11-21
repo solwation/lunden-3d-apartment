@@ -44,13 +44,13 @@ node tools/unreal-engine/tests/crop-stats.cjs <bildkatalog> tools/unreal-engine/
 
 Grinden kontrollerar projektets luminansintervall 0,8–1,25. Som kulörkontroll ska både R/G och B/G i varje mätfält ligga inom 10 % av webbens kanalproportioner (*guess*).
 
-### Övriga material i samma bildpar
+### Övriga material vid gardinprovet
 
 | Mätfält | Unreal/webb kl. 14 | Unreal/webb kl. 22 | Kvar i #2322 |
 |---|---:|---:|---|
 | Matta | 1,094 | 0,450 | Dagens luminans klarar intervallet. Kvällsljuset är för svagt och båda bilderna är kallare. |
 | Soffbord | 1,839 | 0,612 | För ljust på dagen och för mörkt på kvällen. Kvällens R/B är 2,42 i Unreal och 6,31 på webben. |
-| Vitrinskåpets övre dörr | 2,144 | 0,622 | Skåpsspotens exporterade ljuspunkt är flyttad 40 cm. Träfronten är fortfarande för ljus på dagen och för mörk på kvällen. Kvällens R/B är 1,37 mot 3,50 på webben. De lokala ljusfälten återstår. |
+| Vitrinskåpets övre dörr | 2,144 | 0,622 | Vid gardinprovet var träfronten för ljus på dagen och för mörk på kvällen. Kvällens R/B var 1,37 mot 3,50 på webben. Skåpets separat uppmätta ljusfält och senare resultat redovisas nedan. |
 | Soffa | 1,136 | 0,796 | Dagvärdet klarar intervallet. Kvällsvärdet ligger strax under 0,8. Tyget har mindre färgskillnad mellan rött och blått i båda utsnitten. |
 
 Pendellampans koppar och vitrinskåpets glas saknar avgränsade mätfält i dessa bilder.
@@ -62,3 +62,30 @@ Webbens tre främre spottar ritar var sitt 50 × 100 cm stort ljusfält över lu
 ![Samma kvällsbild av vitrinskåpet, vänster med enbart de fem bildfälten bortkopplade och höger med ordinarie ljus.](cabinet-web-spots.png)
 
 Båda bilderna visar utsnittet x = 955, y = 173, bredd 260 och höjd 185 i den ordinarie vardagsrumskameran (1 440 × 810). Klockan är 22. Punktlampan, rummets övriga belysning och exponeringen är desamma. Luckans linjära medelluminans steg från 0,0960 till 0,1584 när bildfälten åter visades. Mitt i de tre främre käglorna steg den från 0,0596 / 0,0666 / 0,0457 till 0,2446 / 0,2607 / 0,2170. Fälten mättes i 6 × 10 pixlar runt (1010, 260), (1067, 244) och (1145, 221). Med släckta lampor klockan 14 gav de båda webbrenderingarna byteidentiska bilder.
+
+### Skåpsljuset i Unreal 5.8.4
+
+I den inlästa Windows-världen hamnade ljusfältens 20 hörn inom 0,02 cm från webbens exporterade positioner. Prov med lampan på, av, en del av nattoningen och helt eller delvis bortkopplad ström kontrollerade både de fem synliga fältens material och skåpets punktljus. Med de fem fälten tillfälligt dolda gav punktlampan på 7,95 cd en linjär luminans på 0,0957 över luckan mot webbens 0,0960. Ljuskällorna i resten av rummet behöll sina ordinarie inställningar.
+
+De fyra valnötsluckorna är enfärgade i webbmodellen och delar ett material med linjär RGB (0,1559, 0,0704, 0,0331). Webbens material får ingen av rummets reflektionskartor. I Windows-provet gav en svart diffus yta med den importerade spegelreflexen fortfarande medel-sRGB (57, 58, 60) i dagsljus. När vi satte spegelreflexen till noll på dessa fyra luckor blev motsvarande värde (4, 4, 4). Luckornas lokala material ärver den importerade glTF-instansen med dess ursprungliga råhet 0,6. Den diffusa tonens RGB-faktorer (1,12, 0,94, 0,32) och skåpsljusets HDR-skala är visuella skattningar (*guess*) från de två kamerorna.
+
+Bildparen visar samma utsnitt som webbprovet ovan. Webben är till vänster och Unreal till höger. De tre lysande käglorna går att särskilja över framdörrarna klockan 22. Mittkäglan är ljusare i Unreal. Med enbart det breda punktljuset och de fem fälten dolda hade den redan luminansen 0,1373 i sitt centrum mot webbens 0,0666. De två inre ljusfälten kontrollerades med koordinater, material och lampans tillstånd i editorn. De har inga egna bildmätfält i denna kameravinkel.
+
+| Bildpar och mätfält | Luminans webb | Luminans Unreal | Unreal/webb | Medel-sRGB webb | Medel-sRGB Unreal |
+|---|---:|---:|---:|---|---|
+| [Lucka kl. 14](paired-cabinet-day.png) | 0,0655 | 0,0661 | 1,009 | 106,7 / 61,6 / 19,7 | 107,6 / 61,6 / 19,3 |
+| [Lucka kl. 22](paired-cabinet-evening.png) | 0,1584 | 0,1565 | 0,988 | 149,4 / 98,7 / 42,6 | 152,8 / 96,7 / 40,3 |
+| Vänster kägla kl. 22 | 0,2446 | 0,2353 | 0,962 | 176,1 / 125,4 / 69,0 | 172,7 / 123,2 / 71,2 |
+| Mittkägla kl. 22 | 0,2607 | 0,3157 | 1,211 | 184,1 / 125,8 / 64,8 | 194,0 / 142,1 / 78,8 |
+| Höger kägla kl. 22 | 0,2170 | 0,2248 | 1,036 | 167,4 / 118,5 / 62,7 | 170,0 / 120,3 / 68,7 |
+
+Skåpluckans R/G och B/G höll sig inom 5 % av webbens värden i båda vyerna. Kvällens luminanskvoter för matta, soffa och soffbord var 0,476, 0,798 respektive 0,613. På dagen var de 1,094, 1,136 och 1,839. Vardagsrumsgardinens kvoter var 0,924 på dagen och 1,048 på kvällen. Vitringlasets reflektion och pendelns koppar saknar egna bildmätfält.
+
+Verifiera ljusfälten från en L1007-export och mät sedan de ordinarie webb- och Windows-vyerna för vardagsrummet.
+
+```sh
+node tools/unreal-engine/tests/cabinet-washes.mjs unreal/Lunden/Import
+node tools/unreal-engine/tests/crop-stats.cjs <bildkatalog> tools/unreal-engine/tests/cabinet-crops.json --check-cabinet
+```
+
+Efter en Windows-import kontrollerar `run-python.ps1 tools/unreal-engine/tests/test_cabinet_washes.py` även koordinaterna, de fyra ursprungliga träytorna och lampans styrning i den sparade världen.
