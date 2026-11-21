@@ -9,6 +9,16 @@ import { REST } from './config.js';
 // aims a spot's initial seated view at a world point; spots without it keep the default level gaze.
 // `follow` marks a moving spot whose updated eye position the camera must track after the entry glide.
 
+/** Body root sent for a seat or bed, in web metres. */
+export function restAnchor(spot, lie, tall) {
+  const y = spot.pos.y - (lie ? REST.lieEye : REST.sitEye);
+  // lying: the centre line sits at the spot's `bodyY` (under the duvet, #1234), else a little over the surface
+  const root = lie ? (spot.bodyY ?? y + REST.avatarLieClearance * tall) - REST.avatarLieHip * tall : y - REST.avatarSeat * tall;
+  // lying: the spot is the head's place; the hips lie that far towards the feet (#1275), along the way the spot faces
+  const back = lie ? REST.avatarLieTorso * Math.cos(REST.avatarLieTilt) * tall : 0;
+  return [spot.pos.x - Math.sin(spot.yaw) * back, root, spot.pos.z - Math.cos(spot.yaw) * back];
+}
+
 /** World-space rest target for a furniture piece (called by buildFurniture). */
 export function restTarget(obj, item, levelFloor) {
   const R = obj.userData.rest, yaw = obj.rotation.y, c = Math.cos(yaw), s = Math.sin(yaw);

@@ -1,3 +1,4 @@
+import { restAnchor } from './rest.js';
 import { REST, decodeAvatarLook, avatarProportions, avatarHeightCm, closedSeatFit } from './config.js';
 import { poseOlof, seatedPose } from './olof.js';
 import { reactionPose, mixHand } from './reactpose.js';
@@ -10,13 +11,8 @@ export function restState(rest, code, seed) {
   const lk = decodeAvatarLook(code, seed), tall = Number.isInteger(lk.height) ? avatarProportions(lk.height).body : lk.tall;
   if(rest.spot.gymPose||rest.spot.gymWirePose){const sp=rest.spot;return {p:sp.gymRoot.toArray(),r:sp.yaw,c:false,pose:sp.gymPose===5||sp.gymWirePose===7?2:0,gx:[sp.gymPose||sp.gymWirePose,sp.gymPhase],look:[Math.atan2(Math.sin(rest.camera.rotation.y-sp.yaw),Math.cos(rest.camera.rotation.y-sp.yaw)),rest.camera.rotation.x]};}
   const lie = rest.kind === 'lie', spot = rest.spot;
-  const y = spot.pos.y - (lie ? REST.lieEye : REST.sitEye);
-  // lying: the centre line sits at the spot's `bodyY` (under the duvet, #1234), else a little over the surface
-  const root = lie ? (spot.bodyY ?? y + REST.avatarLieClearance * tall) - REST.avatarLieHip * tall : y - REST.avatarSeat * tall;
-  // lying: the spot is the head's place; the hips lie that far towards the feet (#1275), along the way the spot faces
-  const back = lie ? REST.avatarLieTorso * Math.cos(REST.avatarLieTilt) * tall : 0;
   // Keep the seat heading on the body; the camera supplies independent seated head angles.
-  return { p: [spot.pos.x - Math.sin(spot.yaw) * back, root, spot.pos.z - Math.cos(spot.yaw) * back],
+  return { p: restAnchor(spot, lie, tall),
     r: spot.yaw, ...(!lie ? { look: [Math.atan2(Math.sin(rest.camera.rotation.y - spot.yaw), Math.cos(rest.camera.rotation.y - spot.yaw)), rest.camera.rotation.x] } : {}), c: false, pose: lie ? 2 : spot.legsUp ? 3 : 1, ...(!lie && !spot.legsUp && spot.closed ? { cs: 1 } : {}) }; // 3: legs stretched out on the furniture (#1237); cs (#2273): a car front seat, the PVP boxes take its fit
 }
 

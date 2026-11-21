@@ -44,6 +44,20 @@
       "class": "/Game/Lunden/Audio/BPC_LundenAudio.BPC_LundenAudio_C",
       "owner": "#2287",
       "what": "footsteps per surface (src/footsteps.js pickStep, one MetaSound per profile), the wind and the outdoor bed (src/windsound.js, src/ambientbed.js) and the room's reverb zone (src/roomreverb.js) (build_audio.py)"
+    },
+    {
+      "target": "character",
+      "name": "NetworkPeers",
+      "class": "/Game/Lunden/Network/BPC_LundenNetworkPeers.BPC_LundenNetworkPeers_C",
+      "owner": "#2292",
+      "what": "displays and interpolates the other players from the local launcher snapshot"
+    },
+    {
+      "target": "character",
+      "name": "Network",
+      "class": "/Game/Lunden/Network/BPC_LundenNetwork.BPC_LundenNetwork_C",
+      "owner": "#2292",
+      "what": "exchanges only public presence, appearance and movement with the launcher through private session files"
     }
   ]
 }

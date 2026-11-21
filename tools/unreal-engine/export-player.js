@@ -7,6 +7,7 @@ import * as THREE from 'three';
 import * as C from '../../src/config.js';
 import { stepInfo } from '../../src/stepsurface.js';
 import { Player } from '../../src/player.js';
+import { restAnchor } from '../../src/rest.js';
 import { safeRespawnPoint } from '../../src/respawn.js';
 import { groundY } from '../../src/surroundings.js';
 import { parkDeckAt } from '../../src/riverpark.js';
@@ -304,6 +305,13 @@ function controlPoints(world, core, garage, S) {
   return pts;
 }
 
+/** The web's seated/lying wire root is affine in body scale, including a bed with its own duvet height. */
+export function networkRestRoot(sp) {
+  const root = restAnchor(sp, sp.kind === 'lie', 0);
+  const full = restAnchor(sp, sp.kind === 'lie', 1);
+  return { baseCm: webToUnrealRounded(root), perBodyScaleCm: webToUnrealRounded(full.map((v, i) => v - root[i])) };
+}
+
 /** Rest spots (src/rest.js restTarget): every furniture target with `kind: 'rest'` whose piece is an exported node. */
 function restData(world, idOf) {
   const spots = [], skipped = [];
@@ -319,7 +327,7 @@ function restData(world, idOf) {
       const startPitch = sp.kind === 'lie' ? lim.startPitch : look ? Math.atan2(look.y - eye.y, Math.hypot(dx, dz)) : 0;
       const pitchDeg = webPitchToUnrealPitch(deg(startPitch));
       const aim = sp.aimPos ?? sp.pos;
-      spots.push({ item: id, name: t.name, verb: t.verbText ?? null, index, kind: sp.kind, eye: P(eye.x, eye.y, eye.z), aim: P(aim.x, aim.y, aim.z),
+      spots.push({ networkRoot: networkRestRoot(sp), item: id, name: t.name, verb: t.verbText ?? null, index, kind: sp.kind, eye: P(eye.x, eye.y, eye.z), aim: P(aim.x, aim.y, aim.z),
         yaw: roundCm(webYawToUnrealYaw(deg(sp.yaw))), startYaw: roundCm(webYawToUnrealYaw(deg(startYaw))),
         // A bed faces its upper stop exactly. Measured seat directions are rounded like their yaw.
         startPitch: sp.kind === 'lie' ? pitchDeg : roundCm(pitchDeg) });
@@ -330,6 +338,9 @@ function restData(world, idOf) {
     source: 'src/rest.js (Rest, restTarget, chooseSpot), src/config.js REST, HOLD.reach; src/main.js sitOrLie / standUp',
     move: R.move, sitEye: roundCm(R.sitEye * 100), lieEye: roundCm(R.lieEye * 100), reach: roundCm(C.HOLD.reach * 100),
     limits: Object.fromEntries(['sit', 'lie'].map((k) => [k, { yaw: roundCm(deg(R[k].yaw)), pitch: R[k].pitch.map(deg) }])),
+    networkBodyScales: { minHeightCm: C.AVATAR_HEIGHT.min,
+      byHeight: Array.from({ length: C.AVATAR_HEIGHT.max - C.AVATAR_HEIGHT.min + 1 }, (_, i) => C.avatarProportions(C.AVATAR_HEIGHT.min + i).body),
+      seeded: C.AVATAR_SEEDED_TALL },
     spots, skipped,
   };
 }
