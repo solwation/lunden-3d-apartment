@@ -56,6 +56,10 @@ CLASSES = {  # name: (parent, 2D reverb send) -- the web sends every effect to t
 }
 ZONES = ("soft", "bright", "concrete", "courtyard")
 REVERB_TAG = "LundenRoom"
+# guess (#2320): mean deficit in the nine real Windows #2287 silent submix recordings,
+# relative to the web synth before its master. Convert to linear amplitude once per local step.
+# docs/verification/2287/audio-render.json. The comparison also applies the web master below.
+STEP_OUTPUT_TRIM_DB = 9.6
 SAMPLE_RATE = 48000.0  # the MetaSound default on Windows; only used to turn the web's biquad Q into a bandwidth
 ASSETS = u.EditorAssetLibrary
 BP = u.BlueprintEditorLibrary
@@ -835,7 +839,7 @@ def defaults(bp, P, trees, sounds, wind, bed, reverbs):
     names = step_names(P)
     d.set_editor_property("Profiles", [u.Name(n) for n in names])
     d.set_editor_property("StepSounds", [sounds[n] for n in names])
-    d.set_editor_property("StepVolume", float(F["gain"]))
+    d.set_editor_property("StepVolume", F["gain"] * P["masterGain"] * 10 ** (STEP_OUTPUT_TRIM_DB / 20))
     d.set_editor_property("LeafMonths", [int(m) for m in F["leafMonths"]])
     d.set_editor_property("StrideWalk", 100.0 * F["strideWalk"])
     d.set_editor_property("StrideRun", 100.0 * F["strideRun"])

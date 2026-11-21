@@ -895,7 +895,7 @@ sound classes of the three `volumes` rows of `ui-extensions.json`.
   without a class plays in the engine's Master, outside the Huvudvolym slider.
 - **Decided here (can be overturned in one sentence).** No `Maps/Zones/Audio` sub-level: the web's beds follow the
   listener and its rooms come from the surface data, so the sources live on the player and `L_Lunden` is untouched.
-  The web's master gain 0.8 is not applied: Unreal has its own volume chain. The level offset is under Results.
+  The local step gain uses the web master at its unmuted setting. The engine's Master and Effects sliders still scale it.
 - **Builder findings (5.8.4).** The MetaSound builder works headless (`MetaSoundBuilderSubsystem` +
   `MetaSoundEditorSubsystem.build_to_asset`). `BuildToAsset` only creates assets: the builder's own overwrite refuses a
   saved asset, and a package deleted in the session cannot be created again. `build_audio.py` therefore removes the old
@@ -939,10 +939,17 @@ stair tread `stair`, gravel, grass, road, garage. Wet road gave `wet`, and grass
 Each point also got the web's room zone. Indoors the wind and bed are the web's indoor model of the outdoor values. The
 silent render matches the web's synthesis in length (within 6 %; snow and snowCold +10 … 12 %) and in spectral centroid (−8 … +11 %, snow
 −45 % and leaves −18 % from the crackle approximation). The spectrograms show the same shapes, squeak and stair ring.
-Unreal is 9.6 ± 0.5 dB lower for every profile alike. That is engine output: −3 dB Windows platform headroom and the
+The original #2287 recordings were 9.6 ± 0.5 dB below the web synth before the web master. That is engine output: −3 dB Windows platform headroom and the
 centre pan of a mono source, the rest not traced. The relative levels between surfaces match within ±1 dB. `build_audio.py`
 is idempotent, `--check` passes, and `test_player`, `test_ui` and `build_player.py --check` still pass. Evidence:
 [docs/verification/2287/](../verification/2287/README.md).
+
+**Footstep output calibration (#2320, guess).** The builder applies +9.6 dB to the local step path, from the
+nine original Windows measurements above, and multiplies by the same unmuted master gain as Web Audio (0.8).
+At the default slider positions the new StepVolume is approximately 0.918, previously 0.38.
+The dry reference now includes the web master and the comparison rejects a difference over ±2 dB for any profile.
+Rebuild the Audio assets and run the silent render above to measure the new output. Snowfall in BP_LundenSky describes
+falling flakes. Ground accumulation and temperature for snow footsteps are tracked in #2331.
 
 ## Lighting, sky and weather (#2283)
 

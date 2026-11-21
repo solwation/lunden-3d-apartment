@@ -9743,6 +9743,9 @@ export { SANTA } from './santaconfig.js';
 export { SANTA_GIFTS } from './santagiftconfig.js';
 export { SANTA_TV } from './santatvconfig.js';
 
+// Unmuted output gain of the Web Audio master, including the local player's dry footsteps.
+export const AUDIO_MASTER_GAIN = 0.8;
+
 // #1519: deliberately soft synthetic shoe contacts; artistic tuning, not measured material acoustics.
 export const FOOTSTEPS = {
   gain: .38, attack: .018, noiseQ: .5, releaseFloor: .0001, sourceTail: .03, voiceDuration: .28,

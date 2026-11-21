@@ -55,7 +55,7 @@ def biquad_lowpass(x, hz, q_db, rate):
 
 
 def web_step(profile, rng):
-    """src/footsteps.js synthFootstep, variation 1, times FOOTSTEPS.gain (sfx.step's out(null, FOOTSTEPS.gain))."""
+    """src/footsteps.js synthFootstep, variation 1, times the local step gain and the unmuted web master."""
     p = F["profiles"][profile]
     dur, att, tail = p["duration"], F["attack"], F["sourceTail"]
     n = int((dur + tail) * RATE)
@@ -89,7 +89,7 @@ def web_step(profile, rng):
             qphase += 2 * math.pi * qhz / RATE
             a = q["gain"] * (t / att if t < att else max(0.0, (q["duration"] - t) / (q["duration"] - att)))
             s += math.sin(qphase) * a
-        out.append(s * F["gain"])
+        out.append(s * F["gain"] * A["masterGain"])
     return out
 
 
@@ -199,6 +199,10 @@ def main(argv):
             print(f"{name:9s} {report['beds'][name]}")
     png(out / "audio-render.png", [[v for v in r for _ in (0, 1)] for r in sheet])  # twice as wide
     (out / "audio-render.json").write_text(json.dumps(report, indent=1) + "\n", encoding="utf-8")
+    failed = [f"{profile} {row['levelDiffDb']:+.2f} dB" for profile, row in report["steps"].items()
+              if abs(row["levelDiffDb"]) > 2.0]
+    if failed:
+        raise SystemExit("Step RMS outside ±2 dB of the web output: " + ", ".join(failed))
 
 
 if __name__ == "__main__":

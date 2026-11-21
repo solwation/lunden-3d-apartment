@@ -92,6 +92,7 @@ const params = round({
   generator: 'tools/unreal-engine/export-audio.mjs',
   owner: '#2287',
   units: 'web units: metres, seconds, Hz, linear gain; `unreal` arrays are centimetres on Unreal axes (coordinates.mjs)',
+  masterGain: C.AUDIO_MASTER_GAIN,
   footsteps,
   pickStep: {
     source: 'src/footsteps.js pickStep(stepInfo, { snow, wet, temp, month })',

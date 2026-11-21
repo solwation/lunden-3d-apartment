@@ -4,7 +4,7 @@ import { synthFootstep } from './footsteps.js';
 // The AudioContext can only start after a user gesture — call initAudio() from a click.
 
 import { windowWindParams } from './windsound.js';
-import { SOUNDS, OCCLUSION, BIRD_SONG, PONY_VOICE, KISS, PLAYROOM, SANTA, FOOTSTEPS, SQUIRRELS, SWIM, RAIN_SURFACE } from './config.js';
+import { AUDIO_MASTER_GAIN, SOUNDS, OCCLUSION, BIRD_SONG, PONY_VOICE, KISS, PLAYROOM, SANTA, FOOTSTEPS, SQUIRRELS, SWIM, RAIN_SURFACE } from './config.js';
 import { distanceGain, VoiceCap } from './spatialsound.js';
 import { duckCall, DUCK_LIFE } from './ducklife.js';
 import { RoomReverb } from './roomreverb.js';
@@ -26,7 +26,7 @@ export function initAudio() {
   if (!AC) return;
   ctx = new AC();
   master = ctx.createGain();
-  master.gain.value = muted ? 0 : 0.8;
+  master.gain.value = muted ? 0 : AUDIO_MASTER_GAIN;
   master.connect(ctx.destination);
   try { reverb = new RoomReverb(ctx, master, lowMemory); } catch { reverb = null; } // a failed convolver never costs the sound
   noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
@@ -36,7 +36,7 @@ export function initAudio() {
 
 export function toggleMuted() {
   muted = !muted;
-  if (master) master.gain.setTargetAtTime(muted ? 0 : 0.8, ctx.currentTime, 0.05);
+  if (master) master.gain.setTargetAtTime(muted ? 0 : AUDIO_MASTER_GAIN, ctx.currentTime, 0.05);
   return muted;
 }
 export const isMuted = () => muted;

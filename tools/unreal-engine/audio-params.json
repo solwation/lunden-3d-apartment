@@ -4,6 +4,7 @@
  "generator": "tools/unreal-engine/export-audio.mjs",
  "owner": "#2287",
  "units": "web units: metres, seconds, Hz, linear gain; `unreal` arrays are centimetres on Unreal axes (coordinates.mjs)",
+ "masterGain": 0.8,
  "footsteps": {
   "gain": 0.38,
   "attack": 0.018,
