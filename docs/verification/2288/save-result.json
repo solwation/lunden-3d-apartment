@@ -1,0 +1,81 @@
+{
+  "engine": "5.8.4-58902052+++UE5+Release-5.8",
+  "slot": "unreal/Lunden/Saved/SaveGames/LundenSave.sav (editor)",
+  "migration": {
+    "from": "tests/save-v0.sav",
+    "fixtureBytes": 2494,
+    "SaveVersion": "1",
+    "PlayerName": "Gammal sparfil",
+    "LookCode": "v0-look-2288",
+    "PlaceMap": "L_Lunden",
+    "PlayerId": "54dbac5e-46ef-46f8-1ab0-dbb58c0f96d8",
+    "placeErrorCm": 0.0,
+    "facingErrorDeg": 0.0
+  },
+  "file": {
+    "bytes": 2872,
+    "map": "Untitled_3",
+    "placeErrorCm": 0.0,
+    "facingErrorDeg": 0.0,
+    "version": 1
+  },
+  "restart": {
+    "playerStart": [
+      -2000.0,
+      -2000.0,
+      100.0
+    ],
+    "left": [
+      1234.5,
+      -678.9,
+      94.65
+    ],
+    "back": [
+      1234.5,
+      -678.9,
+      94.65
+    ],
+    "fromPlayerStartCm": 3493.9,
+    "placeErrorCm": 0.0,
+    "facing": [
+      -12.6,
+      137.3,
+      0.0
+    ],
+    "backFacing": [
+      -12.6,
+      137.3,
+      0.0
+    ],
+    "facingErrorDeg": 0.0,
+    "settings": {
+      "mouse.sensitivity": [
+        "0.42",
+        true
+      ],
+      "mouse.invertY": [
+        "true",
+        true
+      ],
+      "audio.master": [
+        "0.8",
+        true
+      ],
+      "graphics.quality": [
+        "medium",
+        true
+      ]
+    },
+    "unknownSetting": [
+      "fallback",
+      false
+    ],
+    "name": "Testspelare 2288",
+    "look": "a1b2c3d4-look",
+    "id": "e5ba8a68-4e3e-db8f-0da6-4b9fc6dc5f70"
+  },
+  "otherMap": {
+    "restored": false,
+    "movedCm": 0.0
+  }
+}

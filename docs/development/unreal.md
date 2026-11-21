@@ -92,6 +92,10 @@ tools/unreal-engine/tests/test_seasons.py     PIE test on L_Lunden: the Christma
 tools/unreal-engine/tests/season-rule.test.mjs  season-dates.json against the web's own inChristmas (Node)
 tools/unreal-engine/tests/capture_seasons.py  GPU views of the tree corner on a summer and a Christmas date (nothing saved)
 unreal/Lunden/Content/Lunden/Seasons/         BPC_LundenSeasons (LFS; made by build_seasons.py)
+tools/unreal-engine/python/build_save.py      the save file /Game/Lunden/Save/: SG_LundenSave, BFL_LundenSave, BPC_LundenSave (#2288)
+tools/unreal-engine/tests/test_save.py        PIE test: v0 migration, place/facing/settings/name/look/id over a restart
+tools/unreal-engine/tests/save-v0.sav         frozen version-0 save (no SaveVersion, no PlayerId) for the migration test
+unreal/Lunden/Content/Lunden/Save/            SG_LundenSave, BFL_LundenSave, BPC_LundenSave (LFS; made by build_save.py)
 ```
 
 The rendering values in `Config/DefaultEngine.ini` are **assumptions** modelled on what a UE 5.x Blank C++ template
@@ -572,6 +576,51 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-
 ```
 
 Results: [docs/verification/2295/](../verification/2295/README.md).
+
+## Save file (#2288)
+
+The web keeps the player's name (`lunden.name`), opaque id (`lunden.playerId`, a `crypto.randomUUID()`), look code
+(`lunden.avatar`), settings and place (`src/resume.js`, `lunden.playerWorld`) in browser storage
+([storage](storage.md#local-player-profiles-1515)). The Windows game keeps them in one versioned SaveGame slot,
+`LundenSave`, written by the engine to `<user dir>\Saved\SaveGames\LundenSave.sav`. The launcher starts the game
+with `-UserDir=%LOCALAPPDATA%\Lunden` (`Lunden-Test` for the test channel), so the file lives outside the
+installation, is never part of a version tree and is kept by a default uninstall ([launcher](#windows-launcher-2249)).
+In the editor it is `unreal/Lunden/Saved/SaveGames/LundenSave.sav`. #2288 owns `/Game/Lunden/Save/`, `build_save.py`,
+`tests/test_save.py`, `tests/save-v0.sav` and the `Save` row of `player-extensions.json`.
+
+- **`SG_LundenSave`** (SaveGame): `SaveVersion`, `PlayerName`, `PlayerId`, `LookCode`, `PlaceMap`, `PlaceLocation`
+  (cm), `PlaceRotation` (the control rotation: pitch and yaw) and `Settings` (string → string).
+- **`BFL_LundenSave`** (function library) is the interface for other areas: #2286 uses `GetSetting(Key, Default) →
+  Value, Found` and `SetSetting(Key, Value)`, #2291 `GetLookCode`/`SetLookCode`, #2292 `GetPlayerName`/`SetPlayerName`
+  and `GetPlayerId`. Every call reads the slot and every setter writes it back at once, so callers keep no copy and
+  never overwrite each other. `LoadSave()` always returns a save: a missing or unreadable slot becomes a new save with
+  a new id, written at once. Settings are strings under keys the owning area chooses (for example
+  `mouse.sensitivity`); convert numbers with the string conversion nodes. `NewPlayerId()` makes a lower-case
+  8-4-4-4-12 id like the web's.
+- **`BPC_LundenSave`** rides on `BP_LundenPlayerController` (`player-extensions.json` row `Save`). At BeginPlay it puts
+  the possessed pawn back at the saved place and facing when the save was made on the same map (`K2_TeleportTo`, which
+  refuses or nudges a spot that something now blocks; the body takes the yaw, the view pitch and yaw), retrying every
+  `RetrySeconds` until a pawn is possessed. Then it saves the place every `SaveIntervalSeconds` (2 s, like the web's F5
+  record) and at EndPlay. A save from another map (the pilot map, a test level) is not applied.
+- **Versions and migration.** `SaveVersion` defaults to 0 on the class and a SaveGame stores only properties that
+  differ from the defaults, so a file written before the field existed reads as 0. New saves get `CurrentVersion()`
+  (1). `MigrateSave` brings an older save up one step at a time and `LoadSave` writes the result back; 0 → 1 adds the
+  player id. A new version adds a step there, keeps old field names and types (a renamed field reads as empty) and a
+  frozen file of the old layout under `tests/`, as `save-v0.sav` is for version 0. A save from a newer build (after a
+  launcher rollback) is read as far as this build knows it; fields it does not know are dropped at its next write.
+- **Not in the save:** the home and life simulation (G13, later), cloud storage, several local profiles (the web's
+  `lunden.players.v1`; one player per Windows user for now) and the web's two-minute "Ladda om" record (the game
+  always resumes at the last place).
+
+```text
+git lfs lock unreal/Lunden/Content/Lunden/Save/SG_LundenSave.uasset unreal/Lunden/Content/Lunden/Save/BFL_LundenSave.uasset unreal/Lunden/Content/Lunden/Save/BPC_LundenSave.uasset
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/build_save.py [--force | --check]
+copy tools\unreal-engine\tests\test_save.py unreal\Lunden\Content\Python\   (untracked copy, delete afterwards)
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-tests.ps1 -Filter Editor.Python.Lunden.test_save
+```
+
+`build_save.py --v0-fixture <file>` rewrites the version-0 fixture; do that only to repair it, since its value is that
+it stays frozen. Results: [docs/verification/2288/](../verification/2288/README.md).
 
 ## Pilot camera references (#2246)
 

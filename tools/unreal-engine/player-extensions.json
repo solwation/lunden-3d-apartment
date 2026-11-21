@@ -9,6 +9,13 @@
       "class": "/Game/Lunden/Seasons/BPC_LundenSeasons.BPC_LundenSeasons_C",
       "owner": "#2295",
       "what": "shows seasonal pieces (actor tag seasonal: the Christmas tree) only inside their season window, from the PC's local date at game start (build_seasons.py)"
+    },
+    {
+      "target": "controller",
+      "name": "Save",
+      "class": "/Game/Lunden/Save/BPC_LundenSave.BPC_LundenSave_C",
+      "owner": "#2288",
+      "what": "puts the player back at the saved place and facing at game start and saves the place every 2 s and at the end, in the user's save folder (build_save.py)"
     }
   ]
 }
