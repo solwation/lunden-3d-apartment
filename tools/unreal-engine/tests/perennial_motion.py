@@ -6,21 +6,52 @@ import unreal as u
 
 TAG = "LundenPerennialCapture"
 SIZE = 128
+THROTTLE = "Slate.bAllowThrottling"
 
 
-def setup():
+def setup(editor_world):
     camera = u.get_editor_subsystem(u.EditorActorSubsystem).spawn_actor_from_class(u.SceneCapture2D, u.Vector())
     camera.tags = [u.Name(TAG)]
     camera.capture_component2d.set_editor_property("capture_every_frame", False)
     camera.capture_component2d.set_editor_property("capture_on_movement", False)
+    # EditorEngine gates PIE world ticks on IsAllowingExpensiveTasks. In an offscreen editor,
+    # Slate can continue scheduling this automation even when the game's clock is stationary.
+    previous = u.SystemLibrary.get_console_variable_int_value(THROTTLE)
+    u.SystemLibrary.execute_console_command(editor_world, f"{THROTTLE} 0")
+    return previous
+
+
+def restore(editor_world, previous):
+    u.SystemLibrary.execute_console_command(editor_world, f"{THROTTLE} {previous}")
+
+
+def play_state(world):
+    pc = u.GameplayStatics.get_player_controller(world, 0)
+    ui_class = u.load_class(None, "/Game/Lunden/UI/BPC_LundenUI.BPC_LundenUI_C")
+    ui = pc.get_component_by_class(ui_class) if ui_class else None
+    menu = ui.get_editor_property("Menu") if ui else None
+    paused = u.GameplayStatics.is_game_paused(world)
+    menu_open = bool(menu and menu.get_editor_property("IsOpen"))
+    if paused and menu_open:
+        menu.call_method("Close")
+    if u.GameplayStatics.is_game_paused(world):
+        raise RuntimeError(f"Perennial motion needs active PIE play, pause={paused}, menuOpen={menu_open}")
+    u.log(f"LUNDEN_PERENNIAL_CLOCK pause={paused} menuOpen={menu_open} "
+          f"throttling={u.SystemLibrary.get_console_variable_int_value(THROTTLE)} "
+          f"dilation={u.GameplayStatics.get_global_time_dilation(world)}")
 
 
 def sample_after(world, seconds):
     start = u.GameplayStatics.get_time_seconds(world)
+    real_start = u.GameplayStatics.get_real_time_seconds(world)
     deadline = time.monotonic() + 30
     while u.GameplayStatics.get_time_seconds(world) - start < seconds:
         if time.monotonic() > deadline:
-            raise RuntimeError("Game time did not advance while measuring the perennial")
+            delta = u.GameplayStatics.get_time_seconds(world) - start
+            real_delta = u.GameplayStatics.get_real_time_seconds(world) - real_start
+            raise RuntimeError(f"Perennial PIE clock advanced {delta:.3f} game / {real_delta:.3f} real seconds "
+                               f"(pause={u.GameplayStatics.is_game_paused(world)}, "
+                               f"dilation={u.GameplayStatics.get_global_time_dilation(world)})")
         yield
 
 
@@ -36,6 +67,7 @@ def silhouette(world, capture, target, far):
 
 
 def measure(world, component, bounds):
+    play_state(world)
     camera, = u.GameplayStatics.get_all_actors_with_tag(world, TAG)
     capture = camera.capture_component2d
     lo, hi = bounds

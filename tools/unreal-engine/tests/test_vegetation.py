@@ -67,7 +67,7 @@ u.log(f"LUNDEN_VEGETATION streamed in memory (map not recomposed): {IN_MEMORY}")
 render_motion = os.environ.get("LUNDEN_VEGETATION_RENDER") == "1"
 if render_motion:
     import perennial_motion
-    perennial_motion.setup()
+    previous_throttle = perennial_motion.setup(_world)
 saved_slot = save_isolation.isolate()
 levels.editor_request_begin_play()
 
@@ -391,4 +391,8 @@ def vegetation_test():
               f"height class; {sum(result['instances'].values())} foliage instances; result {out}")
     finally:
         levels.editor_request_end_play()
-        yield from save_isolation.restore_after_play(saved_slot, editor)
+        try:
+            yield from save_isolation.restore_after_play(saved_slot, editor)
+        finally:
+            if render_motion:
+                perennial_motion.restore(_world, previous_throttle)
