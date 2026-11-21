@@ -15,6 +15,10 @@
      the export itself (measurements.json materials[].looks: the web's own weather class, or the colour map's name, or the
      class of another look drawing the same canvas, `mapIndex`), never from a list of keys here. A look without a colour
      map (the web's plain brick pilasters, a plain asphalt path) is drawn in full by Interchange's instance and may stay.
+  7. (#2321) every export key with vertex colours, in every zone, draws them: a rule's material multiplies the vertex
+     colour in, or the key matches `vertexColor.match` and the glTF master Interchange gives it (from the GLB material:
+     KHR_materials_unlit, transmission, clearcoat, sheen, else M_Default) has a vertex-colour copy listed under
+     `vertexColor.masters` and built as a `gltf-vertex-color` material from that master.
 --table prints one line per key: key, nodes, rule material or "default: <reason>".
 Exit 0 when all hold, 1 otherwise; prints MATERIAL_COVERAGE_OK.
 """
@@ -33,6 +37,13 @@ MASTER_PARAMS = {
               "VertexColorWeight", "Roughness", "Tile", "PatchCells", "PatchContrast", "Dry", "Lush", "TuftCount", "TuftRadius",
               "TuftShade"},
 }
+GLTF_VC = "gltf-vertex-color"  # #2321: build_materials.py's copy of an Interchange glTF master times the vertex colour
+GLTF_MASTERS = (("KHR_materials_unlit", "/InterchangeAssets/gltf/M_Unlit.M_Unlit"),  # Interchange's choice by extension
+                ("KHR_materials_transmission", "/InterchangeAssets/gltf/M_Transmission.M_Transmission"),
+                ("KHR_materials_clearcoat", "/InterchangeAssets/gltf/M_ClearCoat.M_ClearCoat"),
+                ("KHR_materials_sheen", "/InterchangeAssets/gltf/M_Sheen.M_Sheen"),
+                ("KHR_materials_pbrSpecularGlossiness", "/InterchangeAssets/gltf/M_SpecularGlossiness.M_SpecularGlossiness"))
+GLTF_DEFAULT = "/InterchangeAssets/gltf/M_Default.M_Default"
 GRASS_MAP = "shared-grass-detail"  # src/grass.js grassTexture's name; measurements.json materials[].map since #2308
 # #2318: web surface classes whose look is a pattern in the colour map (joints, seams, aggregate) that Interchange's plain
 # instance loses, and colour-map names that carry a class themselves (src/roofsurface.js roofMap, src/asphaltsurface.js)
@@ -116,6 +127,63 @@ def scope_nodes(export_dir, scope):
     return out
 
 
+def vertex_color_check(export_dir, table, rule_rx, errors):
+    """#2321: Interchange's glTF masters ignore COLOR_0, so a vertex-coloured key on one renders as its plain (often
+    white) base colour. Every key whose GLB material is vertex-coloured (the export's `_vc`, or COLOR_0 on a primitive
+    using it) must reach a material that multiplies the vertex colour in. Returns the number of such keys."""
+    mats, vc = table["materials"], table.get("vertexColor") or {}
+    match = re.compile(vc.get("match", "(?!)"))
+    masters = vc.get("masters", {})
+    for src, dst in masters.items():
+        spec = mats.get(dst.split(".")[0])
+        if not spec or spec.get("graph") != GLTF_VC or spec.get("from") != src.split(".")[0]:
+            errors.append(f"vertexColor master {src} -> {dst} is not a listed {GLTF_VC} material built from {src.split('.')[0]}")
+    keys = {}
+    for name in sorted(os.listdir(export_dir)):
+        if not name.endswith(".glb"):
+            continue
+        j = glb_json(os.path.join(export_dir, name))
+        materials = j.get("materials", [])
+        colored = {p["material"] for mesh in j.get("meshes", []) for p in mesh.get("primitives", [])
+                   if "material" in p and "COLOR_0" in p.get("attributes", {})}
+        for mesh in j.get("meshes", []):
+            for p in mesh.get("primitives", []):
+                if "material" not in p:
+                    continue
+                m = materials[p["material"]]
+                key = m.get("name", "")
+                if "_vc" not in key and p["material"] not in colored:
+                    continue
+                entry = keys.setdefault(key, {"zones": set(), "meshes": set(), "material": m})
+                entry["zones"].add(name[:-4])
+                entry["meshes"].add(mesh.get("name", ""))
+    for key, entry in sorted(keys.items()):
+        where = f"{key} ({', '.join(sorted(entry['zones']))})"
+        ruled, unruled = set(), False
+        for mesh in entry["meshes"]:
+            hit = next((r for rx, mx, r in rule_rx if rx.search(key) and (mx is None or mx.search(mesh))), None)
+            if hit:
+                ruled.add(hit["material"].split(".")[0])
+            else:
+                unruled = True
+        for target in sorted(ruled):
+            spec = mats.get(target, {})
+            parent = mats.get(spec.get("parent"), {}) if "parent" in spec else spec
+            weight = spec.get("params", {}).get("VertexColorWeight", 0)
+            if not (parent.get("graph") == GLTF_VC or (parent.get("graph") == "grass" and weight > 0)):
+                errors.append(f"vertex-coloured key {where}: rule material {target} does not multiply the vertex colour in")
+        if not unruled:
+            continue  # every mesh using the key gets a rule's material
+        if not match.search(key):
+            errors.append(f"vertex-coloured key {where} does not match vertexColor.match {match.pattern!r}: it would render without its vertex colour")
+            continue
+        ext = entry["material"].get("extensions", {})
+        master = next((m for e, m in GLTF_MASTERS if e in ext), GLTF_DEFAULT)
+        if master not in masters:
+            errors.append(f"vertex-coloured key {where}: Interchange gives it {master}, which vertexColor.masters does not map")
+    return len(keys)
+
+
 def main(argv):
     args = [a for a in argv if not a.startswith("--")]
     export_dir = args[0] if args else os.path.join(ROOT, "unreal", "Lunden", "Import")
@@ -143,7 +211,7 @@ def main(argv):
             unknown = set(spec.get("params", {})) - MASTER_PARAMS.get(parent.get("graph"), set())
             if unknown:
                 errors.append(f"{path}: {parent.get('graph')} master has no parameter(s) {sorted(unknown)}")
-        elif spec.get("graph", "constant") not in ("constant", *MASTER_PARAMS):
+        elif spec.get("graph", "constant") not in ("constant", GLTF_VC, *MASTER_PARAMS):
             errors.append(f"{path}: unknown graph {spec.get('graph')}")
         # 4. source / assumption
         if not spec.get("source") or "assumption" not in spec:
@@ -188,6 +256,10 @@ def main(argv):
                     checked.setdefault(cls, set()).add((zone, mesh_name, key))
         print("patterned surfaces (#2318): " + ", ".join(f"{c} {len(checked.get(c, ()))} mesh(es)" for c in PATTERNED)
               + f" from {len(patterned)} look(s); each on a material that draws its surface")
+
+    # 7. #2321: vertex colours drawn in every zone
+    vc_keys = vertex_color_check(export_dir, table, rule_rx, errors)
+    print(f"vertex-coloured keys (all zones): {vc_keys}, each on a master that multiplies the vertex colour in")
 
     # 1. coverage, per (key, mesh) so mesh selectors count
     nodes = scope_nodes(export_dir, table["scope"])

@@ -308,6 +308,111 @@ def apply_materials(zone, table):
     return replaced
 
 
+# BasePropertyOverrides flags and the value each one guards; the ones MaterialInstanceBasePropertyOverrides lacks on
+# this engine (5.8.4 has no override_is_thin_surface) are left out at run time
+OVERRIDES = (("override_blend_mode", "blend_mode"), ("override_two_sided", "two_sided"),
+             ("override_opacity_mask_clip_value", "opacity_mask_clip_value"), ("override_shading_model", "shading_model"),
+             ("override_dithered_lod_transition", "dithered_lod_transition"),
+             ("override_cast_dynamic_shadow_as_masked", "cast_dynamic_shadow_as_masked"),
+             ("override_is_thin_surface", "is_thin_surface"))
+
+
+def known_overrides():
+    probe, out = unreal.MaterialInstanceBasePropertyOverrides(), []
+    for flag, value in OVERRIDES:
+        try:
+            probe.get_editor_property(flag)
+            probe.get_editor_property(value)
+        except Exception:
+            continue
+        out.append((flag, value))
+    return out
+
+
+def effective_overrides(mi):
+    """The base property overrides mi gets from itself and its instance parents (nearest wins), as one struct."""
+    chain, x = [], mi
+    while isinstance(x, unreal.MaterialInstance):
+        chain.append(x)
+        x = x.get_editor_property("parent")
+    out = unreal.MaterialInstanceBasePropertyOverrides()
+    pairs = known_overrides()
+    for inst in reversed(chain):  # farthest first, so the nearest override is written last
+        o = inst.get_editor_property("base_property_overrides")
+        for flag, value in pairs:
+            if o.get_editor_property(flag):
+                out.set_editor_property(flag, True)
+                out.set_editor_property(value, o.get_editor_property(value))
+    return out
+
+
+def vertex_color_masters(table):
+    """(key regex, {Interchange glTF master path: project vertex-colour master path}) from material-map.json."""
+    vc = table.get("vertexColor") or {}
+    return re.compile(vc.get("match", "_vc")), dict(vc.get("masters", {}))
+
+
+def apply_vertex_color(zone, table):
+    """#2321: Interchange's glTF masters (M_Default, M_Unlit) ignore the meshes' vertex colours (COLOR_0, imported
+    onto the StaticMesh), so a key whose web material has vertexColors (`_vc`) and white or light base colour came out
+    white: the plants, fruit, bridge railings and door handles. Each such instance of the zone is re-parented from its
+    Interchange parent (MI_Default_Opaque, ..._DS, ...) onto the project's copy of the same glTF master that multiplies
+    the vertex colour in (material-map.json `vertexColor`, built by build_materials.py). The parameters keep their names
+    and values; the parent chain's blend, two-sided and mask overrides are copied onto the instance itself."""
+    rx, masters = vertex_color_masters(table)
+    loaded, done = {}, set()
+    for p in eal.list_assets(f"{GENERATED_ROOT}/{zone}/StaticMeshes", recursive=True, include_folder=False):
+        mesh = eal.load_asset(p)
+        if not isinstance(mesh, unreal.StaticMesh):
+            continue
+        for slot in mesh.static_materials:
+            mi = slot.material_interface
+            if not isinstance(mi, unreal.MaterialInstanceConstant) or not rx.search(mi.get_name()):
+                continue
+            if mi.get_path_name() in done or not mi.get_path_name().startswith(f"{GENERATED_ROOT}/{zone}/"):
+                continue  # once per instance; a rule's hand-made material is not the import's to change
+            done.add(mi.get_path_name())
+            base = mi.get_base_material().get_path_name()
+            if base in masters.values():
+                continue
+            target = masters.get(base)
+            if target is None:
+                raise RuntimeError(f"{mi.get_path_name()} (vertex colours) has glTF master {base}, which material-map.json "
+                                   f"`vertexColor.masters` does not map: add its vertex-colour copy")
+            if target not in loaded:
+                loaded[target] = eal.load_asset(target)
+                if loaded[target] is None:
+                    raise RuntimeError(f"material-map.json names {target}, which does not exist: run tools/unreal-engine/python/build_materials.py")
+            blend = mi.get_blend_mode()
+            overrides = effective_overrides(mi)
+            unreal.MaterialEditingLibrary.set_material_instance_parent(mi, loaded[target])
+            mi.set_editor_property("base_property_overrides", overrides)
+            unreal.MaterialEditingLibrary.update_material_instance(mi)
+            if mi.get_blend_mode() != blend:
+                raise RuntimeError(f"{mi.get_path_name()}: blend mode {blend} became {mi.get_blend_mode()} on the vertex-colour master")
+    unreal.log(f"LUNDEN_IMPORT_VERTEX_COLOR zone {zone}: {len(done)} vertex-coloured instances on a vertex-colour master")
+    return len(done)
+
+
+def check_vertex_color(zone, table):
+    """--check (#2321): every vertex-coloured key's instance in the zone draws the vertex colour."""
+    rx, masters = vertex_color_masters(table)
+    wanted, bad, seen = set(masters.values()), [], set()
+    for _, mesh in zone_meshes(zone):
+        for slot in mesh.static_materials:
+            mi = slot.material_interface
+            if mi is None or not rx.search(mi.get_name()) or mi.get_path_name() in seen:
+                continue
+            seen.add(mi.get_path_name())
+            if not mi.get_path_name().startswith(f"{GENERATED_ROOT}/{zone}/"):
+                continue  # a rule's hand-made material: tests/test_materials.py checks that it uses the vertex colour
+            if mi.get_base_material().get_path_name() not in wanted:
+                bad.append(f"{mi.get_name()} ({mi.get_base_material().get_path_name()})")
+    if bad:
+        raise RuntimeError(f"{zone}: {len(bad)} vertex-coloured keys on a master without vertex colour, e.g. {bad[:3]}: run import_world.py")
+    unreal.log(f"LUNDEN_IMPORT_VERTEX_COLOR zone {zone}: {len(seen)} vertex-coloured keys, each drawing its vertex colour")
+
+
 def clear_zone(zone):
     """Remove everything an earlier import wrote for the zone. EditorAssetLibrary.delete_directory is unusable at this
     size on 5.8.4: it left the .umap behind, logged "Error opening file" for every package and took > 7 minutes for
@@ -349,6 +454,7 @@ def import_zone(zone, glb_path, glb_entry, manifest, table, map_sha):
         raise RuntimeError(f"{zone}: {len(missing)} nodes have no actor after import, e.g. {missing[:5]}")
     collisions = apply_collision(by_id, extras)
     materials = apply_materials(zone, table)
+    apply_vertex_color(zone, table)  # after the rules: a key a rule maps keeps its hand-made material
     double = apply_double_sided(zone)
     prepare_zone(zone)
     if not unreal.EditorLoadingAndSavingUtils.save_map(world, level_path(zone)):
@@ -516,6 +622,7 @@ def main(argv):
         check_ids(zone, glb_path)
         check_collision(zone, glb_path)
         check_double_sided(zone)
+        check_vertex_color(zone, table)
         if zone == "fixture":
             check_fixture(measurements)
         log_measures(zone, measure)

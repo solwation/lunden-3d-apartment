@@ -9,6 +9,9 @@ Every entry under `materials` becomes one asset in /Game/Lunden/Materials/:
   - "graph": "glass"     the translucent glazing master M_LundenGlass;
   - "graph": "grass"     the lawn master M_LundenGrass (#2308): src/grass.js's detail map rebuilt procedurally in UV
                          metres (a grey ground with short random blade strokes, tinted by the lawn's colour);
+  - "graph": "gltf-vertex-color"  (#2321) a copy of Interchange's glTF master `from` (M_Default, M_Unlit) whose `output`
+                         (BaseColor, or EmissiveColor for the unlit master) is multiplied by the vertex colour: the
+                         importer re-parents every vertex-coloured key's instance onto it (material-map.json `vertexColor`);
   - "parent": <master>   a MaterialInstanceConstant with the entry's `params`.
 Colours are sRGB hex as the web writes them (converted to linear). Opaque materials get the Nanite usage flag and
 instances a persisted Nanite usage override, so prepare_nanite_materials.py finds nothing to change (#2276). Each asset
@@ -155,6 +158,8 @@ def vector(value):
 
 def spec_hash(path, spec):
     parts = [path, spec, TILED_HLSL] + ([GRASS_HLSL] if spec.get("graph") == "grass" else [])  # other hashes unchanged
+    if spec.get("graph") == GLTF_VC:  # a copy of an engine material: a new engine version rebuilds it
+        parts.append(unreal.SystemLibrary.get_engine_version())
     return hashlib.sha256(json.dumps(parts, sort_keys=True).encode("utf-8")).hexdigest()[:16]
 
 
@@ -277,6 +282,49 @@ def glass_graph(m, spec):
     mel.connect_material_property(scalar_param(m, "Specular", 0.5, -400, 350), "", unreal.MaterialProperty.MP_SPECULAR)
 
 
+GLTF_VC = "gltf-vertex-color"
+VC_OUTPUTS = {"BaseColor": unreal.MaterialProperty.MP_BASE_COLOR, "EmissiveColor": unreal.MaterialProperty.MP_EMISSIVE_COLOR}
+
+
+def build_gltf_vertex_color(path, spec, existing):
+    """#2321: duplicate Interchange's glTF master and multiply its colour output by the vertex colour. A copy keeps every
+    parameter name, so an imported instance keeps its values when the importer re-parents it here. An existing asset
+    is deleted first (only the importer's generated instances reference it; a changed spec changes the map hash, which
+    re-imports them)."""
+    folder, name = path.rsplit("/", 1)
+    unreal.AssetRegistryHelpers.get_asset_registry().scan_paths_synchronous([spec["from"].rsplit("/", 1)[0]], True)
+    source = eal.load_asset(spec["from"])
+    if not isinstance(source, unreal.Material):
+        raise RuntimeError(f"{path}: source master {spec['from']} does not exist")
+    if existing is not None and not eal.delete_asset(path):
+        raise RuntimeError(f"could not delete {path} to rebuild it (is it locked with git lfs lock and writable?)")
+    m = unreal.AssetToolsHelpers.get_asset_tools().duplicate_asset(name, folder, source)
+    if m is None:
+        raise RuntimeError(f"could not duplicate {spec['from']} to {path}")
+    prop = VC_OUTPUTS[spec["output"]]
+    node = mel.get_material_property_input_node(m, prop)
+    out = mel.get_material_property_input_node_output_name(m, prop)
+    if node is None:
+        raise RuntimeError(f"{path}: {spec['from']} has nothing on {spec['output']}")
+    vc = mel.create_material_expression(m, unreal.MaterialExpressionVertexColor, node.get_editor_property("material_expression_editor_x") - 250,
+                                        node.get_editor_property("material_expression_editor_y") + 250)
+    mul = mel.create_material_expression(m, unreal.MaterialExpressionMultiply, node.get_editor_property("material_expression_editor_x") + 300,
+                                         node.get_editor_property("material_expression_editor_y"))
+    if not (mel.connect_material_expressions(node, out, mul, "A") and mel.connect_material_expressions(vc, "", mul, "B")
+            and mel.connect_material_property(mul, "", prop)):
+        raise RuntimeError(f"{path}: could not multiply {spec['output']} by the vertex colour")
+    mel.set_base_material_usage(m, NANITE, True)
+    mel.recompile_material(m)
+    return m
+
+
+def uses_vertex_color(m, prop):
+    """True when the expression on `prop` is a Multiply with a VertexColor input (what build_gltf_vertex_color makes)."""
+    node = mel.get_material_property_input_node(m, prop)
+    return isinstance(node, unreal.MaterialExpressionMultiply) and any(
+        isinstance(i, unreal.MaterialExpressionVertexColor) for i in mel.get_inputs_for_material_expression(m, node))
+
+
 GRAPHS = {"constant": constant_graph, "surface": surface_graph, "tiled": tiled_graph, "glass": glass_graph,
           "grass": grass_graph}
 
@@ -360,6 +408,8 @@ def check(table):
                 usage = usage and mel.has_material_usage_override(asset, NANITE)
             if not usage:
                 problems.append(f"{path}: no persisted Nanite usage")
+        if spec.get("graph") == GLTF_VC and not uses_vertex_color(asset, VC_OUTPUTS[spec["output"]]):
+            problems.append(f"{path}: {spec['output']} is not multiplied by the vertex colour")
         if "parent" in spec:
             parent = eal.load_asset(spec["parent"])
             names = {str(n) for n in mel.get_vector_parameter_names(parent)} | {str(n) for n in mel.get_scalar_parameter_names(parent)}
@@ -399,7 +449,8 @@ def main(argv):
             unreal.log(f"LUNDEN_MATERIAL {path}: kept (spec {want})")
             kept += 1
             continue
-        asset = (build_instance if "parent" in spec else build_master)(path, spec, existing)
+        build = build_instance if "parent" in spec else build_gltf_vertex_color if spec.get("graph") == GLTF_VC else build_master
+        asset = build(path, spec, existing)
         stamp(asset, path, spec)
         if not eal.save_loaded_asset(asset, only_if_is_dirty=False):
             raise RuntimeError(f"could not save {path} (is it locked with git lfs lock and writable?)")
