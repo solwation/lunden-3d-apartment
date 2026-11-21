@@ -1,0 +1,735 @@
+{
+  "engine": "5.8.4-58902052+++UE5+Release-5.8",
+  "map": "/Game/Lunden/Maps/L_Lunden",
+  "export": "b8c74df18dcb37803879df62fc3fccd9844282e2",
+  "tolerance": 5.0,
+  "inMemory": [],
+  "subLevels": [
+    "/Game/Lunden/Generated/gard/Level_gard",
+    "/Game/Lunden/Generated/omgivning/Level_omgivning",
+    "/Game/Lunden/Generated/SiteWorld/Level_site_collision"
+  ],
+  "heights": [
+    {
+      "id": "elevation_xm15000_zm25000",
+      "what": "open ground on the elevation grid",
+      "reference": "elevation",
+      "unrealXY": [
+        -15000,
+        -25000
+      ],
+      "gotCm": 469.0,
+      "exportCm": 469,
+      "node": "mesh_site-terrain-remainder_l0_xm500_z6000_y155",
+      "elevationCm": 470.0,
+      "webTerrainCm": 469.0,
+      "referenceCm": 470.0,
+      "errorCm": 1.0,
+      "exportErrorCm": 0.0,
+      "sameNode": true,
+      "elevationDeltaCm": -1.0,
+      "ok": true
+    },
+    {
+      "id": "elevation_xm21800_zm6000",
+      "what": "open ground on the elevation grid",
+      "reference": "elevation",
+      "unrealXY": [
+        -21800,
+        -6000
+      ],
+      "gotCm": 447.24,
+      "exportCm": 447.24,
+      "node": "mesh_site-terrain-remainder_l0_xm500_z6000_y155",
+      "elevationCm": 448.24,
+      "webTerrainCm": 447.24,
+      "referenceCm": 448.24,
+      "errorCm": 1.0,
+      "exportErrorCm": 0.0,
+      "sameNode": true,
+      "elevationDeltaCm": -1.0,
+      "ok": true
+    },
+    {
+      "id": "elevation_x9800_zm20000",
+      "what": "open ground on the elevation grid",
+      "reference": "elevation",
+      "unrealXY": [
+        9800,
+        -20000
+      ],
+      "gotCm": 543.96,
+      "exportCm": 543.96,
+      "node": "mesh_site-terrain-remainder_l0_xm500_z6000_y155",
+      "elevationCm": 544.96,
+      "webTerrainCm": 543.96,
+      "referenceCm": 544.96,
+      "errorCm": 1.0,
+      "exportErrorCm": 0.0,
+      "sameNode": true,
+      "elevationDeltaCm": -1.0,
+      "ok": true
+    },
+    {
+      "id": "elevation_x25000_zm15000",
+      "what": "open ground on the elevation grid",
+      "reference": "elevation",
+      "unrealXY": [
+        25000,
+        -15000
+      ],
+      "gotCm": 469.0,
+      "exportCm": 469,
+      "node": "mesh_site-terrain-remainder_l0_xm500_z6000_y155",
+      "elevationCm": 470.0,
+      "webTerrainCm": 469.0,
+      "referenceCm": 470.0,
+      "errorCm": 1.0,
+      "exportErrorCm": 0.0,
+      "sameNode": true,
+      "elevationDeltaCm": -1.0,
+      "ok": true
+    },
+    {
+      "id": "elevation_x20000_zm25000",
+      "what": "open ground on the elevation grid",
+      "reference": "elevation",
+      "unrealXY": [
+        20000,
+        -25000
+      ],
+      "gotCm": 579.0,
+      "exportCm": 579,
+      "node": "mesh_site-terrain-remainder_l0_xm500_z6000_y155",
+      "elevationCm": 580.0,
+      "webTerrainCm": 579.0,
+      "referenceCm": 580.0,
+      "errorCm": 1.0,
+      "exportErrorCm": 0.0,
+      "sameNode": true,
+      "elevationDeltaCm": -1.0,
+      "ok": true
+    },
+    {
+      "id": "elevation_xm25400_z0",
+      "what": "open ground on the elevation grid",
+      "reference": "elevation",
+      "unrealXY": [
+        -25400,
+        0
+      ],
+      "gotCm": 254.44,
+      "exportCm": 254.44,
+      "node": "mesh_site-terrain-remainder_l0_xm500_z6000_y155",
+      "elevationCm": 255.44,
+      "webTerrainCm": 254.44,
+      "referenceCm": 255.44,
+      "errorCm": 1.0,
+      "exportErrorCm": 0.0,
+      "sameNode": true,
+      "elevationDeltaCm": -1.0,
+      "ok": true
+    },
+    {
+      "id": "elevation_x27400_zm4000",
+      "what": "open ground on the elevation grid",
+      "reference": "elevation",
+      "unrealXY": [
+        27400,
+        -4000
+      ],
+      "gotCm": -163.16,
+      "exportCm": -163.16,
+      "node": "mesh_site-terrain-remainder_l0_xm500_z6000_y155",
+      "elevationCm": -162.16,
+      "webTerrainCm": -163.16,
+      "referenceCm": -162.16,
+      "errorCm": 1.0,
+      "exportErrorCm": 0.0,
+      "sameNode": true,
+      "elevationDeltaCm": -1.0,
+      "ok": true
+    },
+    {
+      "id": "elevation_x5800_zm26000",
+      "what": "open ground on the elevation grid",
+      "reference": "elevation",
+      "unrealXY": [
+        5800,
+        -26000
+      ],
+      "gotCm": 590.84,
+      "exportCm": 590.84,
+      "node": "mesh_site-terrain-remainder_l0_xm500_z6000_y155",
+      "elevationCm": 591.84,
+      "webTerrainCm": 590.84,
+      "referenceCm": 591.84,
+      "errorCm": 1.0,
+      "exportErrorCm": 0.0,
+      "sameNode": true,
+      "elevationDeltaCm": -1.0,
+      "ok": true
+    },
+    {
+      "id": "elevation_xm18200_zm30000",
+      "what": "open ground on the elevation grid",
+      "reference": "elevation",
+      "unrealXY": [
+        -18200,
+        -30000
+      ],
+      "gotCm": 527.96,
+      "exportCm": 527.96,
+      "node": "mesh_site-terrain-remainder_l0_xm500_z6000_y155",
+      "elevationCm": 528.96,
+      "webTerrainCm": 527.96,
+      "referenceCm": 528.96,
+      "errorCm": 1.0,
+      "exportErrorCm": 0.0,
+      "sameNode": true,
+      "elevationDeltaCm": -1.0,
+      "ok": true
+    },
+    {
+      "id": "elevation_xm10200_zm9000",
+      "what": "open ground on the elevation grid",
+      "reference": "elevation",
+      "unrealXY": [
+        -10200,
+        -9000
+      ],
+      "gotCm": 577.8,
+      "exportCm": 577.8,
+      "node": "mesh_site-terrain-remainder_l0_xm500_z6000_y155",
+      "elevationCm": 578.8,
+      "webTerrainCm": 577.8,
+      "referenceCm": 578.8,
+      "errorCm": 1.0,
+      "exportErrorCm": 0.0,
+      "sameNode": true,
+      "elevationDeltaCm": -1.0,
+      "ok": true
+    },
+    {
+      "id": "courtyard_centre",
+      "what": "courtyard between the pergolas (garage box)",
+      "reference": "terrain",
+      "unrealXY": [
+        -2000,
+        2200
+      ],
+      "gotCm": -1.0,
+      "exportCm": -1,
+      "node": "mesh_site-terrain-remainder_l0_xm2850_z3255_ym151",
+      "elevationCm": 7.68,
+      "webTerrainCm": -1.0,
+      "referenceCm": -1.0,
+      "errorCm": 0.0,
+      "exportErrorCm": 0.0,
+      "sameNode": true,
+      "elevationDeltaCm": -8.68,
+      "ok": true
+    },
+    {
+      "id": "courtyard_east",
+      "what": "courtyard east part, before Hus A",
+      "reference": "terrain",
+      "unrealXY": [
+        0,
+        2000
+      ],
+      "gotCm": -1.0,
+      "exportCm": -1,
+      "node": "mesh_site-terrain-remainder_l0_xm2850_z3255_ym151",
+      "elevationCm": -20.0,
+      "webTerrainCm": -1.0,
+      "referenceCm": -1.0,
+      "errorCm": 0.0,
+      "exportErrorCm": 0.0,
+      "sameNode": true,
+      "elevationDeltaCm": 19.0,
+      "ok": true
+    },
+    {
+      "id": "courtyard_west",
+      "what": "courtyard west part, by Hus C",
+      "reference": "terrain",
+      "unrealXY": [
+        -5500,
+        4000
+      ],
+      "gotCm": -1.0,
+      "exportCm": -1,
+      "node": "mesh_site-terrain-remainder_l0_xm2850_z3255_ym151",
+      "elevationCm": 51.88,
+      "webTerrainCm": -1.0,
+      "referenceCm": -1.0,
+      "errorCm": 0.0,
+      "exportErrorCm": 0.0,
+      "sameNode": true,
+      "elevationDeltaCm": -52.88,
+      "ok": true
+    },
+    {
+      "id": "river_shore_path",
+      "what": "Höje å: the shore path east of the road bridge",
+      "reference": "terrain",
+      "unrealXY": [
+        3600,
+        11000
+      ],
+      "gotCm": -549.726,
+      "exportCm": -549.73,
+      "node": "mesh_site-terrain-southeast_l0_x16900_z25900_ym52",
+      "elevationCm": -250.0,
+      "webTerrainCm": -549.73,
+      "referenceCm": -549.73,
+      "errorCm": 0.004,
+      "exportErrorCm": 0.004,
+      "sameNode": true,
+      "elevationDeltaCm": -299.73,
+      "ok": true
+    },
+    {
+      "id": "river_bank",
+      "what": "Höje å: the bank above the water",
+      "reference": "terrain",
+      "unrealXY": [
+        3800,
+        11600
+      ],
+      "gotCm": -550.233,
+      "exportCm": -550.23,
+      "node": "mesh_site-terrain-southeast_l0_x16900_z25900_ym52",
+      "elevationCm": -249.0,
+      "webTerrainCm": -550.23,
+      "referenceCm": -550.23,
+      "errorCm": 0.003,
+      "exportErrorCm": 0.003,
+      "sameNode": true,
+      "elevationDeltaCm": -301.23,
+      "ok": true
+    },
+    {
+      "id": "river_path_west",
+      "what": "Höje å: the shore path west of the bridges",
+      "reference": "terrain",
+      "unrealXY": [
+        657,
+        11181
+      ],
+      "gotCm": -549.375,
+      "exportCm": -549.37,
+      "node": "mesh_park-paths_l0_xm7385_z16190_ym119",
+      "elevationCm": -320.03,
+      "webTerrainCm": -552.43,
+      "referenceCm": -552.43,
+      "errorCm": 3.055,
+      "exportErrorCm": 0.005,
+      "sameNode": true,
+      "elevationDeltaCm": -229.34,
+      "ok": true
+    },
+    {
+      "id": "river_bed",
+      "what": "Höje å: the river bed under the water surface",
+      "reference": "terrain",
+      "unrealXY": [
+        116,
+        12514
+      ],
+      "gotCm": -860.914,
+      "exportCm": -860.91,
+      "node": "mesh_site-terrain-southeast_l0_x16900_z25900_ym52",
+      "elevationCm": -394.09,
+      "webTerrainCm": -860.91,
+      "referenceCm": -860.91,
+      "errorCm": 0.004,
+      "exportErrorCm": 0.004,
+      "sameNode": true,
+      "elevationDeltaCm": -466.82,
+      "ok": true
+    }
+  ],
+  "bounds": [
+    {
+      "node": "mesh_site-terrain-remainder_l0_x288_zm1200_ym1",
+      "errorCm": 0.0
+    },
+    {
+      "node": "mesh_site-asphalt_l0_x288_zm875_y1",
+      "errorCm": 0.0
+    },
+    {
+      "node": "mesh_site-paving_l0_x288_zm175_y1",
+      "errorCm": 0.0
+    },
+    {
+      "node": "mesh_l0_xm4382_z1240_ym1",
+      "errorCm": 0.0
+    },
+    {
+      "node": "mesh_l0_xm251_z1240_ym1",
+      "errorCm": 0.0
+    },
+    {
+      "node": "mesh_l0_xm1779_z1240_ym1",
+      "errorCm": 0.0
+    },
+    {
+      "node": "mesh_l0_xm6960_z1240_ym1",
+      "errorCm": 0.0
+    },
+    {
+      "node": "mesh_site-terrain-remainder_l0_xm2850_z3255_ym151",
+      "errorCm": 0.0
+    },
+    {
+      "node": "mesh_site-asphalt_l0_xm7072_z4400_ym299",
+      "errorCm": 0.0
+    },
+    {
+      "node": "mesh_site-paving_l0_xm1618_z4750_ym299",
+      "errorCm": 0.0
+    },
+    {
+      "node": "mesh_l0_xm4382_z105_ym1",
+      "errorCm": 0.0
+    },
+    {
+      "node": "mesh_l0_xm251_z105_ym1",
+      "errorCm": 0.0
+    },
+    {
+      "node": "mesh_l0_xm1779_zm474_ym1",
+      "errorCm": 0.0
+    },
+    {
+      "node": "mesh_l0_xm1779_z1084_ym1",
+      "errorCm": 0.0
+    },
+    {
+      "node": "mesh_l0_xm6960_z1135_ym1",
+      "errorCm": 0.0
+    },
+    {
+      "node": "mesh_l0_xm4175_zm1380_y2",
+      "errorCm": 0.0
+    },
+    {
+      "node": "mesh_l0_xm5617_z305_y1",
+      "errorCm": 0.0
+    },
+    {
+      "node": "mesh_l0_xm5605_z485_y2",
+      "errorCm": 0.0
+    },
+    {
+      "node": "mesh_l0_xm5755_z485_y2",
+      "errorCm": 0.0
+    },
+    {
+      "node": "mesh_l0_xm2010_zm320_y8",
+      "errorCm": 0.0
+    },
+    {
+      "node": "mesh_site-terrain-remainder_l0_xm500_z6000_y155",
+      "errorCm": 0.0
+    },
+    {
+      "node": "mesh_site-terrain-southeast_l0_x16900_z25900_ym52",
+      "errorCm": 0.0
+    },
+    {
+      "node": "mesh_site-asphalt_l0_xm11329_zm5273_y160",
+      "errorCm": 0.0
+    },
+    {
+      "node": "mesh_site-paving_l0_xm11245_zm5363_y158",
+      "errorCm": 0.0
+    },
+    {
+      "node": "mesh_bridges-asphalt_l0_x2349_z12379_ym288",
+      "errorCm": 0.0
+    },
+    {
+      "node": "mesh_park-paths-asphalt_l0_x2977_z16700_ym133",
+      "errorCm": 0.001
+    },
+    {
+      "node": "mesh_park-paths_l0_xm7385_z16190_ym119",
+      "errorCm": 0.0
+    },
+    {
+      "node": "mesh_park-timber-bridge_l0_xm12758_z20559_ym254",
+      "errorCm": 0.001
+    },
+    {
+      "node": "mesh_bus-stop-platform_l0_x4336_z19501_y17",
+      "errorCm": 0.001
+    },
+    {
+      "node": "mesh_street-asphalt-patches_l0_xm1490_zm1628_y2",
+      "errorCm": 0.0
+    },
+    {
+      "node": "mesh_street-cobbled-corner_l0_x1941_zm1571_y1",
+      "errorCm": 0.0
+    }
+  ],
+  "checkpoints": [
+    {
+      "label": "spawn",
+      "capsuleCm": [
+        287.5,
+        -1200.0,
+        95.85
+      ],
+      "feetCm": 1.2,
+      "webSurfaceCm": 1.2,
+      "errorCm": 0.0
+    },
+    {
+      "label": "street east",
+      "capsuleCm": [
+        989.46,
+        -608.88,
+        95.85
+      ],
+      "feetCm": 1.2,
+      "webSurfaceCm": 1.2,
+      "errorCm": 0.0
+    },
+    {
+      "label": "east leg",
+      "capsuleCm": [
+        1593.02,
+        388.47,
+        54.52
+      ],
+      "feetCm": -40.13,
+      "webSurfaceCm": -43.33,
+      "errorCm": 3.2
+    },
+    {
+      "label": "ramp foot",
+      "capsuleCm": [
+        1256.6,
+        890.16,
+        33.77
+      ],
+      "feetCm": -60.88,
+      "webSurfaceCm": -64.04,
+      "errorCm": 3.16
+    },
+    {
+      "label": "ramp",
+      "capsuleCm": [
+        1250.33,
+        1146.42,
+        7.3
+      ],
+      "feetCm": -87.35,
+      "webSurfaceCm": -90.31,
+      "errorCm": 2.96
+    },
+    {
+      "label": "ramp top",
+      "capsuleCm": [
+        1250.0,
+        2386.48,
+        90.92
+      ],
+      "feetCm": -3.73,
+      "webSurfaceCm": -4.46,
+      "errorCm": 0.73
+    },
+    {
+      "label": "landing",
+      "capsuleCm": [
+        1250.0,
+        2586.82,
+        93.89
+      ],
+      "feetCm": -0.76,
+      "webSurfaceCm": -1.0,
+      "errorCm": 0.24
+    },
+    {
+      "label": "courtyard edge",
+      "capsuleCm": [
+        812.51,
+        2599.63,
+        93.89
+      ],
+      "feetCm": -0.76,
+      "webSurfaceCm": -1.0,
+      "errorCm": 0.24
+    },
+    {
+      "label": "courtyard east",
+      "capsuleCm": [
+        9.75,
+        2007.2,
+        93.89
+      ],
+      "feetCm": -0.76,
+      "webSurfaceCm": -1.0,
+      "errorCm": 0.24
+    },
+    {
+      "label": "courtyard",
+      "capsuleCm": [
+        -1986.81,
+        2198.73,
+        93.89
+      ],
+      "feetCm": -0.76,
+      "webSurfaceCm": -1.0,
+      "errorCm": 0.24
+    },
+    {
+      "label": "back to courtyard edge",
+      "capsuleCm": [
+        787.74,
+        2598.23,
+        93.89
+      ],
+      "feetCm": -0.76,
+      "webSurfaceCm": -1.0,
+      "errorCm": 0.24
+    },
+    {
+      "label": "back to landing",
+      "capsuleCm": [
+        1236.08,
+        2599.95,
+        93.89
+      ],
+      "feetCm": -0.76,
+      "webSurfaceCm": -1.0,
+      "errorCm": 0.24
+    },
+    {
+      "label": "down the ramp",
+      "capsuleCm": [
+        1249.87,
+        1212.74,
+        9.51
+      ],
+      "feetCm": -85.14,
+      "webSurfaceCm": -87.54,
+      "errorCm": 2.4
+    },
+    {
+      "label": "east leg again",
+      "capsuleCm": [
+        1594.03,
+        610.45,
+        43.86
+      ],
+      "feetCm": -50.79,
+      "webSurfaceCm": -52.05,
+      "errorCm": 1.26
+    },
+    {
+      "label": "Sankt Lars väg",
+      "capsuleCm": [
+        2196.54,
+        2986.35,
+        -43.28
+      ],
+      "feetCm": -137.93,
+      "webSurfaceCm": -138.91,
+      "errorCm": 0.98
+    },
+    {
+      "label": "park level",
+      "capsuleCm": [
+        2000.83,
+        5987.34,
+        -204.36
+      ],
+      "feetCm": -299.01,
+      "webSurfaceCm": -299.2,
+      "errorCm": 0.19
+    },
+    {
+      "label": "before the bridge",
+      "capsuleCm": [
+        2000.0,
+        8986.21,
+        -204.28
+      ],
+      "feetCm": -298.93,
+      "webSurfaceCm": -299.11,
+      "errorCm": 0.18
+    },
+    {
+      "label": "across the road",
+      "capsuleCm": [
+        3488.17,
+        9297.52,
+        -205.82
+      ],
+      "feetCm": -300.47,
+      "webSurfaceCm": -300.46,
+      "errorCm": 0.01
+    },
+    {
+      "label": "shore path top",
+      "capsuleCm": [
+        4786.1,
+        9497.85,
+        -204.57
+      ],
+      "feetCm": -299.22,
+      "webSurfaceCm": -299.12,
+      "errorCm": 0.1
+    },
+    {
+      "label": "shore path",
+      "capsuleCm": [
+        4407.4,
+        10088.46,
+        -277.52
+      ],
+      "feetCm": -372.17,
+      "webSurfaceCm": -386.06,
+      "errorCm": 13.89
+    },
+    {
+      "label": "shore path lower",
+      "capsuleCm": [
+        4010.98,
+        10391.61,
+        -387.95
+      ],
+      "feetCm": -482.6,
+      "webSurfaceCm": -493.19,
+      "errorCm": 10.59
+    },
+    {
+      "label": "river valley",
+      "capsuleCm": [
+        3607.46,
+        10988.96,
+        -454.88
+      ],
+      "feetCm": -549.53,
+      "webSurfaceCm": -549.73,
+      "errorCm": 0.2
+    },
+    {
+      "label": "by the water",
+      "capsuleCm": [
+        3795.84,
+        11586.8,
+        -455.15
+      ],
+      "feetCm": -549.8,
+      "webSurfaceCm": -550.23,
+      "errorCm": 0.43
+    }
+  ]
+}
