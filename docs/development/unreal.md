@@ -1113,6 +1113,10 @@ sky's brightness and the locked exposure.
 The L1007 stair and its entrance-floor passage use the web lamp wash's 192 angular visibility samples and floor split
 on the existing point lights (#2369). The lights that reach these two regions have generated light functions under
 `/Game/Lunden/Generated/Lighting/StairLightFunctions`. The rest of each light's volume keeps full transmission.
+`build_lighting.py` builds every mask before it spawns the lamps and assigns it as the lamp's last step (#2381):
+saving a material while lamps were alive killed their component handles, and each Blueprint property set on a lamp
+remakes its light. `BP_LundenLamp` sets the disabled brightness (1, full light where light functions are off) on its
+template, because an instance value did not survive the level's reload.
 Rerun `build_lighting.py` with the new measurements before taking the four paired captures.
 [Stair verification and capture gate](../verification/2369/README.md).
 

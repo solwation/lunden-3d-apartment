@@ -869,6 +869,9 @@ def build_lamp(spec, mpc):
     light.set_editor_property("intensity_units", u.LightUnits.CANDELAS)
     light.set_editor_property("attenuation_radius", 100.0 * LAMP_RANGE)
     light.set_editor_property("cast_shadows", False)  # one shadow-casting light (the sun/moon), as the web
+    # #2381: full light where light functions are switched off (stair masks). On the template: an instance override did
+    # not survive the level's save and reload, and set_light_function_disabled_brightness does nothing in the editor
+    light.set_editor_property("disabled_brightness", 1.0)
     sky = spec["sky"]["light"]
     variables(bp, {"IsOn": ("bool", False), "Auto": ("bool", False), "Candela": ("real", 0.0), "K": ("real", 0.0),
                    "Dusk": ("real", -1.0), "DuskOn": ("real", sky["duskOn"]), "DuskOff": ("real", sky["duskOff"]),
@@ -1278,7 +1281,23 @@ wet = clamp(Wet + dt * select(Rain > 0.05, WetSoak * Rain, 0 - WetDry), 0, 1)
 
 # -------------------------------------------------------------------------------------------------- level ------
 
+def assign_light_function(lamp, row, mask):
+    """#2381: set the stair mask on the lamp's PointLight after every Blueprint property of the lamp is set (each
+    set_editor_property on the actor reruns its construction script and remakes the component), through the property
+    itself, and read it back by path."""
+    light = lamp.get_component_by_class(u.PointLightComponent)
+    light.set_editor_property("light_function_material", mask)
+    got = light.get_editor_property("light_function_material")
+    if not got or got.get_path_name() != mask.get_path_name():
+        raise RuntimeError(f"Stair light function was not assigned to {row['id']} (have {got.get_path_name() if got else None})")
+    if abs(light.get_editor_property("disabled_brightness") - 1.0) > 1e-6:
+        raise RuntimeError(f"{row['id']}: the lamp's disabled brightness is not 1 (rebuild BP_LundenLamp)")
+
+
 def build_level(spec, sky_bp, lamp_bp):
+    # #2381: build (and save) every stair mask before the map and its lamps exist; saving a material while the spawned
+    # lamps were alive left their component handles dead ("ObjectInstance is null")
+    masks = {row["id"]: stair_lamp.build(row, spec["stairBounds"]) for row in spec["lamps"] if row["stairVisibility"]}
     levels = u.EditorLoadingAndSavingUtils
     world = levels.new_blank_map(False)
     actors = u.get_editor_subsystem(u.EditorActorSubsystem)
@@ -1307,12 +1326,6 @@ def build_level(spec, sky_bp, lamp_bp):
         light = lamp.get_component_by_class(u.PointLightComponent)
         light.set_intensity(row["candela"])
         light.set_editor_property("attenuation_radius", row["radius"])
-        if row["stairVisibility"]:
-            mask = stair_lamp.build(row, spec["stairBounds"])
-            light.set_light_function_material(mask)
-            light.set_light_function_disabled_brightness(1.0)
-            if light.get_editor_property("light_function_material") != mask:
-                raise RuntimeError("Stair light function was not assigned to " + row["id"])
         r, g, b = bytes.fromhex(row["colour"].lstrip("#"))
         colour = u.LinearColor()
         colour.set_from_srgb(u.Color(r=r, g=g, b=b, a=255))
@@ -1321,6 +1334,8 @@ def build_level(spec, sky_bp, lamp_bp):
             lamp.set_editor_property("BulbColour", u.Vector(colour.r, colour.g, colour.b))
             lamp.set_editor_property("BulbIdle", row["patioBulbs"]["idle"])
             lamp.set_editor_property("BulbBoost", row["patioBulbs"]["boost"])
+        if row["id"] in masks:
+            assign_light_function(lamp, row, masks[row["id"]])
     if not levels.save_map(world, LEVEL):
         raise RuntimeError("Could not save " + LEVEL)
     u.log(f"LUNDEN_LIGHTING_LEVEL {LEVEL}: 1 sky, {len(spec['lamps'])} lamps")
