@@ -4,8 +4,8 @@
         -AllowCommandletRendering -RenderOffScreen -unattended -nosplash -nosound
 
 scene.json: `node tools/unreal-engine/pilot-scene.mjs measurements.json scene.json` for the cameras (the #2279 pair: the
-shared `start` view and a `courtyard` view, see docs/verification/2279/). Loads L_Lunden, streams the #2279 zones into
-it in memory (until world-levels.json lists them), adds capture_l1007.py's temporary
+shared `start` view and a `courtyard` view, see docs/verification/2279/). Loads L_Lunden (streaming in memory only a
+#2279 zone that world-levels.json does not list), adds capture_l1007.py's temporary
 light rig and renders with screenshot_level.render_view. Nothing is saved. Logs LUNDEN_EXTERIOR_CAPTURE_OK.
 """
 import json
@@ -29,9 +29,12 @@ def run(scene_path, out_dir, ids=None):
     if not u.EditorLoadingAndSavingUtils.load_map(MAP):
         raise RuntimeError(f"Cannot load {MAP}: run compose_world.py first")
     world = u.get_editor_subsystem(u.UnrealEditorSubsystem).get_editor_world()
+    listed = {e["package"] for e in json.loads((Path(__file__).resolve().parents[1] / "world-levels.json").read_text(encoding="utf-8"))["levels"]}
     added = []
     for zone in ZONES:
         package = f"/Game/Lunden/Generated/{zone}/Level_{zone}"
+        if package in listed:  # composed into L_Lunden already
+            continue
         if not u.EditorLevelUtils.add_level_to_world(world, package, u.LevelStreamingAlwaysLoaded):
             raise RuntimeError(f"Cannot stream {package}: run import_world.py --zones {zone}")
         added.append(package)

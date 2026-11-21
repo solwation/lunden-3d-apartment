@@ -1,0 +1,24 @@
+{
+  "engine": "5.8.4-58902052+++UE5+Release-5.8",
+  "map": "/Game/Lunden/Maps/L_Lunden",
+  "streamedInMemory": [],
+  "naniteOffInMemory": 1345,
+  "hiddenCollisionActors": 298,
+  "cameras": [
+    {
+      "xyz": [
+        287.5,
+        -1200.0,
+        162.0
+      ],
+      "yaw": 89.99999999999999,
+      "pitch": 8.000000000000002,
+      "roll": -0.0,
+      "horizontalFov": 104.50486755371094,
+      "width": 1440,
+      "height": 810,
+      "id": "start",
+      "lighting": "day"
+    }
+  ]
+}

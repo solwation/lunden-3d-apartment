@@ -1,0 +1,143 @@
+{
+  "engine": "5.8.4-58902052+++UE5+Release-5.8",
+  "map": "/Game/Lunden/Maps/L_Lunden",
+  "pawn": "BP_LundenPlayer_C",
+  "subLevels": [
+    "/Game/Lunden/Generated/l1007/Level_l1007",
+    "/Game/Lunden/Generated/L1007World/Level_l1007_collision",
+    "/Game/Lunden/Generated/l1007-entre/Level_l1007-entre",
+    "/Game/Lunden/Generated/hus-l/Level_hus-l",
+    "/Game/Lunden/Generated/kvarteret/Level_kvarteret",
+    "/Game/Lunden/Generated/ExteriorWorld/Level_exterior_collision"
+  ],
+  "checkpoints": [
+    {
+      "label": "START",
+      "capsuleCm": [
+        287.5,
+        -1200.0,
+        94.65
+      ]
+    },
+    {
+      "label": "street west of L1007",
+      "capsuleCm": [
+        1.13,
+        -303.55,
+        94.65
+      ]
+    },
+    {
+      "label": "street by the portik",
+      "capsuleCm": [
+        -1446.6,
+        -300.01,
+        94.65
+      ]
+    },
+    {
+      "label": "in the portik",
+      "capsuleCm": [
+        -1449.99,
+        893.08,
+        94.65
+      ]
+    },
+    {
+      "label": "through the stairwell door",
+      "capsuleCm": [
+        -1636.33,
+        896.92,
+        94.95
+      ]
+    },
+    {
+      "label": "stairwell landing, v\u00e5ning 1",
+      "capsuleCm": [
+        -1726.66,
+        861.32,
+        94.65
+      ]
+    },
+    {
+      "label": "passage beside the flights",
+      "capsuleCm": [
+        -1729.95,
+        603.76,
+        94.65
+      ]
+    },
+    {
+      "label": "street-end floor, v\u00e5ning 1",
+      "capsuleCm": [
+        -1730.0,
+        283.92,
+        94.65
+      ]
+    },
+    {
+      "label": "top of the flight down",
+      "capsuleCm": [
+        -1841.66,
+        280.11,
+        94.65
+      ]
+    },
+    {
+      "label": "flight down 1",
+      "capsuleCm": [
+        -1845.0,
+        420.01,
+        59.36
+      ]
+    },
+    {
+      "label": "flight down 2",
+      "capsuleCm": [
+        -1845.0,
+        541.17,
+        -28.88
+      ]
+    },
+    {
+      "label": "flight down 3",
+      "capsuleCm": [
+        -1845.0,
+        660.99,
+        -117.11
+      ]
+    },
+    {
+      "label": "foot of the flight, v\u00e5ning \u22121",
+      "capsuleCm": [
+        -1845.0,
+        796.43,
+        -205.05
+      ]
+    },
+    {
+      "label": "stairwell, v\u00e5ning \u22121",
+      "capsuleCm": [
+        -1732.83,
+        838.93,
+        -205.05
+      ]
+    },
+    {
+      "label": "basement opening",
+      "capsuleCm": [
+        -1603.28,
+        839.97,
+        -205.05
+      ]
+    },
+    {
+      "label": "garage under Hus L",
+      "capsuleCm": [
+        -1453.66,
+        840.0,
+        -205.05
+      ]
+    }
+  ]
+}

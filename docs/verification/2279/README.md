@@ -61,3 +61,36 @@ ahead and Hus L's courtyard façade with the neighbours' patios and roof terrace
 
 With Nanite on, the same START capture draws the simplified fallback:
 [unreal-start-nanite-fallback.jpg](unreal-start-nanite-fallback.jpg).
+
+## World map, collision and route (2026-11-21, `L_Lunden` recomposed)
+
+`world-levels.json` gained the three zone levels and `Generated/ExteriorWorld/Level_exterior_collision`. With the LFS
+lock on `L_Lunden.umap`: `compose_world.py` saved the six sub-levels (sha256 `71a0c97420c45c3c`), a second run logged
+`unchanged, nothing saved` with the same hash, and `--check` passed.
+
+`build_exterior.py`: `373 collision actors from 283 mesh copies (stairwells and garage), door leaf left open (6 parts)`,
+2 provisional ground boxes (Hus L's stairwell 44, Hus A/B/C's stairwells and the garage 329). A second run skipped
+(`unchanged since import fingerprints …`).
+
+[`exterior-route-result.json`](exterior-route-result.json): `test_exterior_route.py` in Play In Editor (Automation:
+1 passed, 0 warnings). Capsule centre (cm), 94.65 cm above the floor walked on:
+
+| Checkpoint | Capsule centre |
+|---|---|
+| START | (287.5, −1200, 94.65) |
+| street by the portik | (−1446.8, −300.0, 94.65) |
+| in the portik | (−1450.0, 893.2, 94.65) |
+| through the stairwell door | (−1636.4, 896.9, 94.95) |
+| landing, våning 1 | (−1726.7, 861.3, 94.65) |
+| street-end floor, våning 1 | (−1730.0, 283.0, 94.65) |
+| down the flight | z 59.4 → −28.9 → −117.1 |
+| foot of the flight, våning −1 | (−1845.0, 796.9, −205.05) |
+| through the basement opening | (−1603.6, 840.0, −205.05) |
+| garage under Hus L | (−1453.3, 840.0, −205.05) |
+
+The garage floor is at −299.7 cm (GARAGE.floor −3 m). Hus A/B/C's stairwells and the rest of the garage have the same
+collision but are not on the walked route: from the street, the garage is reached through Hus L's stairwell.
+
+START from the composed map (no level streamed in memory; Nanite off in memory as above, [`unreal-capture-composed.json`](unreal-capture-composed.json)):
+
+![Unreal: START on the composed L_Lunden](unreal-start-composed.jpg)

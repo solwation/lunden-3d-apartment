@@ -75,6 +75,8 @@ tools/unreal-engine/python/compose_world.py   composes /Game/Lunden/Maps/L_Lunde
 tools/unreal-engine/python/build_l1007.py     L1007's derived collision sub-level Generated/L1007World/ (from the l1007 import)
 tools/unreal-engine/tests/test_l1007.py       PIE test on L_Lunden: sub-levels, 1 cm measurements, START → stairs → back
 tools/unreal-engine/tests/capture_l1007.py    GPU views of L_Lunden from the shared camera list (temporary light, nothing saved)
+tools/unreal-engine/python/build_exterior.py  Hus L's stairwell and the garage as walkable collision, Generated/ExteriorWorld/ (#2279)
+tools/unreal-engine/tests/test_exterior_route.py  PIE route on L_Lunden: START → portik → stairwell → våning −1 → garage (#2279)
 tools/unreal-engine/tests/test_exterior.py    PIE test: the export's 32 measurement rays through Hus L, A/B/C and the garage, 1 cm (#2279)
 tools/unreal-engine/tests/capture_exterior.py GPU views of L_Lunden with the #2279 zones streamed in memory (nothing saved)
 unreal/Lunden/Content/Lunden/Maps/L_Lunden.umap  the persistent world map (LFS); written only by compose_world.py
@@ -404,6 +406,10 @@ open the map (see [Parallel work](#parallel-work-levels-and-blueprints)).
 |---|---|---|---|
 | `/Game/Lunden/Generated/l1007/Level_l1007` | #2278 (importer output) | `import_world.py --zones l1007` | both storeys as exported: walls, floors, ceilings, stair, doors, windows, fittings, furniture |
 | `/Game/Lunden/Generated/L1007World/Level_l1007_collision` | #2278 | `build_l1007.py` | walkable collision: 54 wall/floor boxes, 15 complex-as-simple stair treads, provisional street approach |
+| `/Game/Lunden/Generated/l1007-entre/Level_l1007-entre` | #2279 (importer output) | `import_world.py --zones l1007-entre` | street, pavement and terrain pieces in front of L1007 |
+| `/Game/Lunden/Generated/hus-l/Level_hus-l` | #2279 (importer output) | `import_world.py --zones hus-l` | Hus L: façades, loftgång, roofs, patios, portik, stairwell/lift core, L1004/L1201 |
+| `/Game/Lunden/Generated/kvarteret/Level_kvarteret` | #2279 (importer output) | `import_world.py --zones kvarteret` | Hus A/B/C with stairwells and entrance shells, the garage |
+| `/Game/Lunden/Generated/ExteriorWorld/Level_exterior_collision` | #2279 | `build_exterior.py` | walkable collision: Hus L's stairwell and the garage (complex-as-simple copies), provisional street ground to the portik |
 
 `world-levels.json` format (version 1): `map`, `gameMode` (class path; #2284's `BP_LundenGameMode` since 2026-11-21), `playerStart` (always `measurements.json#/spawn/start`) and `levels`, an ordered list of
 `{package, owner, builder, streaming, what}`. `streaming` is `always` (`LevelStreamingAlwaysLoaded`) for now; add a
@@ -423,6 +429,7 @@ stays empty until something hand-made is needed.
 git lfs lock unreal/Lunden/Content/Lunden/Maps/L_Lunden.umap
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/import_world.py
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/build_l1007.py
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/build_exterior.py
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/compose_world.py [--check]
 copy tools\unreal-engine\tests\test_l1007.py unreal\Lunden\Content\Python\   (untracked copy, delete afterwards)
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-tests.ps1 -Filter Editor.Python.Lunden.test_l1007
@@ -1379,12 +1386,21 @@ Second, Interchange leaves complex collision single-sided, so the A/B entrance g
 effect) was not hit from the side its faces turn away from. The same fallback is what a commandlet capture draws: with
 Nanite on, Hus L's round stair drum and brick façade became loose panels
 ([picture](../verification/2279/unreal-start-nanite-fallback.jpg)); with Nanite off they match the web. With Nanite off and double-sided collision, all 32 rays matched: see the
-[#2279 verification](../verification/2279/README.md). Player collision for these zones is not built yet. It needs a
-derived collision level like `build_l1007.py`, and the same two facts apply to it.
+[#2279 verification](../verification/2279/README.md).
 
-**Not in the world map yet.** The zone levels are imported (`import_world.py`, default zones) but
-`world-levels.json` does not list them until `L_Lunden` is recomposed with its LFS lock. `capture_exterior.py` streams
-them into `L_Lunden` in memory for the verification pictures.
+**In the world map.** `world-levels.json` lists the three zone levels and `Level_exterior_collision`
+([World map](#world-map-l_lunden-2278)). `build_exterior.py` builds the collision where the player can now reach:
+a complex-as-simple copy of every imported mesh of Hus L's stairwell (`source` src/core.js, 50 actors less the 6 parts
+of the portik's glazed door leaf, which stays open until #2285), of Hus A/B/C's stairwells, which open onto the garage on
+våning −1 (src/corehouse.js; their door leaves stay closed as exported), and of the garage (src/garage.js), each with
+double-sided triangles and Nanite off on the copy (so neither #2298 nor #2299 applies to it), hidden in game on the
+imported actor's transform. Two provisional street-level boxes (`kind:provisional-ground`,
+`replacedBy:#2280`) continue `build_l1007.py`'s approach west to the portik and through it; #2280 removes them with its
+terrain. Hus L's façades and Hus A/B/C's façades have no collision yet: nothing walkable leads to them before #2280's ground.
+The skip rule is `build_l1007.py`'s (both import fingerprints, the script, the output packages).
+`tests/test_exterior_route.py` (PIE on `L_Lunden`) walks START → street → portik → through the stairwell door →
+landing → passage → down the flight to våning −1 → through the basement opening into the garage under Hus L, each
+checkpoint on its floor: see the [#2279 verification](../verification/2279/README.md).
 
 ### Generated assets: rebuilt, not versioned (decided)
 

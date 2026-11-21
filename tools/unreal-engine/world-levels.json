@@ -19,6 +19,34 @@
       "builder": "build_l1007.py",
       "streaming": "always",
       "what": "L1007 walkable collision (wall/floor boxes, stair treads) and the provisional street approach from START"
+    },
+    {
+      "package": "/Game/Lunden/Generated/l1007-entre/Level_l1007-entre",
+      "owner": "#2279",
+      "builder": "import_world.py --zones l1007-entre",
+      "streaming": "always",
+      "what": "the street, pavement and terrain pieces in front of L1007 up to START (#2279 zone split)"
+    },
+    {
+      "package": "/Game/Lunden/Generated/hus-l/Level_hus-l",
+      "owner": "#2279",
+      "builder": "import_world.py --zones hus-l",
+      "streaming": "always",
+      "what": "Hus L as imported: facades, loftgång, roofs and terraces, the neighbours' patios, the portik, the stairwell and lift core, the visitable flats L1004/L1201"
+    },
+    {
+      "package": "/Game/Lunden/Generated/kvarteret/Level_kvarteret",
+      "owner": "#2279",
+      "builder": "import_world.py --zones kvarteret",
+      "streaming": "always",
+      "what": "Hus A/B/C (facades, loggias, roofs, stairwells, lifts, entrance shells) and the garage under the courtyard, as imported"
+    },
+    {
+      "package": "/Game/Lunden/Generated/ExteriorWorld/Level_exterior_collision",
+      "owner": "#2279",
+      "builder": "build_exterior.py",
+      "streaming": "always",
+      "what": "walkable collision of Hus L's stairwell and the garage (complex-as-simple copies) and the provisional street ground from the L1007 approach to the portik"
     }
   ]
 }
