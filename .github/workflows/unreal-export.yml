@@ -1,0 +1,138 @@
+name: Unreal export
+
+# #2305: when main changes what the Unreal export is built from, export the web scene headless, check it, compare it
+# zone by zone with the previous export, keep it as an artifact for the Windows import (tools/unreal-engine/sync-import.ps1)
+# and open or update one tracking issue on a failure or deviation, so nothing goes quiet.
+# The Pages workflow is separate and unchanged. docs/development/unreal.md, "Automatic export and import (#2305)".
+on:
+  push:
+    branches: [main]
+    # the export's sources (tools/unreal-engine/sources.mjs: the import closure in src/, data/, models/, textures/ and the
+    # exporter), the validator and this workflow; a push whose sources hash to an existing export is skipped quickly
+    paths:
+      - 'src/**'
+      - 'data/**'
+      - 'models/**'
+      - 'textures/**'
+      - 'tools/unreal-engine/*.js'
+      - 'tools/unreal-engine/*.mjs'
+      - 'tools/unreal-engine/export.html'
+      - 'tools/unreal-engine/tests/export-ci.test.mjs'
+      - 'tools/unreal-engine/tests/check-import.test.mjs'
+      - 'shared/schema/**'
+      - '.github/workflows/unreal-export.yml'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Export even when an export of the same sources already exists'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  actions: read # find the previous export and an existing export of the same sources
+  issues: write # the tracking issue on failure or deviation
+
+concurrency:
+  group: unreal-export
+  cancel-in-progress: true # a newer push includes every older change
+
+env:
+  PLAYWRIGHT_VERSION: '1.58.2'
+  THREE_VERSION: '0.170.0' # tools/unreal-engine/export-world.mjs serves three from node_modules when it matches
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Tool tests
+        id: tests
+        run: node --test tools/unreal-engine/tests/export-ci.test.mjs tools/unreal-engine/tests/check-import.test.mjs
+      - name: Export key
+        id: key
+        run: node tools/unreal-engine/export-ci.mjs key
+      - name: Look for an export of the same sources
+        id: existing
+        run: |
+          id=$(gh api "repos/$GITHUB_REPOSITORY/actions/artifacts?name=${{ steps.key.outputs.artifact }}&per_page=20" \
+            --jq '[.artifacts[] | select(.expired | not)][0].workflow_run.id // empty')
+          if [ -n "$id" ] && [ "${{ inputs.force }}" != "true" ]; then
+            echo "found=true" >> "$GITHUB_OUTPUT"
+            echo "### Unreal export: sources unchanged" >> "$GITHUB_STEP_SUMMARY"
+            echo "Source hash \`${{ steps.key.outputs.source-hash }}\` was exported by run $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$id (artifact \`${{ steps.key.outputs.artifact }}\`); nothing to export." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "found=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Previous export manifest
+        if: steps.existing.outputs.found != 'true'
+        run: |
+          mkdir -p "$RUNNER_TEMP/prev"
+          id=$(gh api "repos/$GITHUB_REPOSITORY/actions/artifacts?name=unreal-export-manifest&per_page=20" \
+            --jq '[.artifacts[] | select(.expired | not)][0].id // empty')
+          if [ -n "$id" ]; then
+            gh api "repos/$GITHUB_REPOSITORY/actions/artifacts/$id/zip" > "$RUNNER_TEMP/prev.zip"
+            unzip -q -o "$RUNNER_TEMP/prev.zip" -d "$RUNNER_TEMP/prev"
+          else
+            echo "no earlier export manifest: this is the first export"
+          fi
+      - name: Cache the Playwright browser
+        if: steps.existing.outputs.found != 'true'
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-chromium-${{ env.PLAYWRIGHT_VERSION }}-${{ runner.os }}
+      - name: Install Playwright and three
+        if: steps.existing.outputs.found != 'true'
+        run: |
+          npm install --no-save --no-package-lock --no-audit --no-fund "playwright@$PLAYWRIGHT_VERSION" "three@$THREE_VERSION"
+          npx playwright install chromium
+      - name: Export
+        id: export
+        if: steps.existing.outputs.found != 'true'
+        run: node tools/unreal-engine/export-world.mjs --out "$RUNNER_TEMP/export"
+      - name: Check the export
+        id: check
+        if: steps.existing.outputs.found != 'true'
+        run: node tools/unreal-engine/check-export.mjs --dir "$RUNNER_TEMP/export"
+      - name: Compare zone by zone with the previous export
+        id: compare
+        if: steps.existing.outputs.found != 'true'
+        run: node tools/unreal-engine/export-ci.mjs compare --prev "$RUNNER_TEMP/prev" --cur "$RUNNER_TEMP/export" --out "$RUNNER_TEMP/export-diff.json"
+      - name: Upload the export
+        id: upload
+        if: steps.existing.outputs.found != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.key.outputs.artifact }}
+          path: ${{ runner.temp }}/export/
+          retention-days: 30
+          if-no-files-found: error
+      - name: Upload the manifest and comparison (the next run's baseline)
+        if: steps.existing.outputs.found != 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: unreal-export-manifest
+          path: |
+            ${{ runner.temp }}/export/export-manifest.json
+            ${{ runner.temp }}/export-diff.json
+          retention-days: 90
+          if-no-files-found: error
+      - name: Report a failure or deviation in the tracking issue
+        if: ${{ !cancelled() }}
+        env:
+          FAILED: ${{ steps.tests.outcome == 'failure' && 'tool tests' || steps.key.outcome == 'failure' && 'export key' || steps.export.outcome == 'failure' && 'export' || steps.check.outcome == 'failure' && 'check-export' || steps.compare.outcome == 'failure' && 'compare' || steps.upload.outcome == 'failure' && 'upload' || '' }}
+        run: |
+          outcome=success
+          [ -n "$FAILED" ] && outcome=failure
+          [ "${{ job.status }}" = "failure" ] && outcome=failure
+          node tools/unreal-engine/export-ci.mjs report --outcome "$outcome" --failed "$FAILED" --diff "$RUNNER_TEMP/export-diff.json" \
+            --run-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" --commit "$GITHUB_SHA" --repo "$GITHUB_REPOSITORY"

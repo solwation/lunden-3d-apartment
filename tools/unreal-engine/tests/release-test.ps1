@@ -9,10 +9,13 @@ $engine = Join-Path $temp 'fixture engine'
 $batDir = Join-Path $engine 'Engine\Build\BatchFiles'
 $ps = (Get-Process -Id $PID).Path
 $previousMode = $env:LUNDEN_FIXTURE_MODE
-function Run-Release([string]$output = $out, [string]$failure) {
+function Run-Release([string]$output = $out, [string]$failure, [switch]$Gate) {
+    # the fixture has no Unreal import: every case but the gate's own skips it (#2305)
+    $gateArgs = @()
+    if (-not $Gate) { $gateArgs = @('-SkipImportGate') } # (an if-expression would unroll the array: splatting a string passes its characters)
     try {
         $ErrorActionPreference = 'Continue'
-        $result = & $ps -NoProfile -NonInteractive -File (Join-Path $fixture 'release.ps1') -Version 0.1.0 -Content 12 -EngineDir $engine -OutputRoot $output 2>&1
+        $result = & $ps -NoProfile -NonInteractive -File (Join-Path $fixture 'release.ps1') -Version 0.1.0 -Content 12 -EngineDir $engine -OutputRoot $output @gateArgs 2>&1
         $code = $LASTEXITCODE
     } finally { $ErrorActionPreference = 'Stop' }
     $text = $result | Out-String
@@ -30,6 +33,9 @@ function Git-Fixture {
 try {
     New-Item -ItemType Directory -Path $fixture, $batDir, (Join-Path $repo 'unreal\Lunden') | Out-Null
     Copy-Item (Join-Path $unrealEngineTools 'release.ps1'), (Join-Path $unrealEngineTools 'common.ps1') -Destination $fixture
+    # the import gate (#2305) and the export check it runs
+    Copy-Item (Join-Path $unrealEngineTools 'check-import.mjs'), (Join-Path $unrealEngineTools 'check-export.mjs'), (Join-Path $unrealEngineTools 'sources.mjs'),
+        (Join-Path $unrealEngineTools 'json-schema.mjs') -Destination $fixture
     $source = Join-Path $unrealEngineTools '..\..\unreal\Lunden'
     Copy-Item (Join-Path $source 'Lunden.uproject'), (Join-Path $source 'ENGINE_VERSION') -Destination (Join-Path $repo 'unreal\Lunden')
     # Only the disposable checkout substitutes discovery of installed VS/SDK. Real engine-lock checks stay active.
@@ -100,12 +106,16 @@ if ($env:LUNDEN_FIXTURE_MODE -eq 'changed-runtime') { Add-Content $game 'changed
         Require ($info.runtime.path -eq 'Engine/Binaries/Win64/UnrealGame-Win64-Shipping.exe') 'Wrong runtime path'
         $hash = (Get-FileHash (Join-Path $file.DirectoryName $info.runtime.path)).Hash
         Require ($info.runtime.sha256 -eq $hash -and $info.runtime.publisher -eq 'Epic Games Inc.') 'Missing runtime verification metadata'
+        Require ($info.import.gate -eq 'skipped') 'build-info.json does not record the skipped import gate'
     }
     $logs = @(Get-ChildItem -LiteralPath $out -Recurse -Filter BuildCookRun.log)
     Require ($logs.Count -eq 2 -and @(Select-String -Path $logs.FullName -Pattern 'FAKE BuildCookRun fixture').Count -eq 2) 'Missing UAT logs'
     # UnrealPak derives the pak index's path-hash seed from the staged .pak path: every build must stage at one path.
     $stages = @(Select-String -Path $logs.FullName -Pattern 'FIXTURE STAGE=(.*)$' | ForEach-Object { $_.Matches[0].Groups[1].Value.Trim() })
     Require ($stages.Count -eq 2 -and $stages[0] -eq $stages[1] -and $stages[0] -eq (Join-Path $out 'stage')) "Builds staged at different paths: $stages"
+    # #2305: without an import as new as the export (here: no export at all) nothing is built
+    Run-Release $out 'older than the web export' -Gate
+    Require (@(Get-ChildItem -LiteralPath $out | Where-Object Name -ne 'stage').Count -eq 2) 'A stale import started a build'
     Run-Release (Join-Path $repo 'inside') 'outside the Git checkout'
     $dirty = Join-Path $repo 'dirty.txt'
     Set-Content $dirty 'untracked'
@@ -127,7 +137,7 @@ if ($env:LUNDEN_FIXTURE_MODE -eq 'changed-runtime') { Add-Content $game 'changed
     $env:LUNDEN_FIXTURE_MODE = 'dirty-during'
     Run-Release $out 'clean Git worktree'
     Require (@(Get-ChildItem -LiteralPath $out -Recurse -Filter build-info.json).Count -eq 2) 'Failed build got a completion marker'
-    Write-Host 'PASS: two clean fixture builds, provenance and logs, one fixed staging path, external-only output, dirty inputs, UAT failures, changed checkout.'
+    Write-Host 'PASS: two clean fixture builds, provenance and logs, one fixed staging path, import gate, external-only output, dirty inputs, UAT failures, changed checkout.'
 }
 finally {
     $env:LUNDEN_FIXTURE_MODE = $previousMode

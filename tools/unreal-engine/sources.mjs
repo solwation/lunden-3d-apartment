@@ -43,6 +43,15 @@ export function importClosure(entries = ENTRY_MODULES, root = ROOT) {
 export const sha256 = (buf) => crypto.createHash('sha256').update(buf).digest('hex');
 export const sha256File = (abs) => sha256(fs.readFileSync(abs));
 
+/** Text sources are hashed with CRLF read as LF (#2305): a Windows checkout (core.autocrlf=true) then gives the same
+ *  source hash as Linux/CI, so an export made in WSL or by the Unreal export workflow counts as current in the Windows
+ *  Unreal clone. Binary sources (models, pictures) are hashed as they are. */
+const TEXT_SOURCE = /\.(m?js|cjs|json|html|css|txt)$/i;
+export const sourceSha256File = (abs) => {
+  const buf = fs.readFileSync(abs);
+  return TEXT_SOURCE.test(abs) ? sha256(Buffer.from(buf.toString('latin1').replace(/\r\n/g, '\n'), 'latin1')) : sha256(buf);
+};
+
 /** [{ path, sha256 }] of every source of the export, sorted by path; and the hash over that list. */
 export function sourceList(root = ROOT) {
   const models = fs.existsSync(path.join(root, 'models'))
@@ -53,6 +62,6 @@ export function sourceList(root = ROOT) {
     ? fs.readdirSync(path.join(root, 'textures')).filter((f) => /\.(jpe?g|png|webp)$/i.test(f)).map((f) => `textures/${f}`) : [];
   const paths = [...new Set([...importClosure(ENTRY_MODULES, root), ...EXTRA_SOURCES, ...models, ...pictures])]
     .filter((p) => fs.existsSync(path.join(root, p))).sort();
-  const files = paths.map((p) => ({ path: p, sha256: sha256File(path.join(root, p)) }));
+  const files = paths.map((p) => ({ path: p, sha256: sourceSha256File(path.join(root, p)) }));
   return { files, sourceHash: sha256(files.map((f) => `${f.sha256}  ${f.path}\n`).join('')) };
 }

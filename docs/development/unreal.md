@@ -61,6 +61,10 @@ tools/unreal-engine/export-player.js          the player data of the export (#23
                                    rest spots (src/rest.js), wake points (src/respawn.js); loaded after the GLBs are written
 tools/unreal-engine/sources.mjs               the export's source list (import closure, data, models) and hashes
 tools/unreal-engine/check-export.mjs          staleness + schema check of an export, no Unreal or browser needed
+tools/unreal-engine/check-import.mjs          release gate (#2305): the local import against the export (zone stamps, sync stamp)
+tools/unreal-engine/export-ci.mjs             export workflow helpers (#2305): export key, zone-by-zone comparison, tracking issue
+tools/unreal-engine/sync-import.ps1           Windows helper (#2305): export → import_world.py → derived levels → compose --check → checks
+.github/workflows/unreal-export.yml           exports, checks and compares on pushes that change the export's sources (#2305)
 tools/unreal-engine/json-schema.mjs            small dependency-free JSON Schema validator for shared/schema/ (and GLB JSON reader)
 tools/unreal-engine/notices.mjs               writes/checks unreal/Lunden/THIRD_PARTY_NOTICES.md from the web's attribution files
 tools/unreal-engine/python/import_world.py    Interchange scene import of the export into Content/Lunden/Generated/<zone>/
@@ -1135,7 +1139,9 @@ Use Windows Git to check out the intended commit with all Unreal LFS objects. Ve
 
 `-Version` is the app version and `-Content` is its accompanying content version
 (nonnegative integer). The default output root is `%LOCALAPPDATA%\Lunden\Builds`.
-The script checks for staged, modified and untracked files before calling
+The script checks for staged, modified and untracked files and runs the import gate
+([Automatic export and import](#automatic-export-and-import-2305); `-SyncImport` brings a stale import up to date
+first) before calling
 `RunUAT.bat BuildCookRun` for a Win64 Shipping cook, stage, IoStore package and
 archive. It uses the installed target with `-nocompileuat -nocompile -skipbuild`
 and omits the locally customized bootstrap with `-nobootstrapexe`. The MCP and
@@ -1792,7 +1798,88 @@ about 25 s and peaks near 2.8 GB of browser memory.
 file's SHA-256, and validates the manifest, `measurements.json` and every GLB node's extras against `shared/schema/`.
 Exit 0 current, 1 **STALE** (lists the changed sources: export and import again), 2 no export (0 with
 `--allow-missing`), 3 invalid (unknown `formatVersion`, schema error, edited or missing file). It is not wired into the
-Pages workflow (no export exists there); run it before an Unreal import or build.
+Pages workflow (no export exists there); the Unreal export workflow and the release gate run it
+([Automatic export and import](#automatic-export-and-import-2305)).
+
+### Automatic export and import (#2305)
+
+Web changes reach the Unreal import without anyone running the export and import by hand, in two halves.
+
+**Export in GitHub Actions** (`.github/workflows/unreal-export.yml`, Linux, no secrets). It runs on pushes to `main`
+that touch `src/`, `data/`, `models/`, `textures/`, the exporter and checker (`tools/unreal-engine/*.js|*.mjs`,
+`export.html`), `shared/schema/` or the workflow, and on demand (`workflow_dispatch`, `force` re-exports). Steps:
+
+1. the tool tests (`tools/unreal-engine/tests/export-ci.test.mjs`, `check-import.test.mjs`);
+2. the export key: `node tools/unreal-engine/export-ci.mjs key` = the source hash of `sources.mjs`. An unexpired artifact
+   `unreal-export-<first 16 hex>` means these exact sources were already exported: the run stops there (about 15 s).
+   Most pushes to `src/` change nothing the export reads and end here;
+3. otherwise Playwright 1.58.2 (browser cached) and three 0.170.0 are installed without a lockfile, then
+   `export-world.mjs`, `check-export.mjs` and `export-ci.mjs compare` against the previous run's
+   `unreal-export-manifest` artifact: a zone table (unchanged / changed / new / gone, nodes, triangles, SHA-256) and the
+   changed sources in the run summary;
+4. uploads the export as `unreal-export-<hash>` (30 days; about 185 MB uncompressed) and the manifest plus
+   `export-diff.json` as `unreal-export-manifest` (90 days, the next run's baseline);
+5. `export-ci.mjs report` keeps **one tracking issue** (marker `<!-- unreal-export-ci -->`, `bug`, `priority: medium`,
+   title `Bugg: Unreal-exporten i Actions misslyckas eller avviker`). A failed step or a deviation opens it, or comments
+   on it while it is open; the first green run afterwards notes that once. Closing it stays with whoever fixes the
+   cause. Deviations: a zone no longer exported, a zone's nodes or triangles at 0 or below half of the previous export
+   (`SHRINK_LIMIT`, a *guess*), or other bytes from the same source hash (a forced re-export that is not deterministic).
+   A zone that merely changed is the normal case and only appears in the summary. `--dry-run` prints the `gh`
+   commands instead of running them.
+
+The Pages workflow is unchanged; this workflow only reads the repository, uploads artifacts and writes that one issue.
+Typical cost: one 15 s job per matching push, a 4–6 minute job when the sources really changed.
+
+**Source hashes ignore line endings (#2305).** `sources.mjs` hashes text sources (`.js`, `.mjs`, `.json`, `.html`) with
+CRLF read as LF, so an export made on Linux, in WSL or by the workflow counts as current in the Windows clone, whose
+Git checks text out with CRLF (`core.autocrlf=true`). Binary sources (`models/*.glb`, pictures) are hashed as they are.
+
+**Import on the Windows PC** (`tools/unreal-engine/sync-import.ps1`, headless, no window):
+
+```text
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\unreal-engine\sync-import.ps1 [-ExportFrom <dir>] [-ImportOnly] [-Zones a,b] [-DryRun]
+```
+
+1. keeps `unreal/Lunden/Import/` when `check-export.mjs` says it is current; otherwise takes `-ExportFrom <dir>`, the
+   workflow's artifact for this source hash (needs an authenticated `gh`: `winget install GitHub.cli`, `gh auth login`),
+   or a local export (needs Playwright in the checkout: `npm install --no-save playwright@1.58.2 three@0.170.0` and
+   `npx playwright install chromium`), and checks it before it replaces `Import/`. With none of these it stops and
+   names all three;
+2. `import_world.py`: zones whose GLB is unchanged are skipped by their import stamps, so only changed zones cost
+   import time;
+3. the derived levels in build order, each skipping itself when its inputs are unchanged: `build_l1007.py`,
+   `build_exterior.py`, `build_site.py`, `build_lighting.py`, `build_vegetation.py`, `build_interaction.py`;
+4. `compose_world.py --check` (never saves the map; a moved START needs the map owner's locked run);
+5. `import_world.py --check` as the quick test (stamps, content fingerprints, ids, collision, fixture positions);
+6. writes `Generated/sync-stamp.json` (export manifest hash, steps, builder-script hash) and runs the release gate.
+
+Any failing step stops with exit 1 and its name; each Unreal step's log is under `unreal/Lunden/Saved/Logs`. A builder
+that has to save a versioned asset (for example `BP_LundenSky` when the lamps changed) needs its LFS lock and leaves
+the worktree changed; commit it before a release. `-ImportOnly`/`-Zones` run steps 1, 2 and 5 only and mark the sync
+stamp partial.
+
+**Release gate.** `release.ps1` runs `node tools/unreal-engine/check-import.mjs` before BuildCookRun and builds nothing
+unless it exits 0: (1) the export in `Import/` is current for the checkout (`check-export.mjs`); (2) every zone's
+`import-stamp.json` names that zone's GLB SHA-256, the checkout's `IMPORTER_VERSION`, material map and locked engine,
+and every package file it lists is byte-identical (no lost, edited or stray file); (3) `sync-stamp.json` records a
+complete `sync-import.ps1` run for this export manifest with the current `tools/unreal-engine/python/*.py`,
+`world-levels.json` and `material-map.json`, so a value that only reaches `measurements.json` (START, lamps) cannot ship
+stale either. Exit 1 lists the stale zones and the current ones that the next import skips; exit 2 means no current
+export. Both end with the fix: `sync-import.ps1`, or `release.ps1 … -SyncImport`, which runs it first and checks again.
+`build-info.json` records `import` (`gate`, `exportCommit`, `sourceHash`, `exportManifestSha256`). `-SkipImportGate`
+exists for the fixture test (`tests/release-test.ps1`) and is recorded as `import.gate = skipped`.
+
+**Optional schedule (not set up by the agents).** Creating a Windows scheduled task changes the PC outside the
+repository, so it is left to the user. To keep the import fresh in the background, a hidden task could run, for
+example daily or at log-on:
+
+```text
+schtasks /Create /TN "Lunden sync-import" /SC DAILY /ST 06:00 /TR "powershell.exe -NoProfile -NonInteractive -WindowStyle Hidden -ExecutionPolicy Bypass -File C:\Users\Olof\Documents\lunden-unreal-engine\tools\unreal-engine\sync-import.ps1"
+```
+
+Pull the clone first (or add `git -C … pull --ff-only` to the task); a failure only shows as the task's exit code and
+the step logs, so `release.ps1` remains the gate that cannot be missed. Remove it with
+`schtasks /Delete /TN "Lunden sync-import"`.
 
 ### Import into Unreal (verified 2026-11-20)
 

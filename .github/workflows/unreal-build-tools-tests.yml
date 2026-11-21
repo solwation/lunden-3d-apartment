@@ -6,6 +6,10 @@ on:
     paths:
       - 'tools/unreal-engine/release.ps1'
       - 'tools/unreal-engine/common.ps1'
+      - 'tools/unreal-engine/check-import.mjs'
+      - 'tools/unreal-engine/check-export.mjs'
+      - 'tools/unreal-engine/sources.mjs'
+      - 'tools/unreal-engine/json-schema.mjs'
       - 'tools/unreal-engine/tests/release-test.ps1'
       - 'tools/unreal-engine/run-tests.ps1'
       - 'tools/unreal-engine/tests/editor-test.ps1'
@@ -29,6 +33,10 @@ jobs:
           sparse-checkout: |
             /tools/unreal-engine/release.ps1
             /tools/unreal-engine/common.ps1
+            /tools/unreal-engine/check-import.mjs
+            /tools/unreal-engine/check-export.mjs
+            /tools/unreal-engine/sources.mjs
+            /tools/unreal-engine/json-schema.mjs
             /tools/unreal-engine/tests/release-test.ps1
             /tools/unreal-engine/run-tests.ps1
             /tools/unreal-engine/tests/editor-test.ps1
