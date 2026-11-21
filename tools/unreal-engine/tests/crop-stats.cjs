@@ -13,6 +13,7 @@ async function main() {
   const browser = await chromium.launch({executablePath: process.env.CHROME_PATH || undefined, args: ['--no-sandbox']});
   const page = await browser.newPage();
   const out = {};
+  try {
   for (const [shot, rects] of Object.entries(crops)) {
     out[shot] = {};
     for (const side of ['web', 'unreal']) {
@@ -40,7 +41,7 @@ async function main() {
         + ` unreal lum ${u.luminance.toFixed(4)} R/B ${u.warmth.toFixed(2)} sRGB ${u.srgb.join(',').padEnd(17)} ratio ${(u.luminance / w.luminance).toFixed(2)}`);
     }
   }
-  await browser.close();
+  } finally { await browser.close(); }
   fs.writeFileSync(path.join(dir, 'crop-stats.json'), JSON.stringify({crops, stats: out}, null, 1) + '\n');
 }
 main().catch((e) => { console.error(e); process.exitCode = 1; });

@@ -9,8 +9,8 @@ composed into L_Lunden) is set to views.json's date and each preset's hour with 
 lamps are switched with their TurnOn / TurnOff events (views.json `lampsOn`). Weather shots switch Rain or Snow on and
 set Wet to 1 (a soaked street). #2307 adds the shots of lighting-shots.json (their own date and hour; lamps `all`, `none`
 or `dusk`: only the lamps tagged auto:dusk, on when the sky's DuskLight is below the middle of the web's dusk thresholds,
-the lamp Blueprint's first reading, which test_lighting checks in play). Each shot's exposure is manual: bias 0 at 14:00
-as the #2246/#2279 pairs, -0.7 otherwise. Nothing is saved; the zones' meshes render with Nanite off in memory (a one-shot
+the lamp Blueprint's first reading, which test_lighting checks in play). Each shot takes the game's locked exposure
+(#2313, game_bias); --exposure=manual keeps #2283's fixed bias (0 at 14:00 as the #2246/#2279 pairs, -0.7 otherwise). Nothing is saved; the zones' meshes render with Nanite off in memory (a one-shot
 commandlet capture draws Nanite meshes as coarse loose panels otherwise, also with the full fallback of importer
 version 5, #2279/#2298). Logs LUNDEN_LIGHTING_CAPTURE_OK.
 """
@@ -23,7 +23,7 @@ import sys
 import unreal as u
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "python"))
-from screenshot_level import render_view  # noqa: E402
+from screenshot_level import render_view, spawn  # noqa: E402
 from prepare_nanite_materials import static_mesh_editor  # noqa: E402
 
 MAP = "/Game/Lunden/Maps/L_Lunden"
@@ -39,7 +39,56 @@ SHOTS = [{"name": n, "camera": c, "date": DATE, "hour": VIEWS["lighting"][p]["ho
 SHOTS += json.loads((Path(__file__).resolve().parent / "lighting-shots.json").read_text(encoding="utf-8"))["shots"]
 
 
-def run(scene_path, out_dir, names=None):
+def game_bias(sky):
+    """#2313: the exposure the game shows now: BP_LundenSky's Weather post process is manual at its bias and its Exposure
+    component, blended in by the weight UpdateSky gave it, overrides that bias; the engine lerps the two by the weight.
+    (A scene capture does not take the world's exposure, so captures set it themselves.)"""
+    pps = {c.get_name(): c for c in sky.get_components_by_class(u.PostProcessComponent)}
+    base = pps["Weather"].get_editor_property("settings").get_editor_property("auto_exposure_bias")
+    top = pps["Exposure"].get_editor_property("settings").get_editor_property("auto_exposure_bias")
+    return base + pps["Exposure"].get_editor_property("blend_weight") * (top - base)
+
+
+def render_game(world, out_dir, name, loc, rot, width, height, fov, excluded, histogram=None):
+    """#2313: render_view (screenshot_level.py) with the game's exposure. Without `histogram` that is render_view at
+    game_bias (pass it as the bias). With `histogram` = (min, max, bias) EV100 the capture meters each view with histogram
+    auto exposure, as the game did until #2313 (a fresh capture has no exposure history, so it starts at the metered
+    exposure): the comparison that rejected it."""
+    cam = spawn(u.SceneCapture2D, loc, rot)
+    comp = cam.capture_component2d
+    rt = u.RenderingLibrary.create_render_target2d(world, width, height, u.TextureRenderTargetFormat.RTF_RGBA8_SRGB)
+    for actor in excluded:
+        comp.hide_actor_components(actor)
+    comp.set_editor_property("texture_target", rt)
+    comp.set_editor_property("capture_source", u.SceneCaptureSource.SCS_FINAL_TONE_CURVE_HDR)
+    comp.set_editor_property("fov_angle", float(fov))
+    comp.set_editor_property("capture_every_frame", False)
+    comp.set_editor_property("always_persist_rendering_state", True)
+    pp = comp.get_editor_property("post_process_settings")
+    if histogram:
+        for key, value in (("auto_exposure_method", u.AutoExposureMethod.AEM_HISTOGRAM), ("auto_exposure_min_brightness", histogram[0]),
+                           ("auto_exposure_max_brightness", histogram[1]), ("auto_exposure_bias", histogram[2]),
+                           ("auto_exposure_speed_up", 100.0), ("auto_exposure_speed_down", 100.0)):
+            pp.set_editor_property("override_" + key, True)
+            pp.set_editor_property(key, value)
+    for key, value in (("dynamic_global_illumination_method", u.DynamicGlobalIlluminationMethod.LUMEN),
+                       ("reflection_method", u.ReflectionMethod.LUMEN)):
+        pp.set_editor_property("override_" + key, True)
+        pp.set_editor_property(key, value)
+    comp.set_editor_property("post_process_settings", pp)
+    comp.set_editor_property("post_process_blend_weight", 1.0)
+    u.AutomationLibrary.finish_loading_before_screenshot()
+    for _ in range(24):
+        comp.capture_scene()
+    u.RenderingLibrary.export_render_target(world, rt, out_dir, name + ".png")
+    observed = {"xyz": list(cam.get_actor_location().to_tuple()), "yaw": cam.get_actor_rotation().yaw,
+                "pitch": cam.get_actor_rotation().pitch, "roll": cam.get_actor_rotation().roll,
+                "horizontalFov": comp.fov_angle, "width": rt.size_x, "height": rt.size_y}
+    cam.destroy_actor()
+    return observed
+
+
+def run(scene_path, out_dir, names=None, exposure="game", trial=None, bias_offset=0.0):
     scene = json.loads(Path(scene_path).read_text(encoding="utf-8"))
     cams = {c["id"]: c for c in scene["cameras"]}
     wanted = names.split(",") if names else [s["name"] for s in SHOTS]
@@ -80,6 +129,8 @@ def run(scene_path, out_dir, names=None):
                      ("Wet", 1.0 if weather == "rain" else 0.0)):
             # NEVER notify: a property change in the editor world re-runs the construction script, which resets the lights
             sky.set_editor_property(k, v, u.PropertyAccessChangeNotifyMode.NEVER)
+        for k, v in (trial or {}).items():
+            sky.set_editor_property(k, v, u.PropertyAccessChangeNotifyMode.NEVER)
         sky.call_method("UpdateSky")
         dark = sky.get_editor_property("DuskLight") < dusk_mid
         lit = 0
@@ -90,8 +141,15 @@ def run(scene_path, out_dir, names=None):
         skylight.recapture_sky()
         direction = sky.get_editor_property("SunDirection")
         bias = 0.0 if hour == 14 else -0.7
-        obs = render_view(world, out_dir, name, u.Vector(*cam["xyz"]), u.Rotator(roll=0, pitch=cam["pitch"], yaw=cam["yaw"]),
-                          scene["width"], scene["height"], scene["horizontalFov"], bias, excluded, lumen=True)
+        where = (u.Vector(*cam["xyz"]), u.Rotator(roll=0, pitch=cam["pitch"], yaw=cam["yaw"]), scene["width"], scene["height"], scene["horizontalFov"])
+        if exposure == "game":
+            bias = game_bias(sky) + bias_offset
+            obs = render_view(world, out_dir, name, *where, bias, excluded, lumen=True)
+        elif exposure == "histogram":
+            bias = None
+            obs = render_game(world, out_dir, name, *where, excluded, (-4.0, 3.0, 0.0))
+        else:
+            obs = render_view(world, out_dir, name, *where, bias, excluded, lumen=True)
         forward = u.MathLibrary.get_forward_vector(sun.get_world_rotation())
         off = math.degrees(math.acos(max(-1, min(1, -(forward.x * direction.x + forward.y * direction.y + forward.z * direction.z)))))
         if math.dist(obs["xyz"], cam["xyz"]) > 0.01 or any(abs(obs[k] - cam[k]) > 0.001 for k in ("pitch", "yaw")) or off > 0.01:
@@ -103,9 +161,17 @@ def run(scene_path, out_dir, names=None):
                          "cloudCover": sky.get_editor_property("CloudCover"), "moonIllumination": sky.get_editor_property("MoonIllumination")})
         u.log(f"LUNDEN_LIGHTING_CAPTURE {name}: sun elevation {sky.get_editor_property('SunElevation'):.3f}°, sun {sun.intensity:.3f} lux")
     (Path(out_dir) / "capture.json").write_text(json.dumps({"engine": u.SystemLibrary.get_engine_version(), "map": MAP,
-        "naniteOffInMemory": fallback, "hiddenCollisionActors": len(excluded), "lamps": len(lamps), "shots": observed}, indent=2) + "\n")
+        "exposure": exposure, "trial": trial, "biasOffset": bias_offset, "naniteOffInMemory": fallback, "hiddenCollisionActors": len(excluded), "lamps": len(lamps), "shots": observed}, indent=2) + "\n")
     u.EditorLoadingAndSavingUtils.new_blank_map(False)  # discard every in-memory change
     u.log(f"LUNDEN_LIGHTING_CAPTURE_OK {len(observed)} views")
 
 
-run(*[a for a in sys.argv[1:] if a])
+# --exposure=game (default: the game's locked exposure, game_bias), manual (#2283's fixed bias) or histogram (#2283's auto
+# exposure);
+# --set=Name:value,... sets BP_LundenSky variables before UpdateSky and --bias=x shifts its exposure by x EV (calibration
+# trials, nothing is saved).
+_args = [a for a in sys.argv[1:] if a]
+_opt = dict(a[2:].split("=", 1) for a in _args if a.startswith("--") and "=" in a)
+run(*[a for a in _args if not a.startswith("--")], exposure=_opt.get("exposure", "game"),
+    trial={k: float(v) for k, v in (kv.split(":") for kv in _opt["set"].split(","))} if "set" in _opt else None,
+    bias_offset=float(_opt.get("bias", 0)))

@@ -69,12 +69,16 @@ STAMP = LEVEL_DIR / "build-stamp.json"
 # points from src/lights.js, the small lamps' pool lights from LIGHTING.floorLamp and their specs), attenuation radius =
 # the web's range. CANDELA_PER_WEB is set by mean luminance and colour of matching wall/ceiling crops of the 22:00 pairs
 # (docs/verification/2307/), *guess* (the web's lamps are four pool lights plus a shader wash, not 36 point lights).
+# #2313 locked the exposure about 1.8 EV darker (EXPOSURE_BIAS) and took the web's night level out of the fill, so the lamps
+# carry the evening rooms again: 2.8, the middle of the 2.66 ... 2.98 that keeps the 22:00 living room and upper floor
+# within 0.8 ... 1.25 x the web's mean luminance (two-exposure trial, docs/verification/2313/), *guess*.
 # SKY_SCALE: the real-time sky light's intensity on a clear
-# day; the atmosphere it captures dims with the sun under rain, so UpdateSky divides by the sun's cut and keeps the web's
-# hemisphere light (x (1 - 0.3 overcast), daycycle.js). FOG_GREY: the height fog's own inscattering under overcast
-# (the web greys the sky and fog, OVERCAST), in the exposure the captures use.
+# day, x (1 - 0.3 overcast) as the web's hemisphere light (daycycle.js; #2283 also divided it by the sun's weather cut,
+# #2313 does not). FOG_GREY: the height fog's own inscattering under overcast, x overcast x (0.15 + 0.85 daylight): it is
+# what makes the rain sky the web's light grey (OVERCAST, which does not dim with the sun), *guess* 10 set by START's sky
+# crop under rain at 14:00 against the web (#2313; #2283's 0.6 was for its brighter exposure).
 SKY_SCALE = 2.0
-FOG_GREY = 0.6
+FOG_GREY = 10.0
 # The web's flat fill (LIGHTING.sky ambient, DAY.nightAmbient) becomes an ambient cubemap on a second post-process
 # component whose blend weight UpdateSky sets to the web's ambient / AMBIENT_REF and whose intensity is AMBIENT_REF, so
 # the cubemap's intensity follows the web's ambient value (the pilot lit its clear day with 0.25 =
@@ -83,7 +87,7 @@ FOG_GREY = 0.6
 AMBIENT_REF = 0.6
 AMBIENT_CUBE = DIR + "/T_LundenHemisphere"
 SUN_LUX = 8.0
-CANDELA_PER_WEB = 1.0
+CANDELA_PER_WEB = 2.8
 LAMP_COLOUR = "#ffd59a"  # LIGHTING.floorLamp colour, where the export has none
 LAMP_RANGE = 5.0         # m, LIGHTING.floorLamp range, where the export has none
 # weather.js: `day.overcast = overcast x (kind === 'snow' ? 0.7 : 1)`, snow clouds are lighter
@@ -94,8 +98,33 @@ SNOW_OVERCAST = 0.7
 # proportion to CloudCover. Engine cloud material: its coverage parameter goes from CLOUD_RANGE[0] (the web's clear
 # threshold) to CLOUD_RANGE[1] (overcast), *guess* by eye.
 CLOUD_RANGE = (-1.0, 1.0)
-# Exposure range of the world's post process (EV100), *guess*: day exteriors and lamp-lit evening rooms both read.
-EXPOSURE = {"min": -4.0, "max": 3.0, "bias": 0.0}
+# Exposure (#2313): locked, not eye adaptation. The web has no auto exposure: its tone-mapping exposure follows the sky
+# (DayCycle: LIGHTING.sky overcast.exposure 1.0 -> clear.exposure 1.5 by daylight x (1 - overcast)). The world's post
+# process is manual at EXPOSURE_BIAS (the web's overcast/night exposure 1.0) and a second component, Exposure, adds
+# log2(clear / overcast) with the blend weight log(web exposure / overcast) / log(clear / overcast), so the game's
+# exposure is the web's. Histogram auto exposure (EV100 -4 ... 3, #2283) was compared and rejected: metered on each view it
+# made the 22:00 living room with only the dusk lamps 2.2 x and the night street 30 x the web's mean luminance
+# (docs/verification/2313/). EXPOSURE_BIAS is a *guess* set by the 14:00 START and living-room pairs.
+EXPOSURE_BIAS = -2.55
+# The web's hemisphere light (LIGHTING.sky overcast.hemi 2.0 -> clear.hemi 1.5, x daylight, + DAY.nightAmbient, x (1 - 0.3
+# overcast)) reaches every surface, also deep in the rooms, unshadowed; Unreal's captured sky light reaches the rooms
+# only through the windows. HEMI_SHARE of it is added to the unshadowed ambient cubemap (with the web's ambient), *guess*
+# set by the living room at 14:00 (#2313). SKY_LUMINANCE scales the atmosphere's own sky luminance (the web paints a
+# brighter sky, DAY_ZENITH/HORIZON, than a physical atmosphere next to an 8 lux sun), blended to SKY_OVERCAST at full
+# overcast: a bright atmosphere behind the rain deck showed through it blue (trial with the factor divided by the sun's
+# cut), so under rain the grey comes from the fog (FOG_GREY). Both *guess*, set by START's sky crop at 14:00, clear and
+# under rain (#2313). The ambient cubemap is not scaled by the exposure (UE adds it outside the pre-exposure; trials at -1 EV
+# left the night street, lit only by it, unchanged), so the fill reads in display terms like the web's flat hemisphere
+# light, and EXPOSURE_BIAS only moves the sun, sky, sky light and lamps.
+HEMI_SHARE = 0.72
+# The fill is in display terms, so it carries the web's own exposure (expo = web exposure / clear.exposure: 1 by a clear
+# day, 1/1.5 under rain and at night) and the hemisphere's night colour: daycycle.js blends the hemisphere's sky colour
+# 0xeaf3ff to HEMI_NIGHT_SKY by night (1 - daylight) while its ground colour stays. The cubemap keeps the day colours and
+# its weight takes the luminance ratio, averaged over the sky and ground halves (a wall sees both). Without the two terms
+# the 22:00 rooms were lit mostly by a neutral fill and came out grey-white (R/B 1.11 against the web's 1.50).
+HEMI_NIGHT_SKY = "6b7da8"
+SKY_LUMINANCE = 9.0
+SKY_OVERCAST = 1.0
 # Wet surfaces soak in about 10 minutes of rain and dry in about 30 (web: src/wetground.js integrates a film; *guess*).
 WET_RATE = {"soak": 1 / 600, "dry": 1 / 1800}
 FOG = {"clear": 0.004, "overcast": 0.03}  # ExponentialHeightFog density (web: fog far 80 m under rain, WEATHER.fogFar)
@@ -110,6 +139,8 @@ def load_measurements(path):
     sky = (m.get("site") or {}).get("sky")
     if not sky or "hemiGround" not in sky.get("light", {}) or "rain" not in sky:
         raise RuntimeError("measurements.json site.sky is missing: re-export with this commit (export-scene.js #2283)")
+    if "hemiOvercast" not in sky["light"]:
+        raise RuntimeError("measurements.json lacks the hemisphere light: re-export with this commit (export-scene.js #2313)")
     if "duskOn" not in sky["light"] or "clouds" not in sky or any("auto" not in l for l in m["lights"] if l["kind"] == "lamp"):
         raise RuntimeError("measurements.json lacks the dusk, cloud and lamp numbers: re-export with this commit (export-scene.js #2307)")
     ids = [l.get("id") for l in m["lights"]]
@@ -148,7 +179,7 @@ def spec_of(m):
     sky = m["site"]["sky"]
     boxes, soffit = indoor_boxes(m)
     return {"sky": sky, "boxes": boxes, "soffit": soffit, "lamps": lamp_rows(m), "sunLux": SUN_LUX,
-            "exposure": EXPOSURE, "wet": WET_RATE, "skyScale": SKY_SCALE, "fogGrey": FOG_GREY, "ambientRef": AMBIENT_REF, "fog": FOG,
+            "exposureBias": EXPOSURE_BIAS, "hemiShare": HEMI_SHARE, "hemiNightSky": HEMI_NIGHT_SKY, "skyLuminance": SKY_LUMINANCE, "skyOvercast": SKY_OVERCAST, "wet": WET_RATE, "skyScale": SKY_SCALE, "fogGrey": FOG_GREY, "ambientRef": AMBIENT_REF, "fog": FOG,
             "snowOvercast": SNOW_OVERCAST, "cloudRange": CLOUD_RANGE,
             "script": hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
 
@@ -310,7 +341,7 @@ class Expr:
            ast.Div: "Divide_DoubleDouble"}
     CMP = {ast.Gt: "Greater_DoubleDouble", ast.GtE: "GreaterEqual_DoubleDouble", ast.Lt: "Less_DoubleDouble",
            ast.LtE: "LessEqual_DoubleDouble"}
-    FN1 = {"sind": "DegSin", "cosd": "DegCos", "tand": "DegTan", "asind": "DegAsin", "acosd": "DegAcos", "sqrt": "Sqrt"}
+    FN1 = {"sind": "DegSin", "cosd": "DegCos", "tand": "DegTan", "asind": "DegAsin", "acosd": "DegAcos", "sqrt": "Sqrt", "loge": "Loge"}
     PY = {ast.Add: float.__add__, ast.Sub: float.__sub__, ast.Mult: float.__mul__, ast.Div: float.__truediv__}
 
     def __init__(self, graph, env):
@@ -370,7 +401,7 @@ class Expr:
                 if isinstance(args[0], float):
                     return {"sind": lambda x: math.sin(math.radians(x)), "cosd": lambda x: math.cos(math.radians(x)),
                             "tand": lambda x: math.tan(math.radians(x)), "asind": lambda x: math.degrees(math.asin(x)),
-                            "acosd": lambda x: math.degrees(math.acos(x)), "sqrt": math.sqrt}[f](args[0])
+                            "acosd": lambda x: math.degrees(math.acos(x)), "sqrt": math.sqrt, "loge": math.log}[f](args[0])
                 return self.k(self.FN1[f], A=args[0]), "ReturnValue"
             if f == "atan2d":
                 return self.k("DegAtan2", Y=args[0], X=args[1]), "ReturnValue"
@@ -444,7 +475,12 @@ moonLux = SunLux / SunClear * Moonlight * (MoonFloor + (1 - MoonFloor) * pow(ill
 sunOut = select(useMoon, 0, sunLux)
 moonOut = select(useMoon, moonLux, 0)
 fog = FogClear + (FogOvercast - FogClear) * oc
-skyI = SkyScale * (1 - 0.3 * oc) / max(cut, 0.15)
+skyI = SkyScale * (1 - 0.3 * oc)
+skyLum = SkyLuminance + (SkyOvercast - SkyLuminance) * oc
+hemi = ((HemiOvercast + (HemiClear - HemiOvercast) * clear) * day + NightAmbient) * (1 - 0.3 * oc)
+expo = (1 + (ExpRatio - 1) * clear) / ExpRatio
+fill = (ambient + HemiShare * hemi * (1 + (HemiNight - 1) * (1 - day))) * expo
+expoW = loge(expo * ExpRatio) / loge(ExpRatio)
 grey = FogGrey * oc * (0.15 + 0.85 * day)
 streak = 0.06 + 0.54 * day
 windX = 0 - WindSpeed * sind(WindFromDeg - PlanNorth)
@@ -699,6 +735,21 @@ def build_clouds(mpc):
     return mat
 
 
+def ambient_ref(spec):
+    """The ambient cubemap's full intensity: an upper bound of the unshadowed fill UpdateSky asks for (the larger web
+    ambient and hemisphere values at full exposure), so the post process's blend weight, fill / AmbientRef, stays within 0 ... 1."""
+    l = spec["sky"]["light"]
+    return max(l["ambientOvercast"], l["ambientClear"]) + l["nightAmbient"] * 0.5 + HEMI_SHARE * (max(l["hemiOvercast"], l["hemiClear"]) + l["nightAmbient"])
+
+
+def hemi_night(spec):
+    """The hemisphere light's luminance at night ÷ by day, averaged over its sky and ground colours (see HEMI_NIGHT_SKY)."""
+    light = spec["sky"]["light"]
+    lum = lambda c: sum(w * (((v / 255 + 0.055) / 1.055) ** 2.4 if v / 255 > 0.04045 else v / 255 / 12.92)
+                        for w, v in zip((0.2126, 0.7152, 0.0722), bytes.fromhex(c.lstrip("#"))))
+    return (lum(HEMI_NIGHT_SKY) + lum(light["hemiGround"])) / (lum(light["hemiSky"]) + lum(light["hemiGround"]))
+
+
 def hemisphere_cube(spec):
     """T_LundenHemisphere: a 64 x 32 lat-long HDR, the web's HemisphereLight colours blended by height (three.js mixes
     ground → sky by 0.5 + 0.5 x up), imported as a TextureCube."""
@@ -838,7 +889,7 @@ def build_sky(spec, mpc, precip, clouds):
     comps = components(bp, {"Sun": u.DirectionalLightComponent, "Moon": u.DirectionalLightComponent,
                             "Atmosphere": u.SkyAtmosphereComponent, "SkyLight": u.SkyLightComponent,
                             "Fog": u.ExponentialHeightFogComponent, "Clouds": u.VolumetricCloudComponent,
-                            "Weather": u.PostProcessComponent, "Ambient": u.PostProcessComponent})
+                            "Weather": u.PostProcessComponent, "Ambient": u.PostProcessComponent, "Exposure": u.PostProcessComponent})
     for name in ("Sun", "Moon"):
         c = comps[name]
         c.set_editor_property("mobility", u.ComponentMobility.MOVABLE)
@@ -859,17 +910,27 @@ def build_sky(spec, mpc, precip, clouds):
     weather.set_editor_property("unbound", True)
     pp = weather.get_editor_property("settings")
     pp.set_editor_property("weighted_blendables", u.WeightedBlendables(array=[u.WeightedBlendable(weight=1.0, object=precip)]))
-    for key, value in (("auto_exposure_min_brightness", EXPOSURE["min"]), ("auto_exposure_max_brightness", EXPOSURE["max"]),
-                       ("auto_exposure_bias", EXPOSURE["bias"])):
+    for key, value in (("auto_exposure_method", u.AutoExposureMethod.AEM_MANUAL), ("auto_exposure_apply_physical_camera_exposure", False),
+                       ("auto_exposure_bias", EXPOSURE_BIAS)):
         pp.set_editor_property("override_" + key, True)
         pp.set_editor_property(key, value)
+    for key in ("auto_exposure_min_brightness", "auto_exposure_max_brightness"):  # (#2283's histogram range, unused now)
+        pp.set_editor_property("override_" + key, False)
     weather.set_editor_property("settings", pp)
+    light = spec["sky"]["light"]
+    exposure = comps["Exposure"]  # the web's clear-sky exposure on top, weighted by UpdateSky
+    exposure.set_editor_property("unbound", True)
+    exposure.set_editor_property("priority", 1.0)
+    pp = exposure.get_editor_property("settings")
+    pp.set_editor_property("override_auto_exposure_bias", True)
+    pp.set_editor_property("auto_exposure_bias", EXPOSURE_BIAS + math.log2(light["exposureClear"] / light["exposureOvercast"]))
+    exposure.set_editor_property("settings", pp)
     ambient = comps["Ambient"]
     ambient.set_editor_property("unbound", True)
     pp = ambient.get_editor_property("settings")
     pp.set_editor_property("ambient_cubemap", hemisphere_cube(spec))
     pp.set_editor_property("override_ambient_cubemap_intensity", True)
-    pp.set_editor_property("ambient_cubemap_intensity", AMBIENT_REF)
+    pp.set_editor_property("ambient_cubemap_intensity", ambient_ref(spec))
     ambient.set_editor_property("settings", pp)
 
     sky_data, light = spec["sky"], spec["sky"]["light"]
@@ -881,7 +942,9 @@ def build_sky(spec, mpc, precip, clouds):
         "SunLux": ("real", spec["sunLux"]), "SunOvercast": ("real", light["sunOvercast"]), "SunClear": ("real", light["sunClear"]),
         "Moonlight": ("real", light["moonlight"]), "MoonFloor": ("real", light["moonFloor"]), "MoonExp": ("real", light["moonExp"]),
         "SunCut": ("real", light["sunCut"]), "FogClear": ("real", FOG["clear"]), "FogOvercast": ("real", FOG["overcast"]),
-        "SkyScale": ("real", SKY_SCALE), "FogGrey": ("real", FOG_GREY), "AmbientRef": ("real", AMBIENT_REF),
+        "SkyScale": ("real", SKY_SCALE), "FogGrey": ("real", FOG_GREY), "AmbientRef": ("real", ambient_ref(spec)),
+        "HemiShare": ("real", HEMI_SHARE), "SkyLuminance": ("real", SKY_LUMINANCE), "SkyOvercast": ("real", SKY_OVERCAST),
+        "HemiOvercast": ("real", light["hemiOvercast"]), "HemiClear": ("real", light["hemiClear"]), "HemiNight": ("real", hemi_night(spec)),
         "AmbientOvercast": ("real", light["ambientOvercast"]), "AmbientClear": ("real", light["ambientClear"]),
         "NightAmbient": ("real", light["nightAmbient"]),
         "WetSoak": ("real", WET_RATE["soak"]), "WetDry": ("real", WET_RATE["dry"]),
@@ -896,7 +959,8 @@ def build_sky(spec, mpc, precip, clouds):
     chain = Chain(start)
     getters = {n: (G.get(n), n) for n in ("Hour", "Latitude", "Longitude", "PlanNorth", "Rain", "Snow", "Wet", "WindSpeed",
                                           "WindFromDeg", "SunLux", "SunOvercast", "SunClear", "Moonlight", "MoonFloor",
-                                          "MoonExp", "SunCut", "FogClear", "FogOvercast", "SkyScale", "FogGrey", "AmbientRef", "AmbientOvercast", "AmbientClear", "NightAmbient")}
+                                          "MoonExp", "SunCut", "FogClear", "FogOvercast", "SkyScale", "FogGrey", "AmbientRef", "AmbientOvercast", "AmbientClear", "NightAmbient",
+                                          "HemiShare", "SkyLuminance", "SkyOvercast", "HemiOvercast", "HemiClear", "HemiNight")}
     date = G.call("KismetMathLibrary:MakeDateTime", Hour=0, Minute=0, Second=0, Millisecond=0)
     for n in ("Year", "Month", "Day"):
         connect(G.get(n), n, date, n)
@@ -913,7 +977,8 @@ def build_sky(spec, mpc, precip, clouds):
     clouds = spec["sky"]["clouds"]
     E = Expr(G, {**getters, "doy": (doy, "ReturnValue"), "days": (days, "ReturnValue"), "SnowOvercast": SNOW_OVERCAST,
                  "ClearThr": float(clouds["clearThr"]), "ThrA": float(clouds["thr"][0]), "ThrB": float(clouds["thr"][1]),
-                 "Ramp": float(clouds["ramp"]), "CloudLo": float(CLOUD_RANGE[0]), "CloudHi": float(CLOUD_RANGE[1])})
+                 "Ramp": float(clouds["ramp"]), "CloudLo": float(CLOUD_RANGE[0]), "CloudHi": float(CLOUD_RANGE[1]),
+                 "ExpRatio": float(light["exposureClear"] / light["exposureOvercast"])})
     E.run(SUN)
     E.run(SKYDIR.format(p="sun", dec="dec", ha="ha"))
     E.run(MOON)
@@ -952,8 +1017,19 @@ def build_sky(spec, mpc, precip, clouds):
         chain.then(power)
     weight = G.place(G.g.add_set_member_variable_node("BlendWeight", "/Script/Engine.PostProcessComponent"))
     connect(G.get("Ambient"), "Ambient", weight, "self")
-    E.feed(weight, "BlendWeight", (E.k("Divide_DoubleDouble", A=env["ambient"], B=env["AmbientRef"]), "ReturnValue"))
+    E.feed(weight, "BlendWeight", (E.k("Divide_DoubleDouble", A=env["fill"], B=env["AmbientRef"]), "ReturnValue"))
     chain.then(weight)
+    expo = G.place(G.g.add_set_member_variable_node("BlendWeight", "/Script/Engine.PostProcessComponent"))
+    connect(G.get("Exposure"), "Exposure", expo, "self")
+    E.feed(expo, "BlendWeight", env["expoW"])
+    chain.then(expo)
+    lum = G.call("KismetMathLibrary:MakeColor", A=1.0)
+    for ch in "RGB":
+        E.feed(lum, ch, env["skyLum"])
+    sky_lum = G.call("SkyAtmosphereComponent:SetSkyLuminanceFactor")
+    connect(G.get("Atmosphere"), "Atmosphere", sky_lum, "self")
+    connect(lum, "ReturnValue", sky_lum, "NewValue")
+    chain.then(sky_lum)
     sky_power = G.call("SkyLightComponent:SetIntensity")
     connect(G.get("SkyLight"), "SkyLight", sky_power, "self")
     E.feed(sky_power, "NewIntensity", env["skyI"])

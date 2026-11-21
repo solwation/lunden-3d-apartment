@@ -1162,6 +1162,7 @@ function measurementData({ world, planCopy, W, D, byZone, lightsInfo, materialTa
           // #2307: the tone-mapping exposure DayCycle blends overcast -> clear, the dusk rule of the small lamps (LIGHTING.auto:
           // on below `on` daylight, off above `off`, fading over `fade` s) and the moon disc's size and earthshine
           exposureOvercast: C.LIGHTING.sky.overcast.exposure, exposureClear: C.LIGHTING.sky.clear.exposure,
+          hemiOvercast: C.LIGHTING.sky.overcast.hemi, hemiClear: C.LIGHTING.sky.clear.hemi, // #2313: the hemisphere light's strength
           duskOn: C.LIGHTING.auto.on, duskOff: C.LIGHTING.auto.off, duskFade: C.LIGHTING.auto.fade,
           moonRadius: C.DAY.moonRadius, moonEarthshine: C.DAY.moonEarthshine },
         // #2307: the sky's cloud cover follows the weather's overcast (src/cloudshadow.js skyCloudState: the noise threshold
