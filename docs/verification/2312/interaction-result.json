@@ -1,0 +1,764 @@
+{
+ "engine": "5.8.4-58902052+++UE5+Release-5.8",
+ "map": "/Game/Lunden/Maps/L_Lunden",
+ "doors": {
+  "door_l0_x80_z0": {
+   "opened": {
+    "hingeCm": [
+     80.47,
+     0.0,
+     0.0
+    ],
+    "yaw": -90.0,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     80.47,
+     0.0,
+     0.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_l0_x95_z1270": {
+   "opened": {
+    "hingeCm": [
+     95.47,
+     1269.86,
+     0.0
+    ],
+    "yaw": 90.0,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     95.47,
+     1269.86,
+     0.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_l0_x85_z305": {
+   "opened": {
+    "hingeCm": [
+     85.47,
+     304.97,
+     0.0
+    ],
+    "yaw": -90.0,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     85.47,
+     304.97,
+     0.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_l0_x215_z525": {
+   "opened": {
+    "hingeCm": [
+     215.16,
+     524.74,
+     0.0
+    ],
+    "yaw": 0.0,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     215.16,
+     524.74,
+     0.0
+    ],
+    "yaw": 90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_l0_x335_z570": {
+   "opened": {
+    "hingeCm": [
+     335.14,
+     570.24,
+     0.0
+    ],
+    "yaw": 180.0,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     335.14,
+     570.24,
+     0.0
+    ],
+    "yaw": 90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_l0_x143_z496": {
+   "opened": {
+    "hingeCm": [
+     66.18,
+     495.7,
+     105.0
+    ],
+    "yaw": 0.0,
+    "open": true,
+    "changes": 1,
+    "boxCm": [
+     66.18,
+     495.7,
+     105.0
+    ]
+   },
+   "closed": {
+    "hingeCm": [
+     142.67,
+     495.7,
+     105.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2,
+    "boxCm": [
+     142.67,
+     495.7,
+     105.0
+    ]
+   }
+  },
+  "door_l1_x255_z501": {
+   "opened": {
+    "hingeCm": [
+     255.37,
+     501.45,
+     325.0
+    ],
+    "yaw": -90.0,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     255.37,
+     501.45,
+     325.0
+    ],
+    "yaw": 180.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_l1_x275_z501": {
+   "opened": {
+    "hingeCm": [
+     275.47,
+     501.45,
+     325.0
+    ],
+    "yaw": -90.0,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     275.47,
+     501.45,
+     325.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_l1_x154_z705": {
+   "opened": {
+    "hingeCm": [
+     154.18,
+     705.13,
+     325.0
+    ],
+    "yaw": 0.0,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     154.18,
+     705.13,
+     325.0
+    ],
+    "yaw": -90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_l1_x275_z780": {
+   "opened": {
+    "hingeCm": [
+     275.47,
+     780.42,
+     325.0
+    ],
+    "yaw": 90.0,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     275.47,
+     780.42,
+     325.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_l1_x263_z780": {
+   "opened": {
+    "hingeCm": [
+     262.87,
+     780.42,
+     325.0
+    ],
+    "yaw": 90.0,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     262.87,
+     780.42,
+     325.0
+    ],
+    "yaw": 180.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_l1_x432_z413": {
+   "opened": {
+    "hingeCm": [
+     510.89,
+     413.46,
+     430.0
+    ],
+    "yaw": 0.0,
+    "open": true,
+    "changes": 1,
+    "boxCm": [
+     510.9,
+     413.46,
+     430.0
+    ]
+   },
+   "closed": {
+    "hingeCm": [
+     431.9,
+     413.46,
+     430.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2,
+    "boxCm": [
+     431.91,
+     413.46,
+     430.0
+    ]
+   }
+  },
+  "door_l0_x84_z210": {
+   "opened": {
+    "hingeCm": [
+     84.15,
+     269.63,
+     108.0
+    ],
+    "yaw": 0.0,
+    "open": true,
+    "changes": 1,
+    "boxCm": [
+     84.15,
+     269.63,
+     108.0
+    ]
+   },
+   "closedByPartner": {
+    "hingeCm": [
+     84.15,
+     210.33,
+     108.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2,
+    "boxCm": [
+     84.15,
+     210.33,
+     108.0
+    ]
+   }
+  },
+  "door_l0_x82_z270": {
+   "opened": {
+    "hingeCm": [
+     81.65,
+     210.33,
+     108.0
+    ],
+    "yaw": 0.0,
+    "open": true,
+    "changes": 1,
+    "boxCm": [
+     81.65,
+     210.33,
+     108.0
+    ]
+   },
+   "closed": {
+    "hingeCm": [
+     81.65,
+     269.63,
+     108.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2,
+    "boxCm": [
+     81.65,
+     269.63,
+     108.0
+    ]
+   }
+  },
+  "door_l1_x55_z417": {
+   "opened": {
+    "hingeCm": [
+     115.73,
+     417.45,
+     433.0
+    ],
+    "yaw": 0.0,
+    "open": true,
+    "changes": 1,
+    "boxCm": [
+     115.73,
+     417.45,
+     433.0
+    ]
+   },
+   "closedByPartner": {
+    "hingeCm": [
+     54.84,
+     417.45,
+     433.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2,
+    "boxCm": [
+     54.84,
+     417.45,
+     433.0
+    ]
+   }
+  },
+  "door_l1_x116_z420": {
+   "opened": {
+    "hingeCm": [
+     54.84,
+     419.95,
+     433.0
+    ],
+    "yaw": 0.0,
+    "open": true,
+    "changes": 1,
+    "boxCm": [
+     54.84,
+     419.95,
+     433.0
+    ]
+   },
+   "closed": {
+    "hingeCm": [
+     115.73,
+     419.95,
+     433.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2,
+    "boxCm": [
+     115.73,
+     419.95,
+     433.0
+    ]
+   }
+  },
+  "door_l1_x439_z854": {
+   "opened": {
+    "hingeCm": [
+     513.54,
+     854.41,
+     433.0
+    ],
+    "yaw": 0.0,
+    "open": true,
+    "changes": 1,
+    "boxCm": [
+     513.54,
+     854.41,
+     433.0
+    ]
+   },
+   "closedByPartner": {
+    "hingeCm": [
+     438.75,
+     854.41,
+     433.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2,
+    "boxCm": [
+     438.75,
+     854.41,
+     433.0
+    ]
+   }
+  },
+  "door_l1_x514_z852": {
+   "opened": {
+    "hingeCm": [
+     438.75,
+     851.91,
+     433.0
+    ],
+    "yaw": 0.0,
+    "open": true,
+    "changes": 1,
+    "boxCm": [
+     438.75,
+     851.91,
+     433.0
+    ]
+   },
+   "closed": {
+    "hingeCm": [
+     513.54,
+     851.91,
+     433.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2,
+    "boxCm": [
+     513.54,
+     851.91,
+     433.0
+    ]
+   }
+  }
+ },
+ "sashes": {
+  "window_l0_x385_z7": {
+   "opened": {
+    "hingeCm": [
+     385.24,
+     7.0,
+     212.0
+    ],
+    "yaw": 0.0,
+    "open": true,
+    "changes": 1,
+    "angle": 40.0,
+    "checkCm": [
+     385.24,
+     -73.99,
+     115.48
+    ]
+   },
+   "closed": {
+    "hingeCm": [
+     385.24,
+     7.0,
+     212.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2,
+    "angle": 0.0,
+    "checkCm": [
+     385.24,
+     7.0,
+     86.0
+    ]
+   }
+  },
+  "window_l0_x318_z1263": {
+   "opened": {
+    "hingeCm": [
+     317.57,
+     1262.86,
+     212.0
+    ],
+    "yaw": 0.0,
+    "open": true,
+    "changes": 1,
+    "angle": 4.0,
+    "checkCm": [
+     317.57,
+     1273.04,
+     66.36
+    ]
+   },
+   "closed": {
+    "hingeCm": [
+     317.57,
+     1262.86,
+     212.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2,
+    "angle": 0.0,
+    "checkCm": [
+     317.57,
+     1262.86,
+     66.0
+    ]
+   }
+  },
+  "window_l1_x179_z7": {
+   "opened": {
+    "hingeCm": [
+     179.48,
+     7.0,
+     544.0
+    ],
+    "yaw": 0.0,
+    "open": true,
+    "changes": 1,
+    "angle": 40.0,
+    "checkCm": [
+     179.48,
+     -72.06,
+     449.78
+    ]
+   },
+   "closed": {
+    "hingeCm": [
+     179.48,
+     7.0,
+     544.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2,
+    "angle": 0.0,
+    "checkCm": [
+     179.48,
+     7.0,
+     421.0
+    ]
+   }
+  },
+  "window_l1_x385_z7": {
+   "opened": {
+    "hingeCm": [
+     385.16,
+     7.0,
+     544.0
+    ],
+    "yaw": 0.0,
+    "open": true,
+    "changes": 1,
+    "angle": 40.0,
+    "checkCm": [
+     385.16,
+     -84.92,
+     434.46
+    ]
+   },
+   "closed": {
+    "hingeCm": [
+     385.16,
+     7.0,
+     544.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2,
+    "angle": 0.0,
+    "checkCm": [
+     385.16,
+     7.0,
+     401.0
+    ]
+   }
+  },
+  "window_l1_x146_z1263": {
+   "opened": {
+    "hingeCm": [
+     145.68,
+     1262.86,
+     522.0
+    ],
+    "yaw": 0.0,
+    "open": true,
+    "changes": 1,
+    "angle": 40.0,
+    "checkCm": [
+     145.68,
+     1340.64,
+     429.31
+    ]
+   },
+   "closed": {
+    "hingeCm": [
+     145.68,
+     1262.86,
+     522.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2,
+    "angle": 0.0,
+    "checkCm": [
+     145.68,
+     1262.86,
+     401.0
+    ]
+   }
+  },
+  "window_l1_x385_z1263": {
+   "opened": {
+    "hingeCm": [
+     384.66,
+     1262.86,
+     544.0
+    ],
+    "yaw": 0.0,
+    "open": true,
+    "changes": 1,
+    "angle": 40.0,
+    "checkCm": [
+     384.66,
+     1354.78,
+     434.46
+    ]
+   },
+   "closed": {
+    "hingeCm": [
+     384.66,
+     1262.86,
+     544.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2,
+    "angle": 0.0,
+    "checkCm": [
+     384.66,
+     1262.86,
+     401.0
+    ]
+   }
+  }
+ },
+ "frontDoorWithE": {
+  "hingeCm": [
+   80.47,
+   0.0,
+   0.0
+  ],
+  "yaw": -90.0,
+  "open": true,
+  "changes": 3
+ },
+ "switch": {
+  "id": "light_fixture_l0_x195_z48",
+  "room": "Hall",
+  "on": {
+   "room_hall_l0_x117_z175": true,
+   "room_hall_l0_x288_z634": true
+  },
+  "off": {
+   "room_hall_l0_x117_z175": false,
+   "room_hall_l0_x288_z634": false
+  },
+  "otherRoomLamp": [
+   "room_badrum_l0_x117_z631",
+   false
+  ]
+ },
+ "tap": {
+  "id": "tap_koksblandaren_l0_x531_z208",
+  "hiddenBefore": true,
+  "hiddenOn": false,
+  "hiddenOff": true
+ },
+ "liftButtons": {
+  "count": 49,
+  "litOnceAfterTwoPresses": 49
+ },
+ "event": {
+  "listener": "/Game/Lunden/Interaction/BP_LundenInteractionListener.BP_LundenInteractionListener_C",
+  "calls": 102,
+  "changes": 102,
+  "interactables": 92,
+  "mismatched": 0,
+  "samples": {
+   "door": [
+    "door_l0_x80_z0",
+    [
+     true,
+     false,
+     true
+    ]
+   ],
+   "sash": [
+    "window_l0_x385_z7",
+    [
+     true,
+     false
+    ]
+   ],
+   "switch": [
+    "light_fixture_l0_x195_z48",
+    [
+     true,
+     false
+    ]
+   ],
+   "tap": [
+    "tap_koksblandaren_l0_x531_z208",
+    [
+     true,
+     false
+    ]
+   ]
+  },
+  "lastSource": "BP_LundenSwingDoor_C_48"
+ },
+ "problems": []
+}

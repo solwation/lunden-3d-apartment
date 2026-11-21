@@ -946,24 +946,44 @@ means rebuilding the controller's cast in `build_player.py` and is left for when
 raises `ChangeCount` by exactly one; asking for the state it is already in changes nothing. A switch calls
 `TurnOn`/`TurnOff` on every `BP_LundenLamp` tagged `lamp:<id>` in its `LampTags`; a tap shows or hides its water
 (an engine cylinder from outlet to landing). A wardrobe panel that opens first closes its partner (`wardrobeDoors`).
-**The change event is `ChangeCount`** (#2293 compares it with the
-value it saw last and reads `TargetOpen`). An event dispatcher was tried and is not built: in UE 5.8.4 headless,
-`BlueprintEditorLibrary.add_event_dispatcher` / `add_event_dispatcher_parameter` create `OnStateChanged(Id)` and
-`add_dispatcher_event_node` makes a matching event, but nothing can place the node that calls (broadcasts) it.
-Dispatchers declared in a Blueprint never reach the editor's action database in a commandlet: `list_available_nodes`
-gave 41,188 actions with none containing `OnStateChanged` (not even Bind/Assign), also after saving, on
-`BP_LundenSwingDoor` itself, with `declaring_class` and with a typed context pin; `create_node_from_name`
-(`Default|CallOnStateChanged`, `EventDispatchers|CallOnStateChanged`, …) and `add_call_function_node` return None.
-Native dispatchers do appear (`…|CallOnX`). A declared dispatcher that never fires is deliberately not committed; the
-real broadcast is a follow-up linked to #2293. Not ported yet: water sound and splash, the switch rocker's tilt.
+**The change event (#2312).** On every real change, right after `ChangeCount` rises and before the lamps, water or
+motion react, an interactable calls `OnInteractableChanged(Id, IsOpen, Source)` on every actor of
+`/Game/Lunden/Interaction/BP_LundenInteractionListener` and of its child Blueprints (Get All Actors Of Class, cast,
+call; `Id` is the export id, `IsOpen` the new `TargetOpen`, `Source` the interactable actor). A repeated request for
+the state an interactable is already in calls nothing. **How #2293 (or any other area) listens:** make a child
+Blueprint of `BP_LundenInteractionListener` in its own folder, override `OnInteractableChanged` there
+(`BlueprintEditorLibrary.add_function_override`, which also places the parent call; keep or drop it) and place or
+spawn one instance in the world. The base class records every call (`Received` gets `"<id>=<true|false>"`, `Total`
++1, `LastSource`), which is what `test_interaction` counts; that costs a short string per change. `ChangeCount` and
+`TargetOpen` keep working for anyone who prefers to poll. Listeners are actors because the interactable finds them by
+class; a non-actor (a subsystem, a widget) owns a small listener actor.
+
+*Why a listener class and not a dispatcher or an interface (decision, can be overturned):* both are blocked headless
+in UE 5.8.4, and the assets are rebuilt by script, never by hand. A Blueprint-declared event dispatcher can be created
+(`BlueprintEditorLibrary.add_event_dispatcher` / `add_event_dispatcher_parameter`, `add_dispatcher_event_node` makes a
+matching event), but nothing can place the node that calls (broadcasts) it, in the declaring Blueprint's own graph
+too: #2312 tried a separate hub Blueprint with its own `OnChanged` dispatcher, where `list_available_nodes` had no
+action containing `OnChanged`, and `create_node_from_name` (`Default|CallOnChanged`, `EventDispatchers|CallOnChanged`,
+`CallOnChanged`, …) and `add_call_function_node` returned None. #2285's probes on the door itself (41,188 actions,
+none containing `OnStateChanged`, also after saving, with `declaring_class` and with a typed context pin) found the
+same. Native dispatchers do appear (`…|CallOnX`, `…|AssignOnClicked`). A Blueprint interface gets further:
+`BlueprintInterfaceFactory` creates `BPI_…`, `create_and_edit_function_graph` gives it a function with parameters, and
+`add_call_function_node` places a call of it (pins `self`, `Id`, `IsOpen`); but its message node is not in the action
+database, and neither `BlueprintEditorLibrary` nor `BlueprintGraphEditor` can add an interface to a listener Blueprint
+(`ImplementedInterfaces` is not exposed to Python), so no listener could be built. A function on a Blueprint base
+class can: #2312's probe built a base listener, a child that overrides the function with `add_function_override` and
+a caller, and two calls reached both (`["door_xtrue", "door_xtrue"]`, child count 2).
+
+Not ported yet: water sound and splash, the switch rocker's tilt.
 
 **Lift buttons.** The lifts (Hus L's `src/core.js`, Hus A/B/C's `src/corehouse.js`) are not ported yet. Their button
 panels are: `measurements.json` `interaction.liftButtons` (49 buttons: each lift's car buttons, one per stop, and its
 landing call buttons; `src/liftpanel.js` targets) become interactables in their own sub-level
 `/Game/Lunden/Generated/Interaction/Level_lift_buttons` (an additive `world-levels.json` row), `Kind` 3, ids
 `lift_<house>_<car|call>_<stop>[_<n>]`, tags `house:<l|a|b|c>`, `lift:<car|call>`, `stop:<k>`. A press (E, or
-`OpenDoor` by id) sets `TargetOpen` (the lit ring) and raises `ChangeCount`; nothing else moves. **Hook for the lift
-port:** read `TargetOpen`/`ChangeCount` of the buttons tagged with its house, call `CloseDoor` on a button when the car
+`OpenDoor` by id) sets `TargetOpen` (the lit ring), raises `ChangeCount` and sends the change event; nothing else moves.
+**Hook for the lift port:** listen to the change event (ids `lift_…`) or read `TargetOpen`/`ChangeCount` of the buttons
+tagged with its house, call `CloseDoor` on a button when the car
 arrives (the web clears the ring then). Differences from the web, until then: E toggles (the web keeps a lit button lit),
 and the plates have no lit look or click sound. The car buttons sit where the car rests in the export.
 
@@ -973,11 +993,14 @@ now), and the switches and taps have small use boxes. It is generated, not versi
 `Generated/l1007/Level_l1007` in `world-levels.json` (the line stays #2278's; only its package was swapped), so the
 doors are live in `L_Lunden`. Re-run `build_interaction.py` after every `import_world.py` of `l1007` (it copies the
 imported level), then `compose_world.py`. `test_l1007` now opens the front door by id before walking in. The builder
-skips the class when `Lunden.SpecHash` (the script's hash, line endings normalised) is unchanged.
+skips each class (`BP_LundenSwingDoor`, `BP_LundenInteractionListener`) when its `Lunden.SpecHash` (the script's hash,
+line endings normalised) is unchanged; `--check` builds nothing and fails unless both carry the script's hash, compile
+cleanly and the door's `Apply` calls the listener once (`LUNDEN_INTERACTION_CHECK_OK`).
 
 ```text
 git lfs lock unreal/Lunden/Content/Lunden/Blueprints/PilotDoors/BP_LundenSwingDoor.uasset
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/build_interaction.py [<measurements.json>]
+git lfs lock unreal/Lunden/Content/Lunden/Interaction/BP_LundenInteractionListener.uasset
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/build_interaction.py [<measurements.json>] [--check]
 copy tools\unreal-engine\tests\test_interaction.py unreal\Lunden\Content\Python\   (untracked copy, delete afterwards)
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-tests.ps1 -Filter Editor.Python.Lunden.test_interaction
 ```
@@ -986,8 +1009,11 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-
 opened and closed by id, every hinge/pivot is within 1 cm and every yaw / sash angle within 1° of `measurements.json`,
 sliders' boxes and sashes' check points within 1 cm of the open/closed points, `ChangeCount` 1 after open + repeated
 open and 2 after close; a wardrobe panel closes its partner; E opens the front door; a Hall switch turns both Hall
-lamps (#2283's real `BP_LundenLamp`s in `Level_lighting`) on and off and leaves the Badrum lamp off; the kitchen tap shows and hides its water; all 49 lift buttons sit within 1 cm of the export and are lit once after two presses. Results:
-[docs/verification/2285/](../verification/2285/README.md).
+lamps (#2283's real `BP_LundenLamp`s in `Level_lighting`) on and off and leaves the Badrum lamp off; the kitchen tap shows and hides its water; all 49 lift buttons sit within 1 cm of the export and are lit once after two presses.
+Since #2312 a `BP_LundenInteractionListener` placed before Play must hear every interactable exactly once per real
+change (its calls equal `ChangeCount` and alternate with the state), and a door, a sash, the switch and the tap
+exactly `[open, closed]` for open + repeated open + close. Results:
+[docs/verification/2285/](../verification/2285/README.md), [docs/verification/2312/](../verification/2312/README.md).
 
 ## Furnishing and pictures (#2289)
 

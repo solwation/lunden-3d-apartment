@@ -1,6 +1,6 @@
 """#2285: make L1007's doors, windows, light switches and taps usable (successor of build_pilot_doors.py).
 
-    run-python.ps1 tools/unreal-engine/python/build_interaction.py [<measurements.json>]
+    run-python.ps1 tools/unreal-engine/python/build_interaction.py [<measurements.json>] [--check]
 
 1. Rebuilds the graph of /Game/Lunden/Blueprints/PilotDoors/BP_LundenSwingDoor as the general interactable. The class
    stays where the pilot put it because BP_LundenPlayerController's use (E / left mouse: trace 2.2 m, take the hit
@@ -13,13 +13,23 @@
      already in changes nothing).
    Events: OpenDoor, CloseDoor, ToggleDoor (all set Wanted, then Apply). Open by id without a player (#2292/#2293):
    Get All Actors With Tag "interact:<id>" and call OpenDoor / CloseDoor / ToggleDoor.
+   The change event (#2312): on every real change, right after ChangeCount rises, Apply calls
+   OnInteractableChanged(Id, IsOpen, Source) on every actor of /Game/Lunden/Interaction/BP_LundenInteractionListener
+   (and its child Blueprints). A Blueprint-declared event dispatcher cannot be broadcast from a headless build in
+   UE 5.8.4 (no Call node can be placed, #2285/#2312) and a Blueprint interface cannot be added to a listener
+   Blueprint headless, so the listener is a class: a subscriber is an actor of that class or of a child Blueprint
+   that overrides OnInteractableChanged (BlueprintEditorLibrary.add_function_override). The base class records each
+   call (Received "<id>=<true|false>", Total, LastSource), which test_interaction counts.
 2. Builds /Game/Lunden/Generated/Interaction/Level_l1007_interaction: a copy of the importer's Level_l1007 (as the
    pilot's door builder did) where each door leaf and window sash hangs on an interactable at its hinge / pivot with a
    blocking box for the use trace, each room switch and tap gets an interactable with a small use box, and each tap a
    hidden water stream (an engine cylinder from outlet to landing, src/water.js).
 3. Builds /Game/Lunden/Generated/Interaction/Level_lift_buttons: the four lifts' car and call buttons
    (src/liftpanel.js) as interactables (Kind 3: state + ChangeCount only, since the lifts are not ported yet).
-Ends with LUNDEN_INTERACTION_OK. Lock BP_LundenSwingDoor.uasset first (git lfs lock); the level is generated, not versioned.
+Ends with LUNDEN_INTERACTION_OK. Lock BP_LundenSwingDoor.uasset and Interaction/BP_LundenInteractionListener.uasset
+first (git lfs lock); the levels are generated, not versioned. Both classes are skipped when their Lunden.SpecHash
+matches this script. --check builds nothing: it fails unless both classes carry this script's hash, compile cleanly
+and the door's Apply calls the listener (LUNDEN_INTERACTION_CHECK_OK).
 """
 import hashlib
 import json
@@ -34,6 +44,8 @@ BP = u.BlueprintEditorLibrary
 GRAPH = u.BlueprintGraphEditor
 DOOR = "/Game/Lunden/Blueprints/PilotDoors/BP_LundenSwingDoor"
 LAMP = "/Game/Lunden/Lighting/BP_LundenLamp"
+LISTENER = "/Game/Lunden/Interaction/BP_LundenInteractionListener"  # #2312: the change event's subscriber class
+EVENT = "OnInteractableChanged"
 SOURCE = "/Game/Lunden/Generated/l1007/Level_l1007"
 TARGET = "/Game/Lunden/Generated/Interaction/Level_l1007_interaction"
 LIFTS = "/Game/Lunden/Generated/Interaction/Level_lift_buttons"
@@ -148,7 +160,117 @@ def for_each_tag(gr, tags_var, cls_bp, body):
     return outer
 
 
-def build_class():
+def for_each_listener(gr, listener):
+    """for actor in GetAllActorsOfClass(listener): OnInteractableChanged(Id, TargetOpen, self) -> (find, loop)."""
+    find = gr.call("GameplayStatics:GetAllActorsOfClass")
+    value(find, "ActorClass", listener.generated_class().get_path_name())
+    loop = gr.at(gr.g.add_macro_node(FOR_EACH))
+    connect(find, "then", loop, "Exec")
+    connect(find, "OutActors", loop, "Array")
+    cast, typed = gr.cast(listener)
+    connect(loop, "LoopBody", cast, "execute")
+    connect(loop, "Array Element", cast, "Object")
+    call = gr.call(listener.generated_class().get_path_name() + ":" + EVENT)
+    connect(cast, "then", call, "execute")
+    connect(cast, typed, call, "self")
+    connect(gr.get("Id"), "Id", call, "Id")
+    connect(gr.get("TargetOpen"), "TargetOpen", call, "IsOpen")
+    me = gr.call("ActorComponent:GetOwner")  # self, through the root component (the graph editor has no Self node)
+    connect(gr.call("Actor:K2_GetRootComponent"), "ReturnValue", me, "self")
+    connect(me, "ReturnValue", call, "Source")
+    return find, loop
+
+
+def build_listener():
+    """#2312: BP_LundenInteractionListener (Actor). Its function OnInteractableChanged(Id, IsOpen, Source) is the change
+    event: every interactable calls it on every listener actor once per real change. The base body records the call
+    (Received gets "<id>=<true|false>", Total +1, LastSource); a child Blueprint overrides the function to react."""
+    bp = ASSETS.load_asset(LISTENER) if ASSETS.does_asset_exist(LISTENER) else None
+    if bp and ASSETS.get_metadata_tag(bp, SPEC_TAG) == SPEC:
+        u.log("LUNDEN_INTERACTION listener unchanged, nothing saved")
+        return bp
+    if not bp:
+        bp = BP.create_blueprint_asset_with_parent(LISTENER, u.Actor)
+        if not bp:
+            raise RuntimeError("Could not create " + LISTENER)
+    string, boolean = BP.get_basic_type_by_name("string"), BP.get_basic_type_by_name("bool")
+    have = {str(n) for n in BP.list_member_variable_names(bp)}
+    for name, typ in (("Received", BP.get_array_type(string)), ("Total", BP.get_basic_type_by_name("int")),
+                      ("LastSource", BP.get_object_reference_type(u.Actor))):
+        if name not in have and not BP.add_member_variable(bp, name, typ):
+            raise RuntimeError("Could not add the variable " + name)
+    if EVENT in [str(n) for n in BP.list_graph_names(bp)]:
+        BP.remove_function_graph(bp, EVENT)
+    BP.compile_blueprint(bp)
+    ed = GRAPH.create_and_edit_function_graph(bp, EVENT)
+    for name, typ in (("Id", string), ("IsOpen", boolean), ("Source", BP.get_object_reference_type(u.Actor))):
+        pin = ed.add_graph_input_parameter(name, typ)
+        if not pin or not pin.is_valid():
+            raise RuntimeError(f"Could not add the input {EVENT}.{name}")
+    entry = [n for n in ed.list_all_nodes() if n.get_class().get_name() == "K2Node_FunctionEntry"][0]
+    eq = ed.add_call_function_node("/Script/Engine.KismetStringLibrary:Concat_StrStr")
+    connect(entry, "Id", eq, "A")
+    value(eq, "B", "=")
+    state = ed.add_call_function_node("/Script/Engine.KismetStringLibrary:Conv_BoolToString")
+    connect(entry, "IsOpen", state, "InBool")
+    text = ed.add_call_function_node("/Script/Engine.KismetStringLibrary:Concat_StrStr")
+    connect(eq, "ReturnValue", text, "A")
+    connect(state, "ReturnValue", text, "B")
+    add = ed.add_call_function_node("/Script/Engine.KismetArrayLibrary:Array_Add")
+    connect(entry, "then", add, "execute")
+    connect(ed.add_get_member_variable_node("Received"), "Received", add, "TargetArray")
+    connect(text, "ReturnValue", add, "NewItem")
+    plus = ed.add_call_function_node("/Script/Engine.KismetMathLibrary:Add_IntInt")
+    connect(ed.add_get_member_variable_node("Total"), "Total", plus, "A")
+    value(plus, "B", 1)
+    total = ed.add_set_member_variable_node("Total")
+    connect(add, "then", total, "execute")
+    connect(plus, "ReturnValue", total, "Total")
+    last = ed.add_set_member_variable_node("LastSource")
+    connect(total, "then", last, "execute")
+    connect(entry, "Source", last, "LastSource")
+    for i, node in enumerate(ed.list_all_nodes()):
+        BP.set_node_pos(node, u.IntPoint(280 * i, 0))
+    BP.compile_blueprint(bp)
+    bad = ed.list_nodes_with_errors()
+    if bad:
+        raise RuntimeError("BP_LundenInteractionListener failed to compile: " + ", ".join(n.get_name() for n in bad))
+    ASSETS.set_metadata_tag(bp, SPEC_TAG, SPEC)
+    if not ASSETS.save_loaded_asset(bp, only_if_is_dirty=False):
+        raise RuntimeError("Could not save " + LISTENER + " (git lfs lock it first)")
+    return bp
+
+
+def check():
+    """--check: both classes carry this script's hash, compile without errors, and the door's Apply calls the listener."""
+    problems = []
+    for path in (LISTENER, DOOR):
+        bp = ASSETS.load_asset(path) if ASSETS.does_asset_exist(path) else None
+        if not bp:
+            problems.append(path + " is missing")
+            continue
+        if ASSETS.get_metadata_tag(bp, SPEC_TAG) != SPEC:
+            problems.append(f"{path}: spec {ASSETS.get_metadata_tag(bp, SPEC_TAG)} != {SPEC}")
+        BP.compile_blueprint(bp)
+        graphs = ["EventGraph"] if path == DOOR else [EVENT]
+        for name in graphs:
+            ed = GRAPH.get_graph_editor_by_name(bp, name)
+            if not ed:
+                problems.append(f"{path} has no graph {name}")
+                continue
+            if ed.list_nodes_with_errors():
+                problems.append(f"{path} {name} has errors")
+            if path == DOOR:
+                calls = [n for n in ed.list_all_nodes() if n.get_class().get_name() == "K2Node_CallFunction"
+                         and {"Id", "IsOpen", "Source"} <= {str(p.get_pin_name()) for p in BP.list_input_pins(n)}]
+                if len(calls) != 1:
+                    problems.append(f"{path}: {len(calls)} calls of {EVENT} (expected 1)")
+    if problems:
+        raise RuntimeError("LUNDEN_INTERACTION_CHECK failed: " + "; ".join(problems))
+    u.log(f"LUNDEN_INTERACTION_CHECK_OK spec {SPEC[:12]}")
+
+
+def build_class(listener):
     bp = ASSETS.load_asset(DOOR)
     if not bp:
         raise RuntimeError(DOOR + " is missing (the #2246 pilot asset)")
@@ -200,11 +322,16 @@ def build_class():
     count = gr.set("ChangeCount")
     connect(state, "then", count, "execute")
     connect(plus, "ReturnValue", count, "ChangeCount")
+    # #2312: the change event, once per real change, before the switch / tap / motion below
+    gr.row()
+    notify, listeners = for_each_listener(gr, listener)
+    connect(count, "then", notify, "execute")
+    gr.row()
     is_switch = gr.call("KismetMathLibrary:EqualEqual_IntInt")
     connect(gr.get("Kind"), "Kind", is_switch, "A")
     value(is_switch, "B", KIND_SWITCH)
     b_switch = gr.branch()
-    connect(count, "then", b_switch, "execute")
+    connect(listeners, "Completed", b_switch, "execute")
     connect(is_switch, "ReturnValue", b_switch, "Condition")
 
     # switch: every lamp:<id> actor on or off
@@ -490,14 +617,18 @@ def build_lift_level(cls, m):
 
 
 def main(argv):
-    path = Path(argv[0]) if argv else PROJECT / "Import/measurements.json"
+    if "--check" in argv:
+        check()
+        return
+    args = [a for a in argv if not a.startswith("--")]
+    path = Path(args[0]) if args else PROJECT / "Import/measurements.json"
     m = json.loads(path.read_text(encoding="utf-8"))
     if "interaction" not in m or not any(w.get("sashes") for w in m["windows"]):
         raise RuntimeError("measurements.json has no #2285 interaction data: export again (export-world.mjs)")
     for level in (TARGET, LIFTS):  # generated: delete first, so a rebuilt class does not keep the old level loaded
         if ASSETS.does_asset_exist(level) and not ASSETS.delete_asset(level):
             raise RuntimeError("Could not delete the previous " + level)
-    cls = build_class()
+    cls = build_class(build_listener())
     build_level(cls, m)
     build_lift_level(cls, m)
     u.log("LUNDEN_INTERACTION_OK")

@@ -11,6 +11,9 @@
 4. A switch turns its room's real lamps (#2283's BP_LundenLamp actors tagged lamp:<id> in Level_lighting) on and off
    and leaves another room's lamp off; a tap shows and hides its water.
 5. The four lifts' 49 buttons (Level_lift_buttons) sit within 1 cm of the export and light once on two presses.
+6. The change event (#2312): a BP_LundenInteractionListener placed before Play receives OnInteractableChanged exactly once
+   per real change: for every interactable its calls equal its ChangeCount and alternate with the state, and a door, a
+   window sash, a switch and a tap each get exactly [open, closed] for open + repeated open + close.
 
 Run: copy this file to unreal/Lunden/Content/Python/ (untracked) and
     run-tests.ps1 -Filter Editor.Python.Lunden.test_interaction
@@ -31,6 +34,7 @@ MAP = "/Game/Lunden/Maps/L_Lunden"  # the composed world: L1007 via Level_l1007_
 DOOR = "/Game/Lunden/Blueprints/PilotDoors/BP_LundenSwingDoor.BP_LundenSwingDoor_C"
 LAMP = "/Game/Lunden/Lighting/BP_LundenLamp.BP_LundenLamp_C"
 CONTROLLER = "/Game/Lunden/Player/BP_LundenPlayerController.BP_LundenPlayerController_C"
+LISTENER = "/Game/Lunden/Interaction/BP_LundenInteractionListener.BP_LundenInteractionListener_C"
 PROJECT = Path(u.Paths.convert_relative_path_to_full(u.Paths.project_dir()))
 M = json.loads((PROJECT / "Import/measurements.json").read_text(encoding="utf-8"))
 ENTRANCE = "door_l0_x80_z0"
@@ -44,6 +48,11 @@ world.get_world_settings().set_editor_property("default_game_mode", mode)
 cam = u.get_editor_subsystem(u.EditorActorSubsystem).spawn_actor_from_class(u.CameraActor, u.Vector(130.665, -100, 110))
 cam.root_component.set_mobility(u.ComponentMobility.MOVABLE)
 cam.tags = [u.Name("interaction-test-camera")]
+listener_class = u.load_class(None, LISTENER)
+if not listener_class:
+    raise RuntimeError(LISTENER + " is missing: run build_interaction.py (#2312)")
+subscriber = u.get_editor_subsystem(u.EditorActorSubsystem).spawn_actor_from_class(listener_class, u.Vector(0, 0, -1000))
+subscriber.tags = [u.Name("interaction-test-listener")]  # subscribes for the whole Play session (PIE copies it)
 saved_slot = save_isolation.isolate()
 levels.editor_request_begin_play()
 
@@ -96,6 +105,12 @@ def run():
             return a.get_editor_property("ChangeCount")
 
         problems, evidence = [], {"engine": u.SystemLibrary.get_engine_version(), "map": MAP, "doors": {}, "sashes": {}}
+        listener, = u.GameplayStatics.get_all_actors_with_tag(game, "interaction-test-listener")
+
+        def heard(i):
+            """The states OnInteractableChanged reported for id i, in order (#2312)."""
+            return [state == "true" for got_id, state in
+                    (str(r).rsplit("=", 1) for r in listener.get_editor_property("Received")) if got_id == i]
         # 1. coverage
         every = list(DOORS) + list(SASHES) + [s["id"] for s in SWITCHES] + [t["id"] for t in TAPS] + [b["id"] for b in LIFT_BUTTONS]
         act = {i: by_id(i) for i in every}
@@ -166,6 +181,8 @@ def run():
             (evidence["doors"] if i in DOORS else evidence["sashes"])[i]["closed"] = check(i, False)
             if count(act[i]) != 2:
                 problems.append(f"{i}: {count(act[i])} changes after open + close")
+            if heard(i) != [True, False]:
+                problems.append(f"{i}: event {heard(i)} after open + repeated open + close (expected [True, False])")
         done = set()
         for i in wardrobes:
             j = DOORS[i].get("partner")
@@ -210,6 +227,7 @@ def run():
         sw = next(s for s in SWITCHES if len(s["lamps"]) > 1) if any(len(s["lamps"]) > 1 for s in SWITCHES) else SWITCHES[0]
         other = next(lid for lid in lamps if lid not in sw["lamps"])
         act[sw["id"]].call_method("OpenDoor")
+        act[sw["id"]].call_method("OpenDoor")  # already on: no change, no event
         yield from seconds(0.1)
         on = {lid: lamps[lid].get_editor_property("IsOn") for lid in sw["lamps"]}
         other_on = lamps[other].get_editor_property("IsOn")
@@ -223,6 +241,7 @@ def run():
         water, = u.GameplayStatics.get_all_actors_with_tag(game, "water:" + tap["id"])
         hidden0 = water.get_editor_property("hidden")
         act[tap["id"]].call_method("OpenDoor")
+        act[tap["id"]].call_method("OpenDoor")  # already on: no change, no event
         yield from seconds(0.1)
         hidden1 = water.get_editor_property("hidden")
         act[tap["id"]].call_method("CloseDoor")
@@ -244,12 +263,35 @@ def run():
         if bad:
             problems.append(f"lift buttons not lit once: {bad}")
         evidence["liftButtons"] = {"count": len(LIFT_BUTTONS), "litOnceAfterTwoPresses": len(pressed) - len(bad)}
+        # 6. the change event (#2312): one call per real change for every interactable, alternating with the state
+        sample = {"door": next(i for i in simple if i in DOORS), "sash": next(i for i in simple if i in SASHES),
+                  "switch": sw["id"], "tap": tap["id"]}
+        for what, i in sample.items():
+            if what in ("switch", "tap") and heard(i) != [True, False]:
+                problems.append(f"{what} {i}: event {heard(i)} after on + repeated on + off (expected [True, False])")
+        wrong = {}
+        for i in every:
+            got = heard(i)
+            alternate = all(a != b for a, b in zip(got, got[1:]))
+            if len(got) != count(act[i]) or not alternate or (got and got[-1] != act[i].get_editor_property("TargetOpen")):
+                wrong[i] = (got, count(act[i]))
+        if wrong:
+            problems.append(f"event calls do not match the changes: {dict(list(wrong.items())[:8])}")
+        received = list(listener.get_editor_property("Received"))
+        source = listener.get_editor_property("LastSource")
+        if listener.get_editor_property("Total") != len(received) or not source or source.get_class().get_name() != "BP_LundenSwingDoor_C":
+            problems.append(f"listener Total {listener.get_editor_property('Total')} vs {len(received)} calls, "
+                            f"LastSource {source}")
+        evidence["event"] = {"listener": LISTENER, "calls": len(received), "changes": sum(count(act[i]) for i in every),
+                             "interactables": len(every), "mismatched": len(wrong),
+                             "samples": {what: [i, heard(i)] for what, i in sample.items()},
+                             "lastSource": source.get_name() if source else None}
         evidence["problems"] = problems
         (Path(u.Paths.project_saved_dir()) / "interaction-result.json").write_text(json.dumps(evidence, indent=1) + "\n", encoding="utf-8")
         if problems:
             raise RuntimeError("LUNDEN_INTERACTION_TEST failed: " + "; ".join(problems[:20]))
         u.log(f"LUNDEN_INTERACTION_TEST_OK {len(DOORS)} doors, {len(SASHES)} sashes, {len(SWITCHES)} switches, {len(TAPS)} taps, "
-              f"{len(LIFT_BUTTONS)} lift buttons")
+              f"{len(LIFT_BUTTONS)} lift buttons, {len(received)} change events")
     finally:
         levels.editor_request_end_play()
         yield from save_isolation.restore_after_play(saved_slot, editor)
