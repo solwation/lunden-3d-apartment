@@ -1,4 +1,5 @@
 [
+  {"id": 1755, "date": "2026-11-21", "text": "Redan på laddningsskärmen kan du läsa vad andra spelare ser när du går med i flerspelarrummet.", "issues": [2375]},
   {"id": 1754, "date": "2026-11-21", "text": "I Windows-piloten kan du gå in i L1007, öppna dörrarna och ta trappan till övervåningen.", "issues": [2246]},
   {"id": 1753, "date": "2026-11-20", "text": "Namnskylten döljs nu helt medan en spelare sitter i bilen, i stället för att kluvas av taket.", "issues": [2274]},
   {"id": 1752, "date": "2026-11-20", "text": "Huvud- och kroppsträffar på spelare i bilens framsäten följer nu hur de sitter.", "group": "head-hits", "issues": [2273]},
