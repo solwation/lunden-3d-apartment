@@ -205,7 +205,7 @@ levels and builder scripts. Shared text files (`world-levels.json`, `player-exte
 
 | Group | Issue | Sole write area (binary) | Starts after |
 |---|---|---|---|
-| G01 (1/2) | #2278 L1007 both storeys and the world map | `Maps/L_Lunden` (via `compose_world.py`), `Buildings/L1007/`, `Generated/L1007/`; owns the format of `world-levels.json`; takes over `Maps/Pilot_L1007` after #2246 | #2246 |
+| G01 (1/2) | #2278 L1007 both storeys and the world map | `Maps/L_Lunden` (via `compose_world.py`), `Buildings/L1007/`, `Generated/L1007World/` (not `L1007/`: case-insensitive paths would make it the importer's `l1007/`); owns the format of `world-levels.json`; keeps `Maps/Pilot_L1007` as a test map | #2246 |
 | G01 (2/2) | #2279 Hus L, Hus A/B/C, stairwells and garage as static shells | `Buildings/Exterior/`, `Maps/Zones/HusL`, `Maps/Zones/Kvarteret`; the exporter's zone split | #2278 |
 | G02 | #2280 Terrain, streets, courtyard and river valley | `Site/`, `Maps/Zones/Gard`, `Maps/Zones/Omgivning` | #2279 (export split), #2278 |
 | G03 | #2281 Trees, hedges and grass | `Vegetation/`, `Maps/Zones/Vegetation` | #2280 |

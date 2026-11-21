@@ -1,0 +1,24 @@
+{
+  "formatVersion": 1,
+  "owner": "#2278",
+  "map": "/Game/Lunden/Maps/L_Lunden",
+  "gameMode": "/Game/Lunden/Blueprints/Pilot/BP_LundenPilotMode.BP_LundenPilotMode_C",
+  "gameModeOwner": "#2284 (the #2246 pilot GameMode until #2284 takes over Blueprints/Pilot/)",
+  "playerStart": "measurements.json#/spawn/start",
+  "levels": [
+    {
+      "package": "/Game/Lunden/Generated/l1007/Level_l1007",
+      "owner": "#2278",
+      "builder": "import_world.py --zones l1007",
+      "streaming": "always",
+      "what": "L1007 Entréplan and Övre plan as imported from the web (#2245): walls, floors, ceilings, stair, doors, windows, fittings, furniture"
+    },
+    {
+      "package": "/Game/Lunden/Generated/L1007World/Level_l1007_collision",
+      "owner": "#2278",
+      "builder": "build_l1007.py",
+      "streaming": "always",
+      "what": "L1007 walkable collision (wall/floor boxes, stair treads) and the provisional street approach from START"
+    }
+  ]
+}

@@ -1,0 +1,526 @@
+{
+  "engine": "5.8.4-58902052+++UE5+Release-5.8",
+  "map": "/Game/Lunden/Maps/L_Lunden",
+  "subLevels": [
+    "/Game/Lunden/Generated/l1007/Level_l1007",
+    "/Game/Lunden/Generated/L1007World/Level_l1007_collision"
+  ],
+  "measurements": [
+    {
+      "id": "entreplan_floor",
+      "gotCm": -0.0,
+      "wantCm": 0,
+      "errorCm": 0.0,
+      "source": "measurements.json#/plan/levels/0",
+      "trace": [
+        [
+          142,
+          225,
+          150
+        ],
+        [
+          142,
+          225,
+          -50
+        ]
+      ],
+      "hit": "L1007 collision col_l0_x288_z635_ym10"
+    },
+    {
+      "id": "ovre_plan_floor",
+      "gotCm": 325.0,
+      "wantCm": 325,
+      "errorCm": 0.0,
+      "source": "measurements.json#/plan/levels/1",
+      "trace": [
+        [
+          120,
+          120,
+          450
+        ],
+        [
+          120,
+          120,
+          250
+        ]
+      ],
+      "hit": "L1007 collision col_l1_x288_z285_y313"
+    },
+    {
+      "id": "entreplan_west_outer",
+      "gotCm": 0.18,
+      "wantCm": 0,
+      "errorCm": 0.18,
+      "source": "measurements.json#/plan/size",
+      "trace": [
+        [
+          -100,
+          600,
+          100
+        ],
+        [
+          300,
+          600,
+          100
+        ]
+      ],
+      "hit": "L1007 collision col_l0_x10_z635_y150"
+    },
+    {
+      "id": "entreplan_east_outer",
+      "gotCm": 575.12,
+      "wantCm": 575.3,
+      "errorCm": 0.18,
+      "source": "measurements.json#/plan/size",
+      "trace": [
+        [
+          700,
+          600,
+          100
+        ],
+        [
+          300,
+          600,
+          100
+        ]
+      ],
+      "hit": "L1007 collision col_l0_x565_z635_y150"
+    },
+    {
+      "id": "entreplan_north_outer",
+      "gotCm": 0.0,
+      "wantCm": 0,
+      "errorCm": 0.0,
+      "source": "measurements.json#/plan/size",
+      "trace": [
+        [
+          500,
+          -100,
+          100
+        ],
+        [
+          500,
+          300,
+          100
+        ]
+      ],
+      "hit": "L1007 collision col_l0_x521_z23_y150"
+    },
+    {
+      "id": "entreplan_south_outer",
+      "gotCm": 1269.86,
+      "wantCm": 1269.9,
+      "errorCm": 0.04,
+      "source": "measurements.json#/plan/size",
+      "trace": [
+        [
+          520,
+          1400,
+          100
+        ],
+        [
+          520,
+          1000,
+          100
+        ]
+      ],
+      "hit": "L1007 collision col_l0_x533_z1247_y150"
+    },
+    {
+      "id": "ovre_plan_west_outer",
+      "gotCm": 0.2,
+      "wantCm": 0,
+      "errorCm": 0.2,
+      "source": "measurements.json#/plan/size",
+      "trace": [
+        [
+          -100,
+          300,
+          450
+        ],
+        [
+          300,
+          300,
+          450
+        ]
+      ],
+      "hit": "L1007 collision col_l1_x10_z635_y465"
+    },
+    {
+      "id": "ovre_plan_east_outer",
+      "gotCm": 575.14,
+      "wantCm": 575.3,
+      "errorCm": 0.16,
+      "source": "measurements.json#/plan/size",
+      "trace": [
+        [
+          700,
+          300,
+          450
+        ],
+        [
+          300,
+          300,
+          450
+        ]
+      ],
+      "hit": "L1007 collision col_l1_x565_z635_y465"
+    },
+    {
+      "id": "stair_foot",
+      "gotCm": 350.0,
+      "wantCm": 350,
+      "errorCm": 0.0,
+      "source": "measurements.json#/stair/foot",
+      "trace": [
+        [
+          300,
+          713,
+          10.155
+        ],
+        [
+          450,
+          713,
+          10.155
+        ]
+      ],
+      "hit": "L1007 collision mesh_l0_x364_z713_y10"
+    },
+    {
+      "id": "stair_tread_1_top",
+      "gotCm": 20.312,
+      "wantCm": 20.31,
+      "errorCm": 0.003,
+      "source": "measurements.json#/stair/riser",
+      "trace": [
+        [
+          364,
+          713,
+          150
+        ],
+        [
+          364,
+          713,
+          -50
+        ]
+      ],
+      "hit": "L1007 collision mesh_l0_x364_z713_y10"
+    },
+    {
+      "id": "stair_tread_15_top",
+      "gotCm": 304.688,
+      "wantCm": 304.65,
+      "errorCm": 0.038,
+      "source": "measurements.json#/stair/riser",
+      "trace": [
+        [
+          399,
+          618,
+          450
+        ],
+        [
+          399,
+          618,
+          200
+        ]
+      ],
+      "hit": "L1007 collision mesh_l0_x399_z618_y292"
+    },
+    {
+      "id": "stair_landing",
+      "gotCm": 325.0,
+      "wantCm": 325,
+      "errorCm": 0.0,
+      "source": "measurements.json#/plan/levels/1",
+      "trace": [
+        [
+          347,
+          616,
+          450
+        ],
+        [
+          347,
+          616,
+          250
+        ]
+      ],
+      "hit": "L1007 collision col_l1_x193_z665_y313"
+    },
+    {
+      "id": "stair_opening",
+      "hitZCm": 162.5,
+      "hit": "L1007 collision mesh_l0_x507_z683_y150",
+      "rule": "no \u00d6vre plan floor over measurements.json#/stair/hole"
+    },
+    {
+      "id": "visible_entreplan_floor_top",
+      "gotCm": 0.2,
+      "wantCm": 0,
+      "errorCm": 0.2,
+      "source": "imported visible mesh"
+    },
+    {
+      "id": "visible_ovre_plan_floor_top",
+      "gotCm": 325.2,
+      "wantCm": 325,
+      "errorCm": 0.2,
+      "source": "imported visible mesh"
+    },
+    {
+      "id": "visible_west_wall_outer",
+      "gotCm": 0.18,
+      "wantCm": 0,
+      "errorCm": 0.18,
+      "source": "imported visible mesh"
+    },
+    {
+      "id": "visible_east_wall_outer",
+      "gotCm": 575.12,
+      "wantCm": 575.3,
+      "errorCm": 0.18,
+      "source": "imported visible mesh"
+    }
+  ],
+  "checkpoints": [
+    {
+      "label": "START",
+      "capsuleCm": [
+        287.5,
+        -1200.0,
+        94.9
+      ]
+    },
+    {
+      "label": "approach entrance",
+      "capsuleCm": [
+        139.55,
+        -143.91,
+        94.9
+      ]
+    },
+    {
+      "label": "through entrance",
+      "capsuleCm": [
+        140.98,
+        97.13,
+        94.9
+      ]
+    },
+    {
+      "label": "blocked by hall wall",
+      "capsuleCm": [
+        183.56,
+        98.6,
+        94.65
+      ]
+    },
+    {
+      "label": "entrance hall",
+      "capsuleCm": [
+        143.25,
+        221.21,
+        94.65
+      ]
+    },
+    {
+      "label": "towards kitchen",
+      "capsuleCm": [
+        262.34,
+        249.37,
+        94.65
+      ]
+    },
+    {
+      "label": "hallway",
+      "capsuleCm": [
+        269.92,
+        502.3,
+        94.65
+      ]
+    },
+    {
+      "label": "stair foot",
+      "capsuleCm": [
+        300.47,
+        706.43,
+        94.65
+      ]
+    },
+    {
+      "label": "ascending 1",
+      "capsuleCm": [
+        456.04,
+        713.04,
+        194.47
+      ]
+    },
+    {
+      "label": "ascending 2",
+      "capsuleCm": [
+        484.91,
+        709.9,
+        228.65
+      ]
+    },
+    {
+      "label": "ascending 3",
+      "capsuleCm": [
+        505.09,
+        692.92,
+        254.75
+      ]
+    },
+    {
+      "label": "ascending 4",
+      "capsuleCm": [
+        518.22,
+        665.54,
+        283.07
+      ]
+    },
+    {
+      "label": "ascending 5",
+      "capsuleCm": [
+        506.96,
+        635.9,
+        316.04
+      ]
+    },
+    {
+      "label": "ascending 6",
+      "capsuleCm": [
+        477.72,
+        617.83,
+        354.3
+      ]
+    },
+    {
+      "label": "ascending 7",
+      "capsuleCm": [
+        450.17,
+        614.91,
+        375.57
+      ]
+    },
+    {
+      "label": "upper landing",
+      "capsuleCm": [
+        350.46,
+        615.96,
+        419.58
+      ]
+    },
+    {
+      "label": "\u00d6vre plan",
+      "capsuleCm": [
+        252.47,
+        663.79,
+        419.58
+      ]
+    },
+    {
+      "label": "back to landing",
+      "capsuleCm": [
+        343.83,
+        617.6,
+        419.58
+      ]
+    },
+    {
+      "label": "descending 1",
+      "capsuleCm": [
+        451.51,
+        614.99,
+        374.64
+      ]
+    },
+    {
+      "label": "descending 2",
+      "capsuleCm": [
+        479.04,
+        618.12,
+        353.23
+      ]
+    },
+    {
+      "label": "descending 3",
+      "capsuleCm": [
+        508.0,
+        636.64,
+        315.52
+      ]
+    },
+    {
+      "label": "descending 4",
+      "capsuleCm": [
+        518.22,
+        666.65,
+        279.32
+      ]
+    },
+    {
+      "label": "descending 5",
+      "capsuleCm": [
+        504.6,
+        693.8,
+        254.48
+      ]
+    },
+    {
+      "label": "descending 6",
+      "capsuleCm": [
+        483.87,
+        710.1,
+        227.76
+      ]
+    },
+    {
+      "label": "descending 7",
+      "capsuleCm": [
+        454.97,
+        713.0,
+        194.09
+      ]
+    },
+    {
+      "label": "downstairs",
+      "capsuleCm": [
+        285.94,
+        714.97,
+        94.65
+      ]
+    },
+    {
+      "label": "back along hallway",
+      "capsuleCm": [
+        270.22,
+        507.85,
+        94.65
+      ]
+    },
+    {
+      "label": "back in entrance hall",
+      "capsuleCm": [
+        144.79,
+        226.94,
+        94.65
+      ]
+    },
+    {
+      "label": "back out of the entrance",
+      "capsuleCm": [
+        141.1,
+        103.29,
+        94.65
+      ]
+    },
+    {
+      "label": "back outside",
+      "capsuleCm": [
+        139.03,
+        -136.42,
+        94.65
+      ]
+    }
+  ]
+}

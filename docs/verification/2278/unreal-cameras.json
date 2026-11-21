@@ -1,0 +1,37 @@
+{
+  "engine": "5.8.4-58902052+++UE5+Release-5.8",
+  "map": "/Game/Lunden/Maps/L_Lunden",
+  "hiddenCollisionActors": 123,
+  "cameras": [
+    {
+      "xyz": [
+        250.0,
+        819.9999999999999,
+        162.0
+      ],
+      "yaw": 97.00000000000006,
+      "pitch": -4.000000000000002,
+      "roll": -3.9854015897965574e-16,
+      "horizontalFov": 104.50486755371094,
+      "width": 1440,
+      "height": 810,
+      "id": "living-room",
+      "lighting": "day"
+    },
+    {
+      "xyz": [
+        215.0,
+        738.0,
+        162.0
+      ],
+      "yaw": -6.999999999999999,
+      "pitch": 8.000000000000002,
+      "roll": -1.0036911916390718e-16,
+      "horizontalFov": 104.50486755371094,
+      "width": 1440,
+      "height": 810,
+      "id": "stairs",
+      "lighting": "evening"
+    }
+  ]
+}

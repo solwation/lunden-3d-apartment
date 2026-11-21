@@ -67,6 +67,12 @@ tools/unreal-engine/python/screenshot_level.py       headless GPU screenshots of
 tools/unreal-engine/material-map.json         export material keys → hand-made Unreal materials (stub; the look is #2246)
 unreal/Lunden/Content/Lunden/Materials/       M_LundenWallPaint, M_LundenCollision (LFS, 6 KB each; made by create_base_materials.py)
 unreal/Lunden/Content/Lunden/Generated/       importer output per zone + import-stamp.json; Git-ignored pending a decision
+tools/unreal-engine/world-levels.json         the world map's sub-level list (#2278 owns the format; other issues add their own line)
+tools/unreal-engine/python/compose_world.py   composes /Game/Lunden/Maps/L_Lunden from world-levels.json (+ START, GameMode)
+tools/unreal-engine/python/build_l1007.py     L1007's derived collision sub-level Generated/L1007World/ (from the l1007 import)
+tools/unreal-engine/tests/test_l1007.py       PIE test on L_Lunden: sub-levels, 1 cm measurements, START → stairs → back
+tools/unreal-engine/tests/capture_l1007.py    GPU views of L_Lunden from the shared camera list (temporary light, nothing saved)
+unreal/Lunden/Content/Lunden/Maps/L_Lunden.umap  the persistent world map (LFS); written only by compose_world.py
 ```
 
 The rendering values in `Config/DefaultEngine.ini` are **assumptions** modelled on what a UE 5.x Blank C++ template
@@ -374,6 +380,76 @@ its own binaries, so the editor and the packaged game load only Epic-signed code
   its own `Generated/<folder>/`. Hand edits there are lost on the next run.
 - Different tools folders can be worked on in parallel (`tools/unreal-engine/export*`, `tools/unreal-engine/package*`,
   `unreal/Launcher/`; #2242).
+
+## World map L_Lunden (#2278)
+
+`/Game/Lunden/Maps/L_Lunden` is the persistent world map. It holds only the sub-level list, the GameMode and the
+PlayerStart at START; all geometry lives in sub-levels. #2278 owns the map, `compose_world.py`, `build_l1007.py` and
+the format of `tools/unreal-engine/world-levels.json`. Other porting issues add their own line to that list and never
+open the map (see [Parallel work](#parallel-work-levels-and-blueprints)).
+
+**Sub-levels (2026-11-21):**
+
+| Package | Owner | Built by | Contents |
+|---|---|---|---|
+| `/Game/Lunden/Generated/l1007/Level_l1007` | #2278 (importer output) | `import_world.py --zones l1007` | both storeys as exported: walls, floors, ceilings, stair, doors, windows, fittings, furniture |
+| `/Game/Lunden/Generated/L1007World/Level_l1007_collision` | #2278 | `build_l1007.py` | walkable collision: 54 wall/floor boxes, 15 complex-as-simple stair treads, provisional street approach |
+
+`world-levels.json` format (version 1): `map`, `gameMode` (class path; the #2246 pilot GameMode until #2284 changes
+this line), `playerStart` (always `measurements.json#/spawn/start`) and `levels`, an ordered list of
+`{package, owner, builder, streaming, what}`. `streaming` is `always` (`LevelStreamingAlwaysLoaded`) for now; add a
+value to `compose_world.py` when a zone needs distance streaming. To add a zone: build its sub-level with your own
+builder, add one line to `levels`, then ask the map owner (or run `compose_world.py` with the map's LFS lock). An issue
+that must change imported actors (for example #2285's doors) builds a derived copy under its own `Generated/<Area>/`
+and swaps the `package` of the line it replaces, recording the swap in both issues.
+
+**Folder name.** The issue planned `Generated/L1007/`, but Windows paths and Unreal package paths are
+case-insensitive: that folder is the importer's `Generated/l1007/`, which `import_world.py` deletes on disk at every
+re-import. The derived level therefore lives in `Generated/L1007World/`. `Buildings/L1007/` (hand-made L1007 assets)
+stays empty until something hand-made is needed.
+
+**Build order** in the Windows clone (all headless; lock the map first):
+
+```text
+git lfs lock unreal/Lunden/Content/Lunden/Maps/L_Lunden.umap
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/import_world.py
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/build_l1007.py
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/compose_world.py [--check]
+copy tools\unreal-engine\tests\test_l1007.py unreal\Lunden\Content\Python\   (untracked copy, delete afterwards)
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-tests.ps1 -Filter Editor.Python.Lunden.test_l1007
+```
+
+`build_l1007.py` skips when the import fingerprint, the script and its output packages are unchanged
+(`Generated/L1007World/build-stamp.json`); `--force` rebuilds. `compose_world.py` adds missing and removes unlisted
+sub-levels, sets the GameMode and places one PlayerStart (`Lunden START`, tag `id:START`) at START with the capsule
+centre half the web's standing headroom above the feet; it saves only when something differs, so a second run leaves
+the `.umap` byte-identical. `--check` fails on any difference without saving. It refuses a missing sub-level (naming
+its builder) and a PlayerStart in a sub-level.
+
+**Collision.** The imported collision proxies and visible meshes have no simple collision shapes after a reload (the
+pilot finding in [route.md](../verification/2246/route.md)), so the player would fall through. `build_l1007.py` places
+an engine cube at each proxy's bounds and copies the 15 tread meshes with complex-as-simple collision. The imported
+door leaves therefore do not block either: closed doors that block and open are #2285. The approach slab (x 0…575.3,
+y −1630…0, top at START's street level 0, `BasicShapeMaterial`, tags `kind:provisional-ground`, `replacedBy:#2280`)
+exists only because the street zone `l1007-entre` is not exported yet; #2280 removes it from `build_l1007.py` when its
+terrain sub-level is listed.
+
+**Lighting.** The map has none yet; G05 (#2283) adds a lighting sub-level. `capture_l1007.py` adds the pilot's
+temporary sun, sky and room lamps for verification pictures and saves nothing.
+
+**Results (2026-11-21, UE 5.8.4, export of ff93015a):** `import_world.py --check` kept the fixture within 0.000 cm over
+9 markers but failed on the l1007 content fingerprint, also without any #2278 asset: a fresh editor finds no simple box
+on the imported collision cube (an importer problem from before #2278). `compose_world.py` created the map, then a second run logged `unchanged, nothing saved` with the
+same SHA-256 and sub-level list, and `--check` passed. `test_l1007` passed in PIE: 16 measurements within 0.20 cm of
+`measurements.json` (both floors by trace and visible mesh, outer walls of both storeys, stair foot, first and last
+tread, landing; the stair opening has no floor over it), and the character walked START → front door → hall (stopped
+22.1 cm from the partition) → hallway → 15 treads up to Övre plan (centre 94.65 → 419.58 cm) → down → out to the
+approach. Evidence: [docs/verification/2278/](../verification/2278/README.md).
+
+**Pilot map.** `Maps/Pilot_L1007` (#2246, closed) stays as a test map: the playable pilot package and its
+route/door tests ([Local playable L1007 pilot](#local-playable-l1007-pilot-2246)) still build from it, and it shares no
+sub-level with `L_Lunden` that either builder writes. It is not part of the world and gets no new features; remove it
+when #2284/#2285 have moved its player and door tests to `L_Lunden`.
 
 ## Pilot camera references (#2246)
 
