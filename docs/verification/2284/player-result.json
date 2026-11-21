@@ -1,0 +1,84 @@
+{
+  "engine": "5.8.4-58902052+++UE5+Release-5.8",
+  "gameMode": "/Game/Lunden/Player/BP_LundenGameMode.BP_LundenGameMode_C",
+  "player": {
+    "eye": 1.62,
+    "crouchEye": 0.95,
+    "radius": 0.22,
+    "walk": 1.6,
+    "run": 3.2,
+    "runOutdoor": 4.8,
+    "stepUp": 0.45,
+    "headroom": 1.85,
+    "jump": 3.7,
+    "crouchSpeed": 0.5,
+    "mouseSens": 0.0013,
+    "source": "src/config.js#PLAYER"
+  },
+  "fall": [
+    {
+      "dropM": 2.9,
+      "measuredDropCm": 291.52,
+      "damage": 0,
+      "webDamage": 0,
+      "livesBefore": 10,
+      "livesAfter": 10,
+      "dead": false
+    },
+    {
+      "dropM": 3.1,
+      "measuredDropCm": 311.49,
+      "damage": 5,
+      "webDamage": 5,
+      "livesBefore": 10,
+      "livesAfter": 5,
+      "dead": false
+    },
+    {
+      "dropM": 4.5,
+      "measuredDropCm": 451.36,
+      "damage": 5,
+      "webDamage": 5,
+      "livesBefore": 5,
+      "livesAfter": 10,
+      "dead": true
+    },
+    {
+      "dropM": 6.1,
+      "measuredDropCm": 611.23,
+      "damage": 10,
+      "webDamage": 10,
+      "livesBefore": 10,
+      "livesAfter": 10,
+      "dead": true
+    }
+  ],
+  "eyeStandingCm": {
+    "got": 162.0,
+    "want": 162.0
+  },
+  "eyeCrouchedCm": {
+    "got": 95.0,
+    "want": 95.0
+  },
+  "crouchSpeedCmS": {
+    "got": 80.0,
+    "want": 80.0
+  },
+  "walkSpeedCmS": {
+    "got": 160.0,
+    "want": 160.0
+  },
+  "runSpeedCmS": {
+    "got": 320.0,
+    "want": 320.0
+  },
+  "gravityCmS2": {
+    "got": 980.0,
+    "want": 980.0
+  },
+  "jumpApexCm": {
+    "got": 69.84,
+    "want": 69.85
+  }
+}

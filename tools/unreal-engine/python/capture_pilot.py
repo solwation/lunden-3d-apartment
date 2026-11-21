@@ -14,7 +14,7 @@ ZONES = ("l1007", "l1007-uteplats")
 LABEL = "Lunden Pilot "
 APARTMENT = "/Game/Lunden/Generated/l1007/Level_l1007"
 DOORS = "/Game/Lunden/Generated/PilotDoors/Level_l1007_doors"
-GAMEMODE = "/Game/Lunden/Blueprints/Pilot/BP_LundenPilotMode"
+GAMEMODE = "/Game/Lunden/Player/BP_LundenGameMode"
 
 
 def actor(cls, label, loc=(0, 0, 0)):
@@ -91,7 +91,7 @@ def upgrade_door_level(world):
 def bind_player(world):
     if not unreal.EditorAssetLibrary.does_asset_exist(GAMEMODE):
         return False
-    mode = unreal.load_class(None, GAMEMODE + ".BP_LundenPilotMode_C")
+    mode = unreal.load_class(None, GAMEMODE + ".BP_LundenGameMode_C")
     if not mode:
         raise RuntimeError("Cannot load the pilot GameMode class")
     settings = world.get_world_settings()

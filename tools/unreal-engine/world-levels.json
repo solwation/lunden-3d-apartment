@@ -2,8 +2,8 @@
   "formatVersion": 1,
   "owner": "#2278",
   "map": "/Game/Lunden/Maps/L_Lunden",
-  "gameMode": "/Game/Lunden/Blueprints/Pilot/BP_LundenPilotMode.BP_LundenPilotMode_C",
-  "gameModeOwner": "#2284 (the #2246 pilot GameMode until #2284 takes over Blueprints/Pilot/)",
+  "gameMode": "/Game/Lunden/Player/BP_LundenGameMode.BP_LundenGameMode_C",
+  "gameModeOwner": "#2284 (built by build_player.py)",
   "playerStart": "measurements.json#/spawn/start",
   "levels": [
     {

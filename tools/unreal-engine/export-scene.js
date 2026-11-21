@@ -13,6 +13,7 @@ import { buildWorld } from '../../src/world.js';
 import { groundY } from '../../src/surroundings.js';
 import { stairRise, stairRiser, N_TREADS } from '../../src/stairs.js';
 import { husLLayout } from '../../src/exterior.js';
+import { fallDamage } from '../../src/falldamage.js';
 import { webToUnrealRounded, webYawToUnrealYaw, webPitchToUnrealPitch, webRotationYToUnrealYaw, roundCm } from './coordinates.mjs';
 
 export const FORMAT_VERSION = 1;
@@ -684,7 +685,13 @@ function measurementData({ world, planCopy, W, D, byZone, lightsInfo, materialTa
         source: 'src/config.js#START; feetY = src/surroundings.js groundY' },
       player: { eye: C.PLAYER.eye, crouchEye: C.PLAYER.crouchEye ?? null, radius: C.PLAYER.radius, walk: C.PLAYER.walk, run: C.PLAYER.run,
         runOutdoor: C.PLAYER.runOutdoor ?? null, stepUp: C.PLAYER.stepUp ?? null, headroom: C.PLAYER.headroom ?? null, jump: C.PLAYER.jump ?? null,
+        crouchSpeed: C.PLAYER.crouchSpeed ?? null, mouseSens: C.PLAYER.mouseSens ?? null,
         source: 'src/config.js#PLAYER' },
+      // #2284: the fall-damage rule and its results from the web's own src/falldamage.js, so Unreal's player matches them
+      // without a hand-copied formula. `samples` are free drops (gap = drop) in metres and the lives each one costs.
+      fall: { hurt: C.FALL.hurt, fatal: C.FALL.fatal, free: C.FALL.free, soft: C.FALL.soft, maxReport: C.FALL.maxReport, lives: C.COMBAT.lives,
+        samples: [0.5, 1, 2.9, 3, 3.1, 4.5, 6, 6.1, 9, 100, 101].map((drop) => ({ drop, gap: drop, damage: fallDamage(drop, drop, C.COMBAT.lives) })),
+        source: 'src/config.js#FALL, COMBAT.lives; src/falldamage.js fallDamage' },
     },
     stair: { foot: P(C.STAIR.aX0, C.LEVELS[0].floor, (C.STAIR.aZ[0] + C.STAIR.aZ[1]) / 2), rise: r4(stairRise()), riser: r4(stairRiser()), treads: N_TREADS,
       flights: C.STAIR.treads, hole: C.STAIR.hole, railHeight: C.STAIR.railHeight, source: 'src/config.js#STAIR, src/stairs.js' },

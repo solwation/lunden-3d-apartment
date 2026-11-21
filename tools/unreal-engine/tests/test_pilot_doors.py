@@ -6,7 +6,7 @@ import time
 import unreal as u
 
 MAP = "/Game/Lunden/Generated/PilotDoors/Level_l1007_doors"
-CONTROLLER = "/Game/Lunden/Blueprints/PilotDoors/BP_LundenDoorController.BP_LundenDoorController_C"
+CONTROLLER = "/Game/Lunden/Player/BP_LundenPlayerController.BP_LundenPlayerController_C"
 ENTRANCE = "door_l0_x80_z0"
 levels = u.get_editor_subsystem(u.LevelEditorSubsystem)
 editor = u.get_editor_subsystem(u.UnrealEditorSubsystem)
@@ -14,7 +14,7 @@ world = u.EditorLoadingAndSavingUtils.load_map(MAP)
 if not world:
     raise RuntimeError("Build the playable L1007 sublevel before running the door test.")
 # Use the packaged pilot GameMode and its actual PlayerController binding.
-mode = u.load_class(None, "/Game/Lunden/Blueprints/Pilot/BP_LundenPilotMode.BP_LundenPilotMode_C")
+mode = u.load_class(None, "/Game/Lunden/Player/BP_LundenGameMode.BP_LundenGameMode_C")
 if not mode or u.get_default_object(mode).get_editor_property("player_controller_class") != u.load_class(None, CONTROLLER):
     raise RuntimeError("Link the pilot GameMode to the door controller before testing.")
 world.get_world_settings().set_editor_property("default_game_mode", mode)
@@ -29,7 +29,7 @@ def operate():
     try:
         stop = time.monotonic() + 45
         pc = None
-        while not pc or pc.get_class().get_name() != "BP_LundenDoorController_C":
+        while not pc or pc.get_class().get_name() != "BP_LundenPlayerController_C":
             if time.monotonic() > stop:
                 raise RuntimeError("PIE did not start its door controller: " + str(pc))
             game = editor.get_game_world()

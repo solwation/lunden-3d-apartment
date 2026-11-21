@@ -46,7 +46,7 @@ def world_test():
             world = editor.get_game_world()
             pawn = u.GameplayStatics.get_player_character(world, 0) if world else None
             yield
-        if pawn.get_class().get_name() != "BP_LundenWalker_C":
+        if pawn.get_class().get_name() != "BP_LundenPlayer_C":
             raise RuntimeError(f"Unexpected pawn {pawn.get_class().get_name()}")
         pc = pawn.get_controller()
         result = {"engine": u.SystemLibrary.get_engine_version(), "map": MAP, "subLevels": [],

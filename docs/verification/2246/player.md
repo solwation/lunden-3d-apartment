@@ -1,5 +1,9 @@
 # First-person pilot controls
 
+*Since #2284 these assets are the production player in `/Game/Lunden/Player/` (`BP_LundenPlayer`,
+`BP_LundenGameMode`, `BP_LundenPlayerController`, `Input/`), built by `build_player.py`; see
+[unreal.md](../../development/unreal.md#player-2284). The results below are the pilot's.*
+
 `BP_LundenPilotMode` spawns `BP_LundenWalker` at the map's PlayerStart. Its player
 controller is `BP_LundenDoorController`. The pilot character registers its Enhanced
 Input mapping when play begins and removes it when play ends. WASD moves, the
@@ -39,11 +43,10 @@ $report = Join-Path $env:TEMP ('lunden-walker-' + [guid]::NewGuid())
 Get-Content (Join-Path $report 'index.json') -Raw
 ```
 
-The [Blueprint generator](../../../tools/unreal-engine/python/build_pilot_player.py)
-can rebuild the assets in a clean scratch project using the editor's
-`-run=pythonscript` and `-script=<generator path>`. With both sets of assets
-present, run it again with `-script="<generator path> --link-door-controller"`
-to bind the GameMode to the pilot door controller.
+The pilot's generator, `build_pilot_player.py`, is replaced by
+[build_player.py](../../../tools/unreal-engine/python/build_player.py) (#2284). It builds
+the same assets from the export in `/Game/Lunden/Player/` and binds the GameMode to the
+controller that carries the pilot door use.
 
 The [full traversal](route.md) exercises the production character on the actual
 streamed apartment and patio with both doors, the hall wall and the complete

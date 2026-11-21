@@ -1,0 +1,6 @@
+{
+  "formatVersion": 1,
+  "owner": "#2284",
+  "about": "Components that tools/unreal-engine/python/build_player.py adds to the production player (/Game/Lunden/Player/). Other issues add their own rows here instead of opening the player Blueprints. target: character (BP_LundenPlayer) or controller (BP_LundenPlayerController); name: the component variable name, unique per target; class: a component class path (a Blueprint component ends in _C); owner: the issue that owns the row and the class; what: one line. The builder adds missing rows, removes components it added earlier whose row is gone, and leaves every other component alone. docs/development/unreal.md#player-2284",
+  "components": []
+}

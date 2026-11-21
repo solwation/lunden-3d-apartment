@@ -13,12 +13,13 @@ SOURCE = "/Game/Lunden/Generated/l1007/Level_l1007"
 TARGET = "/Game/Lunden/Generated/PilotDoors/Level_l1007_doors"
 
 
-def blueprint(name, parent):
-    if ASSETS.does_asset_exist(DIR + "/" + name):
-        return ASSETS.load_asset(DIR + "/" + name), False
+def blueprint(path, parent):
+    if ASSETS.does_asset_exist(path):
+        return ASSETS.load_asset(path), False
     factory = u.BlueprintFactory()
     factory.set_editor_property("parent_class", parent)
-    return u.AssetToolsHelpers.get_asset_tools().create_asset(name, DIR, u.Blueprint, factory), True
+    folder, name = path.rsplit("/", 1)
+    return u.AssetToolsHelpers.get_asset_tools().create_asset(name, folder, u.Blueprint, factory), True
 
 
 def connect(src, output, dst, name):
@@ -51,7 +52,7 @@ def compile_save(bp, graph):
 
 
 def door_class():
-    door, fresh = blueprint("BP_LundenSwingDoor", u.Actor)
+    door, fresh = blueprint(DIR + "/BP_LundenSwingDoor", u.Actor)
     if not fresh:
         return door.generated_class()
     graph = GRAPH.get_graph_editor_by_name(door, "EventGraph")
@@ -87,8 +88,10 @@ def door_class():
     return door.generated_class()
 
 
-def controller_class(door):
-    bp, fresh = blueprint("BP_LundenDoorController", u.PlayerController)
+def controller_class(door, path):
+    """The door use (E / left mouse) on a PlayerController. Since #2284 the controller is the production
+    /Game/Lunden/Player/BP_LundenPlayerController, which build_player.py creates through this function."""
+    bp, fresh = blueprint(path, u.PlayerController)
     if not fresh:
         return bp.generated_class()
     BP.add_function_graph(bp, "UseDoor")
@@ -214,6 +217,5 @@ def build_level(door, measurements):
 
 
 if __name__ == "__main__":
-    door = door_class()
-    controller_class(door)
-    build_level(door, sys.argv[1])
+    # The door controller moved to /Game/Lunden/Player/BP_LundenPlayerController (#2284); build_player.py builds it.
+    build_level(door_class(), sys.argv[1])

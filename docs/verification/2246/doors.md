@@ -3,7 +3,8 @@
 The content-only pilot uses `BP_LundenSwingDoor` to animate the original imported
 leaf, glass and fittings about each web hinge. The imported frame and jamb strike
 stay fixed. A movable box covering the leaf blocks the walking capsule and
-visibility traces throughout its swing. `BP_LundenDoorController` traces 220 cm
+visibility traces throughout its swing. `BP_LundenDoorController` (since #2284
+`/Game/Lunden/Player/BP_LundenPlayerController`) traces 220 cm
 from the active camera on E or left mouse press and toggles the first door hit.
 Its eased rotation takes approximately 0.56 seconds, matching `src/doors.js`.
 
@@ -17,8 +18,9 @@ and the importer's `/Game/Lunden/Generated/l1007/Level_l1007` available.
    .\tools\unreal-engine\run-python.ps1 tools/unreal-engine/python/build_pilot_doors.py "C:/build/Lunden/Import/measurements.json"
    ```
 
-2. Link the generated pilot GameMode to `/Game/Lunden/Blueprints/PilotDoors/BP_LundenDoorController`
-   using `build_pilot_player.py --link-door-controller`. Compose the pilot
+2. Build the player with `build_player.py` (#2284). Its `BP_LundenGameMode` uses
+   `/Game/Lunden/Player/BP_LundenPlayerController`, the pilot's `BP_LundenDoorController`
+   moved there with its door use. Compose the pilot
    with `/Game/Lunden/Generated/PilotDoors/Level_l1007_doors` in place of the
    static L1007 import. The composition retains the original patio sublevel.
 3. To run the input and geometry check, copy `tools/unreal-engine/tests/test_pilot_doors.py`

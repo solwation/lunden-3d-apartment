@@ -42,7 +42,8 @@
       "type": "object", "required": ["start", "player"],
       "properties": {
         "start": { "type": "object", "required": ["web", "unreal", "feetY", "eyeY", "yawDeg", "pitchDeg", "unrealEye", "unrealYaw", "unrealPitch", "source"] },
-        "player": { "type": "object", "required": ["eye", "radius", "walk", "run", "source"] }
+        "player": { "type": "object", "required": ["eye", "radius", "walk", "run", "source"] },
+        "fall": { "type": "object", "description": "#2284: the web fall-damage rule (src/config.js FALL, COMBAT.lives) with sample results of src/falldamage.js: drops in metres, damage in lives (null = not reported)", "required": ["hurt", "fatal", "free", "lives", "samples", "source"] }
       }
     },
     "stair": { "type": "object", "required": ["foot", "rise", "riser", "treads", "hole", "source"], "properties": { "foot": { "$ref": "#/$defs/point" } } },

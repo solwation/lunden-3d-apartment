@@ -25,7 +25,7 @@ def route():
             pawn = u.GameplayStatics.get_player_character(world, 0) if world else None
             yield
         pc = pawn.get_controller()
-        if pawn.get_class().get_name() != "BP_LundenWalker_C" or pc.get_class().get_name() != "BP_LundenDoorController_C":
+        if pawn.get_class().get_name() != "BP_LundenPlayer_C" or pc.get_class().get_name() != "BP_LundenPlayerController_C":
             raise RuntimeError(f"Unexpected possession: {pawn.get_class().get_name()}, {pc.get_class().get_name()}")
         checkpoints = []
 

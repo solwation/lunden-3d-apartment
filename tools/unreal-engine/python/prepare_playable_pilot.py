@@ -18,12 +18,12 @@ def run_builder(name, *args):
 
 def prepare(measurements, scene):
     pilot = "/Game/Lunden/Maps/Pilot_L1007"
-    mode = "/Game/Lunden/Blueprints/Pilot/BP_LundenPilotMode.BP_LundenPilotMode_C"
+    mode = "/Game/Lunden/Player/BP_LundenGameMode.BP_LundenGameMode_C"
     config = unreal.GameMapsSettings.get_game_maps_settings()
     if pilot + ".Pilot_L1007" not in config.get_editor_property("game_default_map").export_text():
         raise RuntimeError("Set GameDefaultMap to Pilot_L1007 in the private project's DefaultEngine.ini first")
     run_builder("build_pilot_doors.py", measurements)
-    run_builder("build_pilot_player.py", "--link-door-controller")
+    run_builder("build_player.py", measurements)
     run_builder("capture_pilot.py", scene)
     run_builder("build_pilot_collision.py")
     world = unreal.get_editor_subsystem(unreal.UnrealEditorSubsystem).get_editor_world()

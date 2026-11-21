@@ -78,6 +78,11 @@ tools/unreal-engine/tests/capture_l1007.py    GPU views of L_Lunden from the sha
 tools/unreal-engine/tests/test_exterior.py    PIE test: the export's 32 measurement rays through Hus L, A/B/C and the garage, 1 cm (#2279)
 tools/unreal-engine/tests/capture_exterior.py GPU views of L_Lunden with the #2279 zones streamed in memory (nothing saved)
 unreal/Lunden/Content/Lunden/Maps/L_Lunden.umap  the persistent world map (LFS); written only by compose_world.py
+tools/unreal-engine/python/build_player.py    the production player in /Game/Lunden/Player/ from the export (#2284;
+                                   succeeds build_pilot_player.py); moves the pilot assets, extension components
+tools/unreal-engine/player-extensions.json    components other issues add to the player and its controller (#2284 owns the format)
+tools/unreal-engine/tests/test_player.py      PIE test: eye heights, speeds, jump, fall damage against measurements.json
+unreal/Lunden/Content/Lunden/Player/          BP_LundenPlayer, BP_LundenPlayerController, BP_LundenGameMode, Input/ (LFS)
 ```
 
 The rendering values in `Config/DefaultEngine.ini` are **assumptions** modelled on what a UE 5.x Blank C++ template
@@ -370,7 +375,7 @@ its own binaries, so the editor and the packaged game load only Epic-signed code
   one large actor.
 - **Editor Python is the source of every hand-maintained asset.** Each area has a builder,
   `tools/unreal-engine/python/build_<area>.py`, that creates or updates its Blueprints, graphs, input assets,
-  materials and sub-levels headless (as `build_pilot_player.py` and `build_pilot_doors.py` do). The committed `.uasset`
+  materials and sub-levels headless (as `build_player.py` and `build_pilot_doors.py` do). The committed `.uasset`
   is the builder's output: review the script diff, regenerate with the lock, commit both. Agents never edit
   assets in the editor GUI.
 - **Python never ships.** The packaged game runs Blueprints and assets only. Editor Python covers import, builders
@@ -400,8 +405,7 @@ open the map (see [Parallel work](#parallel-work-levels-and-blueprints)).
 | `/Game/Lunden/Generated/l1007/Level_l1007` | #2278 (importer output) | `import_world.py --zones l1007` | both storeys as exported: walls, floors, ceilings, stair, doors, windows, fittings, furniture |
 | `/Game/Lunden/Generated/L1007World/Level_l1007_collision` | #2278 | `build_l1007.py` | walkable collision: 54 wall/floor boxes, 15 complex-as-simple stair treads, provisional street approach |
 
-`world-levels.json` format (version 1): `map`, `gameMode` (class path; the #2246 pilot GameMode until #2284 changes
-this line), `playerStart` (always `measurements.json#/spawn/start`) and `levels`, an ordered list of
+`world-levels.json` format (version 1): `map`, `gameMode` (class path; #2284's `BP_LundenGameMode` since 2026-11-21), `playerStart` (always `measurements.json#/spawn/start`) and `levels`, an ordered list of
 `{package, owner, builder, streaming, what}`. `streaming` is `always` (`LevelStreamingAlwaysLoaded`) for now; add a
 value to `compose_world.py` when a zone needs distance streaming. To add a zone: build its sub-level with your own
 builder, add one line to `levels`, then ask the map owner (or run `compose_world.py` with the map's LFS lock). An issue
@@ -455,6 +459,57 @@ approach. Evidence: [docs/verification/2278/](../verification/2278/README.md).
 route/door tests ([Local playable L1007 pilot](#local-playable-l1007-pilot-2246)) still build from it, and it shares no
 sub-level with `L_Lunden` that either builder writes. It is not part of the world and gets no new features; remove it
 when #2284/#2285 have moved its player and door tests to `L_Lunden`.
+
+## Player (#2284)
+
+`/Game/Lunden/Player/` holds the production first-person player; #2284 owns the folder, `build_player.py`,
+`tests/test_player.py` and the format of `player-extensions.json`. It took over the #2246 pilot's assets with their
+references fixed: `BP_LundenWalker` → `BP_LundenPlayer` (Character), `BP_LundenPilotMode` → `BP_LundenGameMode`,
+`PilotDoors/BP_LundenDoorController` → `BP_LundenPlayerController` (it keeps the pilot door use, E / left mouse, until
+#2285 replaces it through `player-extensions.json`), `IMC_LundenPilot` → `Input/IMC_LundenPlayer` and the nine
+`IA_Lunden*` actions → `Input/`. `Blueprints/Pilot/` is empty; `Blueprints/PilotDoors/` keeps only `BP_LundenSwingDoor`
+(the door area, #2285). `L_Lunden` and `Pilot_L1007` use `BP_LundenGameMode`.
+
+```text
+git lfs lock unreal/Lunden/Content/Lunden/Player/<every .uasset the run may write>
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/build_player.py [<measurements.json>] [--force | --check] [--extensions <file>]
+```
+
+**Values come from the export.** `measurements.json` `spawn.player` (`src/config.js` `PLAYER`) and `spawn.fall`
+(`FALL`, `COMBAT.lives` and sample results of the web's own `src/falldamage.js`, added to `export-scene.js` by #2284).
+The builder writes them into the character's movement settings and Blueprint variable defaults (`WalkSpeed`,
+`RunSpeed`, `LookDegrees`, `MaxLives`, `Lives`, `FallHurt`, `FallFatal`, `FallMaxReport` in cm); the graphs read
+the variables, never a literal web number. Capsule radius 22 cm, half height 92.5 cm (headroom 1.85 m / 2), step
+45 cm, jump 370 cm/s (apex 69.8 cm with Unreal's default gravity of 980 cm/s², the web's 9.8 m/s²), walk 160, sprint
+320, crouched 80 cm/s (`walk × crouchSpeed`). Eye heights: standing 162, crouched 95 cm above the floor; the eye
+offsets subtract the 2.15 cm the walking capsule floats above the floor. *Assumption:* the crouched capsule keeps the
+standing headroom over the eye (half height 59 cm); the web has no crouched body height. Not yet ported: the faster
+outdoor sprint `runOutdoor` (needs an indoor/outdoor signal), rest (`src/rest.js`) and the footstep surface sensor
+(`src/stepsurface.js`).
+
+**Fall damage** (`src/player.js` landing, `src/falldamage.js`, `src/combat.js` `fall`). A fall starts when the
+character enters Falling (take-off of a jump, or the ledge it walked off) and its drop is that capsule height minus
+the landing height. Unreal only falls in free drops, since stairs and steps up to 45 cm stay in Walking, so the web's
+gap under the feet is never smaller than the drop. The rule is therefore: drop over `FallMaxReport` (100 m) costs
+nothing (the web reports no damage), over `FallFatal` (6 m) costs `MaxLives`, over `FallHurt` (3 m) costs
+ceil(`MaxLives` / 2), else nothing. Lives drop by the damage, and a death (damage ≥ lives) refills them and counts
+`Deaths`; `LastFallDrop` and `LastFallDamage` hold the latest landing for #2293's shared life and the HUD. The
+blackout, outdoor wake and suit protection stay with #2293/G08. Floor checks use a flat base
+(`use_flat_base_for_floor_checks`): with the round capsule bottom the character sank up to 17 cm down a ledge before
+falling, and the drop came out short.
+
+**Extension point.** `tools/unreal-engine/player-extensions.json` (`formatVersion` 1) lists components as
+`{target: character | controller, name, class, owner, what}`. `build_player.py` adds each missing row's component to
+`BP_LundenPlayer` or `BP_LundenPlayerController`. It removes components it added earlier whose row is gone, recorded
+in the asset metadata `Lunden.PlayerExtensions`, and leaves every other component alone. #2285, #2286, #2287, #2288
+and #2292 add their rows here and never open the player Blueprints.
+
+**Idempotency.** The builder stores a hash of its inputs (export values, extension rows, the script itself) as
+`Lunden.SpecHash` on `BP_LundenPlayer`; a run with the same inputs logs `unchanged, nothing saved`. `--check` fails
+when the assets are missing, the hash differs or a pilot asset is still in its old folder. A changed input rebuilds
+the character's event graph from scratch and rewrites the defaults.
+
+Results: [docs/verification/2284/](../verification/2284/README.md).
 
 ## Pilot camera references (#2246)
 
@@ -569,7 +624,7 @@ staging copy's `unreal/Lunden/Config/DefaultEngine.ini`:
 
 ```ini
 GameDefaultMap=/Game/Lunden/Maps/Pilot_L1007.Pilot_L1007
-GlobalDefaultGameMode=/Game/Lunden/Blueprints/Pilot/BP_LundenPilotMode.BP_LundenPilotMode_C
+GlobalDefaultGameMode=/Game/Lunden/Player/BP_LundenGameMode.BP_LundenGameMode_C
 ```
 
 From the staging repository root, select a fresh output directory, assemble the
