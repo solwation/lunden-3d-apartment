@@ -1,6 +1,6 @@
 {
  "engine": "5.8.4-58902052+++UE5+Release-5.8",
- "map": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction",
+ "map": "/Game/Lunden/Maps/L_Lunden",
  "doors": {
   "door_l0_x80_z0": {
    "opened": {

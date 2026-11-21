@@ -1,4 +1,4 @@
-"""#2285: L1007's doors, windows, switches and taps in Play In Editor (build_interaction.py's level).
+"""#2285: L1007's doors, windows, switches and taps in Play In Editor on the composed world map L_Lunden.
 
 1. Coverage: every L1007 door and window sash in measurements.json has exactly one interactable (tag interact:<id>),
    and so do the room switches and taps.
@@ -8,9 +8,8 @@
    angle (within 1 degree). A second OpenDoor changes nothing: ChangeCount rises exactly once per change. CloseDoor
    brings each back to its closed pose. Wardrobe pairs: opening one panel closes its open partner (src/doors.js).
 3. Player use: the production controller's E aimed at the front door (as the pilot's door test) opens it.
-4. A switch turns its room's lamp:<id> actors (#2283's BP_LundenLamp; spawned into the PIE world here, since the
-   lighting sub-level is not part of this level) on and off and leaves another room's lamp alone; a tap shows and
-   hides its water.
+4. A switch turns its room's real lamps (#2283's BP_LundenLamp actors tagged lamp:<id> in Level_lighting) on and off
+   and leaves another room's lamp off; a tap shows and hides its water.
 
 Run: copy this file to unreal/Lunden/Content/Python/ (untracked) and
     run-tests.ps1 -Filter Editor.Python.Lunden.test_interaction
@@ -22,7 +21,7 @@ from pathlib import Path
 import time
 import unreal as u
 
-MAP = "/Game/Lunden/Generated/Interaction/Level_l1007_interaction"
+MAP = "/Game/Lunden/Maps/L_Lunden"  # the composed world: L1007 via Level_l1007_interaction, lamps via Level_lighting
 DOOR = "/Game/Lunden/Blueprints/PilotDoors/BP_LundenSwingDoor.BP_LundenSwingDoor_C"
 LAMP = "/Game/Lunden/Lighting/BP_LundenLamp.BP_LundenLamp_C"
 CONTROLLER = "/Game/Lunden/Player/BP_LundenPlayerController.BP_LundenPlayerController_C"
@@ -33,18 +32,12 @@ levels = u.get_editor_subsystem(u.LevelEditorSubsystem)
 editor = u.get_editor_subsystem(u.UnrealEditorSubsystem)
 world = u.EditorLoadingAndSavingUtils.load_map(MAP)
 if not world:
-    raise RuntimeError("Run build_interaction.py first")
+    raise RuntimeError("Compose L_Lunden first (build_interaction.py, build_lighting.py, compose_world.py)")
 mode = u.load_class(None, "/Game/Lunden/Player/BP_LundenGameMode.BP_LundenGameMode_C")
 world.get_world_settings().set_editor_property("default_game_mode", mode)
 cam = u.get_editor_subsystem(u.EditorActorSubsystem).spawn_actor_from_class(u.CameraActor, u.Vector(130.665, -100, 110))
 cam.root_component.set_mobility(u.ComponentMobility.MOVABLE)
 cam.tags = [u.Name("interaction-test-camera")]
-# #2283's lamps live in the lighting sub-level; for this level-only test, spawn one BP_LundenLamp per switched light id
-# in the editor world (not saved), so PIE has the lamp:<id> actors the switches look for.
-_lamp_cls = u.load_class(None, LAMP)
-for _lid in sorted({lid for s in M["interaction"]["switches"] for lid in s["lamps"]}):
-    _lamp = u.get_editor_subsystem(u.EditorActorSubsystem).spawn_actor_from_class(_lamp_cls, u.Vector(0, 0, -1000))
-    _lamp.tags = [u.Name("lamp:" + _lid), u.Name("lunden-test-lamp")]
 levels.editor_request_begin_play()
 
 DOORS = {d["id"]: d for d in M["doors"] if d["zone"] == "l1007"}
@@ -197,7 +190,15 @@ def run():
         if count(act[ENTRANCE]) != before + 1 or not act[ENTRANCE].get_editor_property("TargetOpen"):
             problems.append(f"E did not open the front door once ({before} -> {count(act[ENTRANCE])})")
         # 4. a switch and its room's lamps; a tap and its water
-        lamps = {str(a.tags[0])[len("lamp:"):]: a for a in u.GameplayStatics.get_all_actors_with_tag(game, "lunden-test-lamp")}
+        lamps = {}
+        for lid in sorted({lid for s in SWITCHES for lid in s["lamps"]}):
+            found = u.GameplayStatics.get_all_actors_with_tag(game, "lamp:" + lid)
+            if len(found) != 1 or found[0].get_class().get_name() != "BP_LundenLamp_C":
+                raise RuntimeError(f"lamp:{lid}: {[a.get_class().get_name() for a in found]} (is Level_lighting in L_Lunden?)")
+            lamps[lid] = found[0]
+        for lamp in lamps.values():  # all start off (#2283)
+            if lamp.get_editor_property("IsOn"):
+                lamp.call_method("TurnOff")
         sw = next(s for s in SWITCHES if len(s["lamps"]) > 1) if any(len(s["lamps"]) > 1 for s in SWITCHES) else SWITCHES[0]
         other = next(lid for lid in lamps if lid not in sw["lamps"])
         act[sw["id"]].call_method("OpenDoor")

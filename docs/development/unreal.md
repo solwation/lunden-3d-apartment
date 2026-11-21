@@ -734,7 +734,16 @@ means rebuilding the controller's cast in `build_player.py` and is left for when
 raises `ChangeCount` by exactly one; asking for the state it is already in changes nothing. A switch calls
 `TurnOn`/`TurnOff` on every `BP_LundenLamp` tagged `lamp:<id>` in its `LampTags`; a tap shows or hides its water
 (an engine cylinder from outlet to landing). A wardrobe panel that opens first closes its partner (`wardrobeDoors`).
-Not yet: an event dispatcher to bind to (not built yet; until then #2293 watches `ChangeCount`), the lift panel, water sound and splash, the switch rocker's tilt.
+**The change event is `ChangeCount`** (#2293 compares it with the
+value it saw last and reads `TargetOpen`). An event dispatcher was tried and is not built: in UE 5.8.4 headless,
+`BlueprintEditorLibrary.add_event_dispatcher` / `add_event_dispatcher_parameter` create `OnStateChanged(Id)` and
+`add_dispatcher_event_node` makes a matching event, but nothing can place the node that calls (broadcasts) it.
+Dispatchers declared in a Blueprint never reach the editor's action database in a commandlet: `list_available_nodes`
+gave 41,188 actions with none containing `OnStateChanged` (not even Bind/Assign), also after saving, on
+`BP_LundenSwingDoor` itself, with `declaring_class` and with a typed context pin; `create_node_from_name`
+(`Default|CallOnStateChanged`, `EventDispatchers|CallOnStateChanged`, …) and `add_call_function_node` return None.
+Native dispatchers do appear (`…|CallOnX`). A declared dispatcher that never fires is deliberately not committed; the
+real broadcast is a follow-up linked to #2293. Not ported yet: water sound and splash, the switch rocker's tilt.
 
 **Level.** `/Game/Lunden/Generated/Interaction/Level_l1007_interaction` is a copy of the importer's `Level_l1007`
 where each door leaf and sash hangs on its interactable at the hinge/pivot with a blocking box (closed doors block
@@ -751,11 +760,11 @@ copy tools\unreal-engine\tests\test_interaction.py unreal\Lunden\Content\Python\
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-tests.ps1 -Filter Editor.Python.Lunden.test_interaction
 ```
 
-`test_interaction` (PIE on `Level_l1007_interaction` alone): all 18 L1007 doors, 6 sashes, 13 switches and 6 taps have one interactable;
+`test_interaction` (PIE on the composed `L_Lunden`): all 18 L1007 doors, 6 sashes, 13 switches and 6 taps have one interactable;
 opened and closed by id, every hinge/pivot is within 1 cm and every yaw / sash angle within 1° of `measurements.json`,
 sliders' boxes and sashes' check points within 1 cm of the open/closed points, `ChangeCount` 1 after open + repeated
 open and 2 after close; a wardrobe panel closes its partner; E opens the front door; a Hall switch turns both Hall
-lamps on and off and leaves the Badrum lamp off; the kitchen tap shows and hides its water. Results:
+lamps (#2283's real `BP_LundenLamp`s in `Level_lighting`) on and off and leaves the Badrum lamp off; the kitchen tap shows and hides its water. Results:
 [docs/verification/2285/](../verification/2285/README.md).
 
 ## Furnishing and pictures (#2289)

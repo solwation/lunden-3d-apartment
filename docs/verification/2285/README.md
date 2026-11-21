@@ -11,8 +11,9 @@ Source: export of 68becc86 + this issue's exporter change (98a0c0bf); Unreal 5.8
   Success. Every value: [interaction-result.json](interaction-result.json) (hinge/pivot, yaw, sash angle, slider box and
   sash check point per door and window, opened and closed, with `ChangeCount`; the wardrobe pairs; E on the front
   door; the Hall switch with both Hall lamps and the Badrum lamp; the kitchen tap's water).
-- Not covered here: the level is not yet in `L_Lunden` (see docs/development/unreal.md, "Doors, windows, switches and
-  taps"), so the lamps of the real lighting sub-level were stood in by `BP_LundenLamp` actors with the same tags.
+- Since 84650a1d the level is part of `L_Lunden`, and `test_interaction` runs there: the Hall switch turns #2283's real
+  `lamp:<id>` actors in `Level_lighting` on and off (no stand-ins). On the composed map `test_l1007` and
+  `test_exterior_route` (16 checkpoints) pass too.
 
 ## Picture
 
