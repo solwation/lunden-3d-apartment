@@ -1,0 +1,229 @@
+{
+  "engine": "5.8.4-58902052+++UE5+Release-5.8",
+  "map": "/Game/Lunden/Maps/L_Lunden",
+  "exposure": "game",
+  "trial": null,
+  "biasOffset": 0.0,
+  "naniteOffInMemory": 3373,
+  "hiddenCollisionActors": 1124,
+  "lamps": 36,
+  "shots": [
+    {
+      "xyz": [
+        250.0,
+        819.9999999999999,
+        162.0
+      ],
+      "yaw": 97.00000000000006,
+      "pitch": -4.000000000000002,
+      "roll": -3.9854015897965574e-16,
+      "horizontalFov": 104.50486755371094,
+      "width": 1440,
+      "height": 810,
+      "name": "living-room-day",
+      "camera": "living-room",
+      "date": [
+        2026,
+        6,
+        21
+      ],
+      "hour": 14.0,
+      "weather": "clear",
+      "lamps": "none",
+      "lampsLit": 0,
+      "exposureBias": -1.96503746509552,
+      "sunElevation": 56.38685825268361,
+      "sunLux": 8.0,
+      "daylight": 1.0,
+      "duskLight": 1.0,
+      "cloudCover": 0.0,
+      "moonIllumination": 0.4584773242846292
+    },
+    {
+      "xyz": [
+        250.0,
+        819.9999999999999,
+        162.0
+      ],
+      "yaw": 97.00000000000006,
+      "pitch": -4.000000000000002,
+      "roll": -3.9854015897965574e-16,
+      "horizontalFov": 104.50486755371094,
+      "width": 1440,
+      "height": 810,
+      "name": "living-room-evening",
+      "camera": "living-room",
+      "date": [
+        2026,
+        6,
+        21
+      ],
+      "hour": 22.0,
+      "weather": "clear",
+      "lamps": "all",
+      "lampsLit": 36,
+      "exposureBias": -2.462862008455037,
+      "sunElevation": -1.2975290578632654,
+      "sunLux": 0.0,
+      "daylight": 0.12452149711509822,
+      "duskLight": 0.12452149711509822,
+      "cloudCover": 0.0,
+      "moonIllumination": 0.49308163660365234
+    },
+    {
+      "xyz": [
+        175.0,
+        795.0,
+        487.0
+      ],
+      "yaw": 99.99999999999999,
+      "pitch": -3.0000000000000004,
+      "roll": 1.99057468934487e-16,
+      "horizontalFov": 104.50486755371094,
+      "width": 1440,
+      "height": 810,
+      "name": "upper-floor-evening",
+      "camera": "upper-floor",
+      "date": [
+        2026,
+        6,
+        21
+      ],
+      "hour": 22.0,
+      "weather": "clear",
+      "lamps": "all",
+      "lampsLit": 36,
+      "exposureBias": -2.462862008455037,
+      "sunElevation": -1.2975290578632654,
+      "sunLux": 0.0,
+      "daylight": 0.12452149711509822,
+      "duskLight": 0.12452149711509822,
+      "cloudCover": 0.0,
+      "moonIllumination": 0.49308163660365234
+    },
+    {
+      "xyz": [
+        250.0,
+        819.9999999999999,
+        162.0
+      ],
+      "yaw": 97.00000000000006,
+      "pitch": -4.000000000000002,
+      "roll": -3.9854015897965574e-16,
+      "horizontalFov": 104.50486755371094,
+      "width": 1440,
+      "height": 810,
+      "name": "living-room-dusk",
+      "camera": "living-room",
+      "date": [
+        2026,
+        6,
+        21
+      ],
+      "hour": 22.0,
+      "weather": "clear",
+      "lamps": "dusk",
+      "lampsLit": 19,
+      "exposureBias": -2.462862008455037,
+      "sunElevation": -1.2975290578632654,
+      "sunLux": 0.0,
+      "daylight": 0.12452149711509822,
+      "duskLight": 0.12452149711509822,
+      "cloudCover": 0.0,
+      "moonIllumination": 0.49308163660365234
+    },
+    {
+      "xyz": [
+        287.5,
+        -1200.0,
+        162.0
+      ],
+      "yaw": 89.99999999999999,
+      "pitch": 8.000000000000002,
+      "roll": -0.0,
+      "horizontalFov": 104.50486755371094,
+      "width": 1440,
+      "height": 810,
+      "name": "start-day",
+      "camera": "start",
+      "date": [
+        2026,
+        6,
+        21
+      ],
+      "hour": 14.0,
+      "weather": "clear",
+      "lamps": "none",
+      "lampsLit": 0,
+      "exposureBias": -1.96503746509552,
+      "sunElevation": 56.38685825268361,
+      "sunLux": 8.0,
+      "daylight": 1.0,
+      "duskLight": 1.0,
+      "cloudCover": 0.0,
+      "moonIllumination": 0.4584773242846292
+    },
+    {
+      "xyz": [
+        287.5,
+        -1200.0,
+        162.0
+      ],
+      "yaw": 89.99999999999999,
+      "pitch": 8.000000000000002,
+      "roll": -0.0,
+      "horizontalFov": 104.50486755371094,
+      "width": 1440,
+      "height": 810,
+      "name": "start-overcast",
+      "camera": "start",
+      "date": [
+        2026,
+        6,
+        21
+      ],
+      "hour": 14.0,
+      "weather": "rain",
+      "lamps": "none",
+      "lampsLit": 0,
+      "exposureBias": -2.549999952316284,
+      "sunElevation": 56.38685825268361,
+      "sunLux": 0.8799999952316284,
+      "daylight": 1.0,
+      "duskLight": 0.4,
+      "cloudCover": 1.0,
+      "moonIllumination": 0.4584773242846292
+    },
+    {
+      "xyz": [
+        287.5,
+        -1200.0,
+        162.0
+      ],
+      "yaw": 89.99999999999999,
+      "pitch": 8.000000000000002,
+      "roll": -0.0,
+      "horizontalFov": 104.50486755371094,
+      "width": 1440,
+      "height": 810,
+      "name": "start-night",
+      "camera": "start",
+      "date": [
+        2026,
+        11,
+        16
+      ],
+      "hour": 18.25,
+      "weather": "clear",
+      "lamps": "dusk",
+      "lampsLit": 19,
+      "exposureBias": -2.549999952316284,
+      "sunElevation": -18.99012878535478,
+      "sunLux": 0.0,
+      "daylight": 0.0,
+      "duskLight": 0.0,
+      "cloudCover": 0.0,
+      "moonIllumination": 0.4257102935179921
+    }
+  ]
+}

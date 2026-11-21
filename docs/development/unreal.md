@@ -950,7 +950,8 @@ fog and clouds follow, rain and snow can be switched on and off, and every expor
 #2283 owns `/Game/Lunden/Lighting/` (including the pilot's `T_PilotClearSky`), `build_lighting.py`,
 `tests/test_lighting.py`, `tests/capture_lighting.py`, `check-sun.mjs` and the `Lighting` row of `world-levels.json`;
 #2307 added the evening calibration, dusk lamps, weather-driven clouds, stars and the moon's phase, `M_LundenClouds`,
-`tests/lighting-shots.json`, `tests/capture-web-lighting.cjs` and `tests/crop-stats.cjs`.
+`tests/lighting-shots.json`, `tests/capture-web-lighting.cjs` and `tests/crop-stats.cjs`; #2313 the daylight fill, the
+sky's brightness and the locked exposure.
 
 - **Level.** The issue planned `/Game/Lunden/Maps/Zones/Lighting`; the lamps come from the export, so the level is
   generated like #2278's and #2279's derived levels: `/Game/Lunden/Generated/Lighting/Level_lighting` (Git-ignored,
@@ -974,12 +975,41 @@ fog and clouds follow, rain and snow can be switched on and off, and every expor
   `MoonIllumination`.
 - **Sky and fill.** `SkyAtmosphere` lit by both directional lights, a real-time captured `SkyLight`,
   `ExponentialHeightFog` (denser and greyer under rain or snow, as the web greys sky and fog) and Epic's
-  `VolumetricCloud` material at its default coverage. The sky light's intensity is divided by the sun's weather cut,
-  so the atmosphere it captures keeps the web's hemisphere light under rain (× (1 − 0.3 overcast), `daycycle.js`).
-  The web's flat fill becomes an ambient cubemap, `T_LundenHemisphere` (the web's `LIGHTING.sky.hemi` sky colour above,
-  ground colour below), on a second post-process component whose weight follows the web's `ambient` value (clear
-  0.25, overcast 0.6, `DAY.nightAmbient` at night). Auto exposure is kept within EV100 −4 … 3. Sky-light scale 2,
-  fog grey and the exposure range are *guesses* by eye against the web pictures.
+  `VolumetricCloud` material (since #2307 with weather-driven coverage). Sky-light scale 2 and fog grey are *guesses*
+  by eye against the web pictures.
+- **Daylight indoors, the sky's brightness and the exposure (#2313).** Measured with `crop-stats.cjs` against the web,
+  the 14:00 living room was 0.26 × and the rain sky at START 0.37 × the web's mean luminance. The web lights every
+  surface with its hemisphere light (`LIGHTING.sky` overcast.hemi 2.0 → clear.hemi 1.5, × daylight, + `DAY.nightAmbient`,
+  × (1 − 0.3 overcast)) and its flat `ambient`, both unshadowed, so its rooms are almost as light as the street; Unreal's
+  captured sky light reaches a room only through its windows. Three changes (and the lamps' candela, below), all *guesses* set by the
+  [#2313 pairs](../verification/2313/README.md):
+  - **Fill.** The ambient cubemap `T_LundenHemisphere` (the web's hemisphere colours) gets the web's `ambient` plus
+    `HEMI_SHARE` (0.72) × the web's hemisphere value; its post-process weight is that fill ÷ `AmbientRef`, an upper bound
+    of the fill, which is also the component's intensity. The cubemap is not scaled by the exposure (UE adds it
+    outside the pre-exposure: a −1 EV trial left the night street, lit only by it, unchanged), so it behaves like the
+    web's flat light in display terms and carries the web's exposure itself (× web exposure ÷ 1.5) and the hemisphere's
+    night colour (`daycycle.js` blends its sky colour `0xeaf3ff` to `0x6b7da8` by 1 − daylight; the weight takes the
+    luminance ratio averaged over sky and ground, `HemiNight` 0.56). Without these two terms the 22:00 rooms were lit
+    mostly by a neutral fill and came out grey-white (R/B 1.11 against the web's 1.50).
+  - **Sky.** `UpdateSky` sets the atmosphere's `SkyLuminanceFactor` to `SKY_LUMINANCE` (9) by a clear day, blended to
+    `SKY_OVERCAST` (1) at full overcast: the web paints a brighter sky than a physical atmosphere next to an 8 lux sun.
+    Under rain the web's sky is a fixed light grey (`OVERCAST`) that does not dim with the sun; in Unreal that grey is
+    the height fog's inscattering, `FOG_GREY` (now 10, for the locked exposure; #2283's 0.6) × overcast. A trial that
+    instead divided the sky factor by the sun's cut made the atmosphere show blue through the rain deck. The sky light's
+    intensity is `SkyScale` × (1 − 0.3 overcast), without #2283's division by the cut.
+  - **Exposure, locked.** The web has no eye adaptation: its tone-mapping exposure follows the sky (`DayCycle`:
+    overcast.exposure 1.0 → clear.exposure 1.5 by daylight × (1 − overcast); the window term `WINDOW_LIGHT.exposure`
+    0.05 is left out). The `Weather` post process is manual at `EXPOSURE_BIAS` (−2.55 EV, the web's exposure 1.0) and a
+    third component, `Exposure` (priority 1), overrides the bias with +log2(1.5) at the blend weight
+    ln(web exposure) ÷ ln(1.5), so the game's exposure is the web's rule. #2283's histogram auto exposure (EV100 −4 … 3)
+    was compared on the same shots and rejected (see the pairs): metering each view, it made the dusk-lamp living room
+    and the night street far brighter than the web's. Scene captures do not take the world's exposure, so
+    `capture_lighting.py --exposure=game` sets the same bias (`game_bias`: the engine's lerp of the two components);
+    `--exposure=histogram` renders the rejected auto exposure and `--set` / `--bias` run calibration trials.
+  - **Result** (Unreal ÷ web, mean luminance): the 14:00 living room 1.01 (before 0.26), START's rain sky 1.00 (0.37),
+    the 22:00 living room 0.83 and upper floor 1.21 with all lamps (#2307: 0.76, 1.15), the dusk-lamp living room 0.88,
+    the clear sky 1.20. `CANDELA_PER_WEB` went from 1 to 2.8 to keep the evening rooms there under the darker exposure.
+    START's whole pictures are about 2.3 × the web, because its façades and paving still render near-white.
 - **Overcast, clouds, stars and the moon's phase (#2307).** The sky's overcast is the web's `day.overcast`:
   `max(Rain, 0.7 × Snow)` (`weather.js`: snow clouds are lighter). The clouds are `M_LundenClouds`, a copy of Epic's
   `m_SimpleVolumetricCloud` whose `Cloud_GlobalCoverage` parameter reads `MPC_LundenWeather` `CloudCoverage`, so the
@@ -1022,8 +1052,10 @@ fog and clouds follow, rain and snow can be switched on and off, and every expor
   over 1 s. **Intensity:** every lamp now carries the web's own intensity, range and colour from the export (rooms:
   `src/lights.js` ceiling/pendant/spot points; small lamps: `LIGHTING.floorLamp` under their spec's `light`, several
   anchors summed into one light), candela = `CANDELA_PER_WEB` × the web intensity and attenuation radius = the web's
-  range. `CANDELA_PER_WEB` = 1 (*guess*, compared, not derived: the web's lamps are four pool lights plus a shader
-  wash). At 22:00 with all lamps on the upper floor's walls and ceiling came out 1.12–1.19 × the web's mean luminance
+  range. `CANDELA_PER_WEB` = 1 at #2307's exposure (*guess*, compared, not derived: the web's lamps are four pool
+  lights plus a shader wash); #2313 locked the exposure about 1.8 EV darker and set it to 2.8 (*guess*), the middle of the
+  range that keeps both 22:00 rooms within 0.8 … 1.25 × the web ([docs/verification/2313/](../verification/2313/README.md)).
+  #2307's numbers: at 22:00 with all lamps on the upper floor's walls and ceiling came out 1.12–1.19 × the web's mean luminance
   and the living room's frame 0.76 ×, both as warm (R/B 1.29–1.37 against the web's 1.25–1.50); #2283's 3.5 × made the
   rooms about 3 × as bright and whiter ([docs/verification/2307/](../verification/2307/README.md)). No lamp casts
   shadows (one shadow-casting light, as the web).
@@ -1034,7 +1066,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-
 copy tools\unreal-engine\tests\test_lighting.py unreal\Lunden\Content\Python\   (untracked copy, delete afterwards)
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-tests.ps1 -Filter Editor.Python.Lunden.test_lighting
 node tools/unreal-engine/check-sun.mjs unreal/Lunden/Saved/lighting-result.json
-UnrealEditor-Cmd.exe <uproject> -run=pythonscript "-script=tools/unreal-engine/tests/capture_lighting.py <scene.json> <out> [shot,…]" -AllowCommandletRendering -RenderOffScreen -unattended -nosplash -nosound
+UnrealEditor-Cmd.exe <uproject> -run=pythonscript "-script=tools/unreal-engine/tests/capture_lighting.py <scene.json> <out> [shot,…] [--exposure=game|manual|histogram] [--set=Var:value,…] [--bias=EV]" -AllowCommandletRendering -RenderOffScreen -unattended -nosplash -nosound
 PLAYWRIGHT_MODULE=… THREE_DIR=node_modules/three tools/browsertest.sh node tools/unreal-engine/tests/capture-web-lighting.cjs http://localhost:PORT <out>
 PLAYWRIGHT_MODULE=… node tools/unreal-engine/tests/crop-stats.cjs <out> <crops.json>
 ```
@@ -1043,7 +1075,7 @@ The #2307 comparison shots (`tests/lighting-shots.json`: day, 22:00 with all lam
 clear and overcast day, a night with the moon) are rendered by both capture scripts with the shared cameras;
 `crop-stats.cjs` gives the mean luminance and warmth of matching crops.
 
-Results: [docs/verification/2283/](../verification/2283/README.md), [docs/verification/2307/](../verification/2307/README.md).
+Results: [docs/verification/2283/](../verification/2283/README.md), [docs/verification/2307/](../verification/2307/README.md), [docs/verification/2313/](../verification/2313/README.md).
 
 ## Doors, windows, switches and taps (#2285)
 

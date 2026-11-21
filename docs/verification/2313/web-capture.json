@@ -1,0 +1,351 @@
+{
+  "viewport": {
+    "width": 1440,
+    "height": 810
+  },
+  "shots": [
+    {
+      "name": "living-room-day",
+      "eye": [
+        2.5,
+        1.62,
+        8.2
+      ],
+      "yaw": 173,
+      "pitch": -4,
+      "day": [
+        2026,
+        6,
+        21,
+        14,
+        true
+      ],
+      "daylight": 1,
+      "overcast": 0,
+      "weather": "clear",
+      "dark": false,
+      "smallLampsOn": [],
+      "forced": false,
+      "moon": {
+        "illum": 0.4584773242846291,
+        "elong": 1.4876552237745946,
+        "dir": [
+          0.7190308315424737,
+          0.17379231682673568,
+          -0.6728973873506529
+        ]
+      },
+      "sun": [
+        0.3290249069149738,
+        0.832794289174853,
+        0.44519241070277027
+      ]
+    },
+    {
+      "name": "living-room-evening",
+      "eye": [
+        2.5,
+        1.62,
+        8.2
+      ],
+      "yaw": 173,
+      "pitch": -4,
+      "day": [
+        2026,
+        6,
+        21,
+        22,
+        true
+      ],
+      "daylight": 0.12452149711509822,
+      "overcast": 0,
+      "weather": "clear",
+      "dark": true,
+      "smallLampsOn": [
+        "golvlampan",
+        "spotsen",
+        "julgranen",
+        "långlampan",
+        "rottinglampan",
+        "Hue Go-lampan",
+        "lampan",
+        "nattlampan",
+        "nattlampan",
+        "garderobsspegeln",
+        "läslampan",
+        "läslampan",
+        "läslampan",
+        "läslampan",
+        "enhörningslampan",
+        "dödsstjärnan",
+        "sminkspegeln",
+        "lampan i köksfläkten",
+        "bänkbelysningen",
+        "spegeln i toaletten",
+        "spegelns nattlampa"
+      ],
+      "forced": true,
+      "moon": {
+        "illum": 0.49308163661963944,
+        "elong": 1.5569591584776947,
+        "dir": [
+          0.14592293931718525,
+          0.3737070102152488,
+          0.9159964881466593
+        ]
+      },
+      "sun": [
+        -0.9835368767087977,
+        -0.022644218576034717,
+        0.17928316016565618
+      ]
+    },
+    {
+      "name": "upper-floor-evening",
+      "eye": [
+        1.75,
+        4.87,
+        7.95
+      ],
+      "yaw": 170,
+      "pitch": -3,
+      "day": [
+        2026,
+        6,
+        21,
+        22,
+        true
+      ],
+      "daylight": 0.12452149711509822,
+      "overcast": 0,
+      "weather": "clear",
+      "dark": true,
+      "smallLampsOn": [
+        "golvlampan",
+        "spotsen",
+        "julgranen",
+        "långlampan",
+        "rottinglampan",
+        "Hue Go-lampan",
+        "lampan",
+        "nattlampan",
+        "nattlampan",
+        "garderobsspegeln",
+        "läslampan",
+        "läslampan",
+        "läslampan",
+        "läslampan",
+        "enhörningslampan",
+        "dödsstjärnan",
+        "sminkspegeln",
+        "lampan i köksfläkten",
+        "bänkbelysningen",
+        "spegeln i toaletten",
+        "spegelns nattlampa"
+      ],
+      "forced": true,
+      "moon": {
+        "illum": 0.49308163661963944,
+        "elong": 1.5569591584776947,
+        "dir": [
+          0.14592293931718525,
+          0.3737070102152488,
+          0.9159964881466593
+        ]
+      },
+      "sun": [
+        -0.9835368767087977,
+        -0.022644218576034717,
+        0.17928316016565618
+      ]
+    },
+    {
+      "name": "living-room-dusk",
+      "eye": [
+        2.5,
+        1.62,
+        8.2
+      ],
+      "yaw": 173,
+      "pitch": -4,
+      "day": [
+        2026,
+        6,
+        21,
+        22,
+        true
+      ],
+      "daylight": 0.12452149711509822,
+      "overcast": 0,
+      "weather": "clear",
+      "dark": true,
+      "smallLampsOn": [
+        "golvlampan",
+        "spotsen",
+        "långlampan",
+        "rottinglampan",
+        "Hue Go-lampan",
+        "lampan",
+        "nattlampan",
+        "nattlampan",
+        "garderobsspegeln",
+        "läslampan",
+        "läslampan",
+        "läslampan",
+        "läslampan",
+        "enhörningslampan",
+        "dödsstjärnan",
+        "sminkspegeln",
+        "bänkbelysningen",
+        "spegeln i toaletten",
+        "spegelns nattlampa"
+      ],
+      "forced": false,
+      "moon": {
+        "illum": 0.49308163661963944,
+        "elong": 1.5569591584776947,
+        "dir": [
+          0.14592293931718525,
+          0.3737070102152488,
+          0.9159964881466593
+        ]
+      },
+      "sun": [
+        -0.9835368767087977,
+        -0.022644218576034717,
+        0.17928316016565618
+      ]
+    },
+    {
+      "name": "start-day",
+      "eye": [
+        2.875,
+        1.62,
+        -12
+      ],
+      "yaw": 180,
+      "pitch": 8,
+      "day": [
+        2026,
+        6,
+        21,
+        14,
+        true
+      ],
+      "daylight": 1,
+      "overcast": 0,
+      "weather": "clear",
+      "dark": false,
+      "smallLampsOn": [],
+      "forced": false,
+      "moon": {
+        "illum": 0.4584773242846291,
+        "elong": 1.4876552237745946,
+        "dir": [
+          0.7190308315424737,
+          0.17379231682673568,
+          -0.6728973873506529
+        ]
+      },
+      "sun": [
+        0.3290249069149738,
+        0.832794289174853,
+        0.44519241070277027
+      ]
+    },
+    {
+      "name": "start-overcast",
+      "eye": [
+        2.875,
+        1.62,
+        -12
+      ],
+      "yaw": 180,
+      "pitch": 8,
+      "day": [
+        2026,
+        6,
+        21,
+        14,
+        true
+      ],
+      "daylight": 1,
+      "overcast": 1,
+      "weather": "rain",
+      "dark": false,
+      "smallLampsOn": [],
+      "forced": false,
+      "moon": {
+        "illum": 0.4584773242846291,
+        "elong": 1.4876552237745946,
+        "dir": [
+          0.7190308315424737,
+          0.17379231682673568,
+          -0.6728973873506529
+        ]
+      },
+      "sun": [
+        0.3290249069149738,
+        0.832794289174853,
+        0.44519241070277027
+      ]
+    },
+    {
+      "name": "start-night",
+      "eye": [
+        2.875,
+        1.62,
+        -12
+      ],
+      "yaw": 180,
+      "pitch": 8,
+      "day": [
+        2026,
+        11,
+        16,
+        18.25,
+        true
+      ],
+      "daylight": 0,
+      "overcast": 0,
+      "weather": "clear",
+      "dark": true,
+      "smallLampsOn": [
+        "golvlampan",
+        "spotsen",
+        "långlampan",
+        "rottinglampan",
+        "Hue Go-lampan",
+        "lampan",
+        "nattlampan",
+        "nattlampan",
+        "garderobsspegeln",
+        "läslampan",
+        "läslampan",
+        "läslampan",
+        "läslampan",
+        "enhörningslampan",
+        "dödsstjärnan",
+        "sminkspegeln",
+        "bänkbelysningen",
+        "spegeln i toaletten",
+        "spegelns nattlampa"
+      ],
+      "forced": false,
+      "moon": {
+        "illum": 0.42571029351799206,
+        "elong": 1.421664741423662,
+        "dir": [
+          0.7192068650214697,
+          0.2932388525798878,
+          0.6298828943888065
+        ]
+      },
+      "sun": [
+        -0.40300385020116136,
+        -0.32540525077236565,
+        0.855394247989086
+      ]
+    }
+  ]
+}
