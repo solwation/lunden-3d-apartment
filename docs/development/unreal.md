@@ -760,7 +760,9 @@ Results: [docs/verification/2286/](../verification/2286/README.md).
 G05's release-1 part: the sun and moon stand where the web puts them over Lund for the date and clock, the sky,
 fog and clouds follow, rain and snow can be switched on and off, and every exported lamp is an actor with its id.
 #2283 owns `/Game/Lunden/Lighting/` (including the pilot's `T_PilotClearSky`), `build_lighting.py`,
-`tests/test_lighting.py`, `tests/capture_lighting.py`, `check-sun.mjs` and the `Lighting` row of `world-levels.json`.
+`tests/test_lighting.py`, `tests/capture_lighting.py`, `check-sun.mjs` and the `Lighting` row of `world-levels.json`;
+#2307 added the evening calibration, dusk lamps, weather-driven clouds, stars and the moon's phase, `M_LundenClouds`,
+`tests/lighting-shots.json`, `tests/capture-web-lighting.cjs` and `tests/crop-stats.cjs`.
 
 - **Level.** The issue planned `/Game/Lunden/Maps/Zones/Lighting`; the lamps come from the export, so the level is
   generated like #2278's and #2279's derived levels: `/Game/Lunden/Generated/Lighting/Level_lighting` (Git-ignored,
@@ -789,8 +791,23 @@ fog and clouds follow, rain and snow can be switched on and off, and every expor
   The web's flat fill becomes an ambient cubemap, `T_LundenHemisphere` (the web's `LIGHTING.sky.hemi` sky colour above,
   ground colour below), on a second post-process component whose weight follows the web's `ambient` value (clear
   0.25, overcast 0.6, `DAY.nightAmbient` at night). Auto exposure is kept within EV100 −4 … 3. Sky-light scale 2,
-  fog grey and the exposure range are *guesses* by eye against the web pictures. Stars, the moon's phase on its disc
-  and weather-driven cloud cover are not ported.
+  fog grey and the exposure range are *guesses* by eye against the web pictures.
+- **Overcast, clouds, stars and the moon's phase (#2307).** The sky's overcast is the web's `day.overcast`:
+  `max(Rain, 0.7 × Snow)` (`weather.js`: snow clouds are lighter). The clouds are `M_LundenClouds`, a copy of Epic's
+  `m_SimpleVolumetricCloud` whose `Cloud_GlobalCoverage` parameter reads `MPC_LundenWeather` `CloudCoverage`, so the
+  cover follows the weather at run time without a dynamic material instance (captures and tests call `UpdateSky` in an
+  editor world). `UpdateSky` computes the web's sky cloud threshold (`cloudshadow.js` `skyCloudState`: `clearThr` over a
+  clear sky, `thr[0]` → `thr[1]` with overcast, from the export's `site.sky.clouds`) as `CloudCover`, 0 clear … 1
+  overcast, and maps it onto the material's coverage range `CLOUD_RANGE` (*guess* by eye: −1 for a clear sky, which
+  leaves it empty as the web's 0.92 threshold does, to 1, a closed grey deck under rain; Epic's default is −0.2). The stars,
+  the moon disc with its phase and the moon's halo are the web's sky shader (`daycycle.js` `skyFrag`) transcribed into
+  `M_LundenPrecipitation`, drawn on sky pixels only, in the web's axes and in display units (× `EyeAdaptationInverse`,
+  so they read the same at any exposure): stars on a 260-cell hash grid × `Night` (1 − daylight), faded towards the
+  horizon; the disc `DAY.moonRadius` (0.04 rad, drawn ~9× the real moon as on the web) lit from the sun's side by the
+  elongation (`MoonPh` = sin e, −cos e, lit fraction, from the same `moonState` terms) with the web's maria pattern and
+  earthshine. The clouds hide them as the web mixes its clouds over them, by 0.85 × `CloudCover` (one value for the
+  sky: the web hides a star behind each cloud, Unreal dims all stars by the cover; identical in clear weather and under
+  rain or snow, the only weathers Unreal has). The moon light's own atmosphere disk is switched off.
 - **Weather.** `Rain`, `Snow` (0–1), `Wet`, `WindSpeed` (m/s) and `WindFromDeg` (the direction the wind comes from,
   as Open-Meteo gives it; #2287 reads `WindSpeed`) are public variables; `ToggleRain` and `ToggleSnow` switch one on
   at full strength (and the other off) or off. Tick soaks `Wet` in about 10 minutes of rain and dries it in about 30
@@ -806,20 +823,39 @@ fog and clouds follow, rain and snow can be switched on and off, and every expor
   ceiling and pendant light points of the rooms, named `Lamp_<id>` and tagged `lamp:<id>`, `kind:lamp|room`, `level:<n>`,
   `room:<room>`. The exporter now gives the lights without an exported object a stable id
   (`room_<room>_l<level>_x<cm>_z<cm>`, `lamp_<name>_…`). Events `TurnOn`, `TurnOff`, `Toggle` and the variable `IsOn`
-  are what #2285's switches call (Get All Actors With Tag `lamp:<id>`). All start off; the web's dusk-following small
-  lamps (`LIGHTING.auto`) are not ported. Room light candela = 3.5 × the web intensity, lamps 2 cd, warm white where
-  the export has no colour (*guess*; the pilot's 7 × washed the 22:00 rooms out with all 36 on, and they are still
-  brighter than the web's). No lamp casts shadows (one shadow-casting light, as the web).
+  are what #2285's switches call (Get All Actors With Tag `lamp:<id>`); they switch at once.
+  **Dusk (#2307).** The small lamps follow the dusk as on the web (`src/lights.js` `Lights.updateAuto`, `LIGHTING.auto`
+  in the export's `site.sky.light`): the exporter marks each lamp `auto` (false only for a spec with `auto: false`, the
+  cooker hood's work light and the Christmas tree), the builder sets `Auto` and the tag `auto:dusk`; the ceiling lamps
+  stay by hand. The sky writes `DuskLight` = daylight × (1 − 0.6 × the weather's overcast) (`main.js`) to the weather
+  collection; each lamp's Tick keeps `Dusk` (−1 unknown, 0 light, 1 dark) with the web's hysteresis (dark below 0.3,
+  light again above 0.4, a first reading split at 0.35). Only a change switches an `Auto` lamp, so one switched by hand
+  stays until the next dusk or dawn; the first reading sets it at once, later ones fade `K` (intensity = `Candela` × `K`)
+  over 1 s. **Intensity:** every lamp now carries the web's own intensity, range and colour from the export (rooms:
+  `src/lights.js` ceiling/pendant/spot points; small lamps: `LIGHTING.floorLamp` under their spec's `light`, several
+  anchors summed into one light), candela = `CANDELA_PER_WEB` × the web intensity and attenuation radius = the web's
+  range. `CANDELA_PER_WEB` = 1 (*guess*, compared, not derived: the web's lamps are four pool lights plus a shader
+  wash). At 22:00 with all lamps on the upper floor's walls and ceiling came out 1.12–1.19 × the web's mean luminance
+  and the living room's frame 0.76 ×, both as warm (R/B 1.29–1.37 against the web's 1.25–1.50); #2283's 3.5 × made the
+  rooms about 3 × as bright and whiter ([docs/verification/2307/](../verification/2307/README.md)). No lamp casts
+  shadows (one shadow-casting light, as the web).
 
 ```text
-git lfs lock unreal/Lunden/Content/Lunden/Lighting/{BP_LundenSky,BP_LundenLamp,MPC_LundenWeather,M_LundenPrecipitation,T_LundenHemisphere}.uasset
+git lfs lock unreal/Lunden/Content/Lunden/Lighting/{BP_LundenSky,BP_LundenLamp,MPC_LundenWeather,M_LundenPrecipitation,M_LundenClouds,T_LundenHemisphere}.uasset
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/build_lighting.py [--force | --check]
 copy tools\unreal-engine\tests\test_lighting.py unreal\Lunden\Content\Python\   (untracked copy, delete afterwards)
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-tests.ps1 -Filter Editor.Python.Lunden.test_lighting
 node tools/unreal-engine/check-sun.mjs unreal/Lunden/Saved/lighting-result.json
+UnrealEditor-Cmd.exe <uproject> -run=pythonscript "-script=tools/unreal-engine/tests/capture_lighting.py <scene.json> <out> [shot,…]" -AllowCommandletRendering -RenderOffScreen -unattended -nosplash -nosound
+PLAYWRIGHT_MODULE=… THREE_DIR=node_modules/three tools/browsertest.sh node tools/unreal-engine/tests/capture-web-lighting.cjs http://localhost:PORT <out>
+PLAYWRIGHT_MODULE=… node tools/unreal-engine/tests/crop-stats.cjs <out> <crops.json>
 ```
 
-Results: [docs/verification/2283/](../verification/2283/README.md).
+The #2307 comparison shots (`tests/lighting-shots.json`: day, 22:00 with all lamps, 22:00 with only the dusk lamps,
+clear and overcast day, a night with the moon) are rendered by both capture scripts with the shared cameras;
+`crop-stats.cjs` gives the mean luminance and warmth of matching crops.
+
+Results: [docs/verification/2283/](../verification/2283/README.md), [docs/verification/2307/](../verification/2307/README.md).
 
 ## Doors, windows, switches and taps (#2285)
 

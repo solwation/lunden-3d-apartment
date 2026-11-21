@@ -1,0 +1,590 @@
+{
+ "crops": {
+  "living-room-day": {
+   "left-wall": [
+    0,
+    0.15,
+    0.08,
+    0.35
+   ],
+   "right-wall": [
+    0.7,
+    0.07,
+    0.85,
+    0.19
+   ],
+   "ceiling": [
+    0.45,
+    0.02,
+    0.6,
+    0.1
+   ],
+   "frame": [
+    0,
+    0,
+    1,
+    1
+   ]
+  },
+  "living-room-evening": {
+   "left-wall": [
+    0,
+    0.15,
+    0.08,
+    0.35
+   ],
+   "right-wall": [
+    0.7,
+    0.07,
+    0.85,
+    0.19
+   ],
+   "ceiling": [
+    0.45,
+    0.02,
+    0.6,
+    0.1
+   ],
+   "frame": [
+    0,
+    0,
+    1,
+    1
+   ]
+  },
+  "living-room-dusk": {
+   "left-wall": [
+    0,
+    0.15,
+    0.08,
+    0.35
+   ],
+   "right-wall": [
+    0.7,
+    0.07,
+    0.85,
+    0.19
+   ],
+   "ceiling": [
+    0.45,
+    0.02,
+    0.6,
+    0.1
+   ],
+   "frame": [
+    0,
+    0,
+    1,
+    1
+   ]
+  },
+  "upper-floor-evening": {
+   "left-wall": [
+    0.03,
+    0.15,
+    0.2,
+    0.45
+   ],
+   "right-wall": [
+    0.86,
+    0.08,
+    0.93,
+    0.3
+   ],
+   "ceiling": [
+    0.3,
+    0.12,
+    0.42,
+    0.22
+   ],
+   "frame": [
+    0,
+    0,
+    1,
+    1
+   ]
+  },
+  "start-day": {
+   "sky": [
+    0.02,
+    0.02,
+    0.2,
+    0.3
+   ],
+   "frame": [
+    0,
+    0,
+    1,
+    1
+   ]
+  },
+  "start-overcast": {
+   "sky": [
+    0.02,
+    0.02,
+    0.2,
+    0.3
+   ],
+   "frame": [
+    0,
+    0,
+    1,
+    1
+   ]
+  },
+  "start-night": {
+   "sky": [
+    0.02,
+    0.02,
+    0.2,
+    0.3
+   ],
+   "frame": [
+    0,
+    0,
+    1,
+    1
+   ]
+  }
+ },
+ "stats": {
+  "living-room-day": {
+   "web": {
+    "left-wall": {
+     "srgb": [
+      236.9,
+      228.9,
+      218
+     ],
+     "luminance": 0.7928,
+     "warmth": 1.087
+    },
+    "right-wall": {
+     "srgb": [
+      209.1,
+      201.3,
+      190.7
+     ],
+     "luminance": 0.5977,
+     "warmth": 1.096
+    },
+    "ceiling": {
+     "srgb": [
+      244.7,
+      232.1,
+      216.1
+     ],
+     "luminance": 0.8208,
+     "warmth": 1.132
+    },
+    "frame": {
+     "srgb": [
+      184.9,
+      175.9,
+      158.5
+     ],
+     "luminance": 0.5073,
+     "warmth": 1.166
+    }
+   },
+   "unreal": {
+    "left-wall": {
+     "srgb": [
+      97.1,
+      99.1,
+      98.1
+     ],
+     "luminance": 0.1239,
+     "warmth": 0.99
+    },
+    "right-wall": {
+     "srgb": [
+      111,
+      111.2,
+      107.9
+     ],
+     "luminance": 0.1591,
+     "warmth": 1.029
+    },
+    "ceiling": {
+     "srgb": [
+      118.5,
+      115.9,
+      108.6
+     ],
+     "luminance": 0.1746,
+     "warmth": 1.091
+    },
+    "frame": {
+     "srgb": [
+      94.5,
+      94.6,
+      89.7
+     ],
+     "luminance": 0.1369,
+     "warmth": 1.054
+    }
+   }
+  },
+  "living-room-evening": {
+   "web": {
+    "left-wall": {
+     "srgb": [
+      137.4,
+      123,
+      106.6
+     ],
+     "luminance": 0.2077,
+     "warmth": 1.289
+    },
+    "right-wall": {
+     "srgb": [
+      118.2,
+      104.5,
+      87.5
+     ],
+     "luminance": 0.1494,
+     "warmth": 1.351
+    },
+    "ceiling": {
+     "srgb": [
+      155.9,
+      137.9,
+      114.7
+     ],
+     "luminance": 0.2647,
+     "warmth": 1.359
+    },
+    "frame": {
+     "srgb": [
+      113.6,
+      98.4,
+      75.6
+     ],
+     "luminance": 0.1647,
+     "warmth": 1.504
+    }
+   },
+   "unreal": {
+    "left-wall": {
+     "srgb": [
+      109.8,
+      95.8,
+      75.9
+     ],
+     "luminance": 0.1226,
+     "warmth": 1.446
+    },
+    "right-wall": {
+     "srgb": [
+      125.1,
+      120.9,
+      112.3
+     ],
+     "luminance": 0.1975,
+     "warmth": 1.114
+    },
+    "ceiling": {
+     "srgb": [
+      137,
+      123.3,
+      102.9
+     ],
+     "luminance": 0.2054,
+     "warmth": 1.332
+    },
+    "frame": {
+     "srgb": [
+      96.3,
+      85.8,
+      70.3
+     ],
+     "luminance": 0.1252,
+     "warmth": 1.37
+    }
+   }
+  },
+  "living-room-dusk": {
+   "web": {
+    "left-wall": {
+     "srgb": [
+      111.2,
+      102.4,
+      93.3
+     ],
+     "luminance": 0.1387,
+     "warmth": 1.191
+    },
+    "right-wall": {
+     "srgb": [
+      112.9,
+      100.3,
+      84.6
+     ],
+     "luminance": 0.1368,
+     "warmth": 1.334
+    },
+    "ceiling": {
+     "srgb": [
+      130.6,
+      117.6,
+      101
+     ],
+     "luminance": 0.1865,
+     "warmth": 1.294
+    },
+    "frame": {
+     "srgb": [
+      91.2,
+      80.1,
+      63.6
+     ],
+     "luminance": 0.1066,
+     "warmth": 1.435
+    }
+   },
+   "unreal": {
+    "left-wall": {
+     "srgb": [
+      73.9,
+      66.7,
+      56.1
+     ],
+     "luminance": 0.0577,
+     "warmth": 1.317
+    },
+    "right-wall": {
+     "srgb": [
+      110.4,
+      108.7,
+      103.6
+     ],
+     "luminance": 0.1584,
+     "warmth": 1.066
+    },
+    "ceiling": {
+     "srgb": [
+      100.3,
+      92,
+      79.6
+     ],
+     "luminance": 0.1105,
+     "warmth": 1.261
+    },
+    "frame": {
+     "srgb": [
+      71.6,
+      65.5,
+      55.3
+     ],
+     "luminance": 0.0759,
+     "warmth": 1.295
+    }
+   }
+  },
+  "upper-floor-evening": {
+   "web": {
+    "left-wall": {
+     "srgb": [
+      142.4,
+      128.4,
+      109.1
+     ],
+     "luminance": 0.2269,
+     "warmth": 1.306
+    },
+    "right-wall": {
+     "srgb": [
+      138.1,
+      125.2,
+      107.8
+     ],
+     "luminance": 0.2125,
+     "warmth": 1.282
+    },
+    "ceiling": {
+     "srgb": [
+      132.5,
+      121.5,
+      106.2
+     ],
+     "luminance": 0.208,
+     "warmth": 1.248
+    },
+    "frame": {
+     "srgb": [
+      108.9,
+      96.8,
+      82
+     ],
+     "luminance": 0.1684,
+     "warmth": 1.327
+    }
+   },
+   "unreal": {
+    "left-wall": {
+     "srgb": [
+      154.1,
+      139.5,
+      115.7
+     ],
+     "luminance": 0.2708,
+     "warmth": 1.333
+    },
+    "right-wall": {
+     "srgb": [
+      146.7,
+      131.7,
+      109
+     ],
+     "luminance": 0.2374,
+     "warmth": 1.346
+    },
+    "ceiling": {
+     "srgb": [
+      144.2,
+      131.7,
+      111.3
+     ],
+     "luminance": 0.2416,
+     "warmth": 1.295
+    },
+    "frame": {
+     "srgb": [
+      120.5,
+      107.8,
+      89.6
+     ],
+     "luminance": 0.1941,
+     "warmth": 1.345
+    }
+   }
+  },
+  "start-day": {
+   "web": {
+    "sky": {
+     "srgb": [
+      149,
+      171.4,
+      203.8
+     ],
+     "luminance": 0.422,
+     "warmth": 0.731
+    },
+    "frame": {
+     "srgb": [
+      133.6,
+      125.2,
+      123
+     ],
+     "luminance": 0.2663,
+     "warmth": 1.086
+    }
+   },
+   "unreal": {
+    "sky": {
+     "srgb": [
+      100.6,
+      136.7,
+      169.2
+     ],
+     "luminance": 0.2415,
+     "warmth": 0.595
+    },
+    "frame": {
+     "srgb": [
+      148.3,
+      160.4,
+      156.9
+     ],
+     "luminance": 0.397,
+     "warmth": 0.945
+    }
+   }
+  },
+  "start-overcast": {
+   "web": {
+    "sky": {
+     "srgb": [
+      156.2,
+      155.3,
+      160
+     ],
+     "luminance": 0.3498,
+     "warmth": 0.976
+    },
+    "frame": {
+     "srgb": [
+      110.9,
+      100.3,
+      96.2
+     ],
+     "luminance": 0.1848,
+     "warmth": 1.152
+    }
+   },
+   "unreal": {
+    "sky": {
+     "srgb": [
+      94.9,
+      100.3,
+      109.1
+     ],
+     "luminance": 0.1313,
+     "warmth": 0.87
+    },
+    "frame": {
+     "srgb": [
+      127.1,
+      130.7,
+      132
+     ],
+     "luminance": 0.2412,
+     "warmth": 0.963
+    }
+   }
+  },
+  "start-night": {
+   "web": {
+    "sky": {
+     "srgb": [
+      23.2,
+      26.8,
+      37.4
+     ],
+     "luminance": 0.0237,
+     "warmth": 0.622
+    },
+    "frame": {
+     "srgb": [
+      8.7,
+      7.2,
+      9.4
+     ],
+     "luminance": 0.0054,
+     "warmth": 0.926
+    }
+   },
+   "unreal": {
+    "sky": {
+     "srgb": [
+      10.7,
+      11.8,
+      15
+     ],
+     "luminance": 0.012,
+     "warmth": 0.712
+    },
+    "frame": {
+     "srgb": [
+      13,
+      13.7,
+      14.2
+     ],
+     "luminance": 0.006,
+     "warmth": 0.915
+    }
+   }
+  }
+ }
+}

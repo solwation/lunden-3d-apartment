@@ -1,0 +1,735 @@
+{
+  "engine": "5.8.4-58902052+++UE5+Release-5.8",
+  "sun": [
+    {
+      "year": 2026,
+      "month": 6,
+      "day": 21,
+      "hour": 7.0,
+      "sun": [
+        0.27099910676524075,
+        -0.9117309127588771,
+        0.3087170660205016
+      ],
+      "moon": [
+        -0.6569169446226488,
+        -0.5326860623816768,
+        -0.5335781918444081
+      ],
+      "sunLightForward": [
+        -0.2709991067652418,
+        0.9117309127588764,
+        -0.3087170660205022
+      ],
+      "lightVsDirectionDeg": 0.0,
+      "sunElevation": 17.981931937259866,
+      "daylight": 1.0,
+      "moonIllumination": 0.4280205821076085,
+      "sunIntensity": 8.0,
+      "night": 0.0,
+      "cloudCover": 0.0,
+      "cloudCoverage": -1.0,
+      "duskLight": 1.0,
+      "moonPh": [
+        0.9895836710929871,
+        -0.14395883679389954,
+        0.4280205965042114
+      ]
+    },
+    {
+      "year": 2026,
+      "month": 6,
+      "day": 21,
+      "hour": 14.0,
+      "sun": [
+        0.3290249069149739,
+        0.44519241070277027,
+        0.832794289174853
+      ],
+      "moon": [
+        0.7190308315424736,
+        -0.672897387350653,
+        0.17379231682673565
+      ],
+      "sunLightForward": [
+        -0.3290249069149738,
+        -0.4451924107027715,
+        -0.8327942891748524
+      ],
+      "lightVsDirectionDeg": 0.0,
+      "sunElevation": 56.38685825268361,
+      "daylight": 1.0,
+      "moonIllumination": 0.4584773242846292,
+      "sunIntensity": 8.0,
+      "night": 0.0,
+      "cloudCover": 0.0,
+      "cloudCoverage": -1.0,
+      "duskLight": 1.0,
+      "moonPh": [
+        0.9965457916259766,
+        -0.0830453485250473,
+        0.45847731828689575
+      ]
+    },
+    {
+      "year": 2026,
+      "month": 6,
+      "day": 21,
+      "hour": 22.0,
+      "sun": [
+        -0.9835368767087976,
+        0.17928316016565615,
+        -0.022644218576034714
+      ],
+      "moon": [
+        0.14592294012807233,
+        0.9159964878602801,
+        0.3737070106005648
+      ],
+      "sunLightForward": [
+        0.9835368767087975,
+        -0.17928316016565637,
+        0.022644218576034717
+      ],
+      "lightVsDirectionDeg": 0.0,
+      "sunElevation": -1.2975290578632654,
+      "daylight": 0.12452149711509822,
+      "moonIllumination": 0.49308163660365234,
+      "sunIntensity": 0.0,
+      "night": 0.8754785060882568,
+      "cloudCover": 0.0,
+      "cloudCoverage": -1.0,
+      "duskLight": 0.12452149391174316,
+      "moonPh": [
+        0.9999042749404907,
+        -0.013836726546287537,
+        0.49308162927627563
+      ]
+    },
+    {
+      "year": 2026,
+      "month": 12,
+      "day": 21,
+      "hour": 9.0,
+      "sun": [
+        0.9850483156561021,
+        -0.1701795244212162,
+        0.02680942541057202
+      ],
+      "moon": [
+        -0.8658815184498846,
+        -0.46058168617572764,
+        -0.1952273197235614
+      ],
+      "sunLightForward": [
+        -0.985048315656102,
+        0.17017952442121606,
+        -0.026809425410572393
+      ],
+      "lightVsDirectionDeg": 0.0,
+      "sunElevation": 1.5362509935480726,
+      "daylight": 0.36762742638818324,
+      "moonIllumination": 0.891117922141877,
+      "sunIntensity": 1.7333669662475586,
+      "night": 0.6323725581169128,
+      "cloudCover": 0.0,
+      "cloudCoverage": -1.0,
+      "duskLight": 0.36762741208076477,
+      "moonPh": [
+        0.622982382774353,
+        0.782235860824585,
+        0.8911179304122925
+      ]
+    },
+    {
+      "year": 2026,
+      "month": 12,
+      "day": 21,
+      "hour": 12.0,
+      "sun": [
+        0.8459610247101096,
+        0.4989224605363676,
+        0.18821881692263942
+      ],
+      "moon": [
+        -0.38417840996520525,
+        -0.9203329266471754,
+        -0.073445581525723
+      ],
+      "sunLightForward": [
+        -0.8459610247101098,
+        -0.49892246053636724,
+        -0.18821881692263967
+      ],
+      "lightVsDirectionDeg": 0.0,
+      "sunElevation": 10.848854607338566,
+      "daylight": 1.0,
+      "moonIllumination": 0.9001029105027668,
+      "sunIntensity": 8.0,
+      "night": 0.0,
+      "cloudCover": 0.0,
+      "cloudCoverage": -1.0,
+      "duskLight": 1.0,
+      "moonPh": [
+        0.5997254848480225,
+        0.8002058267593384,
+        0.9001029133796692
+      ]
+    },
+    {
+      "year": 2026,
+      "month": 12,
+      "day": 21,
+      "hour": 15.5,
+      "sun": [
+        0.21778368203160908,
+        0.9759932546838188,
+        -0.0027266559080917907
+      ],
+      "moon": [
+        0.28275961327863186,
+        -0.9007276806195298,
+        0.3297524017566531
+      ],
+      "sunLightForward": [
+        -0.21778368203161014,
+        -0.9759932546838187,
+        0.0027266559080917916
+      ],
+      "lightVsDirectionDeg": 0.0,
+      "sunElevation": -0.1562260692995662,
+      "daylight": 0.2124879306299053,
+      "moonIllumination": 0.9101803780552437,
+      "sunIntensity": 0.2648840546607971,
+      "night": 0.7875120639801025,
+      "cloudCover": 0.0,
+      "cloudCoverage": -1.0,
+      "duskLight": 0.21248793601989746,
+      "moonPh": [
+        0.5718463063240051,
+        0.8203607797622681,
+        0.910180389881134
+      ]
+    },
+    {
+      "year": 2026,
+      "month": 3,
+      "day": 20,
+      "hour": 10.25,
+      "sun": [
+        0.8785382350645017,
+        -0.04267274534854548,
+        0.4757621320935167
+      ],
+      "moon": [
+        0.7771436994241943,
+        -0.334152092381784,
+        0.5332823357304772
+      ],
+      "sunLightForward": [
+        -0.8785382350645013,
+        0.04267274534854551,
+        -0.47576213209351714
+      ],
+      "lightVsDirectionDeg": 0.0,
+      "sunElevation": 28.408983976565704,
+      "daylight": 1.0,
+      "moonIllumination": 0.02389443336153435,
+      "sunIntensity": 8.0,
+      "night": 0.0,
+      "cloudCover": 0.0,
+      "cloudCoverage": -1.0,
+      "duskLight": 1.0,
+      "moonPh": [
+        0.30544060468673706,
+        -0.9522111415863037,
+        0.023894432932138443
+      ]
+    },
+    {
+      "year": 2026,
+      "month": 3,
+      "day": 28,
+      "hour": 12.0,
+      "sun": [
+        0.8103118217009292,
+        0.13770947839154263,
+        0.5695883172720898
+      ],
+      "moon": [
+        -0.42050914835185343,
+        -0.8934727711809639,
+        -0.15772908200648267
+      ],
+      "sunLightForward": [
+        -0.810311821700929,
+        -0.13770947839154268,
+        -0.5695883172720899
+      ],
+      "lightVsDirectionDeg": 0.0,
+      "sunElevation": 34.72152285326267,
+      "daylight": 1.0,
+      "moonIllumination": 0.7755965907679463,
+      "sunIntensity": 8.0,
+      "night": 0.0,
+      "cloudCover": 0.0,
+      "cloudCoverage": -1.0,
+      "duskLight": 1.0,
+      "moonPh": [
+        0.834377646446228,
+        0.5511931777000427,
+        0.7755966186523438
+      ]
+    },
+    {
+      "year": 2026,
+      "month": 10,
+      "day": 27,
+      "hour": 12.0,
+      "sun": [
+        0.7733362584803484,
+        0.5285360577451114,
+        0.3501437804429376
+      ],
+      "moon": [
+        -0.9266806527085018,
+        -0.32755991637113724,
+        -0.1843026562008233
+      ],
+      "sunLightForward": [
+        -0.7733362584803483,
+        -0.5285360577451111,
+        -0.3501437804429379
+      ],
+      "lightVsDirectionDeg": 0.0,
+      "sunElevation": 20.49610961855113,
+      "daylight": 1.0,
+      "moonIllumination": 0.9758947688559969,
+      "sunIntensity": 8.0,
+      "night": 0.0,
+      "cloudCover": 0.0,
+      "cloudCoverage": -1.0,
+      "duskLight": 1.0,
+      "moonPh": [
+        0.3067518174648285,
+        0.9517895579338074,
+        0.9758947491645813
+      ]
+    },
+    {
+      "year": 2027,
+      "month": 1,
+      "day": 10,
+      "hour": 23.5,
+      "sun": [
+        -0.5531190202191573,
+        -0.1335803189574726,
+        -0.8223233231880386
+      ],
+      "moon": [
+        -0.736855585200256,
+        0.355486315028401,
+        -0.5750420214094938
+      ],
+      "sunLightForward": [
+        0.5531190202191582,
+        0.13358031895747272,
+        0.822323323188038
+      ],
+      "lightVsDirectionDeg": 0.0,
+      "sunElevation": -55.31804816037742,
+      "daylight": 0.0,
+      "moonIllumination": 0.08321387386990309,
+      "sunIntensity": 0.0,
+      "night": 1.0,
+      "cloudCover": 0.0,
+      "cloudCoverage": -1.0,
+      "duskLight": 0.0,
+      "moonPh": [
+        0.5524104237556458,
+        -0.833572268486023,
+        0.08321387320756912
+      ]
+    }
+  ],
+  "lamps": {
+    "export": 36,
+    "unreal": 36,
+    "missing": [],
+    "extra": [],
+    "doubled": [],
+    "misplaced": [],
+    "byKind": {
+      "lamp": 21,
+      "room": 15
+    },
+    "events": [
+      [
+        true,
+        true
+      ],
+      [
+        false,
+        false
+      ],
+      [
+        true,
+        true
+      ],
+      [
+        false,
+        false
+      ]
+    ]
+  },
+  "weather": [
+    {
+      "event": "ToggleRain",
+      "rain": 1.0,
+      "snow": 0.0,
+      "mpcRain": 1.0,
+      "mpcSnow": 0.0,
+      "year": 2027,
+      "month": 1,
+      "day": 10,
+      "hour": 23.5,
+      "night": 1.0,
+      "cloudCover": 1.0,
+      "cloudCoverage": 1.0,
+      "duskLight": 0.0,
+      "moonPh": [
+        0.5524104237556458,
+        -0.833572268486023,
+        0.08321387320756912
+      ]
+    },
+    {
+      "event": "ToggleSnow",
+      "rain": 0.0,
+      "snow": 1.0,
+      "mpcRain": 0.0,
+      "mpcSnow": 1.0,
+      "year": 2027,
+      "month": 1,
+      "day": 10,
+      "hour": 23.5,
+      "night": 1.0,
+      "cloudCover": 0.8500000238418579,
+      "cloudCoverage": 0.699999988079071,
+      "duskLight": 0.0,
+      "moonPh": [
+        0.5524104237556458,
+        -0.833572268486023,
+        0.08321387320756912
+      ]
+    },
+    {
+      "event": "ToggleRain",
+      "rain": 1.0,
+      "snow": 0.0,
+      "mpcRain": 1.0,
+      "mpcSnow": 0.0,
+      "year": 2027,
+      "month": 1,
+      "day": 10,
+      "hour": 23.5,
+      "night": 1.0,
+      "cloudCover": 1.0,
+      "cloudCoverage": 1.0,
+      "duskLight": 0.0,
+      "moonPh": [
+        0.5524104237556458,
+        -0.833572268486023,
+        0.08321387320756912
+      ]
+    },
+    {
+      "event": "ToggleRain",
+      "rain": 0.0,
+      "snow": 0.0,
+      "mpcRain": 0.0,
+      "mpcSnow": 0.0,
+      "year": 2027,
+      "month": 1,
+      "day": 10,
+      "hour": 23.5,
+      "night": 1.0,
+      "cloudCover": 0.0,
+      "cloudCoverage": -1.0,
+      "duskLight": 0.0,
+      "moonPh": [
+        0.5524104237556458,
+        -0.833572268486023,
+        0.08321387320756912
+      ]
+    }
+  ],
+  "clock": {
+    "pc": "2026-11-21T13:44:45",
+    "unreal": [
+      2026,
+      11,
+      21,
+      13.842310700317224
+    ],
+    "minutesOff": 5.789,
+    "advancedGameMinutesIn2s": 20.07
+  },
+  "dusk": [
+    {
+      "step": 0,
+      "hour": 14.0,
+      "rain": 0.0,
+      "hand": null,
+      "daylight": 1.0,
+      "duskLight": 1.0,
+      "lamps": {
+        "A": {
+          "isOn": false,
+          "k": 0.0,
+          "dusk": 0.0,
+          "intensity": 0.0,
+          "visible": false
+        },
+        "B": {
+          "isOn": false,
+          "k": 0.0,
+          "dusk": 0.0,
+          "intensity": 0.0,
+          "visible": false
+        },
+        "C": {
+          "isOn": false,
+          "k": 0.0,
+          "dusk": 0.0,
+          "intensity": 0.0,
+          "visible": false
+        }
+      }
+    },
+    {
+      "step": 1,
+      "hour": 14.0,
+      "rain": 0.0,
+      "hand": [
+        "C",
+        "TurnOn"
+      ],
+      "daylight": 1.0,
+      "duskLight": 1.0,
+      "lamps": {
+        "A": {
+          "isOn": false,
+          "k": 0.0,
+          "dusk": 0.0,
+          "intensity": 0.0,
+          "visible": false
+        },
+        "B": {
+          "isOn": false,
+          "k": 0.0,
+          "dusk": 0.0,
+          "intensity": 0.0,
+          "visible": false
+        },
+        "C": {
+          "isOn": true,
+          "k": 1.0,
+          "dusk": 0.0,
+          "intensity": 10.0,
+          "visible": true
+        }
+      }
+    },
+    {
+      "step": 2,
+      "hour": 21.5,
+      "rain": 0.0,
+      "hand": null,
+      "daylight": 0.38485332968466474,
+      "duskLight": 0.38485332968466474,
+      "lamps": {
+        "A": {
+          "isOn": false,
+          "k": 0.0,
+          "dusk": 0.0,
+          "intensity": 0.0,
+          "visible": false
+        },
+        "B": {
+          "isOn": false,
+          "k": 0.0,
+          "dusk": 0.0,
+          "intensity": 0.0,
+          "visible": false
+        },
+        "C": {
+          "isOn": true,
+          "k": 1.0,
+          "dusk": 0.0,
+          "intensity": 10.0,
+          "visible": true
+        }
+      }
+    },
+    {
+      "step": 3,
+      "hour": 22.0,
+      "rain": 0.0,
+      "hand": null,
+      "daylight": 0.12452149711509822,
+      "duskLight": 0.12452149711509822,
+      "lamps": {
+        "A": {
+          "isOn": true,
+          "k": 1.0,
+          "dusk": 1.0,
+          "intensity": 10.0,
+          "visible": true
+        },
+        "B": {
+          "isOn": false,
+          "k": 0.0,
+          "dusk": 1.0,
+          "intensity": 0.0,
+          "visible": false
+        },
+        "C": {
+          "isOn": true,
+          "k": 1.0,
+          "dusk": 1.0,
+          "intensity": 10.0,
+          "visible": true
+        }
+      },
+      "fadeAfter3Frames": 0.025
+    },
+    {
+      "step": 4,
+      "hour": 22.0,
+      "rain": 0.0,
+      "hand": [
+        "A",
+        "TurnOff"
+      ],
+      "daylight": 0.12452149711509822,
+      "duskLight": 0.12452149711509822,
+      "lamps": {
+        "A": {
+          "isOn": false,
+          "k": 0.0,
+          "dusk": 1.0,
+          "intensity": 0.0,
+          "visible": false
+        },
+        "B": {
+          "isOn": false,
+          "k": 0.0,
+          "dusk": 1.0,
+          "intensity": 0.0,
+          "visible": false
+        },
+        "C": {
+          "isOn": true,
+          "k": 1.0,
+          "dusk": 1.0,
+          "intensity": 10.0,
+          "visible": true
+        }
+      }
+    },
+    {
+      "step": 5,
+      "hour": 21.5,
+      "rain": 0.0,
+      "hand": null,
+      "daylight": 0.38485332968466474,
+      "duskLight": 0.38485332968466474,
+      "lamps": {
+        "A": {
+          "isOn": false,
+          "k": 0.0,
+          "dusk": 1.0,
+          "intensity": 0.0,
+          "visible": false
+        },
+        "B": {
+          "isOn": false,
+          "k": 0.0,
+          "dusk": 1.0,
+          "intensity": 0.0,
+          "visible": false
+        },
+        "C": {
+          "isOn": true,
+          "k": 1.0,
+          "dusk": 1.0,
+          "intensity": 10.0,
+          "visible": true
+        }
+      }
+    },
+    {
+      "step": 6,
+      "hour": 21.25,
+      "rain": 0.0,
+      "hand": null,
+      "daylight": 0.5467826574885882,
+      "duskLight": 0.5467826574885882,
+      "lamps": {
+        "A": {
+          "isOn": false,
+          "k": 0.0,
+          "dusk": 0.0,
+          "intensity": 0.0,
+          "visible": false
+        },
+        "B": {
+          "isOn": false,
+          "k": 0.0,
+          "dusk": 0.0,
+          "intensity": 0.0,
+          "visible": false
+        },
+        "C": {
+          "isOn": false,
+          "k": 0.975,
+          "dusk": 0.0,
+          "intensity": 9.75,
+          "visible": true
+        }
+      }
+    },
+    {
+      "step": 7,
+      "hour": 21.25,
+      "rain": 1.0,
+      "hand": null,
+      "daylight": 0.5467826574885882,
+      "duskLight": 0.2187130629954353,
+      "lamps": {
+        "A": {
+          "isOn": true,
+          "k": 0.025,
+          "dusk": 1.0,
+          "intensity": 0.25,
+          "visible": true
+        },
+        "B": {
+          "isOn": false,
+          "k": 0.0,
+          "dusk": 1.0,
+          "intensity": 0.0,
+          "visible": false
+        },
+        "C": {
+          "isOn": true,
+          "k": 1.0,
+          "dusk": 1.0,
+          "intensity": 10.0,
+          "visible": true
+        }
+      }
+    }
+  ]
+}
