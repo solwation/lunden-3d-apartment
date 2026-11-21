@@ -7,23 +7,23 @@
     {
       "key": "audio.master",
       "label": "Huvudvolym",
-      "soundClass": "/Engine/EngineSounds/Master.Master",
-      "owner": "#2286",
-      "what": "every sound: the engine's default sound class, which sounds without their own class use and #2287's classes can have as parent"
+      "soundClass": "/Game/Lunden/Audio/SC_LundenMaster.SC_LundenMaster",
+      "owner": "#2286 (row), #2287 (class)",
+      "what": "every sound: #2287's project root class SC_LundenMaster, parent of the effects and music classes (the engine's own Master cannot hold project classes as children)"
     },
     {
       "key": "audio.music",
       "label": "Musik",
-      "soundClass": null,
+      "soundClass": "/Game/Lunden/Audio/SC_LundenMusic.SC_LundenMusic",
       "owner": "#2287",
-      "what": "music and radios; #2287 sets its music sound class here"
+      "what": "music and radios: #2287's SC_LundenMusic (child of SC_LundenMaster); nothing plays in it until the music player is ported"
     },
     {
       "key": "audio.effects",
       "label": "Ljudeffekter",
-      "soundClass": null,
+      "soundClass": "/Game/Lunden/Audio/SC_LundenEffects.SC_LundenEffects",
       "owner": "#2287",
-      "what": "doors, steps, animals and other effects; #2287 sets its effects sound class here"
+      "what": "doors, steps, animals and other effects: #2287's SC_LundenEffects (child of SC_LundenMaster) with SC_LundenAmbience (wind, outdoor bed) under it"
     }
   ]
 }

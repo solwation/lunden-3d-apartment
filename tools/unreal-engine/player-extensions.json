@@ -37,6 +37,13 @@
       "class": "/Game/Lunden/Player/BPC_LundenRest.BPC_LundenRest_C",
       "owner": "#2300",
       "what": "sit and lie down on furniture with E (src/rest.js): the eye glides to the web's rest spot, the view is clamped, E, Space or Ctrl stands up (player_parts.py)"
+    },
+    {
+      "target": "character",
+      "name": "Audio",
+      "class": "/Game/Lunden/Audio/BPC_LundenAudio.BPC_LundenAudio_C",
+      "owner": "#2287",
+      "what": "footsteps per surface (src/footsteps.js pickStep, one MetaSound per profile), the wind and the outdoor bed (src/windsound.js, src/ambientbed.js) and the room's reverb zone (src/roomreverb.js) (build_audio.py)"
     }
   ]
 }
