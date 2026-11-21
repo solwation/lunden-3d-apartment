@@ -35,7 +35,7 @@ export function linkedSources(readme, html, setup) {
   return [substitute(readme, `[${label}](${setup})`),
     substitute(html, `        <a class="menu-btn" href="${setup}"><span class="btn-text"><b>${label}</b>` +
       `<span class="btn-desc">Installationsprogram signerat av ${PUBLISHER}</span></span></a>\n` +
-      `        <p class="resume">Varnar Windows SmartScreen? <a href="${help}" target="_blank" rel="noopener">Så kontrollerar du signaturen</a>.</p>`)];
+      `        <p class="resume">Varnar Windows SmartScreen? <a class="windows-signature-help" href="${help}" target="_blank" rel="noopener">Så kontrollerar du signaturen</a>.</p>`)];
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
