@@ -1309,6 +1309,7 @@ function* worldParts(plan) {
 
   return {
     object: scene,
+    streetParking: { carFootprints: life.carFootprints, rackSegments: life.rackSegments },
     bicycles: [...life.bicycles, ...courtyard.bicycles],
     // (#2229: an optional query point x, z skips bicycles / scooters more than 4 m away: the parked e-scooters are solid everywhere)
     bicyclePolys(feet, headroom, hurdle, x, z) { return this.bicycles.filter(b => x === undefined || (Math.abs(b.position.x - x) < 4 && Math.abs(b.position.z - z) < 4)).map(b => b.footprint(feet, headroom, hurdle)).filter(p => p.length); },

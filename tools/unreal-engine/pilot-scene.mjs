@@ -27,6 +27,7 @@ const lamps = measurements.lights.filter(lamp => lamp.kind === 'room').map((lamp
   candela: 7 * lamp.intensity
 }));
 if (!lamps.length) throw Error('Import contains no room light anchors.');
-const cameras = views.views.map(v => ({ id: v.id, lighting: v.lighting,
+const poses = process.env.LUNDEN_CAPTURE_VIEWS ? JSON.parse(await readFile(process.env.LUNDEN_CAPTURE_VIEWS)) : views.views;
+const cameras = poses.map(v => ({ id: v.id, lighting: v.lighting,
   xyz: webToUnreal([v.x, v.feetY + views.standingEyeHeightM, v.z]), yaw: webYawToUnrealYaw(v.yawDeg), pitch: v.pitchDeg }));
 await writeFile(process.argv[3], JSON.stringify({ ...views.viewport, spawnZ: measurements.spawn.start.unreal[2] + 50 * measurements.spawn.player.headroom, verticalFov: views.verticalFovDeg, horizontalFov, cameras, lighting, lamps }, null, 2) + '\n');

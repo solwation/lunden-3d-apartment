@@ -345,13 +345,14 @@ export class Garage {
     const bikeRows = new Map(); // (row, area) → the bikes and stalls of one rack row, as a near and a far mesh (#704)
     const rackOf = (row, x, z) => { const a = areaAt(x, z), k = row + '|' + a.name; if (!bikeRows.has(k)) bikeRows.set(k, { area: a, hi: [], lo: [] }); return bikeRows.get(k); };
     const bikeRecords = [];
+    this.parkedRackSegments = [];
     const rideableRows = new Set(options.rideableRows ?? G.rideableBikeRows ?? [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
     this.rideableRows = rideableRows;
     G.bikes.forEach(([x0, x1, z, f], row) => {
       put('shell', bake(new THREE.CylinderGeometry(0.014, 0.014, x1 - x0, 8).rotateZ(Math.PI / 2).translate((x0 + x1) / 2, F + 0.03, z), 0xb4b9bd), (x0 + x1) / 2, z + f * 0.5);
       const za = Math.min(z, z + f * 1.3), zb = Math.max(z, z + f * 1.3);
       const rowRack = [[x0, za, x1, za], [x1, za, x1, zb], [x1, zb, x0, zb], [x0, zb, x0, za]];
-      segs.push(...rowRack);
+      segs.push(...rowRack); this.parkedRackSegments.push(rowRack);
       let slot = 0;
       for (let x = x0 + 0.3; x < x1 - 0.2; x += 0.62) {
         const rack = rackOf(row, x, z + f * 0.5), at = (g) => g.clone().rotateY(f * Math.PI / 2).translate(x, F, z + f * 0.42);

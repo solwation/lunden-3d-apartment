@@ -2662,9 +2662,11 @@ terrain, streets, paving, trees and backdrops: `SITE_NAME`), `garage`, `core-abc
 `l1007` zones take any part of `buildWorld` but never the extra builders. `l1007-entre` takes `surroundings*`, `hus-l`
 takes `exterior`, `visit`, `core-l` and `portik`, and `kvarteret` takes `surroundings`, `garage` and `core-abc`. The
 boxes (`zoneTable`) are generous guards and `from` does the sorting; the courtyard, parked cars and the rest of the
-ground are #2280's zones `gard` and `omgivning`. Left out on purpose: the garage's parked cars
-and bicycles (furnishing, later) and `entrance-plants-far` (the web's distance stand-in for the entrance plants, which
-are exported).
+ground are #2280's zones `gard` and `omgivning`. The parked vehicles use their web near meshes and footprint boxes
+in `kvarteret` (garage and storage), `gard` (courtyard bikes) and `omgivning` (street, racks and east parking lots).
+Their part anchors and collision corners are recorded in `measurements.json` under `site.parkedVehicles`. The importer
+makes the footprint boxes hidden BlockAll actors. Stored bikes have the web's existing cage boundary.
+The entrance plants use their near models. The `entrance-plants-far` distance stand-in stays in the web renderer.
 
 **The split.** A merged mesh (the web bakes one mesh per material for all of Hus L, all of Hus A/B/C or the whole
 terrain) that crosses a split zone's box is clipped at the box sides (vertical planes; attributes interpolated) and

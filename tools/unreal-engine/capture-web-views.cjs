@@ -69,7 +69,7 @@ async function main() {
     assert.equal(day.toISOString().slice(0, 10), isoDate);
     spec.date = {year: day.getUTCFullYear(), month: day.getUTCMonth() + 1, day: day.getUTCDate()};
   }
-  const views = spec.views;
+  const views = process.env.LUNDEN_CAPTURE_VIEWS ? JSON.parse(await fs.readFile(process.env.LUNDEN_CAPTURE_VIEWS)) : spec.views;
   const axes = await import('./coordinates.mjs');
   await fs.mkdir(out, {recursive: true});
   const browser = await chromium.launch({executablePath: process.env.CHROME_PATH || undefined,

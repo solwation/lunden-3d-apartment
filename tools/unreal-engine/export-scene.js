@@ -23,6 +23,7 @@ import { stairRise, stairRiser, N_TREADS } from '../../src/stairs.js';
 import { hedgeTexture } from './hedge-texture.js';
 import { husLLayout } from '../../src/exterior.js';
 import { fallDamage } from '../../src/falldamage.js';
+import { parkedVehicles, recordParkedPart, parkedCollision, parkedMaterial } from './export-parked-vehicles.js';
 import { riverGeometry, riverMaterialData } from './export-river.js';
 import { facadeLightingData } from './export-facade-lighting.js';
 import { webToUnrealRounded, webYawToUnrealYaw, webPitchToUnrealPitch, webRotationYToUnrealYaw, roundCm } from './coordinates.mjs';
@@ -466,8 +467,8 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
   } catch (e) { lightsInfo.error = String(e?.message ?? e); }
   // #2279: the garage under the courtyard and the four stairwells/lifts (Hus L's and Hus A/B/C's), which main.js builds
   // next to the world. Loaded after the world and the lights so their modules cannot shift the seeded random sequence
-  // the l1007 zones were built with. Parked cars and bicycles in the garage are furnishing (later), not exported.
-  const extra = { objects: [], skip: new Set(), group: new Map(), error: null };
+  // the l1007 zones were built with. Keep the parked near models; detached rideable copies and far LODs start hidden.
+  const extra = { objects: [], group: new Map(), error: null };
   try {
     const [{ Garage }, { Core }, { CoreHouse }] = await Promise.all([import('../../src/garage.js'), import('../../src/core.js'), import('../../src/corehouse.js')]);
     const garage = new Garage();
@@ -484,8 +485,7 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     for (const o of [garage.object, garage.door.object, garage.parkObject]) extra.group.set(o, 'garage');
     extra.group.set(core.own, 'core-l');
     for (const p of core.parts) { extra.group.set(p.object, 'core-abc'); if (p.exterior) extra.group.set(p.exterior, 'core-abc'); }
-    for (const o of [garage.carArea, garage.bikeSpokesMesh, garage.storageBikeSpokesMesh, ...(garage.bikeRows ?? []).flatMap((r) => [r.hiMesh, r.loMesh]),
-      ...(garage.storageBikeRows ?? []).flatMap((r) => [r.hiMesh, r.loMesh]), ...[...(garage.bicycles ?? []), ...(garage.storageBicycles ?? [])].map((b) => b.object)]) if (o) extra.skip.add(o);
+
   } catch (e) { extra.error = String(e?.stack ?? e); }
   // #2310: the fruit bowl on the coffee table (src/fruit.js) and Tilly's basketball in its wall holder (src/basket.js),
   // which main.js builds next to the world: the same classes with main.js's arguments, so they stand where the game puts
@@ -528,6 +528,8 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
   for (const o of extra.objects) scene.add(o);
   scene.add(loose.root);
   scene.updateMatrixWorld(true);
+  if (!extra.garage) throw Error(extra.error || "Garage missing from parked vehicle export");
+  const parked = parkedVehicles(world, extra.garage);
   // which builder each object comes from (zoneTable `from`)
   const groupOf = new Map(extra.group);
   for (const c of world.object.children) {
@@ -575,7 +577,6 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     return b;
   };
   const visit = (o, ctx) => {
-    if (extra.skip.has(o)) return skip('garage cars and bicycles (furnishing, later)');
     if (o.name === 'entrance-plants-far') return skip('distance stand-in of the entrance plants (web LOD; the near plants are exported)');
     if (!o.visible) return skip('hidden');
     const why = webOnly(o);
@@ -623,6 +624,11 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     } else box.copy(visibleBox(a.object));
     if (box.isEmpty()) { skip('empty'); continue; }
     box.getCenter(centre);
+    if (parked.meshes.has(a.object)) {
+      const part = parked.meshes.get(a.object);
+      place(a, exportedZones.find(z => z.id === part.zone), box);
+      continue;
+    }
     const group = sourceGroup(a.object);
     const zone = exportedZones.find((z) => accepts(z, group, a) && inBox(z.box, centre));
     const cuttable = a.instance === undefined && a.object.isMesh && !a.object.isInstancedMesh
@@ -663,6 +669,14 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
   const pos = (p) => `${tag('x', p.x)}_${tag('z', p.z)}`;
   for (const list of byZone.values()) for (const a of list) {
     const c = a.centre, lv = `l${a.level}`;
+    if (parked.meshes.has(a.object)) {
+      const first = parked.meshes.get(a.object).instances.get(a.instance)[0].vehicle;
+      a.kind = 'structure'; a.name = first.area + ' parked ' + (first.id.includes('-car-') ? 'car' : 'bicycle');
+      a.source = ({street:'src/streetlife.js',yard:'src/streetlife.js',eastlot:'src/eastlot.js',garage:'src/garage.js parked vehicles',
+        storage:'src/garage.js parked bicycles',courtyard:'src/courtyard.js'})[first.area];
+      a.id = unique('parked_' + first.id.replaceAll('-', '_'));
+      recordParkedPart(parked, a, worldMatrix(a)); continue;
+    }
     if (a.kind === 'door') {
       const d = a.door.owner;
       const h = d.hinge ? { x: d.hinge[0], z: d.hinge[1] } : c;
@@ -753,7 +767,7 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     // The rail and sign need distinct keys; the hedge tints already identify them.
     // In particular the pilot ground builder loads the original patio-hedge material path.
     const hedge = m.name === 'patio-hedge' || m.name === 'boxwood';
-    const siteMap = m.map?.name === 'site-slatted-rail' || m.map?.name === 'site-house-letters';
+    const siteMap = m.map?.name === 'site-slatted-rail' || m.map?.name === 'site-house-letters' || m.map?.name === 'parked-bicycle-spokes';
     const tex = furnish && !hedge && !siteMap ? furnishingTexture(m.map, textures, textureOfMap) : null;
     const bulb = m === lightsInfo.patioBulb;
     const siteSuffix = siteMap ? m.map.name.replaceAll('-', '_') : null;
@@ -787,8 +801,8 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     return geoCache.get(k);
   };
   // a curtain or blind cloth (src/curtains.js, src/blinds.js tag the cloth with the openable it belongs to) is a textile
-  const meshNode = (mesh, furnish = false) => {
-    const ms = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+  const meshNode = (mesh, furnish = false, material = mesh.material) => {
+    const ms = Array.isArray(material) ? material : [material];
     let g = exportGeometry(mesh, ms.some((m) => m.vertexColors));
     if (!g) return null;
     if (mesh.material.userData?.riverSurface) g = riverGeometry(mesh, g.clone(), mesh.material.userData.riverSurface);
@@ -833,7 +847,7 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
       let node;
       const furnish = FURNISH_KINDS.has(a.kind);
       lookAtom = a.id;
-      if (a.instance !== undefined) node = meshNode(a.object, furnish), node && (Array.isArray(node.material) ? node.material : [node.material]).forEach((m) => keys.add(m.name));
+      if (a.instance !== undefined || parked.meshes.has(a.object)) node = meshNode(a.object, furnish, parked.meshes.has(a.object) ? parkedMaterial(a.object, a.instance) : a.object.material), node && (Array.isArray(node.material) ? node.material : [node.material]).forEach((m) => keys.add(m.name));
       else node = subtree(a.object, a.id, counter, keys, furnish);
       if (!node) continue;
       worldMatrix(a).decompose(node.position, node.quaternion, node.scale);
@@ -855,6 +869,7 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     }
     const zone = ZONES.find((z) => z.id === zoneId);
     lookAtom = null;
+    tris += parkedCollision(root, parked, zoneId);
     if (zone.collision) tris += addCollision(root, world, zoneId, W, D, unique);
     roots[zoneId] = { root, triangles: Math.round(tris) };
   }
@@ -960,6 +975,11 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     coreDoors: extra.coreDoors ?? [], garage: extra.garage ?? null });
   if (lightsInfo.stairLight) measurements.stair.lightBounds = lightsInfo.stairLight.bounds;
   if (wanted.includes('l1007')) measurements.site.livingWallLight = livingWallLight(world);
+  measurements.site.parkedVehicles = {
+    vehicles: [...parked.vehicles.values()].filter(v => wanted.includes(v.zone)),
+    blockers: parked.footprints.filter(v => wanted.includes(v.zone)),
+  };
+  for (const v of measurements.site.parkedVehicles.vehicles) if (!v.parts.length) throw Error('Missing parked vehicle: ' + v.id);
   measurements.site.riverSurface = riverMaterialData();
   measurements.buildings = buildings;
   if (wanted.includes('hus-l') || wanted.includes('kvarteret')) measurements.site.facadeLighting = facadeLightingData(world, wanted);

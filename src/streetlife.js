@@ -220,7 +220,7 @@ function instanced(geo, material, mats, colors) {
 }
 
 export function buildStreetLife({ entrances = [] } = {}) {
-  const group = new THREE.Group(), segments = [], R = rng(17);
+  const group = new THREE.Group(), segments = [], carFootprints = [], R = rng(17);
   const white = new THREE.MeshStandardMaterial({ color: 0xeeeeea, roughness: 0.7 });
   // the car park: one row of stalls along the hedge, nose to it, from the west end to the drive (#208, #260)
   const lot = L.lot, lines = [], cars = [], carColors = [];
@@ -235,6 +235,7 @@ export function buildStreetLife({ entrances = [] } = {}) {
       carColors.push(L.carColors[Math.floor(R() * L.carColors.length)]);
       const hx = 0.92, hz = 2.17; // footprint (turned 90°: across x)
       const c = [[cx - hx, cz - hz], [cx + hx, cz - hz], [cx + hx, cz + hz], [cx - hx, cz + hz]];
+      carFootprints.push(c);
       c.forEach((p, i) => segments.push([...p, ...c[(i + 1) % 4]]));
     }
   }
@@ -370,5 +371,5 @@ export function buildStreetLife({ entrances = [] } = {}) {
     pick.userData.door = bicycle.target;
     return bicycle;
   });
-  return { object: group, segments, bicycles };
+  return { object: group, segments, bicycles, carFootprints, rackSegments };
 }
