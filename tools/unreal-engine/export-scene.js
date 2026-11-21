@@ -17,6 +17,7 @@ import { groundY, renderedTerrainY, treeFeet, aoTrees } from '../../src/surround
 import { gridGround } from '../../src/elevation.js';
 import { leafMaterial, windLeafMaterial } from '../../src/foliage.js';
 import { skyGradientPalette } from '../../src/daycycle.js';
+import { livingWallLight } from './export-living-wall.js';
 import { stairLampProfiles } from './export-stair-light.js';
 import { stairRise, stairRiser, N_TREADS } from '../../src/stairs.js';
 import { hedgeTexture } from './hedge-texture.js';
@@ -958,6 +959,7 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
   const measurements = measurementData({ world, planCopy, W, D, byZone, lightsInfo, seasons, materialTable, commit, ZONES, wanted, lifts: extra.lifts ?? [],
     coreDoors: extra.coreDoors ?? [], garage: extra.garage ?? null });
   if (lightsInfo.stairLight) measurements.stair.lightBounds = lightsInfo.stairLight.bounds;
+  if (wanted.includes('l1007')) measurements.site.livingWallLight = livingWallLight(world);
   measurements.site.riverSurface = riverMaterialData();
   measurements.buildings = buildings;
   if (wanted.includes('hus-l') || wanted.includes('kvarteret')) measurements.site.facadeLighting = facadeLightingData(world, wanted);

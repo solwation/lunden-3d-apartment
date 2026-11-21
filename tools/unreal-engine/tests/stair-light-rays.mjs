@@ -7,7 +7,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { LIGHTING } from '../../../src/config.js';
 
 const dir = process.argv[2] ?? 'unreal/Lunden/Import';
-const { lights } = JSON.parse(fs.readFileSync(path.join(dir, 'measurements.json')));
+const { lights, site } = JSON.parse(fs.readFileSync(path.join(dir, 'measurements.json')));
 const views = JSON.parse(fs.readFileSync(new URL('../../../unreal/Lunden/Tests/views.json', import.meta.url)));
 const view = views.views.find(v => v.id === 'stairs');
 const camera = new THREE.PerspectiveCamera(views.verticalFovDeg, views.viewport.width / views.viewport.height, .05, 1500);
@@ -73,3 +73,23 @@ for (const [label, x, y, id, blocked] of probes) {
 assert.equal(lights.find(l => l.id === closet).distance, LIGHTING.ceiling.range);
 assert.equal(lights.find(l => l.id === 'room_badrum_l0_x117_z631').distance, LIGHTING.spots.range);
 console.log('STAIR_LIGHT_RAYS_OK');
+
+// #2372 uses the same apartment geometry. Trace nine pixels of the original crop, including
+// the part beyond the plan's collinear vertex at z=11.639 m, to the exported window-light receiver.
+if (site.livingWallLight) {
+  const living = views.views.find(v => v.id === 'living-room');
+  camera.position.set(living.x, living.feetY + views.standingEyeHeightM, living.z);
+  camera.rotation.set(THREE.MathUtils.degToRad(living.pitchDeg), THREE.MathUtils.degToRad(living.yawDeg), 0);
+  camera.updateMatrixWorld();
+  const [x, z0, y0, z1, y1] = site.livingWallLight.wall;
+  for (const u of [.01, .04, .07]) for (const v of [.18, .25, .33]) {
+    const ray = new THREE.Raycaster();
+    ray.setFromCamera(new THREE.Vector2(2*u - 1, 1 - 2*v), camera);
+    const hit = firstHit(ray);
+    assert.equal(hit?.object.material.name, 'std_f1f1ee_r85_m0', `wall paint at (${u}, ${v})`);
+    const p = hit.point;
+    assert.ok(Math.abs(p.x - x) < .001 && z0 <= p.z && p.z <= z1 && y0 <= p.y && p.y <= y1,
+      `painted receiver is outside the diffuse window field: ${p.toArray()}`);
+  }
+  console.log('LIVING_WALL_RAYS_OK 9 painted receiver points');
+}

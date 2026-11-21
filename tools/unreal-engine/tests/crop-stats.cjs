@@ -43,6 +43,27 @@ async function main() {
   }
   } finally { await browser.close(); }
   fs.writeFileSync(path.join(dir, 'crop-stats.json'), JSON.stringify({crops, stats: out}, null, 1) + '\n');
+  if (process.argv.includes('--check-pendant')) {
+    const shot = out['living-room-evening'];
+    for (const crop of ['left-wall', 'upper-left', 'upper-right', 'lower-left', 'lower-right']) {
+      const ratio = shot?.unreal[crop]?.luminance / shot?.web[crop]?.luminance;
+      if (!(ratio >= 0.8 && ratio <= 1.25)) throw Error(`Evening pendant ${crop} outside 0.8–1.25: ${ratio.toFixed(3)}`);
+    }
+    for (const column of ['left', 'right']) {
+      const contrast = side => shot[side]['lower-' + column].luminance / shot[side]['upper-' + column].luminance;
+      const web = contrast('web'), ue = contrast('unreal');
+      if ((web - 1) * (ue - 1) <= 0 || ue / web < 0.8 || ue / web > 1.25)
+        throw Error(`Evening wall ${column} vertical contrast: Unreal ${ue.toFixed(3)}, web ${web.toFixed(3)}`);
+    }
+    const unlit = out['living-room-without-pendant'];
+    if (unlit) {
+      for (const side of ['web','unreal']) {
+        const gain = shot[side]['left-wall'].luminance - unlit[side]['left-wall'].luminance;
+        if (!(gain > 0)) throw Error(`The pendant switch should light the ${side} wall`);
+        console.log(`${side} living-room pendant switch changes left-wall luminance by ${gain.toFixed(4)}`);
+      }
+    }
+  }
   const stairs = process.argv.includes('--check-stairs'), sky = process.argv.includes('--check-lighting');
   if (stairs || sky) {
     const failures = [];

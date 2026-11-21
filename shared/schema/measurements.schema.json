@@ -106,6 +106,19 @@
     "site": {
       "type": "object", "required": ["geo", "planNorthDeg", "source"],
       "properties": {
+        "livingWallLight": {
+          "type": "object", "description": "L1007 painted east wall and the web window diffuse field. Metres in Unreal axis order. Samples are row-major from low to high, column along south.",
+          "required": ["wall", "emitter", "glass", "columns", "rows", "field", "gain", "tint", "hemiOvercast", "hemiClear"],
+          "properties": {
+            "wall": { "type": "array", "minItems": 5, "maxItems": 5, "items": { "type": "number" } },
+            "emitter": { "type": "array", "minItems": 3, "maxItems": 3, "items": { "type": "number" } },
+            "glass": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number", "exclusiveMinimum": 0 } },
+            "columns": { "type": "integer", "minimum": 2 }, "rows": { "type": "integer", "minimum": 2 },
+            "field": { "type": "array", "items": { "type": "number", "minimum": 0 } },
+            "gain": { "type": "number", "exclusiveMinimum": 0 }, "tint": { "type": "integer" },
+            "hemiOvercast": { "type": "number" }, "hemiClear": { "type": "number" }
+          }
+        },
         "facadeLighting": {
           "type": "object", "description": "#2324: room and wall-light data for the requested building zones. Positions and lengths are in Unreal centimetres, normals are horizontal unit [X,Y], routine times are local hours.",
           "required": ["panes", "fixtures", "windows", "roomLevels", "facadeGlow", "wallLight", "schedule"],

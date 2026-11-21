@@ -33,6 +33,11 @@ async function capture(page, shot, view, out) {
     const all = shot.lamps === 'all';
     lights.forced = all;
     lights.setAll(all);
+    if (shot.omitRoomLight) {
+      const room = [...lights.rooms.values()].find(r => r.name === shot.omitRoomLight.room && r.level === shot.omitRoomLight.level);
+      if (!room?.on || room.lamps.length !== 1) throw Error(shot.name + ': expected one switched room emitter');
+      room.toggle();
+    }
     visitLights.setAll(all);
     if (patio.strings) { patio.strings.forced = all; patio.setStringLights(patio.strings, all); }
     if (shot.lamps === 'dusk') lights.dark = undefined; // the next updateAuto is a first reading: the dusk lamps at once
