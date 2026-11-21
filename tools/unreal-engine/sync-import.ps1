@@ -129,7 +129,9 @@ function Invoke-UnrealStep([string]$name, [string]$script, [string[]]$scriptArgs
     try {
         $ErrorActionPreference = 'Continue'
         Push-Location $root
-        & $ps @runArgs 2>&1 | ForEach-Object { Write-Host "  $_" }
+        # the editor's full log stays in unreal/Lunden/Saved/Logs; show the Lunden result lines, errors and the summary
+        & $ps @runArgs 2>&1 | ForEach-Object { "$_" } | Where-Object { $_ -match 'LUNDEN_|Error|PYTHON ERROR|exit code|^ERROR|Traceback' -and $_ -notmatch 'GetLastError' } |
+            ForEach-Object { Write-Host "  $_" }
         $code = $LASTEXITCODE
     } finally { Pop-Location; $ErrorActionPreference = $old }
     if ($code -ne 0) { Fail $name "run-python.ps1 $script exited $code; see the log named above" }

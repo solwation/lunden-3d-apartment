@@ -1831,6 +1831,12 @@ that touch `src/`, `data/`, `models/`, `textures/`, the exporter and checker (`t
 The Pages workflow is unchanged; this workflow only reads the repository, uploads artifacts and writes that one issue.
 Typical cost: one 15 s job per matching push, a 4–6 minute job when the sources really changed.
 
+**One producer per PC.** The same sources give the same nodes, triangles and `measurements.json` on every machine,
+but zones with canvas-drawn pictures (signs, name plate: `l1007`, `hus-l`, `kvarteret`) differ in their embedded image
+bytes between the workflow's Linux runner and a WSL or Windows export (fonts and browser build; first comparison on
+`9951f5be…`, 2026-11-21). Switching between a workflow artifact and a local export therefore re-imports those zones once;
+nothing is wrong, but prefer one producer (the artifact) on a PC.
+
 **Source hashes ignore line endings (#2305).** `sources.mjs` hashes text sources (`.js`, `.mjs`, `.json`, `.html`) with
 CRLF read as LF, so an export made on Linux, in WSL or by the workflow counts as current in the Windows clone, whose
 Git checks text out with CRLF (`core.autocrlf=true`). Binary sources (`models/*.glb`, pictures) are hashed as they are.
