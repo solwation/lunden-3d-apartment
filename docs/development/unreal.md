@@ -429,7 +429,7 @@ open the map (see [Parallel work](#parallel-work-levels-and-blueprints)).
 
 | Package | Owner | Built by | Contents |
 |---|---|---|---|
-| `/Game/Lunden/Generated/l1007/Level_l1007` | #2278 (importer output) | `import_world.py --zones l1007` | both storeys as exported: walls, floors, ceilings, stair, doors, windows, fittings, furniture |
+| `/Game/Lunden/Generated/Interaction/Level_l1007_interaction` | #2278 line, #2285 package | `import_world.py --zones l1007`, then `build_interaction.py` | both storeys as exported (walls, floors, ceilings, stair, fittings, furniture), with #2285's usable doors, windows, switches and taps; replaced the importer's `Generated/l1007/Level_l1007` |
 | `/Game/Lunden/Generated/L1007World/Level_l1007_collision` | #2278 | `build_l1007.py` | walkable collision: 54 wall/floor boxes, 15 complex-as-simple stair treads |
 | `/Game/Lunden/Generated/l1007-entre/Level_l1007-entre` | #2279 (importer output) | `import_world.py --zones l1007-entre` | street, pavement and terrain pieces in front of L1007 |
 | `/Game/Lunden/Generated/hus-l/Level_hus-l` | #2279 (importer output) | `import_world.py --zones hus-l` | Hus L: façades, loftgång, roofs, patios, portik, stairwell/lift core, L1004/L1201 |
@@ -461,6 +461,8 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/build_l1007.py
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/build_exterior.py
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/build_site.py
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/build_lighting.py
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/build_interaction.py
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/compose_world.py [--check]
 copy tools\unreal-engine\tests\test_l1007.py unreal\Lunden\Content\Python\   (untracked copy, delete afterwards)
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-tests.ps1 -Filter Editor.Python.Lunden.test_l1007
@@ -736,9 +738,11 @@ Not yet: an event dispatcher to bind to (not built yet; until then #2293 watches
 
 **Level.** `/Game/Lunden/Generated/Interaction/Level_l1007_interaction` is a copy of the importer's `Level_l1007`
 where each door leaf and sash hangs on its interactable at the hinge/pivot with a blocking box (closed doors block
-now), and the switches and taps have small use boxes. It is generated, not versioned. It is **not yet in
-`L_Lunden`**: swapping `world-levels.json`'s `Level_l1007` line for it needs `compose_world.py` with the map's lock,
-and `test_l1007`'s walk through the front door must then open the door first (it is closed and now blocks).
+now), and the switches and taps have small use boxes. It is generated, not versioned, and since #2285 it replaces
+`Generated/l1007/Level_l1007` in `world-levels.json` (the line stays #2278's; only its package was swapped), so the
+doors are live in `L_Lunden`. Re-run `build_interaction.py` after every `import_world.py` of `l1007` (it copies the
+imported level), then `compose_world.py`. `test_l1007` now opens the front door by id before walking in. The builder
+skips the class when `Lunden.SpecHash` (the script's hash, line endings normalised) is unchanged.
 
 ```text
 git lfs lock unreal/Lunden/Content/Lunden/Blueprints/PilotDoors/BP_LundenSwingDoor.uasset
@@ -747,7 +751,7 @@ copy tools\unreal-engine\tests\test_interaction.py unreal\Lunden\Content\Python\
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-tests.ps1 -Filter Editor.Python.Lunden.test_interaction
 ```
 
-`test_interaction` (PIE on that level): all 18 L1007 doors, 6 sashes, 13 switches and 6 taps have one interactable;
+`test_interaction` (PIE on `Level_l1007_interaction` alone): all 18 L1007 doors, 6 sashes, 13 switches and 6 taps have one interactable;
 opened and closed by id, every hinge/pivot is within 1 cm and every yaw / sash angle within 1° of `measurements.json`,
 sliders' boxes and sashes' check points within 1 cm of the open/closed points, `ChangeCount` 1 after open + repeated
 open and 2 after close; a wardrobe panel closes its partner; E opens the front door; a Hall switch turns both Hall

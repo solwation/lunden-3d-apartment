@@ -19,6 +19,7 @@
    hidden water stream (an engine cylinder from outlet to landing, src/water.js).
 Ends with LUNDEN_INTERACTION_OK. Lock BP_LundenSwingDoor.uasset first (git lfs lock); the level is generated, not versioned.
 """
+import hashlib
 import json
 import math
 from pathlib import Path
@@ -40,6 +41,9 @@ PROJECT = Path(u.Paths.convert_relative_path_to_full(u.Paths.project_dir()))
 USE_BOX = 6.0       # cm, half size of a switch's / tap's use box (the web picks the switch plate / tap lever)
 LEAF_HALF = 2.5     # cm, half thickness of a door leaf's / sash's blocking box (the pilot's)
 KIND_MOVE, KIND_SWITCH, KIND_TAP = 0, 1, 2
+SPEC_TAG = "Lunden.SpecHash"
+# the class depends only on this script (line endings normalised, so a CRLF checkout does not rebuild it)
+SPEC = hashlib.sha256(Path(__file__).read_bytes().replace(b"\r\n", b"\n")).hexdigest()
 
 
 # ---------------------------------------------------------------------------------------------- graph helpers ----
@@ -143,6 +147,9 @@ def build_class():
     bp = ASSETS.load_asset(DOOR)
     if not bp:
         raise RuntimeError(DOOR + " is missing (the #2246 pilot asset)")
+    if ASSETS.get_metadata_tag(bp, SPEC_TAG) == SPEC:
+        u.log("LUNDEN_INTERACTION class unchanged, nothing saved")
+        return bp.generated_class()
     rot, vec = BP.get_struct_type(u.Rotator.static_struct()), BP.get_struct_type(u.Vector.static_struct())
     names = BP.get_array_type(BP.get_basic_type_by_name("name"))
     variables(bp, {"OpenRotation": rot, "ClosedRotation": rot, "OpenLocation": vec, "ClosedLocation": vec,
@@ -258,6 +265,7 @@ def build_class():
     bad = gr.g.list_nodes_with_errors()
     if bad:
         raise RuntimeError("BP_LundenSwingDoor failed to compile: " + ", ".join(n.get_name() for n in bad))
+    ASSETS.set_metadata_tag(bp, SPEC_TAG, SPEC)
     if not ASSETS.save_loaded_asset(bp, only_if_is_dirty=False):
         raise RuntimeError("Could not save " + DOOR + " (git lfs lock it first)")
     return bp.generated_class()

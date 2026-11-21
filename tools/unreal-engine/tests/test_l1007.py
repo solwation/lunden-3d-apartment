@@ -190,7 +190,11 @@ def world_test():
         if math.hypot(start.x - want[0], start.y - want[1]) > 10 or abs(start.z - HALF_HEIGHT - want[2]) > 12:
             raise RuntimeError(f"Spawned at {start}, not at START {want}")
         yield from move("approach entrance", 139, -140, entre)
-        # The imported door leaves have no simple collision (door movement and blocking doors are #2285).
+        # Since #2285 the closed front door blocks: open it through its interactable (interact:<id>, OpenDoor).
+        door = u.GameplayStatics.get_all_actors_with_tag(world, "interact:door_l0_x80_z0")
+        if door:
+            door[0].call_method("OpenDoor")
+            yield from wait(0.8)
         yield from move("through entrance", 141, 100, entre)
         aim(350, 100)  # the hall partition faces x = 205.66 cm here; the 22 cm capsule must stop short of it
         yield

@@ -7,11 +7,11 @@
   "playerStart": "measurements.json#/spawn/start",
   "levels": [
     {
-      "package": "/Game/Lunden/Generated/l1007/Level_l1007",
-      "owner": "#2278",
-      "builder": "import_world.py --zones l1007",
+      "package": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction",
+      "owner": "#2278 (line), #2285 (package swap)",
+      "builder": "import_world.py --zones l1007, then build_interaction.py",
       "streaming": "always",
-      "what": "L1007 Entréplan and Övre plan as imported from the web (#2245): walls, floors, ceilings, stair, doors, windows, fittings, furniture"
+      "what": "L1007 Entréplan and Övre plan as imported from the web (#2245): walls, floors, ceilings, stair, fittings, furniture; #2285's copy with usable doors, windows, switches and taps (replaces Generated/l1007/Level_l1007)"
     },
     {
       "package": "/Game/Lunden/Generated/L1007World/Level_l1007_collision",
