@@ -1005,6 +1005,11 @@ sky's brightness and the locked exposure.
   `ExponentialHeightFog` (denser and greyer under rain or snow, as the web greys sky and fog) and Epic's
   `VolumetricCloud` material (since #2307 with weather-driven coverage). Sky-light scale 2 and fog grey are *guesses*
   by eye against the web pictures.
+- **Clear night sky (#2366).** The two stored START exposure trials put the web's sky luminance between
+  the game exposure and +1.76 EV. The sky material applies a fitted +1.53 EV (*guess*) to the atmospheric
+  background at astronomical night. The correction fades out with cloud cover and between astronomical and
+  civil twilight. Run the paired captures and `crop-stats.cjs <out> <crops.json> --check-lighting` to check
+  the three START sky crops and the accepted living-room and upper-floor views against 0.8–1.25 × the web.
 - **Daylight indoors, the sky's brightness and the exposure (#2313).** Measured with `crop-stats.cjs` against the web,
   the 14:00 living room was 0.26 × and the rain sky at START 0.37 × the web's mean luminance. The web lights every
   surface with its hemisphere light (`LIGHTING.sky` overcast.hemi 2.0 → clear.hemi 1.5, × daylight, + `DAY.nightAmbient`,
