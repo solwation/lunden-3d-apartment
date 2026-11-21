@@ -83,7 +83,32 @@ internal static class Program
                 }
             }
             if (options.DryRun) return state.Active == null ? 1 : 0;
-            return await RunInstalled(store, state, key, userData, (info, _, pending) => StartGame(info, pending));
+            PlayerBridge? bridge = null;
+            Process? game = null;
+            try {
+                int result = await RunInstalled(store, state, key, userData, async (info, _, pending) => {
+                    if (!options.Offline && bridge == null) {
+                        try { bridge = PlayerBridge.Open(userData); }
+                        catch (Exception ex) when (ExpectedFailure(ex)) {
+                            Console.Error.WriteLine("Flerspelarläget är inte tillgängligt. Du kan fortfarande spela lokalt.");
+                        }
+                    }
+                    if (bridge != null) info.ArgumentList.Add(bridge.GameArgument);
+                    game?.Dispose();
+                    game = Process.Start(info) ?? throw new IOException("Windows kunde inte starta spelet.");
+                    if (!pending) return true;
+                    var exit = game.WaitForExitAsync();
+                    return await Task.WhenAny(exit, Task.Delay(TimeSpan.FromSeconds(FirstStartSeconds))) != exit || game.ExitCode == 0;
+                });
+                // Confirm (or roll back) the update first. The bridge owns only the running game's lifetime.
+                lease?.Dispose();
+                maintenance?.Dispose();
+                if (result == 0 && bridge != null && game != null) await game.WaitForExitAsync();
+                return result;
+            } finally {
+                game?.Dispose();
+                if (bridge != null) await bridge.DisposeAsync();
+            }
         }
         catch (Exception ex) when (ExpectedFailure(ex)) {
             Console.Error.WriteLine($"Lunden kunde inte startas. {ex.Message}");
@@ -119,14 +144,6 @@ internal static class Program
         Console.WriteLine("Startar den föregående fungerande versionen.");
         Directory.CreateDirectory(userData);
         return await startGame(GameProcess.StartInfo(store.GameFile(state.Previous, ""), previousEntry, userData), state.Previous, false) ? 0 : 1;
-    }
-
-    static async Task<bool> StartGame(ProcessStartInfo info, bool pending)
-    {
-        using var game = Process.Start(info) ?? throw new IOException("Windows kunde inte starta spelet.");
-        if (!pending) return true;
-        var exit = game.WaitForExitAsync();
-        return await Task.WhenAny(exit, Task.Delay(TimeSpan.FromSeconds(FirstStartSeconds))) != exit || game.ExitCode == 0;
     }
 
     static bool ExpectedFailure(Exception ex) => ex is IOException or InvalidDataException or UnauthorizedAccessException

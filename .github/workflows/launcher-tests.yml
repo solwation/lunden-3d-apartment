@@ -6,6 +6,7 @@ on:
     paths:
       - 'unreal/Launcher/**'
       - 'unreal/Launcher.Tests/**'
+      - 'tools/unreal-engine/wire/players.json'
       - 'tools/unreal-engine/make-manifest.mjs'
       - 'tools/unreal-engine/tests/make-manifest.test.mjs'
       - 'tools/unreal-engine/verify-published.mjs'
@@ -36,6 +37,8 @@ jobs:
           sparse-checkout: |
             unreal/Launcher
             unreal/Launcher.Tests
+            cloudflare
+            src
             tools/unreal-engine
             shared/schema
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
