@@ -19,6 +19,12 @@ const near = (values, expected, tolerance = 0.0001) => {
   values.forEach((v, i) => assert.ok(Math.abs(v - expected[i]) <= tolerance, `${values} vs ${expected}`));
 };
 
+// The composed map already references this palm and its four parts by the pre-season-check IDs.
+const palmId = 'furn_planter_l0_x43_z1324';
+const palm = nodes.find(n => n.extras?.webId === 'f-planter-0-0.45-13.25-0-0');
+assert.equal(palm?.extras.id, palmId);
+assert.deepEqual(palm.children.map(i => nodes[i].extras.id), [1, 2, 3, 4].map(i => `${palmId}__${i}`));
+
 const item = FURNITURE.find(f => f.type === 'parasol');
 const web = parasol(item);
 updateParasols({ month: 6, sunDir: new THREE.Vector3(0, 1, 0), overcast: 0 }, 0, true);
