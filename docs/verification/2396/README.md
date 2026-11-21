@@ -131,3 +131,54 @@ the tonemapper.
 - `test_lighting` (PIE): passed.
 - `neutral_tonemap_probe.py` + `check-neutral-tonemap.cjs`: within 1/255 at both biases, and a 2.000 EV step.
 - `capture_lighting.py --exposure=game` (9 shots) and `capture_l1007.py` (2 views): OK.
+
+## Re-measurement of #2390 and #2373 on 4af7f0bb
+
+The same scenes and crops as [#2390](../2390/README.md) and [#2373](../2373/README.md), captured with
+`tests/capture_vegetation.py` in the warm checkout at 4af7f0bb. The camera, the 14:00 sun and the exposure bias
+(−1.965) are the same as #2390's committed pairs. The web halves and crops are #2390's and #2373's committed ones.
+Triptychs `re-<view>.jpg` show the web, Unreal before #2396 (#2390/#2373's committed frames) and Unreal after.
+The numbers are in `remeasure-2390-crop-stats.json` and `remeasure-2373-crop-stats.json`.
+
+**#2390, scored with [`score.py`](../2390/score.py)** (Unreal / web; pass band 0.8–1.25):
+
+| View | Luminance before | Luminance after | Saturation before | Saturation after |
+|---|---|---|---|---|
+| start (not counted) | 1.34 | 1.13 | 0.69 | 1.00 |
+| patio-lawn | 1.37 | 1.13 | 0.57 | **0.74** |
+| courtyard | 0.82 | 0.80 | 0.71 | 1.01 |
+| courtyard-loggias | 1.04 | 1.09 | 0.52 | 0.83 |
+| river | 1.28 | **1.29** | 0.65 | 0.84 |
+| entrance-a | 1.17 | 1.18 | 0.77 | 0.99 |
+| river-bridge | 1.38 | **1.27** | 0.65 | 0.84 |
+
+Passing #2325 views: 0 of 6 before, 3 of 6 after.
+
+What still fails is local to some surfaces, not the sun or the sky. Every sky crop is 0.89–1.14 in luminance and
+0.90–1.09 in saturation. The outliers:
+- the lawn by the river: far-lawn 1.31 and bridge lawn 1.65, while the courtyard lawn is 0.52, in tree shadow in Unreal;
+- the far water: 1.56;
+- the hedge: R/B 1.48 against 2.82, saturation 0.67;
+- the bricks: saturation 0.65–0.69, which fits #2393's lighter joints;
+- the letter plate: 1.39.
+
+**#2373 at dusk** (23.5 h):
+
+| Crop | Lum. ratio before | Lum. ratio after | R/B web | R/B Unreal before | R/B Unreal after |
+|---|---|---|---|---|---|
+| bulb-row | 0.70 | 0.58 | 3.44 | 1.73 | 2.53 |
+| fence-pool | 2.59 | 2.00 | 13.27 | 1.52 | 2.00 |
+| paving | 0.71 | 0.63 | 2.06 | 1.75 | 2.41 |
+
+The string lights are dimmer and less orange than on the web, and the web's warm pool of light on the fence under them
+is missing. The tonemapper only moved the colour part of the way. The open, bright parasol at dusk is #2403.
+
+**Stale river materials in a warm checkout.** The first capture showed the river as flat grey. Both generated river
+materials, `Generated/RiverMaterials/M_LundenRiverFlow` and `M_LundenRiverEdge`, failed to compile with
+"CollectionParameter has invalid parameter None" and fell back to the default material:
+- They had been generated at 18:09, before 390b0f08 (#2381) rebuilt `MPC_LundenWeather` with new parameter GUIDs.
+- `build_materials.py` skips them because their spec hash is unchanged.
+
+Rebuilding just those two materials restored the water: bridge water 1.19, saturation 0.91. The figures above are
+from that capture. A fresh import generates them against the committed collection, so this affects only checkouts
+whose river materials predate 390b0f08.
