@@ -42,34 +42,33 @@ def wall_collection():
 def wall_controller(spec, weather, wall):
     bp = lighting.load_or_create_blueprint(CONTROLLER, u.Actor)
     g = lighting.Graph(bp)
-    tick = g.event("Tick", "ReceiveTick")
-
-    def read(mpc, name):
+    def read(chain, mpc, name):
         node = g.call("KismetMaterialLibrary:GetScalarParameterValue", ParameterName=name)
         lighting.constant(node, "Collection", mpc.get_path_name())
+        # This getter has exec pins. Its output belongs to the event that executed it.
+        chain.then(node)
         return node, "ReturnValue"
 
-    def write(chain, name, value):
-        node = g.call("KismetMaterialLibrary:SetScalarParameterValue", ParameterName=name)
-        lighting.constant(node, "Collection", wall.get_path_name())
-        expr.feed(node, "ParameterValue", value)
-        chain.then(node)
+    def update(event, ticking):
+        chain = lighting.Chain(event)
+        expr = lighting.Expr(g, {"night": read(chain, weather, "Night"),
+                                 "power": read(chain, weather, "PowerAvailable"),
+                                 "latch": read(chain, wall, "WallOn"),
+                                 "on": float(spec["on"]), "off": float(spec["off"])})
+        desired = expr.run("desired = select(power > 0.5, select(latch > 0.5, select(night < off, 0, 1), select(night > on, 1, 0)), 0)")["desired"]
+        level = desired
+        if ticking:
+            expr.env.update(level=read(chain, wall, "WallLevel"), dt=(event, "DeltaSeconds"), fade=float(spec["fade"]))
+            level = expr.run("amount = clamp(level + select(desired > 0.5, 1, -1) * min(dt,1) / fade, 0, 1)")["amount"]
+        for name, value in (("WallLevel", level), ("WallOn", desired)):
+            node = g.call("KismetMaterialLibrary:SetScalarParameterValue", ParameterName=name)
+            lighting.constant(node, "Collection", wall.get_path_name())
+            expr.feed(node, "ParameterValue", value)
+            chain.then(node)
 
-    expr = lighting.Expr(g, {"dt": (tick, "DeltaSeconds"), "night": read(weather, "Night"),
-                             "power": read(weather, "PowerAvailable"), "latch": read(wall, "WallOn"),
-                             "level": read(wall, "WallLevel"), **{k: float(spec[k]) for k in ("on","off","fade")}})
-    # Strict dusk/dawn comparisons match exterior.js and surroundings.js. All fixtures share one ticking actor.
-    values = expr.run("""
-        desired = select(power > 0.5, select(latch > 0.5, select(night < off, 0, 1), select(night > on, 1, 0)), 0)
-        amount = clamp(level + select(desired > 0.5, 1, -1) * min(dt,1) / fade, 0, 1)
-    """)
-    chain = lighting.Chain(tick)
-    write(chain, "WallLevel", values["amount"])
-    write(chain, "WallOn", values["desired"])
-    # Still captures run in an editor world without Tick. Use the same target as gameplay after its fade settles.
-    snapshot = lighting.Chain(g.custom("SettleFacade"))
-    write(snapshot, "WallLevel", values["desired"])
-    write(snapshot, "WallOn", values["desired"])
+    update(g.event("Tick", "ReceiveTick"), ticking=True)
+    # Still captures run in an editor world without Tick. Read the same inputs on their own exec chain.
+    update(g.custom("SettleFacade"), ticking=False)
     lighting.BP.compile_blueprint(bp)
     if g.g.list_nodes_with_errors():
         raise RuntimeError("Could not compile BP_LundenFacade")

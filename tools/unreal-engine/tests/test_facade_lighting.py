@@ -54,12 +54,15 @@ try:
         k = min(1,max(0,k+(1 if expected else -1)*min(dt,1)/fade))
         if value(wall,"WallOn") != expected or not math.isclose(value(wall,"WallLevel"),k,abs_tol=1e-5):
             raise RuntimeError(f"Facade controller failed at night={n}, power={p}, delta={dt}")
-    for power in (1,0):
+    # Change both collections between calls, with no Tick: SettleFacade must read its own fresh inputs.
+    for night, power, latch, expected in [(1,1,0,1), (1,0,1,0), ((on+off)/2,1,1,1), ((on+off)/2,1,0,0)]:
         set_value(weather,"PowerAvailable",power)
-        set_value(weather,"Night",1)
+        set_value(weather,"Night",night)
+        set_value(wall,"WallOn",latch)
+        set_value(wall,"WallLevel",1-expected)
         ctrl.call_method("SettleFacade")
-        if value(wall,"WallOn") != power or value(wall,"WallLevel") != power:
-            raise RuntimeError("The still-capture facade state differs from the settled runtime state")
+        if value(wall,"WallOn") != expected or value(wall,"WallLevel") != expected:
+            raise RuntimeError(f"Still capture failed at night={night}, power={power}, latch={latch}")
 finally:
     for mpc,name,v in saved:
         set_value(mpc,name,v)
