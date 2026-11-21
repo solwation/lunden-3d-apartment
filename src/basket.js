@@ -346,6 +346,12 @@ export class Basketball extends Holdable {
     this.rest = { q: new THREE.Quaternion(), lift: b.r }; // put down: it lies on its round side
   }
 
+  /** #1568: the holder's entry in world.furniture.movable (a wall piece like the posters; its pose is the saved layout).
+   *  main.js adds it; the Unreal export (tools/unreal-engine/export-scene.js, #2310) reads its id and name from here. */
+  holderMovable() {
+    return { id: 'f-basketholder-1-0.2-0-0', item: { type: 'basketholder', level: B.ball.level }, object: this.holder, level: B.ball.level, picture: true, name: 'basketbollshållaren' };
+  }
+
   /** Out of its holder (in the hand, flying, lying somewhere): the hoop stands outside. */
   get out() { return this.held || this.placed; }
 

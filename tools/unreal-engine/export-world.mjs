@@ -156,6 +156,7 @@ async function main() {
   console.log(`  export-manifest.json   sha256 ${sha256(fs.readFileSync(manifestPath))}`);
   console.log(`  kinds ${JSON.stringify(result.report.kinds)}; skipped ${JSON.stringify(result.report.skipped)}; world static merges skipped: ${result.report.skippedMerges}`);
   if (result.report.lightsError) console.log(`  note: room lights not built (${result.report.lightsError})`);
+  if (result.report.looseError) throw new Error(`fruit bowl/basketball not built (#2310): ${result.report.looseError}`);
   if (result.report.extraError) throw new Error(`garage/stairwells not built: ${result.report.extraError}`);
   const { split, unassigned } = result.report;
   console.log(`  split: ${split.atoms} merged meshes → ${split.pieces} zone pieces (${split.triangles} triangles, ${split.cut} clipped at a zone edge, ${split.dropped} in no exported zone)`);

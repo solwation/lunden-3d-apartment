@@ -275,7 +275,7 @@ import { ValleyVeils } from './valleymist.js'; // #2187: low mist veils over Hö
 import { RiverDriftSurface, RiverDriftUnder, driftRiver } from './riverdriftview.js'; // #1952: flecks drifting downstream on Höje å, specks under its surface
 import { DiveAir } from './diveair.js'; // #1949: the air while diving: meter, warning, drowning
 import { Chat } from './chat.js';
-import { BASKET, COMBAT, CHAT, GHOSTS, TOUCH, NEW_YEAR, TOAST, TOAST_LINES, SOUNDS } from './config.js';
+import { COMBAT, CHAT, GHOSTS, TOUCH, NEW_YEAR, TOAST, TOAST_LINES, SOUNDS } from './config.js';
 import { Basketball, Hoop } from './basket.js';
 import { Mess } from './mess.js';
 import { readTestMode, makeTestController } from './testmode.js';
@@ -2890,7 +2890,7 @@ for (const piece of [...world.furniture.movable, ...curtainMaterialTargets, ...t
 }
 world.furniture.movable.push(...lights.pendants); // the pendants move too (#1106)
 // #1568: Tilly's basketball holder is a wall piece like the posters; the ball's home is local to it, so it follows
-world.furniture.movable.push({ id: 'f-basketholder-1-0.2-0-0', item: { type: 'basketholder', level: BASKET.ball.level }, object: ball.holder, level: BASKET.ball.level, picture: true, name: 'basketbollshållaren' });
+world.furniture.movable.push(ball.holderMovable());
 const rearrange = new Rearrange({ scene, camera, world, player, life, marks, materialOnly: [...curtainMaterialTargets, ...towelMaterialTargets],
   carryables: () => [...holdables, ...cups.cups, ...life.views.values(), fruit.carryable, ...fruit.placed],
   // #1601: the reason (truthy) Möblera om cannot start or act now, shown to the player instead of a silent no

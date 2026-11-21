@@ -1559,13 +1559,23 @@ What is exported:
 - **Zones** (a node belongs to the first zone whose box holds the centre of its world bounding box and whose `from`
   accepts the builder it comes from): `l1007` (L1007's two floors: walls, structure, doors, windows,
   cabinets/appliances, lamps, furniture, plus simple collision boxes from `world.levels[i].wallRects` and the floor
-  plates), `l1007-uteplats` (patio paving, fences, hedge, patio furniture), `fixture` (the position test), and since
+  plates; since #2310 also the fruit bowl and Tilly's basketball, see below), `l1007-uteplats` (patio paving, fences, hedge, patio furniture), `fixture` (the position test), and since
   #2279 the buildings round L1007: `l1007-entre` (the street, pavement and terrain in front of L1007 up to START),
   `hus-l` (Hus L: façades, loftgång, roofs and terraces, the neighbours' patios, the portik, the stairwell/lift core
   and the visitable flats L1004/L1201) and `kvarteret` (Hus A/B/C with their loggias and roofs, their stairwells, lifts
   and entrance shells, and the garage and förråd under the courtyard), and since #2280 the ground: `gard` (the
   courtyard) and `omgivning` (terrain, streets, the Höje å valley). See [Ground](#ground-terrain-streets-courtyard-and-höje-å-2280).
   See [Buildings](#buildings-hus-l-hus-abc-and-the-garage-2279).
+- **Fruit bowl and basketball (#2310).** `main.js` builds them next to the world, so `export-scene.js` constructs the
+  same classes with main.js's arguments (`new FruitBowl(scene, camera)` from `src/fruit.js`; `new Basketball(scene,
+  camera, { world })` from `src/basket.js`, without the bullet marks and the outdoor hoop, which only matter in play)
+  after every other builder, so the seeded random sequence of the other zones is unchanged. Three `furniture` nodes in
+  `l1007`: `furn_fruitbowl_l0_x332_z1052` (`source` `src/config.js#FRUIT`, name `fruktskålen`; the copper wires and the
+  nine pieces of fruit are its parts), `furn_basketholder_l1_x31_z1108` (`webId` `f-basketholder-1-0.2-0-0` from
+  `Basketball.holderMovable()`, the same entry main.js adds to `world.furniture.movable`) and `furn_basketball_l1_x33_z1108`
+  (the ball is its own node, although the web hangs it in the holder; `src/config.js#BASKET.ball`). The default state:
+  every piece in the bowl, the ball at home. The two modules bring `src/stats.js`, `src/keep.js` and their score
+  modules into the [source list](#staleness-check), so a change there also makes the export stale.
 - **Nodes** carry `extras` (`shared/schema/node-extras.schema.json`): stable `id` (= node name; kind + level +
   position in cm), `kind` (`wall | structure | door | window | furniture | interactive | light | collision | fixture |
   part`), `zone`, `level`, `source` (a pointer such as `data/plan.json#/floors/0/doors/0` or

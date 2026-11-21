@@ -441,10 +441,28 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     for (const o of [garage.carArea, garage.bikeSpokesMesh, garage.storageBikeSpokesMesh, ...(garage.bikeRows ?? []).flatMap((r) => [r.hiMesh, r.loMesh]),
       ...(garage.storageBikeRows ?? []).flatMap((r) => [r.hiMesh, r.loMesh]), ...[...(garage.bicycles ?? []), ...(garage.storageBicycles ?? [])].map((b) => b.object)]) if (o) extra.skip.add(o);
   } catch (e) { extra.error = String(e?.stack ?? e); }
+  // #2310: the fruit bowl on the coffee table (src/fruit.js) and Tilly's basketball in its wall holder (src/basket.js),
+  // which main.js builds next to the world: the same classes with main.js's arguments, so they stand where the game puts
+  // them (nothing placed by hand). Built last, after every earlier builder, so the seeded random sequence of the other
+  // zones stays the same. Not given main.js's bullet marks or hoop (the ball only keeps them for play; the hoop outside
+  // is not exported). One node each for the bowl (its fruit as parts), the holder (with the web's saved-layout id) and
+  // the ball, which is its own node although the web hangs it in the holder (it leaves the holder in play).
+  const loose = { root: new THREE.Group(), of: new Map(), error: null };
+  try {
+    const [{ FruitBowl }, { Basketball }] = await Promise.all([import('../../src/fruit.js'), import('../../src/basket.js')]);
+    const camera = new THREE.PerspectiveCamera();
+    const bowl = new FruitBowl(loose.root, camera);
+    const ball = new Basketball(loose.root, camera, { marks: null, hoop: {}, world });
+    const holder = ball.holderMovable();
+    loose.of.set(bowl.group, { type: 'fruitbowl', name: 'fruktskålen', webId: null, source: 'src/config.js#FRUIT' });
+    loose.of.set(holder.object, { type: holder.item.type, name: holder.name, webId: holder.id, source: 'src/config.js#BASKET.ball' });
+    loose.of.set(ball.model, { type: 'basketball', name: ball.name, webId: null, source: 'src/config.js#BASKET.ball' });
+  } catch (e) { loose.error = String(e?.stack ?? e); }
   const scene = new THREE.Group();
   scene.add(world.object);
   if (lightsInfo.group) scene.add(lightsInfo.group);
   for (const o of extra.objects) scene.add(o);
+  scene.add(loose.root);
   scene.updateMatrixWorld(true);
   // which builder each object comes from (zoneTable `from`)
   const groupOf = new Map(extra.group);
@@ -501,6 +519,11 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     const d = doorOf.get(o);
     if (d) return atoms.push({ object: o, kind: d.kind, door: d });
     if (furnitureRoots.has(o)) return atoms.push({ object: o, kind: 'furniture', movable: furnitureOf.get(o) });
+    if (loose.of.has(o)) { // #2310: a loose object is one node; one inside it (the ball in its holder) is its own node
+      atoms.push({ object: o, kind: 'furniture', loose: loose.of.get(o) });
+      for (const c of o.children) if (loose.of.has(c)) visit(c, ctx);
+      return;
+    }
     if (lampOf.has(o)) return atoms.push({ object: o, kind: 'light', lamp: lampOf.get(o) });
     if (lightGroupKids.has(o)) return atoms.push({ object: o, kind: 'light', fixture: true });
     if (o.isInstancedMesh) { // an instance scaled to zero is the web's way of hiding it (its matrix has no rotation: NaN in glTF)
@@ -593,6 +616,9 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
       a.name = a.door.owner.name ?? null;
       a.id = unique(`int_${slug(a.name) || 'openable'}_${lv}_${pos(c)}`);
       a.source = null;
+    } else if (a.kind === 'furniture' && a.loose) { // #2310: the fruit bowl, the basketball holder and the ball
+      Object.assign(a, { name: a.loose.name, webId: a.loose.webId, source: a.loose.source });
+      a.id = unique(`furn_${slug(a.loose.type)}_${lv}_${pos(c)}`);
     } else if (a.kind === 'furniture') {
       const m = a.movable, item = m?.item;
       const fi = item ? furnitureIndex(item) : -1;
@@ -657,7 +683,7 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     if (!n) return null;
     if (o.isMesh && !o.isInstancedMesh) (Array.isArray(n.material) ? n.material : [n.material]).forEach((m) => keys.add(m.name));
     for (const c of o.children) {
-      if (!c.visible || webOnly(c)) continue;
+      if (!c.visible || webOnly(c) || loose.of.has(c)) continue; // (#2310: the ball is its own node, not part of its holder)
       if (c.isInstancedMesh) {
         for (let i = 0; i < c.count; i++) {
           const node = meshNode(c, furnish); if (!node) continue;
@@ -800,7 +826,7 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
   if (vegetation) measurements.vegetation = vegetation;
   for (const { root } of Object.values(roots)) root.updateMatrixWorld(true); // (the mesh centres below)
   measurements.furnishing = furnishingData(byZone, textures, worldMatrix);
-  return { glbs, measurements, report: { zones: zoneReport, kinds: stats, skipped, lightsError: lightsInfo.error, extraError: extra.error, atoms: atoms.length, split, unassigned } };
+  return { glbs, measurements, report: { zones: zoneReport, kinds: stats, skipped, lightsError: lightsInfo.error, extraError: extra.error, looseError: loose.error, atoms: atoms.length, split, unassigned } };
 }
 
 /** GLTFExporter encodes images asynchronously (canvas.toBlob, FileReader) and appends each one's bytes when it is done,
