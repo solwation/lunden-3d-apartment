@@ -1,0 +1,117 @@
+{
+ "engine": "5.8.4-58902052+++UE5+Release-5.8",
+ "levels": {
+  "/Game/Lunden/Generated/l1007/Level_l1007": {
+   "items": 162,
+   "textureMeshes": 171
+  },
+  "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats": {
+   "items": 9,
+   "textureMeshes": 1
+  },
+  "/Game/Lunden/Generated/l1007-entre/Level_l1007-entre": {
+   "items": 0,
+   "textureMeshes": 0
+  },
+  "/Game/Lunden/Generated/hus-l/Level_hus-l": {
+   "items": 0,
+   "textureMeshes": 2
+  },
+  "/Game/Lunden/Generated/kvarteret/Level_kvarteret": {
+   "items": 0,
+   "textureMeshes": 56
+  },
+  "/Game/Lunden/Generated/gard/Level_gard": {
+   "items": 0,
+   "textureMeshes": 0
+  },
+  "/Game/Lunden/Generated/omgivning/Level_omgivning": {
+   "items": 0,
+   "textureMeshes": 0
+  }
+ },
+ "items": {
+  "export": 171,
+  "placed": 171,
+  "maxCm": 0.005,
+  "maxDeg": 0.0007,
+  "maxScale": 0.0,
+  "byKind": {
+   "interactive": 48,
+   "light": 26,
+   "furniture": 97
+  }
+ },
+ "textures": {
+  "export": 87,
+  "meshes": 230,
+  "shown": 230,
+  "maxCm": 0.0069
+ },
+ "pictures": {
+  "textures/angsgras-sovrum1.jpg": {
+   "meshes": [
+    "furn_item_l1_x554_z255__1"
+   ],
+   "inNotices": true
+  },
+  "textures/eat-sleep-game-repeat-sovrum2.jpg": {
+   "meshes": [
+    "furn_item_l1_x554_z906__1"
+   ],
+   "inNotices": true
+  },
+  "textures/linjeteckning-sovrum1.jpg": {
+   "meshes": [
+    "furn_item_l1_x272_z92__1"
+   ],
+   "inNotices": true
+  },
+  "textures/miele.jpg": {
+   "meshes": [
+    "furn_photoframe_l1_x349_z39__1"
+   ],
+   "inNotices": true
+  },
+  "textures/stair-pictures.jpg": {
+   "meshes": [
+    "furn_item_l1_x554_z665__1",
+    "furn_item_l1_x554_z665__10",
+    "furn_item_l1_x554_z665__4",
+    "furn_item_l1_x554_z665__7"
+   ],
+   "inNotices": true
+  },
+  "textures/tavla-akvarell-schaslong.jpg": {
+   "meshes": [
+    "furn_painting_l0_x549_z1135__1"
+   ],
+   "inNotices": true
+  },
+  "textures/tavla-guld-lila-vardagsrum.jpg": {
+   "meshes": [
+    "furn_item_l0_x507_z781__1"
+   ],
+   "inNotices": true
+  },
+  "textures/tavla-svartvit-trappan.jpg": {
+   "meshes": [
+    "furn_item_l0_x217_z701__1"
+   ],
+   "inNotices": true
+  },
+  "textures/teckning-till-mamma.jpg": {
+   "meshes": [
+    "furn_item_l0_x216_z345__1"
+   ],
+   "inNotices": true
+  },
+  "textures/the-gulag-sovrum2.jpg": {
+   "meshes": [
+    "furn_item_l1_x276_z1145__1"
+   ],
+   "inNotices": true
+  }
+ },
+ "errors": []
+}
