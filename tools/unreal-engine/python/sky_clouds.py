@@ -12,6 +12,16 @@ def shader(c):
     def vec(values):
         return f"float{len(values)}(" + ", ".join(map(num, values)) + ")"
 
+    # Pre-#2371 exports contain only volumetric cloud thresholds. Preserve their sky colour in
+    # the precipitation pass so existing ExportFrom artifacts can still be imported and played.
+    if "palette" not in c and set(c) == {"clearThr", "thr", "ramp"}:
+        return """
+struct WebClouds {
+    float3 daylight(float3 color, float3 view, float3 sun, float3 eye, float2 offset, float threshold, float overcast) {
+        return color;
+    }
+};
+"""
     sk, palette = c["sky"], c["palette"]
     # In an Unreal Custom node, local functions are methods on a local struct (no global include dependency).
     return f"""

@@ -149,8 +149,6 @@ def load_measurements(path):
         raise RuntimeError("measurements.json lacks the hemisphere light: re-export with this commit (export-scene.js #2313)")
     if "duskOn" not in sky["light"] or "clouds" not in sky or any("auto" not in l for l in m["lights"] if l["kind"] == "lamp"):
         raise RuntimeError("measurements.json lacks the dusk, cloud and lamp numbers: re-export with this commit (export-scene.js #2307)")
-    if "palette" not in sky["clouds"]:
-        raise RuntimeError("Re-export measurements.json for the daylight cloud field (#2371)")
     ids = [l.get("id") for l in m["lights"]]
     if not all(ids) or len(set(ids)) != len(ids):
         raise RuntimeError("measurements.json lights need unique ids: re-export with this commit")
@@ -1036,7 +1034,7 @@ def build_sky(spec, mpc, precip, clouds):
 
     sky_data, light = spec["sky"], spec["sky"]["light"]
     clouds = sky_data["clouds"]
-    wx, wy = clouds["wind"]
+    wx, wy = clouds.get("wind", (1, 0))  # older exports have no independently moving sky field
     length = math.hypot(wx, wy)
     variables(bp, {
         "CloudOffsetX": ("real", 0), "CloudOffsetY": ("real", 0),
@@ -1223,8 +1221,9 @@ def build_sky(spec, mpc, precip, clouds):
     env4["dt"] = (tick, "DeltaSeconds")
     for key in ("WindSpeed", "WindFromDeg", "PlanNorth", "CloudDirectionX", "CloudDirectionY", "CloudOffsetX", "CloudOffsetY"):
         env4[key] = (G.get(key), key)
-    env4.update(DriftMin=float(clouds["drift"][0]), DriftMax=float(clouds["drift"][1]),
-                WindScale=float(clouds["windScale"]), Tile=float(clouds["cell"] * clouds["cells"]))
+    drift_min, drift_max = clouds.get("drift", (0, 0))
+    env4.update(DriftMin=float(drift_min), DriftMax=float(drift_max),
+                WindScale=float(clouds.get("windScale", 0)), Tile=float(clouds.get("cell", 1) * clouds.get("cells", 1)))
     E4 = Expr(G, env4)
     v = E4.run("""
 directionX = select(WindSpeed > 0.001, 0 - sind(WindFromDeg - PlanNorth), CloudDirectionX)
