@@ -1,0 +1,294 @@
+"""Lunden (#2282): build the hand-made surface materials that tools/unreal-engine/material-map.json lists.
+
+Every entry under `materials` becomes one asset in /Game/Lunden/Materials/:
+  - "graph": "constant"  a material with constant base colour, roughness and metallic (M_LundenWallPaint, M_LundenCollision);
+  - "graph": "surface"   the plain opaque master M_LundenSurface (vector BaseColor, scalars Roughness and Metallic);
+  - "graph": "tiled"     the procedural master M_LundenTiled: tiles, slabs, planks, boards, bricks and fine aggregate
+                         drawn in UV metres by one Custom HLSL node (the export keeps the web's metre UVs, but its
+                         canvas textures do not travel, so the pattern is rebuilt here from the web's sizes and colours);
+  - "graph": "glass"     the translucent glazing master M_LundenGlass;
+  - "parent": <master>   a MaterialInstanceConstant with the entry's `params`.
+Colours are sRGB hex as the web writes them (converted to linear). Opaque materials get the Nanite usage flag and
+instances a persisted Nanite usage override, so prepare_nanite_materials.py finds nothing to change (#2276). Each asset
+carries the entry's `source` and `assumption` as metadata tags Lunden.Source / Lunden.Assumption (plan-material's
+*guess* markers stay attached to the material) and Lunden.SpecHash: an asset whose spec hash is unchanged is skipped,
+so a second run writes nothing. --force rebuilds every asset in place (paths and references stay valid).
+
+Run headless (Windows checkout; take `git lfs lock` on each Materials/*.uasset it will write first):
+    powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/build_materials.py [--force | --check]
+Logs LUNDEN_MATERIAL <path>: created|updated|kept and finally LUNDEN_MATERIALS_OK.
+"""
+import hashlib
+import json
+import os
+import sys
+
+import unreal
+
+eal = unreal.EditorAssetLibrary
+mel = unreal.MaterialEditingLibrary
+NANITE = unreal.MaterialUsage.MATUSAGE_NANITE
+
+# One cell of a pattern in UV metres: Size = (w along U, h along V). Stagger shifts each column along V by a random
+# share of a cell (parquet), Bond shifts each row along U (half bond), Joint is the joint width in metres. Returns
+# linear colour (rgb) and roughness (a).
+TILED_HLSL = r"""
+float2 S = max(Size.xy, float2(0.001, 0.001));
+float2 p = UV / S;
+float col = floor(p.x);
+p.y += Stagger * frac(sin(col * 12.9898 + 1.7) * 43758.5453);
+float row = floor(p.y);
+p.x += Bond * row;
+float2 cell = floor(p);
+float2 f = frac(p);
+float2 d = min(f, 1.0 - f) * S;
+float edge = min(d.x, d.y);
+float hj = Joint * 0.5;
+float joint = Joint > 0.0 ? 1.0 - smoothstep(hj, hj + max(hj, 0.0006), edge) : 0.0;
+float h = frac(sin(dot(cell, float2(127.1, 311.7))) * 43758.5453);
+float3 face = Color.rgb * saturate(1.0 + Variation * (h * 2.0 - 1.0));
+float g = sin(UV.x * 210.0 + sin(UV.y * 6.0 + h * 40.0) * 2.0 + h * 17.0);
+face *= 1.0 + Grain * g;
+return float4(lerp(face, JointColor.rgb, joint), lerp(Roughness, JointRoughness, joint));
+"""
+TILED_SCALARS = {"Joint": 0.003, "Bond": 0.0, "Stagger": 0.0, "Variation": 0.0, "Grain": 0.0, "Roughness": 0.8,
+                 "JointRoughness": 0.95}
+TILED_VECTORS = {"Size": (0.2, 0.2, 0.0), "Color": "#ffffff", "JointColor": "#b9bbbb"}
+
+
+def repo_root():
+    return os.path.normpath(os.path.join(unreal.Paths.convert_relative_path_to_full(unreal.Paths.project_dir()), "..", ".."))
+
+
+def linear(hex_text):
+    """An sRGB hex colour (as the web writes it) as a linear colour."""
+    v = hex_text.lstrip("#")
+
+    def lin(c):
+        c = int(c, 16) / 255
+        return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+    return unreal.LinearColor(lin(v[0:2]), lin(v[2:4]), lin(v[4:6]), 1.0)
+
+
+def vector(value):
+    if isinstance(value, str):
+        return linear(value)
+    x, y, z = (list(value) + [0.0, 0.0, 0.0])[:3]
+    return unreal.LinearColor(float(x), float(y), float(z), 0.0)
+
+
+def spec_hash(path, spec):
+    return hashlib.sha256(json.dumps([path, spec, TILED_HLSL], sort_keys=True).encode("utf-8")).hexdigest()[:16]
+
+
+# ---------------------------------------------------------------- graphs
+def scalar_param(m, name, value, x, y):
+    e = mel.create_material_expression(m, unreal.MaterialExpressionScalarParameter, x, y)
+    e.set_editor_property("parameter_name", name)
+    e.set_editor_property("default_value", float(value))
+    return e
+
+
+def vector_param(m, name, value, x, y):
+    e = mel.create_material_expression(m, unreal.MaterialExpressionVectorParameter, x, y)
+    e.set_editor_property("parameter_name", name)
+    e.set_editor_property("default_value", vector(value))
+    return e
+
+
+def constant_graph(m, spec):
+    base = mel.create_material_expression(m, unreal.MaterialExpressionConstant3Vector, -400, 0)
+    base.set_editor_property("constant", linear(spec["baseColor"]))
+    mel.connect_material_property(base, "", unreal.MaterialProperty.MP_BASE_COLOR)
+    for prop, key, y in ((unreal.MaterialProperty.MP_ROUGHNESS, "roughness", 200), (unreal.MaterialProperty.MP_METALLIC, "metallic", 300)):
+        c = mel.create_material_expression(m, unreal.MaterialExpressionConstant, -400, y)
+        c.set_editor_property("r", float(spec[key]))
+        mel.connect_material_property(c, "", prop)
+
+
+def surface_graph(m, spec):
+    mel.connect_material_property(vector_param(m, "BaseColor", "#ffffff", -400, 0), "", unreal.MaterialProperty.MP_BASE_COLOR)
+    mel.connect_material_property(scalar_param(m, "Roughness", 0.8, -400, 200), "", unreal.MaterialProperty.MP_ROUGHNESS)
+    mel.connect_material_property(scalar_param(m, "Metallic", 0.0, -400, 300), "", unreal.MaterialProperty.MP_METALLIC)
+
+
+def tiled_graph(m, spec):
+    custom = mel.create_material_expression(m, unreal.MaterialExpressionCustom, -500, 0)
+    names = ["UV"] + list(TILED_VECTORS) + list(TILED_SCALARS)
+    inputs = []
+    for name in names:
+        ci = unreal.CustomInput()
+        ci.set_editor_property("input_name", name)
+        inputs.append(ci)
+    custom.set_editor_property("inputs", inputs)
+    custom.set_editor_property("output_type", unreal.CustomMaterialOutputType.CMOT_FLOAT4)
+    custom.set_editor_property("description", "LundenTiled")
+    custom.set_editor_property("code", TILED_HLSL.strip())
+    uv = mel.create_material_expression(m, unreal.MaterialExpressionTextureCoordinate, -900, -200)
+    if not mel.connect_material_expressions(uv, "", custom, "UV"):
+        raise RuntimeError("could not connect UV")
+    y = 0
+    for name, value in TILED_VECTORS.items():
+        if not mel.connect_material_expressions(vector_param(m, name, value, -900, y), "", custom, name):
+            raise RuntimeError("could not connect " + name)
+        y += 150
+    for name, value in TILED_SCALARS.items():
+        if not mel.connect_material_expressions(scalar_param(m, name, value, -900, y), "", custom, name):
+            raise RuntimeError("could not connect " + name)
+        y += 100
+    rgb = mel.create_material_expression(m, unreal.MaterialExpressionComponentMask, -250, 0)
+    for c, on in (("r", True), ("g", True), ("b", True), ("a", False)):
+        rgb.set_editor_property(c, on)
+    rough = mel.create_material_expression(m, unreal.MaterialExpressionComponentMask, -250, 200)
+    for c, on in (("r", False), ("g", False), ("b", False), ("a", True)):
+        rough.set_editor_property(c, on)
+    mel.connect_material_expressions(custom, "", rgb, "")
+    mel.connect_material_expressions(custom, "", rough, "")
+    mel.connect_material_property(rgb, "", unreal.MaterialProperty.MP_BASE_COLOR)
+    mel.connect_material_property(rough, "", unreal.MaterialProperty.MP_ROUGHNESS)
+    metal = mel.create_material_expression(m, unreal.MaterialExpressionConstant, -250, 350)
+    metal.set_editor_property("r", 0.0)
+    mel.connect_material_property(metal, "", unreal.MaterialProperty.MP_METALLIC)
+
+
+def glass_graph(m, spec):
+    m.set_editor_property("blend_mode", unreal.BlendMode.BLEND_TRANSLUCENT)
+    m.set_editor_property("translucency_lighting_mode", unreal.TranslucencyLightingMode.TLM_SURFACE)
+    mel.connect_material_property(vector_param(m, "BaseColor", "#a9cce3", -400, 0), "", unreal.MaterialProperty.MP_BASE_COLOR)
+    mel.connect_material_property(scalar_param(m, "Opacity", 0.1, -400, 150), "", unreal.MaterialProperty.MP_OPACITY)
+    mel.connect_material_property(scalar_param(m, "Roughness", 0.02, -400, 250), "", unreal.MaterialProperty.MP_ROUGHNESS)
+    mel.connect_material_property(scalar_param(m, "Specular", 0.5, -400, 350), "", unreal.MaterialProperty.MP_SPECULAR)
+
+
+GRAPHS = {"constant": constant_graph, "surface": surface_graph, "tiled": tiled_graph, "glass": glass_graph}
+
+
+# ---------------------------------------------------------------- assets
+def stamp(asset, path, spec):
+    eal.set_metadata_tag(asset, "Lunden.Source", spec.get("source") or "")
+    eal.set_metadata_tag(asset, "Lunden.Assumption", spec.get("assumption") or "none")
+    eal.set_metadata_tag(asset, "Lunden.SpecHash", spec_hash(path, spec))
+    eal.set_metadata_tag(asset, "Lunden.Builder", "tools/unreal-engine/python/build_materials.py (#2282)")
+
+
+def build_master(path, spec, existing):
+    folder, name = path.rsplit("/", 1)
+    if existing is None:
+        m = unreal.AssetToolsHelpers.get_asset_tools().create_asset(name, folder, unreal.Material, unreal.MaterialFactoryNew())
+    else:
+        m = existing
+        mel.delete_all_material_expressions(m)
+        m.set_editor_property("blend_mode", unreal.BlendMode.BLEND_OPAQUE)
+    GRAPHS[spec.get("graph", "constant")](m, spec)
+    if spec.get("graph") != "glass":
+        mel.set_base_material_usage(m, NANITE, True)
+    mel.recompile_material(m)
+    return m
+
+
+def build_instance(path, spec, existing):
+    folder, name = path.rsplit("/", 1)
+    if existing is None:
+        mi = unreal.AssetToolsHelpers.get_asset_tools().create_asset(name, folder, unreal.MaterialInstanceConstant,
+                                                                      unreal.MaterialInstanceConstantFactoryNew())
+    else:
+        mi = existing
+        mel.clear_all_material_instance_parameters(mi)
+    parent = eal.load_asset(spec["parent"])
+    if parent is None:
+        raise RuntimeError(f"{path}: parent {spec['parent']} does not exist")
+    mel.set_material_instance_parent(mi, parent)
+    # The parameter structs are written directly: in a commandlet a master built in the same run does not yet expose
+    # its parameter names to MaterialEditingLibrary's setters (they returned False until the next editor start).
+    # tests/test_materials.py checks the names against each master statically, --check against the saved assets.
+    scalars, vectors = [], []
+    for key, value in spec.get("params", {}).items():
+        info = unreal.MaterialParameterInfo()
+        info.set_editor_property("name", key)
+        if isinstance(value, (str, list)):
+            v = unreal.VectorParameterValue()
+            v.set_editor_property("parameter_info", info)
+            v.set_editor_property("parameter_value", vector(value))
+            vectors.append(v)
+        else:
+            v = unreal.ScalarParameterValue()
+            v.set_editor_property("parameter_info", info)
+            v.set_editor_property("parameter_value", float(value))
+            scalars.append(v)
+    mi.set_editor_property("scalar_parameter_values", scalars)
+    mi.set_editor_property("vector_parameter_values", vectors)
+    if parent.get_blend_mode() in (unreal.BlendMode.BLEND_OPAQUE, unreal.BlendMode.BLEND_MASKED):
+        mel.set_material_usage_override(mi, NANITE, True, True)
+    mel.update_material_instance(mi)
+    return mi
+
+
+def check(table):
+    """--check: every listed asset exists with its current spec hash, source/assumption metadata and the Nanite usage
+    the cooked game needs; writes nothing."""
+    problems = []
+    for path, spec in sorted(table["materials"].items()):
+        asset = eal.load_asset(path) if eal.does_asset_exist(path) else None
+        if asset is None:
+            problems.append(f"{path}: missing")
+            continue
+        if eal.get_metadata_tag(asset, "Lunden.SpecHash") != spec_hash(path, spec):
+            problems.append(f"{path}: stale (spec hash {eal.get_metadata_tag(asset, 'Lunden.SpecHash')} != {spec_hash(path, spec)})")
+        if not eal.get_metadata_tag(asset, "Lunden.Assumption") or not eal.get_metadata_tag(asset, "Lunden.Source"):
+            problems.append(f"{path}: no Lunden.Source/Lunden.Assumption metadata")
+        if asset.get_blend_mode() in (unreal.BlendMode.BLEND_OPAQUE, unreal.BlendMode.BLEND_MASKED):
+            usage = mel.has_material_usage(asset, NANITE)
+            if isinstance(asset, unreal.MaterialInstanceConstant):
+                usage = usage and mel.has_material_usage_override(asset, NANITE)
+            if not usage:
+                problems.append(f"{path}: no persisted Nanite usage")
+        if "parent" in spec:
+            parent = eal.load_asset(spec["parent"])
+            names = {str(n) for n in mel.get_vector_parameter_names(parent)} | {str(n) for n in mel.get_scalar_parameter_names(parent)}
+            missing = sorted(set(spec.get("params", {})) - names)
+            if missing:
+                problems.append(f"{path}: parent has no parameter(s) {missing}")
+            for key, value in spec.get("params", {}).items():
+                got = (mel.get_material_instance_vector_parameter_value(asset, key) if isinstance(value, (str, list))
+                       else mel.get_material_instance_scalar_parameter_value(asset, key))
+                want = vector(value) if isinstance(value, (str, list)) else float(value)
+                if isinstance(value, (str, list)):
+                    off = max(abs(got.r - want.r), abs(got.g - want.g), abs(got.b - want.b))
+                else:
+                    off = abs(got - want)
+                if off > 1e-4:
+                    problems.append(f"{path}: {key} is {got}, spec {want}")
+        unreal.log(f"LUNDEN_MATERIAL_CHECK {path}: assumption = {eal.get_metadata_tag(asset, 'Lunden.Assumption')}")
+    for p in problems:
+        unreal.log_error("LUNDEN_MATERIAL_CHECK " + p)
+    if problems:
+        raise RuntimeError(f"{len(problems)} material problems")
+    unreal.log(f"LUNDEN_MATERIALS_CHECK_OK {len(table['materials'])} materials")
+
+
+def main(argv):
+    force = "--force" in argv
+    with open(os.path.join(repo_root(), "tools", "unreal-engine", "material-map.json"), encoding="utf-8") as f:
+        table = json.load(f)
+    if "--check" in argv:
+        return check(table)
+    entries = sorted(table["materials"].items(), key=lambda kv: ("parent" in kv[1], kv[0]))  # masters first
+    made = kept = 0
+    for path, spec in entries:
+        existing = eal.load_asset(path) if eal.does_asset_exist(path) else None
+        want = spec_hash(path, spec)
+        if existing is not None and not force and eal.get_metadata_tag(existing, "Lunden.SpecHash") == want:
+            unreal.log(f"LUNDEN_MATERIAL {path}: kept (spec {want})")
+            kept += 1
+            continue
+        asset = (build_instance if "parent" in spec else build_master)(path, spec, existing)
+        stamp(asset, path, spec)
+        if not eal.save_loaded_asset(asset, only_if_is_dirty=False):
+            raise RuntimeError(f"could not save {path} (is it locked with git lfs lock and writable?)")
+        made += 1
+        unreal.log(f"LUNDEN_MATERIAL {path}: {'updated' if existing else 'created'} (spec {want})")
+    unreal.log(f"LUNDEN_MATERIALS_OK {made} written, {kept} kept")
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])

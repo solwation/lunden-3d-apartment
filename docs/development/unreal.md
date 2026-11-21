@@ -62,10 +62,13 @@ tools/unreal-engine/json-schema.mjs            small dependency-free JSON Schema
 tools/unreal-engine/notices.mjs               writes/checks unreal/Lunden/THIRD_PARTY_NOTICES.md from the web's attribution files
 tools/unreal-engine/python/import_world.py    Interchange scene import of the export into Content/Lunden/Generated/<zone>/
                                    (level + actors with id names/tags), stamp-based idempotency; --check = headless checks
-tools/unreal-engine/python/create_base_materials.py  makes the hand-made materials that material-map.json lists
+tools/unreal-engine/python/build_materials.py        builds the hand-made materials that material-map.json lists (#2282);
+                                   create_base_materials.py is the kept entry point that calls it
+tools/unreal-engine/tests/test_materials.py          key coverage of material-map.json against an export (plain Python)
 tools/unreal-engine/python/screenshot_level.py       headless GPU screenshots of an imported level (verification only)
-tools/unreal-engine/material-map.json         export material keys → hand-made Unreal materials (stub; the look is #2246)
-unreal/Lunden/Content/Lunden/Materials/       M_LundenWallPaint, M_LundenCollision (LFS, 6 KB each; made by create_base_materials.py)
+tools/unreal-engine/material-map.json         export material keys → hand-made Unreal materials, defaults with reasons (#2282)
+unreal/Lunden/Content/Lunden/Materials/       masters M_LundenSurface/Tiled/Glass, M_LundenWallPaint, M_LundenCollision and
+                                   their MI_Lunden* instances (LFS, 5–15 KB each; made by build_materials.py)
 unreal/Lunden/Content/Lunden/Generated/       importer output per zone + import-stamp.json; Git-ignored pending a decision
 tools/unreal-engine/world-levels.json         the world map's sub-level list (#2278 owns the format; other issues add their own line)
 tools/unreal-engine/python/compose_world.py   composes /Game/Lunden/Maps/L_Lunden from world-levels.json (+ START, GameMode)
@@ -1125,7 +1128,7 @@ Pages workflow (no export exists there); run it before an Unreal import or build
 ```text
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/import_world.py [<export dir>] [--zones l1007,fixture] [--force] [--measure <id>,…]
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/import_world.py --check [--measure <id>,…]
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/create_base_materials.py [--force]
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/build_materials.py [--force | --check]
 ```
 
 Run in the Windows clone after copying (or writing) the export to `unreal/Lunden/Import/`. Every run reads the
@@ -1134,7 +1137,7 @@ and checks it: ids, the fixture (zone `fixture`) and, with `--check`, the stamp 
 importing. It ends with `LUNDEN_IMPORT_OK` / `LUNDEN_CHECK_OK`; any failure raises, so `run-python.ps1` exits 1. This
 `--check` run is the headless position test (no C++ Automation Test: the project becomes content-only, #2268).
 `--measure` logs the world bounds of named objects (`LUNDEN_IMPORT_MEASURE`), for round-trip checks.
-`create_base_materials.py` is only needed when `material-map.json` names a material that does not exist yet.
+Run `build_materials.py` before an import when `material-map.json` changed (see [Surface materials](#surface-materials-2282)).
 
 What 5.8.4 does, and what the importer does about it:
 
@@ -1157,10 +1160,10 @@ What 5.8.4 does, and what the importer does about it:
   simple box on the cube mesh, `BlockAll`, hidden in game (54 in l1007). `StaticMeshEditorSubsystem` is `None` in the
   commandlet, so the deprecated `EditorStaticMeshLibrary` does it (a deprecation warning in the log). Visible meshes
   keep Interchange's default collision; what the player collides with is #2246.
-- **Materials.** `tools/unreal-engine/material-map.json` rules (a regex on the key, first match wins) replace the
-  imported instances on the mesh slots by hand-made materials: `M_LundenWallPaint` for the walls' `std_f1f1ee_r85_m0`
-  and `M_LundenCollision` (87 slots in l1007). Other keys keep Interchange's glTF material instance (colour, roughness
-  and metalness from the export). The real look is #2246; add rules there.
+- **Materials.** `tools/unreal-engine/material-map.json` rules (a regex on the key, first match wins, optionally
+  narrowed by a `mesh` regex on the StaticMesh name) replace the imported instances on the mesh slots by hand-made
+  materials ([Surface materials](#surface-materials-2282)). Other keys keep Interchange's glTF material instance
+  (colour, roughness, metalness, opacity and emissive from the export).
 - **Clearing a zone.** `EditorAssetLibrary.delete_directory` left the `.umap` behind, logged *Error opening file* for
   every package and was still working after 7 minutes on l1007's 2,426 assets (killed). `Generated/<zone>/` belongs to
   the importer alone, so it removes the folder on disk and rescans the asset registry when none of its packages is
@@ -1214,6 +1217,40 @@ asset (class; for meshes vertices, triangles, bounds to 0.01, slot materials and
   `l1007.glb`; the import skipped `fixture` and `l1007-uteplats` (`changed: glb` for l1007) and the front door
   `door_l0_x80_z0` went from `size [100.39, 13.40, 209.70] cm` to `[100.39, 13.40, 219.70] cm` with the same id.
   Importing the original export again restored 209.70 cm and fingerprint `6f9231fb7625c1f3`.
+
+### Surface materials (#2282)
+
+The export's keys describe a look (`std_<colour>_r<roughness>_m<metalness>` plus suffixes), not a surface, and its
+canvas textures do not travel. `tools/unreal-engine/material-map.json` therefore holds three lists:
+
+- `materials`: every hand-made asset in `/Game/Lunden/Materials/`. Three masters cover the building and ground
+  surfaces: `M_LundenSurface` (plain opaque PBR), `M_LundenTiled` (tiles, slabs, planks, boards, bricks and fine
+  aggregate drawn by one Custom HLSL node in the export's metre UVs) and `M_LundenGlass` (translucent glazing, so its
+  meshes use the raster path, #2276). The `MI_Lunden*` instances take their sizes and colours from the web's
+  `COLORS`, `FINISH`, `PATIO.paving` and `SCREEN_WALL`. `MI_LundenFacadeBrick`, `MI_LundenAsphalt` and
+  `MI_LundenRoofSeam` are prepared for the exterior and ground zones (#2279, #2280) and no export key uses them yet.
+  Each entry names its web `source` and an `assumption`; `build_materials.py` writes both into the asset metadata
+  (`Lunden.Source`, `Lunden.Assumption`), so plan-material's *guess* markers stay with the material.
+- `rules`: key → material. The tile key `std_ffffff_r100_m0_tex` is shared by the hall and wet-room floors, the wall
+  tiles, the splashback, the patio paving and the screen walls, so its rules add a `mesh` selector (the StaticMesh
+  name is the id of the first export node that uses it). The last rule for that key has no selector and catches any
+  other surface with white wall tiles.
+- `defaults`: keys left on Interchange's instance, each with a reason (plain opaque fittings, transparent and
+  emissive fittings, textured fittings that belong to furnishing #2289, grass for #2281).
+
+`scope` lists the zones and node kinds whose keys count as building and ground surfaces. Before an import, after the
+export, run the coverage check (no Unreal needed):
+
+```text
+python3 tools/unreal-engine/tests/test_materials.py [<export dir>] [--table]
+```
+
+It fails when a key on those nodes has neither a rule nor a default, a rule names an unlisted material, a `mesh`
+selector selects nothing (a moved surface changes its id), an instance names an unknown parameter, or an entry that
+says *guess* has no assumption. `build_materials.py` skips an asset whose `Lunden.SpecHash` matches its entry, so a
+second run writes nothing; `--force` rebuilds in place and `--check` verifies existence, spec hash, metadata,
+parameters and the persisted Nanite usage without writing. Take `git lfs lock` on every `Materials/*.uasset` before a
+build that writes. Results are in [the #2282 verification](../verification/2282/README.md).
 
 ### Generated assets: rebuilt, not versioned (decided)
 

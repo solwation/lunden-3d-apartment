@@ -231,7 +231,9 @@ def apply_collision(by_id, extras):
 
 def apply_materials(zone, table):
     """Replace imported material instances whose key matches a rule in material-map.json by the hand-made material."""
-    rules = [(re.compile(r["match"]), r["material"]) for r in table.get("rules", [])]
+    # optional "mesh": a regex on the StaticMesh asset name (= the id of the first export node using it, #2282), for
+    # keys whose web texture differs per surface (one shared tile key covers hall/wet-room tiles, paving and boards)
+    rules = [(re.compile(r["match"]), re.compile(r["mesh"]) if r.get("mesh") else None, r["material"]) for r in table.get("rules", [])]
     loaded, replaced = {}, 0
     for p in eal.list_assets(f"{GENERATED_ROOT}/{zone}/StaticMeshes", recursive=True, include_folder=False):
         mesh = eal.load_asset(p)
@@ -240,13 +242,13 @@ def apply_materials(zone, table):
         slots, changed = list(mesh.static_materials), False
         for slot in slots:
             key = slot.material_interface.get_name() if slot.material_interface else ""
-            target = next((m for rx, m in rules if rx.search(key)), None)
+            target = next((m for rx, mx, m in rules if rx.search(key) and (mx is None or mx.search(mesh.get_name()))), None)
             if target is None:
                 continue
             if target not in loaded:
                 loaded[target] = eal.load_asset(target)
                 if loaded[target] is None:
-                    raise RuntimeError(f"material-map.json names {target}, which does not exist: run tools/unreal-engine/python/create_base_materials.py")
+                    raise RuntimeError(f"material-map.json names {target}, which does not exist: run tools/unreal-engine/python/build_materials.py")
             slot.material_interface = loaded[target]
             changed, replaced = True, replaced + 1
         if changed:

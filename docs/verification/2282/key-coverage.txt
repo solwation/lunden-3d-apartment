@@ -1,0 +1,84 @@
+  std_f5f5f5_r50_m0                   293  -> MI_LundenFramePaint
+  std_f1f1ee_r85_m0                    86  -> M_LundenWallPaint
+  std_b8bbbf_r35_m60                   42  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_e8ebec_r50_m0                    33  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_c3c7ca_r32_m35                   24  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_f3f2ee_r40_m10                   24  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_ffffff_r70_m0_tex                24  -> MI_LundenParquetEkChalk
+  std_f4f4f1_r40_m30                   20  -> MI_LundenRailPaint
+  std_f1f1ee_r60_m0                    18  -> MI_LundenDoorPaint
+  std_f4f4f1_r60_m0                    16  -> MI_LundenRiserPaint
+  std_f2f2ef_r55_m0                    14  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  phys_a9cce3_r2_m0_a10                13  -> MI_LundenWindowGlass
+  std_ffffff_r96_m0_a94_tex_ds         12  default: transparent fittings (front-door glazing, shower screen, glass shelf, curtains): Interchan
+  std_c9cdd0_r40_m72_vc                11  default: vertex-coloured fittings (door handles, vents, frames, plant pots): Interchange's instance
+  std_f4f4f1_r50_m0                    11  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_151515_r45_m0_ds                 10  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_ffffff_r100_m0_tex                9  -> MI_LundenPatioPaving, MI_LundenScreenWall, MI_LundenTileHallFloor, MI_LundenTileSplash, MI_LundenTileWall, MI_LundenTileWetFloor
+  std_fbfbf9_r85_m0                     8  -> MI_LundenCeilingPaint
+  std_ffffff_r15_m0                     8  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_141516_r18_m0                     6  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_2b2d30_r40_m0                     5  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_55585b_r60_m0                     5  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_d8dbde_r50_m0                     5  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_d9dadc_r25_m85                    5  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_2a2b2e_r92_m0_ds                  4  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_ffffff_r5_m10_e4a4a4a_tex         4  default: emissive fittings (lamp shades, mirror, displays, night light): Interchange's instance kee
+  std_c4c6c8_r35_m70                    3  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_e9e9e6_r100_m0                    3  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_f2efe6_r92_m0_ds                  3  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_ffffff_r85_m0_vc                  3  default: vertex-coloured fittings (door handles, vents, frames, plant pots): Interchange's instance
+  std_4d4f51_r50_m0                     2  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_8f9497_r35_m35                    2  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_bf2d24_r40_m0                     2  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_d7dadc_r12_m82                    2  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_f1f5f6_r30_m0_a55_ds              2  default: transparent fittings (front-door glazing, shower screen, glass shelf, curtains): Interchan
+  std_f2f3f1_r45_m0                     2  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_f4f4f1_r45_m0                     2  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_ffffff_r45_m0_vc                  2  default: vertex-coloured fittings (door handles, vents, frames, plant pots): Interchange's instance
+  std_1a1b1c_r45_m30                    1  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_1a1b1c_r58_m22                    1  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_1b1c1d_r70_m0                     1  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_1f2022_r35_m0                     1  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_27282b_r50_m0                     1  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_2b2d2f_r50_m0                     1  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_2f6b3a_r90_m0                     1  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_314d3c_r58_m0                     1  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_3a6fb5_r60_m0                     1  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_3b2a1e_r100_m0_vc                 1  default: vertex-coloured fittings (door handles, vents, frames, plant pots): Interchange's instance
+  std_3b7fc4_r40_m0                     1  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_40ff70_r60_m0_e30ff60             1  default: emissive fittings (lamp shades, mirror, displays, night light): Interchange's instance kee
+  std_4a4a48_r70_m0                     1  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_4f8a4a_r60_m0                     1  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_535456_r75_m0                     1  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_566b5c_r40_m25                    1  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_78a64b_r95_m0_vc_tex              1  default: lawn strip beyond the patio: grass belongs to #2281 (Vegetation); the Interchange instance
+  std_8a8d90_r60_m0                     1  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_8d9886_r55_m0                     1  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_b5cbd0_r22_m0_a48_ds              1  default: transparent fittings (front-door glazing, shower screen, glass shelf, curtains): Interchan
+  std_b8643f_r90_m0                     1  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_b9bcc0_r35_m50                    1  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_c07a52_r32_m60                    1  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_c9a650_r30_m80                    1  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_c9cbc8_r60_m0                     1  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_d9e6ea_r95_m0                     1  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_dcebe6_r10_m0_a35                 1  default: transparent fittings (front-door glazing, shower screen, glass shelf, curtains): Interchan
+  std_e9eef0_r10_m0                     1  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_f2c94c_r90_m0                     1  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_f2f0ea_r35_m0                     1  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_f4efe6_r40_m0_effd9a8             1  default: emissive fittings (lamp shades, mirror, displays, night light): Interchange's instance kee
+  std_f7f7f7_r30_m0                     1  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_fff1d6_r100_m0                    1  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_fff6e6_r100_m0                    1  default: plain opaque PBR fitting (kitchen and bathroom fronts, steel, sanitary ware, radiators, si
+  std_ffffff_r100_m0_e958d80            1  default: emissive fittings (lamp shades, mirror, displays, night light): Interchange's instance kee
+  std_ffffff_r100_m0_efff2dc            1  default: emissive fittings (lamp shades, mirror, displays, night light): Interchange's instance kee
+  std_ffffff_r15_m0_tex                 1  default: textured fittings that are not building or ground surfaces (kitchen worktop, door name pla
+  std_ffffff_r20_m0_effffff_tex         1  default: emissive fittings (lamp shades, mirror, displays, night light): Interchange's instance kee
+  std_ffffff_r30_m0_vc                  1  default: vertex-coloured fittings (door handles, vents, frames, plant pots): Interchange's instance
+  std_ffffff_r30_m10_e262626_tex        1  default: emissive fittings (lamp shades, mirror, displays, night light): Interchange's instance kee
+  std_ffffff_r45_m35_tex                1  default: textured fittings that are not building or ground surfaces (kitchen worktop, door name pla
+  std_ffffff_r55_m0_tex                 1  default: textured fittings that are not building or ground surfaces (kitchen worktop, door name pla
+  std_ffffff_r60_m0_vc_ds               1  default: vertex-coloured fittings (door handles, vents, frames, plant pots): Interchange's instance
+  std_ffffff_r70_m0_vc_ds               1  default: vertex-coloured fittings (door handles, vents, frames, plant pots): Interchange's instance
+material keys on 740 building/ground nodes (l1007, l1007-uteplats): 82 keys, 9 mapped by rules, 73 on the import default with a reason, 0 unmapped
+MATERIAL_COVERAGE_OK
