@@ -45,7 +45,10 @@
       "properties": {
         "start": { "type": "object", "required": ["web", "unreal", "feetY", "eyeY", "yawDeg", "pitchDeg", "unrealEye", "unrealYaw", "unrealPitch", "source"] },
         "player": { "type": "object", "required": ["eye", "radius", "walk", "run", "source"] },
-        "fall": { "type": "object", "description": "#2284: the web fall-damage rule (src/config.js FALL, COMBAT.lives) with sample results of src/falldamage.js: drops in metres, damage in lives (null = not reported)", "required": ["hurt", "fatal", "free", "lives", "samples", "source"] }
+        "fall": { "type": "object", "description": "#2284: the web fall-damage rule (src/config.js FALL, COMBAT.lives) with sample results of src/falldamage.js: drops in metres, damage in lives (null = not reported)", "required": ["hurt", "fatal", "free", "lives", "samples", "source"] },
+        "surface": { "type": "object", "description": "#2300: the footstep surface under the feet, src/stepsurface.js stepInfo sampled by tools/unreal-engine/export-player.js: a ground raster and height-dependent boxes (Unreal cm), the stair levels, named control points and random samples with the web's answers", "required": ["surfaces", "wheres", "grid", "boxes", "levels", "floorTol", "control", "samples", "check", "source"] },
+        "rest": { "type": "object", "description": "#2300: rest spots of the exported furniture (src/rest.js restTarget) with eye, aim, yaw and start view in Unreal terms, and the REST limits (degrees, cm)", "required": ["move", "reach", "limits", "spots", "source"] },
+        "respawn": { "type": "object", "description": "#2300: the wake points a death may use (src/respawn.js grid candidates the web accepts), the wake yaw and the src/fall.js blackout timings", "required": ["yaw", "points", "blackout", "source"] }
       }
     },
     "stair": { "type": "object", "required": ["foot", "rise", "riser", "treads", "hole", "source"], "properties": { "foot": { "$ref": "#/$defs/point" } } },

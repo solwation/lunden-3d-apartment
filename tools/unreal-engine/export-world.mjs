@@ -158,6 +158,8 @@ async function main() {
   if (result.report.lightsError) console.log(`  note: room lights not built (${result.report.lightsError})`);
   if (result.report.looseError) throw new Error(`fruit bowl/basketball not built (#2310): ${result.report.looseError}`);
   if (result.report.extraError) throw new Error(`garage/stairwells not built: ${result.report.extraError}`);
+  if (result.report.player?.error) throw new Error(`player data (#2300, export-player.js) not built: ${result.report.player.error}`);
+  if (result.report.player) console.log(`  player (#2300): ${JSON.stringify(result.report.player)}`);
   const { split, unassigned } = result.report;
   console.log(`  split: ${split.atoms} merged meshes → ${split.pieces} zone pieces (${split.triangles} triangles, ${split.cut} clipped at a zone edge, ${split.dropped} in no exported zone)`);
   for (const m of split.meshes.filter((x) => Object.keys(x.pieces).length)) console.log(`    ${m.group}/${m.name ?? 'mesh'}: ${m.triangles} → ${JSON.stringify(m.pieces)}`);

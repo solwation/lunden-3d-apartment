@@ -432,6 +432,7 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     const [{ Garage }, { Core }, { CoreHouse }] = await Promise.all([import('../../src/garage.js'), import('../../src/core.js'), import('../../src/corehouse.js')]);
     const garage = new Garage();
     const core = new Core();
+    Object.assign(extra, { garage, core }); // #2300: the footstep sensor and the outdoor sprint need them (export-player.js)
     extra.lifts = [['l', core.lift]]; // #2285: the lifts' button panels (src/liftpanel.js targets)
     for (const spec of [C.CORE_A, C.CORE_B, C.CORE_C]) { const house = new CoreHouse(spec); core.attach(house); extra.lifts.push([spec.house.slice(-1).toLowerCase(), house.lift]); }
     extra.objects.push(garage.object, garage.door.object, garage.parkObject, core.object); // (not garage.blackout: a web-only mask)
@@ -826,7 +827,19 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
   if (vegetation) measurements.vegetation = vegetation;
   for (const { root } of Object.values(roots)) root.updateMatrixWorld(true); // (the mesh centres below)
   measurements.furnishing = furnishingData(byZone, textures, worldMatrix);
-  return { glbs, measurements, report: { zones: zoneReport, kinds: stats, skipped, lightsError: lightsInfo.error, extraError: extra.error, looseError: loose.error, atoms: atoms.length, split, unassigned } };
+  // #2300: the footstep surface, outdoor sprint, rest and wake data from the web's own modules (export-player.js). Loaded
+  // here, after every GLB is written, so its modules cannot shift the seeded random sequence the zones were built with.
+  let playerReport = null;
+  try {
+    const { playerData } = await import('./export-player.js');
+    const atomIdOf = new Map(); // web object -> exported node id (furniture: the piece, whose parts carry parent:<id>)
+    for (const list of byZone.values()) for (const a of list) if (a.instance === undefined && a.id) atomIdOf.set(a.object, a.id);
+    const idOf = (o) => { for (; o; o = o.parent) if (atomIdOf.has(o)) return atomIdOf.get(o); return null; };
+    const p = playerData({ world, core: extra.core ?? null, garage: extra.garage ?? null, idOf });
+    Object.assign(measurements.spawn, { surface: p.surface, rest: p.rest, respawn: p.respawn });
+    playerReport = p.report;
+  } catch (e) { playerReport = { error: String(e?.stack ?? e) }; }
+  return { glbs, measurements, report: { zones: zoneReport, kinds: stats, skipped, lightsError: lightsInfo.error, extraError: extra.error, looseError: loose.error, atoms: atoms.length, split, unassigned, player: playerReport } };
 }
 
 /** GLTFExporter encodes images asynchronously (canvas.toBlob, FileReader) and appends each one's bytes when it is done,
