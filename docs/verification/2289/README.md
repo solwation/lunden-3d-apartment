@@ -28,19 +28,25 @@ the same cameras; the web is unchanged by #2289.
 | ![web living room](web-living-room.jpg) | ![unreal living room](unreal-living-room.jpg) |
 | ![web upper floor](web-upper-floor.jpg) | ![unreal upper floor](unreal-upper-floor.jpg) |
 | ![web stairs](web-stairs.jpg) | ![unreal stairs](unreal-stairs.jpg) |
+| ![web patio](web-patio.jpg) | ![unreal patio](unreal-patio.jpg) |
 
 Living room: the rug's arcs, the cushions, the striped and spotted curtains, the watercolour over the chaise and the
 sofa's fabric now carry the web's images; before #2289 they were flat colours
 ([#2283's picture](../2283/unreal-living-room.jpg)). Övre plan: the K-pop posters, the daybed's star bedding and the
-curtains. Stairs: the secretary's teak and labels.
+curtains. Stairs: the secretary's teak and labels. Patio (14:00, taken after `8bf4cf44` put the patio into `L_Lunden`):
+the outdoor sofa with its cushions, the fences, the palm in its pot and the wall lamp stand where the web has them.
+The façade's brick (#2279/#2282), the palm's white fronds (a leaf material outside #2289's furnishing keys), the
+string lights and the parasol (built by `main.js`, not `buildWorld`) differ from the web; the Christmas tree seen
+through the door is the export's seasonal piece (#2295).
 
 ## Not checked or not ported
 
 - Normal, bump, roughness, alpha and emissive maps, the web's shader tweaks, and animated canvases (TV, smart display:
   their first frame) do not travel. The sofa and armchair fabric reads darker than on the web (their material also uses vertex
   colours; whether Interchange's instance multiplies them was not investigated).
-- The patio (`l1007-uteplats`) is imported and checked, but is not a line of `world-levels.json`, so it is not in
-  `L_Lunden` (the view through the patio door shows the courtyard instead of the patio furniture).
+- The patio (`l1007-uteplats`) became a sub-level of `L_Lunden` in `8bf4cf44` (the first three pictures predate it: the
+  living room's patio door still shows the courtyard). `test_furnishing` on `L_Lunden` then found 171 of 171 items
+  (9 on the patio) and 230 of 230 textured meshes, within the same tolerances.
 - The copper fruit bowl and Tilly's basketball are built by `main.js` with their game logic (`src/fruit.js`,
   `src/basket.js`), not by `buildWorld`, so the export does not include them; reported to the conductor.
 - The capture rebuilt `/Game/Lunden/Lighting/` locally because its spec hash differed from the current export (not

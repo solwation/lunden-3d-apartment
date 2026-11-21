@@ -449,6 +449,7 @@ open the map (see [Parallel work](#parallel-work-levels-and-blueprints)).
 |---|---|---|---|
 | `/Game/Lunden/Generated/Interaction/Level_l1007_interaction` | #2278 line, #2285 package | `import_world.py --zones l1007`, then `build_interaction.py` | both storeys as exported (walls, floors, ceilings, stair, fittings, furniture), with #2285's usable doors, windows, switches and taps; replaced the importer's `Generated/l1007/Level_l1007` |
 | `/Game/Lunden/Generated/L1007World/Level_l1007_collision` | #2278 | `build_l1007.py` | walkable collision: 54 wall/floor boxes, 15 complex-as-simple stair treads |
+| `/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats` | #2289 (importer output) | `import_world.py --zones l1007-uteplats` | L1007's patio: paving, fences, screen walls, hedge, patio furniture and lamps ([Furnishing](#furnishing-and-pictures-2289)) |
 | `/Game/Lunden/Generated/l1007-entre/Level_l1007-entre` | #2279 (importer output) | `import_world.py --zones l1007-entre` | street, pavement and terrain pieces in front of L1007 |
 | `/Game/Lunden/Generated/hus-l/Level_hus-l` | #2279 (importer output) | `import_world.py --zones hus-l` | Hus L: façades, loftgång, roofs, patios, portik, stairwell/lift core, L1004/L1201 |
 | `/Game/Lunden/Generated/kvarteret/Level_kvarteret` | #2279 (importer output) | `import_world.py --zones kvarteret` | Hus A/B/C with stairwells and entrance shells, the garage |
@@ -913,8 +914,9 @@ the export and the pictures section of `notices.mjs`.
 - **Notices.** `notices.mjs` `PICTURES` names each picture file, what it shows and its source photo, and fails when a
   file in `textures/` has no entry; `THIRD_PARTY_NOTICES.md` states the owner's approval for the original Windows
   version only. Nothing of this goes to the public downstream copy.
-- **Patio.** `l1007-uteplats` (patio furniture, paving, fences, hedge) is imported but is not yet a line in
-  `world-levels.json`, so it is not in `L_Lunden`.
+- **Patio.** `l1007-uteplats` (patio furniture, paving, fences, screen walls, hedge, lamps) is a sub-level of
+  `L_Lunden` (#2289's line in `world-levels.json`). The parasol and the string lights are built by `main.js`, not
+  `buildWorld`, so they are not exported.
 
 ```text
 copy tools\unreal-engine\tests\test_furnishing.py unreal\Lunden\Content\Python\   (untracked copy, delete afterwards)
@@ -922,7 +924,8 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-
 (or directly) powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/tests/test_furnishing.py
 ```
 
-The test loads the two imported L1007 zone levels and every built level of `world-levels.json` and checks each
+The test loads the two imported L1007 zone levels, every built level of `world-levels.json` and `L_Lunden` itself
+(which must hold every item and textured mesh) and checks each
 `furnishing` item where its id appears (1 cm, 1°, 0.1 % scale), each texture on each of its mesh actors (centre within
 1 cm, the key's instance with a Texture2D of the exported size) and that every picture file is on a mesh and in the
 notices. Results: [docs/verification/2289/](../verification/2289/README.md).
