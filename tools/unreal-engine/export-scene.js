@@ -14,6 +14,7 @@ import { groundY, renderedTerrainY, treeFeet, aoTrees } from '../../src/surround
 import { gridGround } from '../../src/elevation.js';
 import { leafMaterial, windLeafMaterial } from '../../src/foliage.js';
 import { stairRise, stairRiser, N_TREADS } from '../../src/stairs.js';
+import { hedgeTexture } from './hedge-texture.js';
 import { husLLayout } from '../../src/exterior.js';
 import { fallDamage } from '../../src/falldamage.js';
 import { facadeLightingData } from './export-facade-lighting.js';
@@ -697,14 +698,21 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     const cache = furnish ? furnishCache : matCache;
     if (cache.has(m)) { noteLook(m, cache.get(m).name); return cache.get(m); }
     const { key: base, info } = materialInfo(m);
-    const tex = furnish ? furnishingTexture(m.map, textures, textureOfMap) : null;
-    const key = tex ? `${base}_${tex.id}` : base;
+    // These site surfaces use their own material keys so an indoor tile or brick rule cannot replace them.
+    const hedge = m.name === 'patio-hedge' || m.name === 'boxwood';
+    const siteMap = m.map?.name === 'site-slatted-rail' || m.map?.name === 'site-house-letters';
+    const siteName = hedge ? m.name : siteMap ? m.map.name : null;
+    const tex = furnish && !siteName ? furnishingTexture(m.map, textures, textureOfMap) : null;
+    const suffix = siteName?.replaceAll('-', '_') ?? tex?.id;
+    const key = suffix ? `${base}_${suffix}` : base;
     let em = materials.get(key);
     if (!em) {
       em = new THREE.MeshStandardMaterial({ name: key, color: new THREE.Color(info.color), roughness: info.roughness, metalness: info.metalness,
         transparent: info.opacity < 1, opacity: info.opacity, side: info.doubleSided ? THREE.DoubleSide : THREE.FrontSide, vertexColors: info.vertexColors });
       if (info.emissive) em.emissive = new THREE.Color(info.emissive);
-      if (tex) { em.map = tex.out; em.userData.texture = tex.id; }
+      if (hedge) em.map = hedgeTexture(m);
+      else if (siteMap) { em.map = m.map; em.alphaTest = m.alphaTest; }
+      else if (tex) { em.map = tex.out; em.userData.texture = tex.id; }
       materials.set(key, em); materialTable[key] = tex ? { ...info, texture: tex.id } : info;
     }
     if (tex) tex.keys.add(key);

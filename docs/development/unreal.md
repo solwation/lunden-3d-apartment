@@ -2649,6 +2649,19 @@ month's darkest and lightest leaf colour (`SEASON.trees`, `src/seasons.js`'s per
   generated from the import like #2278–#2280's derived levels, references unversioned meshes and would store a new LFS
   copy at every export change, so it lives in `Generated/VegetationWorld/`. Only the two materials are versioned.
 
+**Courtyard rails, entrance letters and hedges (#2325).** The export carries the RGBA rail texture from
+`src/surroundings.js` on the A/B/C loggias and the courtyard-edge fence. The glTF uses the web's
+0.5 alpha cutoff, double-sided panels and existing UVs. Hus L's loftgång and terrace balusters are
+already geometry. The white A/B/C plates use the same letter atlas and each plate's original third
+of the image. These materials have separate keys in the GLB so the importer can keep their images.
+
+The patio hedge and entrance boxwood carry their grey leaf atlas multiplied in linear space by the
+web's `clumpShade` and `CLUMP_MEAN`. Their UVs retain the configured leaf scale and clump diameters
+(21 cm for patio hedges and 13 cm for boxwood). The export bakes a mirrored two-tile patch using a
+side face as its reference. This is a *guess* for the static approximation of the web shader. The
+tint, vertex shading, hedge shape and collision still come from the source mesh. The web adds
+view-dependent fading, fine bump relief and stem shading near the base at render time.
+
 **Grass (#2308).** The web has no grass geometry: its lawns are the ground meshes with `src/grass.js`'s detail map. The
 export names each material's colour map (`measurements.json` `materials[].map`, `shared-grass-detail` on the lawns), and
 `material-map.json` maps the two lawn keys (`std_609548_r100_m0_tex`, GRASS.summer; `std_5f8a3e_r100_m0_tex`, the street

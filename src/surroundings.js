@@ -825,6 +825,7 @@ function railTexture() {
   for (let x = 1; x < 128; x += 16) g.fillRect(x, 6, 7, 58);
   g.fillRect(0, 0, 128, 9); g.fillRect(0, 57, 128, 7);
   const t = new THREE.CanvasTexture(c); t.wrapS = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace;
+  t.name = 'site-slatted-rail';
   return t;
 }
 
@@ -1273,6 +1274,7 @@ function letterTexture(letters) {
     g.fillText(ch, i * 64 + 32, 35);
   });
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+  t.name = 'site-house-letters';
   return t;
 }
 
