@@ -491,6 +491,7 @@ open the map (see [Parallel work](#parallel-work-levels-and-blueprints)).
 | `/Game/Lunden/Generated/Lighting/Level_lighting` | #2283 | `build_lighting.py` | `BP_LundenSky` (sun, moon, sky, fog, clouds, weather) and 36 `BP_LundenLamp`s tagged `lamp:<id>` ([Lighting](#lighting-sky-and-weather-2283)) |
 | `/Game/Lunden/Generated/VegetationWorld/Level_vegetation_foliage` | #2281 | `build_vegetation.py` | the site's trees, shrubs, courtyard plantings and vines, river bank growth and entrance boxwood as foliage instances with wind; a copy of L1007's patio hedge |
 | `/Game/Lunden/Generated/Interaction/Level_lift_buttons` | #2285 | `build_interaction.py` | the four lifts' 49 car and call buttons as interactables (state and `ChangeCount` until the lifts are ported) |
+| `/Game/Lunden/Avatar/Looks/Level_LundenMirror` | #2291 | `build_avatar_looks.py` | the hall mirror `BP_LundenMirror` at the glass of `HALL_WALL.tall`: the player's own figure in the current look |
 
 `world-levels.json` format (version 1): `map`, `gameMode` (class path; #2284's `BP_LundenGameMode` since 2026-11-21), `playerStart` (always `measurements.json#/spawn/start`) and `levels`, an ordered list of
 `{package, owner, builder, streaming, what}`. `streaming` is `always` (`LevelStreamingAlwaysLoaded`) for now; add a
@@ -1346,7 +1347,7 @@ G15's second half: a web look code gives the same figure in Unreal. #2291 owns `
   Parts with one rule form a piece: 97 GLBs (164k vertices, 14 MB) on the bones and bind of `models/avatar-rigged.glb`,
   UV0 = (colour region, shade), UV1/UV2 = a fixed colour. `avatar-parts.json` keeps the rules, the GLB hashes and,
   per sample, the web's pieces, region colours (read back from the builder's output), scale and bind-pose height.
-- **Assets.** `Pieces/SKM_LundenLookPiece_NNN` on `SK_LundenLook` (the looks' own skeleton: `Rig/Web/` stays
+- **Assets.** `BP_LundenMirror`, `M_LundenMirror`, `WBP_LundenLookMenu`, `Level_LundenMirror`, `Pieces/SKM_LundenLookPiece_NNN` on `SK_LundenLook` (the looks' own skeleton: `Rig/Web/` stays
   editor-only, which `build_avatar_rig.py` enforces), `M_LundenLook` (one vector parameter per region, a Custom node
   picks it), `IK_LundenLook` (a copy of #2290's `IK_LundenWeb`), `RTG_LundenMannequinToWeb`, `ABP_LundenLook`
   (Retarget Pose From Mesh from the parent component, then the head bone scaled by `HeadScale`).
@@ -1356,12 +1357,31 @@ G15's second half: a web look code gives the same figure in Unreal. #2291 owns `
   as `avatarModelGeometry` does (lips from the skin and `lipTint`, then a lipstick; brows and beard), scales the figure
   as the web (`avatarProportions(height)`: body and head bone; without a height the wire's seeded `tall`, else 1) and
   sets the avatar's `LookCode`, `HeightScale`, `WidthScale` and hit zones. #2292 calls it for other players.
+- **The player's own figure, the menu and the save.** `SelfAvatar()` (in `BP_LundenMirror` and the menu) finds or
+  makes the player's `BP_LundenAvatar`: its `Look.CaptureOnly` makes the figure (and the hidden Body) visible to scene
+  captures only, so the first-person view never sees it; no collision; it wears `BFL_LundenSave.GetLookCode()` (#2288),
+  or the samples' plain look `012340100` without one (*assumption*: the web seeds a missing look from the player's
+  name or id). The menu button **Utseende** (`ui-extensions.json` row `Look`, #2286's `OpenExtension`) opens
+  `WBP_LundenLookMenu`: a code field (a pasted web code works), Föregående/Nästa through the 16 sample looks,
+  **Använd koden** (`ApplyLook` on the figure, then `SetLookCode` with the code as the web re-encodes it; an invalid code
+  changes nothing) and **Klar**. The web's customizer (sliders, colour pickers, opened with E at a mirror) is not
+  ported: the menu takes codes.
+- **The mirror** (`BP_LundenMirror`, sub-level `Level_LundenMirror`, placed by the builder at the web's hall NISSEDAL:
+  `HALL_WALL.tall` through `avatar-looks.mjs` and `coordinates.mjs`, 1 mm in front of the imported glass). At BeginPlay
+  a plane the size of the glass gets `M_LundenMirror` (unlit; the render target at the screen position, mirrored left to
+  right) and a `SceneCaptureComponent2D` (half the viewport, clip plane at the glass). Every frame, after the camera
+  (`TG_PostUpdateWork`), the player's figure stands at the player's feet with the control yaw and walking speed, and the
+  capture takes the player's camera reflected in the glass (same field of view); it renders only while the glass was on
+  screen in the last 0.25 s. **Cost:** one extra scene render at half resolution while the mirror is seen, and
+  `r.AllowGlobalClipPlane=True` (#2291's own commented section in `DefaultEngine.ini`), which adds the clip-plane test
+  to every base-pass vertex shader; without it the wall behind the glass would hide the reflection.
 - **Not carried** (the web shapes them in its vertex shader; Unreal keeps the bind shape): face and head sliders, the
   gender's face form, body build, hair length and tucking under a hat, finger poses and ring bends, cloth, age,
   freckles, make-up other than lipstick, patterns, metal colours, clear lenses (see-through on the web) and the phone.
   A legacy code without a height takes 1 where the web uses the player's seeded `tall`. 10–21 draw calls per figure.
-- **Open** (seen in the pictures, not yet solved): the head-bone scale of a child (`HeadScale` is right, but the
-  enlarged head does not show), a dark sliver on the inner thigh and a grey patch at one foot.
+- **Head scale.** `ABP_LundenLook` reads `Look.HeadScale` at every update (a look applied before the anim instance
+  existed lost it before; the play test checks the child's head bone, 1.326).
+- **Open** (seen in the pictures, cause not found): a dark sliver on the inner thigh and a grey patch at one foot.
 
 ```text
 node tools/unreal-engine/avatar-looks.mjs [--check]
@@ -1374,7 +1394,10 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-
 
 `test_avatar_looks` round-trips the samples (all 55 fields), answers the malformed codes as the web and, on a
 `BP_LundenAvatar`, checks every sample's pieces, region colours (within 0.002), scale and bind-pose height (within
-1 cm) against the web. After `build_avatar_rig.py` rebuilds `BP_LundenAvatar`, rebuild the looks with `--force` (the
+1 cm) against the web. Its play part (PIE on `L_Lunden`, the save slot set aside by `save_isolation`; it adds
+`Level_LundenMirror` in memory when the map does not list it yet) opens the menu through the Utseende button, applies
+and saves codes, refuses an invalid one, checks the child's head bone, the figure at the player's feet and the capture
+at the reflected camera, and that the chosen look is back after a second PIE start. After `build_avatar_rig.py` rebuilds `BP_LundenAvatar`, rebuild the looks with `--force` (the
 component calls the avatar's functions). Results: [docs/verification/2291/](../verification/2291/README.md).
 
 ## Pilot camera references (#2246)

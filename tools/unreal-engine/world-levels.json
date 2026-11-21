@@ -96,6 +96,13 @@
       "builder": "build_interaction.py",
       "streaming": "always",
       "what": "the four lifts' car and call buttons (src/liftpanel.js) as interactables: state and ChangeCount only until the lifts are ported"
+    },
+    {
+      "package": "/Game/Lunden/Avatar/Looks/Level_LundenMirror",
+      "owner": "#2291",
+      "builder": "build_avatar_looks.py",
+      "streaming": "always",
+      "what": "the hall mirror (BP_LundenMirror at the glass of src/config.js HALL_WALL.tall): the player's own figure in the current look, seen in it"
     }
   ]
 }

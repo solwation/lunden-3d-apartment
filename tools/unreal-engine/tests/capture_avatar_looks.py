@@ -53,6 +53,22 @@ for i, (code, walk) in enumerate(SHOTS):
     avatar.tags = [f"shot:{name}"]
     cam = actors.spawn_actor_from_class(u.SceneCapture2D, u.Vector(x, -420, 95), u.Rotator(roll=0, pitch=-2, yaw=90))
     cam.tags = [f"cam:{name}"]
+# The mirror: BP_LundenMirror (as Level_LundenMirror places it, facing -X) on a wall, the player 0.8 m in front of it
+# (avatar-looks.json mirror.view); a SceneCapture2D takes the player's own view, the player's figure hidden from it.
+MIRROR = "/Game/Lunden/Avatar/Looks/BP_LundenMirror.BP_LundenMirror_C"
+DATA = json.loads((REPO / "tools/unreal-engine/avatar-looks.json").read_text(encoding="utf-8"))
+GLASS = u.Vector(-500, 0, DATA["mirror"]["centre"][2])
+FRONT = DATA["mirror"]["centre"][0] - DATA["mirror"]["view"]["unreal"][0]  # 80 cm
+# the game's own player (BP_LundenGameMode, world-levels.json gameMode): a first-person character at the web's eye height
+mode = json.loads((REPO / "tools/unreal-engine/world-levels.json").read_text(encoding="utf-8"))["gameMode"]
+u.get_editor_subsystem(u.UnrealEditorSubsystem).get_editor_world().get_world_settings().set_editor_property(
+    "default_game_mode", u.load_class(None, mode))
+wall = actors.spawn_actor_from_class(u.StaticMeshActor, u.Vector(GLASS.x + 6, 0, 150))
+wall.static_mesh_component.set_static_mesh(u.EditorAssetLibrary.load_asset("/Engine/BasicShapes/Cube"))
+wall.set_actor_scale3d(u.Vector(0.1, 4, 3))
+actors.spawn_actor_from_class(u.load_class(None, MIRROR), GLASS, u.Rotator(roll=0, pitch=0, yaw=180))
+view = actors.spawn_actor_from_class(u.SceneCapture2D, u.Vector(0, 0, 0))
+view.tags = ["cam:mirror-view"]
 saved_slot = save_isolation.isolate()
 
 
@@ -117,6 +133,37 @@ def capture():
             shots.append({"code": code, "walk": walk, "pieces": len(pieces) + 1, "headBoneZ": round(head.z, 1),
                           "figureScale": round(look.get_editor_property("FigureScale").z, 4)})
             u.log(f"LUNDEN_AVATAR_LOOKS_CAPTURE {json.dumps(shots[-1])}")
+        # the mirror, in the last look of SHOTS
+        game_mirror = u.GameplayStatics.get_all_actors_of_class(game, u.load_class(None, MIRROR))[0]
+        mine_ = game_mirror.get_editor_property("Avatar")
+        look = [c for c in mine_.get_components_by_class(u.ActorComponent) if c.get_name() == "Look"][0]
+        look.call_method("ApplyLook", (SHOTS[2][0],))
+        pawn = u.GameplayStatics.get_player_pawn(game, 0)
+        pc = u.GameplayStatics.get_player_controller(game, 0)
+        pawn.teleport(u.Vector(GLASS.x - FRONT, 0, 100.0), u.Rotator(roll=0, pitch=0, yaw=0))
+        pc.set_control_rotation(u.Rotator(roll=0, pitch=0, yaw=0))
+        for _ in range(60):
+            yield
+        cam = u.GameplayStatics.get_player_camera_manager(game, 0)
+        vcam = tagged(game, u.SceneCapture2D, "cam:")["mirror-view"]
+        vcam.set_actor_location_and_rotation(cam.get_camera_location(), cam.get_camera_rotation(), False, True)
+        comp = vcam.capture_component2d
+        mrt = game_mirror.get_editor_property("Capture").get_editor_property("texture_target")
+        rt = u.RenderingLibrary.create_render_target2d(game, mrt.size_x * 2, mrt.size_y * 2, u.TextureRenderTargetFormat.RTF_RGBA8_SRGB)
+        comp.set_editor_property("texture_target", rt)
+        comp.set_editor_property("capture_source", u.SceneCaptureSource.SCS_FINAL_TONE_CURVE_HDR)
+        comp.set_editor_property("fov_angle", cam.get_fov_angle())
+        comp.set_editor_property("capture_every_frame", False)
+        comp.set_editor_property("hidden_actors", [mine_])
+        u.AutomationLibrary.finish_loading_before_screenshot()
+        for _ in range(8):
+            comp.capture_scene()
+            yield
+        u.RenderingLibrary.export_render_target(game, rt, str(OUT), "unreal-mirror.png")
+        feet = pawn.get_nav_agent_location()
+        shots.append({"mirror": SHOTS[2][0], "camera": [round(v, 1) for v in (cam.get_camera_location().x, cam.get_camera_location().y,
+                      cam.get_camera_location().z)], "feetZ": round(feet.z, 1), "rt": [rt.size_x, rt.size_y]})
+        u.log(f"LUNDEN_AVATAR_LOOKS_CAPTURE {json.dumps(shots[-1])}")
         (OUT / "capture.json").write_text(json.dumps({"engine": u.SystemLibrary.get_engine_version(), "width": WIDTH,
             "height": HEIGHT, "fov": FOV, "camera": "4.2 m in front, 0.95 m up, pitched 2 degrees down", "shots": shots},
             indent=1) + "\n", encoding="utf-8")

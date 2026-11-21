@@ -283,7 +283,7 @@ def figure_vars():
         "EyeColours": COLOURS, "BrowColours": COLOURS, "LipstickColours": COLOURS, "LipTint": COLOUR, "SkinBase": INT,
         "LipSkinMix": REAL, "LipDark": REAL, "LipstickMix": REAL,
         "SeededTall": REALS, "HeightPivot": REAL, "HeightTop": REAL, "HeightAdult": REAL, "HeadPow": REAL,
-        "FigureScale": VECTOR, "HeadScale": REAL,
+        "FigureScale": VECTOR, "HeadScale": REAL, "CaptureOnly": BOOL,
     }
     out.update({"Colour" + n: COLOUR for n in REGION_PARAMS})
     return out
@@ -779,6 +779,7 @@ def ensure_figure(bp):
     fn.exec_call("SceneComponent:K2_SetRelativeRotation", self_=comp, NewRotation="0,0,0", bSweep=False, bTeleport=True)
     fn.exec_call("SkeletalMeshComponent:SetSkeletalMeshAsset", self_=comp, NewMesh=fn.get("CoreMesh"))
     fn.exec_call("SkeletalMeshComponent:SetAnimInstanceClass", self_=comp, NewClass=ABP_CLASS)
+    fn.exec_call("PrimitiveComponent:SetVisibleInSceneCaptureOnly", self_=comp, bValue=fn.get("CaptureOnly"))  # the player's own figure
     # Body keeps animating out of sight: the figure reads its bones every frame.
     other_set(fn, body, "VisibilityBasedAnimTickOption", "/Script/Engine.SkinnedMeshComponent", "AlwaysTickPoseAndRefreshBones")
     fn.exec_call("SceneComponent:SetVisibility", self_=body, bNewVisibility=False, bPropagateToChildren=False)
@@ -835,6 +836,7 @@ def choose_pieces(bp):
                  LocationRule="SnapToTarget", RotationRule="SnapToTarget", ScaleRule="SnapToTarget", bWeldSimulatedBodies=False)
     fn.exec_call("SkinnedMeshComponent:SetLeaderPoseComponent", self_=comp, NewLeaderBoneComponent=fn.get("Figure"),
                  bForceUpdate=True, bInFollowerShouldTickPose=False)
+    fn.exec_call("PrimitiveComponent:SetVisibleInSceneCaptureOnly", self_=comp, bValue=fn.get("CaptureOnly"))
     fn.exec_call(A + "Array_Add", TargetArray=fn.get("PieceComps"), NewItem=comp)
     common = fn.exec_call("SkeletalMeshComponent:SetSkeletalMeshAsset", self_=fn.lget("Comp"), NewMesh=mesh)
     link(pooled_end, BP.find_execute_pin(common))
@@ -865,7 +867,7 @@ def colour_look(bp):
     brows_i = field("brows")
     brow_known = fn.all(fn.f(M + "GreaterEqual_IntInt", A=brows_i, B=0),
                         fn.f(M + "Less_IntInt", A=brows_i, B=fn.f(A + "Array_Length", TargetArray=fn.get("BrowColours"))))
-    brow = fn.f(M + "SelectColor", A=get_at(fn, fn.get("BrowColours"), brows_i), B=hair, bPickA=brow_known)
+    brow = fn.f(M + "SelectColor", A=get_at(fn, fn.get("BrowColours"), fn.f(M + "Max", A=brows_i, B=0)), B=hair, bPickA=brow_known)
     lips = fn.f(M + "Multiply_LinearColorFloat", A=fn.f(M + "LinearColorLerp", A=skin, B=fn.get("LipTint"), Alpha=fn.get("LipSkinMix")),
                 B=fn.get("LipDark"))
     stick = field("lipstick")
@@ -898,7 +900,7 @@ def scale_look(bp, avatar_cls):
     ti = field("tallIndex")
     tall_known = fn.all(fn.f(M + "GreaterEqual_IntInt", A=ti, B=0),
                         fn.f(M + "Less_IntInt", A=ti, B=fn.f(A + "Array_Length", TargetArray=fn.get("SeededTall"))))
-    tall = fn.f(M + "SelectFloat", A=get_at(fn, fn.get("SeededTall"), ti), B=1.0, bPickA=tall_known)
+    tall = fn.f(M + "SelectFloat", A=get_at(fn, fn.get("SeededTall"), fn.f(M + "Max", A=ti, B=0)), B=1.0, bPickA=tall_known)
     sx = fn.f(M + "SelectFloat", A=body, B=1.0, bPickA=has)
     sz = fn.f(M + "SelectFloat", A=body, B=tall, bPickA=has)
     fn.set("FigureScale", fn.f(M + "MakeVector", X=sx, Y=sx, Z=sz))
@@ -918,9 +920,12 @@ def scale_look(bp, avatar_cls):
 def apply_look(bp, avatar_cls):
     """ApplyLook(Code) -> Applied: parse, dress and scale; BP_LundenAvatar keeps the code and its hit-zone scales."""
     fn = Fn(bp, "ApplyLook", [("Code", STRING)], [("Applied", BOOL)])
+    fn.local("Before", STRING)
+    fn.set("Before", fn.get("LookCode"), local=True)
     ok = fn.exec_call(mine("ParseLook"), Code=fn.params["Code"])
     good, bad = fn.branch(out(ok, "Valid"))
-    fn.cur = bad
+    fn.cur = bad  # an invalid code changes nothing: the look before it is parsed again
+    fn.exec_call(mine("ParseLook"), Code=fn.lget("Before"))
     fn.finish(Applied=False)
     fn.cur = good
     fig = fn.exec_call(mine("EnsureFigure"))
@@ -936,6 +941,347 @@ def apply_look(bp, avatar_cls):
     other_set(fn, avatar, "WidthScale", AVATAR_CLASS, fn.f(M + "BreakVector", pin="X", InVec=scale))
     fn.exec_call(AVATAR_CLASS + ":UpdateHitZones", self_=avatar)
     fn.finish(fresh=True, Applied=True)
+
+
+# The player's own figure, the mirror and the look menu ----------------------------------------------------------------
+
+SAVE_LIB = "/Game/Lunden/Save/BFL_LundenSave.BFL_LundenSave_C"
+MIRROR = LOOKS + "/BP_LundenMirror"
+MIRROR_CLASS = MIRROR + ".BP_LundenMirror_C"
+MIRROR_MATERIAL = LOOKS + "/M_LundenMirror"
+MIRROR_LEVEL = LOOKS + "/Level_LundenMirror"
+MENU = LOOKS + "/WBP_LundenLookMenu"
+MENU_CLASS = MENU + ".WBP_LundenLookMenu_C"
+PLAIN_LOOK = "012340100"  # *assumption*: a player without a saved code (the web seeds one from the name/id) wears the samples' plain look
+
+
+def events_graph(bp, wired):
+    """EventGraph: each (event override, function to call with the event's float `DeltaSeconds` if it has one)."""
+    ed = GRAPH.get_graph_editor_by_name(bp, "EventGraph")
+    ed.remove_nodes([n for n in ed.list_all_nodes()])
+    y = 0
+    for override, call, delta in wired:
+        node = BP.add_event_override(bp, override, u.IntPoint(0, y))
+        if not node:
+            raise RuntimeError(f"{bp.get_name()}: no event {override}")
+        c = ed.add_call_function_node(call)
+        if not c:
+            raise RuntimeError(f"{bp.get_name()}: cannot call {call}")
+        BP.set_node_pos(c, u.IntPoint(400, y))
+        link(BP.find_then_pin(node), BP.find_execute_pin(c))
+        if delta:
+            link(out(node, delta), inp(c, "Delta"))
+        y += 300
+
+
+def self_avatar(bp):
+    """SelfAvatar() -> Avatar: the player's own BP_LundenAvatar (its Look has CaptureOnly), made when missing: seen only
+    by scene captures (the mirror), no collision, wearing the saved look (BFL_LundenSave.GetLookCode) or the plain one."""
+    avatar_cls = u.load_class(None, AVATAR_CLASS)
+    ref = BP.get_object_reference_type(avatar_cls)
+    fn = Fn(bp, "SelfAvatar", [], [("Avatar", ref)])
+    fn.local("Found", ref)
+    found = fn.exec_call("GameplayStatics:GetAllActorsOfClass", ActorClass=AVATAR_CLASS)
+    loop = fn.macro("ForEachLoop", Array=out(found, "OutActors"))
+    fn.cur = out(loop, "LoopBody")
+    typed = cast(fn, out(loop, "Array Element"), avatar_cls)
+    mine_, _ = fn.branch(other_get(fn, other_get(fn, typed, "Look", AVATAR_CLASS), "CaptureOnly", COMPONENT_CLASS))
+    fn.cur = mine_
+    fn.set("Found", typed, local=True)
+    fn.cur = out(loop, "Completed")
+    have, none = fn.branch(fn.f("/Script/Engine.KismetSystemLibrary:IsValid", Object=fn.lget("Found")))
+    fn.cur = have
+    fn.finish(Avatar=fn.lget("Found"))
+    fn.cur = none
+    names = [str(n) for n in fn.g.list_available_nodes([])]
+    spawn_name = [n for n in names if n.replace(" ", "").lower().endswith("spawnactorfromclass")]
+    if not spawn_name:
+        raise RuntimeError("No Spawn Actor from Class node")
+    spawn = fn.place(fn.g.create_node_from_name(spawn_name[0], u.Vector2D(0, 0), []))
+    fn.wire(spawn, {"Class": AVATAR_CLASS, "SpawnTransform": fn.f(M + "MakeTransform", Scale="1,1,1")})
+    fn.then(spawn)
+    made = cast(fn, out(spawn, "ReturnValue"), avatar_cls)
+    fn.set("Found", made, local=True)
+    look = other_get(fn, made, "Look", AVATAR_CLASS)
+    other_set(fn, look, "CaptureOnly", COMPONENT_CLASS, True)
+    fn.exec_call("Actor:SetActorEnableCollision", self_=made, bNewActorEnableCollision=False)
+    fn.exec_call("PrimitiveComponent:SetVisibleInSceneCaptureOnly", self_=other_get(fn, made, "Body", AVATAR_CLASS), bValue=True)
+    saved = out(fn.exec_call(SAVE_LIB + ":GetLookCode"), "LookCode")
+    code = fn.f(M + "SelectString", A=PLAIN_LOOK, B=saved, bPickA=fn.f(M + "EqualEqual_IntInt", A=fn.f(S + "Len", S=saved), B=0))
+    applied = fn.exec_call(COMPONENT_CLASS + ":ApplyLook", self_=look, Code=code)
+    good, bad = fn.branch(out(applied, "Applied"))
+    fn.cur = bad
+    fn.exec_call(COMPONENT_CLASS + ":ApplyLook", self_=look, Code=PLAIN_LOOK)
+    fn.finish(fresh=True, Avatar=fn.lget("Found"))
+    fn.cur = good
+    fn.finish(fresh=True, Avatar=fn.lget("Found"))
+
+
+def anim_pull_head():
+    """ABP_LundenLook reads its Look's HeadScale every update (a look applied before the anim instance exists still
+    reaches the head bone)."""
+    abp = ASSETS.load_asset(ABP)
+    avatar_cls = u.load_class(None, AVATAR_CLASS)
+    fn = Fn(abp, "PullHead", [])
+    comp = fn.f("AnimInstance:GetOwningComponent")
+    typed = cast(fn, fn.f("ActorComponent:GetOwner", self_=comp), avatar_cls)
+    hs = other_get(fn, other_get(fn, typed, "Look", AVATAR_CLASS), "HeadScale", COMPONENT_CLASS)
+    fn.set("HeadScale", fn.f(M + "MakeVector", X=hs, Y=hs, Z=hs))
+    fn.finish()
+    BP.compile_blueprint(abp)
+    events_graph(abp, [("BlueprintUpdateAnimation", ABP_CLASS + ":PullHead", None)])
+    compiled(abp, ["PullHead", "EventGraph", "AnimGraph"])
+
+
+def build_mirror_material():
+    if ASSETS.does_asset_exist(MIRROR_MATERIAL):
+        ASSETS.delete_asset(MIRROR_MATERIAL)
+    folder, name = MIRROR_MATERIAL.rsplit("/", 1)
+    mat = TOOLS.create_asset(name, folder, u.Material, u.MaterialFactoryNew())
+    mat.set_editor_property("shading_model", u.MaterialShadingModel.MSM_UNLIT)
+    screen = MATS.create_material_expression(mat, u.MaterialExpressionScreenPosition, -900, 0)
+    flip = MATS.create_material_expression(mat, u.MaterialExpressionCustom, -650, 0)
+    flip.set_editor_property("code", "return float2(1.0 - UV.x, UV.y);")  # the reflected camera's picture, mirrored
+    flip.set_editor_property("output_type", u.CustomMaterialOutputType.CMOT_FLOAT2)
+    ci = u.CustomInput()
+    ci.set_editor_property("input_name", "UV")
+    flip.set_editor_property("inputs", [ci])
+    MATS.connect_material_expressions(screen, "ViewportUV", flip, "UV")
+    tex = MATS.create_material_expression(mat, u.MaterialExpressionTextureSampleParameter2D, -400, 0)
+    tex.set_editor_property("parameter_name", "Reflection")
+    tex.set_editor_property("texture", ASSETS.load_asset("/Engine/EngineResources/DefaultTexture"))
+    MATS.connect_material_expressions(flip, "", tex, "UVs")
+    MATS.connect_material_property(tex, "RGB", u.MaterialProperty.MP_EMISSIVE_COLOR)
+    MATS.recompile_material(mat)
+    return mat
+
+
+def build_mirror(looks):
+    m = looks["mirror"]
+    bp = blueprint(MIRROR, u.Actor)
+    remove_functions(bp, ("SelfAvatar", "Setup", "Update"))
+    avatar_cls = u.load_class(None, AVATAR_CLASS)
+    variables(bp, {"Glass": BP.get_object_reference_type(u.StaticMeshComponent),
+                   "Capture": BP.get_object_reference_type(u.SceneCaptureComponent2D),
+                   "Avatar": BP.get_object_reference_type(avatar_cls), "GlassWidth": REAL, "GlassHeight": REAL,
+                   "Reflected": VECTOR})
+    BP.compile_blueprint(bp)
+    self_avatar(bp)
+    BP.compile_blueprint(bp)
+    me = MIRROR_CLASS + ":"
+
+    # Setup(): the glass (a plane facing the actor's +X), its render target and the capture with a clip plane at the glass
+    fn = Fn(bp, "Setup", [])
+    root = fn.f("Actor:K2_GetRootComponent")
+    add = fn.exec_call("Actor:AddComponentByClass", Class="/Script/Engine.StaticMeshComponent", bManualAttachment=True,
+                       RelativeTransform=fn.f(M + "MakeTransform", Scale="1,1,1"))
+    glass = cast(fn, out(add, "ReturnValue"), u.StaticMeshComponent.static_class())
+    fn.set("Glass", glass)
+    fn.exec_call("SceneComponent:K2_AttachToComponent", self_=glass, Parent=root, SocketName="None", LocationRule="SnapToTarget",
+                 RotationRule="SnapToTarget", ScaleRule="SnapToTarget", bWeldSimulatedBodies=False)
+    fn.exec_call("StaticMeshComponent:SetStaticMesh", self_=glass, NewMesh="/Engine/BasicShapes/Plane.Plane")
+    # the plane faces +Z: pitch -90 turns it to +X; its X (then up) is the glass height, Y the width (100 cm plane)
+    fn.exec_call("SceneComponent:K2_SetRelativeRotation", self_=glass, NewRotation="-90,0,0", bSweep=False, bTeleport=True)
+    fn.exec_call("SceneComponent:SetRelativeScale3D", self_=glass,
+                 NewScale3D=fn.f(M + "MakeVector", X=fn.f(M + "Divide_DoubleDouble", A=fn.get("GlassHeight"), B=100.0),
+                                 Y=fn.f(M + "Divide_DoubleDouble", A=fn.get("GlassWidth"), B=100.0), Z=1.0))
+    fn.exec_call("PrimitiveComponent:SetCollisionEnabled", self_=glass, NewType="NoCollision")
+    fn.exec_call("PrimitiveComponent:SetCastShadow", self_=glass, NewCastShadow=False)
+    size = fn.f("/Script/UMG.WidgetLayoutLibrary:GetViewportSize")
+    half = lambda c: fn.f(M + "Max", A=fn.f(M + "FTrunc", A=fn.f(M + "Multiply_DoubleDouble", A=fn.f(M + "BreakVector2D", pin=c, InVec=size), B=0.5)), B=64)  # noqa: E731
+    rt = fn.exec_call("KismetRenderingLibrary:CreateRenderTarget2D", Width=half("X"), Height=half("Y"), Format="RTF_RGBA16f")
+    made = fn.exec_call("PrimitiveComponent:CreateDynamicMaterialInstance", self_=glass, ElementIndex=0,
+                        SourceMaterial=MIRROR_MATERIAL + ".M_LundenMirror", OptionalName="None")
+    fn.exec_call("MaterialInstanceDynamic:SetTextureParameterValue", self_=out(made), ParameterName="Reflection",
+                 Value=out(rt))
+    add2 = fn.exec_call("Actor:AddComponentByClass", Class="/Script/Engine.SceneCaptureComponent2D", bManualAttachment=False,
+                        RelativeTransform=fn.f(M + "MakeTransform", Scale="1,1,1"))
+    cap = cast(fn, out(add2, "ReturnValue"), u.SceneCaptureComponent2D.static_class())
+    fn.set("Capture", cap)
+    sc = "/Script/Engine.SceneCaptureComponent2D"
+    other_set(fn, cap, "TextureTarget", sc, out(rt))
+    other_set(fn, cap, "bCaptureEveryFrame", "/Script/Engine.SceneCaptureComponent", False)
+    other_set(fn, cap, "bCaptureOnMovement", "/Script/Engine.SceneCaptureComponent", False)
+    other_set(fn, cap, "bEnableClipPlane", sc, True)
+    other_set(fn, cap, "ClipPlaneBase", sc, fn.f("Actor:K2_GetActorLocation"))
+    other_set(fn, cap, "ClipPlaneNormal", sc, fn.f("Actor:GetActorForwardVector"))
+    fn.set("Avatar", out(fn.exec_call(me + "SelfAvatar"), "Avatar"))
+    fn.finish()
+    BP.compile_blueprint(bp)
+
+    # Update(Delta): the figure stands where the player stands; the capture is the player's camera reflected in the glass
+    fn = Fn(bp, "Update", [("Delta", REAL)])
+    pawn = fn.f("GameplayStatics:GetPlayerPawn", PlayerIndex=0)
+    ok, _ = fn.branch(fn.all(fn.f("/Script/Engine.KismetSystemLibrary:IsValid", Object=pawn),
+                             fn.f("/Script/Engine.KismetSystemLibrary:IsValid", Object=fn.get("Avatar")),
+                             fn.f("/Script/Engine.KismetSystemLibrary:IsValid", Object=fn.get("Capture"))))
+    fn.cur = ok
+    yaw = fn.f(M + "BreakRotator", pin="Yaw", InRot=fn.f("Pawn:GetControlRotation", self_=pawn))
+    fn.exec_call("Actor:K2_SetActorLocationAndRotation", self_=fn.get("Avatar"), NewLocation=fn.f("Pawn:GetNavAgentLocation", self_=pawn),
+                 NewRotation=fn.f(M + "MakeRotator", Roll=0.0, Pitch=0.0, Yaw=yaw), bSweep=False, bTeleport=True)
+    vel = fn.f("Actor:GetVelocity", self_=pawn)
+    fn.exec_call(AVATAR_CLASS + ":SetMotion", self_=fn.get("Avatar"), InSpeed=fn.f(M + "VSizeXY", A=vel), InCrouch=0.0,
+                 InAirborne=False, InPose=0)
+    cam = fn.f("GameplayStatics:GetPlayerCameraManager", PlayerIndex=0)
+    loc = fn.f("PlayerCameraManager:GetCameraLocation", self_=cam)
+    rot = fn.f("PlayerCameraManager:GetCameraRotation", self_=cam)
+    n = fn.f("Actor:GetActorForwardVector")
+    p0 = fn.f("Actor:K2_GetActorLocation")
+    reflect = lambda v, point: fn.f(M + "Subtract_VectorVector", A=v, B=fn.f(M + "Multiply_VectorFloat", A=n, B=fn.f(  # noqa: E731
+        M + "Multiply_DoubleDouble", A=fn.f(M + "Dot_VectorVector", A=fn.f(M + "Subtract_VectorVector", A=v, B=p0) if point else v, B=n), B=2.0)))
+    where = reflect(loc, True)
+    fn.set("Reflected", where)
+    forward = reflect(fn.f(M + "GetForwardVector", InRot=rot), False)
+    up = reflect(fn.f(M + "GetUpVector", InRot=rot), False)
+    fn.exec_call("SceneComponent:K2_SetWorldLocationAndRotation", self_=fn.get("Capture"), NewLocation=where,
+                 NewRotation=fn.f(M + "MakeRotFromXZ", X=forward, Z=up), bSweep=False, bTeleport=True)
+    other_set(fn, fn.get("Capture"), "FOVAngle", "/Script/Engine.SceneCaptureComponent2D", fn.f("PlayerCameraManager:GetFOVAngle", self_=cam))
+    seen, _ = fn.branch(fn.f("PrimitiveComponent:WasRecentlyRendered", self_=fn.get("Glass"), Tolerance=0.25))
+    fn.cur = seen  # only while the glass is on screen: one extra scene render
+    fn.exec_call("SceneCaptureComponent2D:CaptureScene", self_=fn.get("Capture"))
+    fn.finish()
+    BP.compile_blueprint(bp)
+    events_graph(bp, [("ReceiveBeginPlay", me + "Setup", None), ("ReceiveTick", me + "Update", "DeltaSeconds")])
+    compiled(bp, ["SelfAvatar", "Setup", "Update"])
+    d = u.get_default_object(bp.generated_class())
+    tick = d.get_editor_property("primary_actor_tick")
+    tick.set_editor_property("tick_group", u.TickingGroup.TG_POST_UPDATE_WORK)  # after the camera has moved this frame
+    d.set_editor_property("primary_actor_tick", tick)
+    d.set_editor_property("GlassWidth", float(m["width"]))
+    d.set_editor_property("GlassHeight", float(m["height"]))
+    return bp
+
+
+def build_mirror_level(looks):
+    """Level_LundenMirror: one BP_LundenMirror at the web's glass, facing out of the wall (world-levels.json row)."""
+    m = looks["mirror"]
+    levels = u.get_editor_subsystem(u.LevelEditorSubsystem)
+    actors = u.get_editor_subsystem(u.EditorActorSubsystem)
+    if ASSETS.does_asset_exist(MIRROR_LEVEL):
+        if not levels.load_level(MIRROR_LEVEL):
+            raise RuntimeError("Could not open " + MIRROR_LEVEL)
+        for old in actors.get_all_level_actors():
+            if old.get_class().get_path_name() == MIRROR_CLASS:
+                actors.destroy_actor(old)
+    elif not levels.new_level(MIRROR_LEVEL):
+        raise RuntimeError("Could not create " + MIRROR_LEVEL)
+    actor = actors.spawn_actor_from_class(u.load_class(None, MIRROR_CLASS), u.Vector(*m["centre"]), u.Rotator(roll=0, pitch=0, yaw=m["yaw"]))
+    actor.set_actor_label("HallMirror")
+    if not levels.save_current_level():
+        raise RuntimeError("Could not save " + MIRROR_LEVEL)
+
+
+def menu_tree(wbp, add):
+    add(u.CanvasPanel, "Root", "")
+    back = add(u.Image, "Shade", "Root")
+    slot = back.get_editor_property("slot")
+    slot.set_anchors(u.Anchors(minimum=u.Vector2D(0, 0), maximum=u.Vector2D(1, 1)))
+    slot.set_offsets(u.Margin(0, 0, 0, 0))
+    back.set_editor_property("color_and_opacity", u.LinearColor(0, 0, 0, 0.55))
+    box = add(u.VerticalBox, "Panel", "Root")
+    slot = box.get_editor_property("slot")
+    slot.set_anchors(u.Anchors(minimum=u.Vector2D(0.5, 0.5), maximum=u.Vector2D(0.5, 0.5)))
+    slot.set_alignment(u.Vector2D(0.5, 0.5))
+    slot.set_auto_size(True)
+    title = add(u.TextBlock, "Title", "Panel")
+    title.set_text(u.Text("Utseende – din utseendekod (fungerar också från webben)"))
+    codebox = add(u.EditableTextBox, "CodeBox", "Panel")
+    codebox.set_editor_property("minimum_desired_width", 520.0)
+    for n, words in (("BtnPrev", "Föregående"), ("BtnNext", "Nästa"), ("BtnApply", "Använd koden"), ("BtnClose", "Klar")):
+        b = add(u.Button, n, "Panel")
+        t = add(u.TextBlock, n + "Label", n)
+        t.set_text(u.Text(words))
+        b.get_editor_property("slot").set_padding(u.Margin(0, 4, 0, 4))
+
+
+def build_menu(parts):
+    """WBP_LundenLookMenu (ui-extensions.json menuButtons row "Look"): the look code to type or paste (a web code works),
+    the samples to step through, Använd (apply to the player's figure and save it) and Klar."""
+    folder, name = MENU.rsplit("/", 1)
+    fresh = not ASSETS.does_asset_exist(MENU)  # Python cannot clear a widget tree: an existing one is kept, its graphs rebuilt
+    wbp = TOOLS.create_asset(name, folder, u.WidgetBlueprint, u.WidgetBlueprintFactory()) if fresh else ASSETS.load_asset(MENU)
+    if not fresh:
+        remove_functions(wbp, ("SelfAvatar", "Refresh", "Apply", "Next", "Prev", "Done"))
+    W = u.EditorUtilityLibrary
+    add = lambda cls, n, parent: W.add_source_widget(wbp, cls, n, parent)  # noqa: E731
+    if fresh:
+        menu_tree(wbp, add)
+    variables(wbp, {"Presets": STRINGS, "Index": INT})
+    BP.compile_blueprint(wbp)
+    self_avatar(wbp)
+    BP.compile_blueprint(wbp)
+    me = MENU_CLASS + ":"
+    text_of = lambda fn, s: fn.f("KismetTextLibrary:Conv_StringToText", InString=s)  # noqa: E731
+
+    fn = Fn(wbp, "Refresh", [])  # the figure's current code in the box
+    avatar = out(fn.exec_call(me + "SelfAvatar"), "Avatar")
+    code = other_get(fn, other_get(fn, avatar, "Look", AVATAR_CLASS), "LookCode", COMPONENT_CLASS)
+    fn.exec_call("/Script/UMG.EditableTextBox:SetText", self_=fn.get("CodeBox"), InText=text_of(fn, code))
+    fn.finish()
+    BP.compile_blueprint(wbp)
+
+    fn = Fn(wbp, "Apply", [], [("Applied", BOOL)])  # a valid code dresses the figure and is saved as the web writes it
+    typed = fn.f("KismetTextLibrary:Conv_TextToString", InText=fn.f("/Script/UMG.EditableTextBox:GetText", self_=fn.get("CodeBox")))
+    clean = fn.f(S + "Trim", SourceString=fn.f(S + "TrimTrailing", SourceString=typed))
+    avatar = out(fn.exec_call(me + "SelfAvatar"), "Avatar")
+    look = other_get(fn, avatar, "Look", AVATAR_CLASS)
+    applied = fn.exec_call(COMPONENT_CLASS + ":ApplyLook", self_=look, Code=clean)
+    good, bad = fn.branch(out(applied, "Applied"))
+    fn.cur = bad
+    fn.exec_call(me + "Refresh")
+    fn.finish(Applied=False)
+    fn.cur = good
+    fn.exec_call(SAVE_LIB + ":SetLookCode", LookCode=other_get(fn, look, "LookCode", COMPONENT_CLASS))
+    fn.exec_call(me + "Refresh")
+    fn.finish(fresh=True, Applied=True)
+    BP.compile_blueprint(wbp)
+
+    for step_name, delta in (("Next", 1), ("Prev", -1)):
+        fn = Fn(wbp, step_name, [])
+        count = fn.f(A + "Array_Length", TargetArray=fn.get("Presets"))
+        nxt = fn.f(M + "Percent_IntInt", A=fn.f(M + "Add_IntInt", A=fn.f(M + "Add_IntInt", A=fn.get("Index"), B=delta), B=count), B=count)
+        fn.set("Index", nxt)
+        fn.exec_call("/Script/UMG.EditableTextBox:SetText", self_=fn.get("CodeBox"),
+                     InText=text_of(fn, get_at(fn, fn.get("Presets"), fn.get("Index"))))
+        fn.exec_call(me + "Apply")
+        fn.finish()
+        BP.compile_blueprint(wbp)
+
+    fn = Fn(wbp, "Done", [])
+    fn.exec_call("/Script/UMG.Widget:RemoveFromParent")
+    fn.finish()
+
+    # Construct: each button's click calls its function, then the box shows the current code
+    ed = GRAPH.get_graph_editor_by_name(wbp, "EventGraph")
+    construct = BP.add_event_override(wbp, "Construct", u.IntPoint(0, 0))
+    if not construct:
+        raise RuntimeError("WBP_LundenLookMenu: no Construct event")
+    cur, x, y = BP.find_then_pin(construct), 300, 400
+    BP.compile_blueprint(wbp)
+    for button, call in (("BtnPrev", "Prev"), ("BtnNext", "Next"), ("BtnApply", "Apply"), ("BtnClose", "Done")):
+        widget = out(ed.add_get_member_variable_node(button, ""), button)
+        choices = [str(c) for c in ed.list_available_nodes([widget]) if str(c).endswith("|AssignOnClicked")]
+        before = {nd.get_name() for nd in ed.list_all_nodes()}
+        assign = ed.create_node_from_name(choices[0], u.Vector2D(x, 0), [widget]) if choices else None
+        if not assign:
+            raise RuntimeError("No AssignOnClicked for " + button)
+        link(cur, BP.find_execute_pin(assign))
+        cur = BP.find_then_pin(assign)
+        widget.try_create_connection(inp(assign, "self"))
+        handler = [nd for nd in ed.list_all_nodes() if nd.get_name() not in before and nd.get_class().get_name() == "K2Node_CustomEvent"]
+        if len(handler) != 1:
+            raise RuntimeError(f"AssignOnClicked for {button} made {len(handler)} events")
+        BP.set_node_pos(handler[0], u.IntPoint(0, y))
+        c = ed.add_call_function_node(me + call)
+        BP.set_node_pos(c, u.IntPoint(300, y))
+        link(BP.find_then_pin(handler[0]), BP.find_execute_pin(c))
+        x, y = x + 300, y + 250
+        BP.compile_blueprint(wbp)
+    refresh = ed.add_call_function_node(me + "Refresh")
+    link(cur, BP.find_execute_pin(refresh))
+    compiled(wbp, ["SelfAvatar", "Refresh", "Apply", "Next", "Prev", "Done", "EventGraph"])
+    u.get_default_object(wbp.generated_class()).set_editor_property("Presets", [smp["code"] for smp in parts["samples"]])
+    return wbp
 
 
 def spec_hash(data_text, parts_text):
@@ -954,7 +1300,7 @@ def main(argv):
     parts_text = PARTS_FILE.read_text(encoding="utf-8").replace("\r\n", "\n")
     parts = json.loads(parts_text)
     spec = spec_hash(data_text, parts_text)
-    assets = [COMPONENT, MATERIAL, LOOK_SKELETON, IK_LOOK, RTG, ABP] + [PIECES + "/" + p["name"] for p in parts["pieces"]]
+    assets = [COMPONENT, MATERIAL, LOOK_SKELETON, IK_LOOK, RTG, ABP, MIRROR_MATERIAL, MIRROR, MENU, MIRROR_LEVEL] + [PIECES + "/" + p["name"] for p in parts["pieces"]]
     missing = [p for p in assets if not ASSETS.does_asset_exist(p)]
     have = ASSETS.get_metadata_tag(ASSETS.load_asset(COMPONENT), SPEC_TAG) if not missing else None
     if check:
@@ -974,10 +1320,17 @@ def main(argv):
     rtg = build_retargeter(core)
     build_anim(rtg, core)
     bp = build_component(data, parts)
+    anim_pull_head()
+    build_mirror_material()
+    build_mirror(data)
+    build_menu(parts)
     ASSETS.set_metadata_tag(bp, SPEC_TAG, spec)
     for path in assets:
+        if path == MIRROR_LEVEL:
+            continue
         if not ASSETS.save_asset(path, only_if_is_dirty=False):
             raise RuntimeError("Could not save " + path)
+    build_mirror_level(data)  # after BP_LundenMirror is saved: the level holds one instance
     report["spec"] = spec
     (PROJECT / "Saved/avatar-looks-build.json").write_text(json.dumps(report, indent=1), encoding="utf-8")
     log(f"built {len(assets)} assets (spec {spec[:12]})")

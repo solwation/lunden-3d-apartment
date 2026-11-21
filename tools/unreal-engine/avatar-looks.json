@@ -1582,5 +1582,31 @@
    "valid": true,
    "encoded": "012340100"
   }
- ]
+ ],
+ "mirror": {
+  "what": "the hall mirror (src/config.js HALL_WALL.tall): glass centre and outward normal in Unreal cm, glass size in cm",
+  "centre": [
+   202.8,
+   111.5,
+   115
+  ],
+  "normal": [
+   -1,
+   0,
+   0
+  ],
+  "yaw": 180,
+  "width": 60,
+  "height": 145,
+  "view": {
+   "webAt": "1.257,1.115,-90",
+   "unreal": [
+    125.7,
+    111.5,
+    0
+   ],
+   "unrealYaw": 0,
+   "eyeCm": 162
+  }
+ }
 }
