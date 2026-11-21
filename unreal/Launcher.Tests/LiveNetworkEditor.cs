@@ -16,6 +16,9 @@ internal sealed class LiveNetworkEditor : IDisposable
     {
         if (!OperatingSystem.IsWindows() || Path.GetFileName(executable) != "UnrealEditor-Cmd.exe" || !File.Exists(executable))
             throw new ArgumentException("LUNDEN_TEST_UE_EDITOR must be the installed Windows UnrealEditor-Cmd.exe.");
+        string? capture = Environment.GetEnvironmentVariable("LUNDEN_TEST_UE_CAPTURE");
+        if (capture != null && (!Path.IsPathFullyQualified(capture) || !Path.GetExtension(capture).Equals(".png", StringComparison.OrdinalIgnoreCase) || File.Exists(capture)))
+            throw new ArgumentException("Choose a fresh absolute PNG path for the live capture.");
         string project = Path.Combine(root, "unreal", "Lunden");
         staged = Path.Combine(project, "Content", "Python", "test_network_live.py");
         string source = Path.Combine(root, "tools", "unreal-engine", "tests", "test_network_live.py");
@@ -37,7 +40,7 @@ internal sealed class LiveNetworkEditor : IDisposable
                 Path.Combine(project,"Lunden.uproject"), "-EnablePlugins=PythonAutomationTest",
                 "-ExecCmds=Automation RunTests Editor.Python.Lunden.test_network_live; Quit", "-TestExit=Automation Test Queue Empty",
                 "-ReportExportPath="+report, "-abslog="+Path.Combine(userDir,"network-live.log"), "-UserDir="+userDir,
-                "-unattended", "-nullrhi", "-nosplash", "-nosound", "-nop4", bridge.GameArgument
+                "-unattended", capture == null ? "-nullrhi" : "-RenderOffScreen", "-nosplash", "-nosound", "-nop4", bridge.GameArgument
             }) info.ArgumentList.Add(arg);
             editor = Process.Start(info) ?? throw new IOException("Could not start headless Unreal.");
         } catch {

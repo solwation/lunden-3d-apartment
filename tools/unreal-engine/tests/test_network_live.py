@@ -18,6 +18,9 @@ sys.path.insert(0, str(TESTS))
 import save_isolation  # noqa: E402
 
 ROOM = Path(os.environ["LUNDEN_NETWORK_LIVE_DIR"])
+capture_path = os.environ.get("LUNDEN_TEST_UE_CAPTURE")
+if capture_path:
+    import capture_network_peers
 MODE = json.loads((TESTS.parent / "world-levels.json").read_text(encoding="utf-8"))["gameMode"]
 NET = "/Game/Lunden/Network/BPC_LundenNetwork.BPC_LundenNetwork_C"
 PEER = "/Game/Lunden/Network/BP_LundenPeer.BP_LundenPeer_C"
@@ -61,6 +64,8 @@ def live_test():
         for method, value in (("SetPlayerName", "Klara"), ("SetLookCode", "120310101175u1")):
             if not lib.call_method(method, (value, world)):
                 raise RuntimeError("Could not prepare the test profile: " + method)
+        if capture_path:
+            capture_network_peers.setup(actors)
         levels.editor_request_begin_play()
         deadline = time.monotonic() + 150
         while time.monotonic() < deadline:
@@ -81,6 +86,7 @@ def live_test():
         (ROOM / "live-ready").write_text("PIE ready", encoding="utf-8")
         last = None
         ids = None
+        photographed = False
         while time.monotonic() < deadline:
             step_file = ROOM / "live-step.json"
             if not step_file.exists():
@@ -112,6 +118,10 @@ def live_test():
                         temporary = output.with_suffix(".tmp")
                         temporary.write_text(value, encoding="utf-8")
                         temporary.replace(output)
+                    if capture_path and stage == 2 and not photographed:
+                        yield from capture_network_peers.capture(game, pc, expected, Path(capture_path))
+                        photographed = True
+                        (ROOM / "live-captured").write_text("OK", encoding="utf-8")
             yield
         raise RuntimeError("Timed out waiting for the three clients to observe the same movement")
     finally:
