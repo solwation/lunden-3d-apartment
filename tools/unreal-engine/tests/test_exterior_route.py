@@ -1,7 +1,7 @@
 """#2279: walk from START into Hus L's stairwell and down into the garage on the composed world map, in Play In Editor.
 
 The production character starts at START in /Game/Lunden/Maps/L_Lunden and, driven only by W and the view direction,
-walks west along the provisional street ground (build_exterior.py) into the portik, through the open way into the
+walks west along the street (the ground collision of build_site.py, #2280) into the portik, through the open way into the
 stairwell (its door leaf has no collision until #2285), onto the landing of våning 1, north along the passage beside
 the flights, down the flight to våning −1 and east through the basement opening into the garage. Each checkpoint must
 be reached and stand on the expected floor (12 cm), so the collision of the stairwell and the garage holds the capsule.

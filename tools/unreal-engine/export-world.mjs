@@ -1,5 +1,5 @@
 // Export the web scene for Unreal (#2245): GLB per zone + measurements.json + export-manifest.json.
-//   PLAYWRIGHT_MODULE=/path/to/node_modules/playwright tools/browsertest.sh node tools/unreal-engine/export-world.mjs [--out DIR] [--zones l1007,l1007-uteplats,fixture,l1007-entre,hus-l,kvarteret]
+//   PLAYWRIGHT_MODULE=/path/to/node_modules/playwright tools/browsertest.sh node tools/unreal-engine/export-world.mjs [--out DIR] [--zones l1007,l1007-uteplats,fixture,l1007-entre,hus-l,kvarteret,gard,omgivning]
 // Runs the real scene builder (src/world.js buildWorld) headless in Chromium via tools/unreal-engine/export.html and
 // tools/unreal-engine/export-scene.js, serving the repository itself from a private 127.0.0.1 port (no other server needed).
 // Output (default unreal/Lunden/Import/, ignored by Git: rebuilt locally, never committed) is deterministic: Date is
@@ -52,7 +52,7 @@ function nameGlbMeshes(buf, zone) {
 const args = process.argv.slice(2);
 const opt = (name, dflt) => { const i = args.indexOf(`--${name}`); return i >= 0 ? args[i + 1] : dflt; };
 const outDir = path.resolve(ROOT, opt('out', 'unreal/Lunden/Import'));
-const zones = opt('zones', 'l1007,l1007-uteplats,fixture,l1007-entre,hus-l,kvarteret').split(',').map((s) => s.trim()).filter(Boolean);
+const zones = opt('zones', 'l1007,l1007-uteplats,fixture,l1007-entre,hus-l,kvarteret,gard,omgivning').split(',').map((s) => s.trim()).filter(Boolean);
 
 const git = (...a) => { try { return execFileSync('git', a, { cwd: ROOT, encoding: 'utf8' }).trim(); } catch { return null; } };
 

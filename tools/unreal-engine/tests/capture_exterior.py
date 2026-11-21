@@ -20,7 +20,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "python"))
 from screenshot_level import render_view  # noqa: E402
 
 MAP = "/Game/Lunden/Maps/L_Lunden"
-ZONES = ["l1007-entre", "hus-l", "kvarteret"]
+ZONES = ["l1007-entre", "hus-l", "kvarteret", "gard", "omgivning"]  # (#2280: the ground zones, full meshes too)
 
 
 def run(scene_path, out_dir, ids=None):

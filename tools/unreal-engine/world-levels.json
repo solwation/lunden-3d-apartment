@@ -18,7 +18,7 @@
       "owner": "#2278",
       "builder": "build_l1007.py",
       "streaming": "always",
-      "what": "L1007 walkable collision (wall/floor boxes, stair treads) and the provisional street approach from START"
+      "what": "L1007 walkable collision (wall/floor boxes, stair treads)"
     },
     {
       "package": "/Game/Lunden/Generated/l1007-entre/Level_l1007-entre",
@@ -46,7 +46,28 @@
       "owner": "#2279",
       "builder": "build_exterior.py",
       "streaming": "always",
-      "what": "walkable collision of Hus L's stairwell and the garage (complex-as-simple copies) and the provisional street ground from the L1007 approach to the portik"
+      "what": "walkable collision of Hus L's stairwell and the garage (complex-as-simple copies)"
+    },
+    {
+      "package": "/Game/Lunden/Generated/gard/Level_gard",
+      "owner": "#2280",
+      "builder": "import_world.py --zones gard",
+      "streaming": "always",
+      "what": "the courtyard on the garage box as imported from the web: its terrain, walks, pergolas, sandboxes, playground, boule court, benches and beds"
+    },
+    {
+      "package": "/Game/Lunden/Generated/omgivning/Level_omgivning",
+      "owner": "#2280",
+      "builder": "import_world.py --zones omgivning",
+      "streaming": "always",
+      "what": "the terrain round Kv. Lunden from the web (data/elevation.json), streets, pavements, parked cars, street furniture, the Höje å valley with its paths, bridges and water surface"
+    },
+    {
+      "package": "/Game/Lunden/Generated/SiteWorld/Level_site_collision",
+      "owner": "#2280",
+      "builder": "build_site.py",
+      "streaming": "always",
+      "what": "walkable ground collision of l1007-entre, gard and omgivning (incl. the street to and through the portik): full-mesh complex collision copies of the terrain, asphalt, paving, paths, bridge decks and the ground plates under Hus L"
     }
   ]
 }

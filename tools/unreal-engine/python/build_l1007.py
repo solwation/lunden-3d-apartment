@@ -8,9 +8,10 @@ writes /Game/Lunden/Generated/L1007World/Level_l1007_collision, which compose_wo
 - one collidable engine cube per imported collision proxy (the web's wall rectangles and floor plates, including the
   stair opening). The proxies share an Interchange cube whose BodySetup is empty after a reload (#2246 route.md), so
   the player would fall through them;
-- the 15 stair treads as complex-as-simple copies of their imported meshes, so the capsule follows the winders;
-- a provisional street-level approach from START to the front door. The street zone is not exported yet
-  (`l1007-entre`); #2280 replaces this slab with the real terrain.
+- the 15 stair treads as complex-as-simple copies of their imported meshes, so the capsule follows the winders.
+
+The street from START to the front door is the ground's collision level (build_site.py, #2280), which replaced the
+provisional approach slab this builder placed until then.
 
 The folder is L1007World, not L1007: Windows paths are case-insensitive, so Generated/L1007 would be the importer's
 Generated/l1007, which it deletes on every re-import. Nothing here is versioned (Content/Lunden/Generated/ is ignored).
@@ -27,7 +28,6 @@ SOURCE = "/Game/Lunden/Generated/l1007/Level_l1007"
 FOLDER = "/Game/Lunden/Generated/L1007World"
 TARGET = FOLDER + "/Level_l1007_collision"
 CUBE = "/Engine/BasicShapes/Cube"
-GROUND_MATERIAL = "/Engine/BasicShapes/BasicShapeMaterial"
 TAGS = ["kind:collision", "zone:l1007", "derived:l1007-collision"]
 # Stable export ids of the 4 straight, 8 winding and 3 return treads (src/stairs.js), as in build_pilot_collision.py.
 TREADS = """
@@ -36,10 +36,6 @@ mesh_l0_x483_z710_y89 mesh_l0_x507_z710_y109 mesh_l0_x507_z708_y130 mesh_l0_x507
 mesh_l0_x507_z648_y170 mesh_l0_x507_z623_y191 mesh_l0_x507_z621_y211 mesh_l0_x483_z621_y231
 mesh_l0_x451_z618_y252 mesh_l0_x425_z618_y272 mesh_l0_x399_z618_y292
 """.split()
-# Provisional approach (cm, Unreal axes): the apartment frontage from the north facade (y = 0) to past START
-# (y = -1200), at the street level of START (measurements.json spawn.start, z = 0). SITE.roads in the web puts the
-# forecourt 16.3 m deep here; build_pilot_collision.py used the same extent. Replaced by #2280's terrain.
-APPROACH = {"x0": 0.0, "x1": 575.3, "y0": -1630.0, "y1": 0.0, "top": 0.0, "thickness": 20.0}
 
 content = Path(u.Paths.project_content_dir())
 out_dir = content / "Lunden/Generated/L1007World"
@@ -131,11 +127,6 @@ def build(proxies, treads):
         if not assets.save_loaded_asset(mesh, only_if_is_dirty=False):
             raise RuntimeError(f"Cannot save {FOLDER}/{target}")
         static_actor("L1007 collision " + name, mesh, TAGS + ["source:" + name]).set_actor_transform(transform, False, False)
-    a = APPROACH
-    ground = box("L1007 provisional approach", u.Vector((a["x0"] + a["x1"]) / 2, (a["y0"] + a["y1"]) / 2,
-                 a["top"] - a["thickness"] / 2), u.Vector((a["x1"] - a["x0"]) / 2, (a["y1"] - a["y0"]) / 2,
-                 a["thickness"] / 2), ["kind:provisional-ground", "zone:l1007", "replacedBy:#2280"], hidden=False)
-    ground.static_mesh_component.set_material(0, assets.load_asset(GROUND_MATERIAL))
     if not u.EditorLoadingAndSavingUtils.save_map(world, TARGET):
         raise RuntimeError("Cannot save " + TARGET)
     u.EditorLoadingAndSavingUtils.new_blank_map(False)
@@ -152,7 +143,7 @@ def main(argv):
         stamp_path.write_text(json.dumps({"inputs": wanted, "files": files}, indent=1, sort_keys=True) + "\n",
                               encoding="utf-8")
         u.log(f"LUNDEN_L1007_BUILD {TARGET}: {len(proxies)} wall/floor boxes, {len(treads)} treads, "
-              f"1 provisional approach, {len(files)} packages")
+              f"{len(files)} packages")
     u.log("LUNDEN_L1007_BUILD_OK")
 
 

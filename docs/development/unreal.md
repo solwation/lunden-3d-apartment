@@ -77,6 +77,8 @@ tools/unreal-engine/tests/test_l1007.py       PIE test on L_Lunden: sub-levels, 
 tools/unreal-engine/tests/capture_l1007.py    GPU views of L_Lunden from the shared camera list (temporary light, nothing saved)
 tools/unreal-engine/python/build_exterior.py  Hus L's stairwell and the garage as walkable collision, Generated/ExteriorWorld/ (#2279)
 tools/unreal-engine/tests/test_exterior_route.py  PIE route on L_Lunden: START → portik → stairwell → våning −1 → garage (#2279)
+tools/unreal-engine/python/build_site.py     the ground's walkable collision (terrain, streets, paths), Generated/SiteWorld/ (#2280)
+tools/unreal-engine/tests/test_site.py       PIE test on L_Lunden: ground height at 17 control points (5 cm), START → courtyard → Höje å (#2280)
 tools/unreal-engine/tests/test_exterior.py    PIE test: the export's 32 measurement rays through Hus L, A/B/C and the garage, 1 cm (#2279)
 tools/unreal-engine/tests/capture_exterior.py GPU views of L_Lunden with the #2279 zones streamed in memory (nothing saved)
 unreal/Lunden/Content/Lunden/Maps/L_Lunden.umap  the persistent world map (LFS); written only by compose_world.py
@@ -405,11 +407,14 @@ open the map (see [Parallel work](#parallel-work-levels-and-blueprints)).
 | Package | Owner | Built by | Contents |
 |---|---|---|---|
 | `/Game/Lunden/Generated/l1007/Level_l1007` | #2278 (importer output) | `import_world.py --zones l1007` | both storeys as exported: walls, floors, ceilings, stair, doors, windows, fittings, furniture |
-| `/Game/Lunden/Generated/L1007World/Level_l1007_collision` | #2278 | `build_l1007.py` | walkable collision: 54 wall/floor boxes, 15 complex-as-simple stair treads, provisional street approach |
+| `/Game/Lunden/Generated/L1007World/Level_l1007_collision` | #2278 | `build_l1007.py` | walkable collision: 54 wall/floor boxes, 15 complex-as-simple stair treads |
 | `/Game/Lunden/Generated/l1007-entre/Level_l1007-entre` | #2279 (importer output) | `import_world.py --zones l1007-entre` | street, pavement and terrain pieces in front of L1007 |
 | `/Game/Lunden/Generated/hus-l/Level_hus-l` | #2279 (importer output) | `import_world.py --zones hus-l` | Hus L: façades, loftgång, roofs, patios, portik, stairwell/lift core, L1004/L1201 |
 | `/Game/Lunden/Generated/kvarteret/Level_kvarteret` | #2279 (importer output) | `import_world.py --zones kvarteret` | Hus A/B/C with stairwells and entrance shells, the garage |
-| `/Game/Lunden/Generated/ExteriorWorld/Level_exterior_collision` | #2279 | `build_exterior.py` | walkable collision: Hus L's stairwell and the garage (complex-as-simple copies), provisional street ground to the portik |
+| `/Game/Lunden/Generated/ExteriorWorld/Level_exterior_collision` | #2279 | `build_exterior.py` | walkable collision: Hus L's stairwell and the garage (complex-as-simple copies) |
+| `/Game/Lunden/Generated/gard/Level_gard` | #2280 (importer output) | `import_world.py --zones gard` | the courtyard on the garage box: terrain, walks, pergolas, sandboxes, playground, boule court, benches, beds |
+| `/Game/Lunden/Generated/omgivning/Level_omgivning` | #2280 (importer output) | `import_world.py --zones omgivning` | terrain, streets, pavements, parked cars, street furniture, the Höje å valley with paths, bridges and water surface |
+| `/Game/Lunden/Generated/SiteWorld/Level_site_collision` | #2280 | `build_site.py` | walkable ground collision of `l1007-entre`, `gard` and `omgivning` (complex-as-simple full-mesh copies) |
 
 `world-levels.json` format (version 1): `map`, `gameMode` (class path; #2284's `BP_LundenGameMode` since 2026-11-21), `playerStart` (always `measurements.json#/spawn/start`) and `levels`, an ordered list of
 `{package, owner, builder, streaming, what}`. `streaming` is `always` (`LevelStreamingAlwaysLoaded`) for now; add a
@@ -430,6 +435,7 @@ git lfs lock unreal/Lunden/Content/Lunden/Maps/L_Lunden.umap
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/import_world.py
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/build_l1007.py
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/build_exterior.py
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/build_site.py
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/compose_world.py [--check]
 copy tools\unreal-engine\tests\test_l1007.py unreal\Lunden\Content\Python\   (untracked copy, delete afterwards)
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-tests.ps1 -Filter Editor.Python.Lunden.test_l1007
@@ -445,10 +451,9 @@ its builder) and a PlayerStart in a sub-level.
 **Collision.** The imported collision proxies and visible meshes have no simple collision shapes after a reload (the
 pilot finding in [route.md](../verification/2246/route.md)), so the player would fall through. `build_l1007.py` places
 an engine cube at each proxy's bounds and copies the 15 tread meshes with complex-as-simple collision. The imported
-door leaves therefore do not block either: closed doors that block and open are #2285. The approach slab (x 0…575.3,
-y −1630…0, top at START's street level 0, `BasicShapeMaterial`, tags `kind:provisional-ground`, `replacedBy:#2280`)
-exists only because the street zone `l1007-entre` is not exported yet; #2280 removes it from `build_l1007.py` when its
-terrain sub-level is listed.
+door leaves therefore do not block either: closed doors that block and open are #2285. The street from START to the
+front door is the ground collision of `build_site.py` ([Ground](#ground-terrain-streets-courtyard-and-höje-å-2280)),
+which replaced the provisional approach slab `build_l1007.py` placed until #2280.
 
 **Lighting.** The map has none yet; G05 (#2283) adds a lighting sub-level. `capture_l1007.py` adds the pilot's
 temporary sun, sky and room lamps for verification pictures and saves nothing.
@@ -1157,7 +1162,8 @@ What is exported:
   #2279 the buildings round L1007: `l1007-entre` (the street, pavement and terrain in front of L1007 up to START),
   `hus-l` (Hus L: façades, loftgång, roofs and terraces, the neighbours' patios, the portik, the stairwell/lift core
   and the visitable flats L1004/L1201) and `kvarteret` (Hus A/B/C with their loggias and roofs, their stairwells, lifts
-  and entrance shells, and the garage and förråd under the courtyard). Planned: `gard` and `omgivning` (#2280).
+  and entrance shells, and the garage and förråd under the courtyard), and since #2280 the ground: `gard` (the
+  courtyard) and `omgivning` (terrain, streets, the Höje å valley). See [Ground](#ground-terrain-streets-courtyard-and-höje-å-2280).
   See [Buildings](#buildings-hus-l-hus-abc-and-the-garage-2279).
 - **Nodes** carry `extras` (`shared/schema/node-extras.schema.json`): stable `id` (= node name; kind + level +
   position in cm), `kind` (`wall | structure | door | window | furniture | interactive | light | collision | fixture |
@@ -1345,8 +1351,8 @@ Lunden's own blocks and the garage box's walls in `src/surroundings.js`), `surro
 terrain, streets, paving, trees and backdrops: `SITE_NAME`), `garage`, `core-abc`, and `world` for the rest. The
 `l1007` zones take any part of `buildWorld` but never the extra builders. `l1007-entre` takes `surroundings*`, `hus-l`
 takes `exterior`, `visit`, `core-l` and `portik`, and `kvarteret` takes `surroundings`, `garage` and `core-abc`. The
-boxes (`zoneTable`) are generous guards, `from` does the sorting, and the courtyard, street life, parked cars and the
-ground outside the box in front of L1007 stay unexported until #2280. Left out on purpose: the garage's parked cars
+boxes (`zoneTable`) are generous guards and `from` does the sorting; the courtyard, parked cars and the rest of the
+ground are #2280's zones `gard` and `omgivning`. Left out on purpose: the garage's parked cars
 and bicycles (furnishing, later) and `entrance-plants-far` (the web's distance stand-in for the entrance plants, which
 are exported).
 
@@ -1394,13 +1400,60 @@ a complex-as-simple copy of every imported mesh of Hus L's stairwell (`source` s
 of the portik's glazed door leaf, which stays open until #2285), of Hus A/B/C's stairwells, which open onto the garage on
 våning −1 (src/corehouse.js; their door leaves stay closed as exported), and of the garage (src/garage.js), each with
 double-sided triangles and Nanite off on the copy (so neither #2298 nor #2299 applies to it), hidden in game on the
-imported actor's transform. Two provisional street-level boxes (`kind:provisional-ground`,
-`replacedBy:#2280`) continue `build_l1007.py`'s approach west to the portik and through it; #2280 removes them with its
-terrain. Hus L's façades and Hus A/B/C's façades have no collision yet: nothing walkable leads to them before #2280's ground.
+imported actor's transform. The street west to the portik and the portik's floor are `build_site.py`'s ground
+collision since #2280, which removed the two provisional street-level boxes placed here before. Hus L's façades and
+Hus A/B/C's façades have no collision yet: the player can now walk up to them on #2280's ground and through them.
 The skip rule is `build_l1007.py`'s (both import fingerprints, the script, the output packages).
 `tests/test_exterior_route.py` (PIE on `L_Lunden`) walks START → street → portik → through the stairwell door →
 landing → passage → down the flight to våning −1 → through the basement opening into the garage under Hus L, each
 checkpoint on its floor: see the [#2279 verification](../verification/2279/README.md).
+
+### Ground: terrain, streets, courtyard and Höje å (#2280)
+
+**Zones.** `gard` (the courtyard on the garage box, box x −71…14, z 12.1…53 m) and `omgivning` (the rest of the drawn
+terrain, `SITE.backgroundGround`) take the builders `world` (courtyard.js, boule.js, streetlife.js, world.js's ground
+plates) and `surroundings-site` (terrain, asphalt, paving, street details); `omgivning` also takes what is left of
+`surroundings` outside `kvarteret` (the Höje å bridges and water surface, the river park's paths and timber bridge,
+the bus stop, street signs). Both are split zones listed after #2279's, so `l1007-entre` keeps the street in front of
+L1007 and `kvarteret` the box walls; a merged mesh held by a later zone's box is still cut where it overlaps an
+earlier split zone that takes it. All earlier GLBs stay byte-identical. `skip` (`SITE_SKIP` in `export-scene.js`)
+leaves out what other issues own: vegetation for #2281 (trees, shrubs, pergola vines, hedges, shore growth, any
+leaf-material mesh, the autumn's fallen leaves), the backdrop houses and the land beyond the terrain, the east campus
+car parks, school yards and the football site, the boule balls, the web's `… far` stand-ins and L1007's own outdoor
+furniture (G11). Their material keys stay on Interchange's default instances (`material-map.json` is #2282's; its
+`scope` does not list these zones yet).
+
+| Zone | Nodes | Triangles | GLB | Import (UE 5.8.4) |
+|---|---|---|---|---|
+| `gard` | 25 | 62,456 | 5.6 MB | 26 actors, 45 assets, 4.5 MB |
+| `omgivning` | 532 | 313,107 | 15.1 MB | 533 actors, 130 assets, 18.0 MB |
+
+**Terrain: the web's mesh, not a Landscape (decision #2280, can be overturned in one sentence).** The terrain is the
+web's own triangle mesh (`site-terrain-remainder` and `-southeast`, 4 m lattice near the block, river subdivisions,
+holes under Hus C's stair pit), cut by zone. A Landscape would resample it onto a regular height grid: the vertical
+steps at the garage box's retaining walls, the ramp's and the river channel's breaks and the holes would be lost or
+blurred, and the heights would move away from the web's by up to the grid spacing. The mesh keeps every vertex where
+the web has it, is built from the same source as everything else (nothing modelled twice) and needs no
+Landscape-specific Python. #2281 reads the ground height by tracing the collision level below.
+
+**Collision.** `build_site.py` reads `measurements.json` `ground.collision` (the export's walkable nodes of
+`l1007-entre`, `gard` and `omgivning`: terrain, asphalt, paving, asphalt patches, the cobbled corner, park paths, the
+road bridge's asphalt, the timber bridge, the bus platform and world.js's level ground plates under Hus L and its
+portik; 31 nodes) and writes `Generated/SiteWorld/Level_site_collision`: a complex-as-simple, double-sided copy of
+each mesh with Nanite off (so neither #2298 nor #2299 applies), hidden in game on the imported actor's transform.
+The water surface, kerbs, street furniture and parked cars get none. It replaced the provisional street ground of
+`build_l1007.py` (#2278) and `build_exterior.py` (#2279). Hus L's and Hus A/B/C's façades still have no collision.
+
+**Control points and route.** `groundProbes` in `export-scene.js` defines ten `elevation` points, on terrain-mesh
+vertices where the web's terrain is `data/elevation.json` itself (src/surroundings.js `elevationWeight` 1), and seven
+`terrain` points where the web departs from the elevation data by design: the courtyard (model y 0 on the garage box,
+`SITE.terrain.ref`) and the carved Höje å valley (`SITE.river`). The exporter measures each on the exported walkable
+nodes and writes `ground` into `measurements.json` with the elevation value, the web's `groundY` and drawn terrain.
+`tests/test_site.py` (PIE on `L_Lunden`) traces the same points against the collision level (5 cm against the
+elevation grid or the drawn terrain, and against the export's own hit on the same node), checks each collision copy's
+bounds against its visible actor, and walks the route START → street → ramp → courtyard → back → Sankt Lars väg → park
+level → shore path → Höje å valley, each checkpoint within 20 cm of the web's surface. The drawn terrain lies 1 cm under
+the elevation grid on purpose (src/surroundings.js `terrainSurface`). Results: [#2280 verification](../verification/2280/README.md).
 
 ### Generated assets: rebuilt, not versioned (decided)
 
@@ -1449,4 +1502,4 @@ packaging (#2248) ships it next to the executable. Add a section to `notices.mjs
 ### Remaining for #2245
 
 The split of the merged exterior meshes exists since #2279 ([Buildings](#buildings-hus-l-hus-abc-and-the-garage-2279)); `gard` and
-`omgivning` use it in #2280.
+`omgivning` use it since #2280 ([Ground](#ground-terrain-streets-courtyard-and-höje-å-2280)).

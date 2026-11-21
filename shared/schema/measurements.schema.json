@@ -22,7 +22,8 @@
           "status": { "enum": ["exported", "planned"] },
           "box": { "type": ["object", "null"], "description": "plan metres {x0, x1, z0, z1, y0, y1}: a node belongs to the first zone that holds the centre of its world bounding box (and accepts its builder, `from`)" },
           "from": { "type": "array", "items": { "type": "string" }, "description": "#2279: the web builders this zone takes objects from (exterior, visit, core-l, portik, surroundings, surroundings-site, garage, core-abc); absent = any part of buildWorld (the l1007 zones)" },
-          "split": { "type": "boolean", "description": "#2279: merged meshes are cut at this zone's box sides and each piece goes to the zone holding its centroid" }
+          "split": { "type": "boolean", "description": "#2279: merged meshes are cut at this zone's box sides and each piece goes to the zone holding its centroid" },
+          "skip": { "type": "string", "description": "#2280: what this zone leaves to other issues (a name pattern of the object or its parents, or a leaf material)" }
         }
       }
     },
@@ -81,6 +82,16 @@
       "type": "object",
       "description": "material key → the web material's look (no web material has a name; the key is built from type, colour, roughness, metalness, opacity, emissive, vertex colours, textures, sides). Unreal maps keys to hand-made materials.",
       "additionalProperties": { "type": "object", "required": ["type", "color", "roughness", "metalness", "opacity", "emissive", "vertexColors", "textured", "doubleSided", "hint"] }
+    },
+    "ground": {
+      "type": "object", "required": ["source", "walkableName", "collision", "points", "route"],
+      "description": "#2280: the walkable ground of the zones l1007-entre, gard and omgivning (export-scene.js groundProbes): the nodes build_site.py gives collision, control points with the elevation grid and the web's drawn terrain, and the walking route; tools/unreal-engine/tests/test_site.py traces and walks them. Optional: absent in exports without those zones.",
+      "properties": {
+        "collision": { "type": "array", "items": { "type": "object", "required": ["id", "zone", "name"] } },
+        "points": { "type": "array", "items": { "type": "object", "required": ["id", "what", "x", "z", "reference", "unreal", "elevationY", "groundY", "terrainY", "hit"],
+          "properties": { "reference": { "enum": ["elevation", "terrain"], "description": "elevation = the web's terrain is data/elevation.json here; terrain = the web's designed ground (courtyard, river valley)" } } } },
+        "route": { "type": "array", "items": { "type": "object", "required": ["label", "x", "z", "unreal", "groundY", "hit"] } }
+      }
     },
     "buildings": {
       "type": "array",

@@ -10,7 +10,9 @@ import * as THREE from 'three';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 import * as C from '../../src/config.js';
 import { buildWorld } from '../../src/world.js';
-import { groundY } from '../../src/surroundings.js';
+import { groundY, renderedTerrainY } from '../../src/surroundings.js';
+import { gridGround } from '../../src/elevation.js';
+import { leafMaterial, windLeafMaterial } from '../../src/foliage.js';
 import { stairRise, stairRiser, N_TREADS } from '../../src/stairs.js';
 import { husLLayout } from '../../src/exterior.js';
 import { fallDamage } from '../../src/falldamage.js';
@@ -23,7 +25,8 @@ export const FORMAT_VERSION = 1;
  *  from (`sourceGroup`; no `from` = any part of buildWorld, never the extra builders). A `split` zone also takes the
  *  triangles of the web's merged meshes (one mesh spans all of Hus L, all of Hus A/B/C or the whole terrain): such a mesh
  *  is cut by triangle, each triangle to the first split zone that holds its world centroid (#2279), so every triangle is
- *  in at most one zone. Only `exported` zones are written; the others are the planned list (docs/development/unreal.md). */
+ *  in at most one zone. `skip` (#2280) keeps objects out of a zone that other issues own (see SITE_SKIP). Only `exported`
+ *  zones are written; the others are the planned list (docs/development/unreal.md). */
 export function zoneTable(W, D, patio, husL = husLLayout(W)) {
   return [
     { id: 'l1007', what: 'L1007 interior, Entréplan + Övre plan (pilot, #2246)', status: 'exported',
@@ -42,21 +45,45 @@ export function zoneTable(W, D, patio, husL = husLLayout(W)) {
     { id: 'kvarteret', what: 'Hus A/B/C (façades, loggias, roofs), their stairwells, lifts and entrance shells, the garage and förråd under the courtyard (#2279)',
       status: 'exported', split: true, from: ['surroundings', 'garage', 'core-abc'],
       box: { x0: -73, x1: 15, z0: 0, z1: 60, y0: C.GARAGE.floor - 2, y1: 22 } },
-    // planned (#2280: the same mechanism, `from` the courtyard, street life and the surroundings' ground)
-    { id: 'gard', what: 'courtyard, playground, bike room', status: 'planned' },
-    { id: 'omgivning', what: 'streets, terrain, Höje å, trees, backdrop (split into omgivning-n/-s/-o/-v)', status: 'planned' },
+    // #2280: the ground round Kv. Lunden. `gard` is the courtyard on the garage box (C.SITE.terrain.box, with the green
+    // between the Å-husen); `omgivning` is the rest of the drawn terrain (SITE.backgroundGround) with the streets,
+    // pavements, parked cars, the Höje å valley, its paths, bridges and the water surface. Both cut the merged terrain,
+    // asphalt and paving like #2279's zones; SITE_SKIP leaves out vegetation, the backdrop houses, the campus and later parts.
+    { id: 'gard', what: 'the courtyard on the garage box: its terrain, walks, pergolas, sandboxes, playground, boule court, benches and beds (#2280)',
+      status: 'exported', split: true, from: ['world', 'surroundings-site'], skip: SITE_SKIP,
+      box: { x0: -71, x1: 14, z0: 12.1, z1: 53, y0: -4, y1: 8 } },
+    { id: 'omgivning', what: 'terrain, streets, pavements, parked cars, street furniture, the Höje å valley with its paths, bridges and water surface (#2280)',
+      status: 'exported', split: true, from: ['world', 'surroundings', 'surroundings-site'], skip: SITE_SKIP,
+      box: { x0: C.SITE.backgroundGround.x0, x1: C.SITE.backgroundGround.x1, z0: C.SITE.backgroundGround.z0, z1: C.SITE.backgroundGround.z1, y0: -30, y1: 40 } },
   ];
 }
 
 /** Builders whose objects only split zones with a matching `from` may take (main.js adds them; the l1007 zones never). */
 const EXTRA_GROUPS = new Set(['garage', 'core-l', 'core-abc']);
-const accepts = (z, group) => (z.from ? z.from.includes(group) : !EXTRA_GROUPS.has(group));
+const accepts = (z, group, atom) => (z.from ? z.from.includes(group) : !EXTRA_GROUPS.has(group)) && !(z.skip && atom && z.skip.test(atom));
 /** `source` of the buildings' static geometry (#2279): the builder module, as no single data row describes a merged mesh. */
 const GROUP_SOURCE = { exterior: 'src/exterior.js', visit: 'src/world.js (visitFlatParts)', 'core-l': 'src/core.js', 'core-abc': 'src/corehouse.js',
   garage: 'src/garage.js', surroundings: 'src/surroundings.js', 'surroundings-site': 'src/surroundings.js' };
 /** The surroundings' ground and backdrop (terrain, streets, paving, trees, the campus and fields beyond): not Kv. Lunden's
  *  buildings, so never Hus A/B/C's zone (#2280's planned zones take them). */
 const SITE_NAME = /^(site-terrain|site-asphalt|site-paving|ground-ao|street-|tree-|east-|west-|north-|edge-|south-)/;
+/** #2280: what the ground zones leave to others, by the name of the object or one of its parents: vegetation (#2281:
+ *  trees, shrubs, the pergola vines, hedges, shore growth; also any leaf-material mesh), the backdrop houses and the land
+ *  beyond the terrain (west/north/east/south/edge, HepCat, the clock tower, Nordic Wellness), the east campus car parks,
+ *  school yards and the football site (later), the boule balls (a game, later), the web's distance stand-ins (`… far`),
+ *  the autumn's fallen leaves (src/street.js, instanced circles) and L1007's own furniture outdoors (G11, #2289). */
+const SITE_SKIP_NAME = /^(tree-|south-|east-|west-|north-|edge-|hepcat-|tower-clock|nordic-wellness|football|school-|east-lot-cars|courtyard-shrubs|park-shore-growth|front-boxwood|boule-balls)|hedge| far$/;
+const SITE_SKIP = { test({ object: o, kind }) {
+  if (kind === 'furniture') return true;
+  if (o.isInstancedMesh && o.geometry?.type === 'CircleGeometry') return true; // fallen leaves
+  for (let q = o; q; q = q.parent) if (SITE_SKIP_NAME.test(q.name ?? '')) return true;
+  const ms = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : [];
+  return ms.some((m) => m === leafMaterial() || m === windLeafMaterial().material);
+}, toString: () => `${SITE_SKIP_NAME}, a leaf material (src/foliage.js), fallen leaves or furniture` };
+/** #2280: the walkable ground among the exported nodes (by the web mesh's name; also unnamed level plates, see the
+ *  ground block in exportWorld): build_site.py gives these complex collision in its derived level; the water surface,
+ *  kerbs, street furniture and cars stay without. */
+const GROUND_NAME = /^(site-terrain|site-asphalt|site-paving|street-asphalt-patches|street-cobbled-corner|park-paths|bridges-asphalt|park-timber-bridge|bus-stop-platform)/;
 
 /** Cuts a mesh by zone (#2279). Triangles that cross one of the vertical `cuts` planes ({axis: 'x'|'z', at}, world
  *  metres: the split zones' box sides) are clipped there into convex pieces, attributes interpolated, so a long street
@@ -181,6 +208,39 @@ export function buildingProbes(W, husL = husLLayout(W)) {
   return out;
 }
 
+/** #2280: ground control points and the walking route (web metres; test points chosen for the check, not game data).
+ *  The exporter measures each point on the exported walkable ground (GROUND_NAME nodes of the ground zones, first hit
+ *  from above) and writes `ground` into measurements.json; tools/unreal-engine/tests/test_site.py traces the same
+ *  points in Unreal and walks the route.
+ *  - `elevation` points lie where the web's terrain is data/elevation.json itself (src/surroundings.js elevationWeight 1:
+ *    away from the block, the river valley, the edges and the far buildings' pads), on grid vertices of the terrain mesh,
+ *    so the drawn ground there is the elevation grid (src/elevation.js gridGround) less the web's 1 cm (terrainSurface).
+ *  - `terrain` points lie where the web deliberately departs from the elevation data: the courtyard on the garage box
+ *    (C.SITE.terrain.ref: the courtyard is model y 0) and the carved Höje å valley (C.SITE.river). Their reference is
+ *    the web's drawn terrain; the elevation value is recorded beside it. */
+export function groundProbes() {
+  const elevation = [[-150, -250], [-218, -60], [98, -200], [250, -150], [200, -250], [-254, 0], [274, -40], [58, -260], [-182, -300], [-102, -90]]
+    .map(([x, z]) => ({ id: `elevation_${tag('x', x)}_${tag('z', z)}`, what: 'open ground on the elevation grid', x, z, reference: 'elevation' }));
+  const terrain = [
+    ['courtyard_centre', 'courtyard between the pergolas (garage box)', -20, 22],
+    ['courtyard_east', 'courtyard east part, before Hus A', 0, 20],
+    ['courtyard_west', 'courtyard west part, by Hus C', -55, 40],
+    ['river_shore_path', 'Höje å: the shore path east of the road bridge', 36, 110],
+    ['river_bank', 'Höje å: the bank above the water', 38, 116],
+    ['river_path_west', 'Höje å: the shore path west of the bridges', 6.57, 111.81],
+    ['river_bed', 'Höje å: the river bed under the water surface', 1.16, 125.14],
+  ].map(([id, what, x, z]) => ({ id, what, x, z, reference: 'terrain' }));
+  // START → the street → up the ramp onto the courtyard (SITE.terrain.ramp, landing) → back down → Sankt Lars väg south
+  // to the park level → the shore path down into the Höje å valley (SITE.riverPark path 44447963), east of the bridges
+  const route = [['START', 2.875, -12], ['street east', 10, -6], ['east leg', 16, 4], ['ramp foot', 12.5, 9], ['ramp', 12.5, 11.6],
+    ['ramp top', 12.5, 24], ['landing', 12.5, 26], ['courtyard edge', 8, 26], ['courtyard east', 0, 20], ['courtyard', -20, 22],
+    ['back to courtyard edge', 8, 26], ['back to landing', 12.5, 26], ['down the ramp', 12.5, 12], ['east leg again', 16, 6],
+    ['Sankt Lars väg', 22, 30], ['park level', 20, 60], ['before the bridge', 20, 90], ['across the road', 35, 93],
+    ['shore path top', 48, 95], ['shore path', 44, 101], ['shore path lower', 40, 104], ['river valley', 36, 110], ['by the water', 38, 116]]
+    .map(([label, x, z]) => ({ label, x, z }));
+  return { points: [...elevation, ...terrain], route };
+}
+
 // --- small helpers -------------------------------------------------------------------------------------------------
 const cm = (v) => Math.round(v * 100);
 const tag = (axis, v) => `${axis}${cm(v) < 0 ? 'm' : ''}${Math.abs(cm(v))}`;
@@ -245,7 +305,7 @@ function plainGeometry(g, keepColor) {
   return out;
 }
 
-export const DEFAULT_ZONES = ['l1007', 'l1007-uteplats', 'fixture', 'l1007-entre', 'hus-l', 'kvarteret'];
+export const DEFAULT_ZONES = ['l1007', 'l1007-uteplats', 'fixture', 'l1007-entre', 'hus-l', 'kvarteret', 'gard', 'omgivning'];
 
 /** Builds the world and returns { glbs: {name: base64}, measurements, report }. `zones`: ids to export. */
 
@@ -364,6 +424,7 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
   const byZone = new Map(exportedZones.filter((z) => wanted.includes(z.id)).map((z) => [z.id, []]));
   const holds = (outer, b) => b.min.x >= outer.x0 && b.max.x <= outer.x1 && b.min.y >= outer.y0 && b.max.y <= outer.y1 && b.min.z >= outer.z0 && b.max.z <= outer.z1;
   const meets = (z, b) => b.max.x >= z.x0 && b.min.x <= z.x1 && b.max.y >= z.y0 && b.min.y <= z.y1 && b.max.z >= z.z0 && b.min.z <= z.z1;
+  const overlaps = (z, b) => b.max.x > z.x0 && b.min.x < z.x1 && b.max.y > z.y0 && b.min.y < z.y1 && b.max.z > z.z0 && b.min.z < z.z1;
   const split = { atoms: 0, pieces: 0, triangles: 0, dropped: 0, cut: 0, meshes: [] }, unassigned = {};
   const place = (a, zone, b) => {
     a.zone = zone.id; a.box = b.clone(); a.centre = b.getCenter(new THREE.Vector3()); a.level = levelOf(b.min.y + 0.05);
@@ -377,12 +438,16 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     if (box.isEmpty()) { skip('empty'); continue; }
     box.getCenter(centre);
     const group = sourceGroup(a.object);
-    const zone = exportedZones.find((z) => accepts(z, group) && inBox(z.box, centre));
+    const zone = exportedZones.find((z) => accepts(z, group, a) && inBox(z.box, centre));
     const cuttable = a.instance === undefined && a.object.isMesh && !a.object.isInstancedMesh
       && !a.object.children.some((c) => c.visible && c.isMesh) && a.kind == null;
-    if ((!zone || zone.split) && cuttable && !(zone && holds(zone.box, box)) && splitZones.some((z) => accepts(z, group) && meets(z.box, box))) {
+    // a merged mesh is cut when it reaches past its zone's box, or (#2280: the ground zones' boxes hold the others') into
+    // an earlier split zone that also takes it; a mesh in no zone is cut when it touches one
+    const crosses = (z) => accepts(z, group, a) && (z === zone ? !holds(z.box, box)
+      : !zone ? meets(z.box, box) : exportedZones.indexOf(z) < exportedZones.indexOf(zone) && overlaps(z.box, box));
+    if ((!zone || zone.split) && cuttable && splitZones.some(crosses)) {
       // a merged mesh across zone boxes: one piece per zone, triangle by triangle (#2279)
-      const mine = splitZones.filter((z) => accepts(z, group));
+      const mine = splitZones.filter((z) => accepts(z, group, a));
       const zoneFor = (p) => mine.find((z) => inBox(z.box, p))?.id ?? null;
       const cuts = mine.flatMap((z) => [['x', z.box.x0], ['x', z.box.x1], ['z', z.box.z0], ['z', z.box.z1]])
         .filter(([axis, at]) => at > box.min[axis] && at < box.max[axis]).map(([axis, at]) => ({ axis, at }));
@@ -554,6 +619,42 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
   }
   for (const [m, side] of sides) m.side = side;
 
+  // ---- the ground (#2280): walkable nodes, control points and the route, measured on what is exported ----
+  let ground = null;
+  const groundZones = ['l1007-entre', 'gard', 'omgivning'].filter((z) => roots[z]);
+  if (groundZones.includes('gard') && groundZones.includes('omgivning')) {
+    const walkable = [];
+    const flat = new THREE.Box3();
+    for (const z of groundZones) roots[z].root.updateMatrixWorld(true);
+    for (const z of groundZones) for (const n of roots[z].root.children) {
+      // named ground batches, and the plain ground plates world.js lays under Hus L and its portik (unnamed, level)
+      const plate = !n.userData.name && flat.setFromObject(n).max.y - flat.min.y < 0.005
+        && Math.abs(flat.max.y - groundY((flat.min.x + flat.max.x) / 2, (flat.min.z + flat.max.z) / 2)) < 0.1;
+      if (GROUND_NAME.test(n.userData.name ?? '') || plate) walkable.push(n);
+    }
+    const down = new THREE.Raycaster();
+    const top = (x, z) => { // the first walkable surface from above (both sides count, as in the Unreal trace)
+      down.set(new THREE.Vector3(x, 60, z), new THREE.Vector3(0, -1, 0)); down.far = 120;
+      for (const [m] of sides) m.side = THREE.DoubleSide;
+      const hit = down.intersectObjects(walkable, true)[0];
+      for (const [m, side] of sides) m.side = side;
+      if (!hit) return null;
+      let o = hit.object; while (o.parent && o.userData.kind === 'part') o = o.parent;
+      return { y: r4(hit.point.y), unrealZ: roundCm(hit.point.y * 100), node: o.userData.id, zone: o.userData.zone, name: o.userData.name ?? null };
+    };
+    const probes = groundProbes();
+    ground = {
+      source: 'tools/unreal-engine/export-scene.js groundProbes; data/elevation.json via src/elevation.js gridGround; src/surroundings.js groundY, renderedTerrainY',
+      walkableName: String(GROUND_NAME), skip: String(SITE_SKIP),
+      collision: walkable.map((n) => ({ id: n.userData.id, zone: n.userData.zone, name: n.userData.name ?? null })),
+      points: probes.points.map((p) => ({ ...p, unreal: webToUnrealRounded([p.x, 0, p.z]).slice(0, 2), elevationY: r4(gridGround(p.x, p.z)),
+        groundY: r4(groundY(p.x, p.z)), terrainY: r4(renderedTerrainY(p.x, p.z)), hit: top(p.x, p.z) })),
+      route: probes.route.map((p) => ({ ...p, unreal: webToUnrealRounded([p.x, 0, p.z]).slice(0, 2), groundY: r4(groundY(p.x, p.z)), hit: top(p.x, p.z) })),
+    };
+    const missing = [...ground.points, ...ground.route].filter((p) => !p.hit).map((p) => p.id ?? p.label);
+    if (missing.length) throw new Error(`ground probes with no walkable ground under them: ${missing.join(', ')}`);
+  }
+
   // ---- GLB per zone ----
   const exporter = new GLTFExporter();
   const glbs = {}, zoneReport = [];
@@ -567,6 +668,7 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
   // ---- measurement data ----
   const measurements = measurementData({ world, planCopy, W, D, byZone, lightsInfo, materialTable, commit, ZONES, wanted });
   measurements.buildings = buildings;
+  if (ground) measurements.ground = ground;
   return { glbs, measurements, report: { zones: zoneReport, kinds: stats, skipped, lightsError: lightsInfo.error, extraError: extra.error, atoms: atoms.length, split, unassigned } };
 }
 
@@ -674,7 +776,7 @@ function measurementData({ world, planCopy, W, D, byZone, lightsInfo, materialTa
     axes: { web: 'x = east, y = up, z = south (north = -z), right-handed', unreal: 'X = 100*x (east), Y = 100*z (south), Z = 100*y (up), left-handed',
       yaw: 'unrealYaw = -90 - webYawDeg (normalised); object rotation.y a (rad) -> unrealYaw = 90 - deg(a)' },
     zones: ZONES.map((z) => ({ id: z.id, what: z.what, status: z.status === 'exported' && (wanted.includes(z.id)) ? 'exported' : 'planned', box: z.box ?? null,
-      ...(z.from ? { from: z.from, split: !!z.split } : {}) })),
+      ...(z.from ? { from: z.from, split: !!z.split } : {}), ...(z.skip ? { skip: String(z.skip) } : {}) })),
     plan: { size: { x: W, z: D }, source: planCopy.source ?? 'L1007_mattsatt_planritning.pdf', unitTop: C.UNIT_TOP,
       levels: C.LEVELS.map((l) => ({ name: l.name, storey: l.storey, floor: l.floor, ceiling: l.ceiling, top: r4(l.top),
         unreal: { floorZ: roundCm(l.floor * 100), ceilingZ: roundCm((l.floor + l.ceiling) * 100), topZ: roundCm(l.top * 100) } })),

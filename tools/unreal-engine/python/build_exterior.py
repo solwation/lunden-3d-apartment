@@ -12,10 +12,10 @@ which compose_world.py streams next to them:
   and hidden in game. Each copy is complex-as-simple with double-sided triangles and Nanite off, so the capsule follows
   the full mesh: the imported meshes have no simple shapes after a reload, their complex collision would be the
   simplified Nanite fallback (#2298) and single-sided (#2299). Copies leave those importer bugs alone;
-- not the portik's glazed door leaf into the stairwell (doors that open are #2285), so the way in stays open;
-- a provisional street-level ground from build_l1007.py's approach west to Hus L's portik and through the portik
-  (Sankt Lars väg and the portik are street level, y 0 like START): the street and terrain zones come with #2280, which
-  removes it here when its terrain sub-level is listed.
+- not the portik's glazed door leaf into the stairwell (doors that open are #2285), so the way in stays open.
+
+The street from START west to the portik and the portik's floor are the ground's collision level (build_site.py,
+#2280), which replaced the provisional street-level boxes this builder placed until then.
 
 Nothing here is versioned (Content/Lunden/Generated/ is ignored). The build is skipped when both import fingerprints,
 this script and every output package are unchanged.
@@ -31,17 +31,10 @@ SOURCES = {"hus-l": ("/Game/Lunden/Generated/hus-l/Level_hus-l", {"source:src/co
            "kvarteret": ("/Game/Lunden/Generated/kvarteret/Level_kvarteret", {"source:src/garage.js", "source:src/corehouse.js"})}
 FOLDER = "/Game/Lunden/Generated/ExteriorWorld"
 TARGET = FOLDER + "/Level_exterior_collision"
-CUBE = "/Engine/BasicShapes/Cube"
 TAGS = ["kind:collision", "derived:exterior-collision"]
 # The portik's glazed door into the stairwell (cm, Unreal axes): src/config.js PORTIK.west = -16.12 m (the screen's line)
 # and CORE.portikDoor.z = [8.45, 9.48] m. Imported actors whose bounds centre lies in this box are the leaf's parts.
 DOOR_LEAF = {"x": (-1612 - 60, -1612 + 60), "y": (845 - 5, 948 + 5), "z": (-10, 230)}
-# Provisional street-level ground (cm, Unreal axes; top at START's street level 0): from x = 0, where build_l1007.py's
-# approach starts, west to past the portik (PORTIK.west -16.12 m) along the same depth as that approach, and the
-# portik's own floor (PORTIK west/east -16.12 / -11.37 m, the row's depth 12.7 m). Replaced by #2280's terrain.
-GROUND = [{"label": "street to the portik", "x0": -1720.0, "x1": 0.0, "y0": -1630.0, "y1": 0.0},
-          {"label": "portik", "x0": -1612.0, "x1": -1137.0, "y0": 0.0, "y1": 1270.0}]
-THICKNESS = 20.0
 
 content = Path(u.Paths.project_content_dir())
 out_dir = content / "Lunden/Generated/ExteriorWorld"
@@ -142,12 +135,6 @@ def build(meshes):
                 raise RuntimeError(f"Cannot save {FOLDER}/Meshes/{target}")
             copies[mesh_path] = mesh
         static_actor("Exterior collision " + name, mesh, TAGS + ["zone:" + zone, "source:" + name]).set_actor_transform(transform, False, False)
-    cube = assets.load_asset(CUBE)
-    for g in GROUND:
-        actor = static_actor("Provisional ground " + g["label"], cube, ["kind:provisional-ground", "kind:collision", "zone:hus-l",
-                                                                         "replacedBy:#2280", "derived:exterior-collision"])
-        actor.set_actor_location(u.Vector((g["x0"] + g["x1"]) / 2, (g["y0"] + g["y1"]) / 2, -THICKNESS / 2), False, False)
-        actor.set_actor_scale3d(u.Vector((g["x1"] - g["x0"]) / 100, (g["y1"] - g["y0"]) / 100, THICKNESS / 100))
     if not u.EditorLoadingAndSavingUtils.save_map(world, TARGET):
         raise RuntimeError("Cannot save " + TARGET)
     u.EditorLoadingAndSavingUtils.new_blank_map(False)
@@ -166,7 +153,7 @@ def main(argv):
                               encoding="utf-8")
         u.log(f"LUNDEN_EXTERIOR_BUILD {TARGET}: {len(meshes)} collision actors from {copies} mesh copies "
               f"(stairwells and garage), door leaf left open ({len(skipped)} parts: {skipped}), "
-              f"{len(GROUND)} provisional ground boxes, {len(files)} packages")
+              f"{len(files)} packages")
     u.log("LUNDEN_EXTERIOR_BUILD_OK")
 
 
