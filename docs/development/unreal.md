@@ -1281,7 +1281,7 @@ the export and the pictures section of `notices.mjs`.
   once, nothing is modelled twice, and the owner's photos are never versioned as `.uasset`s (they are rebuilt with
   the generated assets, [below](#generated-assets-rebuilt-not-versioned-decided)). `/Game/Lunden/Furnishing/` and
   `build_furnishing.py` therefore stay empty until something hand-made is needed. Not ported: normal, bump,
-  roughness and alpha maps, emissive maps, the web's `onBeforeCompile` tweaks, video and animated canvases (the TV
+  roughness and alpha maps, emissive maps other than printed curtain cloth, the web's `onBeforeCompile` tweaks, video and animated canvases (the TV
   and the smart display show their first frame). The lighting and material comparisons below cover the upholstery and other furnishing surfaces.
 - **Colour checks (#2322).** In the UE 5.8.4 L1007 import from `98f42f51`, the living-room rug, sofa and oak
   coffee table use sRGB colour textures. The rug has a white base factor and no vertex colours. Its two most frequent
@@ -1292,7 +1292,12 @@ the export and the pictures section of `notices.mjs`.
   The Unreal level represents the cabinet with one point light. Its export now takes the web emitter's actual position,
   40 cm in front of the fitting at the same height. Single-emitter fittings share this path. The fitting origin
   stays available for stable light IDs. The curtains also differ: `Curtain.glow` multiplies their printed pattern by
-  changing daylight and room-lamp emission on the web. The exported cloth has only its base-colour image.
+  changing daylight and room-lamp emission on the web. L1007 exports the same sRGB print, sampler and UV transform
+  for base colour and emission. The GLB's fallback factor is the cloth's linear RGB at full daylight with the room
+  lamps off. The six rows in `furnishing.curtains` give each fabric's two linear RGB coefficients, its mesh IDs
+  and the ceiling and small lamps in its real room. The daylight and warm gains are the web's visual estimates
+  (`CURTAIN_LIGHT`, *guess*). The export keeps the existing opacity, roughness and two-sided material.
+  Run `node tools/unreal-engine/tests/curtain-light.mjs unreal/Lunden/Import` to compare an L1007 GLB with the web.
   For comparable measurements, run `tests/crop-stats.cjs <paired-image-directory> tests/furnishing-crops.json` from
   `tools/unreal-engine/` on the shared daylight and evening camera pairs. Record the lighting revision and exposure
   with the ratios. In [the #2313 calibration](../verification/2313/README.md) the
