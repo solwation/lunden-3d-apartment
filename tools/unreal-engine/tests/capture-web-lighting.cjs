@@ -64,6 +64,11 @@ async function capture(page, shot, view, out) {
       pool: lights.slots.filter(slot => slot.lamp).map(({lamp, f}) => ({position: lamp.pos.toArray(), level: lamp.level, share: f})),
       dark: lights.dark ?? null, smallLampsOn: lights.floorLamps.filter((f) => f.room.on).map((f) => f.name), forced: lights.forced,
       moon: {illum: day.moon.illum, elong: day.moon.elong, dir: day.moonDir.toArray()}, sun: day.sunDir.toArray()};
+    if (shot.camera === 'living-room' || shot.camera === 'upper-floor') {
+      state.curtains = window.__app.world.blinds.curtains.map(c => ({
+        id: c.spec.materialId, lit: lights.roomLit(c.level, c.room), emission: c.mat.emissive.toArray(),
+      }));
+    }
     return {state, image: renderer.domElement.toDataURL('image/jpeg', 0.92).split(',')[1]};
   }, {view, shot, eyeHeight: spec.standingEyeHeightM});
   const near = (a, b) => assert.ok(Math.abs(a - b) < 1e-5, `${shot.name}: ${a} != ${b}`);

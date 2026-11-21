@@ -58,3 +58,22 @@ if (process.argv.includes('--blueprint')) {
   assert.equal(result.status, 0, result.stderr || result.error?.message);
   console.log(result.stdout.trim());
 }
+const captureIndex = process.argv.indexOf('--web-capture');
+if (captureIndex >= 0) {
+  const captures = JSON.parse(fs.readFileSync(process.argv[captureIndex + 1])).shots;
+  let errors = [], seen = new Set();
+  for (const shot of captures.filter(s => s.curtains)) {
+    assert.equal(shot.curtains.length, profiles.length);
+    for (const row of profiles) {
+      const actual = shot.curtains.find(c => c.id === row.id);
+      const day = shot.daylight * (1 - .5 * shot.overcast);
+      const want = row.daylight.map((d, i) => d * day + (actual.lit ? row.lamp[i] : 0));
+      errors.push(Math.hypot(...want.map((v, i) => v - actual.emission[i])));
+    }
+    seen.add(shot.name);
+  }
+  for (const name of ['living-room-day', 'living-room-evening', 'upper-floor-evening']) assert.ok(seen.has(name), name);
+  const max = Math.max(...errors);
+  assert.ok(max < 1e-6, 'Actual web curtain emission differed by ' + max);
+  console.log(errors.length + ' captured Three.js material states; max linear RGB error ' + max.toPrecision(3) + '.');
+}
