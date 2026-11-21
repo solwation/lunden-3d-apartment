@@ -114,3 +114,25 @@ A headless Mesa GLES run of the shader expression (HLSL ported mechanically to G
 grazing-angle samples for each of the three brick instances against an 8,192-sample-per-axis reference. Across 396
 samples the largest absolute mortar-coverage error was 0.00246 on a 0–1 scale, including 8-bit readback. Windows verification requires rebuilding the tiled master and three
 brick instances, importing the two ground zones and recapturing the three views. The three original web/Unreal pairs predate both changes.
+
+## Windows rebuild after the mortar filter (`ff2d5f92`)
+
+On Windows at `27be8ee5`, `build_materials.py` rebuilt `M_LundenTiled` and the three brick instances. Their spec
+hashes now match the map: `M_LundenTiled` 7174e719714b5d84, `MI_LundenFacadeBrick` 855fc6adf225e0c1,
+`MI_LundenFacadeBrickAHus` afc40cbb7cf25df8 and `MI_LundenBrickHistoric` d246425d8b45026c.
+
+`test_materials.py` passes on a full export of `27be8ee5`. That includes the `fond` zone, whose brick and roof
+looks #2323 wired. Result: brick 6 meshes, roof 10, asphalt 4, paving 8 from 23 looks, 64 vertex-coloured keys, and
+`MATERIAL_COVERAGE_OK`.
+
+The pictures could not be taken again. On `main`, the Windows import chain stops before a complete world exists,
+because other issues' versioned assets are not yet built:
+
+- `import_world.py` and `build_materials.py` need `/Game/Lunden/Seasons/MPC_LundenVegetation`. That asset is
+  referenced since `16269409` (#2317), but it is not in the repository.
+- `build_lighting.py` cannot save its cloud material copy.
+- `build_vegetation.py` cannot save `M_LundenFoliage`.
+- `build_interaction.py` cannot save `BP_LundenInteractionListener`.
+
+`capture_world.py` renders only a complete composed world, so the pictures above are still those from `bf6382b7`,
+taken before the filter.
