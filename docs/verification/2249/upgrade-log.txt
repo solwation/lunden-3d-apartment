@@ -1,0 +1,139 @@
+## 1. install N: signed Lunden-Setup-0.1.1-win-x64.exe --install --quiet --channel test (08:10:16)
+exit=0
+
+## 2. first start of N (installed Lunden.exe --channel test, default latest manifest URL, hidden desktop, via counting proxy)
+Kontrollerar Lunden 0.1.1, innehåll 1.
+Hämtar Engine/Binaries/ThirdParty/DbgHelp/dbghelp.dll (2232688 byte).
+Hämtar Engine/Binaries/ThirdParty/MsQuic/v220/win64/msquic.dll (2547080 byte).
+Hämtar Engine/Binaries/ThirdParty/NVIDIA/NVaftermath/Win64/GFSDK_Aftermath_Lib.x64.dll (5799016 byte).
+Hämtar Engine/Binaries/ThirdParty/Ogg/Win64/VS2015/libogg_64.dll (59832 byte).
+Hämtar Engine/Binaries/ThirdParty/Vorbis/Win64/VS2015/libvorbis_64.dll (1724856 byte).
+Hämtar Engine/Binaries/ThirdParty/Vorbis/Win64/VS2015/libvorbisfile_64.dll (48568 byte).
+Hämtar Engine/Binaries/ThirdParty/Windows/XAudio2_9/x64/xaudio2_9redist.dll (858152 byte).
+Hämtar Engine/Binaries/Win64/D3D12/x64/D3D12Core.dll (4831768 byte).
+Hämtar Engine/Binaries/Win64/D3D12/x64/d3d12SDKLayers.dll (4943344 byte).
+Hämtar Engine/Binaries/Win64/DML/x64/DirectML.dll (18538488 byte).
+Hämtar Engine/Binaries/Win64/UnrealGame-Win64-Shipping.exe (165862328 byte).
+Hämtar Engine/Binaries/Win64/tbb12.dll (342456 byte).
+Hämtar Engine/Binaries/Win64/tbbmalloc.dll (117176 byte).
+Hämtar Engine/Config/StagedBuild_Lunden.ini (3 byte).
+Hämtar Engine/Content/Renderer/TessellationTable.bin (259568 byte).
+Hämtar Engine/Content/Slate/Cursor/invisible.cur (326 byte).
+Hämtar Engine/Plugins/NNE/NNERuntimeORT/Binaries/ThirdParty/Onnxruntime/Win64/onnxruntime.dll (17339384 byte).
+Hämtar NOTICES.txt (111 byte).
+Hämtar Lunden/Content/Paks/Lunden-Windows.pak (11226745 byte).
+Hämtar Lunden/Content/Paks/Lunden-Windows.ucas (223619008 byte).
+Hämtar Lunden/Content/Paks/Lunden-Windows.utoc (216347 byte).
+Hämtar Lunden/Content/Paks/global.ucas (3330560 byte).
+Hämtar Lunden/Content/Paks/global.utoc (806 byte).
+Hämtat: 463898610 byte.
+proxy: 09:11:12 release-assets.githubusercontent.com:443 down=464562125 up=27135 secs=46.5 09:11:12 github.com:443 down=163053 up=16276 secs=47.0 
+state.json: {"channel":"test","active":{"directory":"f6484fa60fe0407f9ca578d1b91991c7","manifestHash":"A10ADA408EAE77422547C9660D8418E26DE640FAF6740627AA925258C11C9907","appVersion":"0.1.1","contentVersion":1,"published":"2026-11-21T08:00:00+00:00"},"previous":null,"rejected":null,"pending":false}
+game running after the 8 s check:
+pid=6996 name=UnrealGame-Win64-Shipping.exe started=08:11:04 cpu=437.9s path=C:\Users\Olof\AppData\Local\Programs\Lunden-Test\versions\f6484fa60fe0407f9ca578d1b91991c7\game\Engine\Binaries\Win64\UnrealGame-Win64-Shipping.exe
+  killed 6996
+seeded fixture save + settings; user-data hashes:
+ce69d7e7bbd1a64729bd4d5724f3c1efc47c6c3d555da9d2c6ad741eddc3d893  ./Saved/Config/CrashReportClient/UECC-Windows-841385B24F720FE5C1C1B1A0EEB5BB87/CrashReportClient.ini
+2246737abedd828a4ae6a981c69480f177a9f4525aa8565af047c9da90863438  ./Saved/Config/Windows/GameUserSettings.ini
+0cfe8da8908aa6c8bb9c882a310fb7f4da8dd4b841a7716ee8aa7503ad9bc8dd  ./Saved/SaveGames/fixture-2249.sav
+
+## 3a. offline start of N: Lunden.exe --channel test --offline
+started pid=20384 at 08:11:48.933
+exit= after 1.7 s
+pid=10112 name=UnrealGame-Win64-Shipping.exe started=08:11:50 cpu=132.4s path=C:\Users\Olof\AppData\Local\Programs\Lunden-Test\versions\f6484fa60fe0407f9ca578d1b91991c7\game\Engine\Binaries\Win64\UnrealGame-Win64-Shipping.exe
+  killed 10112
+
+## 3b. network unreachable (HTTPS_PROXY=http://127.0.0.1:9 refuses every connection), no --offline
+started pid=7620 at 08:12:01.812
+exit= after 3.8 s
+Uppdateringen kunde inte genomföras. No connection could be made because the target machine actively refused it. (127.0.0.1:9)
+pid=28496 name=UnrealGame-Win64-Shipping.exe started=08:12:05 cpu=142.2s path=C:\Users\Olof\AppData\Local\Programs\Lunden-Test\versions\f6484fa60fe0407f9ca578d1b91991c7\game\Engine\Binaries\Win64\UnrealGame-Win64-Shipping.exe
+  killed 28496
+state.json: {"channel":"test","active":{"directory":"f6484fa60fe0407f9ca578d1b91991c7","manifestHash":"A10ADA408EAE77422547C9660D8418E26DE640FAF6740627AA925258C11C9907","appVersion":"0.1.1","contentVersion":1,"published":"2026-11-21T08:00:00+00:00"},"previous":null,"rejected":null,"pending":false}
+
+## 4. interrupted update to N+1 (app-v0.1.2, content 2): --manifest https://github.com/solwation/lunden-3d-apartment/releases/download/app-v0.1.2/lunden-manifest-test.json, proxy throttled to 1 MB/s, launcher killed once the partial pak exceeds 1 MB
+started pid=3488 at 08:13:14.546
+killed child pid=13208 conhost.exe
+killed child pid=3096 Lunden.exe
+killed pid=3488 after 6 s
+exit= after 6 s
+Kontrollerar Lunden 0.1.2, innehåll 2.
+Hämtar Lunden/Content/Paks/Lunden-Windows.pak (11226745 byte).
+partial left behind:
+total 1176
+drwxrwxrwx 1 olof olof    4096 Nov 21 09:13 .
+drwxrwxrwx 1 olof olof    4096 Nov 21 09:13 ..
+-rwxrwxrwx 1 olof olof 1202176 Nov 21 09:13 CD4B57E10B4111F8941FFCA5E142705B1A44157963D4CB4F6FD88072ED708725
+state.json: {"channel":"test","active":{"directory":"f6484fa60fe0407f9ca578d1b91991c7","manifestHash":"A10ADA408EAE77422547C9660D8418E26DE640FAF6740627AA925258C11C9907","appVersion":"0.1.1","contentVersion":1,"published":"2026-11-21T08:00:00+00:00"},"previous":null,"rejected":null,"pending":false}
+(no launcher/game process left: none listed above)
+
+## 5. after the interruption: offline start still runs N
+started pid=12332 at 08:13:35.042
+exit= after 1.6 s
+pid=24976 name=UnrealGame-Win64-Shipping.exe started=08:13:36 cpu=130.6s path=C:\Users\Olof\AppData\Local\Programs\Lunden-Test\versions\f6484fa60fe0407f9ca578d1b91991c7\game\Engine\Binaries\Win64\UnrealGame-Win64-Shipping.exe
+  killed 24976
+
+## 6. next online start resumes the update (proxy unthrottled): --manifest https://github.com/solwation/lunden-3d-apartment/releases/download/app-v0.1.2/lunden-manifest-test.json
+started pid=5784 at 08:13:47.411
+exit= after 16.2 s
+Kontrollerar Lunden 0.1.2, innehåll 2.
+Hämtar Lunden/Content/Paks/Lunden-Windows.pak (11226745 byte).
+Hämtat: 10024569 byte.
+proxy: 09:14:04 github.com:443 down=20970 up=1005 secs=16.8 09:14:04 release-assets.githubusercontent.com:443 down=10055822 up=3572 secs=16.6 
+state.json: {"channel":"test","active":{"directory":"1707f5479cd94bbd97d0fd0922f50588","manifestHash":"DE84127FA67F4CF6A5D6951CDEB0FC4B0F163CA386140AE3FB7C41690569CDA0","appVersion":"0.1.2","contentVersion":2,"published":"2026-11-21T08:10:00+00:00"},"previous":{"directory":"f6484fa60fe0407f9ca578d1b91991c7","manifestHash":"A10ADA408EAE77422547C9660D8418E26DE640FAF6740627AA925258C11C9907","appVersion":"0.1.1","contentVersion":1,"published":"2026-11-21T08:00:00+00:00"},"rejected":null,"pending":false}
+game after the 8 s check:
+pid=17876 name=UnrealGame-Win64-Shipping.exe started=08:13:55 cpu=257.2s path=C:\Users\Olof\AppData\Local\Programs\Lunden-Test\versions\1707f5479cd94bbd97d0fd0922f50588\game\Engine\Binaries\Win64\UnrealGame-Win64-Shipping.exe
+  killed 17876
+/mnt/c/Users/Olof/AppData/Local/Programs/Lunden-Test/staging:
+A10ADA408EAE77422547C9660D8418E26DE640FAF6740627AA925258C11C9907
+DE84127FA67F4CF6A5D6951CDEB0FC4B0F163CA386140AE3FB7C41690569CDA0
+
+/mnt/c/Users/Olof/AppData/Local/Programs/Lunden-Test/versions:
+1707f5479cd94bbd97d0fd0922f50588
+f6484fa60fe0407f9ca578d1b91991c7
+
+## 7. offline start of N+1
+started pid=25468 at 08:14:28.784
+exit= after 1.6 s
+pid=11636 name=UnrealGame-Win64-Shipping.exe started=08:14:30 cpu=137.8s path=C:\Users\Olof\AppData\Local\Programs\Lunden-Test\versions\1707f5479cd94bbd97d0fd0922f50588\game\Engine\Binaries\Win64\UnrealGame-Win64-Shipping.exe
+  killed 11636
+
+## 8. installed trees: only the pak differs between N and N+1
+< 38cd82d890100fc4eca939b56a828543f5ff8e1b9bbaaf108d178811976b7b6c  ./Lunden/Content/Paks/Lunden-Windows.pak
+> cd4b57e10b4111f8941ffca5e142705b1a44157963d4cb4f6fd88072ed708725  ./Lunden/Content/Paks/Lunden-Windows.pak
+files per tree: 23
+
+## 9. user data after app+content update (fixture save and settings, excluding game logs/crash config)
+ce69d7e7bbd1a64729bd4d5724f3c1efc47c6c3d555da9d2c6ad741eddc3d893  ./Saved/Config/CrashReportClient/UECC-Windows-2053AB1A452F3320D3C90BB4E245C34D/CrashReportClient.ini
+ce69d7e7bbd1a64729bd4d5724f3c1efc47c6c3d555da9d2c6ad741eddc3d893  ./Saved/Config/CrashReportClient/UECC-Windows-39A595544DDF0F884B5DBA97F882B8FA/CrashReportClient.ini
+ce69d7e7bbd1a64729bd4d5724f3c1efc47c6c3d555da9d2c6ad741eddc3d893  ./Saved/Config/CrashReportClient/UECC-Windows-4C2DF42548028BB96D20248A9F14264F/CrashReportClient.ini
+ce69d7e7bbd1a64729bd4d5724f3c1efc47c6c3d555da9d2c6ad741eddc3d893  ./Saved/Config/CrashReportClient/UECC-Windows-4C5174454D19AE8BF51EDD8A1A65E0D2/CrashReportClient.ini
+ce69d7e7bbd1a64729bd4d5724f3c1efc47c6c3d555da9d2c6ad741eddc3d893  ./Saved/Config/CrashReportClient/UECC-Windows-841385B24F720FE5C1C1B1A0EEB5BB87/CrashReportClient.ini
+ce69d7e7bbd1a64729bd4d5724f3c1efc47c6c3d555da9d2c6ad741eddc3d893  ./Saved/Config/CrashReportClient/UECC-Windows-E52ED28A4718378DC06A94841FD2C6E2/CrashReportClient.ini
+0cfe8da8908aa6c8bb9c882a310fb7f4da8dd4b841a7716ee8aa7503ad9bc8dd  ./Saved/SaveGames/fixture-2249.sav
+0a1,4
+> ce69d7e7bbd1a64729bd4d5724f3c1efc47c6c3d555da9d2c6ad741eddc3d893  ./Saved/Config/CrashReportClient/UECC-Windows-2053AB1A452F3320D3C90BB4E245C34D/CrashReportClient.ini
+> ce69d7e7bbd1a64729bd4d5724f3c1efc47c6c3d555da9d2c6ad741eddc3d893  ./Saved/Config/CrashReportClient/UECC-Windows-39A595544DDF0F884B5DBA97F882B8FA/CrashReportClient.ini
+> ce69d7e7bbd1a64729bd4d5724f3c1efc47c6c3d555da9d2c6ad741eddc3d893  ./Saved/Config/CrashReportClient/UECC-Windows-4C2DF42548028BB96D20248A9F14264F/CrashReportClient.ini
+> ce69d7e7bbd1a64729bd4d5724f3c1efc47c6c3d555da9d2c6ad741eddc3d893  ./Saved/Config/CrashReportClient/UECC-Windows-4C5174454D19AE8BF51EDD8A1A65E0D2/CrashReportClient.ini
+2c6
+< 2246737abedd828a4ae6a981c69480f177a9f4525aa8565af047c9da90863438  ./Saved/Config/Windows/GameUserSettings.ini
+---
+> ce69d7e7bbd1a64729bd4d5724f3c1efc47c6c3d555da9d2c6ad741eddc3d893  ./Saved/Config/CrashReportClient/UECC-Windows-E52ED28A4718378DC06A94841FD2C6E2/CrashReportClient.ini
+
+## 10. tampered manifest (one byte of 'published' changed, original .sig): rejected, active N+1 starts
+started pid=13880 at 08:15:36.575
+exit= after 1.7 s
+Uppdateringen kunde inte genomföras. Manifestets signatur är ogiltig.
+pid=28000 name=UnrealGame-Win64-Shipping.exe started=08:15:38 cpu=127.2s path=C:\Users\Olof\AppData\Local\Programs\Lunden-Test\versions\1707f5479cd94bbd97d0fd0922f50588\game\Engine\Binaries\Win64\UnrealGame-Win64-Shipping.exe
+  killed 28000
+state.json: {"channel":"test","active":{"directory":"1707f5479cd94bbd97d0fd0922f50588","manifestHash":"DE84127FA67F4CF6A5D6951CDEB0FC4B0F163CA386140AE3FB7C41690569CDA0","appVersion":"0.1.2","contentVersion":2,"published":"2026-11-21T08:10:00+00:00"},"previous":{"directory":"f6484fa60fe0407f9ca578d1b91991c7","manifestHash":"A10ADA408EAE77422547C9660D8418E26DE640FAF6740627AA925258C11C9907","appVersion":"0.1.1","contentVersion":1,"published":"2026-11-21T08:00:00+00:00"},"rejected":null,"pending":false}
+
+## 11. note on the settings fixture
+The hand-written GameUserSettings.ini fixture (no Version key) was deleted by the game itself: seeding it again and starting the stock UnrealGame-Win64-Shipping.exe directly (no launcher) with the same -UserDir removed it within 17 s. The launcher only creates the user-data directory. Game-written config (CrashReportClient.ini, first written by N) and the fixture save were unchanged across the app+content update.
+
+## 12. removal: signed setup --uninstall --quiet --channel test
+exit=0
+ls: cannot access '/mnt/c/Users/Olof/AppData/Local/Programs/Lunden-Test': No such file or directory
+ERROR: The system was unable to find the specified registry key or value.
+save kept: fixture-save-2249 2026-11-21T08:11:35Z

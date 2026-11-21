@@ -1074,8 +1074,13 @@ repository permissions and creates no GitHub Release. [Azure signing action](htt
 
 A completed UE Shipping archive and its reviewed inventory of project-owned and third-party program
 files are still needed to sign the game. Its independent manifest-signing and publication steps
-belong to #2248. The launcher artifact is available for a controlled signed pilot once the Azure
-owner and repository maintainers configure the inputs above. A public download also needs the
+belong to #2248. **First signed release (2026-11-21).** `v0.1.0` failed in the sign job because `exclude-environment-credential: true`
+disabled the client-secret login; `85b80563` removed it, and `v0.1.1` built, signed and timestamped `Lunden.exe` as
+Svep Design Center AB ([run 44882237973](https://github.com/solwation/lunden-3d-apartment/actions/runs/44882237973)).
+Release `v0.1.1` (test channel) is published and promoted to latest; `app-v0.1.2` is a test-only prerelease for the
+upgrade check. Evidence: [signing and install](../verification/2250/signed-launcher-v0.1.1.md),
+[publication](../verification/2248/release-v0.1.1.md), [signed upgrade](../verification/2249/signed-upgrade-v0.1.1-to-0.1.2.md).
+Release builds on the build PC use `-OutputRoot C:\LundenBuilds\release`; keep it for later releases. A public download also needs the
 verified game payload, signed channel manifest, clean Windows 11 install/update/remove test and
 preservation of real saves.
 
