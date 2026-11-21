@@ -35,18 +35,18 @@
       "what": "the street, pavement and terrain pieces in front of L1007 up to START (#2279 zone split)"
     },
     {
-      "package": "/Game/Lunden/Generated/hus-l/Level_hus-l",
-      "owner": "#2279",
-      "builder": "import_world.py --zones hus-l",
+      "package": "/Game/Lunden/Generated/Interaction/Level_hus-l_interaction",
+      "owner": "#2279 (line), #2314 (package swap)",
+      "builder": "import_world.py --zones hus-l, then build_interaction.py",
       "streaming": "always",
-      "what": "Hus L as imported: facades, loftgång, roofs and terraces, the neighbours' patios, the portik, the stairwell and lift core, the visitable flats L1004/L1201"
+      "what": "Hus L as imported: facades, loftgång, roofs and terraces, the neighbours' patios, the portik, the stairwell and lift core, the visitable flats L1004/L1201; #2314's copy whose stairwell doors (portik, loftgång) and the portik's small room door open"
     },
     {
-      "package": "/Game/Lunden/Generated/kvarteret/Level_kvarteret",
-      "owner": "#2279",
-      "builder": "import_world.py --zones kvarteret",
+      "package": "/Game/Lunden/Generated/Interaction/Level_kvarteret_interaction",
+      "owner": "#2279 (line), #2314 (package swap)",
+      "builder": "import_world.py --zones kvarteret, then build_interaction.py",
       "streaming": "always",
-      "what": "Hus A/B/C (facades, loggias, roofs, stairwells, lifts, entrance shells) and the garage under the courtyard, as imported"
+      "what": "Hus A/B/C (facades, loggias, roofs, stairwells, lifts, entrance shells) and the garage under the courtyard, as imported; #2314's copy whose entrance doors of Hus A/B/C and garage door open"
     },
     {
       "package": "/Game/Lunden/Generated/ExteriorWorld/Level_exterior_collision",

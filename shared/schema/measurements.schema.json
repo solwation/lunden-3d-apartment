@@ -57,8 +57,10 @@
       "items": {
         "type": "object", "required": ["id", "zone", "kind", "level", "source", "name"],
         "properties": {
-          "id": { "type": ["string", "null"], "description": "node id in the zone GLB (null: the door is in a zone not exported)" },
-          "kind": { "enum": ["swing", "sliding", "wardrobe"], "description": "src/doors.js: swing = SwingDoor (hinge + angles), sliding / wardrobe = sliding panels (centre + size)" },
+          "id": { "type": ["string", "null"], "description": "node id in the zone GLB (null: the door is in a zone not exported); with `parts` (#2314) the interactable's id, and the leaf is those nodes" },
+          "kind": { "enum": ["swing", "sliding", "wardrobe", "overhead"], "description": "src/doors.js: swing = SwingDoor (hinge + angles), sliding / wardrobe = sliding panels (centre + size); #2314: overhead = the garage door (pivot, axis, angleDeg, checkClosed/checkOpen like a window sash)" },
+          "parts": { "type": "array", "items": { "type": "string" }, "description": "#2314: the GLB nodes of a leaf exported as several nodes (Hus L's stairwell doors, the entrances of Hus A/B/C, the garage door's sections)" },
+          "house": { "type": "string", "description": "#2314: l, a, b or c for a stairwell door" },
           "level": { "type": "integer", "minimum": 0, "maximum": 1 },
           "hinge": { "$ref": "#/$defs/point" },
           "width": { "type": "number" },

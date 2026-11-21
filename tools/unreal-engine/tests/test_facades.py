@@ -8,8 +8,8 @@ the façades had no player collision and the character walked through.
 
 The intentional openings must stay as open as before (`PASSAGES`): Hus L's portik from the street through to the
 courtyard, and the drive up to the garage door in the box's west wall (src/config.js SITE.garageDoor). The garage door
-itself and the A/B/C entrances keep the closed leaves and glazing of build_exterior.py's garage and stairwell copies
-(#2279: they block since then, and opening doors is #2285); the route into Hus L's stairwell is test_exterior_route.py.
+itself and the A/B/C entrances block while closed: since #2314 they are usable doors (build_interaction.py) whose
+blocking boxes move with the leaf; walking through them when open, and Hus L's stairwell, is test_exterior_route.py.
 
 Run like the other world tests: copy this file to unreal/Lunden/Content/Python/ (untracked) and
     run-tests.ps1 -Filter Editor.Python.Lunden.test_facades

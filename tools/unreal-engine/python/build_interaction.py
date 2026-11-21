@@ -24,7 +24,11 @@
    pilot's door builder did) where each door leaf and window sash hangs on an interactable at its hinge / pivot with a
    blocking box for the use trace, each room switch and tap gets an interactable with a small use box, and each tap a
    hidden water stream (an engine cylinder from outlet to landing, src/water.js).
-3. Builds /Game/Lunden/Generated/Interaction/Level_lift_buttons: the four lifts' car and call buttons
+3. (#2314) Builds /Game/Lunden/Generated/Interaction/Level_hus-l_interaction and Level_kvarteret_interaction: copies of
+   the imported Level_hus-l and Level_kvarteret where the doors of measurements.json outside L1007 hang on interactables
+   (Hus L's stairwell doors from the portik and the loftgång and its portik's small room, the entrances of Hus A, B and
+   C, and the garage door, which tips up about its top edge). They replace the imported levels in world-levels.json.
+4. Builds /Game/Lunden/Generated/Interaction/Level_lift_buttons: the four lifts' car and call buttons
    (src/liftpanel.js) as interactables (Kind 3: state + ChangeCount only, since the lifts are not ported yet).
 Ends with LUNDEN_INTERACTION_OK. Lock BP_LundenSwingDoor.uasset and Interaction/BP_LundenInteractionListener.uasset
 first (git lfs lock); the levels are generated, not versioned. Both classes are skipped when their Lunden.SpecHash
@@ -49,6 +53,12 @@ EVENT = "OnInteractableChanged"
 SOURCE = "/Game/Lunden/Generated/l1007/Level_l1007"
 TARGET = "/Game/Lunden/Generated/Interaction/Level_l1007_interaction"
 LIFTS = "/Game/Lunden/Generated/Interaction/Level_lift_buttons"
+# #2314: the doors outside L1007 (Hus L's stairwell doors and its portik's small room, the entrances of Hus A/B/C, the
+# garage door) live in these imported zones; each gets a derived copy whose door nodes hang on interactables
+ENTRANCE_LEVELS = {"hus-l": ("/Game/Lunden/Generated/hus-l/Level_hus-l", "/Game/Lunden/Generated/Interaction/Level_hus-l_interaction"),
+                   "kvarteret": ("/Game/Lunden/Generated/kvarteret/Level_kvarteret",
+                                 "/Game/Lunden/Generated/Interaction/Level_kvarteret_interaction")}
+LEAF_CHECK = 6.0    # cm, how far the exported leaf nodes' centre may lie from the row's hinge + width / 2 (handle, frame)
 FOR_EACH = "/Engine/EditorBlueprintResources/StandardMacros.StandardMacros:ForEachLoop"  # as build_seasons.py
 CYLINDER = "/Engine/BasicShapes/Cylinder.Cylinder"  # 100 cm across, 100 cm high, pivot at its centre
 WATER_MATERIAL = "/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"
@@ -199,15 +209,20 @@ def build_listener():
                       ("LastSource", BP.get_object_reference_type(u.Actor))):
         if name not in have and not BP.add_member_variable(bp, name, typ):
             raise RuntimeError("Could not add the variable " + name)
-    if EVENT in [str(n) for n in BP.list_graph_names(bp)]:
-        BP.remove_function_graph(bp, EVENT)
+    # Rebuild only the body of an existing function: removing it would break the call in BP_LundenSwingDoor (logged as
+    # a compile error) until the door is rebuilt (#2314)
     BP.compile_blueprint(bp)
-    ed = GRAPH.create_and_edit_function_graph(bp, EVENT)
+    ed = (GRAPH.get_graph_editor_by_name(bp, EVENT) if EVENT in [str(n) for n in BP.list_graph_names(bp)]
+          else GRAPH.create_and_edit_function_graph(bp, EVENT))
+    entry = [n for n in ed.list_all_nodes() if n.get_class().get_name() == "K2Node_FunctionEntry"][0]
+    ed.remove_nodes([n for n in ed.list_all_nodes() if n != entry])
+    have = {str(p.get_pin_name()) for p in BP.list_output_pins(entry)}
     for name, typ in (("Id", string), ("IsOpen", boolean), ("Source", BP.get_object_reference_type(u.Actor))):
+        if name in have:
+            continue
         pin = ed.add_graph_input_parameter(name, typ)
         if not pin or not pin.is_valid():
             raise RuntimeError(f"Could not add the input {EVENT}.{name}")
-    entry = [n for n in ed.list_all_nodes() if n.get_class().get_name() == "K2Node_FunctionEntry"][0]
     eq = ed.add_call_function_node("/Script/Engine.KismetStringLibrary:Concat_StrStr")
     connect(entry, "Id", eq, "A")
     value(eq, "B", "=")
@@ -598,6 +613,93 @@ def build_level(cls, m):
     return counts
 
 
+def leaf_centre(parts):
+    lo, hi = None, None
+    for a in parts:
+        c, e = a.get_actor_bounds(False)
+        a_lo, a_hi = [c.x - e.x, c.y - e.y, c.z - e.z], [c.x + e.x, c.y + e.y, c.z + e.z]
+        lo = a_lo if lo is None else [min(p, q) for p, q in zip(lo, a_lo)]
+        hi = a_hi if hi is None else [max(p, q) for p, q in zip(hi, a_hi)]
+    return [(p + q) / 2 for p, q in zip(lo, hi)]
+
+
+def build_entrances(cls, m):
+    """#2314: the doors of the other zones (measurements.json doors outside l1007). A row with `parts` names the leaf's
+    exported nodes (makeDoor's frame bars, fill and handle; the garage door's sections), otherwise the leaf is the node
+    `id` (a world door). Each zone's imported level is copied (as Level_l1007_interaction is) and the leaf hangs on an
+    interactable at its hinge (a swing door) or at its pivot (the garage door, tipped up like a sash) with a blocking box.
+    The imported levels are not edited; build_exterior.py leaves these parts out of its collision copies."""
+    levels = u.EditorLoadingAndSavingUtils
+    done = {}
+    for zone, (source, target) in ENTRANCE_LEVELS.items():
+        rows = [d for d in m["doors"] if d["zone"] == zone]
+        if not rows:
+            continue
+        if ASSETS.does_asset_exist(target) and not ASSETS.delete_asset(target):
+            raise RuntimeError("Could not delete the previous " + target)
+        world = levels.load_map(source)
+        if not world or not levels.save_map(world, target):
+            raise RuntimeError(f"Could not copy {source} to {target} (import_world.py --zones {zone} first)")
+        world = levels.load_map(target)
+        actors = u.get_editor_subsystem(u.EditorActorSubsystem)
+        by_id = {str(a.tags[0]): a for a in actors.get_all_level_actors() if a.tags}
+        counts = {}
+        for d in rows:
+            missing = [p for p in d.get("parts", [d["id"]]) if p not in by_id]
+            if missing:
+                raise RuntimeError(f"{d['id']}: imported door nodes missing in {source}: {missing}")
+            parts = [by_id[p] for p in d.get("parts", [d["id"]])]
+            extra_tags = [u.Name("house:" + d["house"])] if d.get("house") else []
+            if d["kind"] == "swing":
+                xyz = d["hinge"]["unreal"]
+                opened = d["initiallyOpen"]
+                heading = d["open" if opened else "closed"]["unrealYaw"]
+                w, h, r = 100 * d["width"], 100 * d["height"], math.radians(heading)
+                if "parts" in d:  # a world door's node sits at its hinge (checked as in build_level); parts: check the leaf
+                    centre = leaf_centre(parts)
+                    want = [xyz[0] + w * math.cos(r) / 2, xyz[1] + w * math.sin(r) / 2]
+                    if math.dist(centre[:2], want) > LEAF_CHECK:
+                        raise RuntimeError(f"{d['id']}: the leaf's centre {centre[:2]} is not hinge + width / 2 {want}")
+                else:
+                    here = parts[0].get_actor_location()
+                    if math.dist([here.x, here.y, here.z], xyz) > 1.0:
+                        raise RuntimeError(f"Imported hinge differs from the export: {d['id']} {here} {xyz}")
+                hinge = interactable(actors, cls, d["id"], KIND_MOVE, xyz, yaw(heading), OpenRotation=yaw(d["open"]["unrealYaw"]),
+                                     ClosedRotation=yaw(d["closed"]["unrealYaw"]), OpenLocation=u.Vector(*xyz),
+                                     ClosedLocation=u.Vector(*xyz), TargetOpen=opened, Seconds=d["seconds"])
+                for leaf in parts:
+                    movable(leaf)
+                    attach(leaf, hinge)
+                box(actors, hinge, d["id"] + " collision", "door-leaf:" + d["id"],
+                    (xyz[0] + w * math.cos(r) / 2, xyz[1] + w * math.sin(r) / 2, xyz[2] + h / 2), (w / 2, LEAF_HALF, h / 2), yaw(heading))
+            elif d["kind"] == "overhead":  # the garage door: tipped up about its top edge (see export-scene.js entranceDoors)
+                pivot = d["pivot"]["unreal"]
+                q, err = sash_rotation(d)
+                if err > 1.0:
+                    raise RuntimeError(f"{d['id']}: the export's axis/angle miss its open check point by {err:.2f} cm")
+                closed = yaw(0)
+                opened = u.Quat(*q).rotator()
+                hinge = interactable(actors, cls, d["id"], KIND_MOVE, pivot, closed, OpenRotation=opened, ClosedRotation=closed,
+                                     OpenLocation=u.Vector(*pivot), ClosedLocation=u.Vector(*pivot),
+                                     TargetOpen=d["initiallyOpen"], Seconds=d["seconds"])
+                for leaf in parts:
+                    movable(leaf)
+                    attach(leaf, hinge)
+                bottom, w = d["checkClosed"]["unreal"], 100 * d["width"]
+                box(actors, hinge, d["id"] + " collision", "door-leaf:" + d["id"],
+                    [(p + b) / 2 for p, b in zip(pivot, bottom)], (LEAF_HALF, w / 2, abs(pivot[2] - bottom[2]) / 2))
+            else:
+                raise RuntimeError(f"{d['id']}: no Unreal door for kind {d['kind']} outside L1007")
+            if extra_tags:
+                hinge.tags = list(hinge.tags) + extra_tags
+            counts[d["kind"]] = counts.get(d["kind"], 0) + 1
+        if not levels.save_map(world, target):
+            raise RuntimeError("Could not save " + target)
+        u.log(f"LUNDEN_INTERACTION_ENTRANCES {target}: {json.dumps(counts)} {sorted(d['id'] for d in rows)}")
+        done[zone] = counts
+    return done
+
+
 def build_lift_level(cls, m):
     """The lifts' car and call buttons (src/liftpanel.js) as interactables in their own sub-level. The lifts themselves
     are not ported yet: a press only sets the button's state (lit) and raises ChangeCount, the hook a ported lift binds to."""
@@ -625,11 +727,13 @@ def main(argv):
     m = json.loads(path.read_text(encoding="utf-8"))
     if "interaction" not in m or not any(w.get("sashes") for w in m["windows"]):
         raise RuntimeError("measurements.json has no #2285 interaction data: export again (export-world.mjs)")
-    for level in (TARGET, LIFTS):  # generated: delete first, so a rebuilt class does not keep the old level loaded
+    # generated: delete first, so a rebuilt class does not keep the old levels loaded
+    for level in (TARGET, LIFTS) + tuple(t for _, t in ENTRANCE_LEVELS.values()):
         if ASSETS.does_asset_exist(level) and not ASSETS.delete_asset(level):
             raise RuntimeError("Could not delete the previous " + level)
     cls = build_class(build_listener())
     build_level(cls, m)
+    build_entrances(cls, m)
     build_lift_level(cls, m)
     u.log("LUNDEN_INTERACTION_OK")
 

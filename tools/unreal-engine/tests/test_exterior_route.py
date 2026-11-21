@@ -1,14 +1,19 @@
 """#2279: walk from START into Hus L's stairwell and down into the garage on the composed world map, in Play In Editor.
 
 The production character starts at START in /Game/Lunden/Maps/L_Lunden and, driven only by W and the view direction,
-walks west along the street (the ground collision of build_site.py, #2280) into the portik, through the open way into the
-stairwell (its door leaf has no collision until #2285), onto the landing of våning 1, north along the passage beside
+walks west along the street (the ground collision of build_site.py, #2280) into the portik, through the stairwell door
+(#2314: a usable door that blocks while closed, so the route opens it by id first), onto the landing of våning 1, north along the passage beside
 the flights, down the flight to våning −1 and east through the basement opening into the garage. Each checkpoint must
 be reached and stand on the expected floor (12 cm), so the collision of the stairwell and the garage holds the capsule.
 
 Waypoints (cm, Unreal axes) come from src/config.js CORE (the band x −18.95 … −16.62 m split at −17.95, the flights'
 foot z 7.61 m, 16 treads of 0.25 m to våning 1, the landing z 7.61 … 9.58 m, the basement openings z 7.95 … 8.85 m),
 PORTIK and CORE.portikDoor (z 8.45 … 9.48 m at x −16.12 m), and GARAGE.floor (−3 m).
+
+#2314: then two doors outside L1007, each from a point outside (the character is moved there): walking at the closed
+door must stop at it, and after the door is opened by id the character walks through to a point inside. The entrance
+of Hus A (from the courtyard recess into its stairwell; the points are measured from measurements.json's hinge, width
+and yaw) and the garage door (from the drive into the entrance hall; from its pivot).
 
 Run like the other tests: copy this file to unreal/Lunden/Content/Python/ (untracked) and
     run-tests.ps1 -Filter Editor.Python.Lunden.test_exterior_route
@@ -49,6 +54,31 @@ ROUTE = [  # name, x, y, floor (cm)
     ("basement opening", -1600, 840, GARAGE),
     ("garage under Hus L", -1450, 840, GARAGE),
 ]
+
+# #2314: the doors the route goes through (measurements.json); points outside and inside, either side of the leaf
+DOOR_ROWS = {d["id"]: d for d in M["doors"]}
+PORTIK_DOOR = next(i for i, d in DOOR_ROWS.items() if d.get("house") == "l" and d["level"] == 0)
+
+
+def through_swing(d, before=150, after=200):
+    hx, hy, hz = d["hinge"]["unreal"]
+    c, o = (math.radians(d[k]["unrealYaw"]) for k in ("closed", "open"))
+    dc, do = (math.cos(c), math.sin(c)), (math.cos(o), math.sin(o))
+    dot = do[0] * dc[0] + do[1] * dc[1]
+    n = (do[0] - dot * dc[0], do[1] - dot * dc[1])
+    n = (n[0] / math.hypot(*n), n[1] / math.hypot(*n))  # the leaf opens to this side: outside
+    mid = (hx + 50 * d["width"] * dc[0], hy + 50 * d["width"] * dc[1])
+    return d["id"], (mid[0] + before * n[0], mid[1] + before * n[1]), (mid[0] - after * n[0], mid[1] - after * n[1]), hz
+
+
+def through_overhead(d):
+    px, py, _ = d["pivot"]["unreal"]
+    return d["id"], (px - 250, py), (px + 300, py), d["checkClosed"]["unreal"][2]
+
+
+THROUGH = [through_swing(next(d for d in DOOR_ROWS.values() if d.get("house") == "a")),
+           through_overhead(next(d for d in DOOR_ROWS.values() if d["kind"] == "overhead"))]
+DOOR_SECONDS = {i: d["seconds"] for i, d in DOOR_ROWS.items()}
 
 editor = u.get_editor_subsystem(u.UnrealEditorSubsystem)
 levels = u.get_editor_subsystem(u.LevelEditorSubsystem)
@@ -125,12 +155,40 @@ def route_test():
             if floor is not None and abs(p.z - HALF_HEIGHT - floor) > 12:
                 raise RuntimeError(f"Wrong floor at {name}: centre {p.z:.2f}, expected {HALF_HEIGHT + floor:.2f}")
 
+        def open_door(door_id):
+            found = u.GameplayStatics.get_all_actors_with_tag(world, "interact:" + door_id)
+            if len(found) != 1:
+                raise RuntimeError(f"interact:{door_id}: {len(found)} actors")
+            found[0].call_method("OpenDoor")
+            yield from wait(DOOR_SECONDS[door_id] + 0.3)
+
         start = report("START")
         want = M["spawn"]["start"]["unreal"]
         if math.hypot(start.x - want[0], start.y - want[1]) > 10:
             raise RuntimeError(f"Spawned at {start}, not at START {want}")
         for name, x, y, floor in ROUTE:
+            if name == "through the stairwell door":  # #2314: the portik's stairwell door blocks while closed
+                yield from open_door(PORTIK_DOOR)
             yield from move(name, x, y, floor, tolerance=4 if floor is None else 8)
+        # #2314: a closed door stops the character, the open door lets it through
+        result["doors"] = {}
+        for door_id, outside, inside, floor in THROUGH:
+            pawn.set_actor_location(u.Vector(outside[0], outside[1], floor + HALF_HEIGHT + 5), False, True)
+            yield from wait(0.5)
+            report(door_id + " outside")
+            try:
+                yield from move(door_id + " closed", inside[0], inside[1], floor)
+                stopped = False
+            except RuntimeError:
+                stopped = True
+            p = pawn.get_actor_location()
+            if not stopped:
+                raise RuntimeError(f"{door_id}: walked through the closed door to {p}")
+            # step back out of the leaf's swing (a door opens outwards), as a player would, then open it
+            pawn.set_actor_location(u.Vector(outside[0], outside[1], floor + HALF_HEIGHT + 5), False, True)
+            yield from open_door(door_id)
+            yield from move(door_id + " open, inside", inside[0], inside[1], floor)
+            result["doors"][door_id] = {"stoppedClosedAt": [round(p.x, 2), round(p.y, 2), round(p.z, 2)], "throughOpen": True}
         (Path(u.Paths.project_saved_dir()) / "exterior-route-result.json").write_text(json.dumps(result, indent=2) + "\n")
         u.log(f"LUNDEN_EXTERIOR_ROUTE_OK {len(result['checkpoints'])} checkpoints")
     finally:

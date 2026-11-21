@@ -1,13 +1,16 @@
 """#2285: L1007's doors, windows, switches and taps in Play In Editor on the composed world map L_Lunden.
 
 1. Coverage: every L1007 door and window sash in measurements.json has exactly one interactable (tag interact:<id>),
-   and so do the room switches and taps.
+   and so do the room switches and taps. Since #2314 also the doors outside L1007: Hus L's stairwell doors (portik,
+   loftgång) and its portik's small room, the entrances of Hus A, B and C, and the garage door (kind overhead, checked
+   like a sash: pivot, angle, check point).
 2. By id, without the player (#2292/#2293): OpenDoor on every door and sash; after its Seconds each hinge is within
    1 cm of the export's hinge / pivot, a swing door's yaw within 1 degree of open.unrealYaw, a slider's blocking box
    within 1 cm of openCentre, and a sash's check point (bottom rail centre) within 1 cm of checkOpen at the export's
    angle (within 1 degree). A second OpenDoor changes nothing: ChangeCount rises exactly once per change. CloseDoor
    brings each back to its closed pose. Wardrobe pairs: opening one panel closes its open partner (src/doors.js).
-3. Player use: the production controller's E aimed at the front door (as the pilot's door test) opens it.
+3. Player use: the production controller's E aimed at the front door (as the pilot's door test) opens it. #2314: E
+   from outside opens each door outside L1007 and E aimed at the open leaf closes it again.
 4. A switch turns its room's real lamps (#2283's BP_LundenLamp actors tagged lamp:<id> in Level_lighting) on and off
    and leaves another room's lamp off; a tap shows and hides its water.
 5. The four lifts' 49 buttons (Level_lift_buttons) sit within 1 cm of the export and light once on two presses.
@@ -56,8 +59,12 @@ subscriber.tags = [u.Name("interaction-test-listener")]  # subscribes for the wh
 saved_slot = save_isolation.isolate()
 levels.editor_request_begin_play()
 
-DOORS = {d["id"]: d for d in M["doors"] if d["zone"] == "l1007"}
+DOORS = {d["id"]: d for d in M["doors"] if d["kind"] != "overhead"}  # L1007's and (#2314) the other zones' doors
+L1007 = [i for i, d in DOORS.items() if d["zone"] == "l1007"]
+OUTSIDE = [i for i, d in DOORS.items() if d["zone"] != "l1007"]
+OVERHEAD = {d["id"]: d for d in M["doors"] if d["kind"] == "overhead"}  # #2314: the garage door, tipped up like a sash
 SASHES = {s["id"]: s for w in M["windows"] for s in w.get("sashes", [])}
+SASHES.update(OVERHEAD)
 SWITCHES = M["interaction"]["switches"]
 TAPS = M["interaction"]["taps"]
 LIFT_BUTTONS = M["interaction"].get("liftButtons", [])
@@ -161,24 +168,29 @@ def run():
             return got
 
         # 2. by id: swing doors, sliders and sashes all at once; wardrobes in pairs afterwards
+        evidence["overhead"] = {}
+
+        def bucket(i):
+            return evidence["doors"] if i in DOORS else evidence["overhead"] if i in OVERHEAD else evidence["sashes"]
         wardrobes = [i for i, d in DOORS.items() if d["kind"] == "wardrobe"]
         simple = [i for i in list(DOORS) + list(SASHES) if i not in wardrobes]
-        wait = max([d["seconds"] for d in DOORS.values()] + [s["seconds"] for s in SASHES.values()]) + 0.4
+        wait = max([d["seconds"] for d in DOORS.values()] + [s["seconds"] for s in SASHES.values() if s["id"] not in OVERHEAD]) + 0.4
+        slow = max([wait] + [d["seconds"] + 0.4 for d in OVERHEAD.values()])  # the garage door takes GARAGE.door.seconds
         for i in simple:
             act[i].call_method("OpenDoor")
-        yield from seconds(wait)
+        yield from seconds(slow)
         for i in simple:
             act[i].call_method("OpenDoor")  # already open: no change, no event
         yield from seconds(0.1)
         for i in simple:
-            (evidence["doors"] if i in DOORS else evidence["sashes"])[i] = {"opened": check(i, True)}
+            bucket(i)[i] = {"opened": check(i, True)}
             if count(act[i]) != 1:
                 problems.append(f"{i}: {count(act[i])} changes after open + repeated open")
         for i in simple:
             act[i].call_method("CloseDoor")
-        yield from seconds(wait)
+        yield from seconds(slow)
         for i in simple:
-            (evidence["doors"] if i in DOORS else evidence["sashes"])[i]["closed"] = check(i, False)
+            bucket(i)[i]["closed"] = check(i, False)
             if count(act[i]) != 2:
                 problems.append(f"{i}: {count(act[i])} changes after open + close")
             if heard(i) != [True, False]:
@@ -214,6 +226,45 @@ def run():
         evidence["frontDoorWithE"] = check(ENTRANCE, True)
         if count(act[ENTRANCE]) != before + 1 or not act[ENTRANCE].get_editor_property("TargetOpen"):
             problems.append(f"E did not open the front door once ({before} -> {count(act[ENTRANCE])})")
+
+        def press_e(at, rotation, i, want_open, settle):
+            camera.set_actor_location_and_rotation(u.Vector(*at), rotation, False, True)
+            yield from seconds(0.2)
+            n = count(act[i])
+            u.SystemLibrary.execute_console_command(game, "Input.+key E 1", pc)
+            yield
+            u.SystemLibrary.execute_console_command(game, "Input.-key E", pc)
+            yield from seconds(settle)
+            if count(act[i]) != n + 1 or act[i].get_editor_property("TargetOpen") != want_open:
+                problems.append(f"E did not {'open' if want_open else 'close'} {i} once ({n} -> {count(act[i])})")
+            return check(i, want_open)
+
+        # #2314: E from outside opens every door outside L1007, E aimed at its open leaf closes it
+        evidence["outsideWithE"] = {}
+        for i in OUTSIDE:
+            d = DOORS[i]
+            hx, hy, hz = d["hinge"]["unreal"]
+            w = 100 * d["width"]
+            c, o = (math.radians(d[k]["unrealYaw"]) for k in ("closed", "open"))
+            dc, do = (math.cos(c), math.sin(c)), (math.cos(o), math.sin(o))
+            dot = do[0] * dc[0] + do[1] * dc[1]
+            n = (do[0] - dot * dc[0], do[1] - dot * dc[1])
+            n = (n[0] / math.hypot(*n), n[1] / math.hypot(*n))  # the side the leaf opens to (outside)
+            leaf = (hx + w / 2 * dc[0], hy + w / 2 * dc[1])
+            cam = (leaf[0] + 100 * n[0], leaf[1] + 100 * n[1], hz + 110)
+            opened = yield from press_e(cam, u.Rotator(roll=0, pitch=0, yaw=math.degrees(math.atan2(leaf[1] - cam[1], leaf[0] - cam[0]))),
+                                        i, True, d["seconds"] + 0.4)
+            leaf = (hx + w / 2 * do[0], hy + w / 2 * do[1])
+            cam = (leaf[0] + 100 * dc[0], leaf[1] + 100 * dc[1], hz + 110)
+            closed = yield from press_e(cam, u.Rotator(roll=0, pitch=0, yaw=math.degrees(math.atan2(leaf[1] - cam[1], leaf[0] - cam[0]))),
+                                        i, False, d["seconds"] + 0.4)
+            evidence["outsideWithE"][i] = {"opened": opened, "closed": closed}
+        for i, d in OVERHEAD.items():  # outside on the drive, then from inside under the open door looking up at it
+            px, py, pz = d["pivot"]["unreal"]
+            floor = d["checkClosed"]["unreal"][2]
+            opened = yield from press_e((px - 150, py, floor + 110), u.Rotator(roll=0, pitch=0, yaw=0), i, True, d["seconds"] + 0.4)
+            closed = yield from press_e((px + 130, py, floor + 150), u.Rotator(roll=0, pitch=80, yaw=0), i, False, d["seconds"] + 0.4)
+            evidence["outsideWithE"][i] = {"opened": opened, "closed": closed}
         # 4. a switch and its room's lamps; a tap and its water
         lamps = {}
         for lid in sorted({lid for s in SWITCHES for lid in s["lamps"]}):
@@ -290,7 +341,8 @@ def run():
         (Path(u.Paths.project_saved_dir()) / "interaction-result.json").write_text(json.dumps(evidence, indent=1) + "\n", encoding="utf-8")
         if problems:
             raise RuntimeError("LUNDEN_INTERACTION_TEST failed: " + "; ".join(problems[:20]))
-        u.log(f"LUNDEN_INTERACTION_TEST_OK {len(DOORS)} doors, {len(SASHES)} sashes, {len(SWITCHES)} switches, {len(TAPS)} taps, "
+        u.log(f"LUNDEN_INTERACTION_TEST_OK {len(L1007)} doors, {len(SASHES) - len(OVERHEAD)} sashes, {len(SWITCHES)} switches, {len(TAPS)} taps, "
+              f"{len(OUTSIDE)} doors outside L1007, {len(OVERHEAD)} garage door, "
               f"{len(LIFT_BUTTONS)} lift buttons, {len(received)} change events")
     finally:
         levels.editor_request_end_play()

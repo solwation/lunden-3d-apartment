@@ -1,0 +1,216 @@
+{
+  "engine": "5.8.4-58902052+++UE5+Release-5.8",
+  "map": "/Game/Lunden/Maps/L_Lunden",
+  "pawn": "BP_LundenPlayer_C",
+  "subLevels": [
+    "/Game/Lunden/Generated/Interaction/Level_l1007_interaction",
+    "/Game/Lunden/Generated/L1007World/Level_l1007_collision",
+    "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats",
+    "/Game/Lunden/Generated/l1007-entre/Level_l1007-entre",
+    "/Game/Lunden/Generated/Interaction/Level_hus-l_interaction",
+    "/Game/Lunden/Generated/Interaction/Level_kvarteret_interaction",
+    "/Game/Lunden/Generated/ExteriorWorld/Level_exterior_collision",
+    "/Game/Lunden/Generated/gard/Level_gard",
+    "/Game/Lunden/Generated/omgivning/Level_omgivning",
+    "/Game/Lunden/Generated/SiteWorld/Level_site_collision",
+    "/Game/Lunden/Generated/Lighting/Level_lighting",
+    "/Game/Lunden/Generated/VegetationWorld/Level_vegetation_foliage",
+    "/Game/Lunden/Generated/Interaction/Level_lift_buttons"
+  ],
+  "checkpoints": [
+    {
+      "label": "START",
+      "capsuleCm": [
+        287.5,
+        -1200.0,
+        95.85
+      ]
+    },
+    {
+      "label": "street west of L1007",
+      "capsuleCm": [
+        1.15,
+        -303.59,
+        102.65
+      ]
+    },
+    {
+      "label": "street by the portik",
+      "capsuleCm": [
+        -1446.14,
+        -300.01,
+        102.65
+      ]
+    },
+    {
+      "label": "in the portik",
+      "capsuleCm": [
+        -1449.99,
+        893.67,
+        95.45
+      ]
+    },
+    {
+      "label": "through the stairwell door",
+      "capsuleCm": [
+        -1636.34,
+        896.94,
+        94.95
+      ]
+    },
+    {
+      "label": "stairwell landing, v\u00e5ning 1",
+      "capsuleCm": [
+        -1726.63,
+        861.33,
+        94.65
+      ]
+    },
+    {
+      "label": "passage beside the flights",
+      "capsuleCm": [
+        -1729.96,
+        602.97,
+        94.65
+      ]
+    },
+    {
+      "label": "street-end floor, v\u00e5ning 1",
+      "capsuleCm": [
+        -1730.0,
+        283.24,
+        94.65
+      ]
+    },
+    {
+      "label": "top of the flight down",
+      "capsuleCm": [
+        -1841.66,
+        280.09,
+        94.65
+      ]
+    },
+    {
+      "label": "flight down 1",
+      "capsuleCm": [
+        -1845.03,
+        421.1,
+        59.36
+      ]
+    },
+    {
+      "label": "flight down 2",
+      "capsuleCm": [
+        -1845.0,
+        540.81,
+        -28.88
+      ]
+    },
+    {
+      "label": "flight down 3",
+      "capsuleCm": [
+        -1845.0,
+        660.52,
+        -117.11
+      ]
+    },
+    {
+      "label": "foot of the flight, v\u00e5ning \u22121",
+      "capsuleCm": [
+        -1845.0,
+        796.23,
+        -205.05
+      ]
+    },
+    {
+      "label": "stairwell, v\u00e5ning \u22121",
+      "capsuleCm": [
+        -1733.11,
+        838.82,
+        -205.05
+      ]
+    },
+    {
+      "label": "basement opening",
+      "capsuleCm": [
+        -1602.74,
+        839.98,
+        -205.05
+      ]
+    },
+    {
+      "label": "garage under Hus L",
+      "capsuleCm": [
+        -1453.7,
+        840.0,
+        -205.05
+      ]
+    },
+    {
+      "label": "door_husa_l0_x222_z3090 outside",
+      "capsuleCm": [
+        179.5,
+        2940.0,
+        98.65
+      ]
+    },
+    {
+      "label": "door_husa_l0_x222_z3090 closed BLOCKED",
+      "capsuleCm": [
+        179.5,
+        3065.4,
+        98.65
+      ]
+    },
+    {
+      "label": "door_husa_l0_x222_z3090 open, inside",
+      "capsuleCm": [
+        179.5,
+        3286.53,
+        95.25
+      ]
+    },
+    {
+      "label": "door_garage_l0_xm7050_z4400 outside",
+      "capsuleCm": [
+        -7290.0,
+        4400.0,
+        -204.15
+      ]
+    },
+    {
+      "label": "door_garage_l0_xm7050_z4400 closed BLOCKED",
+      "capsuleCm": [
+        -7064.6,
+        4400.0,
+        -204.15
+      ]
+    },
+    {
+      "label": "door_garage_l0_xm7050_z4400 open, inside",
+      "capsuleCm": [
+        -6742.77,
+        4400.0,
+        -205.05
+      ]
+    }
+  ],
+  "doors": {
+    "door_husa_l0_x222_z3090": {
+      "stoppedClosedAt": [
+        179.5,
+        3065.4,
+        98.65
+      ],
+      "throughOpen": true
+    },
+    "door_garage_l0_xm7050_z4400": {
+      "stoppedClosedAt": [
+        -7064.6,
+        4400.0,
+        -204.15
+      ],
+      "throughOpen": true
+    }
+  }
+}

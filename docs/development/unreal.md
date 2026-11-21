@@ -482,8 +482,8 @@ open the map (see [Parallel work](#parallel-work-levels-and-blueprints)).
 | `/Game/Lunden/Generated/L1007World/Level_l1007_collision` | #2278 | `build_l1007.py` | walkable collision: 54 wall/floor boxes, 15 complex-as-simple stair treads |
 | `/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats` | #2289 (importer output) | `import_world.py --zones l1007-uteplats` | L1007's patio: paving, fences, screen walls, hedge, patio furniture and lamps ([Furnishing](#furnishing-and-pictures-2289)) |
 | `/Game/Lunden/Generated/l1007-entre/Level_l1007-entre` | #2279 (importer output) | `import_world.py --zones l1007-entre` | street, pavement and terrain pieces in front of L1007 |
-| `/Game/Lunden/Generated/hus-l/Level_hus-l` | #2279 (importer output) | `import_world.py --zones hus-l` | Hus L: façades, loftgång, roofs, patios, portik, stairwell/lift core, L1004/L1201 |
-| `/Game/Lunden/Generated/kvarteret/Level_kvarteret` | #2279 (importer output) | `import_world.py --zones kvarteret` | Hus A/B/C with stairwells and entrance shells, the garage |
+| `/Game/Lunden/Generated/Interaction/Level_hus-l_interaction` | #2279 line, #2314 package | `import_world.py --zones hus-l`, then `build_interaction.py` | Hus L: façades, loftgång, roofs, patios, portik, stairwell/lift core, L1004/L1201, with #2314's usable stairwell doors (portik, loftgång) and the portik's small room door; replaced the importer's `Generated/hus-l/Level_hus-l` |
+| `/Game/Lunden/Generated/Interaction/Level_kvarteret_interaction` | #2279 line, #2314 package | `import_world.py --zones kvarteret`, then `build_interaction.py` | Hus A/B/C with stairwells and entrance shells, the garage, with #2314's usable entrance doors and garage door; replaced the importer's `Generated/kvarteret/Level_kvarteret` |
 | `/Game/Lunden/Generated/ExteriorWorld/Level_exterior_collision` | #2279 | `build_exterior.py` | walkable collision: Hus L's stairwell and the garage (complex-as-simple copies) |
 | `/Game/Lunden/Generated/gard/Level_gard` | #2280 (importer output) | `import_world.py --zones gard` | the courtyard on the garage box: terrain, walks, pergolas, sandboxes, playground, boule court, benches, beds |
 | `/Game/Lunden/Generated/omgivning/Level_omgivning` | #2280 (importer output) | `import_world.py --zones omgivning` | terrain, streets, pavements, parked cars, street furniture, the Höje å valley with paths, bridges and water surface |
@@ -1135,6 +1135,44 @@ Since #2312 a `BP_LundenInteractionListener` placed before Play must hear every 
 change (its calls equal `ChangeCount` and alternate with the state), and a door, a sash, the switch and the tap
 exactly `[open, closed]` for open + repeated open + close. Results:
 [docs/verification/2285/](../verification/2285/README.md), [docs/verification/2312/](../verification/2312/README.md).
+
+### Doors outside L1007 (#2314)
+
+**Data.** The web's other doors that open are no `world.doors`: Hus L's stairwell doors (the portik's glazed door
+`porten till trapphuset` and `dörren till loftgången`, src/core.js makeDoor), the entrances of Hus A, B and C
+(src/corehouse.js, the same makeDoor) and the garage door (src/garage.js GarageDoor). Their leaves are exported as
+several nodes (frame bars, fill, handle; the garage door's five sections), so `export-scene.js entranceDoors` adds a
+`measurements.json` `doors` row per door whose `id` names the interactable (`door_hus<l|a|b|c>_l<level>_x…_z…`,
+`door_garage_l0_xm7050_z4400`) and whose `parts` lists the leaf's nodes. A stairwell door is a `swing` row like
+L1007's (hinge at the floor, `unrealYaw` the hinge → latch direction closed and open, makeDoor's `max` 1.5 rad, 0.5 s).
+The garage door is `kind: overhead`, described like a window sash: `pivot` (its top edge), `axis`, `angleDeg` 90,
+`checkClosed` (the bottom edge's centre) and `checkOpen`, `seconds` 9 (`GARAGE.door`). The GLBs did not change.
+
+**Unreal.** `build_interaction.py` copies the imported `Level_hus-l` and `Level_kvarteret` to
+`Generated/Interaction/Level_hus-l_interaction` and `Level_kvarteret_interaction` (as `Level_l1007_interaction`), hangs
+each leaf's nodes on a `BP_LundenSwingDoor` at the hinge or pivot with a blocking box (tags `interact:<id>`,
+`house:<l|a|b|c>`), and also makes the portik's small room door (`door_l0_xm1355_z1055`, a `world.doors` row in zone
+`hus-l`) usable. The copies replace the imported levels in `world-levels.json` (their lines stay #2279's).
+`build_exterior.py` leaves the `parts` nodes out of its collision copies, so the closed boxes block and the open ones
+let the player through. Every contract of the [L1007 doors](#doors-windows-switches-and-taps-2285) holds: E, by id,
+`ChangeCount`, the change event.
+
+*Decisions (can be overturned):* the web's garage door rolls its sections up a track and in under the ceiling and is
+worked from two yellow buttons (and opens itself for the car, closing after 25 s); in Unreal the closed door tips up
+about its top edge into the same open place under the ceiling (the same end state, a different motion), it opens and
+closes with E on the door itself, and the buttons, the automatic closing and the car are not ported. Hus L's portik
+door blocks while closed (before #2314 it stood closed but had no collision).
+
+**Houses checked (equivalent houses rule).** Hus A, B and C: each entrance (the same corehouse.js door, all three
+fixed). Hus L: the portik's stairwell door (same makeDoor; was closed but walk-through), the loftgång's stairwell door
+(same makeDoor; was blocking and not usable) and the portik's small room (a `world.doors` row that was not usable):
+all three fixed. Not in scope: the flats' doors in the A/B/C stairwells (#653: makeDoor leaves merged into one mesh
+each, which open onto a dark cell on the web) and the garage's steel, cage and park doors, which still stand as
+exported.
+
+Checks: `test_interaction` (every door: hinge within 1 cm, yaw / angle within 1°, the garage door's check point within
+1 cm, E from outside opens and E at the open leaf closes it, the change event once per change),
+`test_exterior_route` and `test_facades` on the composed `L_Lunden`: [docs/verification/2314/](../verification/2314/README.md).
 
 ## Furnishing and pictures (#2289)
 
@@ -2318,26 +2356,29 @@ Nanite off in memory; then they match the web. See the [#2279 verification](../v
 
 **In the world map.** `world-levels.json` lists the three zone levels and `Level_exterior_collision`
 ([World map](#world-map-l_lunden-2278)). `build_exterior.py` builds the collision where the player can now reach:
-a complex-as-simple copy of every imported mesh of Hus L's stairwell (`source` src/core.js, 50 actors less the 6 parts
-of the portik's glazed door leaf, which stays open until #2285), of Hus A/B/C's stairwells, which open onto the garage on
-våning −1 (src/corehouse.js; their door leaves stay closed as exported), and of the garage (src/garage.js), each with
+a complex-as-simple copy of every imported mesh of Hus L's stairwell (`source` src/core.js), of Hus A/B/C's
+stairwells, which open onto the garage on våning −1 (src/corehouse.js), and of the garage (src/garage.js), less the
+nodes of the door leaves that open (#2314: every `parts` id of a `measurements.json` door row, 35 nodes; until #2314
+only the portik's glazed door leaf was left out, by a hand-measured box, so it stood closed but passable), each with
 double-sided triangles and Nanite off on the copy (so neither #2298 nor #2299 applies to it), hidden in game on the
 imported actor's transform. The street west to the portik and the portik's floor are `build_site.py`'s ground
 collision since #2280, which removed the two provisional street-level boxes placed here before. Since #2302 the same
 builder also copies the buildings' outsides: Hus L's façades, loftgång, roofs, terraces, the neighbours' patios and the
 portik (`source` src/exterior.js, 130 actors, 74 meshes, about 110k triangles) and Hus A/B/C's façades, loggias and
 roofs (src/surroundings.js, 19 actors and meshes, about 46k triangles): 522 actors from 376 mesh copies in all. The
-copies keep the web's openings, so Hus L's portik stays a through-passage; the garage door and the A/B/C entrances keep
-the closed leaves and glazing of the garage and stairwell copies (blocking since #2279; doors that open are #2285).
+copies keep the web's openings, so Hus L's portik stays a through-passage; the garage door and the A/B/C entrances
+block while closed and open with E since #2314 ([Doors outside L1007](#doors-outside-l1007-2314)).
 Hus L's visitable flats (src/world.js visitFlatParts) get no copy. `tests/test_facades.py` (PIE on `L_Lunden`) places
 the character 2.5 m outside each of the export's 16 façade and gable rays (four per house) and walks it towards a point
 6 m inside: before #2302 it got inside at 15 of 16 points, now it stops at all 16 (22–30 cm before the ray's
 façade point, 1.6 m past it under Hus C's south loggias), and the portik and the drive up to the garage door stay
 passable: see the [#2302 verification](../verification/2302/README.md).
 The skip rule is `build_l1007.py`'s (both import fingerprints, the script, the output packages).
-`tests/test_exterior_route.py` (PIE on `L_Lunden`) walks START → street → portik → through the stairwell door →
-landing → passage → down the flight to våning −1 → through the basement opening into the garage under Hus L, each
-checkpoint on its floor: see the [#2279 verification](../verification/2279/README.md).
+`tests/test_exterior_route.py` (PIE on `L_Lunden`) walks START → street → portik → through the stairwell door (opened
+by id since #2314) → landing → passage → down the flight to våning −1 → through the basement opening into the garage
+under Hus L, each checkpoint on its floor: see the [#2279 verification](../verification/2279/README.md). Since #2314 it
+also walks at Hus A's closed entrance and at the closed garage door from outside (both stop the character), opens each
+and walks through to a point inside ([#2314 verification](../verification/2314/README.md)).
 
 ### Ground: terrain, streets, courtyard and Höje å (#2280)
 

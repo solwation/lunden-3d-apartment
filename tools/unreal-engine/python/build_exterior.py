@@ -8,17 +8,19 @@ Reads the imported zones /Game/Lunden/Generated/hus-l/Level_hus-l and /Game/Lund
 which compose_world.py streams next to them:
 
 - a collision copy of every imported mesh of Hus L's stairwell (export `source` src/core.js: walls, flights, landings,
-  the lift shaft), of Hus A/B/C's stairwells, which open onto the garage on våning −1 (src/corehouse.js; their doors
-  stay as exported, closed), of the garage (src/garage.js: floor, walls, ramps, doors), and (#2302) of the buildings'
+  the lift shaft), of Hus A/B/C's stairwells, which open onto the garage on våning −1 (src/corehouse.js), of the garage
+  (src/garage.js: floor, walls, ramps, doors), and (#2302) of the buildings'
   outsides: Hus L's façades, loftgång, roofs, terraces, the neighbours' patios and the portik (src/exterior.js) and Hus
   A/B/C's façades, loggias and roofs (src/surroundings.js), placed on the imported actor's transform
   and hidden in game. Each copy is complex-as-simple with double-sided triangles and Nanite off, so the capsule follows
   the full mesh: the imported meshes have no simple shapes (their complex collision was also single-sided until
   importer version 6, #2299, and the simplified Nanite fallback until version 5, #2298). Copies leave the imported
   meshes alone;
-- not the portik's glazed door leaf into the stairwell (doors that open are #2285), so the way in stays open. The
-  façade meshes keep the web's openings: the portik stays a through-passage and the garage door's opening in the box
-  stays as garage.js has it (tests/test_facades.py).
+- not the leaves of the doors that open (#2314): every node listed in a measurements.json door row's `parts` (Hus L's
+  stairwell doors from the portik and the loftgång, the entrances of Hus A/B/C, the garage door's sections). Their
+  interactables in build_interaction.py's Level_hus-l_interaction / Level_kvarteret_interaction carry a blocking box that
+  moves with the leaf. The façade meshes keep the web's openings: the portik stays a through-passage and the garage
+  door's opening in the box stays as garage.js has it (tests/test_facades.py).
 
 The street from START west to the portik and the portik's floor are the ground's collision level (build_site.py,
 #2280), which replaced the provisional street-level boxes this builder placed until then.
@@ -42,9 +44,7 @@ SOURCES = {"hus-l": ("/Game/Lunden/Generated/hus-l/Level_hus-l", {"source:src/co
 FOLDER = "/Game/Lunden/Generated/ExteriorWorld"
 TARGET = FOLDER + "/Level_exterior_collision"
 TAGS = ["kind:collision", "derived:exterior-collision"]
-# The portik's glazed door into the stairwell (cm, Unreal axes): src/config.js PORTIK.west = -16.12 m (the screen's line)
-# and CORE.portikDoor.z = [8.45, 9.48] m. Imported actors whose bounds centre lies in this box are the leaf's parts.
-DOOR_LEAF = {"x": (-1612 - 60, -1612 + 60), "y": (845 - 5, 948 + 5), "z": (-10, 230)}
+MEASUREMENTS = Path(u.Paths.convert_relative_path_to_full(u.Paths.project_dir())) / "Import/measurements.json"
 
 content = Path(u.Paths.project_content_dir())
 out_dir = content / "Lunden/Generated/ExteriorWorld"
@@ -64,11 +64,17 @@ def package_files():
     return sorted(p for p in out_dir.rglob("*") if p.suffix in (".umap", ".uasset"))
 
 
+def door_parts():
+    """#2314: the exported nodes of the leaves that open (measurements.json doors with `parts`), by zone."""
+    doors = json.loads(MEASUREMENTS.read_text(encoding="utf-8"))["doors"]
+    return {z: sorted(p for d in doors if d["zone"] == z for p in d.get("parts", [])) for z in SOURCES}
+
+
 def inputs():
     stamps = {z: json.loads((content / f"Lunden/Generated/{z}/import-stamp.json").read_text(encoding="utf-8")) for z in SOURCES}
     return {"importFingerprints": {z: s["contentFingerprint"] for z, s in stamps.items()},
             "importGlbs": {z: s["export"]["sha256"] for z, s in stamps.items()},
-            "builder": text_sha(__file__), "engine": u.SystemLibrary.get_engine_version()}
+            "doorParts": door_parts(), "builder": text_sha(__file__), "engine": u.SystemLibrary.get_engine_version()}
 
 
 def unchanged(wanted):
@@ -79,14 +85,10 @@ def unchanged(wanted):
     return old.get("inputs") == wanted and old.get("files") == files and files
 
 
-def in_leaf(centre):
-    d = DOOR_LEAF
-    return d["x"][0] < centre.x < d["x"][1] and d["y"][0] < centre.y < d["y"][1] and d["z"][0] < centre.z < d["z"][1]
-
-
 def collect():
     """The meshes to copy, as plain values (each source world is unloaded after)."""
     meshes, skipped = [], []
+    parts = door_parts()
     for zone, (level, tag) in SOURCES.items():
         if not u.EditorLoadingAndSavingUtils.load_map(level):
             raise RuntimeError(f"Missing {level}: run import_world.py --zones {zone} first")
@@ -97,16 +99,16 @@ def collect():
             mesh = a.static_mesh_component.static_mesh
             if not mesh:
                 continue
-            centre, _ = a.get_actor_bounds(False)
-            if zone == "hus-l" and in_leaf(centre):
-                skipped.append(a.get_name())
+            if a.tags and str(a.tags[0]) in parts[zone]:
+                skipped.append(str(a.tags[0]))
                 continue
             meshes.append((zone, a.get_name(), a.get_actor_transform(), mesh.get_path_name()))
             found += 1
         if not found:
             raise RuntimeError(f"{level} has no actors tagged {tag}")
-    if not skipped:
-        raise RuntimeError("The portik door leaf was not found: check DOOR_LEAF against the export")
+    missing = sorted(set(p for z in parts.values() for p in z) - set(skipped))
+    if missing:
+        raise RuntimeError(f"Door leaf nodes of measurements.json not found among the copied meshes: {missing}")
     return meshes, skipped
 
 
@@ -167,7 +169,7 @@ def main(argv):
         stamp_path.write_text(json.dumps({"inputs": wanted, "files": files}, indent=1, sort_keys=True) + "\n",
                               encoding="utf-8")
         u.log(f"LUNDEN_EXTERIOR_BUILD {TARGET}: {len(meshes)} collision actors from {copies} mesh copies "
-              f"(stairwells, garage and façades), door leaf left open ({len(skipped)} parts: {skipped}), "
+              f"(stairwells, garage and façades), {len(skipped)} door leaf parts left to their interactables, "
               f"{len(files)} packages")
     u.log("LUNDEN_EXTERIOR_BUILD_OK")
 

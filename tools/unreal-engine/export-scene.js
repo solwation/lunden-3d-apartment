@@ -435,7 +435,12 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     const core = new Core();
     Object.assign(extra, { garage, core }); // #2300: the footstep sensor and the outdoor sprint need them (export-player.js)
     extra.lifts = [['l', core.lift]]; // #2285: the lifts' button panels (src/liftpanel.js targets)
-    for (const spec of [C.CORE_A, C.CORE_B, C.CORE_C]) { const house = new CoreHouse(spec); core.attach(house); extra.lifts.push([spec.house.slice(-1).toLowerCase(), house.lift]); }
+    extra.coreDoors = core.doors.map((t, i) => ['l', t, `src/core.js Core.doors[${i}]`]); // #2314: the stairwell doors that open
+    for (const spec of [C.CORE_A, C.CORE_B, C.CORE_C]) {
+      const house = new CoreHouse(spec), letter = spec.house.slice(-1).toLowerCase();
+      core.attach(house); extra.lifts.push([letter, house.lift]);
+      extra.coreDoors.push([letter, house.doors[0], `src/corehouse.js CoreHouse(${spec.house}).doors[0] (the entrance)`]);
+    }
     extra.objects.push(garage.object, garage.door.object, garage.parkObject, core.object); // (not garage.blackout: a web-only mask)
     for (const o of [garage.object, garage.door.object, garage.parkObject]) extra.group.set(o, 'garage');
     extra.group.set(core.own, 'core-l');
@@ -822,7 +827,8 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
   }
 
   // ---- measurement data ----
-  const measurements = measurementData({ world, planCopy, W, D, byZone, lightsInfo, materialTable, commit, ZONES, wanted, lifts: extra.lifts ?? [] });
+  const measurements = measurementData({ world, planCopy, W, D, byZone, lightsInfo, materialTable, commit, ZONES, wanted, lifts: extra.lifts ?? [],
+    coreDoors: extra.coreDoors ?? [], garage: extra.garage ?? null });
   measurements.buildings = buildings;
   if (ground) measurements.ground = ground;
   if (vegetation) measurements.vegetation = vegetation;
@@ -1060,7 +1066,7 @@ function fixtureScene(W, D, unique) {
   return root;
 }
 
-function measurementData({ world, planCopy, W, D, byZone, lightsInfo, materialTable, commit, ZONES, wanted, lifts }) {
+function measurementData({ world, planCopy, W, D, byZone, lightsInfo, materialTable, commit, ZONES, wanted, lifts, coreDoors = [], garage = null }) {
   const P = (x, y, z) => ({ web: [r4(x), r4(y), r4(z)], unreal: webToUnrealRounded([x, y, z]) });
   const atomOf = new Map();
   for (const list of byZone.values()) for (const a of list) if (a.instance === undefined) atomOf.set(a.object, a);
@@ -1087,6 +1093,7 @@ function measurementData({ world, planCopy, W, D, byZone, lightsInfo, materialTa
       floorY: C.LEVELS[li].floor });
   }));
   interactionData({ world, doors, windows, atomOf, lightsInfo, P });
+  doors.push(...entranceDoors({ coreDoors, garage, byZone, atomOf, P }));
   const lights = [];
   const atomAbove = (o) => { for (; o; o = o.parent) if (atomOf.has(o)) return atomOf.get(o); return null; };
   for (const l of world.lamps ?? []) {
@@ -1215,6 +1222,59 @@ function interactionData({ world, doors, windows, atomOf, P }) {
       checkClosed: P(closed.x, closed.y, closed.z), checkOpen: P(opened.x, opened.y, opened.z),
       check: 'the sash bottom rail centre (src/world.js addWindowFrame)', source: 'src/world.js addWindowFrame, src/openables.js Openable' });
   }
+}
+
+/** #2314: the doors outside L1007 that open on the web but are no `world.doors`: the stairwell doors of Hus L (the
+ *  portik's glazed door and the loftgång's, src/core.js makeDoor) and the entrances of Hus A, B and C (src/corehouse.js),
+ *  and the garage door (src/garage.js GarageDoor). Their leaves were exported as several nodes (frame bars, fill, handle;
+ *  the garage door's sections), so a row names the interactable (`id`, not a node) and its nodes (`parts`). A stairwell
+ *  door swings like a SwingDoor row (makeDoor: `max` 1.5 rad at 3 rad/s, core.js update). The garage door's sections
+ *  roll up a track and in under the ceiling (GarageDoor.track); Unreal tips the closed door up about its top edge into
+ *  the same open place (`pivot`, `axis`, `angleDeg`, `checkClosed` = the bottom edge's centre, `checkOpen` = where the
+ *  open door's far edge lies under the ceiling), the way a window sash row does. */
+function entranceDoors({ coreDoors, garage, byZone, atomOf, P }) {
+  const rows = [];
+  const partsUnder = (root) => {
+    const ids = [];
+    root.traverse((o) => { const a = atomOf.get(o); if (a?.id) ids.push(a); });
+    return ids;
+  };
+  for (const [house, t, source] of coreDoors) {
+    const d = t?.door;
+    if (!d?.pivot) continue;
+    const atoms = partsUnder(d.pivot);
+    if (!atoms.length) continue; // the door's zone is not exported
+    const parent = new THREE.Quaternion();
+    d.pivot.parent.getWorldQuaternion(parent);
+    if (Math.abs(parent.w) < 1 - 1e-9) throw new Error(`${source}: the door's group is rotated; the rows assume it is not`);
+    const at = new THREE.Vector3();
+    d.pivot.parent.localToWorld(at.set(d.hx, 0, d.hz));
+    const yaw = (a) => Math.atan2(-(d.dir[1] * Math.cos(a) + d.out[1] * Math.sin(a)), d.dir[0] * Math.cos(a) + d.out[0] * Math.sin(a));
+    // unrealYaw = the hinge -> latch direction in Unreal, as on the other swing rows (makeDoor's leaf runs along its
+    // pivot's local +x, so it is -deg(rotation.y); a SwingDoor's leaf runs along local +z, hence 90 - deg there)
+    const rot = (a) => ({ webRotationY: r4(yaw(a)), unrealYaw: roundCm(((-yaw(a) * 180 / Math.PI) % 360 + 540) % 360 - 180) });
+    const lv = levelOf(d.y + 0.05);
+    rows.push({ id: `door_hus${house}_l${lv}_${tag('x', at.x)}_${tag('z', at.z)}`, zone: atoms[0].zone, kind: 'swing', level: lv, source,
+      name: t.name ?? null, house, hinge: P(at.x, d.y, at.z), width: r4(d.w), height: 2.18,
+      closed: rot(0), open: rot(d.max), initiallyOpen: d.target > 0, seconds: r4(d.max / 3), parts: atoms.map((a) => a.id) });
+  }
+  if (garage?.door?.panels) {
+    const g = garage.door, GD = C.SITE.terrain.garageDoor, F = C.GARAGE.floor, zc = (GD.z0 + GD.z1) / 2;
+    const atoms = [];
+    for (const list of byZone.values()) for (const a of list) if (a.object === g.panels && a.id) atoms.push(a);
+    atoms.sort((a, b) => a.instance - b.instance);
+    if (atoms.length) {
+      rows.push({ id: `door_garage_l0_${tag('x', GD.x)}_${tag('z', zc)}`, zone: atoms[0].zone, kind: 'overhead', level: 0,
+        source: 'src/garage.js GarageDoor, src/config.js#SITE.terrain.garageDoor, GARAGE.door', name: 'garageporten',
+        width: r4(GD.z1 - GD.z0), height: GD.h, pivot: P(g.xd, F + GD.h, zc),
+        axis: { web: [0, 0, 1], unreal: [0, 1, 0] }, angleDeg: 90,
+        checkClosed: P(g.xd, F, zc), checkOpen: P(g.xd + GD.h, F + GD.h, zc),
+        initiallyOpen: g.t >= 1, seconds: C.GARAGE.door.seconds, sections: C.GARAGE.door.sections,
+        parts: atoms.map((a) => a.id),
+        check: 'checkClosed = the closed door\'s bottom edge centre; checkOpen = the same edge with the door tipped up under the ceiling (the web\'s open sections span g.xd … g.xd + h at the ceiling)' });
+    }
+  }
+  return rows;
 }
 
 /** The room switches and the taps (main.js builds them next to the world; not nodes of their own in a tap's case). */
