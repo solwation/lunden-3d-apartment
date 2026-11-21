@@ -703,6 +703,50 @@ node tools/unreal-engine/check-sun.mjs unreal/Lunden/Saved/lighting-result.json
 
 Results: [docs/verification/2283/](../verification/2283/README.md).
 
+## Doors, windows, switches and taps (#2285)
+
+`build_interaction.py` (successor of `build_pilot_doors.py`) makes L1007 usable. **Data:** `measurements.json` (since
+98a0c0bf) gives each door its start state and animation time (`src/doors.js` speed 3 × 0.6 swing / × 0.7 sliding),
+sliding and wardrobe doors their closed and open centres and wardrobes their partner, each window its opening sashes
+(pivot, axis, signed angle, time and a check point closed/open: the sash's bottom rail centre, `src/openables.js`), and
+`interaction` the room switches (with the ids of their room's lights = #2283's `lamp:<id>` tags) and the taps
+(outlet, landing point, radius, pick point). The GLBs did not change.
+
+**One interactable class.** `Blueprints/PilotDoors/BP_LundenSwingDoor` is rebuilt as the general interactable: the
+controller's use (E / left mouse: 2.2 m trace, hit actor's attach parent, cast to `BP_LundenSwingDoor`, `ToggleDoor`)
+already casts to it, so every door, sash, switch and tap is an instance and `BP_LundenPlayerController` is unchanged.
+*Decision (can be overturned):* it stays in `PilotDoors/` with that name; moving it to `/Game/Lunden/Interaction/`
+means rebuilding the controller's cast in `build_player.py` and is left for when the use moves into a
+`player-extensions.json` component. Instance values: `Id`, `Kind` (0 door/window, 1 switch, 2 tap), `TargetOpen`,
+`Closed/Open Location/Rotation`, `Seconds`, `PartnerTags`, `LampTags`, `Water`, `ChangeCount`.
+
+**Contract for #2292/#2293.** Every interactable carries the tag `interact:<export id>`. `OpenDoor`, `CloseDoor` and
+`ToggleDoor` work without a player (Get All Actors With Tag, then call). Only a real change does anything, and it
+raises `ChangeCount` by exactly one; asking for the state it is already in changes nothing. A switch calls
+`TurnOn`/`TurnOff` on every `BP_LundenLamp` tagged `lamp:<id>` in its `LampTags`; a tap shows or hides its water
+(an engine cylinder from outlet to landing). A wardrobe panel that opens first closes its partner (`wardrobeDoors`).
+Not yet: an event dispatcher to bind to (not built yet; until then #2293 watches `ChangeCount`), the lift panel, water sound and splash, the switch rocker's tilt.
+
+**Level.** `/Game/Lunden/Generated/Interaction/Level_l1007_interaction` is a copy of the importer's `Level_l1007`
+where each door leaf and sash hangs on its interactable at the hinge/pivot with a blocking box (closed doors block
+now), and the switches and taps have small use boxes. It is generated, not versioned. It is **not yet in
+`L_Lunden`**: swapping `world-levels.json`'s `Level_l1007` line for it needs `compose_world.py` with the map's lock,
+and `test_l1007`'s walk through the front door must then open the door first (it is closed and now blocks).
+
+```text
+git lfs lock unreal/Lunden/Content/Lunden/Blueprints/PilotDoors/BP_LundenSwingDoor.uasset
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/build_interaction.py [<measurements.json>]
+copy tools\unreal-engine\tests\test_interaction.py unreal\Lunden\Content\Python\   (untracked copy, delete afterwards)
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-tests.ps1 -Filter Editor.Python.Lunden.test_interaction
+```
+
+`test_interaction` (PIE on that level): all 18 L1007 doors, 6 sashes, 13 switches and 6 taps have one interactable;
+opened and closed by id, every hinge/pivot is within 1 cm and every yaw / sash angle within 1° of `measurements.json`,
+sliders' boxes and sashes' check points within 1 cm of the open/closed points, `ChangeCount` 1 after open + repeated
+open and 2 after close; a wardrobe panel closes its partner; E opens the front door; a Hall switch turns both Hall
+lamps on and off and leaves the Badrum lamp off; the kitchen tap shows and hides its water. Results:
+[docs/verification/2285/](../verification/2285/README.md).
+
 ## Pilot camera references (#2246)
 
 Use the [shared five-camera list](../../unreal/Lunden/Tests/views.json) when framing
