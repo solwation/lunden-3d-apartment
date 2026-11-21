@@ -205,4 +205,5 @@ def main(config, output=None):
     unreal.log("LUNDEN_PILOT_CAPTURE_OK")
 
 
-main(*sys.argv[1:])
+if __name__ == "__main__":
+    main(*sys.argv[1:])

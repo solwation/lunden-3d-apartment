@@ -4,7 +4,7 @@
         -AllowCommandletRendering -RenderOffScreen -unattended -nosplash -nosound
 
 scene.json comes from `node tools/unreal-engine/pilot-scene.mjs measurements.json scene.json` (cameras converted from
-the web). Unlike capture_l1007.py there is no temporary rig: the world's BP_LundenSky (Generated/Lighting/Level_lighting,
+the web). The world's BP_LundenSky (Generated/Lighting/Level_lighting,
 composed into L_Lunden) is set to views.json's date and each preset's hour with UseClock off, UpdateSky runs, and the
 lamps are switched with their TurnOn / TurnOff events (views.json `lampsOn`). Weather shots switch Rain or Snow on and
 set Wet to 1 (a soaked street). #2307 adds the shots of lighting-shots.json (their own date and hour; lamps `all`, `none`
@@ -25,6 +25,8 @@ import unreal as u
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "python"))
 from screenshot_level import render_view, spawn  # noqa: E402
 from prepare_nanite_materials import static_mesh_editor  # noqa: E402
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from capture_light import game_bias  # noqa: E402,F401  (#2306: one helper for the capture scripts' light)
 
 MAP = "/Game/Lunden/Maps/L_Lunden"
 VIEWS = json.loads((Path(__file__).resolve().parents[3] / "unreal/Lunden/Tests/views.json").read_text(encoding="utf-8"))
@@ -37,16 +39,6 @@ DATE = [VIEWS["date"][k] for k in ("year", "month", "day")]
 SHOTS = [{"name": n, "camera": c, "date": DATE, "hour": VIEWS["lighting"][p]["hour"], "weather": (w or "clear").lower(),
           "lamps": "all" if VIEWS["lighting"][p]["lampsOn"] else "none"} for n, c, p, w in LEGACY]
 SHOTS += json.loads((Path(__file__).resolve().parent / "lighting-shots.json").read_text(encoding="utf-8"))["shots"]
-
-
-def game_bias(sky):
-    """#2313: the exposure the game shows now: BP_LundenSky's Weather post process is manual at its bias and its Exposure
-    component, blended in by the weight UpdateSky gave it, overrides that bias; the engine lerps the two by the weight.
-    (A scene capture does not take the world's exposure, so captures set it themselves.)"""
-    pps = {c.get_name(): c for c in sky.get_components_by_class(u.PostProcessComponent)}
-    base = pps["Weather"].get_editor_property("settings").get_editor_property("auto_exposure_bias")
-    top = pps["Exposure"].get_editor_property("settings").get_editor_property("auto_exposure_bias")
-    return base + pps["Exposure"].get_editor_property("blend_weight") * (top - base)
 
 
 def render_game(world, out_dir, name, loc, rot, width, height, fov, excluded, histogram=None):

@@ -81,7 +81,7 @@ tools/unreal-engine/world-levels.json         the world map's sub-level list (#2
 tools/unreal-engine/python/compose_world.py   composes /Game/Lunden/Maps/L_Lunden from world-levels.json (+ START, GameMode)
 tools/unreal-engine/python/build_l1007.py     L1007's derived collision sub-level Generated/L1007World/ (from the l1007 import)
 tools/unreal-engine/tests/test_l1007.py       PIE test on L_Lunden: sub-levels, 1 cm measurements, START → stairs → back
-tools/unreal-engine/tests/capture_l1007.py    GPU views of L_Lunden from the shared camera list (temporary light, nothing saved)
+tools/unreal-engine/tests/capture_l1007.py    GPU views of L_Lunden from the shared camera list (map lighting, nothing saved)
 tools/unreal-engine/python/build_exterior.py  Hus L's stairwell, the garage and the façades of Hus L/A/B/C as collision, Generated/ExteriorWorld/ (#2279, #2302)
 tools/unreal-engine/tests/test_exterior_route.py  PIE route on L_Lunden: START → portik → stairwell → våning −1 → garage (#2279)
 tools/unreal-engine/tests/test_facades.py      PIE on L_Lunden: the façades of Hus L, A, B and C stop the player; portik and garage drive open (#2302)
@@ -150,7 +150,7 @@ tools/unreal-engine/check-sun.mjs             Unreal's sun and moon (lighting-re
 tools/unreal-engine/tests/capture_lighting.py GPU views of L_Lunden with its own lighting: day, evening, rain and snow (nothing saved)
 unreal/Lunden/Content/Lunden/Lighting/        BP_LundenSky, BP_LundenLamp, MPC_LundenWeather, M_LundenPrecipitation,
                                    T_LundenHemisphere (LFS; made by build_lighting.py), T_PilotClearSky (the #2246
-                                   pilot's sky cubemap, still used by the capture scripts' temporary rig)
+                                   pilot map’s sky cubemap)
 ```
 
 The rendering values in `Config/DefaultEngine.ini` are **assumptions** modelled on what a UE 5.x Blank C++ template
@@ -536,8 +536,10 @@ which replaced the provisional approach slab `build_l1007.py` placed until #2280
 
 **Lighting.** Since #2283 the sub-level `Generated/Lighting/Level_lighting` lights the map: the sky, the sun and moon
 on the PC's clock, weather and the lamps ([Lighting, sky and weather](#lighting-sky-and-weather-2283)).
-`capture_l1007.py` and `capture_exterior.py` still add the pilot's temporary rig for their own comparison pictures;
-`capture_lighting.py` renders with the map's own lighting.
+The apartment, exterior and seasonal capture scripts use this map’s sky and lamps. Each capture records its active
+directional lights, sky light and their owners. The pilot map uses the named rig already saved by `capture_pilot.py`.
+Run `tests/check_capture_light.py <scene.json>` with the headless editor to check both maps at day and evening presets.
+The counts and component owners are saved in `Saved/capture-light-check.json` (#2306).
 
 **Results (2026-11-21, UE 5.8.4, export of ff93015a):** `import_world.py --check` kept the fixture within 0.000 cm over
 9 markers but failed on the l1007 content fingerprint, also without any #2278 asset: a fresh editor finds no simple box
