@@ -20,7 +20,9 @@
           "id": { "type": "string", "pattern": "^[a-z0-9-]+$" },
           "what": { "type": "string" },
           "status": { "enum": ["exported", "planned"] },
-          "box": { "type": ["object", "null"], "description": "plan metres {x0, x1, z0, z1, y0, y1}: a node belongs to the zone that holds the centre of its world bounding box" }
+          "box": { "type": ["object", "null"], "description": "plan metres {x0, x1, z0, z1, y0, y1}: a node belongs to the first zone that holds the centre of its world bounding box (and accepts its builder, `from`)" },
+          "from": { "type": "array", "items": { "type": "string" }, "description": "#2279: the web builders this zone takes objects from (exterior, visit, core-l, portik, surroundings, surroundings-site, garage, core-abc); absent = any part of buildWorld (the l1007 zones)" },
+          "split": { "type": "boolean", "description": "#2279: merged meshes are cut at this zone's box sides and each piece goes to the zone holding its centroid" }
         }
       }
     },
@@ -78,6 +80,20 @@
       "type": "object",
       "description": "material key → the web material's look (no web material has a name; the key is built from type, colour, roughness, metalness, opacity, emissive, vertex colours, textures, sides). Unreal maps keys to hand-made materials.",
       "additionalProperties": { "type": "object", "required": ["type", "color", "roughness", "metalness", "opacity", "emissive", "vertexColors", "textured", "doubleSided", "hint"] }
+    },
+    "buildings": {
+      "type": "array",
+      "description": "#2279: measurement rays through Hus L, Hus A/B/C and the garage (export-scene.js buildingProbes), cast on the exported nodes of their zone; Unreal traces the same rays (tools/unreal-engine/tests/test_exterior.py). Optional: absent in exports without those zones.",
+      "items": {
+        "type": "object", "required": ["house", "zone", "id", "what", "from", "to", "expect", "web", "hit"], "additionalProperties": false,
+        "properties": {
+          "house": { "type": "string" }, "zone": { "type": "string" }, "id": { "type": "string" }, "what": { "type": "string" },
+          "from": { "type": "array", "description": "Unreal cm" }, "to": { "type": "array", "description": "Unreal cm" },
+          "expect": { "enum": ["hit", "clear", "glass"], "description": "clear = an intentional passage (no hit); glass = intentional glazing" },
+          "web": { "type": "object", "required": ["from", "to"] },
+          "hit": { "type": ["object", "null"], "description": "first hit: web (m), unreal (cm), distanceCm, node (export id), materialKey" }
+        }
+      }
     },
     "fixture": {
       "type": "object", "required": ["points", "arrows"],

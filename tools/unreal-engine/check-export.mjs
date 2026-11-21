@@ -3,7 +3,8 @@
 // Compares the sources recorded in export-manifest.json (the export's import closure in src/, data/plan.json,
 // data/elevation.json, models/*.glb and the exporter itself; tools/unreal-engine/sources.mjs) with the working tree, checks
 // every exported file against its SHA-256, and validates the manifest, measurements.json and every GLB node's
-// extras against shared/schema/. Exit codes: 0 current; 1 STALE (a source changed: re-export and re-import);
+// extras against shared/schema/, and that every node id is unique across all zone GLBs and each node carries its own
+// file's zone (a node in exactly one zone, #2279). Exit codes: 0 current; 1 STALE (a source changed: re-export and re-import);
 // 2 no export found (0 with --allow-missing, for checks on machines that never export); 3 invalid export
 // (unknown format version, schema error, modified or missing file).
 import fs from 'node:fs';
@@ -35,6 +36,7 @@ function main() {
   problems.push(...validate(manifest, schema('export-manifest.schema.json')).map((e) => `export-manifest.json ${e}`));
   const nodeSchema = schema('node-extras.schema.json'), measureSchema = schema('measurements.schema.json');
   let nodes = 0;
+  const zoneOfId = new Map(); // every node id across all zone GLBs → its zone (#2279: a node is in exactly one zone)
   for (const f of manifest.files ?? []) {
     const abs = path.join(dir, f.path);
     if (!fs.existsSync(abs)) { problems.push(`${f.path}: missing`); continue; }
@@ -54,6 +56,9 @@ function main() {
         if (n.name !== n.extras.id) problems.push(`${f.path}: node ${i} name ${n.name} ≠ extras.id ${n.extras.id}`);
         if (ids.has(n.extras.id)) problems.push(`${f.path}: duplicate id ${n.extras.id}`);
         ids.add(n.extras.id);
+        if (n.extras.zone !== undefined && n.extras.zone !== f.zone) problems.push(`${f.path}: node ${n.name} says zone ${n.extras.zone}, file is ${f.zone}`);
+        if (zoneOfId.has(n.extras.id) && zoneOfId.get(n.extras.id) !== f.zone) problems.push(`${f.path}: id ${n.extras.id} is also in zone ${zoneOfId.get(n.extras.id)}`);
+        zoneOfId.set(n.extras.id, f.zone);
       }
     }
   }
@@ -73,7 +78,7 @@ function main() {
   try { head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: ROOT, encoding: 'utf8' }).trim(); } catch { /* not a checkout */ }
   const from = `exported from ${manifest.sourceCommit?.slice(0, 8) ?? '?'}${manifest.sourceDirty ? ' (dirty)' : ''}, HEAD ${head?.slice(0, 8) ?? '?'}`;
   if (now.sourceHash === manifest.sourceHash) {
-    console.log(`Unreal export is current: ${manifest.files.length} files, ${nodes} nodes, ${manifest.sources.length} sources (${from})`);
+    console.log(`Unreal export is current: ${manifest.files.length} files, ${nodes} nodes (${zoneOfId.size} ids, each in one zone), ${manifest.sources.length} sources (${from})`);
     return 0;
   }
   console.log(`STALE: the Unreal import is out of date — re-run tools/unreal-engine/export-world.mjs and the Unreal import (${from})`);

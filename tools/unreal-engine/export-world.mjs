@@ -1,5 +1,5 @@
 // Export the web scene for Unreal (#2245): GLB per zone + measurements.json + export-manifest.json.
-//   PLAYWRIGHT_MODULE=/path/to/node_modules/playwright tools/browsertest.sh node tools/unreal-engine/export-world.mjs [--out DIR] [--zones l1007,l1007-uteplats,fixture]
+//   PLAYWRIGHT_MODULE=/path/to/node_modules/playwright tools/browsertest.sh node tools/unreal-engine/export-world.mjs [--out DIR] [--zones l1007,l1007-uteplats,fixture,l1007-entre,hus-l,kvarteret]
 // Runs the real scene builder (src/world.js buildWorld) headless in Chromium via tools/unreal-engine/export.html and
 // tools/unreal-engine/export-scene.js, serving the repository itself from a private 127.0.0.1 port (no other server needed).
 // Output (default unreal/Lunden/Import/, ignored by Git: rebuilt locally, never committed) is deterministic: Date is
@@ -52,7 +52,7 @@ function nameGlbMeshes(buf, zone) {
 const args = process.argv.slice(2);
 const opt = (name, dflt) => { const i = args.indexOf(`--${name}`); return i >= 0 ? args[i + 1] : dflt; };
 const outDir = path.resolve(ROOT, opt('out', 'unreal/Lunden/Import'));
-const zones = opt('zones', 'l1007,l1007-uteplats,fixture').split(',').map((s) => s.trim()).filter(Boolean);
+const zones = opt('zones', 'l1007,l1007-uteplats,fixture,l1007-entre,hus-l,kvarteret').split(',').map((s) => s.trim()).filter(Boolean);
 
 const git = (...a) => { try { return execFileSync('git', a, { cwd: ROOT, encoding: 'utf8' }).trim(); } catch { return null; } };
 
@@ -156,6 +156,14 @@ async function main() {
   console.log(`  export-manifest.json   sha256 ${sha256(fs.readFileSync(manifestPath))}`);
   console.log(`  kinds ${JSON.stringify(result.report.kinds)}; skipped ${JSON.stringify(result.report.skipped)}; world static merges skipped: ${result.report.skippedMerges}`);
   if (result.report.lightsError) console.log(`  note: room lights not built (${result.report.lightsError})`);
+  if (result.report.extraError) throw new Error(`garage/stairwells not built: ${result.report.extraError}`);
+  const { split, unassigned } = result.report;
+  console.log(`  split: ${split.atoms} merged meshes → ${split.pieces} zone pieces (${split.triangles} triangles, ${split.cut} clipped at a zone edge, ${split.dropped} in no exported zone)`);
+  for (const m of split.meshes.filter((x) => Object.keys(x.pieces).length)) console.log(`    ${m.group}/${m.name ?? 'mesh'}: ${m.triangles} → ${JSON.stringify(m.pieces)}`);
+  console.log(`  not in any exported zone, by builder: ${JSON.stringify(unassigned)}`);
+  // #2279: every object of the buildings' builders must land in a zone (the surroundings' rest is #2280's planned zones)
+  const lost = Object.entries(unassigned).filter(([g, u]) => ['exterior', 'visit', 'core-l', 'core-abc', 'garage', 'portik'].includes(g) && (u.atoms || u.triangles));
+  if (lost.length && zones.includes('hus-l') && zones.includes('kvarteret')) throw new Error(`building objects in no zone: ${JSON.stringify(Object.fromEntries(lost))}`);
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });
