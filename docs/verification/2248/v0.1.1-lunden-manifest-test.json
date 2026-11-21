@@ -1,0 +1,186 @@
+{
+  "formatVersion": 1,
+  "channel": "test",
+  "published": "2026-11-21T08:00:00Z",
+  "app": {
+    "version": "0.1.1",
+    "contentAbi": "sha256-v1-96e3197b8959ce80046f663a8483a5b5e11cde7faa3f00f6e28ec44600a22102",
+    "minLauncher": "0.1.1",
+    "files": [
+      {
+        "path": "Engine/Binaries/ThirdParty/DbgHelp/dbghelp.dll",
+        "url": "https://github.com/solwation/lunden-3d-apartment/releases/download/v0.1.1/sha256-441a7ccee2f854352366e783fcb79fe895d09ad4c577689319e1a664f296c4a3.blob",
+        "size": 2232688,
+        "sha256": "441a7ccee2f854352366e783fcb79fe895d09ad4c577689319e1a664f296c4a3",
+        "authenticode": true
+      },
+      {
+        "path": "Engine/Binaries/ThirdParty/MsQuic/v220/win64/msquic.dll",
+        "url": "https://github.com/solwation/lunden-3d-apartment/releases/download/v0.1.1/sha256-27c231d80310ea9005a6b0c17054f28887272723477e7292a7f9d63b6d1579ee.blob",
+        "size": 2547080,
+        "sha256": "27c231d80310ea9005a6b0c17054f28887272723477e7292a7f9d63b6d1579ee",
+        "authenticode": true
+      },
+      {
+        "path": "Engine/Binaries/ThirdParty/NVIDIA/NVaftermath/Win64/GFSDK_Aftermath_Lib.x64.dll",
+        "url": "https://github.com/solwation/lunden-3d-apartment/releases/download/v0.1.1/sha256-ce49be4194706417ccdc57833aec478faa1e08646157688c879fe616d43abd65.blob",
+        "size": 5799016,
+        "sha256": "ce49be4194706417ccdc57833aec478faa1e08646157688c879fe616d43abd65",
+        "authenticode": true
+      },
+      {
+        "path": "Engine/Binaries/ThirdParty/Ogg/Win64/VS2015/libogg_64.dll",
+        "url": "https://github.com/solwation/lunden-3d-apartment/releases/download/v0.1.1/sha256-c719a5f165e4afe29e92a7eee9762c2e9f301a177885ab1ab8d2c7f57d4a86bf.blob",
+        "size": 59832,
+        "sha256": "c719a5f165e4afe29e92a7eee9762c2e9f301a177885ab1ab8d2c7f57d4a86bf",
+        "authenticode": true
+      },
+      {
+        "path": "Engine/Binaries/ThirdParty/Vorbis/Win64/VS2015/libvorbis_64.dll",
+        "url": "https://github.com/solwation/lunden-3d-apartment/releases/download/v0.1.1/sha256-b8a3e31a6c2d401809bae7aa0fd29f49c2114eeccfba4dc5c7ac8eddbd4b7a98.blob",
+        "size": 1724856,
+        "sha256": "b8a3e31a6c2d401809bae7aa0fd29f49c2114eeccfba4dc5c7ac8eddbd4b7a98",
+        "authenticode": true
+      },
+      {
+        "path": "Engine/Binaries/ThirdParty/Vorbis/Win64/VS2015/libvorbisfile_64.dll",
+        "url": "https://github.com/solwation/lunden-3d-apartment/releases/download/v0.1.1/sha256-6d0e4395bc4d0ef501c3f7f7b4e63fa0cf2ab2ca80328560b7cb10e6d5a171cf.blob",
+        "size": 48568,
+        "sha256": "6d0e4395bc4d0ef501c3f7f7b4e63fa0cf2ab2ca80328560b7cb10e6d5a171cf",
+        "authenticode": true
+      },
+      {
+        "path": "Engine/Binaries/ThirdParty/Windows/XAudio2_9/x64/xaudio2_9redist.dll",
+        "url": "https://github.com/solwation/lunden-3d-apartment/releases/download/v0.1.1/sha256-e6ae545b31a5453f1b1002d434cc802a6088cf05c5faa414d7ebe00264161506.blob",
+        "size": 858152,
+        "sha256": "e6ae545b31a5453f1b1002d434cc802a6088cf05c5faa414d7ebe00264161506",
+        "authenticode": true
+      },
+      {
+        "path": "Engine/Binaries/Win64/D3D12/x64/D3D12Core.dll",
+        "url": "https://github.com/solwation/lunden-3d-apartment/releases/download/v0.1.1/sha256-0aeb09f340927c785bc2703c2f43dea8b1023f6b41318745f06a126689b0fe17.blob",
+        "size": 4831768,
+        "sha256": "0aeb09f340927c785bc2703c2f43dea8b1023f6b41318745f06a126689b0fe17",
+        "authenticode": true
+      },
+      {
+        "path": "Engine/Binaries/Win64/D3D12/x64/d3d12SDKLayers.dll",
+        "url": "https://github.com/solwation/lunden-3d-apartment/releases/download/v0.1.1/sha256-adbb8fd0a5d8efac6da6aa51f14636ade54d61d1a56176663b085e304aae5ddf.blob",
+        "size": 4943344,
+        "sha256": "adbb8fd0a5d8efac6da6aa51f14636ade54d61d1a56176663b085e304aae5ddf",
+        "authenticode": true
+      },
+      {
+        "path": "Engine/Binaries/Win64/DML/x64/DirectML.dll",
+        "url": "https://github.com/solwation/lunden-3d-apartment/releases/download/v0.1.1/sha256-f7b3fa0fd8cb4f4a12021e1e623f2fe7d8fb5bdf88bd1dcfb74c3f109340b3f2.blob",
+        "size": 18538488,
+        "sha256": "f7b3fa0fd8cb4f4a12021e1e623f2fe7d8fb5bdf88bd1dcfb74c3f109340b3f2",
+        "authenticode": true
+      },
+      {
+        "path": "Engine/Binaries/Win64/UnrealGame-Win64-Shipping.exe",
+        "url": "https://github.com/solwation/lunden-3d-apartment/releases/download/v0.1.1/sha256-e083ad2f827b2fbab8eb4e04d6d1d541be3d42d4883aaddf26bab3df62195953.blob",
+        "size": 165862328,
+        "sha256": "e083ad2f827b2fbab8eb4e04d6d1d541be3d42d4883aaddf26bab3df62195953",
+        "authenticode": true
+      },
+      {
+        "path": "Engine/Binaries/Win64/tbb12.dll",
+        "url": "https://github.com/solwation/lunden-3d-apartment/releases/download/v0.1.1/sha256-f3d83f06ad0b14f61c9bb910e824488b2f05c35cdea6803dac5296927cce2485.blob",
+        "size": 342456,
+        "sha256": "f3d83f06ad0b14f61c9bb910e824488b2f05c35cdea6803dac5296927cce2485",
+        "authenticode": true
+      },
+      {
+        "path": "Engine/Binaries/Win64/tbbmalloc.dll",
+        "url": "https://github.com/solwation/lunden-3d-apartment/releases/download/v0.1.1/sha256-6a3606a7791a0cd16866c746114e62a6109b5bb8e32ad7c30d0cf987eb9846d0.blob",
+        "size": 117176,
+        "sha256": "6a3606a7791a0cd16866c746114e62a6109b5bb8e32ad7c30d0cf987eb9846d0",
+        "authenticode": true
+      },
+      {
+        "path": "Engine/Config/StagedBuild_Lunden.ini",
+        "url": "https://github.com/solwation/lunden-3d-apartment/releases/download/v0.1.1/sha256-f1945cd6c19e56b3c1c78943ef5ec18116907a4ca1efc40a57d48ab1db7adfc5.blob",
+        "size": 3,
+        "sha256": "f1945cd6c19e56b3c1c78943ef5ec18116907a4ca1efc40a57d48ab1db7adfc5"
+      },
+      {
+        "path": "Engine/Content/Renderer/TessellationTable.bin",
+        "url": "https://github.com/solwation/lunden-3d-apartment/releases/download/v0.1.1/sha256-edc4f3b628a139c5e185bbaeca661c95c1f427368d3b92892c5cff36c56dd941.blob",
+        "size": 259568,
+        "sha256": "edc4f3b628a139c5e185bbaeca661c95c1f427368d3b92892c5cff36c56dd941"
+      },
+      {
+        "path": "Engine/Content/Slate/Cursor/invisible.cur",
+        "url": "https://github.com/solwation/lunden-3d-apartment/releases/download/v0.1.1/sha256-fef3980fa567e9c45d5d8dcaa432a2c1a3f3bb17fe67d7ab198164f56c142aa1.blob",
+        "size": 326,
+        "sha256": "fef3980fa567e9c45d5d8dcaa432a2c1a3f3bb17fe67d7ab198164f56c142aa1"
+      },
+      {
+        "path": "Engine/Plugins/NNE/NNERuntimeORT/Binaries/ThirdParty/Onnxruntime/Win64/onnxruntime.dll",
+        "url": "https://github.com/solwation/lunden-3d-apartment/releases/download/v0.1.1/sha256-eacc4d935137d67ab0cc1b896472d1de551dfc6545ed9ad74ab842400272e036.blob",
+        "size": 17339384,
+        "sha256": "eacc4d935137d67ab0cc1b896472d1de551dfc6545ed9ad74ab842400272e036",
+        "authenticode": true
+      },
+      {
+        "path": "NOTICES.txt",
+        "url": "https://github.com/solwation/lunden-3d-apartment/releases/download/v0.1.1/sha256-ba49ae5586f817b36a2772269f71f899cb1f54b5f2720fad951319edd5e140b8.blob",
+        "size": 111,
+        "sha256": "ba49ae5586f817b36a2772269f71f899cb1f54b5f2720fad951319edd5e140b8"
+      }
+    ]
+  },
+  "content": {
+    "version": 1,
+    "requiresAbi": "sha256-v1-96e3197b8959ce80046f663a8483a5b5e11cde7faa3f00f6e28ec44600a22102",
+    "packages": [
+      {
+        "id": "base",
+        "files": [
+          {
+            "path": "Lunden/Content/Paks/Lunden-Windows.pak",
+            "url": "https://github.com/solwation/lunden-3d-apartment/releases/download/v0.1.1/sha256-38cd82d890100fc4eca939b56a828543f5ff8e1b9bbaaf108d178811976b7b6c.blob",
+            "size": 11226745,
+            "sha256": "38cd82d890100fc4eca939b56a828543f5ff8e1b9bbaaf108d178811976b7b6c"
+          },
+          {
+            "path": "Lunden/Content/Paks/Lunden-Windows.ucas",
+            "url": "https://github.com/solwation/lunden-3d-apartment/releases/download/v0.1.1/sha256-e8b1c3bf7fabca23c245b6eea0899943982dbdb6001082ac3ed923c6ca933dd8.blob",
+            "size": 223619008,
+            "sha256": "e8b1c3bf7fabca23c245b6eea0899943982dbdb6001082ac3ed923c6ca933dd8"
+          },
+          {
+            "path": "Lunden/Content/Paks/Lunden-Windows.utoc",
+            "url": "https://github.com/solwation/lunden-3d-apartment/releases/download/v0.1.1/sha256-fa82bb4ab6d770941bc71442eb73958ad4a6a9c298271b19273764fd925bd454.blob",
+            "size": 216347,
+            "sha256": "fa82bb4ab6d770941bc71442eb73958ad4a6a9c298271b19273764fd925bd454"
+          }
+        ]
+      },
+      {
+        "id": "global",
+        "files": [
+          {
+            "path": "Lunden/Content/Paks/global.ucas",
+            "url": "https://github.com/solwation/lunden-3d-apartment/releases/download/v0.1.1/sha256-1700e127c3efecd81432687bd34b1959910c8e30a9d67d1004745067d8dfe43a.blob",
+            "size": 3330560,
+            "sha256": "1700e127c3efecd81432687bd34b1959910c8e30a9d67d1004745067d8dfe43a"
+          },
+          {
+            "path": "Lunden/Content/Paks/global.utoc",
+            "url": "https://github.com/solwation/lunden-3d-apartment/releases/download/v0.1.1/sha256-3ae6fb23238326c714b85c7c435385fb9a49a690e22b8790ce37fb1293ea420a.blob",
+            "size": 806,
+            "sha256": "3ae6fb23238326c714b85c7c435385fb9a49a690e22b8790ce37fb1293ea420a"
+          }
+        ]
+      }
+    ]
+  },
+  "launcher": {
+    "version": "0.1.1",
+    "size": 73666880,
+    "sha256": "e6477a6a73e6ad67a0dd3d27821580b9510017e4cc971669c23e2a689e95dac2",
+    "url": "https://github.com/solwation/lunden-3d-apartment/releases/download/v0.1.1/Lunden.exe"
+  }
+}
