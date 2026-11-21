@@ -135,6 +135,25 @@ class PruneWorktreesTests(unittest.TestCase):
         self.assertFalse(path.exists())
         self.assertEqual(git("branch", "--list", "issue-5", cwd=self.main), "")
 
+    def test_submodule_of_an_active_checkout_is_left_alone(self):
+        git("init", "-q", "--bare", "-b", "main", "lib.git", cwd=self.tmp)
+        git("clone", "-q", "lib.git", "lib-src", cwd=self.tmp)
+        git("commit", "-q", "--allow-empty", "-m", "lib", cwd=self.tmp / "lib-src")
+        git("push", "-q", "origin", "main", cwd=self.tmp / "lib-src")
+        allow = ("-c", "protocol.file.allow=always")
+        git(*allow, "submodule", "add", "-q", str(self.tmp / "lib.git"), "lib", cwd=self.main)
+        git("commit", "-q", "-m", "add lib", cwd=self.main)
+        git("push", "-q", "origin", "main", cwd=self.main)
+        path = self.worktree("claimed", age_hours=3, claim="#57")
+        git(*allow, "submodule", "update", "-q", "--init", cwd=path)
+        self.assertTrue((path / "lib" / ".git").exists())
+        rows, out = self.run_script("--apply", "--min-age", "0")
+        self.assertEqual(rows["claimed"][0], "active")
+        self.assertNotIn("lib", rows)
+        self.assertIn("checkouts: 1 ", out)
+        self.assertTrue((path / "lib" / ".git").exists())
+        self.assertEqual(git("status", "--porcelain", cwd=path), "")
+
     def test_clone_with_only_a_stash_is_kept_and_archived(self):
         clone = self.root / "clone"
         git("clone", "-q", str(self.tmp / "origin.git"), str(clone), cwd=self.tmp)

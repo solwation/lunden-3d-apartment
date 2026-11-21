@@ -68,6 +68,10 @@ class ScanTests(unittest.TestCase):
         _, links = self.scan("```invalid`info\n[real](README.md)\n")
         self.assertEqual(links, [(2, "README.md")])
 
+    def test_wrapped_text_does_not_join_across_paragraphs(self):
+        _, links = self.scan("[open\n\nclosed](missing.md)\n- [a](README.md)\n")
+        self.assertEqual(links, [(4, "README.md")])
+
     def test_heading_collision_with_generated_suffix(self):
         anchors, _ = self.scan("# Foo\n# Foo\n# Foo-1\n# Foo\n")
         self.assertEqual(anchors, {"foo", "foo-1", "foo-1-1", "foo-2"})
@@ -102,6 +106,14 @@ class CommandTests(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
         self.assertIn("README.md:5: missing file: missing.md", result.stdout)
+        self.assertNotIn("ignored.md", result.stdout)
+
+    def test_broken_link_with_wrapped_text_is_reported(self):
+        result = self.run_checker(
+            "Intro `[code](ignored.md)` and [text that\nwraps](missing.md) here.\n"
+        )
+        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertIn("README.md:2: missing file: missing.md", result.stdout)
         self.assertNotIn("ignored.md", result.stdout)
 
 

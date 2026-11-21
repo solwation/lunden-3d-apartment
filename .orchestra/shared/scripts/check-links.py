@@ -7,6 +7,9 @@ Standard library only. Run from anywhere inside the repository:
 
 Exit status 0 when every relative link and anchor resolves, 1 otherwise.
 Ignored: http(s)/mailto/other-scheme links, links in fenced code blocks and inline code.
+A link whose text wraps onto the next line of a paragraph is checked; its reported line
+is the one where the link target starts. Paragraphs end at a blank line, heading, fence
+or list item.
 """
 import os
 import re
@@ -19,6 +22,7 @@ HEADING = re.compile(r"^\s{0,3}#{1,6}[ \t]+(.*?)[ \t#]*$")
 INLINE_CODE = re.compile(r"(`+)(.+?)\1")
 LINK = re.compile(r"!?\[(?:[^\]\\]|\\.)*\]\(\s*<?([^)\s>]+)>?(?:\s+(?:\"[^\"]*\"|'[^']*'))?\s*\)")
 REFDEF = re.compile(r"^\s{0,3}\[[^\]]+\]:\s*<?(\S+?)>?(?:\s+.*)?$")
+LIST_ITEM = re.compile(r"^\s{0,3}(?:[-*+]|\d{1,9}[.)])[ \t]")
 HTML_TAGS = re.compile(r"<[^>]+>")
 
 
@@ -38,10 +42,25 @@ def slug(text):
 def scan(path):
     """Return (anchors, links); links are (line number, target)."""
     anchors, links, seen = set(), [], {}
-    fence = None
+    fence, para = None, []
+
+    def flush():
+        """Check links in the buffered paragraph; code spans are blanked, newlines kept."""
+        text = "".join(t for _, t in para)
+        text = INLINE_CODE.sub(lambda c: re.sub(r"[^\n]", " ", c.group(0)), text)
+        starts = [0]
+        for _, t in para:
+            starts.append(starts[-1] + len(t))
+        for m in LINK.finditer(text):
+            idx = max(i for i in range(len(para)) if starts[i] <= m.start(1))
+            links.append((para[idx][0], m.group(1)))
+        para.clear()
+
     with open(path, encoding="utf-8") as fh:
         for no, line in enumerate(fh, 1):
             m = FENCE.match(line)
+            if fence or m or not line.strip() or HEADING.match(line) or LIST_ITEM.match(line):
+                flush()
             if fence:
                 if (m and m.group(1)[0] == fence[0]
                         and len(m.group(1)) >= fence[1]
@@ -61,12 +80,12 @@ def scan(path):
                     anchor = "%s-%d" % (base, n)
                 seen[base] = n + 1
                 anchors.add(anchor)
+            para.append((no, line if line.endswith("\n") else line + "\n"))
             clean = INLINE_CODE.sub("", line)
-            for m in LINK.finditer(clean):
-                links.append((no, m.group(1)))
             r = REFDEF.match(clean)
             if r:
                 links.append((no, r.group(1)))
+        flush()
     return anchors, links
 
 
