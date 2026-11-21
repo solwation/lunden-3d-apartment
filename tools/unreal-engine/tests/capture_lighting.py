@@ -132,6 +132,8 @@ def run(scene_path, out_dir, names=None, exposure="game", trial=None, bias_offse
         for k, v in (trial or {}).items():
             sky.set_editor_property(k, v, u.PropertyAccessChangeNotifyMode.NEVER)
         sky.call_method("UpdateSky")
+        for facade in u.GameplayStatics.get_all_actors_with_tag(world, "lunden:facade-controller"):
+            facade.call_method("SettleFacade")  # the commandlet editor world never ticks the wall-light fade
         dark = sky.get_editor_property("DuskLight") < dusk_mid
         lit = 0
         for lamp in lamps:

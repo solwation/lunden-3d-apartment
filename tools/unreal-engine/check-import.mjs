@@ -32,6 +32,7 @@ export function builderInputs(root = ROOT) {
   const files = [
     ...fs.readdirSync(path.join(root, canvases)).filter((f) => f.endsWith('.png')).map((f) => `${canvases}/${f}`),
     ...fs.readdirSync(py).filter((f) => f.endsWith('.py')).map((f) => `tools/unreal-engine/python/${f}`),
+    ...['room', 'window', 'lens', 'wash'].map((kind) => `tools/unreal-engine/facade/${kind}.hlsl`),
     'tools/unreal-engine/world-levels.json', 'tools/unreal-engine/material-map.json',
   ].filter((p) => fs.existsSync(path.join(root, p))).sort();
   return sha256(files.map((p) => {

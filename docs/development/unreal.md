@@ -2497,7 +2497,7 @@ House L marks its selected evening glass with `duskLit`. With power, use `facade
 threshold and its window colour and emissive intensity. The same threshold switches House L's wall-lamp glass.
 The facade wash and ground pools use `wallLight.on/off` hysteresis and `fade` seconds. A/B/C's loggia lamp glass follows
 that hysteresis. `fixtures` gives the emitting face and orientation of each street entrance, gallery, patio and loggia
-wall lamp. Its physical light intensity in Unreal still needs calibration.
+wall lamp. Native radiance is a *guess* until the paired camera exposures are checked.
 
 A/B/C also carry the actual `windows` light quads from `buildWindowLights`, including the exact routine shared by the
 panes of a detailed opening. The quad’s `routine` indexes `schedule.routines` by the web seed key. Use its local-hour
@@ -2505,6 +2505,20 @@ intervals, fade and TV settings as in `src/windowschedule.js`.
 At night fraction `n = 1 − daylight`, hall intensity is `0.85 n` and a residential light scales its scheduled level by
 `0.25 + 0.75 n`. A local power cut extinguishes both. The source data can be inspected independently of the Unreal
 material and Blueprint build.
+
+`build_facade.py` generates `/Game/Lunden/Generated/FacadeLighting/Level_facade_lighting` after
+`build_lighting.py`. Each pane uses its actual facing triangle(s) and per-face material inputs. The four
+wall/pool meshes keep the web triangles, opening cut-outs, terrain heights and UVs. One Blueprint drives
+their latch and fade. The material and Blueprint share `MPC_LundenWeather.Night`, `Hour` and
+`PowerAvailable` (1 for normal power, 0 for an outage). The individual panes and lenses have no ticks or collision.
+To compare the material code in WSL run `python3 tools/unreal-engine/tests/facade-shaders.py <export>/measurements.json`
+with `glslangValidator`, `vkrunner` and a Vulkan device, including Mesa lavapipe. Add `--dxc <path>` to compile
+the same functions as Direct3D SM6 pixel shaders.
+For native verification, rebuild the lighting and facade, compose the map under its asset lock, and use
+`run-python.ps1 tools/unreal-engine/tests/test_facade_lighting.py` to check serialized faces and the controller.
+Matched web/Unreal START images at 14:00 and November 18:15 and views of each house are the remaining visual checks.
+Inspect the courtyard panes for frame occlusion, the entrance/gallery lanterns for apparent brightness, and the
+clipped washes on walls and ground under the same exposure.
 
 **Builders and zones.** `export-scene.js` builds, after the world and the room lights, what `main.js` builds next to
 the world: the garage (`src/garage.js`, with its door and the park-level basement doors) and the four stairwells

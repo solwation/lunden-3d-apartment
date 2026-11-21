@@ -771,7 +771,9 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   group.userData.wallLampFixtures = lampFixtures;
   /** night 0 … 1 (with the window lights): the lanterns by the loftgång doors glow after dusk. */
   // the upper units' courtyard windows (#337): a share of them lit after dusk (one material, its emissive switched)
-  const litMat = interiorGlass(glassMaterial.clone());litMat.emissive.setHex(H.facadeGlow.window);
+  const litMat = interiorGlass(glassMaterial.clone());
+  litMat.emissive.setHex(H.facadeGlow.window);
+  litMat.emissiveIntensity = 0; // daylight until the first update, also in the static facade export
   add(paneTints(litGlass,0xffffff,GP.near,rooms), litMat, false).name="neighborLitGlass";
   group.userData.update = (night, power = true) => { // power false: a power cut in Kv. Lunden (#604): lanterns, windows, door lights out
     setRoomNight(night);

@@ -8,7 +8,7 @@
      is checked with check-export.mjs before it replaces unreal/Lunden/Import/.
   2. import_world.py: unchanged zones are skipped by their import stamps; only changed zones are imported again.
   3. The derived levels, each skipping itself when its inputs are unchanged: build_l1007.py, build_exterior.py,
-     build_site.py, build_lighting.py, build_vegetation.py, build_interaction.py.
+     build_site.py, build_lighting.py, build_facade.py, build_vegetation.py, build_interaction.py.
   4. compose_world.py --check (the world map L_Lunden must match world-levels.json and START; it is never saved here).
   5. Quick tests: import_world.py --check (stamps, content fingerprints, ids, collision, fixture positions).
   6. Writes unreal/Lunden/Content/Lunden/Generated/sync-stamp.json and runs the release gate (check-import.mjs).
@@ -167,7 +167,7 @@ if ($Zones) { $zoneArgs = @('--zones', $Zones) }
 Invoke-UnrealStep 'import' 'import_world.py' $zoneArgs
 if (-not $ImportOnly) {
     # 3. derived levels (each skips when unchanged), 4. the world map
-    foreach ($b in 'build_l1007', 'build_exterior', 'build_site', 'build_lighting', 'build_vegetation', 'build_interaction') {
+    foreach ($b in 'build_l1007', 'build_exterior', 'build_site', 'build_lighting', 'build_facade', 'build_vegetation', 'build_interaction') {
         Invoke-UnrealStep $b "$b.py"
     }
     Invoke-UnrealStep 'compose-check' 'compose_world.py' @('--check')
