@@ -4,7 +4,8 @@ Read [CLAUDE.md](CLAUDE.md) before working in this repository. It contains the s
 verification requirements (including saved result images embedded in an issue comment before closing)
 and the requirement to carry relevant improvements over to the public
 [downstream project](https://github.com/solwation/kvarteret-lunden) without personal content,
-gameplay or Cloudflare integrations.
+gameplay or Cloudflare integrations. Web changes in groups ported to the Windows Unreal version are
+carried into Unreal or a linked porting issue under CLAUDE.md "Carry web changes into Unreal" (#2304; original only).
 
 ## Queue priority
 

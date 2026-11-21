@@ -226,6 +226,24 @@ The first wave after #2246 is #2278, #2282, #2284 and the WebSocket check in #22
 controls the rest. Later and Not applicable groups have no issues yet. Their issues are created when release 1 is
 done or when the owner promotes a group.
 
+## Keeping Unreal in step with the web (#2304)
+
+The web stays the only place the user changes; agents carry changes over under CLAUDE.md
+"Carry web changes into Unreal". For a web change in an R1 or R1 (part) group: make the Unreal change in the same
+work, or create a linked porting issue (a comment on the group's open release-1 porting issue is enough while that
+issue is open). Data that the shared export carries (geometry, measurements, models, exported `config.js` values)
+needs only the export check described in [unreal.md](unreal.md#staleness-check). Not applicable groups (G22, G23)
+need nothing.
+
+### Affected Later groups
+
+A web change in a Later group stays web-only. Add or update one row here so the group's future porting issue starts
+from the current web behaviour; the row is removed when that porting issue is created.
+
+| Group | Web issue / commit | What changed |
+|---|---|---|
+| — | — | none yet |
+
 ## Coverage of the topic files
 
 | Source | Groups |

@@ -22,6 +22,18 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
   Downstream instructions and its adapted `/orkester` live in its `CLAUDE.md` and `.claude/commands/orkester.md`;
   downstream orchestration is coordinated in its #4. Initial import history remains in this repo's #1064.
   This is an agent responsibility, not an automatic synchronization service.
+- **Carry web changes into Unreal (user, 2026-11-21; #2304).** The user changes only the web version; agents keep
+  the Windows Unreal version (#2242) in step for the groups it ports. After a web change in a group marked R1 or
+  R1 (part) in the [Unreal inventory](docs/development/unreal-inventory.md#inventory) (for a part group, only its R1
+  parts), either make the matching Unreal change in the same work or create a linked porting issue with a Swedish
+  `Lapp:` (if the group's release-1 porting issue is still open, a comment on it with the web issue and commit is
+  enough). Geometry, measurements, models and other data that reach Unreal through the shared export (#2245) need no
+  separate Unreal work: check whether the changed files are export sources (`tools/unreal-engine/sources.mjs`) and,
+  where an export exists, run `node tools/unreal-engine/check-export.mjs`; say which in the completion comment.
+  A change in a Later group stays web-only: record the group as affected in the inventory's
+  [affected Later groups](docs/development/unreal-inventory.md#affected-later-groups) list. Not applicable groups
+  (G22, G23) need nothing. Report the Unreal outcome in the completion comment, like the public transfer. This rule
+  and the Unreal version are original-only: nothing of it transfers to `solwation/kvarteret-lunden`.
 - **All public issues have low priority (user, 2026-11-04).** Every issue in
   `solwation/kvarteret-lunden` has exactly `priority: low`, unless the user gives a later explicit
   exception. This covers ports, independent public work, bugs, maintenance, parents, children, tests,

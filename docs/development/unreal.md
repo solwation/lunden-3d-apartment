@@ -1156,6 +1156,10 @@ script. The protected Windows job repeats the four packaging cases before it att
 
 ## Shared data: web → Unreal (#2245)
 
+Web changes in ported groups are carried into Unreal under CLAUDE.md "Carry web changes into Unreal" (#2304); the
+[inventory](unreal-inventory.md#keeping-unreal-in-step-with-the-web-2304) describes the procedure and the list of
+affected Later groups. Changes that reach Unreal through this export only need the [staleness check](#staleness-check).
+
 The web and Unreal versions are built from the same sources; nothing is modelled twice. The contract — what is
 canonical where, formats, versions and ids — is [`shared/README.md`](../../shared/README.md) with JSON Schemas in
 `shared/schema/`. `data/`, `models/`, `textures/` and `music/` stay where they are (the web's publishing relies on
