@@ -99,6 +99,12 @@ Run `node tools/unreal-engine/tests/court-markings.test.mjs` on the export. It c
 upper-side hits for all 272 source triangles against both GLBs and the underlying road. Across the two zones the paint
 covers 3.98286 m² and lies 0.800 cm above the exported asphalt.
 
+The web capture at `659b1f93` shows the solid free-throw semicircle in front of the dashed half and the hoop.
+Desktop Ultra, 1440 × 810, clear, frozen at 14:00 on 21 June 2026. The camera is at START
+(web x 2.875, z −12, eye height 1.62 m), turned toward the court at yaw −113°, pitch −13°, vertical FOV 72°.
+
+![Free-throw semicircle on the asphalt in front of Hus L, seen from START in the web version](web-court-from-start.jpg)
+
 The original 1440 × 810 Unreal courtyard PNG shows the same moiré as the JPEG. The tiled material had a fixed-width
 mortar transition in UV coordinates, so subpixel mortar lines repeatedly appeared and disappeared across a receding
 wall. The three running-bond brick instances now integrate brick and mortar coverage over each pixel's UV footprint,
@@ -107,4 +113,4 @@ with alternating rows offset by half a brick. Other material instances retain th
 A headless Mesa GLES run of the shader expression (HLSL ported mechanically to GLSL) checked 132 fine, coarse and
 grazing-angle samples for each of the three brick instances against an 8,192-sample-per-axis reference. Across 396
 samples the largest absolute mortar-coverage error was 0.00246 on a 0–1 scale, including 8-bit readback. Windows verification requires rebuilding the tiled master and three
-brick instances, importing the two ground zones and recapturing the three views. The pictures above predate both changes.
+brick instances, importing the two ground zones and recapturing the three views. The three original web/Unreal pairs predate both changes.
