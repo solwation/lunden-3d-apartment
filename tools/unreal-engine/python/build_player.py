@@ -321,6 +321,8 @@ def character_graph(char, mapping):
             connect(vector, "ReturnValue", move, "WorldDirection")
             constant(move, "ScaleValue", -1 if name in ("Back", "Left") else 1)
         elif name in ("LookX", "LookY"):
+            # Raw mouse counts (Enhanced Input does not apply the legacy axis sensitivity) times LookDegrees: MouseX
+            # right turns right, MouseY up looks up, the web's PLAYER.mouseSens per pixel on both axes.
             scale = call("Engine.KismetMathLibrary:Multiply_DoubleDouble", 260, y + 100)
             connect(action, "ActionValue", scale, "A")
             connect(get("LookDegrees", 60, y + 220), "LookDegrees", scale, "B")
@@ -519,7 +521,25 @@ def load_rows(path):
     return data["components"]
 
 
+def check_input_settings():
+    """#2294: with the legacy input scales on, APlayerController multiplies yaw by 2.5 and pitch by -2.5 (BaseGame.ini
+    InputYawScale / InputPitchScale), so the mouse looked down when moved up and turned 2.5 times faster than the web.
+    The look graph alone scales the raw mouse counts by LookDegrees, as src/main.js does with PLAYER.mouseSens.
+    The template's mouse axis sensitivity (0.07 in DefaultInput.ini AxisConfig) also reached the look actions and made
+    it 14 times slower, so MouseX and MouseY keep sensitivity 1: one mouse count is one web pixel."""
+    settings = u.InputSettings.get_input_settings()
+    if settings.get_editor_property("enable_legacy_input_scales"):
+        raise RuntimeError("unreal/Lunden/Config/DefaultInput.ini must set bEnableLegacyInputScales=False (#2294)")
+    axes = {str(c.get_editor_property("axis_key_name")): c.get_editor_property("axis_properties")
+            for c in settings.get_editor_property("axis_config")}
+    for key in ("MouseX", "MouseY"):
+        props = axes.get(key)
+        if props is None or abs(props.get_editor_property("sensitivity") - 1.0) > 1e-6 or props.get_editor_property("invert"):
+            raise RuntimeError(f"DefaultInput.ini AxisConfig {key} must have Sensitivity=1 and bInvert=False (#2294)")
+
+
 def check_defaults(values):
+    check_input_settings()
     cls = u.load_class(None, CHARACTER + ".BP_LundenPlayer_C")
     default = u.get_default_object(cls)
     got = {name: default.get_editor_property(name) for name in values["vars"]}

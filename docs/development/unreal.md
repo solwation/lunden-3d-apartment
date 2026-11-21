@@ -487,6 +487,16 @@ standing headroom over the eye (half height 59 cm); the web has no crouched body
 outdoor sprint `runOutdoor` (needs an indoor/outdoor signal), rest (`src/rest.js`) and the footstep surface sensor
 (`src/stepsurface.js`).
 
+**Mouse look (#2294).** `src/main.js` turns the view by `PLAYER.mouseSens` (0.0013 rad, 0.0745°) per pixel of mouse
+movement, up looks up. The graph multiplies the raw MouseX / MouseY counts by `LookDegrees` (that value in degrees)
+into `AddControllerYaw/PitchInput`. Two engine settings from the 5.8 template are switched off in
+`Config/DefaultInput.ini`, and `build_player.py` refuses to build or pass `--check` when either is back:
+`bEnableLegacyInputScales=False` (with it on, `BaseGame.ini` `InputPitchScale=-2.5` inverted the pitch and
+`InputYawScale=2.5` multiplied the yaw) and `Sensitivity=1` on the MouseX / MouseY `AxisConfig` (the template's 0.07
+reached the look actions too). The pilot therefore turned at 0.175 times the web's rate with the pitch inverted; now
+one count is 0.0745° on both axes. Not yet ported: the web's pitch limit of ±1.45 rad (Unreal keeps its default
+±89.9°) and an inverted-Y setting.
+
 **Fall damage** (`src/player.js` landing, `src/falldamage.js`, `src/combat.js` `fall`). A fall starts when the
 character enters Falling (take-off of a jump, or the ledge it walked off) and its drop is that capsule height minus
 the landing height. Unreal only falls in free drops, since stairs and steps up to 45 cm stay in Walking, so the web's

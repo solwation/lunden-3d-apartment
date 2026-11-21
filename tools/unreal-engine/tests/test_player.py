@@ -2,7 +2,8 @@
 
 1. The pilot assets are gone from Blueprints/Pilot and PilotDoors; the mapping binds the nine Player/Input actions.
 2. Movement in a temporary level with the world's GameMode (tools/unreal-engine/world-levels.json): standing and
-   crouched eye height, walking, sprinting and crouched speed and the jump apex, each against
+   crouched eye height, walking, sprinting and crouched speed, the jump apex and the mouse look per count (MouseY up
+   looks up, MouseX right turns right, #2294), each against
    measurements.json `spawn.player` (src/config.js PLAYER), driven by Unreal keyboard input.
 3. Fall damage: the character walks off platforms of 2.9, 3.1, 4.5 and 6.1 m and lands on the ground. The lives lost
    must equal measurements.json `spawn.fall.samples`, which export-scene.js computes with the web's own
@@ -97,10 +98,10 @@ def player_test():
                 yield
 
         def check(label, got, want, tolerance):
-            u.log(f"LUNDEN_PLAYER_TEST {label}: got {got:.2f}, want {want:.2f} (tolerance {tolerance})")
-            result[label] = {"got": round(got, 2), "want": round(want, 2)}
+            u.log(f"LUNDEN_PLAYER_TEST {label}: got {got:.4f}, want {want:.4f} (tolerance {tolerance})")
+            result[label] = {"got": round(got, 4), "want": round(want, 4)}
             if abs(got - want) > tolerance:
-                raise RuntimeError(f"{label}: {got:.2f}, expected {want:.2f} +- {tolerance}")
+                raise RuntimeError(f"{label}: {got:.4f}, expected {want:.4f} +- {tolerance}")
 
         def speed():
             v = pawn.get_velocity()
@@ -140,6 +141,28 @@ def player_test():
         check("jumpApexCm", peak - base, (100 * P["jump"]) ** 2 / (2 * 100 * WEB_GRAVITY), 2.0)
         if pawn.get_editor_property("Lives") != lives0:
             raise RuntimeError("An ordinary jump cost lives")
+
+        # Mouse look (#2294): a forced raw MouseY / MouseX count of +1 each frame must raise the pitch (look up) and
+        # the yaw (turn right) by the web's PLAYER.mouseSens per pixel (src/main.js look), in degrees.
+        per_count = math.degrees(P["mouseSens"])
+        for axis, part in (("MouseY", "pitch"), ("MouseX", "yaw")):
+            pc.set_control_rotation(u.Rotator(roll=0, pitch=0, yaw=0))
+            yield from seconds(0.2)
+            last = getattr(pc.get_control_rotation(), part)
+            deltas = []
+            key(axis, True)
+            for _ in range(30):
+                yield
+                now = getattr(pc.get_control_rotation(), part)
+                deltas.append(now - last)
+                last = now
+            key(axis, False)
+            moving = sorted(d for d in deltas if abs(d) > 1e-6)
+            if len(moving) < 20:
+                raise RuntimeError(f"{axis} moved the view in only {len(moving)} of 30 frames: {deltas}")
+            check(f"look{axis}DegPerCount", moving[len(moving) // 2], per_count, 0.001)
+        pc.set_control_rotation(u.Rotator(roll=0, pitch=0, yaw=0))
+        yield from seconds(0.2)
 
         lives, max_lives = pawn.get_editor_property("Lives"), pawn.get_editor_property("MaxLives")
         if max_lives != F["lives"] or lives != F["lives"]:
