@@ -447,9 +447,6 @@ def library(values, extensions):
     bp = create(LIBRARY, u.Blueprint, u.BlueprintFunctionLibraryFactory())
     lib = class_path(LIBRARY)
     save_lib = class_path(SAVE_LIBRARY)
-    player = u.load_class(None, class_path(PLAYER))
-    if not player:
-        raise RuntimeError(f"{PLAYER} is missing: build the player first (build_player.py)")
     pc_ref = BP.get_object_reference_type(u.PlayerController.static_class())
     point = BP.get_struct_type(u.IntPoint.static_struct())
 
@@ -545,43 +542,10 @@ def library(values, extensions):
     skip.x, skip.y = g.x - 300, 500
     skip.run("GameUserSettings:ApplySettings", target=gus, bCheckForCommandLineOverrides=False)
 
-    # ApplyMouse(Controller) -> Applied: look speed = BaseLookDegrees x mouse.sensitivity on the possessed
-    # BP_LundenPlayer (whose graph turns by LookDegrees per mouse count), and the inverted-pitch context
-    g, p, result = function(bp, "ApplyMouse", [("Controller", pc_ref)], [("Applied", BOOL)])
-    subsystem = g.named("PlayerController|LocalPlayerSubsystems|GetEnhancedInputLocalPlayerSubsystem")
-    link(p["Controller"], inp(subsystem, "PlayerController"))
-    has_input = g.pure("KismetSystemLibrary:IsValid", Object=out(subsystem, "ReturnValue"))
-    no_input = g.branch(has_input)
-    invert = g.call(lib + ":ReadFlag")
-    feed(invert, "Key", "mouse.invertY")
-    feed(invert, "Default", False)
-    remove = Graph(g.g, g.branch(out(invert, "Value")))
-    remove.x, remove.y = g.x, 400
-    g.run("/Script/EnhancedInput.EnhancedInputSubsystemInterface:AddMappingContext", target=out(subsystem, "ReturnValue"),
-          MappingContext=IMC_INVERT + "." + IMC_INVERT.rsplit("/", 1)[1], Priority=INVERT_PRIORITY)
-    remove.run("/Script/EnhancedInput.EnhancedInputSubsystemInterface:RemoveMappingContext",
-               target=out(subsystem, "ReturnValue"), MappingContext=IMC_INVERT + "." + IMC_INVERT.rsplit("/", 1)[1])
-    seq = g.named("Utilities|FlowControl|Sequence")  # both branches join here
-    g.step(seq, exec_out="then_0")
-    link(remove.exec, inp(seq, "execute"))
-    link(no_input, inp(seq, "execute"))
-    pawn = g.pure("Controller:K2_GetPawn", target=p["Controller"])
-    cast = g.cast("CastToCharacter", u.Character.static_class(), player)
-    g.step(cast)
-    link(pawn, inp(cast, "Object"))
-    failed = out(cast, "CastFailed")
-    speed = g.call(lib + ":ReadNumber")
-    feed(speed, "Key", "mouse.sensitivity")
-    feed(speed, "Default", "1.0")
-    factor = g.pure("KismetMathLibrary:FClamp", Value=out(speed, "Value"), Min=SENSITIVITY[0], Max=SENSITIVITY[1])
-    base = g.call(lib + ":BaseLookDegrees")
-    g.set("LookDegrees", g.pure("KismetMathLibrary:Multiply_DoubleDouble", A=out(base, "Degrees"), B=factor),
-          owner=class_path(PLAYER), target=cast_out(cast))
-    g.ret(result, Applied=True)
-    no = g.g.add_return_node()
-    g.at(no, g.x, 500)
-    link(failed, inp(no, "execute"))
-    feed(no, "Applied", False)
+    # Menu and controller graphs call this signature. Its typed player cast is added once the UI exists,
+    # because loading the player also loads the shared room and its references to BPC_LundenUI.Hud.Fps.
+    g, _, result = function(bp, "ApplyMouse", [("Controller", pc_ref)], [("Applied", BOOL)])
+    g.ret(result, Applied=False)
 
     # ApplyVolumes(): every volumes row with a sound class becomes a SoundMix override; the mix is (re)pushed
     g, _, _ = function(bp, "ApplyVolumes")
@@ -602,6 +566,57 @@ def library(values, extensions):
 
     compiled(bp)
     return bp
+
+
+def finish_mouse_settings(bp):
+    editor = GRAPH.get_graph_editor_by_name(bp, "ApplyMouse")
+    nodes = {node.get_class().get_name(): node for node in editor.list_all_nodes()}
+    entry, result = nodes["K2Node_FunctionEntry"], nodes["K2Node_FunctionResult"]
+    g = Graph(editor, out(entry, "then"))
+    if not g.exec.break_single_pin_link(inp(result, "execute")):
+        raise RuntimeError("Could not replace the initial ApplyMouse return")
+    controller = out(entry, "Controller")
+    lib = class_path(LIBRARY)
+    player = u.load_class(None, class_path(PLAYER))
+    if not player:
+        raise RuntimeError(f"{PLAYER} is missing: build the player first (build_player.py)")
+
+    subsystem = g.named("PlayerController|LocalPlayerSubsystems|GetEnhancedInputLocalPlayerSubsystem")
+    link(controller, inp(subsystem, "PlayerController"))
+    has_input = g.pure("KismetSystemLibrary:IsValid", Object=out(subsystem, "ReturnValue"))
+    no_input = g.branch(has_input)
+    invert = g.call(lib + ":ReadFlag")
+    feed(invert, "Key", "mouse.invertY")
+    feed(invert, "Default", False)
+    remove = Graph(g.g, g.branch(out(invert, "Value")))
+    remove.x, remove.y = g.x, 400
+    g.run("/Script/EnhancedInput.EnhancedInputSubsystemInterface:AddMappingContext", target=out(subsystem, "ReturnValue"),
+          MappingContext=IMC_INVERT + "." + IMC_INVERT.rsplit("/", 1)[1], Priority=INVERT_PRIORITY)
+    remove.run("/Script/EnhancedInput.EnhancedInputSubsystemInterface:RemoveMappingContext",
+               target=out(subsystem, "ReturnValue"), MappingContext=IMC_INVERT + "." + IMC_INVERT.rsplit("/", 1)[1])
+    seq = g.named("Utilities|FlowControl|Sequence")  # both branches join here
+    g.step(seq, exec_out="then_0")
+    link(remove.exec, inp(seq, "execute"))
+    link(no_input, inp(seq, "execute"))
+    pawn = g.pure("Controller:K2_GetPawn", target=controller)
+    cast = g.cast("CastToCharacter", u.Character.static_class(), player)
+    g.step(cast)
+    link(pawn, inp(cast, "Object"))
+    failed = out(cast, "CastFailed")
+    speed = g.call(lib + ":ReadNumber")
+    feed(speed, "Key", "mouse.sensitivity")
+    feed(speed, "Default", "1.0")
+    factor = g.pure("KismetMathLibrary:FClamp", Value=out(speed, "Value"), Min=SENSITIVITY[0], Max=SENSITIVITY[1])
+    base = g.call(lib + ":BaseLookDegrees")
+    g.set("LookDegrees", g.pure("KismetMathLibrary:Multiply_DoubleDouble", A=out(base, "Degrees"), B=factor),
+          owner=class_path(PLAYER), target=cast_out(cast))
+    g.ret(result, Applied=True)
+    no = g.g.add_return_node()
+    g.at(no, g.x, 500)
+    link(failed, inp(no, "execute"))
+    feed(no, "Applied", False)
+
+    compiled(bp)
 
 
 # Widget trees -------------------------------------------------------------------------------------------------------
@@ -1311,6 +1326,8 @@ def main(argv):
     comp = component(hud_bp, menu_bp)
     ASSETS.set_metadata_tag(comp, SPEC_TAG, spec)
     save(comp)
+    finish_mouse_settings(lib)
+    save(lib)
     STAMP.write_text(json.dumps({"spec": spec, "by": "tools/unreal-engine/python/build_ui.py"}, indent=2) + "\n", encoding="utf-8")
     u.log(f"LUNDEN_UI {DIR}: saved BFL_LundenSettings, WBP_LundenHud, WBP_LundenMenu, BPC_LundenUI; "
           f"{len(extensions['menuButtons'])} menu buttons, {len(extensions['volumes'])} volumes; "

@@ -832,7 +832,8 @@ an FPS text in the Windows game. #2286 owns `/Game/Lunden/UI/`, `build_ui.py`, `
   `page: Privacy` in place of `widget`. It opens a scrollable page in the start/pause widget, with Page Up, Page Down
   and Back. The UI builder reads the shared room description directly from the static web dialog in `index.html`
   (`data-privacy="shared"`) and appends its Windows-only template. The rendered text contributes to the build stamp.
-  Update the Windows connection and crash-reporting notes when #2292/#2293 and #2360 ship. `volumes`
+  The Windows text describes the launcher’s connection after Play and its `--offline` option (#2292). Refresh the
+  disclosure when the data exchanged by #2293 or crash reporting in #2360 changes. `volumes`
   `{key, label, soundClass, owner, what}`: a slider; with a `soundClass` the volume is applied to that class.
   Since #2287 the three rows name `/Game/Lunden/Audio/SC_LundenMaster`, `SC_LundenMusic` and `SC_LundenEffects`
   ([Footsteps, wind and outdoor sound](#footsteps-wind-and-outdoor-sound-2287)); the engine's own `Master` cannot be the
