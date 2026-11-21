@@ -1,0 +1,42 @@
+{
+ "commit": "ba05c8ee",
+ "views": {
+  "garage-cage": {
+   "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+   "eye": [
+    -10.18,
+    -1.33,
+    4.65
+   ],
+   "feet": [
+    -10.18,
+    -2.95,
+    4.65
+   ],
+   "yaw": 0,
+   "pitch": -12,
+   "verticalFov": 72,
+   "aspect": 1.7777777777777777,
+   "quality": 4,
+   "day": [
+    2026,
+    6,
+    21,
+    14,
+    true
+   ],
+   "lights": false,
+   "weather": "clear",
+   "desktop": true,
+   "contextLost": false,
+   "draws": 108,
+   "unrealEyeCm": [
+    -1018,
+    465,
+    -133
+   ],
+   "unrealYaw": -90,
+   "unrealPitch": -12
+  }
+ }
+}

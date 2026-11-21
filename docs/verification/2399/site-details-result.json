@@ -1,0 +1,443 @@
+{
+ "engine": "5.8.4-58902052+++UE5+Release-5.8",
+ "summary": {
+  "vc_ds_river_edge": {
+   "nodes": 1,
+   "drawn": 1,
+   "png": null
+  },
+  "vc_tex": {
+   "nodes": 9,
+   "drawn": 9,
+   "png": [
+    512,
+    512
+   ]
+  },
+  "tex_ds_site_slatted_rail": {
+   "nodes": 2,
+   "drawn": 2,
+   "png": [
+    128,
+    64
+   ]
+  },
+  "tex_site_house_letters": {
+   "nodes": 1,
+   "drawn": 1,
+   "png": [
+    192,
+    64
+   ]
+  },
+  "bas_353535_r100_m0_vc_tex_ds_garage_cage_mesh": {
+   "nodes": 4,
+   "drawn": 4,
+   "png": [
+    64,
+    64
+   ]
+  },
+  "bas_ffffff_r100_m0_tex_ds_garage_cage_mesh": {
+   "nodes": 37,
+   "drawn": 37,
+   "png": [
+    64,
+    64
+   ]
+  },
+  "ds_river_flow": {
+   "nodes": 1,
+   "drawn": 1,
+   "png": null
+  }
+ },
+ "nodes": {
+  "mesh_edge-land_l0_xm8363_z7725_y199": [
+   {
+    "level": "Level_fond",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_xm3810_z1720_y57": [
+   {
+    "level": "Level_hus-l_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_xm3255_z1720_y57": [
+   {
+    "level": "Level_hus-l_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_xm2700_z1721_y57": [
+   {
+    "level": "Level_hus-l_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_xm2145_z1720_y57": [
+   {
+    "level": "Level_hus-l_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_xm772_z1720_y57": [
+   {
+    "level": "Level_hus-l_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_xm217_z1720_y57": [
+   {
+    "level": "Level_hus-l_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_x893_z1720_y57": [
+   {
+    "level": "Level_hus-l_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_boxslats_l0_xm2854_z3155_y15": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_loggiarails_l0_xm3059_z3498_y653": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_xm2423_z3695_y80": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_xm6095_z2041_ym167": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_xm3370_z3986_ym167": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_xm10_z3747_ym167": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_x17_z398_ym167": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_xm1018_z320_ym195": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_xm756_z320_ym195": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_xm1018_z480_ym195": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_xm756_z480_ym195": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_xm463_z320_ym195": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_xm201_z320_ym195": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_xm463_z480_ym195": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_x92_z320_ym195": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_x354_z320_ym195": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_x92_z480_ym195": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_x354_z480_ym195": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_x647_z320_ym195": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_x909_z320_ym195": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_x647_z480_ym195": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_x909_z480_ym195": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_xm6900_z1950_ym195": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_xm6675_z1950_ym195": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_xm5930_z1520_ym195": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_xm5677_z1520_ym195": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_xm5424_z1520_ym195": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_xm5760_z1910_ym195": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_xm5465_z1910_ym195": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_xm5930_z2740_ym195": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_xm5705_z2740_ym195": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_xm4020_z3610_ym195": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_xm3780_z3610_ym195": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_xm3100_z3570_ym195": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_xm2850_z3570_ym195": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_xm4020_z4570_ym195": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_xm3850_z4570_ym195": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_xm820_z3140_ym195": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_xm545_z3140_ym195": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_xm270_z3140_ym195": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_x380_z3140_ym195": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_x650_z3140_ym195": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_x605_z4370_ym195": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_x762_z4370_ym195": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_x338_z1720_y57": [
+   {
+    "level": "Level_l1007-uteplats",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_bridges-water_l0_xm500_z19012_ym705": [
+   {
+    "level": "Level_omgivning",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_xm2010_zm320_y33": [
+   {
+    "level": "SM_Veg_hedge_mesh_l0_xm2010_zm320_y33",
+    "ok": true,
+    "why": ""
+   }
+  ]
+ },
+ "errors": []
+}

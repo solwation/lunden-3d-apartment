@@ -1576,6 +1576,9 @@ dark entrance cells the web already builds behind them. Each floor has a separat
 cages, 30 steel doors and two park doors select their actual `Garage.cageDoors` mesh instance. A park leaf moves
 its separate glass pane with its frame. The two yellow gate caps use the actual positions of `GarageDoor.targets`.
 All leaves and both buttons use the existing `BP_LundenSwingDoor` events, IDs and change counts.
+The storage cages' wire mesh (walls and the 37 leaves) keeps `meshTexture()`'s 64 × 64 cut-out (`garage-cage-mesh`,
+alpha mask 0.5, double-sided) through the export and the import; `tests/check_site_details.py` fails when it falls
+back to an opaque or untextured material ([#2399 verification](../verification/2399/README.md)).
 
 The `garage-control` actor counts the 25 seconds only while the overhead door is fully open. A visitor's feet inside
 the opening reset the timer. A visitor or active car obstructing a closing gate makes it reverse at its current angle.

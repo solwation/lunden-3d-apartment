@@ -1,0 +1,36 @@
+{
+ "viewport": {
+  "width": 1440,
+  "height": 810
+ },
+ "verticalFovDeg": 72,
+ "standingEyeHeightM": 1.62,
+ "date": {
+  "year": 2026,
+  "month": 6,
+  "day": 21
+ },
+ "weather": "clear",
+ "lighting": {
+  "day": {
+   "hour": 14,
+   "lampsOn": false
+  },
+  "evening": {
+   "hour": 22,
+   "lampsOn": true
+  }
+ },
+ "views": [
+  {
+   "id": "garage-cage",
+   "subject": "storage cage door hyrf\u00f6rr\u00e5d 1 (door_garage_cage_xm1063_z320), closed, from the aisle",
+   "x": -10.18,
+   "z": 4.65,
+   "feetY": -2.95,
+   "yawDeg": 0,
+   "pitchDeg": -12,
+   "lighting": "day"
+  }
+ ]
+}
