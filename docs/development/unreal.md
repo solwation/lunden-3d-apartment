@@ -75,6 +75,8 @@ tools/unreal-engine/python/compose_world.py   composes /Game/Lunden/Maps/L_Lunde
 tools/unreal-engine/python/build_l1007.py     L1007's derived collision sub-level Generated/L1007World/ (from the l1007 import)
 tools/unreal-engine/tests/test_l1007.py       PIE test on L_Lunden: sub-levels, 1 cm measurements, START → stairs → back
 tools/unreal-engine/tests/capture_l1007.py    GPU views of L_Lunden from the shared camera list (temporary light, nothing saved)
+tools/unreal-engine/tests/test_exterior.py    PIE test: the export's 32 measurement rays through Hus L, A/B/C and the garage, 1 cm (#2279)
+tools/unreal-engine/tests/capture_exterior.py GPU views of L_Lunden with the #2279 zones streamed in memory (nothing saved)
 unreal/Lunden/Content/Lunden/Maps/L_Lunden.umap  the persistent world map (LFS); written only by compose_world.py
 ```
 
@@ -1071,12 +1073,15 @@ does not cover `tools/unreal-engine/`, `shared/` or `unreal/`). Pages ignores pu
 
 What is exported:
 
-- **Zones** (a node belongs to the zone whose box holds the centre of its world bounding box): `l1007` (L1007's two
-  floors: walls, structure, doors, windows, cabinets/appliances, lamps, furniture, plus simple collision boxes from
-  `world.levels[i].wallRects` and the floor plates), `l1007-uteplats` (patio paving, fences, hedge, patio furniture)
-  and `fixture` (the position test). Planned, not yet exported: `l1007-entre` (street/entrance with START), `hus-l`,
-  `gard`, `omgivning` — they first need the large merged exterior/surroundings meshes (one mesh spans all of Hus L)
-  split by zone.
+- **Zones** (a node belongs to the first zone whose box holds the centre of its world bounding box and whose `from`
+  accepts the builder it comes from): `l1007` (L1007's two floors: walls, structure, doors, windows,
+  cabinets/appliances, lamps, furniture, plus simple collision boxes from `world.levels[i].wallRects` and the floor
+  plates), `l1007-uteplats` (patio paving, fences, hedge, patio furniture), `fixture` (the position test), and since
+  #2279 the buildings round L1007: `l1007-entre` (the street, pavement and terrain in front of L1007 up to START),
+  `hus-l` (Hus L: façades, loftgång, roofs and terraces, the neighbours' patios, the portik, the stairwell/lift core
+  and the visitable flats L1004/L1201) and `kvarteret` (Hus A/B/C with their loggias and roofs, their stairwells, lifts
+  and entrance shells, and the garage and förråd under the courtyard). Planned: `gard` and `omgivning` (#2280).
+  See [Buildings](#buildings-hus-l-hus-abc-and-the-garage-2279).
 - **Nodes** carry `extras` (`shared/schema/node-extras.schema.json`): stable `id` (= node name; kind + level +
   position in cm), `kind` (`wall | structure | door | window | furniture | interactive | light | collision | fixture |
   part`), `zone`, `level`, `source` (a pointer such as `data/plan.json#/floors/0/doors/0` or
@@ -1252,6 +1257,65 @@ second run writes nothing; `--force` rebuilds in place and `--check` verifies ex
 parameters and the persisted Nanite usage without writing. Take `git lfs lock` on every `Materials/*.uasset` before a
 build that writes. Results are in [the #2282 verification](../verification/2282/README.md).
 
+### Buildings: Hus L, Hus A/B/C and the garage (#2279)
+
+**Builders and zones.** `export-scene.js` builds, after the world and the room lights, what `main.js` builds next to
+the world: the garage (`src/garage.js`, with its door and the park-level basement doors) and the four stairwells
+(`src/core.js` for Hus L, `src/corehouse.js` for A/B/C including their entrance shells). Loading them afterwards keeps
+the seeded random sequence of the l1007 zones, which stay byte-identical. Every object gets the builder it comes from
+(`sourceGroup`): `exterior`, `visit` (L1004/L1201), `core-l`, `portik` (the portik's door), `surroundings` (Kv.
+Lunden's own blocks and the garage box's walls in `src/surroundings.js`), `surroundings-site` (the same module's
+terrain, streets, paving, trees and backdrops: `SITE_NAME`), `garage`, `core-abc`, and `world` for the rest. The
+`l1007` zones take any part of `buildWorld` but never the extra builders. `l1007-entre` takes `surroundings*`, `hus-l`
+takes `exterior`, `visit`, `core-l` and `portik`, and `kvarteret` takes `surroundings`, `garage` and `core-abc`. The
+boxes (`zoneTable`) are generous guards, `from` does the sorting, and the courtyard, street life, parked cars and the
+ground outside the box in front of L1007 stay unexported until #2280. Left out on purpose: the garage's parked cars
+and bicycles (furnishing, later) and `entrance-plants-far` (the web's distance stand-in for the entrance plants, which
+are exported).
+
+**The split.** A merged mesh (the web bakes one mesh per material for all of Hus L, all of Hus A/B/C or the whole
+terrain) that crosses a split zone's box is clipped at the box sides (vertical planes; attributes interpolated) and
+each piece goes to the zone holding its centroid. A triangle is thus in at most one zone. Its node id comes from the
+piece's own bounds like any other `structure`. A mesh inside one box stays whole (Hus L's façade batch is one node in
+`hus-l`, the Å-husen batches are whole nodes in `kvarteret`). `source` names the builder module. The export prints
+the split (at `28b1ad07`: 23 meshes cut, 5 pieces kept: terrain, asphalt and paving into `l1007-entre`, the box walls
+into `kvarteret`), what no zone took by builder, and fails when anything of the buildings' builders is left over.
+`check-export.mjs` checks that every node id is in exactly one zone and carries its file's zone.
+
+| Zone | Nodes | Triangles | GLB | Import (UE 5.8.4) |
+|---|---|---|---|---|
+| `l1007-entre` | 4 | 43 | 7.6 kB | 5 actors, 0.6 MB |
+| `hus-l` | 1,197 | 235,635 | 21.7 MB | 1,198 actors, 1,205 assets, 119.3 MB |
+| `kvarteret` | 349 | 282,367 | 29.4 MB | 350 actors, 307 assets, 33.8 MB |
+
+**Measurement rays.** `buildingProbes` defines 32 rays: per house the façades (north/east/west/south at the spandrel
+of storey 2), the roof, the stairwell and the glazed entrance (from the core's `glass` hole), Hus L's two gables and
+its portik (`expect: 'clear'`: the through-passage must stay open), and in the garage the floor, the deck soffit and
+two walls from inside. The exporter casts them on the exported nodes of their zone, counting every face from both
+sides, and writes `buildings` into `measurements.json` (hit point in m and cm, node id, material key).
+`tools/unreal-engine/tests/test_exterior.py` traces the same rays in Play In Editor:
+
+```text
+copy tools\unreal-engine\tests\test_exterior.py unreal\Lunden\Content\Python\   (untracked copy, delete afterwards)
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-tests.ps1 -Filter Editor.Python.Lunden.test_exterior
+```
+
+It opens `Level_hus-l`, streams the other measured zones in memory, and traces each ray with complex collision against
+its zone's actors (the others ignored). A ray passes when it hits the same node (or one of its parts) within 1 cm of
+the web's point, or nothing for `clear`. Two engine facts made the first run fail, and the test handles both in memory
+without saving. First, a trace's complex collision is built from the render LOD, which for a Nanite mesh is the
+simplified fallback: 7.7 cm off on Hus L's street façade, and thin rails and parts of the garage shell were gone.
+Second, Interchange leaves complex collision single-sided, so the A/B entrance glass (raster meshes, so not a Nanite
+effect) was not hit from the side its faces turn away from. The same fallback is what a commandlet capture draws: with
+Nanite on, Hus L's round stair drum and brick façade became loose panels
+([picture](../verification/2279/unreal-start-nanite-fallback.jpg)); with Nanite off they match the web. With Nanite off and double-sided collision, all 32 rays matched: see the
+[#2279 verification](../verification/2279/README.md). Player collision for these zones is not built yet. It needs a
+derived collision level like `build_l1007.py`, and the same two facts apply to it.
+
+**Not in the world map yet.** The zone levels are imported (`import_world.py`, default zones) but
+`world-levels.json` does not list them until `L_Lunden` is recomposed with its LFS lock. `capture_exterior.py` streams
+them into `L_Lunden` in memory for the verification pictures.
+
 ### Generated assets: rebuilt, not versioned (decided)
 
 The three zones import to **249 MB** (248,848,382 bytes) (l1007: StaticMeshes 166 MB, Materials 35 MB, SceneImport asset 30 MB, level
@@ -1298,5 +1362,5 @@ packaging (#2248) ships it next to the executable. Add a section to `notices.mjs
 
 ### Remaining for #2245
 
-More zones
-(`l1007-entre`, `hus-l`, `gard`, `omgivning`) need the merged exterior meshes split by zone first (see Export).
+The split of the merged exterior meshes exists since #2279 ([Buildings](#buildings-hus-l-hus-abc-and-the-garage-2279)); `gard` and
+`omgivning` use it in #2280.
