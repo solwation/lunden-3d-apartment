@@ -24,6 +24,7 @@ Run like the other world tests: copy this file to unreal/Lunden/Content/Python/ 
     run-tests.ps1 -Filter Editor.Python.Lunden.test_vegetation
 Writes Saved/vegetation-result.json and logs LUNDEN_VEGETATION_TREE / _HEDGE summaries, then LUNDEN_VEGETATION_OK.
 """
+import datetime
 import json
 import math
 from pathlib import Path
@@ -198,6 +199,41 @@ def trunk_checks(world, result, failures):
             failures.append(f"trunk walk {t['id']} ({t['kind']}): {tries}")
 
 
+def vegetation_parameters(world):
+    pc = u.GameplayStatics.get_player_controller(world, 0)
+    seasons, = pc.get_components_by_class(u.load_class(None, "/Game/Lunden/Seasons/BPC_LundenSeasons.BPC_LundenSeasons_C"))
+    calendar = u.load_asset("/Game/Lunden/Seasons/MPC_LundenVegetation")
+    today = datetime.date.today()
+    months = []
+    try:
+        for month in (1, 6, 10):
+            seasons.call_method("ApplySeason", (2026, month, 15))
+            value = u.MaterialLibrary.get_scalar_parameter_value(world, calendar, "Month")
+            if value != month:
+                raise RuntimeError(f"ApplySeason({month}) published {value} to the vegetation materials")
+            months.append(value)
+    finally:
+        seasons.call_method("ApplySeason", (today.year, today.month, today.day))
+    weather = u.load_asset("/Game/Lunden/Lighting/MPC_LundenWeather")
+    sky, = u.GameplayStatics.get_all_actors_of_class(world, u.load_class(None, "/Game/Lunden/Lighting/BP_LundenSky.BP_LundenSky_C"))
+    speed, direction = (sky.get_editor_property(n) for n in ("WindSpeed", "WindFromDeg"))
+    winds = []
+    try:
+        for sample_speed, turn in ((0, 0), (5, 0), (13, 90)):
+            sky.set_editor_property("WindSpeed", sample_speed)
+            sky.set_editor_property("WindFromDeg", sky.get_editor_property("PlanNorth") + turn)
+            sky.call_method("UpdateSky")
+            wind = [u.MaterialLibrary.get_scalar_parameter_value(world, weather, key) for key in ("WindX", "WindY")]
+            if math.dist(wind, [-sample_speed * math.sin(math.radians(turn)), sample_speed * math.cos(math.radians(turn))]) > 0.01:
+                raise RuntimeError(f"The vegetation wind input differs from {sample_speed} m/s at {turn} degrees: {wind}")
+            winds.append(wind)
+    finally:
+        sky.set_editor_property("WindSpeed", speed)
+        sky.set_editor_property("WindFromDeg", direction)
+        sky.call_method("UpdateSky")
+    return {"months": months, "windXY": winds}
+
+
 @u.AutomationScheduler.add_latent_command
 def vegetation_test():
     try:
@@ -210,6 +246,7 @@ def vegetation_test():
             yield
         result = {"engine": u.SystemLibrary.get_engine_version(), "map": MAP, "export": M.get("sourceCommit"),
                   "tolerance": TOLERANCE, "inMemory": IN_MEMORY, "trees": [], "hedges": [], "instances": {}}
+        result["vegetationParameters"] = vegetation_parameters(world)
         listed = [e["package"] for e in WORLD["levels"]]
         if PACKAGE not in listed:
             raise RuntimeError(f"{PACKAGE} is not in world-levels.json")
@@ -219,6 +256,7 @@ def vegetation_test():
 
         # every foliage instance in the running game: (role, location, world box)
         inst = {"trunk": [], "crown": [], "hedge": [], "other": []}
+        perennial_instances = 0
         leaf_ok = True
         for ifa in u.GameplayStatics.get_all_actors_of_class(world, u.InstancedFoliageActor):
             for comp in ifa.get_components_by_class(u.InstancedStaticMeshComponent):
@@ -229,6 +267,13 @@ def vegetation_test():
                 local = corners(mesh.get_bounding_box())
                 n = comp.get_instance_count()
                 result["instances"][mesh.get_name()] = result["instances"].get(mesh.get_name(), 0) + n
+                if "mesh_courtyard-shrubs_" in mesh.get_name():
+                    expected = "/Game/Lunden/Vegetation/MI_LundenPerennial" if "stillLeafKeys" in VEG["look"] else LEAF
+                    if expected not in [m.get_path_name().split(".")[0] for m in comp.get_materials() if m]:
+                        raise RuntimeError("The courtyard perennials lost their wind material")
+                    if not comp.get_editor_property("evaluate_world_position_offset"):
+                        raise RuntimeError("The courtyard perennial component disabled wind displacement")
+                    perennial_instances += n
                 if role == "crown":
                     mats = [m.get_path_name().split(".")[0] for m in comp.get_materials() if m]
                     result["crownMaterials"] = mats
@@ -236,6 +281,9 @@ def vegetation_test():
                 for i in range(n):
                     t = instance_transform(comp, i)
                     inst[role].append((t.translation, world_box(local, t)))
+        if "stillLeafKeys" in VEG["look"] and perennial_instances != VEG["byWebName"]["courtyard-shrubs"]:
+            raise RuntimeError(f"The courtyard foliage must keep the perennials separate from its still vines: {perennial_instances}")
+        result["perennialWindInstances"] = perennial_instances
         if not leaf_ok:
             raise RuntimeError(f"The crown lobes do not use {LEAF}: {result.get('crownMaterials')}")
         failures = []

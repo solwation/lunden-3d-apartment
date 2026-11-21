@@ -1,6 +1,6 @@
 """#2281: render views of the world map with the vegetation for the web/Unreal picture pairs (verification only).
 
-    UnrealEditor-Cmd.exe <uproject> -run=pythonscript "-script=<this file> <scene.json> <out dir> [view id,…]"
+    UnrealEditor-Cmd.exe <uproject> -run=pythonscript "-script=<this file> <scene.json> <out dir> [view id,…] [YYYY-MM-DD]"
         -AllowCommandletRendering -RenderOffScreen -unattended -nosplash -nosound
 
 scene.json: `node tools/unreal-engine/pilot-scene.mjs measurements.json scene.json` for the cameras (see
@@ -11,6 +11,7 @@ Nanite off already) and lights the views with the world's own sky (#2283's BP_Lu
 each preset's hour exactly as capture_lighting.py does; no temporary rig). Renders with screenshot_level.render_view.
 Nothing is saved. Logs LUNDEN_VEGETATION_CAPTURE_OK.
 """
+import datetime
 import json
 import math
 import os
@@ -20,7 +21,7 @@ import sys
 import unreal as u
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "python"))
-from screenshot_level import render_view  # noqa: E402
+from screenshot_level import render_view, spawn  # noqa: E402
 from prepare_nanite_materials import static_mesh_editor  # noqa: E402
 
 TOOLS = Path(__file__).resolve().parents[1]
@@ -29,7 +30,8 @@ WORLD = json.loads((TOOLS / "world-levels.json").read_text(encoding="utf-8"))
 VIEWS = json.loads((TOOLS.parents[1] / "unreal/Lunden/Tests/views.json").read_text(encoding="utf-8"))
 
 
-def run(scene_path, out_dir, ids=None):
+def run(scene_path, out_dir, ids=None, iso_date=None):
+    date = datetime.date.fromisoformat(iso_date) if iso_date else datetime.date(**VIEWS["date"])
     scene = json.loads(Path(scene_path).read_text(encoding="utf-8"))
     wanted = ids.split(",") if ids else [c["id"] for c in scene["cameras"]]
     if not u.EditorLoadingAndSavingUtils.load_map(WORLD["map"]):
@@ -59,6 +61,13 @@ def run(scene_path, out_dir, ids=None):
     lamps = [a for a in actors if any(str(t).startswith("lamp:") for t in a.tags)]
     if len(skies) != 1:
         raise RuntimeError(f"L_Lunden has {len(skies)} skies: run build_lighting.py (#2283)")
+    holder = spawn(u.Actor, u.Vector(0, 0, 0))
+    seasons = u.new_object(u.load_class(None, "/Game/Lunden/Seasons/BPC_LundenSeasons.BPC_LundenSeasons_C"), outer=holder)
+    seasons.call_method("ApplySeason", (date.year, date.month, date.day))
+    calendar = u.load_asset("/Game/Lunden/Seasons/MPC_LundenVegetation")
+    if u.MaterialLibrary.get_scalar_parameter_value(world, calendar, "Month") != date.month:
+        raise RuntimeError("The vegetation materials did not receive the capture month")
+    hidden_seasonal = [a for a in actors if a.actor_has_tag("seasonal") and a.get_editor_property("hidden")]
     sky = skies[0]
     skylight = sky.get_component_by_class(u.SkyLightComponent)
     skylight.set_editor_property("real_time_capture", False, u.PropertyAccessChangeNotifyMode.NEVER)
@@ -67,8 +76,8 @@ def run(scene_path, out_dir, ids=None):
     observed = []
     for cam in [c for c in scene["cameras"] if c["id"] in wanted]:
         preset = VIEWS["lighting"][cam["lighting"]]
-        for k, v in (("UseClock", False), ("TimeScale", 0.0), ("Year", VIEWS["date"]["year"]), ("Month", VIEWS["date"]["month"]),
-                     ("Day", VIEWS["date"]["day"]), ("Hour", float(preset["hour"])), ("Rain", 0.0), ("Snow", 0.0), ("Wet", 0.0)):
+        for k, v in (("UseClock", False), ("TimeScale", 0.0), ("Year", date.year), ("Month", date.month),
+                     ("Day", date.day), ("Hour", float(preset["hour"])), ("Rain", 0.0), ("Snow", 0.0), ("Wet", 0.0)):
             sky.set_editor_property(k, v, u.PropertyAccessChangeNotifyMode.NEVER)
         sky.call_method("UpdateSky")
         for lamp in lamps:
@@ -76,12 +85,12 @@ def run(scene_path, out_dir, ids=None):
         skylight.recapture_sky()
         obs = render_view(world, out_dir, cam["id"], u.Vector(*cam["xyz"]),
                           u.Rotator(roll=0, pitch=cam["pitch"], yaw=cam["yaw"]), scene["width"], scene["height"],
-                          scene["horizontalFov"], -0.7 if preset["lampsOn"] else 0, excluded, lumen=True)
+                          scene["horizontalFov"], -0.7 if preset["lampsOn"] else 0, excluded + hidden_seasonal, lumen=True)
         if math.dist(obs["xyz"], cam["xyz"]) > 0.01 or any(abs(obs[k] - cam[k]) > 0.001 for k in ("pitch", "yaw")):
             raise RuntimeError("Camera transform mismatch: " + cam["id"])
-        observed.append({**obs, "id": cam["id"], "lighting": cam["lighting"], "hour": preset["hour"], "date": VIEWS["date"]})
+        observed.append({**obs, "id": cam["id"], "lighting": cam["lighting"], "hour": preset["hour"], "date": {"year": date.year, "month": date.month, "day": date.day}})
     (Path(out_dir) / "capture.json").write_text(json.dumps({"engine": u.SystemLibrary.get_engine_version(), "map": WORLD["map"],
-        "streamedInMemory": added, "naniteOffInMemory": fallback, "hiddenCollisionActors": len(excluded), "lamps": len(lamps), "cameras": observed}, indent=2) + "\n")
+        "date": date.isoformat(), "streamedInMemory": added, "naniteOffInMemory": fallback, "hiddenCollisionActors": len(excluded), "lamps": len(lamps), "cameras": observed}, indent=2) + "\n")
     u.EditorLoadingAndSavingUtils.new_blank_map(False)  # discard the temporary levels and rig
     u.log(f"LUNDEN_VEGETATION_CAPTURE_OK {len(observed)} views")
 

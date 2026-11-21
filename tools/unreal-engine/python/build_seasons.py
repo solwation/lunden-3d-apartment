@@ -13,11 +13,11 @@ tools/unreal-engine/player-extensions.json. It holds the rule in one place for e
   when From <= key <= To, or, for a window that wraps the new year (From > To), when key >= From or key <= To.
   The same comparison as src/christmas.js inChristmas, with the window from the actor instead of src/config.js.
 - TagValue(Actor, Prefix) -> Value, Found: the integer after `Prefix` in one of the actor's tags.
-- ApplySeason(Year, Month, Day): every actor tagged `seasonal` whose window tags it can read is shown with collision
+- ApplySeason(Year, Month, Day): publishes Month to MPC_LundenVegetation for crowns and lawns. Every actor tagged `seasonal` whose window tags it can read is shown with collision
   inside its window and hidden without collision outside it. Also the test hook: tests call it with a fixed date.
 - BeginPlay: ApplySeason with the PC's local date (Now), once, at game start, as the web does on a new visit.
 
-Run (Windows checkout; lock the asset first: git lfs lock unreal/Lunden/Content/Lunden/Seasons/BPC_LundenSeasons.uasset):
+Run (Windows checkout; lock Seasons/BPC_LundenSeasons.uasset and Seasons/MPC_LundenVegetation.uasset first):
     powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/build_seasons.py [--force | --check]
 A run whose script is unchanged (metadata Lunden.SpecHash) saves nothing; --check fails when the asset is missing or
 was built by another version of this script. Logs LUNDEN_SEASONS_OK.
@@ -30,6 +30,7 @@ import unreal as u
 
 DIR = "/Game/Lunden/Seasons"
 COMPONENT = DIR + "/BPC_LundenSeasons"
+VEGETATION = DIR + "/MPC_LundenVegetation"
 SPEC_TAG = "Lunden.SpecHash"
 FOR_EACH = "/Engine/EditorBlueprintResources/StandardMacros.StandardMacros:ForEachLoop"
 SEASON_TAG = "seasonal"  # import_world.py season_tags
@@ -187,12 +188,38 @@ def tag_value(bp):
     value(none, "Found", "false")
 
 
-def apply_season(bp):
+def vegetation_calendar(check):
+    asset = ASSETS.load_asset(VEGETATION) if ASSETS.does_asset_exist(VEGETATION) else None
+    if asset:
+        if "Month" not in [str(v.parameter_name) for v in asset.get_editor_property("scalar_parameters")]:
+            raise RuntimeError(VEGETATION + " has no Month parameter")
+        return asset
+    if check:
+        raise RuntimeError("Missing " + VEGETATION)
+    asset = u.AssetToolsHelpers.get_asset_tools().create_asset("MPC_LundenVegetation", DIR,
+        u.MaterialParameterCollection, u.MaterialParameterCollectionFactoryNew())
+    month = u.CollectionScalarParameter()
+    month.set_editor_property("parameter_name", "Month")
+    month.set_editor_property("default_value", 6.0)  # the June export in an editor preview, before BeginPlay
+    asset.set_editor_property("scalar_parameters", [month])
+    if not ASSETS.save_loaded_asset(asset, only_if_is_dirty=False):
+        raise RuntimeError("Could not save " + VEGETATION)
+    return asset
+
+
+def apply_season(bp, calendar):
     g, p, _ = function(bp, "ApplySeason", [(n, INT) for n in ("Year", "Month", "Day")], [])
     cls = bp.generated_class().get_path_name()
     find = g.call("GameplayStatics:GetAllActorsWithTag", 250, 0)
     value(find, "Tag", SEASON_TAG)
-    link(g.g.find_graph_entry_pin(), inp(find, "execute"))
+    publish = g.call("KismetMaterialLibrary:SetScalarParameterValue", 0, -240)
+    value(publish, "Collection", calendar.get_path_name())
+    value(publish, "ParameterName", "Month")
+    real_month = g.call("KismetMathLibrary:Conv_IntToDouble", -250, -380)
+    link(p["Month"], inp(real_month, "InInt"))
+    link(out(real_month, "ReturnValue"), inp(publish, "ParameterValue"))
+    link(g.g.find_graph_entry_pin(), inp(publish, "execute"))
+    link(out(publish, "then"), inp(find, "execute"))
     each = g.loop(550, 0)
     link(out(find, "then"), inp(each, "Exec"))
     link(out(find, "OutActors"), inp(each, "Array"))
@@ -244,7 +271,7 @@ def event_graph(bp):
         link(out(date, name), inp(apply, name))
 
 
-def build():
+def build(calendar):
     if ASSETS.does_asset_exist(COMPONENT):
         bp = ASSETS.load_asset(COMPONENT)
         events = GRAPH.get_graph_editor_by_name(bp, "EventGraph")
@@ -267,7 +294,7 @@ def build():
     in_season(bp)
     tag_value(bp)
     BP.compile_blueprint(bp)  # ApplySeason calls the two functions above by class path
-    apply_season(bp)
+    apply_season(bp, calendar)
     BP.compile_blueprint(bp)
     event_graph(bp)
     BP.compile_blueprint(bp)
@@ -280,6 +307,7 @@ def build():
 
 def main(argv):
     spec = hashlib.sha256(Path(__file__).read_text(encoding="utf-8").encode()).hexdigest()  # line endings as build_player.py
+    calendar = vegetation_calendar("--check" in argv)
     present = ASSETS.does_asset_exist(COMPONENT)
     stored = ASSETS.get_metadata_tag(ASSETS.load_asset(COMPONENT), SPEC_TAG) if present else ""
     if "--check" in argv:
@@ -289,7 +317,7 @@ def main(argv):
     elif stored == spec and "--force" not in argv:
         u.log(f"LUNDEN_SEASONS {COMPONENT}: unchanged, nothing saved; spec {spec[:16]}")
     else:
-        bp = build()
+        bp = build(calendar)
         ASSETS.set_metadata_tag(bp, SPEC_TAG, spec)
         if not ASSETS.save_loaded_asset(bp, only_if_is_dirty=False):
             raise RuntimeError(f"Could not save {COMPONENT} (is its .uasset locked with git lfs lock?)")

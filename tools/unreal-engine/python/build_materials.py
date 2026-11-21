@@ -19,6 +19,7 @@ carries the entry's `source` and `assumption` as metadata tags Lunden.Source / L
 *guess* markers stay attached to the material) and Lunden.SpecHash: an asset whose spec hash is unchanged is skipped,
 so a second run writes nothing. --force rebuilds every asset in place (paths and references stay valid).
 
+Build the season collection with build_seasons.py before rebuilding the lawn master.
 Run headless (Windows checkout; take `git lfs lock` on each Materials/*.uasset it will write first):
     powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/build_materials.py [--force | --check]
 Logs LUNDEN_MATERIAL <path>: created|updated|kept and finally LUNDEN_MATERIALS_OK.
@@ -33,6 +34,7 @@ import unreal
 eal = unreal.EditorAssetLibrary
 mel = unreal.MaterialEditingLibrary
 NANITE = unreal.MaterialUsage.MATUSAGE_NANITE
+CALENDAR = "/Game/Lunden/Seasons/MPC_LundenVegetation"
 
 # One cell of a pattern in UV metres: Size = (w along U, h along V). Stagger shifts each column along V by a random
 # share of a cell (parquet), Bond shifts each row along U (half bond), Joint is the joint width in metres. Returns
@@ -123,7 +125,10 @@ float sp = clamp(field * PatchContrast, -1.0, 1.0);
 sp = sp * pow(abs(sp), 0.3);
 lin *= 1.0 + max(0.0, -sp) * Dry.rgb - max(0.0, sp) * Lush.rgb;
 float3 vc = lerp(float3(1.0, 1.0, 1.0), VertexColor.rgb, VertexColorWeight);
-return float4(lin * Color.rgb * vc, Roughness);
+// src/grass.js grassMaterial: the summer lawn/roadside tint grades towards GRASS.autumn in linear space.
+const float autumnMix[12] = { AUTUMN_MIX };
+float3 lawn = lerp(Color.rgb, Autumn.rgb, autumnMix[clamp((int)round(Month), 1, 12) - 1]);
+return float4(lin * lawn * vc, Roughness);
 """
 GRASS_SCALARS = {"Cell": 0.0334, "StrokeWidth": 0.0044, "StrawTint": 0.94, "BladeTint": 0.91, "VertexColorWeight": 0.0,
                  "Roughness": 1.0, "Tile": 1.6, "PatchContrast": 1.5, "TuftCount": 22.0, "TuftShade": 0.14}
@@ -235,7 +240,7 @@ def tiled_graph(m, spec):
 
 def grass_graph(m, spec):
     custom = mel.create_material_expression(m, unreal.MaterialExpressionCustom, -500, 0)
-    names = ["UV", "VertexColor"] + list(GRASS_VECTORS) + list(GRASS_SCALARS)
+    names = ["UV", "VertexColor", "Month", "Autumn"] + list(GRASS_VECTORS) + list(GRASS_SCALARS)
     inputs = []
     for name in names:
         ci = unreal.CustomInput()
@@ -244,7 +249,13 @@ def grass_graph(m, spec):
     custom.set_editor_property("inputs", inputs)
     custom.set_editor_property("output_type", unreal.CustomMaterialOutputType.CMOT_FLOAT4)
     custom.set_editor_property("description", "LundenGrass")
-    custom.set_editor_property("code", GRASS_HLSL.strip())
+    custom.set_editor_property("code", GRASS_HLSL.strip().replace("AUTUMN_MIX", ", ".join(map(str, spec["autumnMix"]))))
+    month = mel.create_material_expression(m, unreal.MaterialExpressionCollectionParameter, -900, -500)
+    month.set_editor_property("collection", eal.load_asset(CALENDAR))
+    month.set_editor_property("parameter_name", "Month")
+    autumn = vector_param(m, "Autumn", spec["autumn"], -900, -430)
+    if not mel.connect_material_expressions(month, "", custom, "Month") or not mel.connect_material_expressions(autumn, "", custom, "Autumn"):
+        raise RuntimeError("Could not connect the grass month and autumn tint")
     uv = mel.create_material_expression(m, unreal.MaterialExpressionTextureCoordinate, -900, -300)
     vc = mel.create_material_expression(m, unreal.MaterialExpressionVertexColor, -900, -200)
     if not mel.connect_material_expressions(uv, "", custom, "UV") or not mel.connect_material_expressions(vc, "", custom, "VertexColor"):
@@ -338,6 +349,8 @@ def stamp(asset, path, spec):
 
 
 def build_master(path, spec, existing):
+    if spec["graph"] == "grass" and not eal.load_asset(CALENDAR):
+        raise RuntimeError("Run build_seasons.py before rebuilding the grass material")
     folder, name = path.rsplit("/", 1)
     if existing is None:
         m = unreal.AssetToolsHelpers.get_asset_tools().create_asset(name, folder, unreal.Material, unreal.MaterialFactoryNew())

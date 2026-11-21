@@ -62,7 +62,13 @@ async function capture(page, view, base, out, axes) {
 }
 
 async function main() {
-  const [base = 'http://localhost:8846', out = 'docs/verification/2246'] = process.argv.slice(2);
+  const [base = 'http://localhost:8846', out = 'docs/verification/2246', isoDate] = process.argv.slice(2);
+  if (isoDate) {
+    assert.match(isoDate, /^\d{4}-\d{2}-\d{2}$/);
+    const day = new Date(isoDate + 'T00:00:00Z');
+    assert.equal(day.toISOString().slice(0, 10), isoDate);
+    spec.date = {year: day.getUTCFullYear(), month: day.getUTCMonth() + 1, day: day.getUTCDate()};
+  }
   const views = spec.views;
   const axes = await import('./coordinates.mjs');
   await fs.mkdir(out, {recursive: true});

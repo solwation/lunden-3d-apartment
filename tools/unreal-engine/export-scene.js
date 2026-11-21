@@ -108,6 +108,7 @@ const SITE_SKIP = { test({ object: o, kind }) {
  *  hedges) or a leaf material (src/foliage.js: pergola vines, perennials); never the web's `… far` LOD stand-ins, the
  *  backdrop's woodland beyond the terrain, fallen leaves or furniture. */
 const VEGETATION_NAME = /^(tree-crowns|tree-trunks|tree-birches|courtyard-shrubs|park-shore-growth|front-boxwood)|hedge/;
+const LEAF_VARIANTS = new Map([['foliage-leaves-wind', 'perennial'], ['foliage-leaves-lod', 'crown'], ['foliage-leaves', 'still']]);
 const BACKDROP_NAME = /^(south-|east-|west-|north-|edge-|hepcat-|school-|football)| far$/;
 const VEGETATION = { test({ object: o, kind }) {
   if (kind === 'furniture') return false;
@@ -712,7 +713,7 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     if (lookAtom) nodes.add(lookAtom);
   };
   // `furnish` (#2289): a furniture/appliance/lamp/curtain mesh keeps its base-colour image (FURNISH_KINDS)
-  const exportMaterial = (m, furnish = false) => {
+  const exportMaterial = (m, furnish = false, bark = null) => {
     const cache = furnish ? furnishCache : matCache;
     if (cache.has(m)) { noteLook(m, cache.get(m).name); return cache.get(m); }
     const { key: base, info } = materialInfo(m);
@@ -721,7 +722,8 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     const hedge = m.name === 'patio-hedge' || m.name === 'boxwood';
     const siteMap = m.map?.name === 'site-slatted-rail' || m.map?.name === 'site-house-letters';
     const tex = furnish && !hedge && !siteMap ? furnishingTexture(m.map, textures, textureOfMap) : null;
-    const suffix = siteMap ? m.map.name.replaceAll('-', '_') : tex?.id;
+    // Keep evergreen perennials, deciduous crown lobes and still pergola vines on separate foliage types.
+    const suffix = siteMap ? m.map.name.replaceAll('-', '_') : bark || LEAF_VARIANTS.get(m.name) || tex?.id;
     const key = suffix ? `${base}_${suffix}` : base;
     let em = materials.get(key);
     if (!em) {
@@ -730,7 +732,11 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
       if (info.emissive) em.emissive = new THREE.Color(info.emissive);
       if (hedge) em.map = hedgeTexture(m);
       else if (siteMap) { em.map = m.map; em.alphaTest = m.alphaTest; }
-      else if (tex) { em.map = tex.out; em.userData.texture = tex.id; }
+      else if (bark) {
+        // Original trunk maps from foliage.js/barksurface.js. glTF reads roughness from G and metalness from B (zero).
+        em.map = m.map;
+        em.roughnessMap = em.metalnessMap = m.roughnessMap;
+      } else if (tex) { em.map = tex.out; em.userData.texture = tex.id; }
       materials.set(key, em); materialTable[key] = tex ? { ...info, texture: tex.id } : info;
     }
     if (tex) tex.keys.add(key);
@@ -749,7 +755,8 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     const g = exportGeometry(mesh, ms.some((m) => m.vertexColors));
     if (!g) return null;
     const cloth = furnish || !!mesh.userData?.door;
-    const em = ms.map((m) => exportMaterial(m, cloth));
+    const trunk = mesh.geometry.userData.bark; // trunkGeometry marks both detailed species and the plain far LOD
+    const em = ms.map((m) => exportMaterial(m, cloth, trunk === 'bark' || trunk === 'birch' ? trunk : null));
     return new THREE.Mesh(g, Array.isArray(mesh.material) ? em : em[0]);
   };
   const stats = {};
@@ -884,12 +891,18 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
   // ---- the vegetation (#2281): every exported tree (its trunk instance and crown lobes) and hedge, with a height class ----
   const hedgeIds = new Set();
   for (const list of byZone.values()) for (const a of list) if (isHedge(a.object)) hedgeIds.add(a.id);
-  const leafKeys = new Set(); // the leaf-card materials (src/foliage.js) of the vegetation zone: the builder gives them wind
+  const leafKeys = new Set(), stillLeafKeys = new Set();
   for (const a of byZone.get('vegetation') ?? []) {
     const ms = [a.object.material ?? []].flat();
-    if (/^tree-crowns /.test(a.object.name ?? '') || ms.some((m) => m === leafMaterial() || m === windLeafMaterial().material)) for (const m of ms) leafKeys.add(materialInfo(m).key);
+    for (const m of ms) {
+      if (!(/^tree-crowns /.test(a.object.name ?? '') || m === leafMaterial() || m === windLeafMaterial().material)) continue;
+      const key = matCache.get(m)?.name;
+      if (!key) continue; // the geometry may have been omitted from the GLB
+      leafKeys.add(key);
+      if (m === leafMaterial()) stillLeafKeys.add(key);
+    }
   }
-  const vegetation = roots.vegetation ? vegetationData(roots, hedgeIds, [...leafKeys].sort()) : null;
+  const vegetation = roots.vegetation ? vegetationData(roots, hedgeIds, [...leafKeys].sort(), [...stillLeafKeys].sort()) : null;
 
   // ---- GLB per zone ----
   // #2289: the furnishing textures' images must have loaded (and canvases painted from them) before they are written
@@ -1009,7 +1022,7 @@ function isHedge(o) {
   for (let q = o; q; q = q.parent) if (HEDGE_NAME.test(q.name ?? '')) return true;
   return [o.material ?? []].flat().some((m) => HEDGE_NAME.test(m?.name ?? ''));
 }
-function vegetationData(roots, hedgeIds, leafKeys) {
+function vegetationData(roots, hedgeIds, leafKeys, stillLeafKeys) {
   const P = (v) => ({ web: [r4(v.x), r4(v.y), r4(v.z)], unreal: webToUnrealRounded([v.x, v.y, v.z]) });
   const boxOf = (n) => new THREE.Box3().setFromObject(n);
   const nodes = roots.vegetation.root.children.filter((n) => n.userData.kind !== 'collision-group');
@@ -1042,7 +1055,7 @@ function vegetationData(roots, hedgeIds, leafKeys) {
   }
   return {
     source: 'tools/unreal-engine/export-scene.js vegetationData; src/surroundings.js treeFeet, aoTrees (trees), hedge/boxwood nodes',
-    lobeReach: LOBE_REACH, treeClassM: TREE_CLASS_M, hedgeClassM: HEDGE_CLASS_M, byWebName: byWeb, look: vegetationLook(leafKeys),
+    lobeReach: LOBE_REACH, treeClassM: TREE_CLASS_M, hedgeClassM: HEDGE_CLASS_M, byWebName: byWeb, look: vegetationLook(leafKeys, stillLeafKeys),
     notExported: { trees: missing.length, why: 'their foot lies beyond the drawn terrain (SITE.backgroundGround): no zone takes them' },
     looseLobes: loose,
     trunkCollision: trunkCollision(),
@@ -1072,13 +1085,13 @@ function trunkBlocks(f) {
  *  (src/seasons.js applySeason: SEASON.trees[month] in HSL, each tree's own r1..r3 moving hue ±0.02, saturation ±0.075 and
  *  light ±0.05), and they sway in the vertex shader (src/sitewind.js, SITE_WIND). The export's month (fixed date) gives
  *  the darkest and lightest summer leaf colour; the builder's leaf material picks between them per instance. */
-function vegetationLook(leafKeys) {
+function vegetationLook(leafKeys, stillLeafKeys) {
   const month = new Date().getMonth() + 1, [h, sat, l, leaves] = C.SEASON.trees[month];
   const hsl = (dh, ds, dl) => '#' + new THREE.Color().setHSL(h + dh, sat + ds, l + dl).getHexString();
   const W = C.SITE_WIND;
-  return { month, leafKeys, leaves, leafDark: hsl(-0.02, -0.075, -0.05), leafLight: hsl(0.02, 0.075, 0.05),
-    source: 'src/config.js SEASON.trees, SITE_WIND; src/seasons.js applySeason; src/sitewind.js',
-    wind: { dir: W.dir, amp: W.crown.amp, freq: W.crown.freq, flutter: W.crown.flutter, flutterFreq: W.crown.flutterFreq,
+  return { month, leafKeys, stillLeafKeys, months: C.SEASON.trees, blossomMonths: C.SEASON.blossomMonths, leaves, leafDark: hsl(-0.02, -0.075, -0.05), leafLight: hsl(0.02, 0.075, 0.05),
+    source: 'src/config.js SEASON.trees, SITE_WIND, WIND.power; src/seasons.js applySeason; src/sitewind.js and windsim.js',
+    wind: { power: C.WIND.power, dir: W.dir, amp: W.crown.amp, freq: W.crown.freq, flutter: W.crown.flutter, flutterFreq: W.crown.flutterFreq, flutterCap: W.crown.flutterCap,
       gustFreq: W.gust.freq, gustDepth: W.gust.depth, phase: W.phase, maxDisplacement: W.maxDisplacement } };
 }
 

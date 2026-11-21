@@ -8,12 +8,12 @@ the river park's understory, the pavement shrubs, the courtyard plantings and pe
 the entrance boxwood. import_world.py imports it like any zone (Generated/vegetation/, one actor per node, a handful of
 shared meshes); that level belongs to the importer and is never edited here. This builder turns it into foliage:
 
-1. Materials (versioned, /Game/Lunden/Vegetation/): `M_LundenFoliage`, a two-sided masked leaf master whose colour lies
-   between a dark and a light leaf colour per instance (PerInstanceRandom, as the web's seasons give every tree its own
-   tone) times the export's vertex AO, whose opacity mask draws the leaf atlas's cut-out in the cards' UVs (the canvas
+1. Materials (versioned, /Game/Lunden/Vegetation/): `M_LundenFoliage`, a two-sided masked leaf master whose per-instance
+   colours and leaf cover follow BPC_LundenSeasons' month and the export's web palette (times vertex AO), whose opacity mask draws the leaf atlas's cut-out in the cards' UVs (the canvas
    atlas does not travel), and whose world position offset sways it in the wind (a Custom HLSL node after
    src/sitewind.js: sway in the wind's direction with a gust envelope, a small flutter, clamped to the web's maximum
-   displacement); `MI_LundenLeaf` takes the colours and wind numbers from measurements.json `vegetation.look`. Built only
+   displacement); the weather's WindX/Y drive the wind with the web's speed-to-power curve. MI_LundenLeaf serves trees
+   and vines. MI_LundenPerennial stays green year-round. Both use measurements.json `vegetation.look`. Built only
    when its spec hash changes (metadata Lunden.SpecHash, as build_materials.py).
 2. Derived assets (not versioned, /Game/Lunden/Generated/VegetationWorld/): a copy of every imported vegetation mesh
    with Nanite off (the full mesh, not the fallback, #2298), no collision, and MI_LundenLeaf on the leaf-card slots
@@ -28,6 +28,7 @@ shared meshes); that level belongs to the importer and is never edited here. Thi
 3. `vegetation-index.json` next to the level: each mesh copy's role (trunk, crown, hedge, other) and instance count, read
    by tests/test_vegetation.py.
 
+Build the season and lighting collections with build_seasons.py and build_lighting.py before rebuilding the leaf master.
 The build is skipped when the imports, the export's vegetation data, this script and every output package are
 unchanged (build-stamp.json). --check verifies the materials' spec hashes and the level without writing.
 """
@@ -46,13 +47,15 @@ from prepare_nanite_materials import static_mesh_editor  # noqa: E402  set_edito
 MATERIALS = "/Game/Lunden/Vegetation"
 MASTER = MATERIALS + "/M_LundenFoliage"
 LEAF = MATERIALS + "/MI_LundenLeaf"
+PERENNIAL = MATERIALS + "/MI_LundenPerennial"
+CALENDAR = "/Game/Lunden/Seasons/MPC_LundenVegetation"
 FOLDER = "/Game/Lunden/Generated/VegetationWorld"
 TARGET = FOLDER + "/Level_vegetation_foliage"
 ZONE = "vegetation"
 BUILDER = "tools/unreal-engine/python/build_vegetation.py (#2281)"
-# *guess*: the web drives the sway with the weather's wind (src/sitewind.js windPower); Unreal has no weather yet, so the
-# leaves sway at a moderate fixed power until the weather (#2283's MPC_LundenWeather or later) drives the parameter.
-WIND_POWER = 0.5
+WEATHER = "/Game/Lunden/Lighting/MPC_LundenWeather"
+# src/config.js WIND.power for #2281 measurements exported before the curve was included.
+LEGACY_WIND_CURVE = {"full": 13, "gamma": 0.9, "knee": 0.6, "top": 0.8}
 
 content = Path(u.Paths.project_content_dir())
 out_dir = content / "Lunden/Generated/VegetationWorld"
@@ -64,12 +67,18 @@ mel = u.MaterialEditingLibrary
 WIND_HLSL = r"""
 // #2281 after src/sitewind.js: a lobe sways in the wind's direction (its own phase), under a slow gust envelope, and its
 // cards flutter a little; the offset never exceeds the web's SITE_WIND.maxDisplacement. Units: metres in, centimetres out.
+// WindX/Y in MPC_LundenWeather are downwind on the Unreal ground plane in m/s (build_lighting.py).
+float speed = length(Wind);
+if (speed <= 0.0) return float3(0, 0, 0);
+float p = saturate(pow(speed / FullSpeed, Gamma));
+float range = Top - Knee;
+float power = p <= Knee ? p : Knee + range * (1.0 - exp(-(p - Knee) / range)); // src/windsim.js windPower
+float2 d = Wind / speed;
 float ph = Rand * 6.2831853;
-float gust = 1.0 - GustDepth * (0.5 + 0.5 * sin(Time * GustFreq * 6.2831853 + ph * 0.5));
-float sway = sin(Time * Freq * 6.2831853 + ph) * Amp * Power * gust;
-float flut = sin(Time * FlutterFreq * 6.2831853 + dot(WP, float3(0.05, 0.07, 0.03))) * Flutter * Power;
-float2 d = normalize(Dir.xy + 1e-5);
-float3 o = float3(d * (sway + flut), flut * 0.5) * 100.0;
+float gust = 1.0 - GustDepth + GustDepth * sin(Time * GustFreq + ph * 0.5);
+float sway = sin(Time * Freq + ph) * Amp * power * gust;
+float flut = sin(Time * FlutterFreq + dot(WP, float3(0.05, 0.07, 0.03))) * Flutter * min(power, FlutterCap);
+float3 o = float3(d * (sway + flut), 0.0) * 100.0;
 float len = length(o), cap = MaxDisp * 100.0;
 if (len > cap) o *= cap / len;
 return o;
@@ -80,6 +89,7 @@ MASK_HLSL = r"""
 // #2281 after src/foliage.js leafAtlas(): the atlas does not travel (a canvas texture), so its cut-out is drawn here in the
 // cards' own UVs. 2 x 2 cells: cell (1, 0) is the opaque core; the others are round leaf clusters (radius 0.46 of the
 // cell, 0.92 as high as wide) of small pointed leaves on a transparent ground, thinning towards the edge.
+if (Cover <= 0.0) return 0.0;
 float2 cell = floor(UV * 2.0);
 if (cell.x >= 1.0 && cell.y < 1.0) return 1.0;
 float2 p = frac(UV * 2.0) - 0.5;
@@ -94,7 +104,7 @@ for (int i = -1; i <= 1; i++) {
     float h1 = frac(sin(dot(c, float2(127.1, 311.7))) * 43758.5453);
     float h2 = frac(sin(dot(c, float2(269.5, 183.3))) * 43758.5453);
     float h3 = frac(sin(dot(c, float2(419.2, 371.9))) * 43758.5453);
-    if (h3 > 1.25 - r * r) continue;  // fewer leaves towards the cluster's edge
+    if (h3 > (1.25 - r * r) * Cover) continue;  // fewer leaves towards the cluster's edge
     float a = h1 * 6.2831853;
     float2 d = g - (c + float2(h1, h2));
     float2 q = float2(cos(a) * d.x + sin(a) * d.y, -sin(a) * d.x + cos(a) * d.y);
@@ -142,19 +152,40 @@ def level(zone):
 
 
 # ---------------------------------------------------------------- materials (versioned)
+def crown_shader(look):
+    if "months" not in look:
+        return "return float4(Evergreen.rgb, 1.0);"  # #2281 export with a single palette
+    # rgba = this month's HSL in three.js's linear working space, plus its share of leaves.
+    rows = ["float4(" + ", ".join(map(str, look["months"][str(m)])) + ")" for m in range(1, 13)]
+    blossom = " || ".join("m == " + str(m) for m in look["blossomMonths"]) or "false"
+    return """
+if (Seasonal < 0.5) return float4(Evergreen.rgb, 1.0);
+const float4 months[12] = { ROWS };
+int m = clamp((int)round(Month), 1, 12);
+float4 row = months[m - 1];
+float3 seed = frac(Rand * float3(37.17, 23.43, 71.31));
+float hue = frac(row.x + (Rand - 0.5) * (m >= 9 && m <= 11 ? 0.12 : 0.04));
+float sat = saturate(row.y + (seed.x - 0.5) * 0.15), light = saturate(row.z + (seed.y - 0.5) * 0.10);
+if ((BLOSSOM) && seed.z < 0.18) { hue = Rand < 0.5 ? 0.95 : 0; sat = Rand < 0.5 ? 0.5 : 0; light = 0.88; }
+float3 rgb = saturate(abs(frac(hue + float3(0, 2.0/3.0, 1.0/3.0)) * 6 - 3) - 1);
+return float4(light + (rgb - 0.5) * (1 - abs(2 * light - 1)) * sat, saturate(row.w * (0.85 + seed.x * 0.3)));
+""".replace("ROWS", ", ".join(rows)).replace("BLOSSOM", blossom)
+
+
 def material_specs(look):
     w = look["wind"]
-    master = {"what": "two-sided masked leaf master with per-instance tone, leaf cut-out and wind sway", "hlsl": WIND_HLSL,
-              "mask": MASK_HLSL}
-    leaf = {"parent": MASTER, "vectors": {"LeafDark": look["leafDark"], "LeafLight": look["leafLight"],
-                                          "Dir": [w["dir"][0], w["dir"][1], 0.0]},
+    master = {"what": "two-sided leaf master with monthly colour and cover per vertex, leaf cut-out and weather-driven sway", "hlsl": WIND_HLSL,
+              "mask": MASK_HLSL, "weather": WEATHER, "calendar": CALENDAR, "crown": crown_shader(look)}
+    curve = w.get("power", LEGACY_WIND_CURVE)
+    leaf = {"parent": MASTER, "vectors": {"LeafDark": look["leafDark"], "LeafLight": look["leafLight"]},
             "scalars": {"Roughness": 0.92, "Amp": w["amp"], "Freq": w["freq"], "Flutter": w["flutter"],
                         "FlutterFreq": w["flutterFreq"], "GustFreq": w["gustFreq"], "GustDepth": w["gustDepth"],
-                        "MaxDisp": w["maxDisplacement"], "Power": WIND_POWER},
+                        "MaxDisp": w["maxDisplacement"], "FlutterCap": w.get("flutterCap", 0.6),
+                        "FullSpeed": curve["full"], "Gamma": curve["gamma"], "Knee": curve["knee"], "Top": curve["top"]},
             "source": look["source"] + f" (month {look['month']})",
-            "assumption": f"the leaf atlas does not travel: its cut-out is drawn procedurally (Leaves per cell is a guess); "
-                          f"Power {WIND_POWER} is a guess (no weather yet)"}
-    return {MASTER: master, LEAF: leaf}
+            "assumption": "Leaf-card density, per-instance colour variation and sway amplitude are visual calibration (guess)."}
+    perennial = {**leaf, "scalars": {**leaf["scalars"], "Seasonal": 0.0}}
+    return {MASTER: master, LEAF: leaf, PERENNIAL: perennial}
 
 
 def spec_hash(path, spec):
@@ -179,7 +210,22 @@ def param(m, cls, name, value, x, y):
     return e
 
 
+def custom_inputs(node, names):
+    inputs = []
+    for name in names:
+        slot = u.CustomInput()
+        slot.set_editor_property("input_name", name)
+        inputs.append(slot)
+    node.set_editor_property("inputs", inputs)
+
+
 def build_master(spec, existing):
+    weather = eal.load_asset(spec["weather"])
+    if not weather:
+        raise RuntimeError("Build the lighting weather collection before the vegetation: " + spec["weather"])
+    calendar = eal.load_asset(spec["calendar"])
+    if not calendar:
+        raise RuntimeError("Run build_seasons.py before the vegetation: " + spec["calendar"])
     folder, name = MASTER.rsplit("/", 1)
     m = existing or u.AssetToolsHelpers.get_asset_tools().create_asset(name, folder, u.Material, u.MaterialFactoryNew())
     if existing:
@@ -188,12 +234,7 @@ def build_master(spec, existing):
     m.set_editor_property("two_sided", True)
     m.set_editor_property("opacity_mask_clip_value", 0.5)
     mask = expr(m, u.MaterialExpressionCustom, -350, 250)
-    ins = []
-    for n in ("UV", "Leaves"):
-        ci = u.CustomInput()
-        ci.set_editor_property("input_name", n)
-        ins.append(ci)
-    mask.set_editor_property("inputs", ins)
+    custom_inputs(mask, ("UV", "Leaves", "Cover"))
     mask.set_editor_property("output_type", u.CustomMaterialOutputType.CMOT_FLOAT1)
     mask.set_editor_property("description", "LundenLeafMask")
     mask.set_editor_property("code", MASK_HLSL.strip())
@@ -208,43 +249,75 @@ def build_master(spec, existing):
     mel.connect_material_expressions(dark, "", lerp, "A")
     mel.connect_material_expressions(light, "", lerp, "B")
     mel.connect_material_expressions(rand, "", lerp, "Alpha")
+    month = expr(m, u.MaterialExpressionCollectionParameter, -900, -500)
+    month.set_editor_property("collection", calendar)
+    month.set_editor_property("parameter_name", "Month")
+    seasonal = param(m, u.MaterialExpressionScalarParameter, "Seasonal", 1.0, -900, -430)
+    crown = expr(m, u.MaterialExpressionCustom, -350, -350)
+    crown_inputs = {"Month": month, "Seasonal": seasonal, "Evergreen": lerp, "Rand": rand}
+    custom_inputs(crown, crown_inputs)
+    crown.set_editor_property("output_type", u.CustomMaterialOutputType.CMOT_FLOAT4)
+    crown.set_editor_property("description", "LundenMonthlyCrown")
+    crown.set_editor_property("code", spec["crown"])
+    for key, node in crown_inputs.items():
+        if not mel.connect_material_expressions(node, "", crown, key):
+            raise RuntimeError("Could not connect crown input " + key)
+    # Month and the instance seed are constant across the leaf cards. Calculate this once per vertex in the masked material.
+    vertex = expr(m, u.MaterialExpressionVertexInterpolator, -160, -350)
+    if not mel.connect_material_expressions(crown, "", vertex, ""):
+        raise RuntimeError("Could not connect seasonal colour and coverage to the vertex interpolator")
+    outputs = []
+    for channels in ("rgb", "a"):
+        selector = expr(m, u.MaterialExpressionComponentMask, -100, -350 if channels == "rgb" else -200)
+        for channel in "rgba":
+            selector.set_editor_property(channel, channel in channels)
+        mel.connect_material_expressions(vertex, "", selector, "")
+        outputs.append(selector)
+    color, cover = outputs
+    if not mel.connect_material_expressions(cover, "", mask, "Cover"):
+        raise RuntimeError("Could not connect monthly leaf cover to the mask")
     vc = expr(m, u.MaterialExpressionVertexColor, -600, 50)
     mul = expr(m, u.MaterialExpressionMultiply, -350, -50)
-    mel.connect_material_expressions(lerp, "", mul, "A")
+    mel.connect_material_expressions(color, "", mul, "A")
     mel.connect_material_expressions(vc, "", mul, "B")
     mel.connect_material_property(mul, "", u.MaterialProperty.MP_BASE_COLOR)
     mel.connect_material_property(param(m, u.MaterialExpressionScalarParameter, "Roughness", 0.92, -600, 200), "",
                                   u.MaterialProperty.MP_ROUGHNESS)
     # wind
     custom = expr(m, u.MaterialExpressionCustom, -350, 400)
-    names = ["Time", "WP", "Rand", "Dir", "Amp", "Freq", "Flutter", "FlutterFreq", "GustFreq", "GustDepth", "Power", "MaxDisp"]
-    inputs = []
-    for n in names:
-        ci = u.CustomInput()
-        ci.set_editor_property("input_name", n)
-        inputs.append(ci)
-    custom.set_editor_property("inputs", inputs)
+    names = ["Time", "WP", "Rand", "Wind", "Amp", "Freq", "Flutter", "FlutterFreq", "FlutterCap", "GustFreq", "GustDepth",
+             "FullSpeed", "Gamma", "Knee", "Top", "MaxDisp"]
+    custom_inputs(custom, names)
     custom.set_editor_property("output_type", u.CustomMaterialOutputType.CMOT_FLOAT3)
     custom.set_editor_property("description", "LundenWind")
     custom.set_editor_property("code", WIND_HLSL.strip())
+    wind = expr(m, u.MaterialExpressionAppendVector, -1100, 420)
+    for name, pin in (("WindX", "A"), ("WindY", "B")):
+        scalar = expr(m, u.MaterialExpressionCollectionParameter, -1350, 420 if pin == "A" else 500)
+        scalar.set_editor_property("collection", weather)
+        scalar.set_editor_property("parameter_name", name)
+        if not mel.connect_material_expressions(scalar, "", wind, pin):
+            raise RuntimeError("Could not connect " + name + " to the vegetation wind")
     sources = {"Time": expr(m, u.MaterialExpressionTime, -900, 300), "WP": expr(m, u.MaterialExpressionWorldPosition, -900, 360),
-               "Rand": rand, "Dir": param(m, u.MaterialExpressionVectorParameter, "Dir", u.LinearColor(0.71, -0.71, 0, 0), -900, 420)}
+               "Rand": rand, "Wind": wind}
     y = 480
     for n, v in (("Amp", 0.06), ("Freq", 0.9), ("Flutter", 0.03), ("FlutterFreq", 5.3), ("GustFreq", 0.31),
-                 ("GustDepth", 0.45), ("Power", WIND_POWER), ("MaxDisp", 0.35)):
+                 ("GustDepth", 0.45), ("FlutterCap", 0.6), ("FullSpeed", 13.0), ("Gamma", 0.9),
+                 ("Knee", 0.6), ("Top", 0.8), ("MaxDisp", 0.35)):
         sources[n] = param(m, u.MaterialExpressionScalarParameter, n, v, -900, y)
         y += 60
     for n in names:
         if not mel.connect_material_expressions(sources[n], "", custom, n):
             raise RuntimeError("could not connect " + n)
-    mel.connect_material_property(custom, "", u.MaterialProperty.MP_WORLD_POSITION_OFFSET)
+    if not mel.connect_material_property(custom, "", u.MaterialProperty.MP_WORLD_POSITION_OFFSET):
+        raise RuntimeError("Could not connect the weather-driven foliage displacement")
     mel.set_base_material_usage(m, u.MaterialUsage.MATUSAGE_INSTANCED_STATIC_MESHES, True)
     mel.recompile_material(m)
     return m
 
 
-def build_leaf(spec, existing):
-    folder, name = LEAF.rsplit("/", 1)
+def build_leaf(path, spec, existing):
+    folder, name = path.rsplit("/", 1)
     mi = existing or u.AssetToolsHelpers.get_asset_tools().create_asset(name, folder, u.MaterialInstanceConstant,
                                                                          u.MaterialInstanceConstantFactoryNew())
     if existing:
@@ -272,7 +345,7 @@ def build_leaf(spec, existing):
 
 
 def materials(look, check=False):
-    """Builds (or with check only verifies) the two versioned materials; returns the paths it wrote."""
+    """Builds (or with check only verifies) the versioned vegetation materials; returns the paths it wrote."""
     wrote, problems = [], []
     for path, spec in material_specs(look).items():
         existing = eal.load_asset(path) if eal.does_asset_exist(path) else None
@@ -283,7 +356,7 @@ def materials(look, check=False):
         if check:
             problems.append(f"{path}: {'missing' if existing is None else 'stale spec hash'}")
             continue
-        asset = build_master(spec, existing) if path == MASTER else build_leaf(spec, existing)
+        asset = build_master(spec, existing) if path == MASTER else build_leaf(path, spec, existing)
         stamp(asset, path, spec)
         if not eal.save_loaded_asset(asset, only_if_is_dirty=False):
             raise RuntimeError("Cannot save " + path)
@@ -358,7 +431,9 @@ def collect(veg, copies):
 def build(veg, found, copied):
     tools = u.AssetToolsHelpers.get_asset_tools()
     leaf_keys = set(veg["look"]["leafKeys"])
+    still_keys = set(veg["look"].get("stillLeafKeys", []))
     leaf = eal.load_asset(LEAF)
+    perennial = eal.load_asset(PERENNIAL)
     roles = {}
     for node, role, _, mesh_path in found:
         roles.setdefault(mesh_path, {}).setdefault(role, 0)
@@ -379,10 +454,12 @@ def build(veg, found, copied):
         if body:
             body.set_editor_property("collision_trace_flag", u.CollisionTraceFlag.CTF_USE_SIMPLE_AS_COMPLEX)
         leafed = 0
+        wind = False
         for k, slot in enumerate(mesh.get_editor_property("static_materials")):
             mat = slot.get_editor_property("material_interface")
             if mat and mat.get_name() in leaf_keys:
-                mesh.set_material(k, leaf)
+                wind = wind or mat.get_name() not in still_keys
+                mesh.set_material(k, perennial if mat.get_name().endswith("_perennial") else leaf)
                 leafed += 1
         if not eal.save_loaded_asset(mesh, only_if_is_dirty=False):
             raise RuntimeError("Cannot save " + mesh.get_path_name())
@@ -390,6 +467,8 @@ def build(veg, found, copied):
                                 u.FoliageType_InstancedStaticMeshFactory())
         ft.set_editor_property("mesh", mesh)
         ft.set_editor_property("cast_shadow", True)
+        if leafed:
+            ft.set_editor_property("evaluate_world_position_offset", wind)
         if not eal.save_loaded_asset(ft, only_if_is_dirty=False):
             raise RuntimeError("Cannot save " + ft.get_path_name())
         types[mesh_path] = ft
