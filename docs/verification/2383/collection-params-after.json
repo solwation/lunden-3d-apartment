@@ -1,0 +1,23 @@
+[
+ {
+  "collection": "/Game/Lunden/Seasons/MPC_LundenVegetation",
+  "name": "Month",
+  "guid": "14966F144B506D6128F950B3F2BA2C77",
+  "resolvesTo": "Month",
+  "ok": true
+ },
+ {
+  "collection": "/Game/Lunden/Lighting/MPC_LundenWeather",
+  "name": "WindX",
+  "guid": "CECC0620478EE7D96C0ADF90639FB60A",
+  "resolvesTo": "WindX",
+  "ok": true
+ },
+ {
+  "collection": "/Game/Lunden/Lighting/MPC_LundenWeather",
+  "name": "WindY",
+  "guid": "0434B124450321ACBE4199A294450613",
+  "resolvesTo": "WindY",
+  "ok": true
+ }
+]
