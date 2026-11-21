@@ -1225,8 +1225,24 @@ the export and the pictures section of `notices.mjs`.
   the generated assets, [below](#generated-assets-rebuilt-not-versioned-decided)). `/Game/Lunden/Furnishing/` and
   `build_furnishing.py` therefore stay empty until something hand-made is needed. Not ported: normal, bump,
   roughness and alpha maps, emissive maps, the web's `onBeforeCompile` tweaks, video and animated canvases (the TV
-  and the smart display show their first frame). The upholstery (vertex colours × image) reads darker than on the
-  web; not investigated.
+  and the smart display show their first frame). The lighting and material comparisons below cover the upholstery and other furnishing surfaces.
+- **Colour checks (#2322).** In the UE 5.8.4 L1007 import from `98f42f51`, the living-room rug, sofa and oak
+  coffee table use sRGB colour textures. The rug has a white base factor and no vertex colours. Its two most frequent
+  GLB texels are the web ground `#5a6150` and stripe `#e6e1d6`. The exported 256 × 64 wood grain matches
+  `src/woodgrain.js` pixel for pixel after flipping Y. The saved coffee-table material instance carries the GLB's
+  linear tint (0.565, 0.332, 0.153) and UV scale (2, 6). The visible brown BESTÅ doors use a solid walnut colour.
+  On the web three additive light fans fall across the door fronts at night, with two more inside the glass cabinet.
+  The Unreal level represents the cabinet with one point light. Its export now takes the web emitter's actual position,
+  40 cm in front of the fitting at the same height. Single-emitter fittings share this path. The fitting origin
+  stays available for stable light IDs. The curtains also differ: `Curtain.glow` multiplies their printed pattern by
+  changing daylight and room-lamp emission on the web. The exported cloth has only its base-colour image.
+  For comparable measurements, run `tests/crop-stats.cjs <paired-image-directory> tests/furnishing-crops.json` from
+  `tools/unreal-engine/` on the shared daylight and evening camera pairs. Record the lighting revision and exposure
+  with the ratios. In [the #2313 calibration](../verification/2313/README.md) the
+  pre-correction Unreal/web ratios at 14:00 and 22:00 are rug 1.10/0.61, curtain 0.40/0.27, oak table 1.84/0.87,
+  cabinet front 2.14/0.11 and sofa 1.14/1.04. The upper-floor curtain at 22:00 is 0.62. The web renders with
+  `THREE.NeutralToneMapping`. Correcting every furnishing with a single brighter tint would amplify the daytime
+  error on the table and cabinet.
 - **Keys.** A furnishing material's key gets the texture id: `<key>_t<10 hex>` (a hash of the image file path, or a
   canvas's pixels at collection time, plus its repeat, offset, rotation, wrap and flip). Building and ground surfaces
   keep their plain keys, so #2282's rules are untouched; the rugs and the cleaning cupboard no longer fall under the

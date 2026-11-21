@@ -1127,7 +1127,13 @@ function measurementData({ world, planCopy, W, D, byZone, lightsInfo, materialTa
     // `auto`: it follows the dusk (Lights.updateAuto) unless its spec says `auto: false`.
     const pools = (l.anchors ?? [{ light: l.light }]).map((x) => ({ ...C.LIGHTING.floorLamp, ...(x.light ?? {}) }));
     const hex = (c) => (typeof c === 'number' ? '#' + c.toString(16).padStart(6, '0') : null);
-    lights.push({ id: a?.id ?? null, kind: 'lamp', name: l.name ?? null, level: l.level ?? levelOf(p.y), room: l.room ?? null, position: P(p.x, p.y + (l.height ?? 0), p.z),
+    // FloorLamp places some emitters in front of a fitting (the display cabinet's is 40 cm in front of its spots).
+    // Keep the fitting's origin for stable IDs. A single web light supplies its exact world-space emitter position.
+    const anchors = l.lamp?.room.lamps;
+    const emitter = anchors?.length === 1 ? anchors[0].pos : null;
+    const position = emitter ? P(emitter.x, emitter.y, emitter.z) : P(p.x, p.y + (l.height ?? 0), p.z);
+    lights.push({ id: a?.id ?? null, kind: 'lamp', name: l.name ?? null, level: l.level ?? levelOf(p.y), room: l.room ?? null,
+      objectPosition: P(p.x, p.y, p.z), position,
       intensity: r4(pools.reduce((sum, x) => sum + (x.intensity ?? 0), 0)), distance: pools[0].range ?? null, color: hex(pools[0].color), auto: l.auto !== false });
   }
   for (const l of lightsInfo.lamps) lights.push({ id: null, kind: 'room', name: null, level: l.level, room: l.room, position: P(l.pos.x, l.pos.y, l.pos.z),
@@ -1138,7 +1144,7 @@ function measurementData({ world, planCopy, W, D, byZone, lightsInfo, materialTa
   const lightIds = new Set(lights.map((l) => l.id).filter(Boolean));
   for (const l of lights) {
     if (l.id) continue;
-    const [x, , z] = l.position.web, base = `${l.kind}_${slug(l.name ?? l.room) || 'light'}_l${l.level}_${tag('x', x)}_${tag('z', z)}`;
+    const [x, , z] = (l.objectPosition ?? l.position).web, base = `${l.kind}_${slug(l.name ?? l.room) || 'light'}_l${l.level}_${tag('x', x)}_${tag('z', z)}`;
     let id = base, n = 2;
     while (lightIds.has(id)) id = `${base}_${n++}`;
     lightIds.add(id); l.id = id;
