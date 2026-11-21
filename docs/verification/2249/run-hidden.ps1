@@ -1,6 +1,6 @@
 # Runs a command line on a separate, never-shown desktop so neither the console nor the game window
 # appears on the user's screen (#2249 upgrade test). Prints the exit code; optional kill after N seconds.
-param([Parameter(Mandatory)][string]$CommandLine, [string]$Proxy = '', [int]$TimeoutSec = 900, [double]$KillAfterSec = 0, [string]$KillWhenFile = '')
+param([Parameter(Mandatory)][string]$CommandLine, [string]$Proxy = '', [int]$TimeoutSec = 900, [double]$KillAfterSec = 0, [string]$KillWhenFile = '', [int]$LingerSec = 0)
 Add-Type -TypeDefinition @'
 using System; using System.Runtime.InteropServices;
 public static class HiddenDesk {
@@ -34,4 +34,6 @@ while (-not $p.HasExited -and $sw.Elapsed.TotalSeconds -lt $TimeoutSec) {
   Start-Sleep -Milliseconds 100
 }
 $p.WaitForExit(5000) | Out-Null
+# Keep the hidden desktop alive for processes that outlive the command (e.g. the self-update helper's restart).
+if ($LingerSec -gt 0) { Start-Sleep -Seconds $LingerSec }
 "exit=$(if ($p.HasExited) { $p.ExitCode } else { 'running' }) after $([math]::Round($sw.Elapsed.TotalSeconds,1)) s"

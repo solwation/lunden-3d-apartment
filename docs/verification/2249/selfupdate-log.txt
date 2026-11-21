@@ -1,0 +1,111 @@
+## A. install v0.1.1 launcher (signed setup, test channel) and first start from latest (v0.1.1, minLauncher 0.1.1) 2026-11-21T08:24:39Z
+install exit=0; installed Lunden.exe e6477a6a73e6ad67…
+started pid=21488 at 08:24:42.130
+exit= after 45.6 s
+Kontrollerar Lunden 0.1.1, innehåll 1.
+Hämtar Engine/Binaries/ThirdParty/DbgHelp/dbghelp.dll (2232688 byte).
+Hämtar Engine/Binaries/ThirdParty/MsQuic/v220/win64/msquic.dll (2547080 byte).
+Hämtar Engine/Binaries/ThirdParty/NVIDIA/NVaftermath/Win64/GFSDK_Aftermath_Lib.x64.dll (5799016 byte).
+Hämtar Engine/Binaries/ThirdParty/Ogg/Win64/VS2015/libogg_64.dll (59832 byte).
+Hämtar Engine/Binaries/ThirdParty/Vorbis/Win64/VS2015/libvorbis_64.dll (1724856 byte).
+Hämtar Engine/Binaries/ThirdParty/Vorbis/Win64/VS2015/libvorbisfile_64.dll (48568 byte).
+Hämtar Engine/Binaries/ThirdParty/Windows/XAudio2_9/x64/xaudio2_9redist.dll (858152 byte).
+Hämtar Engine/Binaries/Win64/D3D12/x64/D3D12Core.dll (4831768 byte).
+Hämtar Engine/Binaries/Win64/D3D12/x64/d3d12SDKLayers.dll (4943344 byte).
+Hämtar Engine/Binaries/Win64/DML/x64/DirectML.dll (18538488 byte).
+Hämtar Engine/Binaries/Win64/UnrealGame-Win64-Shipping.exe (165862328 byte).
+Hämtar Engine/Binaries/Win64/tbb12.dll (342456 byte).
+Hämtar Engine/Binaries/Win64/tbbmalloc.dll (117176 byte).
+Hämtar Engine/Config/StagedBuild_Lunden.ini (3 byte).
+Hämtar Engine/Content/Renderer/TessellationTable.bin (259568 byte).
+Hämtar Engine/Content/Slate/Cursor/invisible.cur (326 byte).
+Hämtar Engine/Plugins/NNE/NNERuntimeORT/Binaries/ThirdParty/Onnxruntime/Win64/onnxruntime.dll (17339384 byte).
+Hämtar NOTICES.txt (111 byte).
+Hämtar Lunden/Content/Paks/Lunden-Windows.pak (11226745 byte).
+Hämtar Lunden/Content/Paks/Lunden-Windows.ucas (223619008 byte).
+Hämtar Lunden/Content/Paks/Lunden-Windows.utoc (216347 byte).
+Hämtar Lunden/Content/Paks/global.ucas (3330560 byte).
+Hämtar Lunden/Content/Paks/global.utoc (806 byte).
+Hämtat: 463898610 byte.
+pid=3584 name=UnrealGame-Win64-Shipping.exe started=08:25:19 path=C:\Users\Olof\AppData\Local\Programs\Lunden-Test\versions\ec68a5bffad5407e84d5ea40e96c69a9\game\Engine\Binaries\Win64\UnrealGame-Win64-Shipping.exe
+  killed 3584
+state.json: {"channel":"test","active":{"directory":"ec68a5bffad5407e84d5ea40e96c69a9","manifestHash":"A10ADA408EAE77422547C9660D8418E26DE640FAF6740627AA925258C11C9907","appVersion":"0.1.1","contentVersion":1,"published":"2026-11-21T08:00:00+00:00"},"previous":null,"rejected":null,"pending":false}
+
+## B. failed swap: Lunden.exe held open without delete sharing, start with --manifest https://github.com/solwation/lunden-3d-apartment/releases/download/v0.1.2/lunden-manifest-test.json (minLauncher 0.1.2)
+locked C:\Users\Olof\AppData\Local\Programs\Lunden-Test\Lunden.exe at 08:25:53
+started pid=24944 at 08:25:56.589
+exit= after 8.4 s
+Nytt startprogram krävs: 0.1.2.
+Startprogrammet kunde inte bytas eller startas: Access to the path is denied.
+proxy: 09:26:05 github.com:443 down=20833 up=904 secs=7.5 09:26:05 release-assets.githubusercontent.com:443 down=73783563 up=3411 secs=7.2 
+installed Lunden.exe after failed swap: e6477a6a73e6ad67a0dd3d27821580b9510017e4cc971669c23e2a689e95dac2 (v0.1.1 = e6477a6a…)
+0.1.1.0
+Valid
+/mnt/c/Users/Olof/AppData/Local/Programs/Lunden-Test:
+total 71944
+drwxrwxrwx 1 olof olof     4096 Nov 21 09:26 .
+drwxrwxrwx 1 olof olof     4096 Nov 21 09:26 ..
+drwxrwxrwx 1 olof olof     4096 Nov 21 09:26 .launcher-update
+-rwxrwxrwx 1 olof olof       40 Nov 21 09:24 .lunden-install.json
+-rwxrwxrwx 1 olof olof        0 Nov 21 09:24 .update.lock
+-rwxrwxrwx 1 olof olof 73666880 Nov 21 08:56 Lunden.exe
+drwxrwxrwx 1 olof olof     4096 Nov 21 09:25 staging
+-rwxrwxrwx 1 olof olof      286 Nov 21 09:25 state.json
+drwxrwxrwx 1 olof olof     4096 Nov 21 09:25 versions
+
+/mnt/c/Users/Olof/AppData/Local/Programs/Lunden-Test/.launcher-update:
+total 71944
+drwxrwxrwx 1 olof olof     4096 Nov 21 09:26 .
+drwxrwxrwx 1 olof olof     4096 Nov 21 09:26 ..
+-rwxrwxrwx 1 olof olof 73666880 Nov 21 09:26 Swap.exe
+state.json: {"channel":"test","active":{"directory":"ec68a5bffad5407e84d5ea40e96c69a9","manifestHash":"A10ADA408EAE77422547C9660D8418E26DE640FAF6740627AA925258C11C9907","appVersion":"0.1.1","contentVersion":1,"published":"2026-11-21T08:00:00+00:00"},"previous":null,"rejected":null,"pending":false}
+released at 08:26:53
+
+Harness finding: the old launcher restarted by Swap.exe after the failed swap never ran, and no game started. The swap helper starts it after the parent exits; by then run-hidden.ps1 had returned and closed the hidden desktop, so the restarted process had no desktop. Starting the same command directly (old exe still held, --offline) started N normally. run-hidden.ps1 got -LingerSec to keep the desktop open; B was repeated:
+
+## B (repeat, -LingerSec 40): failed swap with Lunden.exe held open
+locked C:\Users\Olof\AppData\Local\Programs\Lunden-Test\Lunden.exe at 08:28:38
+started pid=25000 at 08:28:41.045
+exit= after 47.3 s
+Nytt startprogram krävs: 0.1.2.
+Startprogrammet kunde inte bytas eller startas: Access to the path is denied.
+proxy: 09:28:47 github.com:443 down=20853 up=904 secs=7.4 09:28:47 release-assets.githubusercontent.com:443 down=73783586 up=3417 secs=7.1 
+pid=26788 name=UnrealGame-Win64-Shipping.exe started=08:28:59 path=C:\Users\Olof\AppData\Local\Programs\Lunden-Test\versions\ec68a5bffad5407e84d5ea40e96c69a9\game\Engine\Binaries\Win64\UnrealGame-Win64-Shipping.exe
+  killed 26788
+installed Lunden.exe after failed swap: e6477a6a73e6ad67a0dd3d27821580b9510017e4cc971669c23e2a689e95dac2
+Swap.exe
+state.json: {"channel":"test","active":{"directory":"ec68a5bffad5407e84d5ea40e96c69a9","manifestHash":"A10ADA408EAE77422547C9660D8418E26DE640FAF6740627AA925258C11C9907","appVersion":"0.1.1","contentVersion":1,"published":"2026-11-21T08:00:00+00:00"},"previous":null,"rejected":null,"pending":false}
+released at 08:29:23
+
+## C. self-update: same start without the lock
+started pid=11092 at 08:29:39.654
+exit= after 48.1 s
+Nytt startprogram krävs: 0.1.2.
+Kontrollerar Lunden 0.1.2, innehåll 2.
+Hämtat: 0 byte.
+proxy: 09:29:47 release-assets.githubusercontent.com:443 down=73784335 up=3417 secs=7.0 09:29:47 github.com:443 down=20838 up=904 secs=7.2 09:30:07 github.com:443 down=14998 up=781 secs=15.3 09:30:07 release-assets.githubusercontent.com:443 down=16655 up=2475 secs=15.2 
+pid=28008 name=UnrealGame-Win64-Shipping.exe started=08:29:59 path=C:\Users\Olof\AppData\Local\Programs\Lunden-Test\versions\1be396ba70f34b4ba81b164202da2fe6\game\Engine\Binaries\Win64\UnrealGame-Win64-Shipping.exe
+  killed 28008
+installed Lunden.exe after self-update: 23a7813ca185ad612edf3e3f7c88fc307864eb7f1bbaf31d37a2278aa37c229f (v0.1.2 = 23a7813c…)
+0.1.2.0
+Valid
+Svep Design Center AB
+Swap.exe
+state.json: {"channel":"test","active":{"directory":"1be396ba70f34b4ba81b164202da2fe6","manifestHash":"0AC0D4941380F175F48A3D472C5ECF11D841E383F903EAE80DD1D2DF24B0EF09","appVersion":"0.1.2","contentVersion":2,"published":"2026-11-21T08:20:00+00:00"},"previous":{"directory":"ec68a5bffad5407e84d5ea40e96c69a9","manifestHash":"A10ADA408EAE77422547C9660D8418E26DE640FAF6740627AA925258C11C9907","appVersion":"0.1.1","contentVersion":1,"published":"2026-11-21T08:00:00+00:00"},"rejected":null,"pending":false}
+
+## D. wrong hash: one byte of the active version's installed NOTICES.txt changed, then --offline
+before: ba49ae5586f817b3…
+after:  6ae78da4b8f6bc58…
+started pid=25672 at 08:30:38.771
+exit= after 12.3 s
+Den aktiva versionen kunde inte startas. Installerad fil stämmer inte: NOTICES.txt.
+Startar den föregående fungerande versionen.
+pid=20708 name=UnrealGame-Win64-Shipping.exe started=08:30:40 path=C:\Users\Olof\AppData\Local\Programs\Lunden-Test\versions\ec68a5bffad5407e84d5ea40e96c69a9\game\Engine\Binaries\Win64\UnrealGame-Win64-Shipping.exe
+  killed 20708
+state.json: {"channel":"test","active":{"directory":"ec68a5bffad5407e84d5ea40e96c69a9","manifestHash":"A10ADA408EAE77422547C9660D8418E26DE640FAF6740627AA925258C11C9907","appVersion":"0.1.1","contentVersion":1,"published":"2026-11-21T08:00:00+00:00"},"previous":null,"rejected":"0AC0D4941380F175F48A3D472C5ECF11D841E383F903EAE80DD1D2DF24B0EF09","pending":false}
+
+## E. removal: signed Lunden-Setup-0.1.2-win-x64.exe --uninstall --quiet --channel test
+exit=0
+ls: cannot access '/mnt/c/Users/Olof/AppData/Local/Programs/Lunden-Test': No such file or directory
+ERROR: The system was unable to find the specified registry key or value.
+no Start menu shortcut
