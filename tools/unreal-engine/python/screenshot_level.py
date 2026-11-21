@@ -75,12 +75,14 @@ def capture(world, out_dir, name, view):
 def render_view(world, out_dir, name, loc, rot, width, height, fov, exposure_bias, excluded, lumen=False):
     cam = spawn(unreal.SceneCapture2D, loc, rot)
     comp = cam.capture_component2d
-    # #2396: the picture the game displays: the final LDR colour, already display-encoded by the tonemapper (or by
-    # M_LundenNeutralTonemap in its place), into a plain 8-bit target. A view state is needed for any post-process
-    # material: without one Unreal skips them all (UMaterialInterface::OverrideBlendableSettings), so before #2396 the
-    # non-Lumen captures had neither the weather pass nor a replaced tonemapper. (The former tone-curve HDR source into
-    # an sRGB target was not the displayed picture for Unreal's own tonemapper either.)
+    # #2396: the picture the game displays: the final LDR colour, display-encoded by the tonemapper (or by
+    # M_LundenNeutralTonemap in its place), into a plain 8-bit target at the viewport's display gamma 2.2 (a plain RGBA8
+    # target otherwise reports gamma 1 and Unreal's tonemapper would write linear values into it). The former tone-curve
+    # HDR source into an sRGB target showed Unreal's own tonemapper within a few levels of this, but encodes a replaced
+    # tonemapper's output a second time. A view state is needed for any post-process material: without one Unreal skips
+    # them all (UMaterialInterface::OverrideBlendableSettings), so before #2396 the non-Lumen captures had no weather pass.
     rt = unreal.RenderingLibrary.create_render_target2d(world, width, height, unreal.TextureRenderTargetFormat.RTF_RGBA8)
+    rt.set_editor_property("target_gamma", 2.2)
     for actor in excluded:
         comp.hide_actor_components(actor)
     comp.set_editor_property("texture_target", rt)

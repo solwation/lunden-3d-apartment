@@ -50,6 +50,7 @@ def render_game(world, out_dir, name, loc, rot, width, height, fov, excluded, hi
     cam = spawn(u.SceneCapture2D, loc, rot)
     comp = cam.capture_component2d
     rt = u.RenderingLibrary.create_render_target2d(world, width, height, u.TextureRenderTargetFormat.RTF_RGBA8)
+    rt.set_editor_property("target_gamma", 2.2)  # display-encoded as in the viewport (see screenshot_level.render_view)
     for actor in excluded:
         comp.hide_actor_components(actor)
     comp.set_editor_property("texture_target", rt)
