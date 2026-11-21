@@ -10,7 +10,8 @@ const fs = require('node:fs/promises');
 const path = require('node:path');
 const {chromium} = require(process.env.PLAYWRIGHT_MODULE || 'playwright');
 const spec = require('../../../unreal/Lunden/Tests/views.json');
-const {shots} = require('./lighting-shots.json');
+const custom = process.env.LUNDEN_CAPTURE_SHOTS ? require(path.resolve(process.env.LUNDEN_CAPTURE_SHOTS)) : null;
+const {shots} = custom || require('./lighting-shots.json');
 
 function url(base, view, shot) {
   const u = new URL(base);
@@ -20,7 +21,7 @@ function url(base, view, shot) {
 }
 
 async function capture(page, shot, view, out) {
-  const {state, image} = await page.evaluate(async ({view, shot, eyeHeight}) => {
+  const {state, image} = await page.evaluate(async ({view, shot, eyeHeight, facade}) => {
     const {camera, player, day, lights, visitLights, patio, weather, renderer, scene, step, frame} = window.__app;
     player.spawn(view.x, view.z, view.yawDeg * Math.PI / 180);
     player.pos.y = view.feetY;
@@ -45,19 +46,51 @@ async function capture(page, shot, view, out) {
     step(0);
     // A teleport changes the four point-light slots. At dt=0 the old slots hold their fade; one render frame
     // can leave a newly selected lamp at only 4% brightness. Settle just the light pool at the frozen pose.
-    const {LIGHTING} = await import('/src/config.js');
+    const {LIGHTING, HUS_L} = await import('/src/config.js');
     const dir = camera.getWorldDirection(camera.position.clone());
     const level = player.aloft ? -1 : Math.max(0, player.level);
     for (let i = 0; i < 2; i++) lights.update(level, player.pos, LIGHTING.poolFade, dir);
+    let facadeState;
+    if (facade) {
+      // The entrance and gallery glows use elapsed wall time even with the simulation clock frozen.
+      const {world, power} = window.__app;
+      const night = 1 - day.daylight, amount = night > HUS_L.doorLamp.on ? 1 : 0;
+      if (!power.on) throw Error('Facade reference requires normal power');
+      const names = ['doorLampWash', 'doorLampPools', 'loggiaLampWash', 'loggiaLampPools'];
+      const masks = names.map(name => scene.getObjectByName(name));
+      const deadline = performance.now() + 10000;
+      do {
+        world.windowLights.update(day.hour, night, power.on);
+        if (masks.every(m => m && Math.abs(m.material.opacity - amount * m.userData.peak) < 1e-6)) break;
+        if (performance.now() > deadline) throw Error('Facade glow did not reach its web target');
+        await new Promise(resolve => setTimeout(resolve, 80));
+      } while (true);
+      const windows = world.object.children.find(group => group.userData.siteNeighborOpenings).userData.windows;
+      const schedule = {};
+      windows.habits.forEach(({house}, i) => {
+        if (!house) return;
+        const counts = schedule[house] ??= {on: 0, total: 0};
+        const rgb = windows.object.instanceColor;
+        counts.total++;
+        if (Math.max(rgb.getX(i), rgb.getY(i), rgb.getZ(i)) > 0) counts.on++;
+      });
+      facadeState = {wallLight: Object.fromEntries(masks.map(m => [m.name, m.material.opacity])),
+        husLEmission: scene.getObjectByName('neighborLitGlass').material.emissiveIntensity, schedule};
+    }
     renderer.shadowMap.needsUpdate = true;
     frame(1 / 60);
+    // On the first dusk frame the automatic small lamps can enter the pool *after* lights.update.
+    // Settle the slots at the final pose before rendering their measured contribution.
+    if (facade) {
+      for (let i = 0; i < 3; i++) lights.update(level, player.pos, LIGHTING.poolFade, dir);
+    }
     // Compare both skies at the initial tile phase, independent of the time needed to load each renderer.
     if (shot.camera === 'start') {
       const offset = day.uniforms.cloudShadowA.value;
       offset.x = offset.y = 0;
     }
     renderer.render(scene, camera);
-    const state = {eye: camera.position.toArray(), yaw: camera.rotation.y * 180 / Math.PI, pitch: camera.rotation.x * 180 / Math.PI,
+    const state = {facade: facadeState, eye: camera.position.toArray(), yaw: camera.rotation.y * 180 / Math.PI, pitch: camera.rotation.x * 180 / Math.PI,
       day: [day.year, day.month, day.date, day.hour, day.paused], daylight: day.daylight, overcast: day.overcast, weather: weather.force,
       sky: {procedural: day.uniforms.uSkyCl.value.toArray(), deck: Object.values(day.uniforms.cloudShadowA.value),
         zenith: day.uniforms.uZenith.value.toArray(), horizon: day.uniforms.uHorizon.value.toArray()},
@@ -70,7 +103,7 @@ async function capture(page, shot, view, out) {
       }));
     }
     return {state, image: renderer.domElement.toDataURL('image/jpeg', 0.92).split(',')[1]};
-  }, {view, shot, eyeHeight: spec.standingEyeHeightM});
+  }, {view, shot, eyeHeight: spec.standingEyeHeightM, facade: !!custom?.settleFacade});
   const near = (a, b) => assert.ok(Math.abs(a - b) < 1e-5, `${shot.name}: ${a} != ${b}`);
   near(state.eye[0], view.x); near(state.eye[2], view.z); near(state.yaw, view.yawDeg); near(state.pitch, view.pitchDeg);
   if (shot.camera === 'start') {
@@ -87,7 +120,7 @@ async function capture(page, shot, view, out) {
 async function main() {
   const [base = 'http://localhost:8846', out = '.', names] = process.argv.slice(2);
   const wanted = names ? shots.filter((s) => names.split(',').includes(s.name)) : shots;
-  const views = Object.fromEntries(spec.views.map((v) => [v.id, v]));
+  const views = Object.fromEntries([...spec.views, ...(custom?.views ?? [])].map((v) => [v.id, v]));
   await fs.mkdir(out, {recursive: true});
   const browser = await chromium.launch({executablePath: process.env.CHROME_PATH || undefined,
     args: process.platform === 'win32' ? ['--use-angle=d3d11'] : ['--no-sandbox', '--use-angle=swiftshader', '--enable-unsafe-swiftshader']});

@@ -27,7 +27,15 @@ const lamps = measurements.lights.filter(lamp => lamp.kind === 'room').map((lamp
   candela: 7 * lamp.intensity
 }));
 if (!lamps.length) throw Error('Import contains no room light anchors.');
-const poses = process.env.LUNDEN_CAPTURE_VIEWS ? JSON.parse(await readFile(process.env.LUNDEN_CAPTURE_VIEWS)) : views.views;
+const shotSet = process.env.LUNDEN_CAPTURE_SHOTS ? JSON.parse(await readFile(process.env.LUNDEN_CAPTURE_SHOTS)) : null;
+let poses = views.views;
+if (shotSet) {
+  const cameraIds = new Set(shotSet.shots.map(shot => shot.camera));
+  poses = [...views.views, ...shotSet.views].filter(view => cameraIds.has(view.id));
+  if (new Set(poses.map(view => view.id)).size !== cameraIds.size) throw Error('Shot set references a missing camera.');
+} else if (process.env.LUNDEN_CAPTURE_VIEWS) {
+  poses = JSON.parse(await readFile(process.env.LUNDEN_CAPTURE_VIEWS));
+}
 const cameras = poses.map(v => ({ id: v.id, lighting: v.lighting,
   xyz: webToUnreal([v.x, v.feetY + views.standingEyeHeightM, v.z]), yaw: webYawToUnrealYaw(v.yawDeg), pitch: v.pitchDeg }));
-await writeFile(process.argv[3], JSON.stringify({ ...views.viewport, spawnZ: measurements.spawn.start.unreal[2] + 50 * measurements.spawn.player.headroom, verticalFov: views.verticalFovDeg, horizontalFov, cameras, lighting, lamps }, null, 2) + '\n');
+await writeFile(process.argv[3], JSON.stringify({ ...views.viewport, spawnZ: measurements.spawn.start.unreal[2] + 50 * measurements.spawn.player.headroom, verticalFov: views.verticalFovDeg, horizontalFov, cameras, lighting, lamps, ...(shotSet && {shots: shotSet.shots, settleFacade: shotSet.settleFacade}) }, null, 2) + '\n');

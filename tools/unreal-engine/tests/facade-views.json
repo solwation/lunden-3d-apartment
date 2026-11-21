@@ -1,0 +1,20 @@
+{
+  "settleFacade": true,
+  "views": [
+    { "id": "facade-a", "x": -1, "z": 19.1, "feetY": 0, "yawDeg": 180, "pitchDeg": 12, "lighting": "day" },
+    { "id": "facade-b", "x": -33.2, "z": 23.6, "feetY": 0, "yawDeg": 180, "pitchDeg": 12, "lighting": "day" },
+    { "id": "facade-c", "x": -63, "z": 41.35, "feetY": 0, "yawDeg": 0, "pitchDeg": 20, "lighting": "day" },
+    { "id": "facade-l-courtyard", "x": -5, "z": 23, "feetY": 0, "yawDeg": 0, "pitchDeg": 22, "lighting": "day" }
+  ],
+  "shots": [
+    { "name": "facade-l-day", "camera": "start", "date": [2026, 11, 16], "hour": 14, "weather": "clear", "lamps": "none" },
+    { "name": "facade-a-day", "camera": "facade-a", "date": [2026, 11, 16], "hour": 14, "weather": "clear", "lamps": "none" },
+    { "name": "facade-b-day", "camera": "facade-b", "date": [2026, 11, 16], "hour": 14, "weather": "clear", "lamps": "none" },
+    { "name": "facade-c-day", "camera": "facade-c", "date": [2026, 11, 16], "hour": 14, "weather": "clear", "lamps": "none" },
+    { "name": "facade-l-dusk", "camera": "start", "date": [2026, 11, 16], "hour": 18.25, "weather": "clear", "lamps": "dusk" },
+    { "name": "facade-a-dusk", "camera": "facade-a", "date": [2026, 11, 16], "hour": 18.25, "weather": "clear", "lamps": "dusk" },
+    { "name": "facade-b-dusk", "camera": "facade-b", "date": [2026, 11, 16], "hour": 18.25, "weather": "clear", "lamps": "dusk" },
+    { "name": "facade-c-dusk", "camera": "facade-c", "date": [2026, 11, 16], "hour": 18.25, "weather": "clear", "lamps": "dusk" },
+    { "name": "facade-l-courtyard-dusk", "camera": "facade-l-courtyard", "date": [2026, 11, 16], "hour": 18.25, "weather": "clear", "lamps": "dusk" }
+  ]
+}

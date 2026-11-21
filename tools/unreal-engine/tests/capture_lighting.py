@@ -121,6 +121,11 @@ def run(scene_path, out_dir, names=None, exposure="game", trial=None, bias_offse
     u.SystemLibrary.execute_console_command(world, "r.Shadow.Virtual.Enable 0")
     os.makedirs(out_dir, exist_ok=True)
     observed = []
+    if scene.get("settleFacade"):
+        import build_facade
+        facade_collection = u.load_asset(build_facade.LOCAL_MPC)
+        if facade_collection is None:
+            raise RuntimeError("The composed world needs its facade lighting collection")
     dusk_mid = (lamps[0].get_editor_property("DuskOn") + lamps[0].get_editor_property("DuskOff")) / 2
     for shot in selected:
         name, cam, weather = shot["name"], cams[shot["camera"]], shot["weather"]
@@ -164,6 +169,9 @@ def run(scene_path, out_dir, names=None, exposure="game", trial=None, bias_offse
         off = math.degrees(math.acos(max(-1, min(1, -(forward.x * direction.x + forward.y * direction.y + forward.z * direction.z)))))
         if math.dist(obs["xyz"], cam["xyz"]) > 0.01 or any(abs(obs[k] - cam[k]) > 0.001 for k in ("pitch", "yaw")) or off > 0.01:
             raise RuntimeError(f"Camera or sun mismatch in {name}: sun {off:.3f}° off")
+        if scene.get("settleFacade"):
+            obs["facade"] = {key: u.MaterialLibrary.get_scalar_parameter_value(world, facade_collection, key)
+                             for key in ("WallOn", "WallLevel")}
         observed.append({**obs, "name": name, "camera": shot["camera"], "date": date, "hour": hour, "weather": weather,
                          "hiddenSeasonalActors": len(hidden), "lamps": shot["lamps"], "lampsLit": lit, "exposureBias": bias,
                          "sunElevation": sky.get_editor_property("SunElevation"), "sunLux": sun.intensity,
