@@ -7,7 +7,7 @@ run-tests.ps1 (which adds -nullrhi):
         -RenderOffScreen -unattended -nosplash -nosound -nop4 -abslog=<log>
 (copy this file to unreal/Lunden/Content/Python/test_ui_capture.py first, untracked: the plugin only runs test_*.py). On a temporary lit level with the world's GameMode
 and an isolated save slot (save_isolation) it takes "shot showui" screenshots of: the HUD while playing (looking at
-Unreal yaw -90, plan north, where the web's compass shows 58 degrees, nordost), the start menu, the settings page and
+Unreal yaw -90, plan north, where the web's compass shows 58 degrees, nordost), the start menu, both ends of the privacy notice, the settings page and
 the pause menu. They land in Saved/Screenshots/; LUNDEN_UI_CAPTURE lines name them, then LUNDEN_UI_CAPTURE_OK.
 """
 import json
@@ -92,6 +92,26 @@ def capture():
         menu.call_method("Open", (True,))
         yield from frames(20)
         yield from shot("unreal-start-menu")
+        menu.get_editor_property("ExtPrivacy").get_editor_property("on_clicked").broadcast()
+        yield from frames(20)
+        pages = menu.get_editor_property("Pages")
+        if pages.get_active_widget_index() != 2 or not u.GameplayStatics.is_game_paused(game):
+            raise RuntimeError("The privacy notice must open from the paused start menu")
+        scroll = menu.get_editor_property("PrivacyScrollHolder").get_content()
+        if scroll.get_scroll_offset() > 1:
+            raise RuntimeError("The start of the privacy notice is outside the viewport")
+        yield from shot("unreal-privacy-before-play")
+        end = scroll.get_scroll_offset_of_end()
+        if end > 1:
+            menu.call_method("ScrollPrivacy", (end,))
+            yield from frames(20)
+            if abs(scroll.get_scroll_offset() - end) > 1:
+                raise RuntimeError("The Windows storage and crash information is outside the viewport")
+            yield from shot("unreal-privacy-windows")
+        menu.get_editor_property("BtnPrivacyBack").get_editor_property("on_clicked").broadcast()
+        yield from frames(10)
+        if pages.get_active_widget_index() != 0 or not u.GameplayStatics.is_game_paused(game):
+            raise RuntimeError("Back must return to the start menu before Play")
         menu.call_method("ShowSettings")
         yield from frames(20)
         yield from shot("unreal-settings")
