@@ -770,7 +770,8 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     // The rail and sign need distinct keys; the hedge tints already identify them.
     // In particular the pilot ground builder loads the original patio-hedge material path.
     const hedge = m.name === 'patio-hedge' || m.name === 'boxwood';
-    const siteMap = m.map?.name === 'site-slatted-rail' || m.map?.name === 'site-house-letters' || m.map?.name === 'parked-bicycle-spokes';
+    const siteMap = m.map?.name === 'site-slatted-rail' || m.map?.name === 'site-house-letters' || m.map?.name === 'parked-bicycle-spokes'
+      || m.map?.name === 'garage-cage-mesh'; // #2399: the storage cages' wire mesh
     const tex = furnish && !hedge && !siteMap ? furnishingTexture(m.map, textures, textureOfMap) : null;
     const bulb = m === lightsInfo.patioBulb;
     const siteSuffix = siteMap ? m.map.name.replaceAll('-', '_') : null;

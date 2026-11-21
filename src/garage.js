@@ -173,6 +173,7 @@ function meshTexture() {
   for (let k = 0; k < 4; k++) { g.fillRect(k * 16, 0, 5, 64); g.fillRect(0, k * 16, 64, 5); }
   g.fillRect(0, 0, 64, 6); // (v 0.91…1: solid)
   const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 4;
+  t.name = 'garage-cage-mesh'; // the Unreal export keeps this cut-out (#2399)
   return t;
 }
 const SOLID_V = 0.97;
