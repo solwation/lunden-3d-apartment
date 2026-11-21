@@ -1227,8 +1227,9 @@ function measurementData({ world, planCopy, W, D, byZone, lightsInfo, seasons, m
   for (const l of lightsInfo.lamps) lights.push({ id: null, kind: 'room', name: null, level: l.level, room: l.room, position: P(l.pos.x, l.pos.y, l.pos.z),
     intensity: l.intensity, distance: l.distance, color: l.color });
   for (const [index, l] of (lightsInfo.patioStrings ?? []).entries()) {
+    const { on, off, fade, bulbIdle, bulbBoost } = C.PATIO.stringLights;
     lights.push({ id: null, kind: 'lamp', name: 'ljusslingan', room: null, level: l.level, auto: true,
-      ...(index === 0 ? { patioBulbs: { idle: C.PATIO.stringLights.bulbIdle, boost: C.PATIO.stringLights.bulbBoost } } : {}),
+      patioDusk: { on, off, fade }, ...(index === 0 ? { patioBulbs: { idle: bulbIdle, boost: bulbBoost } } : {}),
       position: P(l.pos.x, l.pos.y, l.pos.z), intensity: l.intensity, distance: l.range, color: '#' + l.color.toString(16).padStart(6, '0') });
   }
   // #2283: a light without an exported object (a room's ceiling light point, a lamp whose object is not a node) gets a

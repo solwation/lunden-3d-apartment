@@ -2084,7 +2084,10 @@ What is exported:
   `buildStringLights` with the same plan fences as the game. Their cable, bulbs and the two pools of light are in
   the patio export and lighting measurements. On import, each bulb receives the `patio:string-bulb` tag. The first
   string light creates a shared unlit material instance on the bulbs and sets its base colour from the same dusk
-  fade that drives the point lights. The static canopy represents the export date. Reacting to later
+  fade that drives the point lights. Both pools read raw daylight at the fence string’s exported on/off thresholds.
+  The weather collection exposes the sky’s raw `Daylight`, decimal `Hour`, and the external `PowerAvailable` factor
+  (1 at startup). A power change scales both point lights and bulb glow while preserving the dusk state.
+  Other automatic lamps use cloud-adjusted daylight. The static canopy represents the export date. Reacting to later
   changes of sun, season or manual folding in the Windows game requires runtime interaction.
 - **Fruit bowl and basketball (#2310).** `main.js` builds them next to the world, so `export-scene.js` constructs the
   same classes with main.js's arguments (`new FruitBowl(scene, camera)` from `src/fruit.js`; `new Basketball(scene,

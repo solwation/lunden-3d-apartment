@@ -172,7 +172,7 @@ def lamp_rows(m):
     rows = []
     for l in m["lights"]:
         rows.append({"id": l["id"], "kind": l["kind"], "level": l["level"], "room": l.get("room"), "name": l.get("name"),
-                     "seasonTags": season_tags({}, l), "patioBulbs": l.get("patioBulbs"),
+                     "seasonTags": season_tags({}, l), "patioBulbs": l.get("patioBulbs"), "patioDusk": l.get("patioDusk"),
                      "xyz": l["position"]["unreal"], "candela": CANDELA_PER_WEB * (l.get("intensity") or 0.0),
                      "radius": 100.0 * (l.get("distance") or LAMP_RANGE), "colour": l.get("color") or LAMP_COLOUR,
                      # the ceiling lamps (the room switches) are by hand only; a small lamp follows the dusk unless `auto: false`
@@ -520,7 +520,8 @@ def build_mpc(spec):
                "SnowSpeed": s["speed"] * 100, "SnowSway": s["sway"] * 100, "SnowSize": s["size"] * 100,
                "DriftPerMs": s["driftPerMs"], "DriftMax": s["driftMax"] * 100,
                # #2307: DuskLight (what the small lamps follow) -1 = the sky has not run yet (the lamps wait); the clouds; the moon disc
-               "DuskLight": -1.0, "Night": 0.0, "CloudCover": 0.0, "CloudCoverage": 0.0,
+               "DuskLight": -1.0, "Daylight": -1.0, "Hour": 14.0, "PowerAvailable": 1.0,
+               "Night": 0.0, "CloudCover": 0.0, "CloudCoverage": 0.0,
                "MoonRadius": spec["sky"]["light"]["moonRadius"], "Earthshine": spec["sky"]["light"]["moonEarthshine"]}
     vectors = {"SunDir": u.LinearColor(0, 0, 1, 0), "MoonDir": u.LinearColor(0, 0, -1, 0), "MoonPh": u.LinearColor(0, 1, 1, 0)}
     for i, box in enumerate(spec["boxes"]):
@@ -788,6 +789,9 @@ def hemisphere_cube(spec):
 def patio_string_function(bp):
     """Share one glTF unlit MID across the tagged bulbs. Only the designated lamp writes its fade."""
     if BP.find_graph(bp, "ApplyPatioBulbs"):
+        # An earlier build has event nodes calling this function. Clear them before recompiling.
+        events = GRAPH.get_graph_editor_by_name(bp, "EventGraph")
+        events.remove_nodes(list(events.list_all_nodes()))
         BP.remove_function_graph(bp, "ApplyPatioBulbs")
     pp.variables(bp, {"StringMaterial": BP.get_object_reference_type(u.MaterialInstanceDynamic.static_class())})
     g, _ = pp.function(bp, "ApplyPatioBulbs")
@@ -808,8 +812,9 @@ def patio_string_function(bp):
     mesh = bulb_component(g, actor)
     g.run("PrimitiveComponent:SetMaterial", target=mesh, ElementIndex=0, Material=g.get("StringMaterial"))
     tail = g.fork(done, 650)
+    live = tail.op("Multiply_DoubleDouble", A=tail.get("K"), B=tail.get("Supply"))
     amount = tail.op("Add_DoubleDouble", A=tail.get("BulbIdle"),
-                     B=tail.op("Multiply_DoubleDouble", A=tail.get("BulbBoost"), B=tail.get("K")))
+                     B=tail.op("Multiply_DoubleDouble", A=tail.get("BulbBoost"), B=live))
     rgb = tail.op("Multiply_VectorFloat", A=tail.get("BulbColour"), B=amount)
     color = tail.pure("KismetMathLibrary:Conv_VectorToLinearColor", InVec=rgb)
     update = tail.run("MaterialInstanceDynamic:SetVectorParameterValue", target=tail.get("StringMaterial"),
@@ -835,7 +840,8 @@ def build_lamp(spec, mpc):
     sky = spec["sky"]["light"]
     variables(bp, {"IsOn": ("bool", False), "Auto": ("bool", False), "Candela": ("real", 0.0), "K": ("real", 0.0),
                    "Dusk": ("real", -1.0), "DuskOn": ("real", sky["duskOn"]), "DuskOff": ("real", sky["duskOff"]),
-                   "DuskFade": ("real", sky["duskFade"]), "BulbIdle": ("real", 0.0),
+                   "DuskFade": ("real", sky["duskFade"]), "PatioDusk": ("bool", False), "Supply": ("real", 1.0),
+                   "BulbIdle": ("real", 0.0),
                    "BulbBoost": ("real", 0.0), "BulbColour": ("vector", u.Vector(0, 0, 0))})
     patio_string_function(bp)
     G = Graph(bp)
@@ -849,14 +855,14 @@ def build_lamp(spec, mpc):
         apply_k(chain)
 
     def apply_k(chain):
-        env = Expr(G, {"K": (G.get("K"), "K"), "Candela": (G.get("Candela"), "Candela")})
+        env = Expr(G, {n: (G.get(n), n) for n in ("K", "Candela", "Supply")})
         power = G.call("LightComponent:SetIntensity")
         connect(G.get("Light"), "Light", power, "self")
-        env.feed(power, "NewIntensity", env.run("c = Candela * K")["c"])
+        env.feed(power, "NewIntensity", env.run("c = Candela * K * Supply")["c"])
         chain.then(power)
         vis = G.call("SceneComponent:SetVisibility")
         connect(G.get("Light"), "Light", vis, "self")
-        env.feed(vis, "bNewVisibility", env.run("v = K > 0.0001")["v"])
+        env.feed(vis, "bNewVisibility", env.run("v = K * Supply > 0.0001")["v"])
         chain.then(vis)
         chain.then(G.call(LAMP + ".BP_LundenLamp_C:ApplyPatioBulbs"))
 
@@ -876,13 +882,18 @@ def build_lamp(spec, mpc):
 
     # Tick: the dusk (Lights.updateAuto), then the fade (FloorLamp.update)
     tick = G.event("Tick", "ReceiveTick")
-    daylight = G.call("KismetMaterialLibrary:GetScalarParameterValue", ParameterName="DuskLight")
+    # The patio reads raw daylight. The other automatic lamps also respond to cloud cover.
+    source = G.call("KismetMathLibrary:SelectName", A="Daylight", B="DuskLight")
+    connect(G.get("PatioDusk"), "PatioDusk", source, "bPickA")
+    daylight = G.call("KismetMaterialLibrary:GetScalarParameterValue")
+    connect(source, "ReturnValue", daylight, "ParameterName")
     constant(daylight, "Collection", mpc.get_path_name())
-    env = {n: (G.get(n), n) for n in ("Dusk", "DuskOn", "DuskOff", "K", "IsOn", "DuskFade")}
+    env = {n: (G.get(n), n) for n in ("Dusk", "DuskOn", "DuskOff", "K", "IsOn", "DuskFade", "PatioDusk")}
     env.update({"day": (daylight, "ReturnValue"), "dt": (tick, "DeltaSeconds")})
     E = Expr(G, env)
     v = E.run("""
-d = select(Dusk >= 0, select(Dusk > 0.5, select(day < DuskOff, 1, 0), select(day < DuskOn, 1, 0)), select(day < (DuskOn + DuskOff) / 2, 1, 0))
+stillDark = select(PatioDusk, select(day <= DuskOff, 1, 0), select(day < DuskOff, 1, 0))
+d = select(Dusk >= 0, select(Dusk > 0.5, stillDark, select(day < DuskOn, 1, 0)), select(day < (DuskOn + DuskOff) / 2, 1, 0))
 valid = day >= 0
 changed = (d - Dusk) * (d - Dusk) > 0.25
 first = Dusk < 0
@@ -895,7 +906,24 @@ moving = (kNew - K) * (kNew - K) > 0.0000000001
     for branch, cond in ((b_valid, v["valid"]), (b_changed, v["changed"]), (b_first, v["first"]), (b_moving, fade["moving"])):
         E.feed(branch, "Condition", cond)
     connect(G.get("Auto"), "Auto", b_auto, "Condition")
-    connect(tick, "then", daylight, "execute")  # (an impure call: in the exec chain, its value read once per tick)
+    patio = G.place(G.g.add_branch_node())
+    connect(G.get("PatioDusk"), "PatioDusk", patio, "Condition")
+    connect(tick, "then", patio, "execute")
+    connect(patio, "else", daylight, "execute")
+    grid = G.call("KismetMaterialLibrary:GetScalarParameterValue", ParameterName="PowerAvailable")
+    constant(grid, "Collection", mpc.get_path_name())
+    connect(patio, "then", grid, "execute")
+    supply = Expr(G, {"grid": (grid, "ReturnValue"), "previous": (G.get("Supply"), "Supply")})
+    changed = G.place(G.g.add_branch_node())
+    supply.feed(changed, "Condition", supply.run("changed = (grid - previous) * (grid - previous) > 0.00000001")["changed"])
+    connect(grid, "then", changed, "execute")
+    connect(changed, "else", daylight, "execute")
+    store = G.place(G.g.add_set_member_variable_node("Supply"))
+    connect(grid, "ReturnValue", store, "Supply")
+    connect(changed, "then", store, "execute")
+    refreshed = Chain(store)
+    apply_k(refreshed)
+    connect(refreshed.node, refreshed.pin, daylight, "execute")
     connect(daylight, "then", b_valid, "execute")
     connect(b_valid, "then", b_changed, "execute")
     connect(b_changed, "then", b_auto, "execute")
@@ -919,9 +947,7 @@ moving = (kNew - K) * (kNew - K) > 0.0000000001
     E.feed(step, "K", fade["kNew"])
     connect(b_moving, "then", step, "execute")
     apply_k(Chain(step))
-    BP.compile_blueprint(bp)
-    if G.g.list_nodes_with_errors():
-        raise RuntimeError("BP_LundenLamp failed to compile: " + ", ".join(n.get_name() for n in G.g.list_nodes_with_errors()))
+    pp.compiled(bp)  # inspect both the event graph and the bulb material function
     return bp
 
 
@@ -1089,7 +1115,7 @@ def build_sky(spec, mpc, precip, clouds):
     chain.then(density)
     for name, value in (("Rain", env["Rain"]), ("Snow", env["Snow"]), ("Wet", env["Wet"]), ("WindX", env["windX"]),
                         ("WindY", env["windY"]), ("Streak", env["streak"]), ("DuskLight", env["duskLight"]),
-                        ("Night", env["night"]), ("CloudCover", env["cover"]), ("CloudCoverage", env["coverage"])):
+                        ("Daylight", env["day"]), ("Hour", env["Hour"]), ("Night", env["night"]), ("CloudCover", env["cover"]), ("CloudCoverage", env["coverage"])):
         setp = G.call("KismetMaterialLibrary:SetScalarParameterValue", ParameterName=name)
         constant(setp, "Collection", mpc.get_path_name())
         E.feed(setp, "ParameterValue", value)
@@ -1220,6 +1246,11 @@ def build_level(spec, sky_bp, lamp_bp):
         lamp.tags = [u.Name(t) for t in tags + row["seasonTags"]]
         lamp.set_editor_property("Candela", row["candela"])
         lamp.set_editor_property("Auto", row["auto"])
+        if rule := row["patioDusk"]:
+            lamp.set_editor_property("PatioDusk", True)
+            lamp.set_editor_property("Dusk", 0.0)  # web strings start off and fade in from zero
+            for prop, key in (("DuskOn", "on"), ("DuskOff", "off"), ("DuskFade", "fade")):
+                lamp.set_editor_property(prop, rule[key])
         light = lamp.get_component_by_class(u.PointLightComponent)
         light.set_intensity(row["candela"])
         light.set_editor_property("attenuation_radius", row["radius"])

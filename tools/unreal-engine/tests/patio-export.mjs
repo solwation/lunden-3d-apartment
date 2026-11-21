@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import * as THREE from 'three';
-import { FURNITURE } from '../../../src/config.js';
+import { FURNITURE, PATIO } from '../../../src/config.js';
 import { buildStringLights, parasol, updateParasols } from '../../../src/patio.js';
 import { glbJson } from '../json-schema.mjs';
 
@@ -54,5 +54,7 @@ for (const [i, lamp] of strings.lamps.entries()) {
   assert.equal(row.intensity, lamp.intensity);
   assert.equal(row.distance, lamp.range);
   assert.equal(row.auto, true);
+  const { on, off, fade } = PATIO.stringLights;
+  assert.deepEqual(row.patioDusk, { on, off, fade });
 }
 console.log(`Patio: canopy pose, ${instances.length} bulbs, cable and ${lights.length} light sources match the web`);

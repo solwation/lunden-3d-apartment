@@ -60,13 +60,21 @@ def patio_strings():
         base = u.LinearColor()
         base.set_from_srgb(u.Color(r=rgb[0], g=rgb[1], b=rgb[2], a=255))
         glow = driver_spec["patioBulbs"]
-        for hour, on in ((14.0, False), (23.5, True), (14.0, False)):
+        mpc = u.load_asset("/Game/Lunden/Lighting/MPC_LundenWeather")
+        for hour, rain, supply, on in ((14.0, 0.0, 1.0, False), (21.25, 1.0, 1.0, False),
+                                       (23.5, 0.0, 1.0, True), (23.5, 0.0, 0.0, True),
+                                       (23.5, 0.0, 1.0, True), (14.0, 0.0, 1.0, False)):
+            sky.set_editor_property("Rain", rain)
+            u.MaterialLibrary.set_scalar_parameter_value(game, mpc, "PowerAvailable", supply)
             sky.set_editor_property("Hour", hour)
             sky.call_method("UpdateSky")
+            for _ in range(3):
+                yield
             deadline = time.monotonic() + 10
             while time.monotonic() < deadline:
                 yield
-                if all(abs(lamp.get_editor_property("K") - float(on)) < 1e-4 for lamp in pools):
+                if all(abs(lamp.get_editor_property("K") - float(on)) < 1e-4
+                       and abs(lamp.get_editor_property("Supply") - supply) < 1e-4 for lamp in pools):
                     break
             else:
                 raise RuntimeError(f"At {hour}, the two patio light pools did not reach the expected fade")
@@ -74,14 +82,14 @@ def patio_strings():
             if not mid or any(a.get_component_by_class(u.StaticMeshComponent).get_material(0) != mid for a in bulbs):
                 raise RuntimeError(f"At {hour}, the {len(bulbs)} bulbs do not share the driver's dynamic material")
             actual = mid.get_vector_parameter_value("BaseColorFactor")
-            factor = glow["idle"] + glow["boost"] * on
+            factor = glow["idle"] + glow["boost"] * on * supply
             if any(abs(a - b * factor) > 1e-4 for a, b in zip((actual.r, actual.g, actual.b), (base.r, base.g, base.b))):
                 raise RuntimeError(f"At {hour}, unexpected patio bulb colour {actual}")
             for lamp in pools:
                 intensity = lamp.get_component_by_class(u.PointLightComponent).intensity
-                if abs(intensity - lamp.get_editor_property("Candela") * on) > 1e-3:
+                if abs(intensity - lamp.get_editor_property("Candela") * on * supply) > 1e-3:
                     raise RuntimeError(f"At {hour}, unexpected pool intensity {intensity}")
-        u.log(f"LUNDEN_PATIO_STRINGS_TEST_OK {len(bulbs)} bulbs and two pools at day, night and day again")
+        u.log(f"LUNDEN_PATIO_STRINGS_TEST_OK {len(bulbs)} bulbs and two pools across rain, dusk and a power cut")
     finally:
         levels.editor_request_end_play()
         yield from save_isolation.restore_after_play(saved, editor)
