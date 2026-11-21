@@ -1,0 +1,140 @@
+{
+ "engine": "5.8.4-58902052+++UE5+Release-5.8",
+ "summary": {
+  "vc_ds_river_edge": {
+   "nodes": 1,
+   "drawn": 1,
+   "png": null
+  },
+  "vc_tex": {
+   "nodes": 9,
+   "drawn": 9,
+   "png": [
+    512,
+    512
+   ]
+  },
+  "tex_ds_site_slatted_rail": {
+   "nodes": 2,
+   "drawn": 2,
+   "png": [
+    128,
+    64
+   ]
+  },
+  "tex_site_house_letters": {
+   "nodes": 1,
+   "drawn": 1,
+   "png": [
+    192,
+    64
+   ]
+  },
+  "ds_river_flow": {
+   "nodes": 1,
+   "drawn": 1,
+   "png": null
+  }
+ },
+ "nodes": {
+  "mesh_edge-land_l0_xm8363_z7725_y199": [
+   {
+    "level": "Level_fond",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_xm3810_z1720_y57": [
+   {
+    "level": "Level_hus-l_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_xm3255_z1720_y57": [
+   {
+    "level": "Level_hus-l_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_xm2700_z1721_y57": [
+   {
+    "level": "Level_hus-l_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_xm2145_z1720_y57": [
+   {
+    "level": "Level_hus-l_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_xm772_z1720_y57": [
+   {
+    "level": "Level_hus-l_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_xm217_z1720_y57": [
+   {
+    "level": "Level_hus-l_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_x893_z1720_y57": [
+   {
+    "level": "Level_hus-l_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_boxslats_l0_xm2854_z3155_y15": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_loggiarails_l0_xm3059_z3498_y653": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_xm2423_z3695_y80": [
+   {
+    "level": "Level_kvarteret_interaction",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_x338_z1720_y57": [
+   {
+    "level": "Level_l1007-uteplats",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_bridges-water_l0_xm500_z19012_ym705": [
+   {
+    "level": "Level_omgivning",
+    "ok": true,
+    "why": ""
+   }
+  ],
+  "mesh_l0_xm2010_zm320_y33": [
+   {
+    "level": "SM_Veg_hedge_mesh_l0_xm2010_zm320_y33",
+    "ok": true,
+    "why": ""
+   }
+  ]
+ },
+ "errors": []
+}
