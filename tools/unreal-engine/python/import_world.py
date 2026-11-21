@@ -352,15 +352,28 @@ def vertex_color_masters(table):
     return re.compile(vc.get("match", "_vc")), dict(vc.get("masters", {}))
 
 
+TEXTURED = "bHasBaseColorTexture"  # Interchange's static switch: its textured base colour path multiplies the vertex colour
+
+
+def textured(mi):
+    """True when Interchange's own master already draws mi's vertex colour: MF_BaseColor multiplies the vertex colour
+    only in its base-colour-texture branch (the static switch bHasBaseColorTexture; the furnishing images, #2289)."""
+    try:
+        return bool(unreal.MaterialEditingLibrary.get_material_instance_static_switch_parameter_value(mi, TEXTURED))
+    except Exception:
+        return False
+
+
 def apply_vertex_color(zone, table):
     """#2321: Interchange's glTF masters (M_Default, M_Unlit) ignore the meshes' vertex colours (COLOR_0, imported
     onto the StaticMesh), so a key whose web material has vertexColors (`_vc`) and white or light base colour came out
-    white: the plants, fruit, bridge railings and door handles. Each such instance of the zone is re-parented from its
+    white: the plants, fruit and bridge railings. (Its textured branch, bHasBaseColorTexture, does multiply them: those
+    instances, the furnishing images of #2289, stay as they are.) Each other such instance of the zone is re-parented from its
     Interchange parent (MI_Default_Opaque, ..._DS, ...) onto the project's copy of the same glTF master that multiplies
     the vertex colour in (material-map.json `vertexColor`, built by build_materials.py). The parameters keep their names
     and values; the parent chain's blend, two-sided and mask overrides are copied onto the instance itself."""
     rx, masters = vertex_color_masters(table)
-    loaded, done = {}, set()
+    loaded, done, kept = {}, set(), set()
     for p in eal.list_assets(f"{GENERATED_ROOT}/{zone}/StaticMeshes", recursive=True, include_folder=False):
         mesh = eal.load_asset(p)
         if not isinstance(mesh, unreal.StaticMesh):
@@ -371,10 +384,14 @@ def apply_vertex_color(zone, table):
                 continue
             if mi.get_path_name() in done or not mi.get_path_name().startswith(f"{GENERATED_ROOT}/{zone}/"):
                 continue  # once per instance; a rule's hand-made material is not the import's to change
-            done.add(mi.get_path_name())
             base = mi.get_base_material().get_path_name()
             if base in masters.values():
+                done.add(mi.get_path_name())
                 continue
+            if mi.get_path_name() in kept or textured(mi):
+                kept.add(mi.get_path_name())
+                continue
+            done.add(mi.get_path_name())
             target = masters.get(base)
             if target is None:
                 raise RuntimeError(f"{mi.get_path_name()} (vertex colours) has glTF master {base}, which material-map.json "
@@ -390,7 +407,8 @@ def apply_vertex_color(zone, table):
             unreal.MaterialEditingLibrary.update_material_instance(mi)
             if mi.get_blend_mode() != blend:
                 raise RuntimeError(f"{mi.get_path_name()}: blend mode {blend} became {mi.get_blend_mode()} on the vertex-colour master")
-    unreal.log(f"LUNDEN_IMPORT_VERTEX_COLOR zone {zone}: {len(done)} vertex-coloured instances on a vertex-colour master")
+    unreal.log(f"LUNDEN_IMPORT_VERTEX_COLOR zone {zone}: {len(done)} vertex-coloured instances on a vertex-colour master, "
+               f"{len(kept)} textured ones on Interchange's master (its texture branch draws the vertex colour)")
     return len(done)
 
 
@@ -406,7 +424,7 @@ def check_vertex_color(zone, table):
             seen.add(mi.get_path_name())
             if not mi.get_path_name().startswith(f"{GENERATED_ROOT}/{zone}/"):
                 continue  # a rule's hand-made material: tests/test_materials.py checks that it uses the vertex colour
-            if mi.get_base_material().get_path_name() not in wanted:
+            if mi.get_base_material().get_path_name() not in wanted and not textured(mi):
                 bad.append(f"{mi.get_name()} ({mi.get_base_material().get_path_name()})")
     if bad:
         raise RuntimeError(f"{zone}: {len(bad)} vertex-coloured keys on a master without vertex colour, e.g. {bad[:3]}: run import_world.py")

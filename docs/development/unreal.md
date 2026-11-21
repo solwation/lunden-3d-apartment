@@ -2263,7 +2263,8 @@ What 5.8.4 does, and what the importer does about it:
 - **Materials.** `tools/unreal-engine/material-map.json` rules (a regex on the key, first match wins, optionally
   narrowed by a `mesh` regex on the StaticMesh name) replace the imported instances on the mesh slots by hand-made
   materials ([Surface materials](#surface-materials-2282)). Other keys keep Interchange's glTF material instance
-  (colour, roughness, metalness, opacity and emissive from the export).
+  (colour, roughness, metalness, opacity and emissive from the export); a vertex-coloured key's instance is then
+  re-parented onto a master that draws the vertex colour ([Vertex colours](#vertex-colours-2321)).
 - **Clearing a zone.** `EditorAssetLibrary.delete_directory` left the `.umap` behind, logged *Error opening file* for
   every package and was still working after 7 minutes on l1007's 2,426 assets (killed). `Generated/<zone>/` belongs to
   the importer alone, so it removes the folder on disk and rescans the asset registry when none of its packages is
@@ -2412,6 +2413,45 @@ Per-brick jitter, the herringbone (drawn as running bond), the cobbles' round st
 the asphalt's tracks and cracks, and roof mottle are not drawn: *guess* in each entry's `assumption`. Left on the
 import default: the old S:t Lars bays' painted window grid (`std_ffffff_r95_m0_tex`, no class) and the school façade.
 Verification: [#2318](../verification/2318/README.md).
+
+### Vertex colours (#2321)
+
+Many web materials take their colour from the mesh's vertex colours (`vertexColors: true` on a white or light base
+colour): the sill and pot plants' leaves and flowers, the fruit, the river bridges' railings (`src/riverbridge.js`), the
+vents, the Weber grill, the Christmas tree, the core stairwells' walls, the door fittings' key slots. The door handles
+themselves are brushed steel (`src/doorfittings.js`: `0xc9cdd0`, metalness 0.72, vertex colour 1): they look black on
+the web at night only because the web's metals reflect no environment; Unreal's are steel-grey, unchanged by #2321. The
+export keeps the colour attribute (`COLOR_0`) and marks the key `_vc`, and Interchange imports the colours onto the
+StaticMesh, but its glTF masters (`/InterchangeAssets/gltf/M_Default`, `M_Unlit`; probed on 5.8.4) multiply them only
+in `MF_BaseColor`'s base-colour-texture branch (static switch `bHasBaseColorTexture`, on for the furnishing images of
+#2289). Every other vertex-coloured key rendered as its plain base colour, so the plants, fruit and railings were
+white. Keys whose colour sits in the base colour (Hus L's entrance plants in `exterior.js`, `std_3f7a3a_r80_m0_ds`, and
+the hedges, `std_78a64b_…`) were unaffected, which is why they were green.
+
+- **Masters.** `build_materials.py` builds `M_LundenGltfVertexColor` and `M_LundenGltfUnlitVertexColor` (graph
+  `gltf-vertex-color`): a duplicate of Interchange's master (`from`) whose `BaseColor` (unlit: `EmissiveColor`) output
+  goes through one Multiply with `VertexColor`, with the Nanite usage flag. A copy keeps every parameter name, so an
+  imported instance keeps its values on it. Its spec hash includes the engine version, so an engine update rebuilds it
+  from the new engine master. `--check` also fails when the output is not multiplied by the vertex colour.
+- **Import.** After the rules, `import_world.py` re-parents every imported instance of the zone whose key matches
+  `material-map.json` `vertexColor.match` (`_vc`) and whose `bHasBaseColorTexture` is off from its Interchange parent
+  (`MI_Default_Opaque`, `…_DS`, …) onto the copy of its master listed in `vertexColor.masters`, and copies the parent
+  chain's blend, two-sided and mask overrides onto the instance itself (the asset name, the key, is unchanged). An
+  unlisted master fails the import, and `--check` fails on an untextured vertex-coloured instance on a master without
+  vertex colour (`LUNDEN_IMPORT_VERTEX_COLOR`). Textured ones stay on Interchange's master: a copy would multiply them
+  twice. The map's hash changes with the section, so every stamped zone is imported again; the importer version is
+  unchanged.
+- **Coverage.** `tests/test_materials.py` reads every zone's GLB: each key with vertex colours (`_vc` or `COLOR_0`)
+  must get a rule's material that multiplies the vertex colour in (a `gltf-vertex-color` master, or a grass instance
+  with `VertexColorWeight` above 0), have a base colour texture in the GLB, or match `vertexColor.match` with the glTF
+  master Interchange gives it (by the material's extensions: unlit, transmission, clearcoat, sheen, else `M_Default`)
+  listed in `vertexColor.masters`. The export of `816b695d` has 56 such keys in 7 zones (64 zone instances, 6 of them
+  textured), all on `M_Default` (the web's `MeshBasicMaterial` keys export without `KHR_materials_unlit` and import lit).
+- Hand-made materials of the rules ignore the vertex colour unless their master reads it; the lawns' grass master has
+  `VertexColorWeight` 0 and no lawn key is vertex-coloured. The vegetation's leaf cards keep `MI_LundenLeaf` (#2281),
+  which multiplies the vertex AO. Textured keys with vertex colours (`…_vc_tex_t…`: the sofas' upholstery, the garage
+  signs) keep Interchange's textured branch, which already multiplied them; their darkness is #2322. Results:
+  [the #2321 verification](../verification/2321/README.md).
 
 ### Buildings: Hus L, Hus A/B/C and the garage (#2279)
 

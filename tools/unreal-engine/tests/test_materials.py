@@ -16,7 +16,8 @@
      class of another look drawing the same canvas, `mapIndex`), never from a list of keys here. A look without a colour
      map (the web's plain brick pilasters, a plain asphalt path) is drawn in full by Interchange's instance and may stay.
   7. (#2321) every export key with vertex colours, in every zone, draws them: a rule's material multiplies the vertex
-     colour in, or the key matches `vertexColor.match` and the glTF master Interchange gives it (from the GLB material:
+     colour in, the GLB material has a base colour texture (Interchange's textured branch multiplies the vertex colour
+     itself), or the key matches `vertexColor.match` and the glTF master Interchange gives it (from the GLB material:
      KHR_materials_unlit, transmission, clearcoat, sheen, else M_Default) has a vertex-colour copy listed under
      `vertexColor.masters` and built as a `gltf-vertex-color` material from that master.
 --table prints one line per key: key, nodes, rule material or "default: <reason>".
@@ -174,6 +175,8 @@ def vertex_color_check(export_dir, table, rule_rx, errors):
                 errors.append(f"vertex-coloured key {where}: rule material {target} does not multiply the vertex colour in")
         if not unruled:
             continue  # every mesh using the key gets a rule's material
+        if "baseColorTexture" in entry["material"].get("pbrMetallicRoughness", {}):
+            continue  # Interchange's textured branch (bHasBaseColorTexture) multiplies the vertex colour itself
         if not match.search(key):
             errors.append(f"vertex-coloured key {where} does not match vertexColor.match {match.pattern!r}: it would render without its vertex colour")
             continue
