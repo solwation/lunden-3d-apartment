@@ -231,13 +231,110 @@ The [release-1 boundary](#release-1-boundary) and [dependency graph](#dependency
 
 The [full-port tracker and its sub-issues](https://github.com/solwation/lunden-3d-apartment/issues/2327) cover the
 Later groups, remaining behaviour in partially ported groups, and gaps found in earlier deliveries. Its group table
-links each area to implementation or evidence. The tracker also covers player-facing features wired through
+links each area to implementation or evidence, and [the coverage table](#coverage-of-player-behaviour-2327) links each
+behaviour. The tracker also covers player-facing features wired through
 `main.js` or grouped with infrastructure, such as the fridge notes and freezer changelog. Browser startup, touch
 input on the web and the two engines' test harnesses keep their platform-specific implementations.
 
 The final checks use a signed, installed Windows build and the published desktop and mobile web clients. They cover
 a shared session, saved progress across an update, and representative visual, audio and interaction comparisons.
 The tracker records the tested revisions, outstanding differences and any agreed platform exceptions.
+
+## Coverage of player behaviour (#2327)
+
+Reconciled on 2026-11-21 against web revision `cb0ca795` and the final or latest comments of every Unreal issue from
+#2243 to #2369. Each behaviour a player meets has a delivery (closed issue and commit) or an open issue. A row with
+both has delivered part and an open remainder. **D** delivered, **D+O** delivered with an open remainder, **O** open
+only, **P** deliberate platform difference. Commits are the implementing commit, not the documentation commit. Packaged-build checks
+by a person (real input, visible window, audible sound) are part of the final play test (#2327, item 3) and #2364.
+They are not repeated per row.
+
+| Behaviour | Group | Status | Delivered (issue, commit) | Open issue / note |
+|---|---|---|---|---|
+| Walk L1007's two storeys, stairs and rooms in the world map | G01 | D | #2246 `3c0faef2`, #2278 `30e49f93` | pilot door test: bug #2315 |
+| Hus L, Hus A/B/C, stairwells and garage as solid shells | G01 | D+O | #2279 `b8c74df1`, #2302 `8750af3c`, #2299 `443c0588`, #2298 `65a0b6ef` | brick façades and roofs #2318, Nanite look in the packaged game #2376 |
+| Entrances of A/B/C, Hus L stairwell doors, garage door open | G01/G07 | D+O | #2314 `816b695d` | flat doors, garage steel doors and buttons #2328 |
+| Backdrop houses round the quarter, campus house | G01/G02 | O | export #2323 `6fb81700`, `cb0ca795` | #2323 |
+| Neighbours' lit windows, entrance and gallery lamps at dusk | G01/G05 | O | export #2324 `28666779` | #2324 |
+| Call and ride the lifts | G01/G07 | D+O | buttons usable #2285 `b43ac06f`, events #2312 `27c6f83a` | #2329 |
+| Visit flats, furnished other houses, school yards, east campus, street life | G01/G02/G11 | O | — | #2330 |
+| Terrain, streets, courtyard and river valley at the web's heights | G02 | D | #2280 `d5862d76` | |
+| Parked cars and bicycles as scenery (street, garage) | G02/G01 | O | — | #2374 |
+| River water, hedge leaves, balcony and fence slats, house letters | G02/G03 | O | export #2325 `7284b06e` | #2325 |
+| Paddock and ponies | G02/G14 | O | — | #2346 |
+| Trees, hedges, grass and entrance boxwood with wind; trunks stop the player | G03 | D+O | #2281 `7b76210c`, #2308 `98f42f51` | bark, seasons, perennials, weather wind #2317 |
+| Pot, sill and patio plants, fruit and bridge railings in colour | G03/G04 | D | #2321 `ca992e89` | |
+| Watering and plant care | G03/G13 | O | — | #2342 |
+| Mussels and detailed river plants | G03/G14 | O | — | #2345 (comment 2026-11-21) |
+| Paint, tiles, parquet, glass and lawns as materials | G04 | D+O | #2282 `2dcabb34`, #2308 `98f42f51` | remaining families and reflections #2362 |
+| Brick, roofs, asphalt and paving | G04 | D+O | #2318 `bf6382b7` | #2318 (in progress) |
+| Furnishing images as bright as on the web | G04/G11 | O | — | #2322 |
+| Sun and moon on the clock, sky, simulated rain and snow, lamp light | G05 | D | #2283 `19b34b69` | |
+| Evening light, dusk lamps, clouds, stars, moon phase | G05 | D+O | #2307 `8971fa42` | cloud veils and rain cloud texture #2371 |
+| Indoor daylight and sky brightness, locked exposure | G05 | D+O | #2313 `443586bd` | night sky #2366, stairwell at 22:00 #2369, ceiling lamp pool #2372 |
+| Real weather, snow cover, frost, wet surfaces | G05 | O | — | #2331 |
+| Walk, run, jump, crouch, stairs and collision with mouse and keyboard | G06 | D+O | #2284 `ff425830`, #2294 `3baf1d27` | look limit ±83° #2370 |
+| Surface sensor, outdoor sprint, rest, death blackout and wake | G06 | D+O | #2300 `d078366b` | stand-up spot, lying down, landing feedback #2363 |
+| Swim, dive, climb, glide | G06/G19 | O | — | #2358 |
+| Doors, windows, light switches and taps in L1007 | G07 | D | #2285 `608edc25`, `84650a1d`; #2312 `27c6f83a` | |
+| Cupboards, drawers, curtains and blinds, running water, drains, switch movement | G07/G11 | O | — | #2332 |
+| Start and pause menu, settings, compass, frame rate, quit | G08 | D | #2286 `c1a1140f` | |
+| Minimap, measuring tool, use markers | G08 | O | — | #2333 |
+| Gamepad | G08 | O | — | #2334 (owner's decision: Later) |
+| Footsteps per surface, wind, outdoor ambience | G09 | D+O | #2287 `b89b1a66` | level, snow and leaf crunch, rain, window wind #2320 (in progress) |
+| Room acoustics, sound through walls, other players' sound | G09 | O | — | #2335 |
+| Settings, name, player id, look code and last position saved across updates | G10 | D | #2288 `96ddd108` | |
+| Several profiles, saved home, resumed life, reset | G10/G13 | O | — | #2336 |
+| L1007 furniture, curtains, fixtures and all wall pictures | G11 | D+O | #2289 `6f1771af`, `9d13c0d1`, `8bf4cf44` | fruit bowl and basketball #2310, parasol and string lights #2373, armchair in the Christmas tree #2303 (in progress) |
+| Pick up, carry five things, containers, hand over | G12 | O | — | #2337 |
+| Rearrange furniture, shared layouts, material library | G12/G11 | O | — | #2339 |
+| Drawings, paper, posters, shared pictures | G12 | O | — | #2340 |
+| Cooking, drinks, serving, kitchen appliances | G13 | O | — | #2341 |
+| Cleaning, laundry, dishes, beds, mail | G13 | O | — | #2342 |
+| Daily quests, statistics, medals, leaderboards | G13 | O | — | #2343 |
+| Indoor and outdoor cats | G14 | O | — | #2344 |
+| Ducks, birds, squirrels, fish | G14 | O | — | #2345 |
+| Discoveries, photos and the bestiary | G14 | O | — | #2347 |
+| Avatar skeleton, walking, crouching, sitting (Mannequin) | G15 | D+O | #2290 `3fd37a23` | lying pose, stairs foot IK, gestures #2348 |
+| Look codes, the web's figure parts, look menu, mirror | G15 | D+O | #2291 `42b5459d` (integration-ready) | look details and the mirror's customizer #2348 (comment 2026-11-21), seams #2367, part hash #2368 |
+| Join the shared room, presence and movement | G16 | O | wire fixtures `e8e7e288` | #2292 (waits for the owner's transport decision) |
+| Chat, shared doors, hits and life | G16 | O | — | #2293 (after #2292) |
+| Privacy information on the shared room | G16/G08 | O | — | #2375 |
+| World clock, reconnect, shared state beyond release 1 | G16 | O | — | #2349 |
+| Billiards and boule | G17 | O | — | #2350 |
+| Football, basketball play, gyms | G17 | O | — | #2351 |
+| Playhouse, club house, cinema, posters | G17 | O | — | #2352 |
+| Computer games, arcade, cartridges, spectator screens | G17 | O | — | #2353 |
+| Music, DJ, Sonos, TV, smart screens | G17/G09 | O | — | #2354 |
+| Fishing and the roof picnic | G17/G13 | O | — | #2355 |
+| Tools, toys, targets and play combat | G18 | O | — | #2356 |
+| Bicycle, scooter, car, passengers, traffic | G19 | O | — | #2357 (web fixes #2269/#2273/#2274 included) |
+| Christmas tree by date | G20 | D | #2295 `37f1b957` | test pictures #2326 |
+| Christmas, New Year, Santa and calendar visits | G20 | O | — | #2359 |
+| Crash reports and the player's report dialog | G21 | O | — | #2360 |
+| Fridge notes, freezer changelog with "Nytt", welcome and help | G22/G08 | O | — | #2361 |
+| Install, sign and update before play (web: PWA install) | G22 | D+O | #2248 `956385c3`, #2249 `7767a507`, #2250 `db7326e3`, signed upgrade `350cb81f` | stable channel and download link #2377, clean and weaker PC #2376, full-world update #2364, key rotation #2378 |
+| Content-only Windows build under Smart App Control | G22 | D | #2268 `60ef87fc` | |
+| Web export and import kept current | G22 | D | #2245 `3b4b65fe`, `1ed0428b`; #2305 `b2c9dec5` | |
+| Engine version | G22 | O | 5.8.4 (#2243 `b84ac5cd`) | 5.9 when stable #2379 |
+| Hidden features (16 undisclosed modules) | — | O | — | #2365 checks them locally; nothing here names them |
+
+**Deliberate platform differences.** The web keeps touch controls and the PWA install; Windows uses keyboard and
+mouse (gamepad #2334), the signed launcher and installer. Browser startup, loading, quality tiers and low-memory paths
+(G22) are replaced by Unreal's own; each engine keeps its own test tooling (G23). Decisions recorded in the closing comments
+and kept: Unreal's crouch headroom and fall height (#2284), the mouse speed range (#2286), use via the controller
+(#2285), the rest spot by gaze and random wake point (#2300), the save format and its fixture (#2288), the own audio
+root class (#2287), the head drawn in front of the shared hit boxes (#2290), grass as a material (#2308), locked
+exposure (#2313), the garage door folding up (#2314), the door handles' steel colour (#2321), the TV and smart screens'
+still image until #2354, content-only builds (#2268), generated assets not versioned (#2245), no binary delta
+patches (#2248), the shared signing profile (#2250).
+
+**Latest web version.** Since the source index (`24d416d2`) the web changed in `src/` only by #2269, #2273, #2274
+(in #2357, #2348, #2292/#2293), #2310 (the export), #2320 (footstep calibration), #2324 and #2325 (export data). The 693
+entries of `src/` still match the module index. No Later-group change is waiting in the table below.
+
+**Closing comments of the closed issues.** All closed issues from #2243 to #2321 were read. Their open remainders are in the
+rows above. Ten had no open issue and became #2370–#2379. Two were assigned by comment: mussels and river plants to #2345, and #2291's look details to #2348.
 
 ## Keeping Unreal in step with the web (#2304)
 
