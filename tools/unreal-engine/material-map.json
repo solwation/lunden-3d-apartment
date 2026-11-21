@@ -84,7 +84,8 @@
   { "match": "^std_5f8a3e_r100_m0_tex$", "material": "/Game/Lunden/Materials/MI_LundenGrassStreet.MI_LundenGrassStreet", "note": "street lawns (#2308: map 'shared-grass-detail', src/streetlife.js)" }
  ],
  "defaults": [
-  { "match": "_(site_slatted_rail|site_house_letters|patio_hedge|boxwood)$", "reason": "exterior image from the GLB: slat cut-out, letter atlas or clumped hedge leaves (#2325); keep its Interchange material instance" },
+  { "match": "^std_(78a64b_r95|48733c_r92)_m0_vc_tex$", "reason": "patio hedge and boxwood (#2325): the textured Interchange branch multiplies the leaf map and clump shading by the vertex colour (#2321). The pilot planting uses the patio material by its original path" },
+  { "match": "_(site_slatted_rail|site_house_letters)$", "reason": "exterior image from the GLB: slat cut-out or letter atlas (#2325); keep its Interchange material instance" },
   { "match": "_a\\d+", "reason": "transparent fittings (front-door glazing, shower screen, glass shelf, curtains): Interchange's translucent instance keeps tint and opacity; textiles are #2289; those meshes use the raster path (#2276)" },
   { "match": "_e[0-9a-f]{6}", "reason": "emissive fittings (lamp shades, mirror, displays, night light): Interchange's instance keeps the emissive colour; lamps and light belong to #2283" },
   { "match": "_tex", "reason": "textured fittings that are not building or ground surfaces (kitchen worktop, door name plate, picture prints): the web's canvas texture does not travel, the Interchange instance keeps its base colour; furnishing looks are #2289" },

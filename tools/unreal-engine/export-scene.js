@@ -698,12 +698,12 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     const cache = furnish ? furnishCache : matCache;
     if (cache.has(m)) { noteLook(m, cache.get(m).name); return cache.get(m); }
     const { key: base, info } = materialInfo(m);
-    // These site surfaces use their own material keys so an indoor tile or brick rule cannot replace them.
+    // The rail and sign need distinct keys; the hedge tints already identify them.
+    // In particular the pilot ground builder loads the original patio-hedge material path.
     const hedge = m.name === 'patio-hedge' || m.name === 'boxwood';
     const siteMap = m.map?.name === 'site-slatted-rail' || m.map?.name === 'site-house-letters';
-    const siteName = hedge ? m.name : siteMap ? m.map.name : null;
-    const tex = furnish && !siteName ? furnishingTexture(m.map, textures, textureOfMap) : null;
-    const suffix = siteName?.replaceAll('-', '_') ?? tex?.id;
+    const tex = furnish && !hedge && !siteMap ? furnishingTexture(m.map, textures, textureOfMap) : null;
+    const suffix = siteMap ? m.map.name.replaceAll('-', '_') : tex?.id;
     const key = suffix ? `${base}_${suffix}` : base;
     let em = materials.get(key);
     if (!em) {
