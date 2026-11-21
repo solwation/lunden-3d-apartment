@@ -1,0 +1,32 @@
+{
+ "gard": {
+  "actors": 2,
+  "meshes": 2,
+  "meshMaterialGroups": 2,
+  "naniteGroups": 2,
+  "rasterGroups": 0,
+  "rasterSections": 0,
+  "lod0Triangles": 8688,
+  "rasterMaterials": []
+ },
+ "kvarteret": {
+  "actors": 109,
+  "meshes": 28,
+  "meshMaterialGroups": 28,
+  "naniteGroups": 28,
+  "rasterGroups": 0,
+  "rasterSections": 0,
+  "lod0Triangles": 267236,
+  "rasterMaterials": []
+ },
+ "omgivning": {
+  "actors": 171,
+  "meshes": 64,
+  "meshMaterialGroups": 64,
+  "naniteGroups": 64,
+  "rasterGroups": 0,
+  "rasterSections": 0,
+  "lod0Triangles": 245088,
+  "rasterMaterials": []
+ }
+}

@@ -2753,6 +2753,13 @@ ground are #2280's zones `gard` and `omgivning`. The parked vehicles use their w
 in `kvarteret` (garage and storage), `gard` (courtyard bikes) and `omgivning` (street, racks and east parking lots).
 Their part anchors and collision corners are recorded in `measurements.json` under `site.parkedVehicles`. The importer
 makes the footprint boxes hidden BlockAll actors. Stored bikes have the web's existing cage boundary.
+In Unreal (#2374, UE 5.8.4) the import gives 282 parked part actors on 94 meshes, all on the Nanite path, so they add
+no per-actor draw calls and need no extra instancing or merging. `tests/test_parked_vehicles.py` is a Play In Editor
+test (`run-tests.ps1 -Filter Editor.Python.Lunden.test_parked_vehicles`; a commandlet's editor world traces nothing).
+It checks the web's model points against LOD0 within 1 cm and the 82 boxes as hidden BlockAll. It sweeps a standing
+capsule onto one box per area and kind, and walks the game's own player into a street car, a street rack and a garage
+rack on a flat test slab, because the zone levels alone have no walkable ground. The player stops 0.1 cm outside the
+web's stopping line. Evidence: [docs/verification/2374/](../verification/2374/README.md).
 The entrance plants use their near models. The `entrance-plants-far` distance stand-in stays in the web renderer.
 
 **The split.** A merged mesh (the web bakes one mesh per material for all of Hus L, all of Hus A/B/C or the whole
