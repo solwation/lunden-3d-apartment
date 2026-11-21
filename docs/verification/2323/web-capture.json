@@ -1,0 +1,153 @@
+{
+ "commit": "27be8ee5",
+ "views": {
+  "start": {
+   "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+   "eye": [
+    2.875,
+    1.62,
+    -12
+   ],
+   "feet": [
+    2.875,
+    0,
+    -12
+   ],
+   "yaw": 180,
+   "pitch": 8,
+   "verticalFov": 72,
+   "aspect": 1.7777777777777777,
+   "quality": 4,
+   "day": [
+    2026,
+    6,
+    21,
+    14,
+    true
+   ],
+   "lights": false,
+   "weather": "clear",
+   "desktop": true,
+   "contextLost": false,
+   "draws": 517,
+   "unrealEyeCm": [
+    287.5,
+    -1200,
+    162
+   ],
+   "unrealYaw": 90,
+   "unrealPitch": 8
+  },
+  "courtyard": {
+   "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+   "eye": [
+    12.5,
+    5.62,
+    26
+   ],
+   "feet": [
+    12.5,
+    4,
+    26
+   ],
+   "yaw": 80,
+   "pitch": -14,
+   "verticalFov": 72,
+   "aspect": 1.7777777777777777,
+   "quality": 4,
+   "day": [
+    2026,
+    6,
+    21,
+    14,
+    true
+   ],
+   "lights": false,
+   "weather": "clear",
+   "desktop": true,
+   "contextLost": false,
+   "draws": 461,
+   "unrealEyeCm": [
+    1250,
+    2600,
+    562
+   ],
+   "unrealYaw": -170,
+   "unrealPitch": -14
+  },
+  "river": {
+   "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+   "eye": [
+    52,
+    1.62,
+    92
+   ],
+   "feet": [
+    52,
+    0,
+    92
+   ],
+   "yaw": 124.99999999999999,
+   "pitch": -14,
+   "verticalFov": 72,
+   "aspect": 1.7777777777777777,
+   "quality": 4,
+   "day": [
+    2026,
+    6,
+    21,
+    14,
+    true
+   ],
+   "lights": false,
+   "weather": "clear",
+   "desktop": true,
+   "contextLost": false,
+   "draws": 104,
+   "unrealEyeCm": [
+    5200,
+    9200,
+    162
+   ],
+   "unrealYaw": 145,
+   "unrealPitch": -14
+  },
+  "patio-lawn": {
+   "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+   "eye": [
+    2.3,
+    1.62,
+    16.1
+   ],
+   "feet": [
+    2.3,
+    0,
+    16.1
+   ],
+   "yaw": 180,
+   "pitch": -10,
+   "verticalFov": 72,
+   "aspect": 1.7777777777777777,
+   "quality": 4,
+   "day": [
+    2026,
+    6,
+    21,
+    14,
+    true
+   ],
+   "lights": false,
+   "weather": "clear",
+   "desktop": true,
+   "contextLost": false,
+   "draws": 158,
+   "unrealEyeCm": [
+    230,
+    1610,
+    162
+   ],
+   "unrealYaw": 90,
+   "unrealPitch": -10
+  }
+ }
+}

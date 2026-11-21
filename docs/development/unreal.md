@@ -92,6 +92,7 @@ tools/unreal-engine/python/build_vegetation.py  the site's trees, shrubs and hed
 tools/unreal-engine/tests/test_vegetation.py  PIE test on L_Lunden: every exported tree (trunk ≤ 10 cm, height class) and hedge (#2281)
 tools/unreal-engine/tests/capture_vegetation.py  GPU views of the vegetation in L_Lunden with all listed sublevels loaded
 tools/unreal-engine/tests/prepare_vegetation_profile.py  scratch map for the courtyard frame-time measurement (#2281)
+tools/unreal-engine/tests/check_fond.py      commandlet: every backdrop node of fond.glb in Level_fond at the web's place, 5 cm (#2323)
 unreal/Lunden/Content/Lunden/Vegetation/      M_LundenFoliage, MI_LundenLeaf (LFS; made by build_vegetation.py)
 tools/unreal-engine/tests/test_exterior.py    PIE test: the export's 32 measurement rays through Hus L, A/B/C and the garage, 1 cm (#2279)
 tools/unreal-engine/tests/capture_exterior.py GPU views of the composed L_Lunden exterior
@@ -2921,9 +2922,13 @@ and vertex-colour coverage. On Windows, `import_world.py --zones fond,omgivning`
 packages under `/Game/Lunden/Generated/BackdropMaterials` before assigning the mesh slots; `--check` checks their
 graphs, sampling, sidedness, per-instance parameters and Nanite settings without writing to disk.
 
-**Pending native verification for #2323.** Reimport both zones and capture the START, courtyard, patio and river
-web/Unreal pairs with the restored surfaces. Use the same courtyard view and quality settings for the frame budget
-comparison. The earlier native captures and timings predate this material change.
+**Native verification (#2323).** `tests/check_fond.py` (commandlet) checks that every mesh node of `fond.glb` is an
+actor of `Level_fond`, named by its id, whose visible bounds centre equals the web's world-box centre in the id within
+5 cm (41 of 41, worst 0.8 cm). The START, courtyard, Höje å and patio pairs show the backdrop houses with the web's
+brick, roofs and arched windows where Unreal had grass, trees or a dark band; the edge land closes the horizon at
+Höje å. In the courtyard A/B the backdrop costs no measurable GPU time (11.3 ms with and without it); the frame was held
+by a render thread that other processes on the shared PC slowed to 13–19 ms in both conditions, so #2246's 60 FPS
+budget still needs a measurement on an idle PC. Results: [docs/verification/2323/](../verification/2323/README.md).
 
 ### Generated assets: rebuilt, not versioned (decided)
 

@@ -47,7 +47,7 @@ The snapshot at `24d416d2` has 693 top-level entries in `src/`, including 16 del
 
 ## Group notes
 - **G01 Buildings (L1007, Hus L/A/B/C, stairwells, lift, garage)** (R1): L1007 both levels and the world map (#2278); Hus L facade, stairwells and lift shaft, Hus A/B/C and garage as static geometry (#2279). Furnishing of the other houses is Later. Doors and openables belong to G07, door fittings to G11.
-- **G02 Terrain and surroundings (site, streets, courtyard, river valley)** (R1): Terrain, streets, courtyard and the Höje å valley as environment. Paddock, school yards, east campus and street life later.
+- **G02 Terrain and surroundings (site, streets, courtyard, river valley)** (R1): Terrain, streets, courtyard and the Höje å valley as environment, and the backdrop houses round the quarter including the campus building's façade, arched windows and roof (zone `fond`, #2323). Paddock, school yards, the football site, the east campus car parks and street life later.
 - **G03 Vegetation** (R1): Trees, hedges and grass with Unreal-native vegetation built from exported meshes. Pot plants and watering follow with G13.
 - **G04 Surface materials and shaders** (R1): New row versus the issue: the web shades surfaces in code; Unreal needs the same finishes as master materials and instances. Source/assumption markers from plan-material must be kept.
 - **G05 Light, sky, day cycle, weather, season** (R1, part): Day cycle (sun/moon by `SITE.geo`), sky, clouds, simulated rain/snow, lamp light. Real weather (Open-Meteo), season details and frost later.
