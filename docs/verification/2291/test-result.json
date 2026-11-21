@@ -438,5 +438,51 @@
    "wrong": []
   }
  ],
- "failures": []
+ "failures": [],
+ "mirrorLevelAddedForTheTest": true,
+ "play": {
+  "one hall mirror in L_Lunden": true,
+  "the player's own capture-only figure": true,
+  "a fresh save wears the plain look": true,
+  "the menu button opens the look menu": true,
+  "the menu applies a typed code": true,
+  "headScale": [
+   1.3257816069359947,
+   1.3257816069359947,
+   1.3257816069359947
+  ],
+  "the child's head bone grows by 1.326 (got 1.326)": true,
+  "an invalid code changes nothing": true,
+  "the chosen code is applied and kept": true,
+  "capture": {
+   "camera": [
+    125.69999999999999,
+    111.5,
+    2.8562034231403572
+   ],
+   "capture": [
+    279.8999999999997,
+    111.49999999999999,
+    2.8562034231403572
+   ],
+   "expected": [
+    279.8999999999999,
+    111.49999999999999,
+    2.8562034231403572
+   ],
+   "glass": [
+    202.8,
+    111.5,
+    115.0
+   ],
+   "normal": [
+    -0.9999999999999996,
+    1.224646799147353e-16,
+    0.0
+   ]
+  },
+  "the capture is the camera reflected in the glass (0.00 cm)": true,
+  "the figure stands at the player's feet": true,
+  "the chosen look survives a restart": true
+ }
 }
