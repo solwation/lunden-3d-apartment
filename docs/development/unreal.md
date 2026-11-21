@@ -1645,9 +1645,13 @@ What 5.8.4 does, and what the importer does about it:
   Tags and object names survive packaging (labels are editor-only); Blueprints find objects with *Get All Actors
   With Tag* on the id.
 - **Collision.** `collision` nodes (the web's wall rectangles and floor plates, one shared unit cube) get a single
-  simple box on the cube mesh, `BlockAll`, hidden in game (54 in l1007). `StaticMeshEditorSubsystem` is `None` in the
-  commandlet, so the deprecated `EditorStaticMeshLibrary` does it (a deprecation warning in the log). Visible meshes
-  keep Interchange's default collision; what the player collides with is #2246.
+  simple box on the cube mesh, `BlockAll`, hidden in game (54 in l1007). `get_editor_subsystem(StaticMeshEditorSubsystem)`
+  is `None` in the commandlet, and the deprecated `EditorStaticMeshLibrary` there **silently does nothing**: until
+  importer version 4 the cube had no box at all, at import or after a restart (#2297; the empty shape set seen in
+  [the #2246 route](../verification/2246/route.md)). The importer therefore uses a new `StaticMeshEditorSubsystem`
+  instance (`static_mesh_editor()` in `prepare_nanite_materials.py`), and the import and `--check` fail unless every
+  collision actor is a hidden `BlockAll` mesh with one simple box (`LUNDEN_IMPORT_COLLISION`). Visible meshes keep
+  Interchange's default collision; what the player collides with is #2246.
 - **Materials.** `tools/unreal-engine/material-map.json` rules (a regex on the key, first match wins, optionally
   narrowed by a `mesh` regex on the StaticMesh name) replace the imported instances on the mesh slots by hand-made
   materials ([Surface materials](#surface-materials-2282)). Other keys keep Interchange's glTF material instance
@@ -1664,6 +1668,13 @@ otherwise unsupported slot sends that mesh through the regular raster path.
 Opaque and masked Nanite meshes use a saved Nanite usage flag on project materials
 and an explicit override on imported material instances. Interchange's engine
 material stays shared. Importer version 2 regenerates older stamped zones.
+The raster switch goes through `StaticMeshEditorSubsystem.set_nanite_settings(mesh, settings, True)`, which rebuilds the
+render data at once. Setting `nanite_settings` with `set_editor_property` only flips the flag (measured in the
+commandlet, #2297): the session keeps the Nanite fallback mesh until the next editor start, so `get_num_vertices`/
+`get_num_triangles` and anything else that reads the render data see the reduced mesh (on l1007, 34 of the 73 raster
+furniture meshes, e.g. 370 instead of 992 triangles). The import then stamped a fingerprint that no fresh editor
+reproduced. Builders that still flip the flag that way (`build_exterior.py`, `build_site.py`, `build_vegetation.py`,
+the capture tests) are affected in their own session as well (#2298).
 After a fresh editor start, check the persisted settings without writing assets:
 
 ```powershell
@@ -1684,7 +1695,12 @@ before and after the run. A changed export, importer version, engine or material
 package file (a hand edit), re-imports the zone. A *forced* re-import (`--force`) is never byte-identical: every new
 package gets a new persistent GUID (2,501 of 2,501 files differed). Its check is the **content fingerprint**, a SHA-256
 over every actor (name, label, class, parent, transform to 0.01, tags, mesh, collision profile, hidden flag) and every
-asset (class; for meshes vertices, triangles, bounds to 0.01, slot materials and simple boxes).
+asset (class; for meshes vertices, triangles, bounds to 0.01, slot materials and simple boxes). The import computes
+it after the save, and `--check` recomputes it in a new editor process; importer version 4 (#2297) made the two agree
+for zones with raster meshes. Version 4 changes the fingerprint only where a mesh left Nanite with a reduced fallback
+or a zone has collision nodes: l1007 changed, `fixture` (`70a3715f2b59d0eb`) and `l1007-uteplats`
+(`88dbd0aee8ee6a16`, export of e8e7e288) did not, so derived builds that record them stay current; results in
+[the #2297 verification](../verification/2297/README.md).
 
 **Results (2026-11-20, UE 5.8.4, export of 3b4b65fe with this change):**
 
