@@ -128,7 +128,7 @@ def exchange(bp):
     g, p = pp.function(bp, "WritePacket", [("Packet", pp.STRING)], [("Written", pp.BOOL)])
     disabled = g.branch(g.op("Not_PreBool", A=empty(g, g.get("SessionPath"))))
     g.fork(disabled, 300).ret(Written=False)
-    table = g.pure(T + "GetTableId", StringTable=g.get("GameTable"))
+    table = g.get("GameTableId")
     # Stock FStringTable::ImportStringsFromCSVString unescapes each parsed CSV field before inserting it.
     escaped = replace(g, p["Packet"], [("\\", "\\\\"), ("\n", "\\n"), ("\r", "\\r"), ("\t", "\\t"),
                                          ("'", "\\'"), ('"', '\\"'), ('"', '""')])
@@ -151,7 +151,7 @@ def exchange(bp):
     g.branch(g.op("Not_PreBool", A=empty(g, g.get("SessionPath"))))
     filename = join(g, [g.get("SessionPath"), "/peers.csv"])
     g.branch(g.pure("BlueprintPathsLibrary:FileExists", InPath=filename))
-    table = g.pure(T + "GetTableId", StringTable=g.get("PeerTable"))
+    table = g.get("PeerTableId")
     g.branch(g.pure(T + "ImportTableFromCSVFile", TableId=table, Filename=filename))
     g.run(ME + "ReceiveEvents", Batch=g.pure(T + "GetTableEntrySourceString", TableId=table, Key="Events"))
     packet = g.pure(T + "GetTableEntrySourceString", TableId=table, Key="Packet")
@@ -230,10 +230,13 @@ def player(bp):
 
 def build(rest, hz, listener):
     bp = pp.fresh_component(COMPONENT, FUNCTIONS)
-    table_type = pp.BP.get_object_reference_type(u.StringTable.static_class())
+    # UStringTable cannot be a Blueprint member type in UE 5.8. Keep the assets loaded
+    # through hard UObject references and use their registered IDs in the stock CSV nodes.
+    table_type = pp.BP.get_object_reference_type(u.Object.static_class())
     pp.variables(bp, {"SessionPath": pp.STRING, "DisplayName": pp.STRING, "Appearance": pp.STRING, "LastPeersPacket": pp.STRING,
                       "Away": pp.BOOL, "HasPublished": pp.BOOL, "NextSequence": pp.INT, "AttemptFile": pp.STRING,
-                      "LastGameFile": pp.STRING, "GameTable": table_type, "PeerTable": table_type, "FirstHeight": pp.INT,
+                      "LastGameFile": pp.STRING, "GameTableAsset": table_type, "PeerTableAsset": table_type,
+                      "GameTableId": pp.NAME, "PeerTableId": pp.NAME, "FirstHeight": pp.INT,
                       "RootBases": pp.array(pp.VEC), "RootOffsets": pp.array(pp.VEC), "BodyScale": pp.REAL,
                       "HeightScales": pp.array(pp.REAL), "SeedScales": pp.array(pp.REAL)})
     network_events.build(bp, listener)
@@ -266,7 +269,8 @@ def build(rest, hz, listener):
             table = u.AssetToolsHelpers.get_asset_tools().create_asset(name, folder, u.StringTable, u.StringTableFactory())
             if not table or not ASSETS.save_loaded_asset(table, only_if_is_dirty=False):
                 raise RuntimeError(f"Could not create/save {path}")
-        default.set_editor_property(prop, table)  # hard references load and cook both tables with the component
+        default.set_editor_property(prop + "Asset", table)
+        default.set_editor_property(prop + "Id", u.StringTableLibrary.get_table_id(table))
     return bp
 
 
@@ -289,7 +293,9 @@ def main(argv):
             raise RuntimeError(COMPONENT + " is not built from the current network inputs")
         default = u.get_default_object(bp.generated_class())
         for prop, path in (("GameTable", GAME_TABLE), ("PeerTable", PEER_TABLE)):
-            if not ASSETS.does_asset_exist(path) or default.get_editor_property(prop) != ASSETS.load_asset(path):
+            table = ASSETS.load_asset(path)
+            if (not table or default.get_editor_property(prop + "Asset") != table or
+                    default.get_editor_property(prop + "Id") != u.StringTableLibrary.get_table_id(table)):
                 raise RuntimeError(f"{COMPONENT}.{prop} must reference {path}")
     else:
         bp = build(rest, hz, listener)

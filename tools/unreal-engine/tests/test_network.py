@@ -105,7 +105,11 @@ def network_test():
             assert net.call_method("SafeAppearance", ("0000000",)) == "0000000"
             for invalid in ("private-name", "v0-look-2288", "000000000\n1"):
                 assert net.call_method("SafeAppearance", (invalid,)) == ""
-            for seq, case in enumerate(WIRE["coordinates"]["cases"], 1):
+            # A newly started pawn must skip an outstanding offer from the previous map.
+            assert net.get_editor_property("NextSequence") == 1
+            collision = folder / "game-1.csv"
+            collision.write_bytes(b"prior map offer")
+            for seq, case in enumerate(WIRE["coordinates"]["cases"], 2):
                 unreal = case["unreal"]
                 feet = unreal["feetCm"]
                 rot = [unreal["yawDeg"], unreal.get("pitchDeg", 0)]
@@ -117,6 +121,9 @@ def network_test():
                 fields = consume().split("\n")
                 assert len(fields) == 11 and fields[:3] == ["1", ENCODED_NAME, LOOK]
                 check_values(fields[3:], [*feet, *rot, 0, pose, head])
+
+            assert collision.read_bytes() == b"prior map offer"
+            collision.unlink()
 
             pc = pawn.get_controller()
             pc.set_control_rotation(u.Rotator(roll=0, pitch=-17, yaw=67))
@@ -147,12 +154,6 @@ def network_test():
             seq = net.get_editor_property("NextSequence")
             net.call_method("ConfigureBridge", ("-LundenPlayersBridge=" + arg,))
             assert net.get_editor_property("NextSequence") == seq
-            # A replacement pawn may restart at one while the previous map still has a final offer on disk.
-            net.set_editor_property("NextSequence", 1)
-            collision = folder / "game-1.csv"
-            collision.write_bytes(b"prior map offer")
-            net.call_method("SyncPresence")
-            assert last_file().name == "game-2.csv" and collision.read_bytes() == b"prior map offer"
             net.call_method("ConfigureBridge", ("",))  # EndPlay cannot recreate the private directory
         u.log("LUNDEN_NETWORK_TEST_OK")
     finally:
