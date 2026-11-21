@@ -101,6 +101,8 @@ unreal/Lunden/Content/Lunden/Seasons/         BPC_LundenSeasons (LFS; made by bu
 tools/unreal-engine/python/build_save.py      the save file /Game/Lunden/Save/: SG_LundenSave, BFL_LundenSave, BPC_LundenSave (#2288)
 tools/unreal-engine/tests/test_save.py        PIE test: v0 migration, place/facing/settings/name/look/id over a restart
 tools/unreal-engine/tests/save-v0.sav         frozen version-0 save (no SaveVersion, no PlayerId) for the migration test
+tools/unreal-engine/tests/save_isolation.py   the other PIE tests start without the save slot and put it back (#2311);
+                                   save_isolation_test.py checks it without Unreal (plain python3)
 unreal/Lunden/Content/Lunden/Save/            SG_LundenSave, BFL_LundenSave, BPC_LundenSave (LFS; made by build_save.py)
 tools/unreal-engine/python/build_lighting.py  sky, sun/moon clock, weather post process and the lamps (#2283): Lighting/ assets and
                                    the generated sub-level Generated/Lighting/Level_lighting
@@ -653,6 +655,17 @@ restart that restored a place edited into the file, and the file unchanged acros
 (0.1.1 → 0.1.2, test channel) and a default uninstall. A Shipping game ignores a map given on its command line
 (`UE_ALLOW_MAP_OVERRIDE_IN_SHIPPING`); packaged tests set `GameDefaultMap` instead. Results:
 [docs/verification/2288/](../verification/2288/README.md).
+
+**Tests and the slot (#2311).** A PIE test on `L_Lunden` that left `LundenSave.sav` behind made the next test start at
+the saved place instead of START. Every PIE test except `test_save.py` therefore calls `save_isolation.isolate()` just
+before `editor_request_begin_play()`: an existing `Saved/SaveGames/LundenSave.sav` is moved to
+`LundenSave.sav.before-test`. Its latent command's `finally` ends play and then
+`yield from save_isolation.restore_after_play(...)`: it waits until the game world is gone (EndPlay writes the slot one
+last time), deletes the test's file and puts the moved file back, also after a failure. A `.before-test` file left by
+an editor that stopped mid-test is kept as the user's file at the next start. The tests import the module from
+`tools/unreal-engine/tests/` through `sys.path` (only the `test_*.py` file is copied into `Content/Python/`);
+`python3 tools/unreal-engine/tests/save_isolation_test.py` checks the file handling. `test_save.py` keeps its own
+handling and still rewrites the slot on purpose. The game's save behaviour is unchanged.
 
 ## Lighting, sky and weather (#2283)
 

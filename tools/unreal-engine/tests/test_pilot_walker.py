@@ -1,6 +1,12 @@
 """Run as an Unreal Python Automation test in a project containing the production player (/Game/Lunden/Player, #2284)."""
 import time
+from pathlib import Path
+import sys
 import unreal as u
+
+sys.path.insert(0, str(Path(u.Paths.convert_relative_path_to_full(u.Paths.project_dir())).parents[1]
+                       / "tools/unreal-engine/tests"))
+import save_isolation  # noqa: E402  #2311: start without the player's save file
 
 MODE = "/Game/Lunden/Player/BP_LundenGameMode.BP_LundenGameMode_C"
 editor = u.get_editor_subsystem(u.UnrealEditorSubsystem)
@@ -22,6 +28,7 @@ box(0, -10, 24, 0.2)      # ground surface at z=0
 box(195, 10.15625, 0.7, 0.203125)  # one real L1007 riser (325 cm / 16)
 box(300, 125, 0.2, 2.5)    # front of wall at x=290
 actors.spawn_actor_from_class(u.PlayerStart, u.Vector(0, 0, 95))
+saved_slot = save_isolation.isolate()
 levels.editor_request_begin_play()
 
 
@@ -115,3 +122,4 @@ def walk():
         u.log(f"LUNDEN_PILOT_WALK_OK start={start} walk={moved} wall={stopped} step={peak-start.z} strafe={strafe} look={after} crouchEye={crouch.z} eye={stand.z} jump={jumped.z}")
     finally:
         levels.editor_request_end_play()
+        yield from save_isolation.restore_after_play(saved_slot, editor)

@@ -15,7 +15,12 @@ import json
 import math
 from pathlib import Path
 import time
+import sys
 import unreal as u
+
+sys.path.insert(0, str(Path(u.Paths.convert_relative_path_to_full(u.Paths.project_dir())).parents[1]
+                       / "tools/unreal-engine/tests"))
+import save_isolation  # noqa: E402  #2311: start without the player's save file
 
 PROJECT = Path(u.Paths.convert_relative_path_to_full(u.Paths.project_dir()))
 WORLD = json.loads((PROJECT.parents[1] / "tools/unreal-engine/world-levels.json").read_text(encoding="utf-8"))
@@ -28,6 +33,7 @@ editor = u.get_editor_subsystem(u.UnrealEditorSubsystem)
 levels = u.get_editor_subsystem(u.LevelEditorSubsystem)
 if not u.EditorLoadingAndSavingUtils.load_map(MAP):
     raise RuntimeError(f"Could not load {MAP}: run compose_world.py first")
+saved_slot = save_isolation.isolate()
 levels.editor_request_begin_play()
 
 
@@ -225,3 +231,4 @@ def world_test():
         u.log("LUNDEN_L1007_WORLD_OK")
     finally:
         levels.editor_request_end_play()
+        yield from save_isolation.restore_after_play(saved_slot, editor)

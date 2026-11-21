@@ -23,7 +23,12 @@ import math
 from pathlib import Path
 import time
 
+import sys
 import unreal as u
+
+sys.path.insert(0, str(Path(u.Paths.convert_relative_path_to_full(u.Paths.project_dir())).parents[1]
+                       / "tools/unreal-engine/tests"))
+import save_isolation  # noqa: E402  #2311: start without the player's save file
 
 TOLERANCE = 1.0  # cm, the issue's acceptance
 PROJECT = Path(u.Paths.convert_relative_path_to_full(u.Paths.project_dir()))
@@ -63,6 +68,7 @@ for zone in ZONES:
             double += 1
 u.log(f"LUNDEN_EXTERIOR in memory (not saved): Nanite off on {nanite} meshes, double-sided complex collision on {double}, "
       f"{time.monotonic() - started:.1f} s")
+saved_slot = save_isolation.isolate()
 levels.editor_request_begin_play()
 
 
@@ -147,3 +153,4 @@ def exterior_test():
         u.log(f"LUNDEN_EXTERIOR_OK {len(result['measurements'])} rays, result {out}")
     finally:
         levels.editor_request_end_play()
+        yield from save_isolation.restore_after_play(saved_slot, editor)

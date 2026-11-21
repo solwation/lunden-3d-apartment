@@ -17,7 +17,12 @@ import datetime
 import json
 from pathlib import Path
 import time
+import sys
 import unreal as u
+
+sys.path.insert(0, str(Path(u.Paths.convert_relative_path_to_full(u.Paths.project_dir())).parents[1]
+                       / "tools/unreal-engine/tests"))
+import save_isolation  # noqa: E402  #2311: start without the player's save file
 
 PROJECT = Path(u.Paths.convert_relative_path_to_full(u.Paths.project_dir()))
 TESTS = PROJECT.parents[1] / "tools/unreal-engine/tests"
@@ -63,6 +68,7 @@ def web_rule(year, month, day, start, end):
     return start <= key <= end if start <= end else key >= start or key <= end
 
 
+saved_slot = save_isolation.isolate()
 u.get_editor_subsystem(u.LevelEditorSubsystem).editor_request_begin_play()
 editor = u.get_editor_subsystem(u.UnrealEditorSubsystem)
 
@@ -126,3 +132,4 @@ def seasons_test():
         u.log("LUNDEN_SEASONS_TEST_OK")
     finally:
         levels.editor_request_end_play()
+        yield from save_isolation.restore_after_play(saved_slot, editor)

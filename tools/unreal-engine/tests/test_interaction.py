@@ -19,7 +19,12 @@ import json
 import math
 from pathlib import Path
 import time
+import sys
 import unreal as u
+
+sys.path.insert(0, str(Path(u.Paths.convert_relative_path_to_full(u.Paths.project_dir())).parents[1]
+                       / "tools/unreal-engine/tests"))
+import save_isolation  # noqa: E402  #2311: start without the player's save file
 
 MAP = "/Game/Lunden/Maps/L_Lunden"  # the composed world: L1007 via Level_l1007_interaction, lamps via Level_lighting
 DOOR = "/Game/Lunden/Blueprints/PilotDoors/BP_LundenSwingDoor.BP_LundenSwingDoor_C"
@@ -38,6 +43,7 @@ world.get_world_settings().set_editor_property("default_game_mode", mode)
 cam = u.get_editor_subsystem(u.EditorActorSubsystem).spawn_actor_from_class(u.CameraActor, u.Vector(130.665, -100, 110))
 cam.root_component.set_mobility(u.ComponentMobility.MOVABLE)
 cam.tags = [u.Name("interaction-test-camera")]
+saved_slot = save_isolation.isolate()
 levels.editor_request_begin_play()
 
 DOORS = {d["id"]: d for d in M["doors"] if d["zone"] == "l1007"}
@@ -230,3 +236,4 @@ def run():
         u.log(f"LUNDEN_INTERACTION_TEST_OK {len(DOORS)} doors, {len(SASHES)} sashes, {len(SWITCHES)} switches, {len(TAPS)} taps")
     finally:
         levels.editor_request_end_play()
+        yield from save_isolation.restore_after_play(saved_slot, editor)

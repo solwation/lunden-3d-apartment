@@ -3,7 +3,12 @@ import json
 import math
 from pathlib import Path
 import time
+import sys
 import unreal as u
+
+sys.path.insert(0, str(Path(u.Paths.convert_relative_path_to_full(u.Paths.project_dir())).parents[1]
+                       / "tools/unreal-engine/tests"))
+import save_isolation  # noqa: E402  #2311: start without the player's save file
 
 MAP = "/Game/Lunden/Generated/PilotDoors/Level_l1007_doors"
 CONTROLLER = "/Game/Lunden/Player/BP_LundenPlayerController.BP_LundenPlayerController_C"
@@ -21,6 +26,7 @@ world.get_world_settings().set_editor_property("default_game_mode", mode)
 camera_template = u.get_editor_subsystem(u.EditorActorSubsystem).spawn_actor_from_class(u.CameraActor, u.Vector(130.665, -100, 110))
 camera_template.root_component.set_mobility(u.ComponentMobility.MOVABLE)
 camera_template.tags = [u.Name("pilot-test-camera")]
+saved_slot = save_isolation.isolate()
 levels.editor_request_begin_play()
 
 
@@ -106,3 +112,4 @@ def operate():
         u.log("LUNDEN_PILOT_DOOR_PLAY_OK")
     finally:
         levels.editor_request_end_play()
+        yield from save_isolation.restore_after_play(saved_slot, editor)

@@ -17,7 +17,12 @@ import json
 import math
 from pathlib import Path
 import time
+import sys
 import unreal as u
+
+sys.path.insert(0, str(Path(u.Paths.convert_relative_path_to_full(u.Paths.project_dir())).parents[1]
+                       / "tools/unreal-engine/tests"))
+import save_isolation  # noqa: E402  #2311: start without the player's save file
 
 PROJECT = Path(u.Paths.convert_relative_path_to_full(u.Paths.project_dir()))
 WORLD = json.loads((PROJECT.parents[1] / "tools/unreal-engine/world-levels.json").read_text(encoding="utf-8"))
@@ -66,6 +71,7 @@ PLATFORMS = {drop: (0, 1000 + i * 800) for i, drop in enumerate(DROPS)}
 for drop, (x, y) in PLATFORMS.items():
     box(x, y, drop * 100, 300, 300, drop * 100)
 actors.spawn_actor_from_class(u.PlayerStart, u.Vector(-2000, -2000, 100))
+saved_slot = save_isolation.isolate()
 levels.editor_request_begin_play()
 
 
@@ -197,3 +203,4 @@ def player_test():
         u.log("LUNDEN_PLAYER_TEST_OK")
     finally:
         levels.editor_request_end_play()
+        yield from save_isolation.restore_after_play(saved_slot, editor)
