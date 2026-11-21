@@ -29,3 +29,8 @@ unreal/**/*.mp4 filter=lfs diff=lfs merge=lfs -text
 # Keep the local pilot launcher and its Notepad guide native to Windows in each checkout.
 unreal/LocalPilot/*.cmd text eol=crlf
 unreal/LocalPilot/*.txt text eol=crlf
+
+# Unreal editor-Python builders hash their own script (and the importer hashes material-map.json) into their
+# idempotency stamps: keep them LF in every checkout, also with core.autocrlf=true on Windows (#2309).
+tools/unreal-engine/**/*.py text eol=lf
+tools/unreal-engine/**/*.json text eol=lf
