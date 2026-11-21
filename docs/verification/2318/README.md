@@ -136,3 +136,26 @@ because other issues' versioned assets are not yet built:
 
 `capture_world.py` renders only a complete composed world, so the pictures above are still those from `bf6382b7`,
 taken before the filter.
+
+## Pairs with the mortar filter (`98e30542`)
+
+These pictures were taken again on Windows in a fresh checkout at `e72c5f55`, with a complete sync and all world
+levels composed in `L_Lunden`. They show the rebuilt filtered brick (`ff2d5f92`) and the rebuilt foliage
+(#2383). The script is `capture_vegetation.py` with its own sky, and the cameras are the same as above
+([`unreal-capture-filtered.json`](unreal-capture-filtered.json)). The web halves are the ones above.
+
+| Web | Unreal, filtered mortar |
+|---|---|
+| ![Web: START](web-start.jpg) | ![Unreal: START](unreal-start-filtered.jpg) |
+| ![Web: courtyard](web-courtyard.jpg) | ![Unreal: courtyard](unreal-courtyard-filtered.jpg) |
+| ![Web: patio](web-patio.jpg) | ![Unreal: patio](unreal-patio-filtered.jpg) |
+
+Hus L's courtyard façade no longer shows the moiré arcs. Hus A, the stair drum and Hus L have red half-bond brick with
+light joints. The street in front of START is asphalt and shows the court lines.
+
+Differences that remain:
+
+- The patio string lights are dark (#2373).
+- Through the patio door and window, the living room is paler and more washed out in Unreal than on the web. No open
+  issue covers this.
+- The patio palm's fronds are a paler green in Unreal. No open issue covers this.
