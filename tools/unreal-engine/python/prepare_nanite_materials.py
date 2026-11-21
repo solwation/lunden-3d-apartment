@@ -14,6 +14,12 @@ def save(asset):
         raise RuntimeError("Could not save " + asset.get_path_name())
 
 
+def static_mesh_editor():
+    """The StaticMeshEditorSubsystem. get_editor_subsystem returns None in the pythonscript commandlet (5.8.4), and the
+    deprecated EditorStaticMeshLibrary then silently does nothing (#2297); a new instance of the subsystem works there."""
+    return unreal.get_editor_subsystem(unreal.StaticMeshEditorSubsystem) or unreal.new_object(unreal.StaticMeshEditorSubsystem)
+
+
 def prepare_zone(zone, check_only=False):
     folder = ROOT + "Generated/" + zone + "/StaticMeshes"
     if not assets.does_directory_exist(folder):
@@ -34,7 +40,12 @@ def prepare_zone(zone, check_only=False):
                 if check_only:
                     raise RuntimeError("Unsupported blend on a Nanite mesh: " + path)
                 settings.enabled = False
-                mesh.set_editor_property("nanite_settings", settings)
+                # set_editor_property only flips the flag: the session kept the Nanite fallback render data (fewer
+                # vertices and triangles) until the next editor start, so the import's fingerprint differed (#2297).
+                # set_nanite_settings(..., apply_changes=True) rebuilds the render data now.
+                static_mesh_editor().set_nanite_settings(mesh, settings, True)
+                if mesh.get_editor_property("nanite_settings").enabled:
+                    raise RuntimeError("Could not disable Nanite: " + path)
                 save(mesh)
                 changed += 1
         elif settings.enabled:

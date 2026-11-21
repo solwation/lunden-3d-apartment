@@ -21,10 +21,13 @@ Import (default):
      seasonTo:<MMDD>] (season_tags; read at run time by /Game/Lunden/Seasons/BPC_LundenSeasons, #2295);
      `collision` nodes become hidden-in-game BlockAll actors whose (shared unit cube) mesh has one simple box;
      material keys listed in tools/unreal-engine/material-map.json are replaced by hand-made materials;
+     prepare_nanite_materials.prepare_zone moves meshes with unsupported material slots to the raster path and
+     rebuilds their render data at once (the fingerprint must equal what a fresh editor computes, #2297);
   4. saves, writes import-stamp.json (export hashes, a content fingerprint and the SHA-256 of every package file);
   5. checks (also run by --check without importing): fixture markers within 1 cm of measurements.json `fixture`,
      arrow tips (north -> Unreal -Y, east -> +X) within 1 cm, every door/window/light/furniture/interactive id present
-     as an actor name, label and tag, and the stamp's package hashes; logs LUNDEN_IMPORT_OK / LUNDEN_CHECK_OK.
+     as an actor name, label and tag, every collision actor's single simple box, and (--check) the stamp's package
+     hashes and content fingerprint; logs LUNDEN_IMPORT_OK / LUNDEN_CHECK_OK.
 Any failure raises, so run-python.ps1 exits non-zero.
 """
 import hashlib
@@ -38,10 +41,10 @@ import sys
 import unreal
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from prepare_nanite_materials import prepare_zone
+from prepare_nanite_materials import prepare_zone, static_mesh_editor
 
 SUPPORTED_FORMAT_VERSION = 1
-IMPORTER_VERSION = 3  # bump when the importer's output changes for the same export (forces a re-import)
+IMPORTER_VERSION = 4  # bump when the importer's output changes for the same export (forces a re-import)
 GENERATED_ROOT = "/Game/Lunden/Generated"
 TOLERANCE_CM = 1.0
 ID_KINDS = ("door", "window", "light", "furniture", "interactive")
@@ -164,10 +167,8 @@ def content_fingerprint(zone):
         if isinstance(asset, unreal.StaticMesh):
             b = asset.get_bounding_box()
             mats = [m.material_interface.get_path_name() if m.material_interface else None for m in asset.static_materials]
-            body = asset.get_editor_property("body_setup")
-            boxes = len(body.get_editor_property("agg_geom").get_editor_property("box_elems")) if body else 0
             meshes.append([p, asset.get_num_vertices(0), asset.get_num_triangles(0),
-                           [r2(b.min.x), r2(b.min.y), r2(b.min.z), r2(b.max.x), r2(b.max.y), r2(b.max.z)], mats, boxes])
+                           [r2(b.min.x), r2(b.min.y), r2(b.min.z), r2(b.max.x), r2(b.max.y), r2(b.max.z)], mats, simple_boxes(asset)])
         else:
             meshes.append([p, asset.get_class().get_name() if asset else None])
     text = json.dumps({"actors": actors, "assets": meshes}, separators=(",", ":"), sort_keys=True)
@@ -228,10 +229,15 @@ def apply_tags(extras):
     return by_id
 
 
+def simple_boxes(mesh):
+    body = mesh.get_editor_property("body_setup")
+    return len(body.get_editor_property("agg_geom").get_editor_property("box_elems")) if body else 0
+
+
 def apply_collision(by_id, extras):
     """`collision` nodes: one simple box on the shared unit-cube mesh, BlockAll, never rendered in game."""
-    # the StaticMeshEditorSubsystem is None in the pythonscript commandlet (5.8.4); EditorStaticMeshLibrary still works there
-    sme = unreal.get_editor_subsystem(unreal.StaticMeshEditorSubsystem) or unreal.EditorStaticMeshLibrary
+    # not EditorStaticMeshLibrary: in the pythonscript commandlet (5.8.4) it silently added no box (#2297)
+    sme = static_mesh_editor()
     done, count = set(), 0
     for node_id, actor in by_id.items():
         if extras[node_id].get("kind") != "collision":
@@ -241,6 +247,8 @@ def apply_collision(by_id, extras):
         if mesh.get_path_name() not in done:
             sme.remove_collisions(mesh)
             sme.add_simple_collisions(mesh, unreal.ScriptCollisionShapeType.BOX)
+            if simple_boxes(mesh) != 1:
+                raise RuntimeError(f"{mesh.get_path_name()}: {simple_boxes(mesh)} simple boxes after adding one")
             done.add(mesh.get_path_name())
         comp.set_collision_profile_name("BlockAll")
         actor.set_actor_hidden_in_game(True)
@@ -390,6 +398,23 @@ def check_ids(zone, glb_path):
     unreal.log(f"LUNDEN_IMPORT_IDS zone {zone}: {len(want)} ids present as actor name, label and tag {json.dumps(counts, sort_keys=True)}")
 
 
+def check_collision(zone, glb_path):
+    """Every `collision` node is a hidden BlockAll actor whose mesh has exactly one simple box (lost before #2297)."""
+    extras = node_extras(glb_path)
+    want = [i for i, ex in extras.items() if ex.get("kind") == "collision"]
+    actors = {a.get_name(): a for a in level_actors()}
+    bad = []
+    for i in want:
+        comp = actors[i].get_component_by_class(unreal.StaticMeshComponent) if i in actors else None
+        if (comp is None or comp.static_mesh is None or simple_boxes(comp.static_mesh) != 1
+                or str(comp.get_collision_profile_name()) != "BlockAll" or not actors[i].get_editor_property("hidden")):
+            bad.append(i)
+    if bad:
+        raise RuntimeError(f"{zone}: {len(bad)} of {len(want)} collision actors lack a hidden BlockAll mesh with one simple box, e.g. {bad[:5]}")
+    if want:
+        unreal.log(f"LUNDEN_IMPORT_COLLISION zone {zone}: {len(want)} collision actors, each a hidden BlockAll mesh with one simple box")
+
+
 def check_stamp(zone, glb_entry, map_sha):
     ok, why = stamp_current(zone, glb_entry, map_sha)
     if not ok:
@@ -453,6 +478,7 @@ def main(argv):
                 import_zone(zone, glb_path, entry, manifest, table, map_sha)
         load_level(zone)
         check_ids(zone, glb_path)
+        check_collision(zone, glb_path)
         if zone == "fixture":
             check_fixture(measurements)
         log_measures(zone, measure)
