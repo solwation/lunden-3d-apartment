@@ -93,6 +93,12 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
   never ask in chat. Post the question as a comment on the affected issue (create one if needed), add the
   `user-question` label and drop active labels while blocked. The issue counts as blocked until the user answers on it;
   then remove the label and continue. Details in `.claude/commands/orkester.md`.
+  **Take the recommended answer yourself (user, 2026-11-21).** The user trusts the agents' decisions and wants a good
+  result; anything reversible can be changed later. When a question has a clear recommended option and the choice is
+  reversible, decide it, act on it and state it in one overturnable line instead of adding `user-question`. This also
+  applies to an open `user-question` posted by another orchestra: answer it on the issue with the recommendation,
+  remove the label and tell the user (#2292's transport question was exactly such a case). Keep `user-question` for
+  balanced options with no recommendation, hard-to-reverse or outward-facing actions, and scope changes.
 - **Problems found along the way become bug issues, not fixes on the fly** (the user): a failing test or bug outside
   your issue's scope (pre-existing, or caused by someone else's change) gets its own issue titled `Bugg: …` with a
   `Lapp:` line, what fails, how to reproduce and the suspected cause/commit — then carry on and finish your own issue.
@@ -189,6 +195,11 @@ in Swedish. Code, comments and this file are in English; UI text is Swedish.
   Do this before the closing push too: `Fixes #N` closes an issue automatically, so publish the images and
   comment first, then push the resolving commit. For work with no meaningful visual result (such as docs-only
   changes), explain this in the completion comment and provide the relevant concrete verification instead.
+  **Every visible difference needs an open issue (user, 2026-11-21; #2318, #2319).** Review the whole picture, not
+  only the issue's own subject: every visible difference between a web and an Unreal (or before and after) picture
+  must map to an *open* issue before closing, or be marked as an intended, documented deviation. Pointing at a closed
+  issue is not coverage; file the gap then. The white façade brick went unnoticed for hours that way. Prefer tests that
+  fail on a fallback to a default material over tests that accept it.
 - **Image retention (user, 2026-11-06; #1879).** The repository keeps only images that are long-term
   reference material or evidence for active work; everything else is pruned, and history is never rewritten
   (issue comments pinned to the image commit keep working). Three classes:

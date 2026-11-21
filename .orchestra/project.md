@@ -122,7 +122,11 @@ reconcile own claims on resume/status updates. Remove recognized work labels and
 owner label when paused back to backlog, released, closed or reopened. A finished handoff
 retains its owner and uses `integration-ready`; active integration switches to `in-progress`
 under that ownership. One integration owner publishes. Do not alter another session's
-active labels or documented handoff ownership. Parents follow the guide's sub-issue rules: the worker or
+active labels or documented handoff ownership. **Work follows the pause (2026-11-21, #420):** when another
+orchestra has pushed commits to an issue while its previous owner was paused, that orchestra keeps it; the previous
+owner takes it back only after it has had no work label and no new commits for 30 minutes, and then continues from the
+newest commits rather than its own stale work. Follow-up issues from a delivery go to the delivering orchestra when it
+has a free slot. Parents follow the guide's sub-issue rules: the worker or
 conductor starting a parent's first active sub-issue adds `in-progress` (not the owner
 label) to the parent; keep the parent `in-progress` while any child is active or
 `integration-ready`, unless the parent's own implementation is handed off. The conductor
@@ -198,7 +202,12 @@ Keep these checks brief; no new background monitoring service is required.
 Keep one publishing/integration owner. Expensive browser jobs run under
 [the existing browser wrapper](../tools/browsertest.sh): one at a time, plus a second
 memory-gated slot when `MemAvailable` leaves room for its ceiling (user, 2026-11-15, #1985);
-they do not set the total agent count. Maintain isolated checkouts and the agreed 2–3 scoped
+they do not set the total agent count. **Unreal editors share PC-wide slots (2026-11-21, #420):** several
+orchestras run Unreal on the same Windows PC, and simultaneous starts once left 2.8 GB free. Before starting any
+UnrealEditor(-Cmd) run, take a slot atomically with `mkdir ~/.local/state/lunden-editor-slots/slot-N` (N = 1–3, in
+WSL), write `<orchestra> #<issue>` into `slot-N/owner`, and remove the slot right after the run, also on failure. At
+most three editors on the PC, at most two per orchestra, and only with at least 6 GB of Windows memory free; while no
+slot is free, do work that needs no editor. Maintain isolated checkouts and the agreed 2–3 scoped
 checks per change. In session status/checkpoints, report measured headroom and time,
 active roles / chosen capacity / runtime ceiling, pending browser/integration work,
 the scale-up/down decision and a concrete reason for unused suitable capacity.
