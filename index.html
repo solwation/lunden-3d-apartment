@@ -774,6 +774,7 @@
     .welcome-settings-note { font-size: 13px; color: #68735c; }
     [data-welcome-runtime][hidden], [data-welcome-pending][hidden] { display: none; }
     body.welcome-pending #settings-dialog { z-index: 55; }
+    body.welcome-pending #privacy-dialog { z-index: 56; }
     body:has(#settings-dialog:not([hidden])) #player-dialog { visibility: hidden; }
     body:has(#loading:not([hidden]):not(.done)) #rotate, body:has(#overlay:not([hidden])) #rotate, body:has(#settings-dialog:not([hidden])) #rotate { display: none !important; }
     .welcome :focus-visible { outline: 3px solid #ac7840; outline-offset: 4px; }
@@ -1259,7 +1260,7 @@
           </span>
           <span class="btn-icon" aria-hidden="true">📊</span>
         </button>
-
+        </div>
         <button id="menu-privacy" class="menu-btn" type="button">
           <span class="btn-text">
             <b>Integritet och cookies</b>
@@ -1267,7 +1268,6 @@
           </span>
           <span class="btn-icon" aria-hidden="true">🔒</span>
         </button>
-        </div>
       </div>
     </div>
   </div>
@@ -1296,24 +1296,28 @@
   <div id="medal-pop" hidden aria-hidden="true">
     <div class="medal-box"><div class="medal-disc"><span class="medal-icon"></span></div><div class="medal-level"></div><div class="medal-name"></div><div class="medal-bonus"></div></div>
   </div>
-  <div id="privacy-dialog" hidden role="dialog" aria-label="Integritet och cookies">
+  <div id="privacy-dialog" hidden role="dialog" aria-modal="true" aria-label="Integritet och cookies">
     <div class="card dialog-card">
       <button id="privacy-dialog-close" type="button" aria-label="Stäng" class="dialog-close">×</button>
       <div class="kicker">INTEGRITET</div>
       <h1>Integritet och cookies</h1>
-      <div class="priv-scroll">
+      <div class="priv-scroll" tabindex="0" role="region" aria-label="Integritetsinformation">
         <p>Så här ser det ut i spelet just nu. Det är en beskrivning, inte juridisk rådgivning.</p>
-        <h2>Vad andra spelare ser</h2>
-        <p>Alla som spelar samtidigt i spelets enda flerspelarrum ser dig. Du väljer ingen grupp, och du kan inte välja bort det (annat än att spela utan moln, se längst ned).</p>
-        <ul>
-          <li>Att du är online: du räknas i besökarantalet och syns i listan ”Spelar just nu” på startskärmen.</li>
-          <li>Din avatar: en figur som rör sig i lägenheten och utomhus, med en skylt med ditt namn (eller ”Anonym”) och din poäng. De ser var du är, åt vilket håll du tittar, vilket vapen du håller och när du skriver i chatten. När du byter flik, går till startskärmen eller står still länge står avataren kvar där du var, markerad som borta, i ungefär två minuter innan den försvinner.</li>
-          <li>Det du skriver i chatten, som pratbubbla och i chattkolumnen. Chatten sparas inte.</li>
-          <li>Ditt namn och din poäng ligger på topplistan även när du inte är online.</li>
-        </ul>
-        <p>Avatarens hår, kläder och kroppsbyggnad bestäms av ditt slumpade spelar-id och säger inget om dig.</p>
-        <h2>Cookies och spårning</h2>
-        <p>Spelet sätter inga cookies och använder ingen reklam- eller besöksspårning.</p>
+        <section data-privacy="shared">
+          <h2>Vad andra spelare ser</h2>
+          <p>När du ansluter till spelets enda flerspelarrum ser alla som spelar där samtidigt dig. Alla delar samma rum.</p>
+          <ul>
+            <li>Att du är online: du räknas i besökarantalet och syns i listan ”Spelar just nu” på startskärmen.</li>
+            <li>Din avatar: en figur som rör sig i lägenheten och utomhus, med en skylt med ditt namn (eller ”Anonym”) och din poäng. De ser var du är, åt vilket håll du tittar, vilket vapen du håller och när du skriver i chatten. När du lämnar spelet i bakgrunden, går till startskärmen eller står still länge står avataren kvar där du var, markerad som borta, i ungefär två minuter innan den försvinner.</li>
+            <li>Det du skriver i chatten, som pratbubbla och i chattkolumnen. Chatten sparas inte.</li>
+            <li>Ditt namn och din poäng ligger på topplistan även när du inte är online.</li>
+          </ul>
+          <p>Avatarens utseende skapas från ett slumpat spelar-id eller det utseende du själv väljer.</p>
+          <p>Det delade rummet använder spelets server hos Cloudflare. Din IP-adress hanteras av Cloudflare när du ansluter, men spelet sparar den inte.</p>
+          <h2>Cookies och spårning</h2>
+          <p>Spelet sätter inga cookies och använder ingen reklam- eller besöksspårning.</p>
+        </section>
+        <p>På webben går du med automatiskt när du spelar med molnet på. Längst ned ser du hur du spelar en lokal kopia eller stänger av flerspelarläget.</p>
         <h2>Sparas i din webbläsare</h2>
         <ul>
           <li>Inställningar och spelläge (localStorage): ditt sparade hem och möblering, var du står, uppgifter, poäng och statistik, grafikkvalitet, persienner, vilka nyheter du sett, sparade spelarnamn och ett eget slumpmässigt spelar-id och avatarutseende per spelare.</li>
@@ -1328,7 +1332,6 @@
           <li>Flerspelarläget: var du står, åt vilket håll du tittar, vilket vapen du håller och det du skriver i chatten, så länge du spelar. Chatten sparas inte. Ett slumpat id för fliken (sessionStorage) gör att servern känner igen dig om du kommer tillbaka inom två minuter; din senaste position finns kvar hos servern så länge.</li>
           <li>Delade teckningar och möblering som du tejpar upp eller flyttar.</li>
           <li>Anonymiserade kraschrapporter: enhet, webbläsare, grafikläge och felmeddelanden, utan namn.</li>
-          <li>Din IP-adress hanteras av Cloudflare när du ansluter, men spelet sparar den inte.</li>
         </ul>
         <h2>Externa tjänster</h2>
         <p>Väder hämtas från Open-Meteo (open-meteo.com, CC BY 4.0, api.open-meteo.com och archive-api.open-meteo.com). Bara platsens koordinater (avrundade) och datum skickas, inget om dig. Spelets filer hämtas från GitHub Pages och nyhetslistan därifrån.</p>
@@ -1340,6 +1343,15 @@
           <li>Det som redan skickats till topplistan ligger kvar på servern; hör av dig till den som driver spelet om du vill ha en rad borttagen.</li>
           <li>Vill du inte skicka något alls: spela en lokal kopia utan serveradress. Med <code>?mp=0</code> i adressen stängs bara flerspelarläget (position och chatt) av; namn, poäng och närvaro skickas ändå.</li>
         </ul>
+        <template data-privacy="windows">
+          <h2>Flerspelarläget i Windows</h2>
+          <p>Den här Windows-versionen spelar lokalt. Informationen om det delade rummet beskriver vad andra kan se när en spelklient ansluter.</p>
+          <h2>Sparas på din Windows-dator</h2>
+          <p>Spelet sparar ditt spelarnamn, ett slumpmässigt spelar-id, avatarens utseendekod, inställningar, karta, position och blickriktning.</p>
+          <p>Med startprogrammet ligger sparfilen i %LOCALAPPDATA%\Lunden\Saved\SaveGames\LundenSave.sav. Testversionen använder Lunden-Test i stället för Lunden. Sparfilen ligger kvar vid vanlig avinstallation. Vill du ta bort den kan du stänga spelet och radera filen.</p>
+          <h2>Kraschdata i Windows</h2>
+          <p>Unreal kan skapa lokala kraschfiler på datorn. Windows-spelet skickar i dag inga automatiska kraschrapporter till Lundens kraschserver.</p>
+        </template>
       </div>
     </div>
   </div>

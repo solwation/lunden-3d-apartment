@@ -43,6 +43,10 @@ let phase='launch',failure;
    await act(page.locator('#loading-settings'));
    check(phase+': early settings own focus and inert both welcome layers',await page.evaluate(()=>!document.querySelector('#settings-dialog').hidden&&document.querySelector('#loading').inert&&document.querySelector('#overlay').inert&&document.activeElement.id==='settings-close'));
    check(phase+': runtime settings remain hidden until ready',await page.locator('#menu-chat-setting').isHidden()&&await page.locator('[data-welcome-pending]').isVisible());
+   await act(page.locator('#menu-privacy'));
+   check(phase+': shared room disclosure is readable before the world starts',await page.locator('#privacy-dialog [data-privacy="shared"]').isVisible()&&!(await page.evaluate(()=>!!window.__app)));
+   await page.keyboard.press('Escape');
+   check(phase+': early privacy returns focus to its button',await page.locator('#privacy-dialog').isHidden()&&await page.evaluate(()=>document.activeElement.id==='menu-privacy'));
    await act(page.locator('#toggle-instructions'));check(phase+': native instructions work while world is absent',await page.locator('#instructions').isVisible());
    await page.screenshot({path:out+'/'+phase+'-early-settings.png'});
    // Keep the early modal open through real module/plan/world/graphics initialization.

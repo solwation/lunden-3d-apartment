@@ -1287,9 +1287,6 @@ const leaderboard = new Leaderboard(cloud.url, totalScore, {
 leaderboard.boards = new Boards(leaderboard, stats, { select: document.getElementById('lb-board'), list: document.getElementById('lb-dialog-list'), hint: document.getElementById('lb-board-hint') }); // #1710
 document.getElementById('menu-leaderboard')?.addEventListener('click', () => leaderboard.openLeaderboardDialog());
 document.getElementById('leaderboard-dialog-close')?.addEventListener('click', () => leaderboard.closeLeaderboardDialog());
-const privacyDialog = document.getElementById('privacy-dialog'); // #723: what is stored and sent
-document.getElementById('menu-privacy')?.addEventListener('click', () => { privacyDialog.hidden = false; });
-document.getElementById('privacy-dialog-close')?.addEventListener('click', () => { privacyDialog.hidden = true; });
 cloud.gate = postersLoaded.catch(() => {}); // no send before the saved drawings are up (#1308)
 cloud.ready = cloud.on ? Promise.all([postersLoaded, catCardsLoaded]).then(() => cloud.sync()) : Promise.resolve(); // (tests wait on it)
 cat.onPet = () => { bump('petted'); if (cat.kitten) bump('kittenPets'); catCards.recordPet(cat.breed.name); discoverCreature(currentCatId(),'pet',{name:cat.catName}); }; // a kitten's pat is worth more (#363)
@@ -4560,7 +4557,6 @@ onTap(document.getElementById('reset-no'), () => resetHome.cancel());
 onTap(document.getElementById('reset-yes'), () => resetHome.confirm());
 document.addEventListener('keydown', (e) => {
   if (e.code === 'Escape' && !resetEl.hidden) { e.preventDefault(); resetHome.cancel(); }
-  else if (e.code === 'Escape' && privacyDialog && !privacyDialog.hidden) { e.preventDefault(); privacyDialog.hidden = true; }
   else if (e.code === 'Escape' && leaderboard?.lbDialog && !leaderboard.lbDialog.hidden) { e.preventDefault(); leaderboard.closeLeaderboardDialog(); }
   else if (e.code === 'Escape' && leaderboard?.dialog && !leaderboard.dialog.hidden) { e.preventDefault(); leaderboard.handleSkip(); }
   else if (e.code === 'Escape' && !statsEl.hidden) { e.preventDefault(); showStats(false); }

@@ -14,6 +14,22 @@ export function welcomeSettings() {
       const playerDialog = document.getElementById('player-dialog');
       if (restoreFocus && playerDialog && !playerDialog.hidden) document.getElementById('player-name')?.focus({ preventScroll: true });
     } });
+  const privacy = document.getElementById('privacy-dialog'), privacyButton = document.getElementById('menu-privacy');
+  const closePrivacy = document.getElementById('privacy-dialog-close');
+  privacyButton.addEventListener('click', () => {
+    privacy.hidden = false;
+    dialog.inert = true;
+    closePrivacy.focus({ preventScroll: true });
+  });
+  function dismissPrivacy() {
+    privacy.hidden = true;
+    dialog.inert = false;
+    privacyButton.focus({ preventScroll: true });
+  }
+  closePrivacy.addEventListener('click', dismissPrivacy);
+  privacy.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); dismissPrivacy(); }
+  });
   const early = document.getElementById('loading-settings');
   early.addEventListener('click', () => settings.open(early));
   return settings;

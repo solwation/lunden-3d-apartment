@@ -196,6 +196,22 @@ def ui_test():
         menu.call_method("Open", (True,))
         yield from frames(2)
         opened = menu_state()
+        click("ExtPrivacy")
+        yield from frames(2)
+        privacy_state = menu_state()
+        if privacy_state["page"] != 2 or not privacy_state["paused"] or not privacy_state["open"]:
+            raise RuntimeError("The privacy action must open before Play and keep the game paused")
+        scroll = menu.get_editor_property("PrivacyScrollHolder").get_content()
+        words = [str(w.get_text()) for w in scroll.get_all_children()]
+        sys.path.insert(0, str(REPO / "tools/unreal-engine/python"))
+        from privacy_content import windows_privacy
+        blocks = windows_privacy((REPO / "index.html").read_text(encoding="utf-8"))
+        if words != [("• " if tag == "li" else "") + text for tag, text in blocks]:
+            raise RuntimeError("Windows privacy text differs from the shared source")
+        click("BtnPrivacyBack")
+        yield from frames(2)
+        if menu_state()["page"] != 0 or not paused():
+            raise RuntimeError("Closing privacy must return to the paused start menu")
         click("BtnSettings")
         yield from frames(2)
         on_settings = menu_state()
@@ -217,7 +233,7 @@ def ui_test():
         esc_closed = menu_state()
         bound = {n: menu.get_editor_property(n).get_editor_property("on_clicked").is_bound()
                  for n in ("BtnPlay", "BtnSettings", "BtnQuit", "BtnQuality", "BtnResolution", "BtnFps", "BtnInvert", "BtnBack")}
-        result["menu"] = {"open": opened, "settings": on_settings, "back": back_main, "play": played, "savedName": saved_name,
+        result["menu"] = {"open": opened, "privacy": privacy_state, "privacyTextBlocks": len(words), "settings": on_settings, "back": back_main, "play": played, "savedName": saved_name,
                           "escOpens": esc_open, "escFromSettings": esc_back, "escCloses": esc_closed, "clickBound": bound}
         u.log(f"LUNDEN_UI_TEST menu {json.dumps(result['menu'], ensure_ascii=False)}")
         problems = []

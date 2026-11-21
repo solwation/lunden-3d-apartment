@@ -34,7 +34,7 @@ row names a soundClass, a SoundMix override for it (#2287 audio). A changed list
 
 Run (Windows checkout; lock every UI/*.uasset that exists first: git lfs lock unreal/Lunden/Content/Lunden/UI/...):
     powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/build_ui.py [<measurements.json>] [--force | --check]
-A run whose inputs (this script, ui-extensions.json, the export values) match UI/build-stamp.json (and Lunden.SpecHash on
+A run whose inputs (this script, ui-extensions.json, the privacy text, the export values) match UI/build-stamp.json (and Lunden.SpecHash on
 BPC_LundenUI) saves nothing; --check fails when an asset is missing or was built from other inputs. A widget tree cannot
 be cleared from Python and an asset deleted in a session cannot be created again in it, so a rebuild takes two runs: the
 first removes the four Blueprint files and logs LUNDEN_UI_RUN_AGAIN, the second builds them from nothing. Input assets
@@ -49,6 +49,9 @@ from pathlib import Path
 import sys
 
 import unreal as u
+
+sys.path.insert(0, str(Path(__file__).parent))
+from privacy_content import windows_privacy  # noqa: E402
 
 REPO = Path(__file__).resolve().parents[3]
 DIR = "/Game/Lunden/UI"
@@ -371,7 +374,9 @@ def load_extensions(path):
         raise RuntimeError(f"{path}: formatVersion {data.get('formatVersion')} is not 1")
     names = set()
     for row in data["menuButtons"]:
-        missing = {"name", "label", "widget", "owner", "what"} - row.keys()
+        missing = {"name", "label", "owner", "what"} - row.keys()
+        if bool(row.get("widget")) == ("page" in row) or ("page" in row and row["page"] != "Privacy"):
+            raise RuntimeError(f"{path}: menu row needs one widget class or the built-in Privacy page: {row}")
         if missing or not row["name"].isidentifier() or row["name"] in names:
             raise RuntimeError(f"{path}: bad menuButtons row {row} (missing {sorted(missing)}, or a repeated/invalid name)")
         names.add(row["name"])
@@ -810,7 +815,23 @@ def hud(values):
 
 # WBP_LundenMenu -----------------------------------------------------------------------------------------------------
 
-def menu(extensions):
+def add_privacy_page(tree, privacy):
+    tree.add(u.VerticalBox, "PrivacyPage", "Pages")
+    tree.label("PrivacyTitle", "PrivacyPage", "Integritet och cookies", size=24, bold=True)
+    area = tree.add(u.SizeBox, "PrivacySize", "PrivacyPage")
+    area.set_height_override(280)
+    holder = tree.add(u.InvalidationBox, "PrivacyScrollHolder", "PrivacySize")
+    holder.set_editor_property("can_cache", False)
+    tree.add(u.ScrollBox, "PrivacyScroll", "PrivacyScrollHolder")
+    for i, (tag, words) in enumerate(privacy):
+        heading = tag == "h2"
+        block = tree.label(f"PrivacyLine{i}", "PrivacyScroll", ("• " if tag == "li" else "") + words,
+                           size=15 if heading else 13, bold=heading, wrap=True)
+        pad(block, 4, 8 if heading else 2, 12, 3)
+    tree.button("BtnPrivacyBack", "PrivacyPage", "Tillbaka", primary=True)
+
+
+def menu(extensions, privacy):
     wbp = widget_blueprint(MENU)
     tree = Tree(wbp)
     root = tree.add(u.CanvasPanel, "Root", None)
@@ -871,6 +892,7 @@ def menu(extensions):
         tree.label(f"VolumeLabel{i}", "SettingsPage", row["label"], size=14, box=True)
         slider(f"VolumeSlider{i}", 0.0, 1.0, 0.05)
     pad(tree.button("BtnBack", "SettingsPage", "Tillbaka", primary=True), 0, 16, 0, 0)
+    add_privacy_page(tree, privacy)
     root.set_visibility(u.SlateVisibility.VISIBLE)
 
     hud_bp = ASSETS.load_asset(HUD)
@@ -973,10 +995,39 @@ def menu(extensions):
     g.run("/Script/UMG.WidgetSwitcher:SetActiveWidgetIndex", target=g.get("Pages"), Index=0)
     g.run("/Script/UMG.Widget:SetKeyboardFocus", target=g.get("BtnSettings"))
 
+    def privacy_scroll(g):
+        content = g.pure("/Script/UMG.ContentWidget:GetContent", target=g.get("PrivacyScrollHolder"))
+        cast = g.cast("CastToScrollBox", None)
+        g.step(cast)
+        link(content, inp(cast, "Object"))
+        return cast_out(cast)
+
+    g, _, _ = function(wbp, "ShowPrivacy")
+    g.run("/Script/UMG.WidgetSwitcher:SetActiveWidgetIndex", target=g.get("Pages"), Index=2)
+    g.run("/Script/UMG.ScrollBox:ScrollToStart", target=privacy_scroll(g))
+    g.run("/Script/UMG.Widget:SetKeyboardFocus", target=g.get("BtnPrivacyBack"))
+
+    g, p, _ = function(wbp, "ScrollPrivacy", [("Delta", REAL)])
+    scroll = privacy_scroll(g)
+    offset = g.pure("/Script/UMG.ScrollBox:GetScrollOffset", target=scroll)
+    end = g.pure("/Script/UMG.ScrollBox:GetScrollOffsetOfEnd", target=scroll)
+    shifted = g.pure("KismetMathLibrary:Add_DoubleDouble", A=offset, B=p["Delta"])
+    g.run("/Script/UMG.ScrollBox:SetScrollOffset", target=scroll,
+          NewScrollOffset=g.pure("KismetMathLibrary:FClamp", Value=shifted, Min=0.0, Max=end))
+
+    g, _, _ = function(wbp, "ClosePrivacy")
+    g.run(me + ":ShowMain")
+    privacy_button = next((row for row in extensions["menuButtons"] if row.get("page") == "Privacy"), None)
+    if privacy_button:
+        g.run("/Script/UMG.Widget:SetKeyboardFocus", target=g.get("Ext" + privacy_button["name"]))
+
     # Back(): Esc goes back one step: settings -> main page -> play / resume
     g, _, _ = function(wbp, "Back")
-    on_settings = g.pure("KismetMathLibrary:EqualEqual_IntInt", B=1,
-                         A=g.pure("/Script/UMG.WidgetSwitcher:GetActiveWidgetIndex", target=g.get("Pages")))
+    page = g.pure("/Script/UMG.WidgetSwitcher:GetActiveWidgetIndex", target=g.get("Pages"))
+    other_page = g.branch(g.pure("KismetMathLibrary:EqualEqual_IntInt", A=page, B=2))
+    g.run(me + ":ClosePrivacy")
+    g = Graph(g.g, other_page)
+    on_settings = g.pure("KismetMathLibrary:EqualEqual_IntInt", A=page, B=1)
     to_close = g.branch(on_settings)
     g.run(me + ":ShowMain")
     h = Graph(g.g, to_close)
@@ -1051,10 +1102,20 @@ def menu(extensions):
     other = g.branch(out(escape, "ReturnValue"))
     g.run(me + ":Back")
     g.ret(result, ReturnValue=g.pure("/Script/UMG.WidgetBlueprintLibrary:Handled"))
+    keys = Graph(editor, other)
+    page = keys.pure("/Script/UMG.WidgetSwitcher:GetActiveWidgetIndex", target=keys.get("Pages"))
+    not_privacy = keys.branch(keys.pure("KismetMathLibrary:EqualEqual_IntInt", A=page, B=2))
+    for key_name, delta in (("PageDown", 240.0), ("PageUp", -240.0)):
+        key = keys.call("KismetInputLibrary:EqualEqual_KeyKey")
+        feed(key, "A", pressed)
+        feed(key, "B", key_name)
+        next_key = keys.branch(out(key, "ReturnValue"))
+        keys.run(me + ":ScrollPrivacy", Delta=delta)
+        keys.ret(editor.add_return_node(), ReturnValue=keys.pure("/Script/UMG.WidgetBlueprintLibrary:Handled"))
+        keys = Graph(editor, next_key)
     no = editor.add_return_node()
-    g.at(no, g.x, 500)
-    link(other, inp(no, "execute"))
-    feed(no, "ReturnValue", g.pure("/Script/UMG.WidgetBlueprintLibrary:Unhandled"))
+    keys.ret(no, ReturnValue=keys.pure("/Script/UMG.WidgetBlueprintLibrary:Unhandled"))
+    link(not_privacy, inp(no, "execute"))
 
     # Construct: the buttons' and sliders' events
     ev = events(wbp)
@@ -1062,7 +1123,11 @@ def menu(extensions):
     clicks = [("BtnPlay", me + ":Close", {}), ("BtnSettings", me + ":ShowSettings", {}), ("BtnQuit", me + ":Quit", {}),
               ("BtnQuality", me + ":CycleQuality", {}), ("BtnResolution", me + ":CycleResolution", {}),
               ("BtnFps", me + ":ToggleFps", {}), ("BtnInvert", me + ":ToggleInvert", {}), ("BtnBack", me + ":ShowMain", {})]
+    clicks.append(("BtnPrivacyBack", me + ":ClosePrivacy", {}))
     for row in extensions["menuButtons"]:
+        if row.get("page") == "Privacy":
+            clicks.append(("Ext" + row["name"], me + ":ShowPrivacy", {}))
+            continue
         widget_class = u.load_class(None, row["widget"])
         if not widget_class:
             raise RuntimeError(f"ui-extensions.json: cannot load the widget {row['widget']} ({row['owner']})")
@@ -1204,7 +1269,8 @@ def main(argv):
     measurements = json.loads((Path(args[0]) if args else REPO / "unreal/Lunden/Import/measurements.json").read_text(encoding="utf-8"))
     values = export_values(measurements)
     extensions = load_extensions(REPO / "tools/unreal-engine/ui-extensions.json")
-    spec = hashlib.sha256(json.dumps({"values": values, "extensions": extensions,
+    privacy = windows_privacy((REPO / "index.html").read_text(encoding="utf-8"))
+    spec = hashlib.sha256(json.dumps({"values": values, "extensions": extensions, "privacy": privacy,
                                       "script": Path(__file__).read_text(encoding="utf-8")}, sort_keys=True).encode()).hexdigest()
     stamp = json.loads(STAMP.read_text(encoding="utf-8")).get("spec", "") if STAMP.exists() else ""
     present = all(ASSETS.does_asset_exist(p) for p in BLUEPRINTS + (IA_MENU, IMC_UI, IMC_INVERT, MIX))
@@ -1240,7 +1306,7 @@ def main(argv):
     save(lib)
     hud_bp = hud(values)
     save(hud_bp)
-    menu_bp = menu(extensions)
+    menu_bp = menu(extensions, privacy)
     save(menu_bp)
     comp = component(hud_bp, menu_bp)
     ASSETS.set_metadata_tag(comp, SPEC_TAG, spec)
