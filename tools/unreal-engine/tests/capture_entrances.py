@@ -17,6 +17,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "python"))
 from prepare_nanite_materials import static_mesh_editor  # noqa: E402
 from screenshot_level import render_view  # noqa: E402
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from capture_light import update_sky_for_capture  # noqa: E402
+from capture_world import CaptureSeasons  # noqa: E402
+
 MAP = "/Game/Lunden/Maps/L_Lunden"
 # view: (door ids opened, camera cm, pitch, yaw, horizontal fov)
 VIEWS = {"unreal-hus-a-entrance-open": (["door_husa_l0_x222_z3090"], (30, 2640, 165), -6, 66, 70),
@@ -28,6 +32,7 @@ def main(out_dir):
     if not u.EditorLoadingAndSavingUtils.load_map(MAP):
         raise RuntimeError(f"Cannot load {MAP}: run compose_world.py first")
     world = u.get_editor_subsystem(u.UnrealEditorSubsystem).get_editor_world()
+    seasons = CaptureSeasons(world)
     for path in u.EditorAssetLibrary.list_assets("/Game/Lunden/Generated", recursive=True, include_folder=False):
         if "/StaticMeshes/" not in path:
             continue
@@ -46,7 +51,8 @@ def main(out_dir):
     for k, v in (("UseClock", False), ("TimeScale", 0.0), ("Year", 2026), ("Month", 6), ("Day", 21), ("Hour", 14.0),
                  ("Rain", 0.0), ("Snow", 0.0), ("Wet", 0.0)):
         sky.set_editor_property(k, v, u.PropertyAccessChangeNotifyMode.NEVER)
-    sky.call_method("UpdateSky")
+    update_sky_for_capture(world, sky)
+    excluded.extend(seasons.apply((2026, 6, 21)))
     skylight = sky.get_component_by_class(u.SkyLightComponent)
     skylight.set_editor_property("real_time_capture", False, u.PropertyAccessChangeNotifyMode.NEVER)
     skylight.recapture_sky()
@@ -60,7 +66,7 @@ def main(out_dir):
         obs = render_view(world, out_dir, name, u.Vector(*xyz), u.Rotator(roll=0, pitch=pitch, yaw=yaw), 1280, 720, fov, 0.0,
                           excluded, lumen=True)
         shots.append({**obs, "name": name, "opened": ids})
-    (Path(out_dir) / "capture.json").write_text(json.dumps({"engine": u.SystemLibrary.get_engine_version(), "map": MAP,
+    (Path(out_dir) / "capture.json").write_text(json.dumps({"engine": u.SystemLibrary.get_engine_version(), "map": MAP, "loadedLevels": seasons.loaded_levels,
                                                              "date": "2026-06-21 14:00", "shots": shots}, indent=2) + "\n")
     u.EditorLoadingAndSavingUtils.new_blank_map(False)  # discard every in-memory change
     u.log(f"LUNDEN_ENTRANCES_CAPTURE_OK {len(shots)} views")

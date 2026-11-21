@@ -14,6 +14,7 @@ import unreal as u
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "python"))
 import capture_pilot  # noqa: E402
+from capture_world import CaptureSeasons  # noqa: E402
 
 VIEWS = json.loads((Path(__file__).resolve().parents[3] / "unreal/Lunden/Tests/views.json").read_text(encoding="utf-8"))
 
@@ -45,13 +46,15 @@ class MapLight:
 
     def __init__(self, world, sky, lamps):
         self.world, self.sky, self.lamps = world, sky, lamps
+        self.seasons = CaptureSeasons(world)
         self.skylight = sky.get_component_by_class(u.SkyLightComponent)
         # A real-time sky capture is refreshed by the main view, which a commandlet capture does not render: capture the
         # sky once per view instead (in memory, never saved; the game keeps the real-time capture).
         self.skylight.set_editor_property("real_time_capture", False, u.PropertyAccessChangeNotifyMode.NEVER)
 
-    def use(self, name, preset):
-        date = [VIEWS["date"][k] for k in ("year", "month", "day")]
+    def use(self, name, preset, date=None):
+        if date is None:
+            date = [VIEWS["date"][k] for k in ("year", "month", "day")]
         hour = float(VIEWS["lighting"][name]["hour"])
         for k, v in (("UseClock", False), ("TimeScale", 0.0), ("Year", date[0]), ("Month", date[1]), ("Day", date[2]),
                      ("Hour", hour), ("Rain", 0.0), ("Snow", 0.0), ("Wet", 0.0)):
@@ -60,7 +63,9 @@ class MapLight:
         update_sky_for_capture(self.world, self.sky)
         for lamp in self.lamps:
             lamp.call_method("TurnOn" if preset["lampsOn"] else "TurnOff")
+        hidden = self.seasons.apply(date)
         self.skylight.recapture_sky()
+        return hidden
 
     def bias(self, preset):
         return game_bias(self.sky)

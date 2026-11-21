@@ -27,6 +27,7 @@ from screenshot_level import render_view, spawn  # noqa: E402
 from prepare_nanite_materials import static_mesh_editor  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from capture_light import game_bias, update_sky_for_capture  # noqa: E402
+from capture_world import CaptureSeasons  # noqa: E402
 
 MAP = "/Game/Lunden/Maps/L_Lunden"
 VIEWS = json.loads((Path(__file__).resolve().parents[3] / "unreal/Lunden/Tests/views.json").read_text(encoding="utf-8"))
@@ -87,6 +88,7 @@ def run(scene_path, out_dir, names=None, exposure="game", trial=None, bias_offse
     if not u.EditorLoadingAndSavingUtils.load_map(MAP):
         raise RuntimeError(f"Cannot load {MAP}: run compose_world.py first")
     world = u.get_editor_subsystem(u.UnrealEditorSubsystem).get_editor_world()
+    seasons = CaptureSeasons(world)
     fallback = 0
     for path in u.EditorAssetLibrary.list_assets("/Game/Lunden/Generated", recursive=True, include_folder=False):
         if "/StaticMeshes/" not in path:
@@ -125,34 +127,40 @@ def run(scene_path, out_dir, names=None, exposure="game", trial=None, bias_offse
             sky.set_editor_property(k, v, u.PropertyAccessChangeNotifyMode.NEVER)
         update_sky_for_capture(world, sky)
         dark = sky.get_editor_property("DuskLight") < dusk_mid
-        lit = 0
+        enabled = []
         for lamp in lamps:
             on = shot["lamps"] == "all" or (shot["lamps"] == "dusk" and dark and "auto:dusk" in [str(t) for t in lamp.tags])
             lamp.call_method("TurnOn" if on else "TurnOff")
-            lit += on
+            if on:
+                enabled.append(lamp)
+        date = [int(sky.get_editor_property(k)) for k in ("Year", "Month", "Day")]
+        hour = sky.get_editor_property("Hour")
+        hidden = seasons.apply(date)
+        lit = sum(not lamp.get_editor_property("hidden") for lamp in enabled)
+        shot_excluded = excluded + hidden
         skylight.recapture_sky()
         direction = sky.get_editor_property("SunDirection")
         bias = 0.0 if hour == 14 else -0.7
         where = (u.Vector(*cam["xyz"]), u.Rotator(roll=0, pitch=cam["pitch"], yaw=cam["yaw"]), scene["width"], scene["height"], scene["horizontalFov"])
         if exposure == "game":
             bias = game_bias(sky) + bias_offset
-            obs = render_view(world, out_dir, name, *where, bias, excluded, lumen=True)
+            obs = render_view(world, out_dir, name, *where, bias, shot_excluded, lumen=True)
         elif exposure == "histogram":
             bias = None
-            obs = render_game(world, out_dir, name, *where, excluded, (-4.0, 3.0, 0.0))
+            obs = render_game(world, out_dir, name, *where, shot_excluded, (-4.0, 3.0, 0.0))
         else:
-            obs = render_view(world, out_dir, name, *where, bias, excluded, lumen=True)
+            obs = render_view(world, out_dir, name, *where, bias, shot_excluded, lumen=True)
         forward = u.MathLibrary.get_forward_vector(sun.get_world_rotation())
         off = math.degrees(math.acos(max(-1, min(1, -(forward.x * direction.x + forward.y * direction.y + forward.z * direction.z)))))
         if math.dist(obs["xyz"], cam["xyz"]) > 0.01 or any(abs(obs[k] - cam[k]) > 0.001 for k in ("pitch", "yaw")) or off > 0.01:
             raise RuntimeError(f"Camera or sun mismatch in {name}: sun {off:.3f}° off")
-        observed.append({**obs, "name": name, "camera": shot["camera"], "date": shot["date"], "hour": hour, "weather": weather,
-                         "lamps": shot["lamps"], "lampsLit": lit, "exposureBias": bias,
+        observed.append({**obs, "name": name, "camera": shot["camera"], "date": date, "hour": hour, "weather": weather,
+                         "hiddenSeasonalActors": len(hidden), "lamps": shot["lamps"], "lampsLit": lit, "exposureBias": bias,
                          "sunElevation": sky.get_editor_property("SunElevation"), "sunLux": sun.intensity,
                          "daylight": sky.get_editor_property("Daylight"), "duskLight": sky.get_editor_property("DuskLight"),
                          "cloudCover": sky.get_editor_property("CloudCover"), "moonIllumination": sky.get_editor_property("MoonIllumination")})
         u.log(f"LUNDEN_LIGHTING_CAPTURE {name}: sun elevation {sky.get_editor_property('SunElevation'):.3f}°, sun {sun.intensity:.3f} lux")
-    (Path(out_dir) / "capture.json").write_text(json.dumps({"engine": u.SystemLibrary.get_engine_version(), "map": MAP,
+    (Path(out_dir) / "capture.json").write_text(json.dumps({"engine": u.SystemLibrary.get_engine_version(), "map": MAP, "loadedLevels": seasons.loaded_levels,
         "exposure": exposure, "trial": trial, "biasOffset": bias_offset, "naniteOffInMemory": fallback, "hiddenCollisionActors": len(excluded), "lamps": len(lamps), "shots": observed}, indent=2) + "\n")
     u.EditorLoadingAndSavingUtils.new_blank_map(False)  # discard every in-memory change
     u.log(f"LUNDEN_LIGHTING_CAPTURE_OK {len(observed)} views")

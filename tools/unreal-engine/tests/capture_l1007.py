@@ -39,16 +39,16 @@ def main(scene_path, out_dir, ids=None):
     observed = []
     for cam in [c for c in scene["cameras"] if c["id"] in wanted]:
         preset = scene["lighting"][cam["lighting"]]
-        light.use(cam["lighting"], preset)
+        hidden = light.use(cam["lighting"], preset)
         lights = count_lights(world, light)
         obs = render_view(world, out_dir, cam["id"], u.Vector(*cam["xyz"]),
                           u.Rotator(roll=0, pitch=cam["pitch"], yaw=cam["yaw"]), scene["width"], scene["height"],
-                          scene["horizontalFov"], light.bias(preset), excluded, lumen=True)
+                          scene["horizontalFov"], light.bias(preset), excluded + hidden, lumen=True)
         if math.dist(obs["xyz"], cam["xyz"]) > 0.01 or any(abs(obs[k] - cam[k]) > 0.001 for k in ("pitch", "yaw")):
             raise RuntimeError("Camera transform mismatch: " + cam["id"])
         observed.append({**obs, "id": cam["id"], "lighting": cam["lighting"], "light": light.kind,
                          "exposureBias": light.bias(preset), "lights": lights})
-    (Path(out_dir) / "capture.json").write_text(json.dumps({"engine": u.SystemLibrary.get_engine_version(), "map": MAP,
+    (Path(out_dir) / "capture.json").write_text(json.dumps({"engine": u.SystemLibrary.get_engine_version(), "map": MAP, "loadedLevels": light.seasons.loaded_levels,
         "hiddenCollisionActors": len(excluded), "cameras": observed}, indent=2) + "\n")
     u.EditorLoadingAndSavingUtils.new_blank_map(False)  # discard the editor world (rig or sky settings)
     u.log(f"LUNDEN_L1007_CAPTURE_OK {len(observed)} views")

@@ -14,6 +14,7 @@ import unreal as u
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from capture_light import count_lights, light_for  # noqa: E402
+from capture_world import loaded_capture_levels  # noqa: E402
 
 PROJECT = Path(u.Paths.convert_relative_path_to_full(u.Paths.project_dir()))
 
@@ -35,6 +36,20 @@ def main(scene_path):
         want = "map" if name == "L_Lunden" else "pilot"
         if light.kind != want or day["sky"] != 1 or not 1 <= day["directional"] <= 2:
             failures.append(f"{name}: {entry}")
+        if name == "L_Lunden":
+            entry["loadedLevels"] = light.seasons.loaded_levels
+            vegetation = next(p for p in entry["loadedLevels"] if "/VegetationWorld/" in p)
+            # Remove its ULevel from this unsaved editor world. Its package and manifest row still exist.
+            stream = u.GameplayStatics.get_streaming_level(world, vegetation)
+            if not u.EditorLevelUtils.remove_level_from_world(stream.get_loaded_level()):
+                raise RuntimeError("Could not remove the vegetation for the negative capture check")
+            try:
+                loaded_capture_levels(world)
+            except RuntimeError as error:
+                if vegetation not in str(error):
+                    raise
+            else:
+                raise RuntimeError("A capture incorrectly accepted unloaded vegetation")
         u.log(f"LUNDEN_CAPTURE_LIGHT {name}: {json.dumps(entry)}")
         u.EditorLoadingAndSavingUtils.new_blank_map(False)
     (PROJECT / "Saved/capture-light-check.json").write_text(json.dumps(report, indent=1) + "\n", encoding="utf-8")

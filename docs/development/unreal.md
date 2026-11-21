@@ -90,11 +90,11 @@ tools/unreal-engine/tests/test_site.py       PIE test on L_Lunden: ground height
 tools/unreal-engine/python/build_vegetation.py  the site's trees, shrubs and hedges as foliage with wind: /Game/Lunden/Vegetation/ materials,
                                    Generated/VegetationWorld/ (mesh copies, foliage types, Level_vegetation_foliage) (#2281)
 tools/unreal-engine/tests/test_vegetation.py  PIE test on L_Lunden: every exported tree (trunk ≤ 10 cm, height class) and hedge (#2281)
-tools/unreal-engine/tests/capture_vegetation.py  GPU views of L_Lunden with every listed sub-level streamed in memory (nothing saved)
+tools/unreal-engine/tests/capture_vegetation.py  GPU views of the vegetation in L_Lunden with all listed sublevels loaded
 tools/unreal-engine/tests/prepare_vegetation_profile.py  scratch map for the courtyard frame-time measurement (#2281)
 unreal/Lunden/Content/Lunden/Vegetation/      M_LundenFoliage, MI_LundenLeaf (LFS; made by build_vegetation.py)
 tools/unreal-engine/tests/test_exterior.py    PIE test: the export's 32 measurement rays through Hus L, A/B/C and the garage, 1 cm (#2279)
-tools/unreal-engine/tests/capture_exterior.py GPU views of L_Lunden with the #2279 zones streamed in memory (nothing saved)
+tools/unreal-engine/tests/capture_exterior.py GPU views of the composed L_Lunden exterior
 unreal/Lunden/Content/Lunden/Maps/L_Lunden.umap  the persistent world map (LFS); written only by compose_world.py
 tools/unreal-engine/python/build_player.py    the production player in /Game/Lunden/Player/ from the export (#2284;
                                    succeeds build_pilot_player.py); moves the pilot assets, extension components
@@ -107,7 +107,7 @@ unreal/Lunden/Content/Lunden/Player/          BP_LundenPlayer, BP_LundenPlayerCo
 tools/unreal-engine/python/build_seasons.py   the season rule /Game/Lunden/Seasons/BPC_LundenSeasons (#2295)
 tools/unreal-engine/tests/test_seasons.py     PIE test on L_Lunden: the Christmas tree shown/hidden per season-dates.json
 tools/unreal-engine/tests/season-rule.test.mjs  season-dates.json against the web's own inChristmas (Node)
-tools/unreal-engine/tests/capture_seasons.py  GPU views of the tree corner on a summer and a Christmas date (nothing saved)
+tools/unreal-engine/tests/capture_seasons.py  GPU views of the tree corner on June 21 and December 24
 unreal/Lunden/Content/Lunden/Seasons/         BPC_LundenSeasons (LFS; made by build_seasons.py)
 tools/unreal-engine/python/build_save.py      the save file /Game/Lunden/Save/: SG_LundenSave, BFL_LundenSave, BPC_LundenSave (#2288)
 tools/unreal-engine/tests/test_save.py        PIE test: v0 migration, place/facing/settings/name/look/id over a restart

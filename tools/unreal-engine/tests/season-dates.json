@@ -1,6 +1,7 @@
 {
   "about": "#2295: dates and the web's answer for the Christmas window (src/christmas.js inChristmas). season-rule.test.mjs checks each `christmas` against the web's own function; test_seasons.py checks BPC_LundenSeasons against the same rows with the window read from the imported tree's tags.",
   "dates": [
+    { "date": "2026-06-21", "christmas": false, "why": "summer capture from #2326" },
     { "date": "2026-07-15", "christmas": false, "why": "summer" },
     { "date": "2026-11-30", "christmas": false, "why": "the day before the window" },
     { "date": "2026-12-01", "christmas": true, "why": "first day" },

@@ -4,8 +4,7 @@
         -AllowCommandletRendering -RenderOffScreen -unattended -nosplash -nosound
 
 scene.json: `node tools/unreal-engine/pilot-scene.mjs measurements.json scene.json` for the cameras (see
-docs/verification/2281/). Loads L_Lunden and streams in memory every world-levels.json sub-level the saved map does not
-hold yet (until compose_world.py recomposes it), turns Nanite off in memory on the imported meshes (their full meshes,
+docs/verification/2281/). Loads and checks the complete composed L_Lunden, turns Nanite off in memory on the imported meshes (their full meshes,
 as capture_lighting.py: a one-shot commandlet capture draws Nanite meshes as coarse panels, #2298; the vegetation's own mesh copies have
 Nanite off already) and lights the views with the world's own sky (#2283's BP_LundenSky, set to views.json's date and
 each preset's hour exactly as capture_lighting.py does; no temporary rig). Renders with screenshot_level.render_view.
@@ -21,11 +20,14 @@ import sys
 import unreal as u
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "python"))
-from screenshot_level import render_view, spawn  # noqa: E402
+from screenshot_level import render_view  # noqa: E402
 from prepare_nanite_materials import static_mesh_editor  # noqa: E402
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from capture_light import light_for  # noqa: E402
+from capture_world import MANIFEST  # noqa: E402
+
 TOOLS = Path(__file__).resolve().parents[1]
-WORLD = json.loads((TOOLS / "world-levels.json").read_text(encoding="utf-8"))
 # views.json's date and lighting presets (the scene file's cameras may come from a scratch copy with extra views)
 VIEWS = json.loads((TOOLS.parents[1] / "unreal/Lunden/Tests/views.json").read_text(encoding="utf-8"))
 
@@ -34,16 +36,10 @@ def run(scene_path, out_dir, ids=None, iso_date=None):
     date = datetime.date.fromisoformat(iso_date) if iso_date else datetime.date(**VIEWS["date"])
     scene = json.loads(Path(scene_path).read_text(encoding="utf-8"))
     wanted = ids.split(",") if ids else [c["id"] for c in scene["cameras"]]
-    if not u.EditorLoadingAndSavingUtils.load_map(WORLD["map"]):
-        raise RuntimeError(f"Cannot load {WORLD['map']}: run compose_world.py first")
+    if not u.EditorLoadingAndSavingUtils.load_map(MANIFEST["map"]):
+        raise RuntimeError(f"Cannot load {MANIFEST['map']}: run compose_world.py first")
     world = u.get_editor_subsystem(u.UnrealEditorSubsystem).get_editor_world()
-    present = {lvl.get_outermost().get_name().lower() for lvl in u.EditorLevelUtils.get_levels(world)}
-    added = []
-    for entry in WORLD["levels"]:
-        if entry["package"].lower() not in present:
-            if not u.EditorLevelUtils.add_level_to_world(world, entry["package"], u.LevelStreamingAlwaysLoaded):
-                raise RuntimeError(f"Cannot stream {entry['package']}: build it with {entry['builder']}")
-            added.append(entry["package"])
+    light = light_for(world)
     fallback = 0
     if os.environ.get("LUNDEN_CAPTURE_NANITE") != "1":
         for path in u.EditorAssetLibrary.list_assets("/Game/Lunden/Generated", recursive=True, include_folder=False):
@@ -57,41 +53,26 @@ def run(scene_path, out_dir, ids=None, iso_date=None):
                 fallback += 1
     actors = u.get_editor_subsystem(u.EditorActorSubsystem).get_all_level_actors()
     excluded = [a for a in actors if "kind:collision" in [str(t) for t in a.tags]]
-    skies = [a for a in actors if "lunden:sky" in [str(t) for t in a.tags]]
-    lamps = [a for a in actors if any(str(t).startswith("lamp:") for t in a.tags)]
-    if len(skies) != 1:
-        raise RuntimeError(f"L_Lunden has {len(skies)} skies: run build_lighting.py (#2283)")
-    holder = spawn(u.Actor, u.Vector(0, 0, 0))
-    seasons = u.new_object(u.load_class(None, "/Game/Lunden/Seasons/BPC_LundenSeasons.BPC_LundenSeasons_C"), outer=holder)
-    seasons.call_method("ApplySeason", (date.year, date.month, date.day))
     calendar = u.load_asset("/Game/Lunden/Seasons/MPC_LundenVegetation")
-    if u.MaterialLibrary.get_scalar_parameter_value(world, calendar, "Month") != date.month:
-        raise RuntimeError("The vegetation materials did not receive the capture month")
-    hidden_seasonal = [a for a in actors if a.actor_has_tag("seasonal") and a.get_editor_property("hidden")]
-    sky = skies[0]
-    skylight = sky.get_component_by_class(u.SkyLightComponent)
-    skylight.set_editor_property("real_time_capture", False, u.PropertyAccessChangeNotifyMode.NEVER)
+    if not calendar:
+        raise RuntimeError("Build the seasonal vegetation collection before capturing the vegetation")
     u.SystemLibrary.execute_console_command(world, "r.Shadow.Virtual.Enable 0")
     os.makedirs(out_dir, exist_ok=True)
     observed = []
     for cam in [c for c in scene["cameras"] if c["id"] in wanted]:
         preset = VIEWS["lighting"][cam["lighting"]]
-        for k, v in (("UseClock", False), ("TimeScale", 0.0), ("Year", date.year), ("Month", date.month),
-                     ("Day", date.day), ("Hour", float(preset["hour"])), ("Rain", 0.0), ("Snow", 0.0), ("Wet", 0.0)):
-            sky.set_editor_property(k, v, u.PropertyAccessChangeNotifyMode.NEVER)
-        sky.call_method("UpdateSky")
-        for lamp in lamps:
-            lamp.call_method("TurnOn" if preset["lampsOn"] else "TurnOff")
-        skylight.recapture_sky()
+        hidden_seasonal = light.use(cam["lighting"], preset, (date.year, date.month, date.day))
+        if u.MaterialLibrary.get_scalar_parameter_value(world, calendar, "Month") != date.month:
+            raise RuntimeError("The vegetation materials did not receive the capture month")
         obs = render_view(world, out_dir, cam["id"], u.Vector(*cam["xyz"]),
                           u.Rotator(roll=0, pitch=cam["pitch"], yaw=cam["yaw"]), scene["width"], scene["height"],
                           scene["horizontalFov"], -0.7 if preset["lampsOn"] else 0, excluded + hidden_seasonal, lumen=True)
         if math.dist(obs["xyz"], cam["xyz"]) > 0.01 or any(abs(obs[k] - cam[k]) > 0.001 for k in ("pitch", "yaw")):
             raise RuntimeError("Camera transform mismatch: " + cam["id"])
         observed.append({**obs, "id": cam["id"], "lighting": cam["lighting"], "hour": preset["hour"], "date": {"year": date.year, "month": date.month, "day": date.day}})
-    (Path(out_dir) / "capture.json").write_text(json.dumps({"engine": u.SystemLibrary.get_engine_version(), "map": WORLD["map"],
-        "date": date.isoformat(), "streamedInMemory": added, "naniteOffInMemory": fallback, "hiddenCollisionActors": len(excluded), "lamps": len(lamps), "cameras": observed}, indent=2) + "\n")
-    u.EditorLoadingAndSavingUtils.new_blank_map(False)  # discard the temporary levels and rig
+    (Path(out_dir) / "capture.json").write_text(json.dumps({"engine": u.SystemLibrary.get_engine_version(), "map": MANIFEST["map"],
+        "date": date.isoformat(), "loadedLevels": light.seasons.loaded_levels, "streamedInMemory": [], "naniteOffInMemory": fallback, "hiddenCollisionActors": len(excluded), "lamps": len(light.lamps), "cameras": observed}, indent=2) + "\n")
+    u.EditorLoadingAndSavingUtils.new_blank_map(False)  # discard the capture state
     u.log(f"LUNDEN_VEGETATION_CAPTURE_OK {len(observed)} views")
 
 
