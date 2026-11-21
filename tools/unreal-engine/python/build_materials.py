@@ -39,7 +39,7 @@ CALENDAR = "/Game/Lunden/Seasons/MPC_LundenVegetation"
 # One cell of a pattern in UV metres: Size = (w along U, h along V). Stagger shifts each column along V by a random
 # share of a cell (parquet), Bond shifts each row along U (half bond), Joint is the joint width in metres. Returns
 # linear colour (rgb) and roughness (a).
-TILED_HLSL = r"""
+TILED_GRID = r"""
 float2 S = max(Size.xy, float2(0.001, 0.001));
 float2 p = UV / S;
 float col = floor(p.x);
@@ -52,7 +52,31 @@ float2 d = min(f, 1.0 - f) * S;
 float edge = min(d.x, d.y);
 float hj = Joint * 0.5;
 float joint = Joint > 0.0 ? 1.0 - smoothstep(hj, hj + max(hj, 0.0006), edge) : 0.0;
-float h = frac(sin(dot(cell, float2(127.1, 311.7))) * 43758.5453);
+"""
+# A screen pixel covers an area of the web's running-bond texture. Integrate the periodic face width
+# over that footprint for each of the two alternating rows. The complement is the mortar coverage.
+BRICK_FILTER = r"""
+if (FilterBrick > 0.5) {
+    float2 footprint = fwidth(UV) / S;
+    float2 gap = saturate(Joint / S);
+    float4 span = max(float4(footprint.xx, 0.5 * footprint.yy), 0.0001);
+    float4 faceWidth = float4(1.0 - gap.xx, 0.5 * (1.0 - gap.yy));
+    float x = frac(UV.x / S.x);
+    float y = frac(0.5 * UV.y / S.y);
+    float4 center = float4(x, frac(x + Bond), y, frac(y + 0.5))
+                  - float4(0.5 * gap.xx, 0.25 * gap.yy);
+    float4 lo = center - 0.5 * span;
+    float4 hi = center + 0.5 * span;
+    float4 area = (floor(hi) - floor(lo)) * faceWidth
+                + min(frac(hi), faceWidth) - min(frac(lo), faceWidth);
+    float4 coverage = saturate(area / span);
+    joint = saturate(1.0 - dot(coverage.xy, coverage.zw));
+    float detail = 1.0 - smoothstep(0.5, 2.0, max(footprint.x, footprint.y));
+    Variation *= detail;
+    Grain *= detail;
+}
+"""
+TILED_FINISH = r"""float h = frac(sin(dot(cell, float2(127.1, 311.7))) * 43758.5453);
 float3 face = Color.rgb * saturate(1.0 + Variation * (h * 2.0 - 1.0));
 float g = sin(UV.x * 210.0 + sin(UV.y * 6.0 + h * 40.0) * 2.0 + h * 17.0);
 face *= 1.0 + Grain * g;
@@ -136,7 +160,7 @@ GRASS_VECTORS = {"Color": "#609548", "Ground": (0.957, 0.094, 0.0), "BladeRange"
                  "BladeLength": (0.0125, 0.0438, 0.0), "PatchCells": (8.0, 17.0, 0.0), "Dry": (0.26, 0.17, 0.02),
                  "Lush": (0.19, 0.09, 0.22), "TuftRadius": (0.044, 0.0875, 0.0)}
 TILED_SCALARS = {"Joint": 0.003, "Bond": 0.0, "Stagger": 0.0, "Variation": 0.0, "Grain": 0.0, "Roughness": 0.8,
-                 "JointRoughness": 0.95}
+                 "JointRoughness": 0.95, "FilterBrick": 0.0}
 TILED_VECTORS = {"Size": (0.2, 0.2, 0.0), "Color": "#ffffff", "JointColor": "#b9bbbb"}
 
 
@@ -162,7 +186,9 @@ def vector(value):
 
 
 def spec_hash(path, spec):
-    parts = [path, spec, TILED_HLSL] + ([GRASS_HLSL] if spec.get("graph") == "grass" else [])  # other hashes unchanged
+    parts = [path, spec, TILED_GRID + TILED_FINISH] + ([GRASS_HLSL] if spec.get("graph") == "grass" else [])  # other hashes unchanged
+    if spec.get("graph") == "tiled":
+        parts.append(BRICK_FILTER)
     if spec.get("graph") == GLTF_VC:  # a copy of an engine material: a new engine version rebuilds it
         parts.append(unreal.SystemLibrary.get_engine_version())
     return hashlib.sha256(json.dumps(parts, sort_keys=True).encode("utf-8")).hexdigest()[:16]
@@ -210,7 +236,7 @@ def tiled_graph(m, spec):
     custom.set_editor_property("inputs", inputs)
     custom.set_editor_property("output_type", unreal.CustomMaterialOutputType.CMOT_FLOAT4)
     custom.set_editor_property("description", "LundenTiled")
-    custom.set_editor_property("code", TILED_HLSL.strip())
+    custom.set_editor_property("code", (TILED_GRID + BRICK_FILTER + TILED_FINISH).strip())
     uv = mel.create_material_expression(m, unreal.MaterialExpressionTextureCoordinate, -900, -200)
     if not mel.connect_material_expressions(uv, "", custom, "UV"):
         raise RuntimeError("could not connect UV")

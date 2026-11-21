@@ -76,14 +76,35 @@ Hus L, the stair drum and Hus A now show red brick in half bond with light joint
 street in front of START is asphalt instead of white wall tiles. The courtyard's paths show the slab joints, the brick
 pavers at its far end are red.
 
-Remaining differences, none of them this issue's:
+Differences visible in these captures:
 
 - Hus L's courtyard façade at a grazing angle shows moiré arcs: `M_LundenTiled` draws joints without filter-width
-  antialiasing, so joints thinner than a pixel alias (no open issue).
+  antialiasing in the captured build. The full-resolution original Unreal PNG already shows the arcs.
 - The basketball court's lines in front of START are missing: `src/basket.js` builds them in `main.js`, outside
-  `buildWorld`, like the ball (#2310 names only the ball).
+  `buildWorld`. The follow-up export below carries the same painted mesh into the game.
 - White plants (#2321), the neighbours' flat windows and the lit window panels (#2324), the missing neighbour houses
   on the left of START (#2323), the hedges' texture and Hus A's balcony slats (#2325).
 - Calibration is *guess* (each entry's `assumption`): per-brick jitter as one variation, no bump relief or moss, the
   herringbone as running bond, square setts for the cobbles, no asphalt tracks or roof mottle. The old S:t Lars bays'
   painted window grid stays on Interchange's instance (it has no surface class, and plain brick would lose its windows).
+
+
+## Court paint and mortar filtering
+
+The export now takes the painted mesh from the web's `Hoop` at its original transform and splits it across
+`l1007-entre` and `omgivning`. The straight lines, dashes and arcs use the web's pale paint and its clearance above
+the asphalt. The solid free-throw semicircle had reversed winding on the web. Its 64 triangles now face up.
+
+Run `node tools/unreal-engine/tests/court-markings.test.mjs` on the export. It checks the original area, material and
+upper-side hits for all 272 source triangles against both GLBs and the underlying road. Across the two zones the paint
+covers 3.98286 m² and lies 0.800 cm above the exported asphalt.
+
+The original 1440 × 810 Unreal courtyard PNG shows the same moiré as the JPEG. The tiled material had a fixed-width
+mortar transition in UV coordinates, so subpixel mortar lines repeatedly appeared and disappeared across a receding
+wall. The three running-bond brick instances now integrate brick and mortar coverage over each pixel's UV footprint,
+with alternating rows offset by half a brick. Other material instances retain their existing shading.
+
+A headless Mesa GLES run of the shader expression (HLSL ported mechanically to GLSL) checked 132 fine, coarse and
+grazing-angle samples for each of the three brick instances against an 8,192-sample-per-axis reference. Across 396
+samples the largest absolute mortar-coverage error was 0.00246 on a 0–1 scale, including 8-bit readback. Windows verification requires rebuilding the tiled master and three
+brick instances, importing the two ground zones and recapturing the three views. The pictures above predate both changes.

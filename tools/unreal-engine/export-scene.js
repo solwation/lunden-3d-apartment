@@ -42,7 +42,7 @@ export function zoneTable(W, D, patio, husL = husLLayout(W)) {
     // #2279: the buildings round L1007. Boxes are generous guards round each builder's content; `from` does the sorting.
     // The export report lists anything of these builders that no zone took (it must stay empty).
     { id: 'l1007-entre', what: 'street and entrance in front of L1007 incl. START: the street, pavement and terrain pieces of the surroundings (#2279)',
-      status: 'exported', split: true, from: ['surroundings', 'surroundings-site'],
+      status: 'exported', split: true, from: ['surroundings', 'surroundings-site', 'basket-court'],
       box: { x0: 0, x1: W, z0: C.OUTDOOR.z0, z1: 0, y0: -4, y1: 8 } },
     { id: 'hus-l', what: 'Hus L: façades, loftgång, roofs and terraces, the neighbours\' patios, the portik, the stairwell/lift core, visitable flats L1004/L1201 (#2279)',
       status: 'exported', split: true, from: ['exterior', 'visit', 'core-l', 'portik'],
@@ -58,7 +58,7 @@ export function zoneTable(W, D, patio, husL = husLLayout(W)) {
       status: 'exported', split: true, from: ['world', 'surroundings-site'], skip: SITE_SKIP,
       box: { x0: -71, x1: 14, z0: 12.1, z1: 53, y0: -4, y1: 8 } },
     { id: 'omgivning', what: 'terrain, streets, pavements, parked cars, street furniture, the Höje å valley with its paths, bridges and water surface (#2280)',
-      status: 'exported', split: true, from: ['world', 'surroundings', 'surroundings-site'], skip: SITE_SKIP,
+      status: 'exported', split: true, from: ['world', 'surroundings', 'surroundings-site', 'basket-court'], skip: SITE_SKIP,
       box: { x0: C.SITE.backgroundGround.x0, x1: C.SITE.backgroundGround.x1, z0: C.SITE.backgroundGround.z0, z1: C.SITE.backgroundGround.z1, y0: -30, y1: 40 } },
     // #2281: the vegetation #2280's zones leave out (SITE_SKIP): the site's trees (trunks and crown lobes, one node per
     // instance), the understory and pavement shrubs, the courtyard plantings and pergola vines, the river bank's growth,
@@ -82,12 +82,12 @@ export function zoneTable(W, D, patio, husL = husLLayout(W)) {
 }
 
 /** Builders whose objects only split zones with a matching `from` may take (main.js adds them; the l1007 zones never). */
-const EXTRA_GROUPS = new Set(['garage', 'core-l', 'core-abc']);
+const EXTRA_GROUPS = new Set(['garage', 'core-l', 'core-abc', 'basket-court']);
 const accepts = (z, group, atom) => (z.from ? z.from.includes(group) : !EXTRA_GROUPS.has(group)) && !(z.skip && atom && z.skip.test(atom))
   && !(z.only && !(atom && z.only.test(atom))); // #2281: a zone with `only` takes nothing else
 /** `source` of the buildings' static geometry (#2279): the builder module, as no single data row describes a merged mesh. */
 const GROUP_SOURCE = { exterior: 'src/exterior.js', visit: 'src/world.js (visitFlatParts)', 'core-l': 'src/core.js', 'core-abc': 'src/corehouse.js',
-  garage: 'src/garage.js', surroundings: 'src/surroundings.js', 'surroundings-site': 'src/surroundings.js' };
+  garage: 'src/garage.js', 'basket-court': 'src/basket.js Hoop.courtMesh', surroundings: 'src/surroundings.js', 'surroundings-site': 'src/surroundings.js' };
 /** The surroundings' ground and backdrop (terrain, streets, paving, trees, the campus and fields beyond): not Kv. Lunden's
  *  buildings, so never Hus A/B/C's zone (#2280's planned zones take them). */
 const SITE_NAME = /^(site-terrain|site-asphalt|site-paving|ground-ao|street-|tree-|east-|west-|north-|edge-|south-)/;
@@ -509,7 +509,15 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
       lightsInfo.patioBulb = strings.mat;
     }
   } catch (e) { loose.error = String(e?.stack ?? e); }
+  // main.js adds Hoop outside buildWorld. Keep the static court paint at the same world transform,
+  // including its clearance above the car park. The scoring volumes and the hoop stay in the game.
+  const { Hoop } = await import('../../src/basket.js');
+  const hoop = new Hoop();
+  const courtLines = hoop.courtMesh;
+  courtLines.name = 'basket-court-lines';
   const scene = new THREE.Group();
+  scene.attach(courtLines);
+  extra.group.set(courtLines, 'basket-court');
   scene.add(world.object);
   if (lightsInfo.group) scene.add(lightsInfo.group);
   for (const o of extra.objects) scene.add(o);

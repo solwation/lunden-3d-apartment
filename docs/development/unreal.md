@@ -2440,6 +2440,9 @@ are the canvases' (a roof's face and seam are its key colour times the roof map'
 Per-brick jitter, the herringbone (drawn as running bond), the cobbles' round stones (square setts), bump relief, moss,
 the asphalt's tracks and cracks, and roof mottle are not drawn: *guess* in each entry's `assumption`. Left on the
 import default: the old S:t Lars bays' painted window grid (`std_ffffff_r95_m0_tex`, no class) and the school façade.
+The three running-bond brick instances use `FilterBrick` to integrate mortar over the pixel footprint. The actual court
+paint from `src/basket.js` lies across the adjacent `l1007-entre` and `omgivning` zones. Verify its paint and clearance
+against the web geometry with `node tools/unreal-engine/tests/court-markings.test.mjs` after exporting both zones.
 Verification: [#2318](../verification/2318/README.md).
 
 ### Vertex colours (#2321)

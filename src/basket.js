@@ -131,7 +131,7 @@ function buildCourtLines(C, H) {
   const ftw2 = (C.freeThrowLen ?? 3.60) / 2;
   addSegment(-ftw2, ftZ, ftw2, ftZ);
   // 5. Free throw circle (radius 1.80 m, outer solid into court, inner dashed toward hoop)
-  addArc(0, ftZ, C.freeThrowRadius ?? 1.80, Math.PI / 2, -Math.PI / 2, 32);
+  addArc(0, ftZ, C.freeThrowRadius ?? 1.80, -Math.PI / 2, Math.PI / 2, 32);
   const dashes = 8;
   for (let i = 0; i < dashes; i += 2) {
     const a1 = Math.PI / 2 + (Math.PI * i) / dashes;

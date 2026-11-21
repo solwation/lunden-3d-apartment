@@ -32,7 +32,7 @@ import sys
 ROOT = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", ".."))
 MASTER_PARAMS = {
     "surface": {"BaseColor", "Roughness", "Metallic"},
-    "tiled": {"Size", "Color", "JointColor", "Joint", "Bond", "Stagger", "Variation", "Grain", "Roughness", "JointRoughness"},
+    "tiled": {"FilterBrick", "Size", "Color", "JointColor", "Joint", "Bond", "Stagger", "Variation", "Grain", "Roughness", "JointRoughness"},
     "glass": {"BaseColor", "Opacity", "Roughness", "Specular"},
     "grass": {"Color", "Ground", "BladeRange", "BladeLength", "Cell", "StrokeWidth", "StrawTint", "BladeTint",
               "VertexColorWeight", "Roughness", "Tile", "PatchCells", "PatchContrast", "Dry", "Lush", "TuftCount", "TuftRadius",
@@ -212,6 +212,11 @@ def main(argv):
                 errors.append(f"{path}: parent {spec['parent']} is not a listed master")
                 continue
             unknown = set(spec.get("params", {})) - MASTER_PARAMS.get(parent.get("graph"), set())
+            params = spec.get("params", {})
+            if parent.get("graph") == "tiled" and bool(params.get("FilterBrick")) != (spec.get("surface") == "brick"):
+                errors.append(f"{path}: only running-bond brick surfaces should enable the mortar footprint filter")
+            if params.get("FilterBrick") and (params.get("Bond") != 0.5 or params.get("Stagger") != 0):
+                errors.append(f"{path}: the mortar footprint filter expects alternate half-brick rows")
             if unknown:
                 errors.append(f"{path}: {parent.get('graph')} master has no parameter(s) {sorted(unknown)}")
         elif spec.get("graph", "constant") not in ("constant", GLTF_VC, *MASTER_PARAMS):
