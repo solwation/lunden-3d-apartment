@@ -22,6 +22,11 @@ on:
       - 'tools/unreal-engine/tests/release-notes.test.mjs'
       - '.github/workflows/launcher-tests.yml'
   workflow_dispatch:
+    inputs:
+      browser_peers:
+        description: Compare movement in the Windows launcher, desktop Chromium and a touch browser
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -57,11 +62,21 @@ jobs:
         run: node --test tools/unreal-engine/tests/sign-manifest.test.mjs
       - name: Render the Swedish release notes (#2377)
         run: node --test tools/unreal-engine/tests/release-notes.test.mjs
+      - name: Install local-room browsers for the three-client test
+        if: github.event_name == 'workflow_dispatch' && inputs.browser_peers
+        run: |
+          npm install --prefix . --no-save --no-package-lock --no-audit --no-fund --ignore-scripts playwright@1.58.2 three@0.170.0
+          npx playwright install chromium
       - name: Run launcher tests on Windows
         env:
           LUNDEN_GENERATED_TEST_MANIFEST: ${{ runner.temp }}/generated-stock-manifest.json
           LUNDEN_NODE_SIGNED_MANIFEST_DIR: ${{ runner.temp }}/node-signed-manifest
         run: dotnet test unreal/Launcher.Tests/Lunden.Launcher.Tests.csproj --configuration Release --logger "console;verbosity=normal"
+      - name: Verify Windows launcher movement with desktop and touch browsers
+        if: github.event_name == 'workflow_dispatch' && inputs.browser_peers
+        env:
+          LUNDEN_TEST_BROWSER_PEERS: '1'
+        run: dotnet test unreal/Launcher.Tests/Lunden.Launcher.Tests.csproj --configuration Release --no-build --filter FullyQualifiedName~LauncherAndWebPeer --logger "console;verbosity=normal"
       - name: Verify Windows Authenticode acceptance and rejection
         shell: pwsh
         run: ./unreal/Launcher.Tests/Test-Authenticode.ps1
