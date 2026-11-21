@@ -54,6 +54,7 @@ unreal/Lunden/THIRD_PARTY_NOTICES.md  attribution shipped with the Windows packa
 unreal/Lunden/Import/              the web export (GLB per zone, measurements.json, export-manifest.json); Git-ignored
 shared/README.md, shared/schema/   the web ↔ Unreal data contract: what is canonical where, formats, versions, axes
 tools/unreal-engine/coordinates.mjs                web metres ↔ Unreal centimetres, yaw/pitch conversion (pure); test: tools/unreal-engine/coordinatestest.mjs
+tools/unreal-engine/wire/players.json              /players wire fixtures (#2292): Worker test cloudflare/playerswire.test.mjs; the Unreal network test uses the same file
 tools/unreal-engine/export-world.mjs          export driver (Node + Playwright): serves the repo, runs tools/unreal-engine/export.html +
                                    tools/unreal-engine/export-scene.js (the real buildWorld), writes unreal/Lunden/Import/
 tools/unreal-engine/sources.mjs               the export's source list (import closure, data, models) and hashes

@@ -84,7 +84,9 @@ shows L1007 furnished with all pictures in `textures/`. Sizes are preliminary un
 - **Protocol.** The Windows client speaks the existing `/players` WebSocket protocol, including IDs, coordinates and
   yaw, optional look and pose fields, rate and size limits, heartbeat, away state, reconnect and the monthly cap.
   Every protocol change is additive and backward compatible: current web clients, phone clients and clients that
-  omit optional fields keep working unchanged. Shared wire fixtures run in both the Worker tests and Unreal.
+  omit optional fields keep working unchanged. Shared wire fixtures run in both the Worker tests and Unreal: they live in
+  [`tools/unreal-engine/wire/players.json`](../../tools/unreal-engine/wire/README.md), `cloudflare/playerswire.test.mjs` plays
+  them against the Worker, and the Unreal test of #2292 is to play the same file.
 - **Hit and life contract.** The room keeps its authority. It recomputes hits from accepted poses with the shared
   head boxes, counts lives per connection and sends the totals. The Windows pose must give the same results as a web
   pose for the version-2 fixtures, and life and respawn must agree in both clients.

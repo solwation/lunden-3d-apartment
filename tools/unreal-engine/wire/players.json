@@ -1,0 +1,467 @@
+{
+  "about": "Fixed wire fixtures of the players' room /players (#2292). Played by cloudflare/playerswire.test.mjs against the real Worker; the Unreal client test (#2292) plays the same steps. Rules: tools/unreal-engine/wire/README.md.",
+  "endpoint": {
+    "path": "/players",
+    "query": {"n":"display name (cleaned by the room)","a":"optional per-tab away token, 12–32 of [a-z0-9]; never relayed"},
+    "upgrade": "websocket",
+    "origin": "a request with an Origin header must come from the site; none (a native client) is accepted"
+  },
+  "clock": {"start":"2026-11-21T12:00:00.000Z","note":"advance steps move the room's clock (Date.now) on Node; a live run waits at least that long"},
+  "relevantTypes": ["w","j","s","x"],
+  "heartbeat": {"send":"p","reply":"q"},
+  "limits": {
+    "maxBytes": 512,
+    "perSecond": 6,
+    "strikes": 5,
+    "idleMs": 60000,
+    "maxPlayers": 30,
+    "nameMax": 20,
+    "monthlyCap": 800000,
+    "msgPerRequest": 20,
+    "awayMs": 120000,
+    "lives": 10,
+    "clientHz": 5,
+    "clientBeatMs": 10000
+  },
+  "closeCodes": {"idle":4000,"cap":4001,"off":4003,"rate":4008,"full":4029,"big":1009,"away":4100},
+  "coordinates": {
+    "web": "metres, right-handed: x east, y up, z south (north = -z); p = the feet; r = yaw in radians (camera.rotation.y: 0 looks north, +pi/2 west); look = [head yaw relative to r, pitch] in radians (pitch > 0 looks up)",
+    "unreal": "centimetres: X = 100 x (east), Y = 100 z (south), Z = 100 y (up); yaw in degrees = -90 - deg(r), normalised to (-180, 180]; pitch unchanged in degrees; a relative head yaw changes sign. tools/unreal-engine/coordinates.mjs, docs/development/unreal.md",
+    "rounding": "the room rounds p, r and look to 0.01 (1 cm, 0.01 rad) before relaying",
+    "cases": [
+      {
+        "name": "Anna in join-state-leave (west-facing)",
+        "web": {"p":[12.35,0,-3.21],"r":1.57},
+        "unreal": {"feetCm":[1235,-321,0],"yawDeg":-179.95}
+      },
+      {"name":"Olof in join-state-leave","web":{"p":[2,0,3],"r":-1},"unreal":{"feetCm":[200,300,0],"yawDeg":-32.7}},
+      {
+        "name": "standing, looking north and up",
+        "web": {"p":[1,0,1],"r":0,"look":[0,0.25]},
+        "unreal": {"feetCm":[100,100,0],"yawDeg":-90,"pitchDeg":14.32,"headYawDeg":0}
+      },
+      {
+        "name": "seated, facing south, head turned left, looking down",
+        "web": {"p":[1,0.45,1],"r":3.14,"look":[0.4,-0.3]},
+        "unreal": {"feetCm":[100,100,45],"yawDeg":90.09,"pitchDeg":-17.19,"headYawDeg":-22.92}
+      },
+      {"name":"away-and-back","web":{"p":[3,0,4],"r":1},"unreal":{"feetCm":[300,400,0],"yawDeg":-147.3}},
+      {
+        "name": "a Windows player facing east (Unreal yaw 0)",
+        "web": {"p":[-4.5,1.2,7.25],"r":-1.57},
+        "unreal": {"feetCm":[-450,725,120],"yawDeg":-0.05}
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "id": "join-state-leave",
+      "title": "native and web clients: welcome with peer id, join, cleaned and rounded states, junk dropped, heartbeat, leave",
+      "steps": [
+        {"op":"connect","client":"A","name":"Anna","note":"no Origin header: a native (Windows) client"},
+        {"op":"expect","client":"A","messages":[{"t":"w","i":"$A","l":10,"ps":[]}]},
+        {"op":"send","client":"A","json":{"p":[12.346,0.004,-3.214],"r":1.5708,"score":0}},
+        {"op":"expect","client":"A","messages":[],"note":"a state is never echoed to its sender"},
+        {
+          "op": "connect",
+          "client": "B",
+          "name": "Olof<b>",
+          "origin": "https://solwation.github.io",
+          "note": "a web page; the name is cleaned (no < > & \" or control characters, at most nameMax)"
+        },
+        {
+          "op": "expect",
+          "client": "B",
+          "messages": [{"t":"w","i":"$B","l":10,"ps":[{"i":"$A","n":"Anna","p":[12.35,0,-3.21],"r":1.57,"score":0,"h":"","l":10}]}]
+        },
+        {"op":"expect","client":"A","messages":[{"t":"j","i":"$B","n":"Olofb","l":10}]},
+        {"op":"send","client":"B","json":{"p":[2,0,3],"r":-1}},
+        {"op":"expect","client":"A","messages":[{"t":"s","i":"$B","p":[2,0,3],"r":-1,"score":0,"h":"","l":10}]},
+        {
+          "op": "send",
+          "client": "B",
+          "texts": ["not json",{"p":[1,2],"r":0},{"p":[1000000000,0,0],"r":0},{"p":[0,0,0]}],
+          "note": "malformed states are dropped silently"
+        },
+        {"op":"expect","client":"A","messages":[]},
+        {"op":"send","client":"B","text":"p","note":"the heartbeat, answered by the runtime without waking the room"},
+        {"op":"expect","client":"B","messages":["q"]},
+        {"op":"expect","client":"A","messages":[]},
+        {"op":"close","client":"B","code":1000},
+        {"op":"expect","client":"A","messages":[{"t":"x","i":"$B"}]}
+      ]
+    },
+    {
+      "id": "appearance-and-pose",
+      "title": "optional look and pose fields: kept when valid, dropped when not",
+      "steps": [
+        {"op":"connect","client":"A","name":"Anna"},
+        {"op":"connect","client":"B","name":"Bo"},
+        {"op":"expect","client":"B","messages":[{"t":"w","i":"$B"}]},
+        {
+          "op": "send",
+          "client": "A",
+          "json": {"p":[1,0,1],"r":0,"score":12.7,"h":"nerf","c":true,"look":[0,0.25],"jp":1,"dn":2,"av":"120310101175","ax":"u1","junk":"x"}
+        },
+        {
+          "op": "expect",
+          "client": "B",
+          "messages": [
+            {
+              "t": "s",
+              "i": "$A",
+              "look": [0,0.25],
+              "p": [1,0,1],
+              "r": 0,
+              "score": 12,
+              "h": "nerf",
+              "c": true,
+              "jp": 1,
+              "dn": 2,
+              "av": "120310101175",
+              "ax": "u1",
+              "l": 10
+            }
+          ]
+        },
+        {
+          "op": "send",
+          "client": "A",
+          "json": {"p":[1,0,1],"r":0,"h":"bazooka","c":"yes","pose":7,"look":[0.5,0],"av":"99","ax":"u1"},
+          "note": "unknown weapon, non-boolean crouch, unknown pose, a standing head turn, an invalid look code (and so its extension)"
+        },
+        {"op":"expect","client":"B","messages":[{"t":"s","i":"$A","p":[1,0,1],"r":0,"score":0,"h":"","l":10}]},
+        {"op":"send","client":"A","json":{"p":[1,0.45,1],"r":3.1416,"pose":1,"look":[0.4,-0.3],"av":"1203101"}},
+        {
+          "op": "expect",
+          "client": "B",
+          "messages": [{"t":"s","i":"$A","look":[0.4,-0.3],"p":[1,0.45,1],"r":3.14,"score":0,"h":"","pose":1,"av":"1203101","l":10}]
+        }
+      ]
+    },
+    {
+      "id": "rate-limit",
+      "title": "over perSecond messages in a second are dropped; strikes such seconds close with 4008",
+      "steps": [
+        {"op":"connect","client":"A","name":"Anna"},
+        {"op":"connect","client":"B","name":"Bo"},
+        {"op":"expect","client":"B","messages":[{"t":"w","i":"$B"}]},
+        {
+          "op": "send",
+          "client": "A",
+          "texts": [
+            {"p":[0,0,0],"r":0},
+            {"p":[1,0,0],"r":0},
+            {"p":[2,0,0],"r":0},
+            {"p":[3,0,0],"r":0},
+            {"p":[4,0,0],"r":0},
+            {"p":[5,0,0],"r":0},
+            {"p":[6,0,0],"r":0}
+          ],
+          "note": "seven in one second: the seventh is dropped (one strike)"
+        },
+        {
+          "op": "expect",
+          "client": "B",
+          "messages": [
+            {"t":"s","i":"$A","p":[0,0,0],"r":0,"score":0,"h":"","l":10},
+            {"t":"s","i":"$A","p":[1,0,0],"r":0,"score":0,"h":"","l":10},
+            {"t":"s","i":"$A","p":[2,0,0],"r":0,"score":0,"h":"","l":10},
+            {"t":"s","i":"$A","p":[3,0,0],"r":0,"score":0,"h":"","l":10},
+            {"t":"s","i":"$A","p":[4,0,0],"r":0,"score":0,"h":"","l":10},
+            {"t":"s","i":"$A","p":[5,0,0],"r":0,"score":0,"h":"","l":10}
+          ]
+        },
+        {"op":"expect","client":"A","closed":null},
+        {"op":"advance","ms":1000},
+        {
+          "op": "send",
+          "client": "A",
+          "texts": [
+            {"p":[0,0,1],"r":0},
+            {"p":[1,0,1],"r":0},
+            {"p":[2,0,1],"r":0},
+            {"p":[3,0,1],"r":0},
+            {"p":[4,0,1],"r":0},
+            {"p":[5,0,1],"r":0},
+            {"p":[6,0,1],"r":0}
+          ]
+        },
+        {
+          "op": "expect",
+          "client": "B",
+          "messages": [
+            {"t":"s","i":"$A","p":[0,0,1],"r":0,"score":0,"h":"","l":10},
+            {"t":"s","i":"$A","p":[1,0,1],"r":0,"score":0,"h":"","l":10},
+            {"t":"s","i":"$A","p":[2,0,1],"r":0,"score":0,"h":"","l":10},
+            {"t":"s","i":"$A","p":[3,0,1],"r":0,"score":0,"h":"","l":10},
+            {"t":"s","i":"$A","p":[4,0,1],"r":0,"score":0,"h":"","l":10},
+            {"t":"s","i":"$A","p":[5,0,1],"r":0,"score":0,"h":"","l":10}
+          ]
+        },
+        {"op":"expect","client":"A","closed":null},
+        {"op":"advance","ms":1000},
+        {
+          "op": "send",
+          "client": "A",
+          "texts": [
+            {"p":[0,0,2],"r":0},
+            {"p":[1,0,2],"r":0},
+            {"p":[2,0,2],"r":0},
+            {"p":[3,0,2],"r":0},
+            {"p":[4,0,2],"r":0},
+            {"p":[5,0,2],"r":0},
+            {"p":[6,0,2],"r":0}
+          ]
+        },
+        {
+          "op": "expect",
+          "client": "B",
+          "messages": [
+            {"t":"s","i":"$A","p":[0,0,2],"r":0,"score":0,"h":"","l":10},
+            {"t":"s","i":"$A","p":[1,0,2],"r":0,"score":0,"h":"","l":10},
+            {"t":"s","i":"$A","p":[2,0,2],"r":0,"score":0,"h":"","l":10},
+            {"t":"s","i":"$A","p":[3,0,2],"r":0,"score":0,"h":"","l":10},
+            {"t":"s","i":"$A","p":[4,0,2],"r":0,"score":0,"h":"","l":10},
+            {"t":"s","i":"$A","p":[5,0,2],"r":0,"score":0,"h":"","l":10}
+          ]
+        },
+        {"op":"expect","client":"A","closed":null},
+        {"op":"advance","ms":1000},
+        {
+          "op": "send",
+          "client": "A",
+          "texts": [
+            {"p":[0,0,3],"r":0},
+            {"p":[1,0,3],"r":0},
+            {"p":[2,0,3],"r":0},
+            {"p":[3,0,3],"r":0},
+            {"p":[4,0,3],"r":0},
+            {"p":[5,0,3],"r":0},
+            {"p":[6,0,3],"r":0}
+          ]
+        },
+        {
+          "op": "expect",
+          "client": "B",
+          "messages": [
+            {"t":"s","i":"$A","p":[0,0,3],"r":0,"score":0,"h":"","l":10},
+            {"t":"s","i":"$A","p":[1,0,3],"r":0,"score":0,"h":"","l":10},
+            {"t":"s","i":"$A","p":[2,0,3],"r":0,"score":0,"h":"","l":10},
+            {"t":"s","i":"$A","p":[3,0,3],"r":0,"score":0,"h":"","l":10},
+            {"t":"s","i":"$A","p":[4,0,3],"r":0,"score":0,"h":"","l":10},
+            {"t":"s","i":"$A","p":[5,0,3],"r":0,"score":0,"h":"","l":10}
+          ]
+        },
+        {"op":"expect","client":"A","closed":null},
+        {"op":"advance","ms":1000},
+        {
+          "op": "send",
+          "client": "A",
+          "texts": [
+            {"p":[0,0,4],"r":0},
+            {"p":[1,0,4],"r":0},
+            {"p":[2,0,4],"r":0},
+            {"p":[3,0,4],"r":0},
+            {"p":[4,0,4],"r":0},
+            {"p":[5,0,4],"r":0},
+            {"p":[6,0,4],"r":0}
+          ],
+          "note": "the fifth flooded second in a row closes the socket"
+        },
+        {"op":"expect","client":"A","closed":4008},
+        {
+          "op": "expect",
+          "client": "B",
+          "messages": [
+            {"t":"s","i":"$A","p":[0,0,4],"r":0,"score":0,"h":"","l":10},
+            {"t":"s","i":"$A","p":[1,0,4],"r":0,"score":0,"h":"","l":10},
+            {"t":"s","i":"$A","p":[2,0,4],"r":0,"score":0,"h":"","l":10},
+            {"t":"s","i":"$A","p":[3,0,4],"r":0,"score":0,"h":"","l":10},
+            {"t":"s","i":"$A","p":[4,0,4],"r":0,"score":0,"h":"","l":10},
+            {"t":"s","i":"$A","p":[5,0,4],"r":0,"score":0,"h":"","l":10},
+            {"t":"x","i":"$A"}
+          ]
+        }
+      ]
+    },
+    {
+      "id": "size-limit",
+      "title": "a message of maxBytes characters passes; one more closes with 1009",
+      "steps": [
+        {"op":"connect","client":"A","name":"Anna"},
+        {"op":"connect","client":"B","name":"Bo"},
+        {"op":"expect","client":"B","messages":[{"t":"w","i":"$B"}]},
+        {
+          "op": "send",
+          "client": "A",
+          "text": "{\"p\":[0,0,0],\"r\":0,\"pad\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}"
+        },
+        {"op":"expect","client":"B","messages":[{"t":"s","i":"$A","p":[0,0,0],"r":0,"score":0,"h":"","l":10}]},
+        {
+          "op": "send",
+          "client": "A",
+          "text": "{\"p\":[0,0,0],\"r\":0,\"pad\":\"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx\"}"
+        },
+        {"op":"expect","client":"A","closed":1009},
+        {"op":"expect","client":"B","messages":[{"t":"x","i":"$A"}]}
+      ]
+    },
+    {
+      "id": "idle-and-heartbeat",
+      "title": "silent longer than idleMs: closed 4000 on the next traffic; a heartbeat counts as alive",
+      "steps": [
+        {"op":"connect","client":"A","name":"Anna"},
+        {"op":"connect","client":"B","name":"Bo"},
+        {"op":"connect","client":"C","name":"Cia"},
+        {"op":"expect","client":"A","messages":[{"t":"w","i":"$A"},{"t":"j","i":"$B","n":"Bo","l":10},{"t":"j","i":"$C","n":"Cia","l":10}]},
+        {"op":"expect","client":"B","messages":[{"t":"w","i":"$B"},{"t":"j","i":"$C","n":"Cia","l":10}]},
+        {"op":"expect","client":"C","messages":[{"t":"w","i":"$C"}]},
+        {"op":"advance","ms":50000},
+        {"op":"send","client":"B","text":"p"},
+        {"op":"expect","client":"B","messages":["q"]},
+        {"op":"advance","ms":11000},
+        {
+          "op": "send",
+          "client": "A",
+          "json": {"p":[5,0,5],"r":0},
+          "note": "traffic runs the sweep: C (silent 61 s) is closed, B (heartbeat 11 s ago) stays"
+        },
+        {"op":"expect","client":"C","closed":4000},
+        {
+          "op": "expect",
+          "client": "B",
+          "closed": null,
+          "messages": [{"t":"s","i":"$A","p":[5,0,5],"r":0,"score":0,"h":"","l":10},{"t":"x","i":"$C"}]
+        },
+        {"op":"expect","client":"A","closed":null,"messages":[{"t":"x","i":"$C"}]}
+      ]
+    },
+    {
+      "id": "away-and-back",
+      "title": "close 4100 with a tab token: shown away (aw: 1, unarmed), also to a newcomer; back within awayMs: the same id, no join, no leave",
+      "steps": [
+        {"op":"connect","client":"A","name":"Anna","token":"annatoken000001"},
+        {"op":"connect","client":"B","name":"Bertil"},
+        {"op":"expect","client":"B","messages":[{"t":"w","i":"$B"}]},
+        {"op":"send","client":"A","json":{"p":[3,0,4],"r":1,"score":5,"h":"nerf"}},
+        {"op":"expect","client":"B","messages":[{"t":"s","i":"$A","p":[3,0,4],"r":1,"score":5,"h":"nerf","l":10}]},
+        {"op":"close","client":"A","code":4100,"reason":"away"},
+        {
+          "op": "expect",
+          "client": "B",
+          "messages": [{"t":"s","i":"$A","p":[3,0,4],"r":1,"score":5,"l":10,"aw":1}],
+          "note": "no leave; the token is never relayed"
+        },
+        {"op":"connect","client":"C","name":"Cia"},
+        {
+          "op": "expect",
+          "client": "C",
+          "messages": [{"t":"w","i":"$C","ps":[{"i":"$B","n":"Bertil","l":10},{"i":"$A","n":"Anna","p":[3,0,4],"r":1,"score":5,"l":10,"aw":1}]}]
+        },
+        {"op":"expect","client":"B","messages":[{"t":"j","i":"$C","n":"Cia","l":10}]},
+        {"op":"advance","ms":30000},
+        {"op":"connect","client":"A2","name":"Anna","token":"annatoken000001","note":"the same tab token and name within awayMs"},
+        {
+          "op": "expect",
+          "client": "A2",
+          "sameId": "A",
+          "messages": [{"t":"w","i":"$A","ps":[{"i":"$B","n":"Bertil","l":10},{"i":"$C","n":"Cia","l":10}]}]
+        },
+        {
+          "op": "expect",
+          "client": "B",
+          "messages": [{"t":"s","i":"$A","p":[3,0,4],"r":1,"score":5,"l":10}],
+          "note": "the kept (unarmed) state again without aw: no join, no leave"
+        },
+        {"op":"expect","client":"C","messages":[{"t":"s","i":"$A","p":[3,0,4],"r":1,"score":5,"l":10}]},
+        {"op":"close","client":"A2","code":1000},
+        {"op":"expect","client":"B","messages":[{"t":"x","i":"$A"}]}
+      ]
+    },
+    {
+      "id": "away-expires",
+      "title": "away longer than awayMs: the leave comes with aw: 1 on the next traffic (or the room alarm)",
+      "steps": [
+        {"op":"connect","client":"A","name":"Anna","token":"annatoken000001"},
+        {"op":"connect","client":"B","name":"Bertil"},
+        {"op":"expect","client":"B","messages":[{"t":"w","i":"$B"}]},
+        {"op":"send","client":"A","json":{"p":[3,0,4],"r":1}},
+        {"op":"close","client":"A","code":4100,"reason":"away"},
+        {
+          "op": "expect",
+          "client": "B",
+          "messages": [{"t":"s","i":"$A","p":[3,0,4],"r":1,"score":0,"h":"","l":10},{"t":"s","i":"$A","p":[3,0,4],"r":1,"score":0,"l":10,"aw":1}]
+        },
+        {"op":"advance","ms":50000},
+        {"op":"send","client":"B","json":{"p":[0,0,9],"r":0}},
+        {"op":"advance","ms":50000},
+        {"op":"send","client":"B","json":{"p":[0,0,9],"r":0.5}},
+        {"op":"expect","client":"B","messages":[]},
+        {"op":"advance","ms":20000},
+        {"op":"send","client":"B","json":{"p":[0,0,9],"r":1}},
+        {"op":"expect","client":"B","messages":[{"t":"x","i":"$A","aw":1}]}
+      ]
+    },
+    {
+      "id": "away-other-name",
+      "title": "the same tab token under another name: the away player leaves at once, a new player joins",
+      "steps": [
+        {"op":"connect","client":"A","name":"Anna","token":"annatoken000001"},
+        {"op":"connect","client":"B","name":"Bertil"},
+        {"op":"expect","client":"B","messages":[{"t":"w","i":"$B"}]},
+        {"op":"send","client":"A","json":{"p":[3,0,4],"r":1}},
+        {"op":"close","client":"A","code":4100,"reason":"away"},
+        {
+          "op": "expect",
+          "client": "B",
+          "messages": [{"t":"s","i":"$A","p":[3,0,4],"r":1,"score":0,"h":"","l":10},{"t":"s","i":"$A","p":[3,0,4],"r":1,"score":0,"l":10,"aw":1}]
+        },
+        {"op":"connect","client":"A2","name":"Annika","token":"annatoken000001"},
+        {"op":"expect","client":"A2","newId":"A","messages":[{"t":"w","i":"$A2","ps":[{"i":"$B","n":"Bertil","l":10}]}]},
+        {"op":"expect","client":"B","messages":[{"t":"x","i":"$A","aw":1},{"t":"j","i":"$A2","n":"Annika","l":10}]}
+      ]
+    },
+    {
+      "id": "away-without-token",
+      "title": "close 4100 without a token (an old client): a plain leave",
+      "steps": [
+        {"op":"connect","client":"A","name":"Anna"},
+        {"op":"connect","client":"B","name":"Bertil"},
+        {"op":"expect","client":"B","messages":[{"t":"w","i":"$B"}]},
+        {"op":"send","client":"A","json":{"p":[3,0,4],"r":1}},
+        {"op":"close","client":"A","code":4100,"reason":"away"},
+        {"op":"expect","client":"B","messages":[{"t":"s","i":"$A","p":[3,0,4],"r":1,"score":0,"h":"","l":10},{"t":"x","i":"$A"}]}
+      ]
+    },
+    {
+      "id": "origin",
+      "title": "a browser page from another site is refused (403); no Origin (a native client) and the site are accepted",
+      "steps": [
+        {"op":"connect","client":"E","name":"Eve","origin":"https://evil.example","status":403},
+        {"op":"connect","client":"W","name":"Web","origin":"https://solwation.github.io"},
+        {"op":"expect","client":"W","messages":[{"t":"w","i":"$W","ps":[]}]},
+        {"op":"connect","client":"N","name":"Native"},
+        {"op":"expect","client":"N","messages":[{"t":"w","i":"$N","ps":[{"i":"$W","n":"Web","l":10}]}]}
+      ]
+    },
+    {
+      "id": "monthly-cap",
+      "title": "the month's billed requests reach monthlyCap: every socket closes with 4001 and new ones are refused",
+      "nodeOnly": "setBill presets the room's counter; against a running Worker wait for the cap instead or skip",
+      "steps": [
+        {"op":"connect","client":"A","name":"Anna"},
+        {"op":"connect","client":"B","name":"Bo"},
+        {"op":"expect","client":"B","messages":[{"t":"w","i":"$B"}]},
+        {"op":"setBill","req":799999,"msg":18,"note":"monthlyCap - 1 requests and msgPerRequest - 2 messages"},
+        {"op":"send","client":"A","json":{"p":[1,0,0],"r":0}},
+        {"op":"expect","client":"B","messages":[{"t":"s","i":"$A","p":[1,0,0],"r":0,"score":0,"h":"","l":10}]},
+        {"op":"send","client":"A","json":{"p":[2,0,0],"r":0},"note":"this message reaches the cap: not relayed"},
+        {"op":"expect","client":"A","closed":4001},
+        {"op":"expect","client":"B","closed":4001,"messages":[{"t":"x","i":"$A"}]},
+        {"op":"connect","client":"C","name":"Cia"},
+        {"op":"expect","client":"C","closed":4001,"messages":[],"note":"accepted and at once closed: no welcome"}
+      ]
+    }
+  ]
+}

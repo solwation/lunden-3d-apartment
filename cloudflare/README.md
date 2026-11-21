@@ -160,6 +160,8 @@ eller sparas. Test: `node --test cloudflare/chat.test.mjs`.
   `DELETE /admin/all` drar samma broms. `curl -H "Authorization: Bearer …" <adress>/admin/players` visar månadens räkning.
 - Lokalt: `node cloudflare/dev.mjs 8146` kör rummet med WebSocket på Node (`cloudflare/devws.mjs`); tester:
   `node --test cloudflare/players.test.mjs`, `tools/ghosttest.cjs` och `tools/chattest.cjs` (två webbläsarsidor).
+  Fasta trådfixturer för protokollet (#2292, också för Unreal-klienten): `tools/unreal-engine/wire/players.json`, test
+  `node --test cloudflare/playerswire.test.mjs`.
 
 ## API
 
