@@ -116,7 +116,7 @@ function releaseObjects(manifest, channel) {
   return objects;
 }
 
-async function verifyDownload(url, entry, channel, publicOnly) {
+export async function verifyDownload(url, entry, channel, publicOnly) {
   url = downloadUrl(url, channel, publicOnly);
   const name = entry.path ?? 'launcher';
   for (let redirect = 0; redirect <= 10; redirect++) {

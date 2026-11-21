@@ -2217,6 +2217,43 @@ that has to save a versioned asset (for example `BP_LundenSky` when the lamps ch
 the worktree changed; commit it before a release. `-ImportOnly`/`-Zones` run steps 1, 2 and 5 only and mark the sync
 stamp partial.
 
+#### Build PC preparation (#2377)
+
+Byggdatorn behöver Git med LFS, Node.js 22 eller senare och projektets Windowsverktyg. Kontrollera dem med
+`check-environment.ps1`. Förbered exporten från samma källor som den rena releasecheckouten:
+
+1. Kör `node tools/unreal-engine/export-ci.mjs key` i checkouten. Hämta artefakten med exakt namnet i fältet
+   `artifact` från en lyckad **Unreal export** i Actions. Packa upp den i en separat katalog, med
+   `export-manifest.json`, `measurements.json` och GLB-filerna direkt i katalogen. Det går också att göra exporten
+   i WSL från samma källor med `tools/browsertest.sh node tools/unreal-engine/export-world.mjs --out <katalog>`.
+2. Kör följande från den lokala Windowscheckouten. Provet läser källhash och filhashar även när en tidigare lokal
+   import finns. Det ändrar inga filer och startar ingen editor.
+
+   ```powershell
+   $export = 'D:\LundenExports\aktuell'
+   node tools/unreal-engine/check-export.mjs --dir $export
+   .\tools\unreal-engine\sync-import.ps1 -DryRun -ExportFrom $export
+   ```
+
+3. När ordinarie releaseägare ska bygga, ge `release.ps1` releaseversionen och innehållsnumret samt
+   `-SyncImport -ExportFrom $export`. Om importen är inaktuell körs full synk och importkontrollen upprepas före
+   paketering. Den här vägen kräver varken inloggad GitHub CLI eller Playwright på byggdatorn.
+
+**Genomfört prov 2026-11-21.** Linux-PowerShell 7.7 i WSL körde samma `sync-import.ps1 -DryRun -ExportFrom`
+mot den fulla [CI-exporten](https://github.com/solwation/lunden-3d-apartment/actions/runs/44920293451). Kontrollen
+godkände 11 filer, 9 102 nod-ID:n och 306 källor. En saknad katalog, ändrade GLB-byte, en inkonsekvent källista och
+en äldre källhash avvisades före import. En isolerad körning av `release.ps1` skickade vidare sökvägar med blanksteg
+och avbröt när synken misslyckades. Full import, paketering och stabil installation behöver köras på Windows.
+
+**Installationslänken för spelare.** Releaseägaren publicerar och provar först den stabila signerade utgåvan enligt
+releasekedjan, inklusive installation och uppdatering på Windows. Efter godkänt prov kör ägaren
+`node tools/unreal-engine/stable-download.mjs --public-key <godkänd-offentlig-PEM> --write` från projektroten.
+Skriptet läser GitHubs aktuella stabila manifest och signatur, kontrollerar den namngivna setup-filens storlek och
+SHA-256 mot den signerade startfilen och uppdaterar länken lokalt i både README och webbens inställningsmeny.
+Utan `--write` skrivs enbart den verifierade adressen ut. Lägg till svenska versionsnyheter och en spelarnotis
+i `data/changelog.json` när länken publiceras. Avpubliceras en installation, ta bort länkarna i båda markerade
+områdena och återställ aktuell status i README.
+
 **Release gate.** `release.ps1` runs `node tools/unreal-engine/check-import.mjs` before BuildCookRun and builds nothing
 unless it exits 0: (1) the export in `Import/` is current for the checkout (`check-export.mjs`); (2) every zone's
 `import-stamp.json` names that zone's GLB SHA-256, the checkout's `IMPORTER_VERSION`, material map and locked engine,

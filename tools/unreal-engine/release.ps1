@@ -5,8 +5,12 @@
   Before cooking, the import gate (#2305, tools/unreal-engine/check-import.mjs) refuses a local Unreal import that is
   older than the web export of this commit. -SyncImport runs tools/unreal-engine/sync-import.ps1 first when it is.
   -SkipImportGate is for fixture tests only; build-info.json then records import.gate = skipped.
+  -ExportFrom <folder> is handed to sync-import.ps1 with -SyncImport: the build PC's documented way to bring in the
+  web export without gh or Playwright (#2377, docs/development/unreal.md#build-pc-preparation-2377).
 .EXAMPLE
   .\tools\unreal-engine\release.ps1 -Version 0.1.0 -Content 12 -OutputRoot D:\LundenBuilds
+.EXAMPLE
+  .\tools\unreal-engine\release.ps1 -Version 0.2.0 -Content 13 -SyncImport -ExportFrom D:\exports\unreal-export-0123456789abcdef
 #>
 [CmdletBinding()]
 param(
@@ -15,6 +19,7 @@ param(
     [string]$OutputRoot = (Join-Path $env:LOCALAPPDATA 'Lunden\Builds'),
     [string]$EngineDir,
     [switch]$SyncImport,
+    [string]$ExportFrom,
     [switch]$SkipImportGate
 )
 . (Join-Path $PSScriptRoot 'common.ps1')
@@ -28,6 +33,9 @@ function Get-CleanRevision {
     if ($LASTEXITCODE -ne 0) { throw 'Could not resolve Git HEAD.' }
     $sha
 }
+
+if ($ExportFrom -and -not $SyncImport) { throw '-ExportFrom is used by -SyncImport; pass both.' }
+if ($ExportFrom -and $SkipImportGate) { throw '-ExportFrom requires the import gate.' }
 
 $commit = Get-CleanRevision
 $scriptBlob = & git -C $project.RepoRoot rev-parse --verify "${commit}:tools/unreal-engine/release.ps1"
@@ -56,7 +64,11 @@ if ($SkipImportGate) {
     $gate = Test-LundenImport
     if ($gate -ne 0 -and $SyncImport) {
         Write-Host "Import is older than the export; running sync-import.ps1 (-SyncImport)"
-        & (Get-Process -Id $PID).Path -NoProfile -NonInteractive -ExecutionPolicy Bypass -File (Join-Path $PSScriptRoot 'sync-import.ps1') -EngineDir $EngineDir
+        $syncArgs = @('-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', (Join-Path $PSScriptRoot 'sync-import.ps1'))
+        # (Windows PowerShell drops an empty native argument, so an unset -EngineDir would swallow the next switch)
+        if ($EngineDir) { $syncArgs += @('-EngineDir', $EngineDir) }
+        if ($ExportFrom) { $syncArgs += @('-ExportFrom', $ExportFrom) }
+        & (Get-Process -Id $PID).Path @syncArgs
         if ($LASTEXITCODE -ne 0) { throw "sync-import.ps1 failed (exit $LASTEXITCODE); nothing was built." }
         if ((Get-CleanRevision) -ne $commit) { throw 'Git HEAD changed during sync-import.ps1.' }
         $gate = Test-LundenImport

@@ -10,7 +10,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
-import { ROOT, sourceList, sha256File } from './sources.mjs';
+import { ROOT, sourceList, sha256, sha256File } from './sources.mjs';
 import { validate, glbJson } from './json-schema.mjs';
 
 export const SUPPORTED_FORMAT_VERSION = 1;
@@ -34,6 +34,10 @@ function main() {
     return 3;
   }
   problems.push(...validate(manifest, schema('export-manifest.schema.json')).map((e) => `export-manifest.json ${e}`));
+  if (Array.isArray(manifest.sources) && manifest.sources.every(s => s && typeof s.path === 'string')) {
+    const recordedHash = sha256(manifest.sources.map(s => `${s.sha256}  ${s.path}\n`).join(''));
+    if (recordedHash !== manifest.sourceHash) problems.push('export-manifest.json: sourceHash differs from its listed sources');
+  }
   const nodeSchema = schema('node-extras.schema.json'), measureSchema = schema('measurements.schema.json');
   let nodes = 0;
   const zoneOfId = new Map(); // every node id across all zone GLBs → its zone (#2279: a node is in exactly one zone)

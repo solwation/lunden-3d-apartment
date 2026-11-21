@@ -297,7 +297,19 @@ python3 -m http.server 8137
 
 Öppna sedan http://localhost:8137/ i Chrome.
 
-## Unreal-version för Windows (under uppbyggnad)
+## Windowsversionen av Lunden
+
+<!-- stable-windows-download -->
+Den stabila Windowsversionen är ännu inte publicerad.
+<!-- /stable-windows-download -->
+
+**Versionsnyheter för Windows.** I testversion 0.1.1 provades installation för den egna Windowsanvändaren. I testversion
+0.1.2 provades att startprogrammet hämtar och uppdaterar sig självt. Webbversionen går att spela som vanligt.
+
+**Om Windows visar en SmartScreen-varning.** En ny signerad fil kan vara ovanlig. Stäng varningen och högerklicka på den
+nedladdade filen i Utforskaren. Öppna **Egenskaper → Digitala signaturer**, välj **Svep Design Center AB** och öppna
+**Information**. Windows ska ange att den digitala signaturen är giltig. Avbryt installationen om signaturen saknas,
+utgivaren skiljer sig eller Windows fortsätter att blockera filen. [Microsofts beskrivning av SmartScreen](https://learn.microsoft.com/windows/apps/package-and-deploy/smartscreen-reputation)
 
 En Unreal Engine 5-version av Lunden för Windows byggs i samma repo under `unreal/Lunden/` (#2242). Webbversionen
 påverkas inte: Pages publicerar bara webbfilerna, och Git LFS används enbart för filer under `unreal/`.

@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import { createHash, generateKeyPairSync, sign } from 'node:crypto';
 import { test } from 'node:test';
+import { readFile } from 'node:fs/promises';
+import { linkedSources, verifiedSetup } from '../stable-download.mjs';
 import { checkRelease, promoteCheckedRelease } from '../promote-release.mjs';
 
 const tag = 'content-72';
@@ -13,7 +15,7 @@ const candidate = { id: 37, tag_name: tag, draft: false, prerelease: false, publ
 function fixture(t) {
   const state = { previous: { id: 51, tag_name: 'content-70' }, target: { ...candidate },
     requests: [], candidateAssets: new Map(), previousAssets: new Map(), bodies: new Map(), objects: new Map() };
-  function seedChannel(channel, previous = false) {
+  function seedChannel(channel, previous = false, launcherUrl) {
     const name = channel === 'stable' ? 'lunden-manifest.json' : 'lunden-manifest-test.json';
     const data = Buffer.from('fixture-' + channel);
     const url = 'https://fixture.invalid/' + channel;
@@ -21,7 +23,7 @@ function fixture(t) {
     const file = { url, size: data.length, sha256: sha(data) };
     const manifest = Buffer.from(JSON.stringify({ formatVersion: 1, channel, published: '2026-11-20T12:00:00Z',
       app: { version: '1.0', minLauncher: '1.0', contentAbi: 'x', files: [{ path: 'Lunden/Binaries/Win64/Lunden-Win64-Shipping.exe', ...file }] },
-      content: { version: 72, requiresAbi: 'x', packages: [] }, launcher: { version: '1.0', ...file } }));
+      content: { version: 72, requiresAbi: 'x', packages: [] }, launcher: { ...file, version: launcherUrl ? '1.2.3' : '1.0', url: launcherUrl ?? file.url } }));
     const sig = sign('sha256', manifest, { key: privateKey, dsaEncoding: 'ieee-p1363' });
     const inventory = previous ? state.previousAssets : state.candidateAssets;
     for (const [asset, bytes] of [[name, manifest], [name + '.sig', sig]]) {
@@ -50,8 +52,11 @@ function fixture(t) {
       if (url.pathname === prefix + '/latest') return state.previous ? Response.json(state.previous) : new Response(null, { status: 404 });
       if (url.pathname === prefix + '/37/assets') return Response.json([...state.candidateAssets.values()]);
       if (url.pathname === prefix + '/51/assets') return Response.json([...state.previousAssets.values()]);
+    } else if (state.objects.has(url.href)) {
+      return new Response(state.objects.get(url.href));
     } else if (url.hostname === 'github.com') {
-      assert(url.pathname.startsWith('/solwation/lunden-3d-apartment/releases/download/content-72/'));
+      if (url.pathname.endsWith('-win-x64.exe')) return new Response(null, { status: 404 });
+      assert(/^\/solwation\/lunden-3d-apartment\/releases\/(?:download\/content-72|latest\/download)\//.test(url.pathname));
       const bytes = state.bodies.get(url.pathname.split('/').at(-1));
       return new Response(bytes, { status: bytes ? 200 : 404 });
     } else if (url.hostname === 'fixture.invalid') {
@@ -139,4 +144,36 @@ test('reject unsafe tags before requests, and reject drafts and prereleases', as
   state.target.prerelease = true;
   await assert.rejects(dispatch(), /published full release/);
   assert.deepEqual(writes(), []);
+});
+
+test('player links need a published stable channel and the actual matching versioned setup bytes', async t => {
+  const { state, seedChannel } = fixture(t);
+  const launcher = 'https://github.com/solwation/lunden-3d-apartment/releases/download/v1.2.3/Lunden.exe';
+  const setup = launcher.replace('Lunden.exe', 'Lunden-Setup-1.2.3-win-x64.exe');
+  state.previous = state.target;
+  seedChannel('test');
+  await assert.rejects(verifiedSetup(pem), /Stable channel unavailable/);
+  seedChannel('stable', false, launcher);
+  await assert.rejects(verifiedSetup(pem), /404/);
+  state.objects.set(setup, Buffer.from('x'));
+  await assert.rejects(verifiedSetup(pem), /size mismatch/i);
+  state.objects.set(setup, Buffer.from('wrong-contents'));
+  await assert.rejects(verifiedSetup(pem), /mismatch/i);
+  state.objects.set(setup, Buffer.from('fixture-stable'));
+  assert.equal(await verifiedSetup(pem), setup);
+  const inputs = await Promise.all(['README.md', 'index.html'].map(name =>
+    readFile(new URL('../../../' + name, import.meta.url), 'utf8')));
+  const linked = linkedSources(...inputs, setup);
+  assert(linked.every(source => source.split(setup).length === 2));
+  assert.deepEqual(linkedSources(...linked, setup), linked);
+  assert.throws(() => linkedSources(inputs[0], '', setup), /marked download/);
+  state.candidateAssets.delete('lunden-manifest.json.sig');
+  await assert.rejects(verifiedSetup(pem), /sig/);
+  seedChannel('stable', false, 'https://another.invalid/releases/download/v1.2.3/Lunden.exe');
+  await assert.rejects(verifiedSetup(pem), /official/);
+  state.bodies.delete('lunden-manifest.json');
+  await assert.rejects(verifiedSetup(pem), /404/);
+  state.target.prerelease = true;
+  await assert.rejects(verifiedSetup(pem), /No published full release/);
+  assert(state.requests.every(([method]) => method === 'GET'));
 });

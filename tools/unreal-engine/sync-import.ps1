@@ -140,12 +140,17 @@ function Invoke-UnrealStep([string]$name, [string]$script, [string[]]$scriptArgs
 # 1. the export
 Write-Host "[export] $importDir"
 $steps.Add('export')
+# Validate an explicitly supplied folder even when Import/ already happens to be current.
+if ($ExportFrom -and (Test-Export $ExportFrom) -ne 0) { Fail 'export' "$ExportFrom is not a current export for this checkout (see above)" }
 if ((Test-Export $importDir) -eq 0) {
     Write-Host '  the export in unreal/Lunden/Import is current for this checkout'
 } elseif ($DryRun) {
-    Write-Host 'DRY-RUN [export] would take -ExportFrom, the workflow artifact or a local export'
+    if ($ExportFrom) {
+        Write-Host "DRY-RUN [export] would copy the current export from $ExportFrom"
+    } else {
+        Write-Host 'DRY-RUN [export] would take -ExportFrom, the workflow artifact or a local export'
+    }
 } elseif ($ExportFrom) {
-    if ((Test-Export $ExportFrom) -ne 0) { Fail 'export' "$ExportFrom is not a current export for this checkout (see above)" }
     Install-Export $ExportFrom
 } else {
     $fromArtifact = Get-ArtifactExport
@@ -154,10 +159,14 @@ if ((Test-Export $importDir) -eq 0) {
         Install-Export $fromArtifact
         Remove-Item -LiteralPath $fromArtifact -Recurse -Force
     } elseif (-not (Invoke-LocalExport)) {
-        Fail 'export' ("no current export and no way to make one here. Do one of:`n" +
-            "  - install and log in to the GitHub CLI once (winget install GitHub.cli; gh auth login), so the workflow's artifact is used;`n" +
-            "  - install Playwright in this checkout once (npm install --no-save playwright@1.58.2 three@0.170.0; npx playwright install chromium);`n" +
-            "  - export from WSL at this commit and pass it: tools/browsertest.sh node tools/unreal-engine/export-world.mjs --out <dir>, then -ExportFrom <dir>.")
+        # #2377: the build PC needs neither gh nor Playwright; -ExportFrom is the documented path (unreal.md, Build PC)
+        $artifact = Invoke-Node @((Join-Path $tools 'export-ci.mjs'), 'key')
+        $want = if ($artifact.Code -eq 0) { ($artifact.Out[-1] | ConvertFrom-Json).artifact } else { 'unreal-export-<source hash>' }
+        Fail 'export' ("no current export here. Pass one with -ExportFrom <folder> (documented path, docs/development/unreal.md#build-pc-preparation-2377):`n" +
+            "  - download the 'Unreal export' workflow artifact $want for this commit (Actions page in a browser, or from WSL:`n" +
+            "    gh run download <run> -R $Repo -n $want -D <folder>), unzip it and run again with -ExportFrom <folder>;`n" +
+            "  - or export from WSL at this commit: tools/browsertest.sh node tools/unreal-engine/export-world.mjs --out <folder>.`n" +
+            "  Optional instead: the GitHub CLI (gh auth login) or Playwright in this checkout let this script fetch or make it itself.")
     }
 }
 

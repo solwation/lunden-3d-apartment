@@ -9,13 +9,13 @@ $engine = Join-Path $temp 'fixture engine'
 $batDir = Join-Path $engine 'Engine\Build\BatchFiles'
 $ps = (Get-Process -Id $PID).Path
 $previousMode = $env:LUNDEN_FIXTURE_MODE
-function Run-Release([string]$output = $out, [string]$failure, [switch]$Gate) {
+function Run-Release([string]$output = $out, [string]$failure, [switch]$Gate, [string[]]$Extra = @()) {
     # the fixture has no Unreal import: every case but the gate's own skips it (#2305)
     $gateArgs = @()
     if (-not $Gate) { $gateArgs = @('-SkipImportGate') } # (an if-expression would unroll the array: splatting a string passes its characters)
     try {
         $ErrorActionPreference = 'Continue'
-        $result = & $ps -NoProfile -NonInteractive -File (Join-Path $fixture 'release.ps1') -Version 0.1.0 -Content 12 -EngineDir $engine -OutputRoot $output @gateArgs 2>&1
+        $result = & $ps -NoProfile -NonInteractive -File (Join-Path $fixture 'release.ps1') -Version 0.1.0 -Content 12 -EngineDir $engine -OutputRoot $output @gateArgs @Extra 2>&1
         $code = $LASTEXITCODE
     } finally { $ErrorActionPreference = 'Stop' }
     $text = $result | Out-String
@@ -89,6 +89,13 @@ $game = Join-Path $dir 'UnrealGame-Win64-Shipping.exe'
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot '..\..\Binaries\Win64\UnrealGame-Win64-Shipping.exe') -Destination $game
 if ($env:LUNDEN_FIXTURE_MODE -eq 'changed-runtime') { Add-Content $game 'changed executable' }
 '@
+    # Exercise release.ps1's real gated sync invocation; any missing argument (including a split space) fails the fixture.
+    Set-Content (Join-Path $fixture 'sync-import.ps1') @'
+param([string]$EngineDir, [string]$ExportFrom)
+if ($EngineDir -ne (Join-Path (Split-Path (Split-Path (Split-Path $PSScriptRoot))) 'fixture engine') -or
+    $ExportFrom -ne 'folder with spaces') { exit 87 }
+exit 49
+'@
     Git-Fixture init --quiet
     Git-Fixture add .
     Git-Fixture -c user.name=Fixture -c user.email=fixture@example.invalid -c commit.gpgSign=false commit -qm fixture
@@ -115,6 +122,9 @@ if ($env:LUNDEN_FIXTURE_MODE -eq 'changed-runtime') { Add-Content $game 'changed
     Require ($stages.Count -eq 2 -and $stages[0] -eq $stages[1] -and $stages[0] -eq (Join-Path $out 'stage')) "Builds staged at different paths: $stages"
     # #2305: without an import as new as the export (here: no export at all) nothing is built
     Run-Release $out 'older than the web export' -Gate
+    Run-Release $out 'pass both' -Gate -Extra @('-ExportFrom', 'folder with spaces')
+    Run-Release $out 'requires the import gate' -Extra @('-SyncImport', '-ExportFrom', 'folder with spaces')
+    Run-Release $out 'exit 49' -Gate -Extra @('-SyncImport', '-ExportFrom', 'folder with spaces')
     Require (@(Get-ChildItem -LiteralPath $out | Where-Object Name -ne 'stage').Count -eq 2) 'A stale import started a build'
     Run-Release (Join-Path $repo 'inside') 'outside the Git checkout'
     $dirty = Join-Path $repo 'dirty.txt'

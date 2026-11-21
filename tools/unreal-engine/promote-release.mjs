@@ -3,7 +3,7 @@
 import { createHash } from 'node:crypto';
 import { appendFile } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
-import { verifyPublishedBytes } from './verify-published.mjs';
+import { readVerifiedManifest, verifyPublishedBytes } from './verify-published.mjs';
 
 const repo = 'solwation/lunden-3d-apartment';
 const api = 'https://api.github.com/repos/' + repo + '/releases';
@@ -62,7 +62,8 @@ async function snapshot(tag) {
 
 async function downloadAsset(tag, file, limit) {
   if (!Number.isSafeInteger(file.size) || file.size < 0 || file.size > limit) throw Error('Invalid size for ' + file.name);
-  let url = new URL(`https://github.com/${repo}/releases/download/${tag}/${file.name}`);
+  const route = tag === null ? 'latest/download' : 'download/' + tag;
+  let url = new URL(`https://github.com/${repo}/releases/${route}/${file.name}`);
   for (let count = 0; count <= 10; count++) {
     const response = await fetch(url, { redirect: 'manual', credentials: 'omit' });
     if ([301, 302, 303, 307, 308].includes(response.status)) {
@@ -91,6 +92,22 @@ async function downloadAsset(tag, file, limit) {
     return bytes;
   }
   throw Error('Too many redirects for ' + file.name);
+}
+
+/** Read only the globally served stable manifest, verified with the release owner's public key. */
+export async function currentStableManifest(publicKey) {
+  const latest = await metadata('/latest', true);
+  if (!latest || !Number.isSafeInteger(latest.id) || latest.id <= 0 || latest.draft !== false ||
+      latest.prerelease !== false || !latest.published_at || !tags.test(latest.tag_name))
+    throw Error('No published full release at latest.');
+  const files = await assets(latest.id);
+  const name = channels.stable;
+  for (const required of [name, name + '.sig']) {
+    if (files.get(required)?.state !== 'uploaded') throw Error('Stable channel unavailable: ' + required);
+  }
+  const [manifest, sig] = await Promise.all([downloadAsset(null, files.get(name), 4 * 1024 * 1024),
+    downloadAsset(null, files.get(name + '.sig'), 64)]);
+  return readVerifiedManifest(manifest, sig, publicKey, 'stable');
 }
 
 export async function checkRelease(tag, publicKey) {
