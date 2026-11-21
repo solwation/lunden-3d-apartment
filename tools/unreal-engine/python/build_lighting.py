@@ -1318,4 +1318,5 @@ def main(argv):
     u.log("LUNDEN_LIGHTING_OK")
 
 
-main(sys.argv[1:])
+if __name__ == "__main__":
+    main(sys.argv[1:])
