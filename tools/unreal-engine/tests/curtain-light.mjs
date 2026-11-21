@@ -1,7 +1,9 @@
-// Compare the actual L1007 GLB factors to the web cloth, using only local assets.
+// Compare the actual L1007 GLB and runtime Blueprint factors to the web cloth, using only local assets.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import {spawnSync} from 'node:child_process';
+import {fileURLToPath} from 'node:url';
 import {Color} from 'three';
 import {CURTAINS} from '../../../src/config.js';
 import {Blinds} from '../../../src/blinds.js';
@@ -15,7 +17,7 @@ const profiles = measures.furnishing.curtains;
 const lamps = new Map(measures.lights.map(row => [row.id, row]));
 assert.equal(profiles.length, CURTAINS.length);
 const nodes = new Set();
-let samples = 0;
+const vectors = [];
 for (const spec of CURTAINS) {
   const row = profiles.find(r => r.id === spec.materialId);
   assert.equal(row.room, spec.room);
@@ -44,8 +46,15 @@ for (const spec of CURTAINS) {
       const expected = cloth.mat.emissive.toArray();
       const fromRows = row.daylight.map((d, i) => d * daylight * (1 - .5 * overcast) + (live && supply > .5 ? row.lamp[i] : 0));
       assert.ok(expected.every((v, i) => Math.abs(v - fromRows[i]) < 1e-12), row.id);
-      samples++;
+      vectors.push({daylight, dusk: daylight * (1 - .6 * overcast), supply, lit: live,
+        day: row.daylight, lamp: row.lamp, expected});
     }
   }
 }
-console.log(profiles.length + ' web fabrics, ' + nodes.size + ' GLB panels, identical colour/emission texture and UV; ' + samples + ' web lighting samples.');
+console.log(profiles.length + ' web fabrics, ' + nodes.size + ' GLB panels, identical colour/emission texture and UV; ' + vectors.length + ' web lighting samples.');
+if (process.argv.includes('--blueprint')) {
+  const python = fileURLToPath(new URL('./curtain-expression.py', import.meta.url));
+  const result = spawnSync(process.env.PYTHON || 'python3', [python], {input: JSON.stringify(vectors), encoding: 'utf8'});
+  assert.equal(result.status, 0, result.stderr || result.error?.message);
+  console.log(result.stdout.trim());
+}

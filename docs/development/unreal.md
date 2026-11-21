@@ -1298,7 +1298,13 @@ the export and the pictures section of `notices.mjs`.
   lamps off. The six rows in `furnishing.curtains` give each fabric's two linear RGB coefficients, its mesh IDs
   and the ceiling and small lamps in its real room. The daylight and warm gains are the web's visual estimates
   (`CURTAIN_LIGHT`, *guess*). The export keeps the existing opacity, roughness and two-sided material.
-  Run `node tools/unreal-engine/tests/curtain-light.mjs unreal/Lunden/Import` to compare an L1007 GLB with the web.
+  After `build_interaction.py`, the full sync runs `build_curtains.py` on the generated apartment level. Each room's
+  controller changes the stock Interchange `EmissiveFactor` on its own panel material instances. It reads
+  `Daylight` and `DuskLight` from the existing weather collection, gates its warm contribution at
+  `PowerAvailable > 0.5`, and reads `IsOn` on its visible room lamps, including the seasonal fixtures. The
+  capture scripts refresh it after setting the lamps and month. Earlier exports omit the optional curtain rows.
+  Run `node tools/unreal-engine/tests/curtain-light.mjs unreal/Lunden/Import --blueprint` for the GLB and web math
+  and `run-python.ps1 tools/unreal-engine/tests/test_curtain_light.py` after a full UE sync for the materials and switches.
   For comparable measurements, run `tests/crop-stats.cjs <paired-image-directory> tests/furnishing-crops.json` from
   `tools/unreal-engine/` on the shared daylight and evening camera pairs. Record the lighting revision and exposure
   with the ratios. In [the #2313 calibration](../verification/2313/README.md) the

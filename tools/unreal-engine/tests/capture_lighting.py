@@ -26,7 +26,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "python"))
 from screenshot_level import render_view, spawn  # noqa: E402
 from prepare_nanite_materials import static_mesh_editor  # noqa: E402
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from capture_light import game_bias, update_sky_for_capture  # noqa: E402
+from capture_light import game_bias, settle_curtains, update_sky_for_capture  # noqa: E402
 from capture_world import CaptureSeasons  # noqa: E402
 
 MAP = "/Game/Lunden/Maps/L_Lunden"
@@ -136,6 +136,7 @@ def run(scene_path, out_dir, names=None, exposure="game", trial=None, bias_offse
         date = [int(sky.get_editor_property(k)) for k in ("Year", "Month", "Day")]
         hour = sky.get_editor_property("Hour")
         hidden = seasons.apply(date)
+        settle_curtains(world)
         lit = sum(not lamp.get_editor_property("hidden") for lamp in enabled)
         shot_excluded = excluded + hidden
         skylight.recapture_sky()

@@ -40,6 +40,12 @@ def update_sky_for_capture(world, sky):
         facade.call_method("SettleFacade")
 
 
+def settle_curtains(world):
+    # A commandlet has no actor tick. Refresh after room switches and seasonal visibility were applied.
+    for curtain in u.GameplayStatics.get_all_actors_with_tag(world, "lunden:curtain-light"):
+        curtain.call_method("UpdateCurtainLight")
+
+
 class MapLight:
     """The map's own BP_LundenSky and lamps."""
     kind = "map"
@@ -64,6 +70,7 @@ class MapLight:
         for lamp in self.lamps:
             lamp.call_method("TurnOn" if preset["lampsOn"] else "TurnOff")
         hidden = self.seasons.apply(date)
+        settle_curtains(self.world)
         self.skylight.recapture_sky()
         return hidden
 
