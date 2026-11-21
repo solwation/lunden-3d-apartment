@@ -1,0 +1,1547 @@
+{
+  "engine": "5.8.4-58902052+++UE5+Release-5.8",
+  "export": "03dda558f34f899d57962630cbe61276ef64cd9c",
+  "tolerance": 1.0,
+  "actors": {
+    "None": 23,
+    "hus-l": 1195,
+    "kvarteret": 349
+  },
+  "measurements": [
+    {
+      "id": "husl_street_facade",
+      "house": "L",
+      "zone": "hus-l",
+      "what": "street (north) fa\u00e7ade, storey 2",
+      "expect": "hit",
+      "from": [
+        -2700,
+        -1200,
+        365
+      ],
+      "to": [
+        -2700,
+        600,
+        365
+      ],
+      "web": {
+        "web": [
+          -27,
+          3.65,
+          -0.006
+        ],
+        "unreal": [
+          -2700,
+          -0.6,
+          365
+        ],
+        "distanceCm": 1199.4,
+        "node": "mesh_l0_xm1668_z455_y665",
+        "materialKey": "std_ffffff_r100_m0_tex_ds"
+      },
+      "hit": "mesh_l0_xm1668_z455_y665",
+      "gotCm": [
+        -2700.0,
+        -0.6,
+        365.0
+      ],
+      "wantCm": [
+        -2700,
+        -0.6,
+        365
+      ],
+      "errorCm": 0.0,
+      "node": "mesh_l0_xm1668_z455_y665",
+      "sameNode": true,
+      "materialKey": "std_ffffff_r100_m0_tex_ds",
+      "ok": true
+    },
+    {
+      "id": "husl_court_facade",
+      "house": "L",
+      "zone": "hus-l",
+      "what": "courtyard (south) fa\u00e7ade, storey 2",
+      "expect": "hit",
+      "from": [
+        -2700,
+        2400,
+        365
+      ],
+      "to": [
+        -2700,
+        600,
+        365
+      ],
+      "web": {
+        "web": [
+          -27,
+          3.65,
+          12.705
+        ],
+        "unreal": [
+          -2700,
+          1270.5,
+          365
+        ],
+        "distanceCm": 1129.5,
+        "node": "mesh_l0_xm1668_z455_y665",
+        "materialKey": "std_ffffff_r100_m0_tex_ds"
+      },
+      "hit": "mesh_l0_xm1668_z455_y665",
+      "gotCm": [
+        -2700.0,
+        1270.5,
+        365.0
+      ],
+      "wantCm": [
+        -2700,
+        1270.5,
+        365
+      ],
+      "errorCm": 0.0,
+      "node": "mesh_l0_xm1668_z455_y665",
+      "sameNode": true,
+      "materialKey": "std_ffffff_r100_m0_tex_ds",
+      "ok": true
+    },
+    {
+      "id": "husl_west_gable",
+      "house": "L",
+      "zone": "hus-l",
+      "what": "west gable",
+      "expect": "hit",
+      "from": [
+        -5675.5,
+        600,
+        365
+      ],
+      "to": [
+        -3675.5,
+        600,
+        365
+      ],
+      "web": {
+        "web": [
+          -41.761,
+          3.65,
+          6
+        ],
+        "unreal": [
+          -4176.1,
+          600,
+          365
+        ],
+        "distanceCm": 1499.4,
+        "node": "mesh_l0_xm1668_z455_y665",
+        "materialKey": "std_ffffff_r100_m0_tex_ds"
+      },
+      "hit": "mesh_l0_xm1668_z455_y665",
+      "gotCm": [
+        -4176.1,
+        600.0,
+        365.0
+      ],
+      "wantCm": [
+        -4176.1,
+        600,
+        365
+      ],
+      "errorCm": 0.0,
+      "node": "mesh_l0_xm1668_z455_y665",
+      "sameNode": true,
+      "materialKey": "std_ffffff_r100_m0_tex_ds",
+      "ok": true
+    },
+    {
+      "id": "husl_east_gable",
+      "house": "L",
+      "zone": "hus-l",
+      "what": "east gable",
+      "expect": "hit",
+      "from": [
+        2658,
+        600,
+        365
+      ],
+      "to": [
+        658,
+        600,
+        365
+      ],
+      "web": {
+        "web": [
+          11.586,
+          3.65,
+          6
+        ],
+        "unreal": [
+          1158.6,
+          600,
+          365
+        ],
+        "distanceCm": 1499.4,
+        "node": "mesh_l0_xm1668_z455_y665",
+        "materialKey": "std_ffffff_r100_m0_tex_ds"
+      },
+      "hit": "mesh_l0_xm1668_z455_y665",
+      "gotCm": [
+        1158.6,
+        600.0,
+        365.0
+      ],
+      "wantCm": [
+        1158.6,
+        600,
+        365
+      ],
+      "errorCm": 0.0,
+      "node": "mesh_l0_xm1668_z455_y665",
+      "sameNode": true,
+      "materialKey": "std_ffffff_r100_m0_tex_ds",
+      "ok": true
+    },
+    {
+      "id": "husl_roof",
+      "house": "L",
+      "zone": "hus-l",
+      "what": "roof over the row",
+      "expect": "hit",
+      "from": [
+        -2700,
+        600,
+        3000
+      ],
+      "to": [
+        -2700,
+        600,
+        50
+      ],
+      "web": {
+        "web": [
+          -27,
+          12.9113,
+          6
+        ],
+        "unreal": [
+          -2700,
+          600,
+          1291.13
+        ],
+        "distanceCm": 1708.87,
+        "node": "mesh_l1_xm1520_z696_y1290",
+        "materialKey": "std_1d2735_r38_m50_tex"
+      },
+      "hit": "mesh_l1_xm1520_z696_y1290",
+      "gotCm": [
+        -2700.0,
+        600.0,
+        1291.13
+      ],
+      "wantCm": [
+        -2700,
+        600,
+        1291.13
+      ],
+      "errorCm": 0.0,
+      "node": "mesh_l1_xm1520_z696_y1290",
+      "sameNode": true,
+      "materialKey": "std_1d2735_r38_m50_tex",
+      "ok": true
+    },
+    {
+      "id": "husl_core_wall",
+      "house": "L",
+      "zone": "hus-l",
+      "what": "stairwell: west inner wall from the landing (core.js)",
+      "expect": "hit",
+      "from": [
+        -1778.5,
+        859.5,
+        160
+      ],
+      "to": [
+        -2045,
+        859.5,
+        160
+      ],
+      "web": {
+        "web": [
+          -18.95,
+          1.6,
+          8.595
+        ],
+        "unreal": [
+          -1895,
+          859.5,
+          160
+        ],
+        "distanceCm": 116.5,
+        "node": "mesh_l0_xm1754_z514_y280",
+        "materialKey": "bas_ffffff_r100_m0_vc_ds"
+      },
+      "hit": "mesh_l0_xm1754_z514_y280",
+      "gotCm": [
+        -1895.0,
+        859.5,
+        160.0
+      ],
+      "wantCm": [
+        -1895,
+        859.5,
+        160
+      ],
+      "errorCm": 0.0,
+      "node": "mesh_l0_xm1754_z514_y280",
+      "sameNode": true,
+      "materialKey": "bas_ffffff_r100_m0_vc_ds",
+      "ok": true
+    },
+    {
+      "id": "husl_portik_passage",
+      "house": "L",
+      "zone": "hus-l",
+      "what": "the portik: the open through-passage under Hus L",
+      "expect": "clear",
+      "from": [
+        -1496,
+        -300,
+        120
+      ],
+      "to": [
+        -1496,
+        1500,
+        120
+      ],
+      "web": null,
+      "hit": null,
+      "ok": true
+    },
+    {
+      "id": "husa_north_facade",
+      "house": "A",
+      "zone": "kvarteret",
+      "what": "north fa\u00e7ade, storey 2 above the base",
+      "expect": "hit",
+      "from": [
+        462.5,
+        2080,
+        40
+      ],
+      "to": [
+        462.5,
+        3180,
+        40
+      ],
+      "web": {
+        "web": [
+          4.625,
+          0.4,
+          28.8
+        ],
+        "unreal": [
+          462.5,
+          2880,
+          40
+        ],
+        "distanceCm": 800,
+        "node": "mesh_l0_xm3059_z3497_y600",
+        "materialKey": "std_ffffff_r95_m0_tex"
+      },
+      "hit": "mesh_l0_xm3059_z3497_y600",
+      "gotCm": [
+        462.5,
+        2880.0,
+        40.0
+      ],
+      "wantCm": [
+        462.5,
+        2880,
+        40
+      ],
+      "errorCm": 0.0,
+      "node": "mesh_l0_xm3059_z3497_y600",
+      "sameNode": true,
+      "materialKey": "std_ffffff_r95_m0_tex",
+      "ok": true
+    },
+    {
+      "id": "husa_east_facade",
+      "house": "A",
+      "zone": "kvarteret",
+      "what": "east fa\u00e7ade",
+      "expect": "hit",
+      "from": [
+        1742,
+        4564.2,
+        40
+      ],
+      "to": [
+        642,
+        4564.2,
+        40
+      ],
+      "web": {
+        "web": [
+          9.42,
+          0.4,
+          45.642
+        ],
+        "unreal": [
+          942,
+          4564.2,
+          40
+        ],
+        "distanceCm": 800,
+        "node": "mesh_l0_xm3059_z3497_y600",
+        "materialKey": "std_ffffff_r95_m0_tex"
+      },
+      "hit": "mesh_l0_xm3059_z3497_y600",
+      "gotCm": [
+        942.0,
+        4564.2,
+        40.0
+      ],
+      "wantCm": [
+        942,
+        4564.2,
+        40
+      ],
+      "errorCm": 0.0,
+      "node": "mesh_l0_xm3059_z3497_y600",
+      "sameNode": true,
+      "materialKey": "std_ffffff_r95_m0_tex",
+      "ok": true
+    },
+    {
+      "id": "husa_west_facade",
+      "house": "A",
+      "zone": "kvarteret",
+      "what": "west fa\u00e7ade",
+      "expect": "hit",
+      "from": [
+        -1776,
+        4564.2,
+        40
+      ],
+      "to": [
+        -676,
+        4564.2,
+        40
+      ],
+      "web": {
+        "web": [
+          -9.76,
+          0.4,
+          45.642
+        ],
+        "unreal": [
+          -976,
+          4564.2,
+          40
+        ],
+        "distanceCm": 800,
+        "node": "mesh_l0_xm3059_z3497_y600",
+        "materialKey": "std_ffffff_r95_m0_tex"
+      },
+      "hit": "mesh_l0_xm3059_z3497_y600",
+      "gotCm": [
+        -976.0,
+        4564.2,
+        40.0
+      ],
+      "wantCm": [
+        -976,
+        4564.2,
+        40
+      ],
+      "errorCm": 0.0,
+      "node": "mesh_l0_xm3059_z3497_y600",
+      "sameNode": true,
+      "materialKey": "std_ffffff_r95_m0_tex",
+      "ok": true
+    },
+    {
+      "id": "husa_south_facade",
+      "house": "A",
+      "zone": "kvarteret",
+      "what": "south fa\u00e7ade",
+      "expect": "hit",
+      "from": [
+        462.5,
+        6286,
+        40
+      ],
+      "to": [
+        462.5,
+        4986,
+        40
+      ],
+      "web": {
+        "web": [
+          4.625,
+          0.4,
+          52.8
+        ],
+        "unreal": [
+          462.5,
+          5280,
+          40
+        ],
+        "distanceCm": 1006,
+        "node": "mesh_loggiarails_l0_xm3059_z3498_y653",
+        "materialKey": "std_ffffff_r58_m0_tex_ds"
+      },
+      "hit": "mesh_loggiarails_l0_xm3059_z3498_y653",
+      "gotCm": [
+        462.5,
+        5280.0,
+        40.0
+      ],
+      "wantCm": [
+        462.5,
+        5280,
+        40
+      ],
+      "errorCm": 0.0,
+      "node": "mesh_loggiarails_l0_xm3059_z3498_y653",
+      "sameNode": true,
+      "materialKey": "std_ffffff_r58_m0_tex_ds",
+      "ok": true
+    },
+    {
+      "id": "husa_roof",
+      "house": "A",
+      "zone": "kvarteret",
+      "what": "roof",
+      "expect": "hit",
+      "from": [
+        -17,
+        4083,
+        2700
+      ],
+      "to": [
+        -17,
+        4083,
+        800
+      ],
+      "web": {
+        "web": [
+          -0.17,
+          13.82,
+          40.83
+        ],
+        "unreal": [
+          -17,
+          4083,
+          1382
+        ],
+        "distanceCm": 1318,
+        "node": "mesh_l1_xm3059_z3497_y1307",
+        "materialKey": "std_8b9095_r90_m0_tex_ds"
+      },
+      "hit": "mesh_l1_xm3059_z3497_y1307",
+      "gotCm": [
+        -17.0,
+        4083.0,
+        1382.0
+      ],
+      "wantCm": [
+        -17,
+        4083,
+        1382
+      ],
+      "errorCm": 0.0,
+      "node": "mesh_l1_xm3059_z3497_y1307",
+      "sameNode": true,
+      "materialKey": "std_8b9095_r90_m0_tex_ds",
+      "ok": true
+    },
+    {
+      "id": "husa_core",
+      "house": "A",
+      "zone": "kvarteret",
+      "what": "stairwell: down through the band at storey 2 (corehouse.js)",
+      "expect": "hit",
+      "from": [
+        -12.5,
+        4140,
+        450
+      ],
+      "to": [
+        -12.5,
+        4140,
+        150
+      ],
+      "web": {
+        "web": [
+          -0.125,
+          3.006,
+          41.4
+        ],
+        "unreal": [
+          -12.5,
+          4140,
+          300.6
+        ],
+        "distanceCm": 149.4,
+        "node": "mesh_l0_xm13_z3985_y422",
+        "materialKey": "bas_ffffff_r100_m0_vc_ds"
+      },
+      "hit": "mesh_l0_xm13_z3985_y422",
+      "gotCm": [
+        -12.5,
+        4140.0,
+        300.6
+      ],
+      "wantCm": [
+        -12.5,
+        4140,
+        300.6
+      ],
+      "errorCm": 0.0,
+      "node": "mesh_l0_xm13_z3985_y422",
+      "sameNode": true,
+      "materialKey": "bas_ffffff_r100_m0_vc_ds",
+      "ok": true
+    },
+    {
+      "id": "husa_entrance_glass",
+      "house": "A",
+      "zone": "kvarteret",
+      "what": "the glazed entrance in its recess",
+      "expect": "glass",
+      "from": [
+        82.5,
+        2280,
+        120
+      ],
+      "to": [
+        82.5,
+        3190,
+        120
+      ],
+      "web": {
+        "web": [
+          0.825,
+          1.2,
+          30.9
+        ],
+        "unreal": [
+          82.5,
+          3090,
+          120
+        ],
+        "distanceCm": 810,
+        "node": "mesh_l0_x83_z3090_y110",
+        "materialKey": "bas_bfd3dc_r100_m0_a35_ds"
+      },
+      "hit": "mesh_l0_x83_z3090_y110",
+      "gotCm": [
+        82.5,
+        3090.0,
+        120.0
+      ],
+      "wantCm": [
+        82.5,
+        3090,
+        120
+      ],
+      "errorCm": 0.0,
+      "node": "mesh_l0_x83_z3090_y110",
+      "sameNode": true,
+      "materialKey": "bas_bfd3dc_r100_m0_a35_ds",
+      "ok": true
+    },
+    {
+      "id": "husb_north_facade",
+      "house": "B",
+      "zone": "kvarteret",
+      "what": "north fa\u00e7ade, storey 2 above the base",
+      "expect": "hit",
+      "from": [
+        -2738.5,
+        2530,
+        40
+      ],
+      "to": [
+        -2738.5,
+        3630,
+        40
+      ],
+      "web": {
+        "web": [
+          -27.385,
+          0.4,
+          33.3
+        ],
+        "unreal": [
+          -2738.5,
+          3330,
+          40
+        ],
+        "distanceCm": 800,
+        "node": "mesh_l0_xm3059_z3497_y600",
+        "materialKey": "std_ffffff_r95_m0_tex"
+      },
+      "hit": "mesh_l0_xm3059_z3497_y600",
+      "gotCm": [
+        -2738.5,
+        3330.0,
+        40.0
+      ],
+      "wantCm": [
+        -2738.5,
+        3330,
+        40
+      ],
+      "errorCm": 0.0,
+      "node": "mesh_l0_xm3059_z3497_y600",
+      "sameNode": true,
+      "materialKey": "std_ffffff_r95_m0_tex",
+      "ok": true
+    },
+    {
+      "id": "husb_east_facade",
+      "house": "B",
+      "zone": "kvarteret",
+      "what": "east fa\u00e7ade",
+      "expect": "hit",
+      "from": [
+        -1460,
+        5013.5,
+        40
+      ],
+      "to": [
+        -2560,
+        5013.5,
+        40
+      ],
+      "web": {
+        "web": [
+          -22.6,
+          0.4,
+          50.135
+        ],
+        "unreal": [
+          -2260,
+          5013.5,
+          40
+        ],
+        "distanceCm": 800,
+        "node": "mesh_l0_xm3059_z3497_y600",
+        "materialKey": "std_ffffff_r95_m0_tex"
+      },
+      "hit": "mesh_l0_xm3059_z3497_y600",
+      "gotCm": [
+        -2260.0,
+        5013.5,
+        40.0
+      ],
+      "wantCm": [
+        -2260,
+        5013.5,
+        40
+      ],
+      "errorCm": 0.0,
+      "node": "mesh_l0_xm3059_z3497_y600",
+      "sameNode": true,
+      "materialKey": "std_ffffff_r95_m0_tex",
+      "ok": true
+    },
+    {
+      "id": "husb_west_facade",
+      "house": "B",
+      "zone": "kvarteret",
+      "what": "west fa\u00e7ade",
+      "expect": "hit",
+      "from": [
+        -4974,
+        5013.5,
+        40
+      ],
+      "to": [
+        -3874,
+        5013.5,
+        40
+      ],
+      "web": {
+        "web": [
+          -41.74,
+          0.4,
+          50.135
+        ],
+        "unreal": [
+          -4174,
+          5013.5,
+          40
+        ],
+        "distanceCm": 800,
+        "node": "mesh_l0_xm3059_z3497_y600",
+        "materialKey": "std_ffffff_r95_m0_tex"
+      },
+      "hit": "mesh_l0_xm3059_z3497_y600",
+      "gotCm": [
+        -4174.0,
+        5013.5,
+        40.0
+      ],
+      "wantCm": [
+        -4174,
+        5013.5,
+        40
+      ],
+      "errorCm": 0.0,
+      "node": "mesh_l0_xm3059_z3497_y600",
+      "sameNode": true,
+      "materialKey": "std_ffffff_r95_m0_tex",
+      "ok": true
+    },
+    {
+      "id": "husb_south_facade",
+      "house": "B",
+      "zone": "kvarteret",
+      "what": "south fa\u00e7ade",
+      "expect": "hit",
+      "from": [
+        -2738.5,
+        6735,
+        40
+      ],
+      "to": [
+        -2738.5,
+        5435,
+        40
+      ],
+      "web": {
+        "web": [
+          -27.385,
+          0.4,
+          57.29
+        ],
+        "unreal": [
+          -2738.5,
+          5729,
+          40
+        ],
+        "distanceCm": 1006,
+        "node": "mesh_loggiarails_l0_xm3059_z3498_y653",
+        "materialKey": "std_ffffff_r58_m0_tex_ds"
+      },
+      "hit": "mesh_loggiarails_l0_xm3059_z3498_y653",
+      "gotCm": [
+        -2738.5,
+        5729.0,
+        40.0
+      ],
+      "wantCm": [
+        -2738.5,
+        5729,
+        40
+      ],
+      "errorCm": 0.0,
+      "node": "mesh_loggiarails_l0_xm3059_z3498_y653",
+      "sameNode": true,
+      "materialKey": "std_ffffff_r58_m0_tex_ds",
+      "ok": true
+    },
+    {
+      "id": "husb_roof",
+      "house": "B",
+      "zone": "kvarteret",
+      "what": "roof",
+      "expect": "hit",
+      "from": [
+        -3217,
+        4532.5,
+        2400
+      ],
+      "to": [
+        -3217,
+        4532.5,
+        500
+      ],
+      "web": {
+        "web": [
+          -32.17,
+          10.82,
+          45.325
+        ],
+        "unreal": [
+          -3217,
+          4532.5,
+          1082
+        ],
+        "distanceCm": 1318,
+        "node": "mesh_l1_xm3059_z3497_y1307",
+        "materialKey": "std_8b9095_r90_m0_tex_ds"
+      },
+      "hit": "mesh_l1_xm3059_z3497_y1307",
+      "gotCm": [
+        -3217.0,
+        4532.5,
+        1082.0
+      ],
+      "wantCm": [
+        -3217,
+        4532.5,
+        1082
+      ],
+      "errorCm": 0.0,
+      "node": "mesh_l1_xm3059_z3497_y1307",
+      "sameNode": true,
+      "materialKey": "std_8b9095_r90_m0_tex_ds",
+      "ok": true
+    },
+    {
+      "id": "husb_core",
+      "house": "B",
+      "zone": "kvarteret",
+      "what": "stairwell: down through the band at storey 2 (corehouse.js)",
+      "expect": "hit",
+      "from": [
+        -3212,
+        4587,
+        450
+      ],
+      "to": [
+        -3212,
+        4587,
+        150
+      ],
+      "web": {
+        "web": [
+          -32.12,
+          3.006,
+          45.87
+        ],
+        "unreal": [
+          -3212,
+          4587,
+          300.6
+        ],
+        "distanceCm": 149.4,
+        "node": "mesh_l0_xm3282_z4417_y272",
+        "materialKey": "bas_ffffff_r100_m0_vc_ds"
+      },
+      "hit": "mesh_l0_xm3282_z4417_y272",
+      "gotCm": [
+        -3212.0,
+        4587.0,
+        300.6
+      ],
+      "wantCm": [
+        -3212,
+        4587,
+        300.6
+      ],
+      "errorCm": 0.0,
+      "node": "mesh_l0_xm3282_z4417_y272",
+      "sameNode": true,
+      "materialKey": "bas_ffffff_r100_m0_vc_ds",
+      "ok": true
+    },
+    {
+      "id": "husb_entrance_glass",
+      "house": "B",
+      "zone": "kvarteret",
+      "what": "the glazed entrance in its recess",
+      "expect": "glass",
+      "from": [
+        -3308,
+        2730,
+        120
+      ],
+      "to": [
+        -3308,
+        3640,
+        120
+      ],
+      "web": {
+        "web": [
+          -33.08,
+          1.2,
+          35.4
+        ],
+        "unreal": [
+          -3308,
+          3540,
+          120
+        ],
+        "distanceCm": 810,
+        "node": "mesh_l0_xm3308_z3540_y110",
+        "materialKey": "bas_bfd3dc_r100_m0_a35_ds"
+      },
+      "hit": "mesh_l0_xm3308_z3540_y110",
+      "gotCm": [
+        -3308.0,
+        3540.0,
+        120.0
+      ],
+      "wantCm": [
+        -3308,
+        3540,
+        120
+      ],
+      "errorCm": 0.0,
+      "node": "mesh_l0_xm3308_z3540_y110",
+      "sameNode": true,
+      "materialKey": "bas_bfd3dc_r100_m0_a35_ds",
+      "ok": true
+    },
+    {
+      "id": "husc_north_facade",
+      "house": "C",
+      "zone": "kvarteret",
+      "what": "north fa\u00e7ade, storey 2 above the base",
+      "expect": "hit",
+      "from": [
+        -5620,
+        460,
+        340
+      ],
+      "to": [
+        -5620,
+        1560,
+        340
+      ],
+      "web": {
+        "web": [
+          -56.2,
+          3.4,
+          12.6
+        ],
+        "unreal": [
+          -5620,
+          1260,
+          340
+        ],
+        "distanceCm": 800,
+        "node": "mesh_l0_xm3059_z3497_y600",
+        "materialKey": "std_ffffff_r95_m0_tex"
+      },
+      "hit": "mesh_l0_xm3059_z3497_y600",
+      "gotCm": [
+        -5620.0,
+        1260.0,
+        340.0
+      ],
+      "wantCm": [
+        -5620,
+        1260,
+        340
+      ],
+      "errorCm": 0.0,
+      "node": "mesh_l0_xm3059_z3497_y600",
+      "sameNode": true,
+      "materialKey": "std_ffffff_r95_m0_tex",
+      "ok": true
+    },
+    {
+      "id": "husc_east_facade",
+      "house": "C",
+      "zone": "kvarteret",
+      "what": "east fa\u00e7ade",
+      "expect": "hit",
+      "from": [
+        -4340,
+        2945.6,
+        340
+      ],
+      "to": [
+        -5440,
+        2945.6,
+        340
+      ],
+      "web": {
+        "web": [
+          -51.4,
+          3.4,
+          29.456
+        ],
+        "unreal": [
+          -5140,
+          2945.6,
+          340
+        ],
+        "distanceCm": 800,
+        "node": "mesh_l0_xm3059_z3497_y600",
+        "materialKey": "std_ffffff_r95_m0_tex"
+      },
+      "hit": "mesh_l0_xm3059_z3497_y600",
+      "gotCm": [
+        -5140.0,
+        2945.6,
+        340.0
+      ],
+      "wantCm": [
+        -5140,
+        2945.6,
+        340
+      ],
+      "errorCm": 0.0,
+      "node": "mesh_l0_xm3059_z3497_y600",
+      "sameNode": true,
+      "materialKey": "std_ffffff_r95_m0_tex",
+      "ok": true
+    },
+    {
+      "id": "husc_west_facade",
+      "house": "C",
+      "zone": "kvarteret",
+      "what": "west fa\u00e7ade",
+      "expect": "hit",
+      "from": [
+        -7860,
+        2945.6,
+        340
+      ],
+      "to": [
+        -6760,
+        2945.6,
+        340
+      ],
+      "web": {
+        "web": [
+          -70.6,
+          3.4,
+          29.456
+        ],
+        "unreal": [
+          -7060,
+          2945.6,
+          340
+        ],
+        "distanceCm": 800,
+        "node": "mesh_l0_xm3059_z3497_y600",
+        "materialKey": "std_ffffff_r95_m0_tex"
+      },
+      "hit": "mesh_l0_xm3059_z3497_y600",
+      "gotCm": [
+        -7060.0,
+        2945.6,
+        340.0
+      ],
+      "wantCm": [
+        -7060,
+        2945.6,
+        340
+      ],
+      "errorCm": 0.0,
+      "node": "mesh_l0_xm3059_z3497_y600",
+      "sameNode": true,
+      "materialKey": "std_ffffff_r95_m0_tex",
+      "ok": true
+    },
+    {
+      "id": "husc_south_facade",
+      "house": "C",
+      "zone": "kvarteret",
+      "what": "south fa\u00e7ade",
+      "expect": "hit",
+      "from": [
+        -5620,
+        4668,
+        340
+      ],
+      "to": [
+        -5620,
+        3368,
+        340
+      ],
+      "web": {
+        "web": [
+          -56.2,
+          3.4,
+          36.62
+        ],
+        "unreal": [
+          -5620,
+          3662,
+          340
+        ],
+        "distanceCm": 1006,
+        "node": "mesh_loggiarails_l0_xm3059_z3498_y653",
+        "materialKey": "std_ffffff_r58_m0_tex_ds"
+      },
+      "hit": "mesh_loggiarails_l0_xm3059_z3498_y653",
+      "gotCm": [
+        -5620.0,
+        3662.0,
+        340.0
+      ],
+      "wantCm": [
+        -5620,
+        3662,
+        340
+      ],
+      "errorCm": 0.0,
+      "node": "mesh_loggiarails_l0_xm3059_z3498_y653",
+      "sameNode": true,
+      "materialKey": "std_ffffff_r58_m0_tex_ds",
+      "ok": true
+    },
+    {
+      "id": "husc_roof",
+      "house": "C",
+      "zone": "kvarteret",
+      "what": "roof",
+      "expect": "hit",
+      "from": [
+        -6100,
+        2464,
+        3000
+      ],
+      "to": [
+        -6100,
+        2464,
+        1100
+      ],
+      "web": {
+        "web": [
+          -61,
+          16.82,
+          24.64
+        ],
+        "unreal": [
+          -6100,
+          2464,
+          1682
+        ],
+        "distanceCm": 1318,
+        "node": "mesh_l1_xm3059_z3497_y1307",
+        "materialKey": "std_8b9095_r90_m0_tex_ds"
+      },
+      "hit": "mesh_l1_xm3059_z3497_y1307",
+      "gotCm": [
+        -6100.0,
+        2464.0,
+        1682.0
+      ],
+      "wantCm": [
+        -6100,
+        2464,
+        1682
+      ],
+      "errorCm": 0.0,
+      "node": "mesh_l1_xm3059_z3497_y1307",
+      "sameNode": true,
+      "materialKey": "std_8b9095_r90_m0_tex_ds",
+      "ok": true
+    },
+    {
+      "id": "husc_core",
+      "house": "C",
+      "zone": "kvarteret",
+      "what": "stairwell: down through the band at storey 2 (corehouse.js)",
+      "expect": "hit",
+      "from": [
+        -6139,
+        2533,
+        450
+      ],
+      "to": [
+        -6139,
+        2533,
+        150
+      ],
+      "web": {
+        "web": [
+          -61.39,
+          3.006,
+          25.33
+        ],
+        "unreal": [
+          -6139,
+          2533,
+          300.6
+        ],
+        "distanceCm": 149.4,
+        "node": "mesh_l0_xm6288_z2533_y588",
+        "materialKey": "bas_ffffff_r100_m0_vc_ds"
+      },
+      "hit": "mesh_l0_xm6288_z2533_y588",
+      "gotCm": [
+        -6139.0,
+        2533.0,
+        300.6
+      ],
+      "wantCm": [
+        -6139,
+        2533,
+        300.6
+      ],
+      "errorCm": 0.0,
+      "node": "mesh_l0_xm6288_z2533_y588",
+      "sameNode": true,
+      "materialKey": "bas_ffffff_r100_m0_vc_ds",
+      "ok": true
+    },
+    {
+      "id": "husc_entrance_glass",
+      "house": "C",
+      "zone": "kvarteret",
+      "what": "the glazed entrance in its recess",
+      "expect": "glass",
+      "from": [
+        -4540,
+        2272.5,
+        120
+      ],
+      "to": [
+        -5440,
+        2272.5,
+        120
+      ],
+      "web": {
+        "web": [
+          -53.4,
+          1.2,
+          22.725
+        ],
+        "unreal": [
+          -5340,
+          2272.5,
+          120
+        ],
+        "distanceCm": 800,
+        "node": "mesh_l0_xm5340_z2273_y110",
+        "materialKey": "bas_bfd3dc_r100_m0_a35_ds"
+      },
+      "hit": "mesh_l0_xm5340_z2273_y110",
+      "gotCm": [
+        -5340.0,
+        2272.5,
+        120.0
+      ],
+      "wantCm": [
+        -5340,
+        2272.5,
+        120
+      ],
+      "errorCm": 0.0,
+      "node": "mesh_l0_xm5340_z2273_y110",
+      "sameNode": true,
+      "materialKey": "bas_bfd3dc_r100_m0_a35_ds",
+      "ok": true
+    },
+    {
+      "id": "garage_floor",
+      "house": "garage",
+      "zone": "kvarteret",
+      "what": "garage floor",
+      "expect": "hit",
+      "from": [
+        -3000,
+        2200,
+        -150
+      ],
+      "to": [
+        -3000,
+        2200,
+        -400
+      ],
+      "web": {
+        "web": [
+          -30,
+          -2.997,
+          22
+        ],
+        "unreal": [
+          -3000,
+          2200,
+          -299.7
+        ],
+        "distanceCm": 149.7,
+        "node": "mesh_l0_xm3039_z2289_ym300",
+        "materialKey": "bas_353535_r100_m0_vc_tex"
+      },
+      "hit": "mesh_l0_xm3039_z2289_ym300",
+      "gotCm": [
+        -3000.0,
+        2200.0,
+        -299.7
+      ],
+      "wantCm": [
+        -3000,
+        2200,
+        -299.7
+      ],
+      "errorCm": 0.0,
+      "node": "mesh_l0_xm3039_z2289_ym300",
+      "sameNode": true,
+      "materialKey": "bas_353535_r100_m0_vc_tex",
+      "ok": true
+    },
+    {
+      "id": "garage_soffit",
+      "house": "garage",
+      "zone": "kvarteret",
+      "what": "underside of the courtyard deck",
+      "expect": "hit",
+      "from": [
+        -3000,
+        2200,
+        -150
+      ],
+      "to": [
+        -3000,
+        2200,
+        100
+      ],
+      "web": {
+        "web": [
+          -30,
+          -0.35,
+          22
+        ],
+        "unreal": [
+          -3000,
+          2200,
+          -35
+        ],
+        "distanceCm": 115,
+        "node": "mesh_l0_xm2245_z3120_ym168",
+        "materialKey": "bas_353535_r100_m0_vc_ds"
+      },
+      "hit": "mesh_l0_xm2245_z3120_ym168",
+      "gotCm": [
+        -3000.0,
+        2200.0,
+        -35.0
+      ],
+      "wantCm": [
+        -3000,
+        2200,
+        -35
+      ],
+      "errorCm": 0.0,
+      "node": "mesh_l0_xm2245_z3120_ym168",
+      "sameNode": true,
+      "materialKey": "bas_353535_r100_m0_vc_ds",
+      "ok": true
+    },
+    {
+      "id": "garage_wall",
+      "house": "garage",
+      "zone": "kvarteret",
+      "what": "the box's park-side wall from inside",
+      "expect": "hit",
+      "from": [
+        -3000,
+        2200,
+        -150
+      ],
+      "to": [
+        -3000,
+        4000,
+        -150
+      ],
+      "web": {
+        "web": [
+          -30,
+          -1.5,
+          33.16
+        ],
+        "unreal": [
+          -3000,
+          3316,
+          -150
+        ],
+        "distanceCm": 1116,
+        "node": "mesh_l0_xm2245_z3120_ym168",
+        "materialKey": "bas_353535_r100_m0_vc_ds"
+      },
+      "hit": "mesh_l0_xm2245_z3120_ym168",
+      "gotCm": [
+        -3000.0,
+        3316.0,
+        -150.0
+      ],
+      "wantCm": [
+        -3000,
+        3316,
+        -150
+      ],
+      "errorCm": 0.0,
+      "node": "mesh_l0_xm2245_z3120_ym168",
+      "sameNode": true,
+      "materialKey": "bas_353535_r100_m0_vc_ds",
+      "ok": true
+    },
+    {
+      "id": "garage_west_wall",
+      "house": "garage",
+      "zone": "kvarteret",
+      "what": "west wall towards Karpv\u00e4gen from inside",
+      "expect": "hit",
+      "from": [
+        -6000,
+        3000,
+        -150
+      ],
+      "to": [
+        -7500,
+        3000,
+        -150
+      ],
+      "web": {
+        "web": [
+          -60.14,
+          -1.5,
+          30
+        ],
+        "unreal": [
+          -6014,
+          3000,
+          -150
+        ],
+        "distanceCm": 14,
+        "node": "mesh_l0_xm5933_z2485_y575",
+        "materialKey": "bas_ffffff_r100_m0_vc_ds"
+      },
+      "hit": "mesh_l0_xm5933_z2485_y575",
+      "gotCm": [
+        -6014.0,
+        3000.0,
+        -150.0
+      ],
+      "wantCm": [
+        -6014,
+        3000,
+        -150
+      ],
+      "errorCm": 0.0,
+      "node": "mesh_l0_xm5933_z2485_y575",
+      "sameNode": true,
+      "materialKey": "bas_ffffff_r100_m0_vc_ds",
+      "ok": true
+    }
+  ],
+  "houses": {
+    "L": {
+      "rays": 7,
+      "ok": 7,
+      "maxErrorCm": 0.0
+    },
+    "A": {
+      "rays": 7,
+      "ok": 7,
+      "maxErrorCm": 0.0
+    },
+    "B": {
+      "rays": 7,
+      "ok": 7,
+      "maxErrorCm": 0.0
+    },
+    "C": {
+      "rays": 7,
+      "ok": 7,
+      "maxErrorCm": 0.0
+    },
+    "garage": {
+      "rays": 4,
+      "ok": 4,
+      "maxErrorCm": 0.0
+    }
+  }
+}

@@ -36,6 +36,9 @@ import sys
 
 import unreal as u
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from prepare_nanite_materials import static_mesh_editor  # noqa: E402  set_editor_property leaves the fallback (#2297)
+
 MATERIALS = "/Game/Lunden/Vegetation"
 MASTER = MATERIALS + "/M_LundenFoliage"
 LEAF = MATERIALS + "/MI_LundenLeaf"
@@ -367,7 +370,7 @@ def build(veg, found, copied):
         nanite = mesh.get_editor_property("nanite_settings")
         if nanite.get_editor_property("enabled"):  # the full mesh in game and in captures (#2298)
             nanite.set_editor_property("enabled", False)
-            mesh.set_editor_property("nanite_settings", nanite)
+            static_mesh_editor().set_nanite_settings(mesh, nanite, True)  # rebuilds the render data now
         body = mesh.get_editor_property("body_setup")
         if body:
             body.set_editor_property("collision_trace_flag", u.CollisionTraceFlag.CTF_USE_SIMPLE_AS_COMPLEX)

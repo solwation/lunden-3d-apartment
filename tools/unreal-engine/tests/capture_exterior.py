@@ -18,6 +18,7 @@ import unreal as u
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "python"))
 from screenshot_level import render_view  # noqa: E402
+from prepare_nanite_materials import static_mesh_editor  # noqa: E402
 
 MAP = "/Game/Lunden/Maps/L_Lunden"
 ZONES = ["l1007-entre", "hus-l", "kvarteret", "gard", "omgivning"]  # (#2280: the ground zones, full meshes too)
@@ -40,15 +41,16 @@ def run(scene_path, out_dir, ids=None):
         added.append(package)
     fallback = 0
     if os.environ.get("LUNDEN_CAPTURE_NANITE") != "1":
-        # The capture draws a Nanite mesh's fallback here, which for the big merged façade meshes is simplified into
-        # loose panels (docs/verification/2279): show the full meshes instead, in memory only (never saved).
+        # A one-shot commandlet capture draws Nanite meshes as coarse loose panels (docs/verification/2279; still so
+        # with the full fallback of importer version 5, #2298): draw the full meshes instead, in memory only (never
+        # saved). set_nanite_settings rebuilds the render data; set_editor_property only flipped the flag (#2297).
         for zone in ZONES:
             for path in u.EditorAssetLibrary.list_assets(f"/Game/Lunden/Generated/{zone}/StaticMeshes", recursive=True, include_folder=False):
                 mesh = u.EditorAssetLibrary.load_asset(path)
                 settings = mesh.get_editor_property("nanite_settings") if isinstance(mesh, u.StaticMesh) else None
                 if settings and settings.get_editor_property("enabled"):
                     settings.set_editor_property("enabled", False)
-                    mesh.set_editor_property("nanite_settings", settings)
+                    static_mesh_editor().set_nanite_settings(mesh, settings, True)
                     fallback += 1
     actors = u.get_editor_subsystem(u.EditorActorSubsystem).get_all_level_actors()
     excluded = [a for a in actors if "kind:collision" in [str(t) for t in a.tags]]

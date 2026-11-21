@@ -10,8 +10,8 @@ which compose_world.py streams next to them:
   the lift shaft), of Hus A/B/C's stairwells, which open onto the garage on våning −1 (src/corehouse.js; their doors
   stay as exported, closed), and of the garage (src/garage.js: floor, walls, ramps, doors), placed on the imported actor's transform
   and hidden in game. Each copy is complex-as-simple with double-sided triangles and Nanite off, so the capsule follows
-  the full mesh: the imported meshes have no simple shapes after a reload, their complex collision would be the
-  simplified Nanite fallback (#2298) and single-sided (#2299). Copies leave those importer bugs alone;
+  the full mesh: the imported meshes have no simple shapes and their complex collision is single-sided (#2299); it
+  was also the simplified Nanite fallback until importer version 5 (#2298). Copies leave the imported meshes alone;
 - not the portik's glazed door leaf into the stairwell (doors that open are #2285), so the way in stays open.
 
 The street from START west to the portik and the portik's floor are the ground's collision level (build_site.py,
@@ -26,6 +26,9 @@ from pathlib import Path
 import sys
 
 import unreal as u
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from prepare_nanite_materials import static_mesh_editor  # noqa: E402  set_editor_property leaves the fallback (#2297)
 
 SOURCES = {"hus-l": ("/Game/Lunden/Generated/hus-l/Level_hus-l", {"source:src/core.js"}),
            "kvarteret": ("/Game/Lunden/Generated/kvarteret/Level_kvarteret", {"source:src/garage.js", "source:src/corehouse.js"})}
@@ -132,7 +135,7 @@ def build(meshes):
                 raise RuntimeError(f"Cannot copy {mesh_path}")
             settings = mesh.get_editor_property("nanite_settings")
             settings.set_editor_property("enabled", False)
-            mesh.set_editor_property("nanite_settings", settings)
+            static_mesh_editor().set_nanite_settings(mesh, settings, True)  # rebuilds the render data now (#2298)
             body = mesh.get_editor_property("body_setup")
             body.set_editor_property("collision_trace_flag", u.CollisionTraceFlag.CTF_USE_COMPLEX_AS_SIMPLE)
             body.set_editor_property("double_sided_geometry", True)

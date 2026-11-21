@@ -6,7 +6,7 @@
 scene.json: `node tools/unreal-engine/pilot-scene.mjs measurements.json scene.json` for the cameras (see
 docs/verification/2281/). Loads L_Lunden and streams in memory every world-levels.json sub-level the saved map does not
 hold yet (until compose_world.py recomposes it), turns Nanite off in memory on the imported meshes (their full meshes,
-as capture_lighting.py: the commandlet capture draws the Nanite fallback, #2298; the vegetation's own mesh copies have
+as capture_lighting.py: a one-shot commandlet capture draws Nanite meshes as coarse panels, #2298; the vegetation's own mesh copies have
 Nanite off already) and lights the views with the world's own sky (#2283's BP_LundenSky, set to views.json's date and
 each preset's hour exactly as capture_lighting.py does; no temporary rig). Renders with screenshot_level.render_view.
 Nothing is saved. Logs LUNDEN_VEGETATION_CAPTURE_OK.
@@ -21,6 +21,7 @@ import unreal as u
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "python"))
 from screenshot_level import render_view  # noqa: E402
+from prepare_nanite_materials import static_mesh_editor  # noqa: E402
 
 TOOLS = Path(__file__).resolve().parents[1]
 WORLD = json.loads((TOOLS / "world-levels.json").read_text(encoding="utf-8"))
@@ -50,7 +51,7 @@ def run(scene_path, out_dir, ids=None):
             settings = mesh.get_editor_property("nanite_settings") if isinstance(mesh, u.StaticMesh) else None
             if settings and settings.get_editor_property("enabled"):
                 settings.set_editor_property("enabled", False)
-                mesh.set_editor_property("nanite_settings", settings)
+                static_mesh_editor().set_nanite_settings(mesh, settings, True)  # rebuilds the render data (#2297)
                 fallback += 1
     actors = u.get_editor_subsystem(u.EditorActorSubsystem).get_all_level_actors()
     excluded = [a for a in actors if "kind:collision" in [str(t) for t in a.tags]]

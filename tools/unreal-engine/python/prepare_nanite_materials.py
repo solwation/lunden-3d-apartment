@@ -1,10 +1,12 @@
-"""Prepare Nanite shader usage on project-owned materials and rasterize meshes with unsupported material slots."""
+"""Prepare Nanite shader usage on project-owned materials, rasterize meshes with unsupported material slots and keep
+every Nanite mesh's fallback at all its triangles (#2298)."""
 import sys
 import unreal
 
 ROOT = "/Game/Lunden/"
 USAGE = unreal.MaterialUsage.MATUSAGE_NANITE
 SUPPORTED = (unreal.BlendMode.BLEND_OPAQUE, unreal.BlendMode.BLEND_MASKED)
+FULL_FALLBACK = unreal.NaniteFallbackTarget.PERCENT_TRIANGLES
 assets = unreal.EditorAssetLibrary
 materials = unreal.MaterialEditingLibrary
 
@@ -26,6 +28,7 @@ def prepare_zone(zone, check_only=False):
         raise RuntimeError("Missing imported meshes in " + folder)
     interfaces = {}
     nanite = fallback = changed = 0
+    reduced = [0, 0]  # fallback triangles of the meshes changed below, before and after
     for path in assets.list_assets(folder, recursive=True, include_folder=False):
         mesh = assets.load_asset(path)
         if not isinstance(mesh, unreal.StaticMesh):
@@ -50,6 +53,19 @@ def prepare_zone(zone, check_only=False):
                 changed += 1
         elif settings.enabled:
             nanite += 1
+            # A Nanite mesh's fallback (render LOD 0) is what complex collision, traces and non-Nanite drawing such as
+            # the commandlet captures use. The default (AUTO) simplifies large meshes: 7.7 cm off on Hus L's façade,
+            # thin rails gone (#2298). Keep every triangle; Nanite drawing itself is unchanged.
+            if settings.fallback_target != FULL_FALLBACK or settings.fallback_percent_triangles < 1.0:
+                if check_only:
+                    raise RuntimeError("Nanite fallback is not the full mesh: " + path)
+                before = mesh.get_num_triangles(0)
+                settings.fallback_target = FULL_FALLBACK
+                settings.fallback_percent_triangles = 1.0
+                static_mesh_editor().set_nanite_settings(mesh, settings, True)
+                save(mesh)
+                reduced[0], reduced[1] = reduced[0] + before, reduced[1] + mesh.get_num_triangles(0)
+                changed += 1
             for mat in slots:
                 interfaces[mat.get_path_name()] = mat
 
@@ -75,7 +91,7 @@ def prepare_zone(zone, check_only=False):
             raise RuntimeError("Could not enable Nanite usage: " + path)
         changed += 1
     unreal.log(f"LUNDEN_NANITE {zone}: {nanite} Nanite meshes; {fallback} raster meshes with unsupported slots; "
-               f"{len(interfaces)} Nanite materials; {changed} packages changed")
+               f"{len(interfaces)} Nanite materials; fallback triangles {reduced[0]} -> {reduced[1]}; {changed} packages changed")
 
 
 if __name__ == "__main__":

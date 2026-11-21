@@ -7,8 +7,9 @@ scene.json comes from `node tools/unreal-engine/pilot-scene.mjs measurements.jso
 the web). Unlike capture_l1007.py there is no temporary rig: the world's BP_LundenSky (Generated/Lighting/Level_lighting,
 composed into L_Lunden) is set to views.json's date and each preset's hour with UseClock off, UpdateSky runs, and the
 lamps are switched with their TurnOn / TurnOff events (views.json `lampsOn`). Weather shots switch Rain or Snow on and
-set Wet to 1 (a soaked street). Nothing is saved; the zones' meshes render with Nanite off in memory (the commandlet
-capture draws the simplified Nanite fallback otherwise, #2279/#2298). Logs LUNDEN_LIGHTING_CAPTURE_OK.
+set Wet to 1 (a soaked street). Nothing is saved; the zones' meshes render with Nanite off in memory (a one-shot
+commandlet capture draws Nanite meshes as coarse loose panels otherwise, also with the full fallback of importer
+version 5, #2279/#2298). Logs LUNDEN_LIGHTING_CAPTURE_OK.
 """
 import json
 import math
@@ -20,6 +21,7 @@ import unreal as u
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "python"))
 from screenshot_level import render_view  # noqa: E402
+from prepare_nanite_materials import static_mesh_editor  # noqa: E402
 
 MAP = "/Game/Lunden/Maps/L_Lunden"
 VIEWS = json.loads((Path(__file__).resolve().parents[3] / "unreal/Lunden/Tests/views.json").read_text(encoding="utf-8"))
@@ -45,7 +47,7 @@ def run(scene_path, out_dir, names=None):
         settings = mesh.get_editor_property("nanite_settings") if isinstance(mesh, u.StaticMesh) else None
         if settings and settings.get_editor_property("enabled"):
             settings.set_editor_property("enabled", False)
-            mesh.set_editor_property("nanite_settings", settings)
+            static_mesh_editor().set_nanite_settings(mesh, settings, True)  # rebuilds the render data (#2297)
             fallback += 1
     actors = u.get_editor_subsystem(u.EditorActorSubsystem).get_all_level_actors()
     excluded = [a for a in actors if "kind:collision" in [str(t) for t in a.tags]]

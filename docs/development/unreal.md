@@ -1686,8 +1686,23 @@ render data at once. Setting `nanite_settings` with `set_editor_property` only f
 commandlet, #2297): the session keeps the Nanite fallback mesh until the next editor start, so `get_num_vertices`/
 `get_num_triangles` and anything else that reads the render data see the reduced mesh (on l1007, 34 of the 73 raster
 furniture meshes, e.g. 370 instead of 992 triangles). The import then stamped a fingerprint that no fresh editor
-reproduced. Builders that still flip the flag that way (`build_exterior.py`, `build_site.py`, `build_vegetation.py`,
-the capture tests) are affected in their own session as well (#2298).
+reproduced. Since #2298 the builders' copies (`build_exterior.py`, `build_site.py`, `build_vegetation.py`) and the
+capture scripts' in-memory switch use `set_nanite_settings` too.
+
+**Full Nanite fallback (#2298, importer version 5).** A Nanite mesh's fallback (render LOD 0) is what complex
+collision and traces use. The default (`fallback_target` AUTO) simplified the large merged meshes: Hus L's street façade
+7.7 cm off, thin loggia rails and parts of the garage shell missing. `prepare_zone` therefore sets every Nanite mesh to
+`fallback_target = PERCENT_TRIANGLES`, `fallback_percent_triangles = 1.0` through `set_nanite_settings(..., True)`;
+Nanite drawing is unchanged, and `prepare_nanite_materials.py --check` fails on a mesh without it. After a restart,
+every imported Nanite mesh's fallback has as many triangles as its raster build (83 meshes, e.g. `mesh_boxrails_…`
+2,716 of 3,396 source triangles, are below their source count because the standard build drops degenerate triangles,
+exactly as the raster build does). Cost, measured on all nine zones of the 03dda558 export: fallback triangles
+655,533 → 1,648,081 (+992,548; l1007 330,269 → 825,904, hus-l 99,158 → 220,839, kvarteret 145,223 → 267,343,
+omgivning 35,759 → 191,358); package bytes under `Generated/` +0.15 % (the render data lives in the DDC and the cook,
+not in the editor packages; a cooked size was not measured, at roughly 44 bytes per raster triangle about 45 MB more);
+import of all zones 4 min instead of about 1.5 (l1007 43 s → 110 s, hus-l 17 s → 44 s, kvarteret 5 s → 31 s).
+A one-shot commandlet capture still draws Nanite meshes as coarse loose panels with the full fallback, so the capture
+scripts keep switching Nanite off in memory ([pictures](../verification/2298/README.md)).
 After a fresh editor start, check the persisted settings without writing assets:
 
 ```powershell
@@ -1713,7 +1728,8 @@ it after the save, and `--check` recomputes it in a new editor process; importer
 for zones with raster meshes. Version 4 changes the fingerprint only where a mesh left Nanite with a reduced fallback
 or a zone has collision nodes: l1007 changed, `fixture` (`70a3715f2b59d0eb`) and `l1007-uteplats`
 (`88dbd0aee8ee6a16`, export of e8e7e288) did not, so derived builds that record them stay current; results in
-[the #2297 verification](../verification/2297/README.md).
+[the #2297 verification](../verification/2297/README.md). Version 5 (#2298) changes the fingerprint of every zone
+whose Nanite fallback was reduced (all but `fixture` and `l1007-entre`), so the derived builds rebuild once.
 
 **Results (2026-11-20, UE 5.8.4, export of 3b4b65fe with this change):**
 
@@ -1814,14 +1830,16 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-
 
 It opens `Level_hus-l`, streams the other measured zones in memory, and traces each ray with complex collision against
 its zone's actors (the others ignored). A ray passes when it hits the same node (or one of its parts) within 1 cm of
-the web's point, or nothing for `clear`. Two engine facts made the first run fail, and the test handles both in memory
-without saving. First, a trace's complex collision is built from the render LOD, which for a Nanite mesh is the
-simplified fallback: 7.7 cm off on Hus L's street façade, and thin rails and parts of the garage shell were gone.
-Second, Interchange leaves complex collision single-sided, so the A/B entrance glass (raster meshes, so not a Nanite
-effect) was not hit from the side its faces turn away from. The same fallback is what a commandlet capture draws: with
-Nanite on, Hus L's round stair drum and brick façade became loose panels
-([picture](../verification/2279/unreal-start-nanite-fallback.jpg)); with Nanite off they match the web. With Nanite off and double-sided collision, all 32 rays matched: see the
-[#2279 verification](../verification/2279/README.md).
+the web's point, or nothing for `clear`. Two engine facts made the first run fail. First, a trace's complex collision
+is built from the render LOD, which for a Nanite mesh is its fallback, simplified by default: 7.7 cm off on Hus L's
+street façade, and thin rails and parts of the garage shell were gone. The importer keeps the full fallback since
+version 5 ([Full Nanite fallback](#import-into-unreal-verified-2026-11-20), #2298), so the test leaves Nanite on: all 32
+rays within 0.000 cm ([#2298 verification](../verification/2298/README.md)). Second, Interchange leaves complex
+collision single-sided, so the A/B entrance glass (raster meshes, so not a Nanite effect) was not hit from the side its
+faces turn away from; the test still makes it double-sided in memory, without saving (#2299). A one-shot commandlet
+capture with Nanite on draws Hus L's round stair drum and brick façade as loose panels
+([picture](../verification/2279/unreal-start-nanite-fallback.jpg)), also with the full fallback, so the captures switch
+Nanite off in memory; then they match the web. See the [#2279 verification](../verification/2279/README.md).
 
 **In the world map.** `world-levels.json` lists the three zone levels and `Level_exterior_collision`
 ([World map](#world-map-l_lunden-2278)). `build_exterior.py` builds the collision where the player can now reach:

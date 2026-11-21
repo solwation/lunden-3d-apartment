@@ -22,7 +22,8 @@ Import (default):
      `collision` nodes become hidden-in-game BlockAll actors whose (shared unit cube) mesh has one simple box;
      material keys listed in tools/unreal-engine/material-map.json are replaced by hand-made materials;
      prepare_nanite_materials.prepare_zone moves meshes with unsupported material slots to the raster path and
-     rebuilds their render data at once (the fingerprint must equal what a fresh editor computes, #2297);
+     rebuilds their render data at once (the fingerprint must equal what a fresh editor computes, #2297), and keeps
+     every Nanite mesh's fallback (collision, traces, non-Nanite drawing) at all its triangles (#2298);
   4. saves, writes import-stamp.json (export hashes, a content fingerprint and the SHA-256 of every package file);
   5. checks (also run by --check without importing): fixture markers within 1 cm of measurements.json `fixture`,
      arrow tips (north -> Unreal -Y, east -> +X) within 1 cm, every door/window/light/furniture/interactive id present
@@ -44,7 +45,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from prepare_nanite_materials import prepare_zone, static_mesh_editor
 
 SUPPORTED_FORMAT_VERSION = 1
-IMPORTER_VERSION = 4  # bump when the importer's output changes for the same export (forces a re-import)
+IMPORTER_VERSION = 5  # bump when the importer's output changes for the same export (forces a re-import)
 GENERATED_ROOT = "/Game/Lunden/Generated"
 TOLERANCE_CM = 1.0
 ID_KINDS = ("door", "window", "light", "furniture", "interactive")

@@ -4,9 +4,8 @@ The exporter casts measurement rays through each house (tools/unreal-engine/expo
 gables, roofs, stairwells, the garage, the glazed entrances and Hus L's portik) on exactly the nodes it exports and
 writes the first hit into measurements.json `buildings`. This test opens Hus L's imported level
 (/Game/Lunden/Generated/hus-l/Level_hus-l, owned by import_world.py) with the other zones that have rays streamed in
-(in memory, nothing is saved), turns Nanite off and complex collision double-sided on their meshes (in memory: a
-trace would otherwise hit the simplified Nanite fallback, and the export's rays count every face from both sides),
-starts Play In Editor and traces the same rays against the complex collision of each
+(in memory, nothing is saved), turns complex collision double-sided on their meshes (in memory: the export's rays
+count every face from both sides, #2299), starts Play In Editor and traces the same rays against the complex collision of each
 zone's actors (the others ignored). Every ray must
 
 - hit the same export node (the actor named by its id, or one of its `<id>__<n>` parts) within 1 cm of the web's
@@ -46,27 +45,22 @@ if not u.EditorLoadingAndSavingUtils.load_map(level(ZONES[0])):
 for zone in ZONES[1:]:
     if not u.EditorLevelUtils.add_level_to_world(editor.get_editor_world(), level(zone), u.LevelStreamingAlwaysLoaded):
         raise RuntimeError(f"Could not stream {level(zone)}: run import_world.py")
-# Measure the imported geometry, not what the collision makes of it. A trace's complex collision is built from the
-# render LOD, which for a Nanite mesh is its simplified fallback (centimetres off on large merged meshes, thin rails
-# gone), and Interchange leaves it single-sided, while the exporter's rays count every face from both sides. So, in
-# memory only and never saved: Nanite off (the full mesh) and double-sided complex collision on the measured meshes.
-double = nanite = 0
+# A trace's complex collision is built from the render LOD, which for a Nanite mesh is its fallback: the importer keeps
+# that at every triangle since version 5 (#2298), so Nanite stays on here. Interchange leaves complex collision
+# single-sided while the exporter's rays count every face from both sides (#2299), so, in memory only and never saved,
+# the measured meshes get double-sided complex collision.
+double = 0
 started = time.monotonic()
 for zone in ZONES:
     for path in u.EditorAssetLibrary.list_assets(f"/Game/Lunden/Generated/{zone}/StaticMeshes", recursive=True, include_folder=False):
         mesh = u.EditorAssetLibrary.load_asset(path)
         if not isinstance(mesh, u.StaticMesh):
             continue
-        settings = mesh.get_editor_property("nanite_settings")
-        if settings.get_editor_property("enabled"):
-            settings.set_editor_property("enabled", False)
-            mesh.set_editor_property("nanite_settings", settings)
-            nanite += 1
         body = mesh.get_editor_property("body_setup")
         if body and not body.get_editor_property("double_sided_geometry"):
             body.set_editor_property("double_sided_geometry", True)
             double += 1
-u.log(f"LUNDEN_EXTERIOR in memory (not saved): Nanite off on {nanite} meshes, double-sided complex collision on {double}, "
+u.log(f"LUNDEN_EXTERIOR in memory (not saved): double-sided complex collision on {double} meshes, "
       f"{time.monotonic() - started:.1f} s")
 saved_slot = save_isolation.isolate()
 levels.editor_request_begin_play()

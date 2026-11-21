@@ -7,8 +7,8 @@ gard (the courtyard) and omgivning (the terrain, streets and the Höje å valley
 import_world.py and are never edited here. The terrain is the web's own triangle mesh (`site-terrain-*`, cut by zone),
 not an Unreal Landscape, so the ground is the web's ground vertex for vertex.
 
-The imported meshes cannot carry the player: after a reload their BodySetup has no simple shape, a trace's complex
-collision is built from the Nanite fallback (#2298) and Interchange leaves it single-sided (#2299). This builder
+The imported meshes cannot carry the player: their BodySetup has no simple shape and Interchange leaves the complex
+collision single-sided (#2299); until importer version 5 it was also the simplified Nanite fallback (#2298). This builder
 therefore writes /Game/Lunden/Generated/SiteWorld/Level_site_collision, which compose_world.py streams next to the
 zones: for every walkable node that the export lists in measurements.json `ground.collision` (terrain, asphalt,
 paving, park paths, the road bridge's asphalt, the timber bridge, the bus platform) a copy of its imported mesh with
@@ -26,6 +26,9 @@ from pathlib import Path
 import sys
 
 import unreal as u
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from prepare_nanite_materials import static_mesh_editor  # noqa: E402  set_editor_property leaves the fallback (#2297)
 
 FOLDER = "/Game/Lunden/Generated/SiteWorld"
 TARGET = FOLDER + "/Level_site_collision"
@@ -120,7 +123,7 @@ def build(found):
         nanite = mesh.get_editor_property("nanite_settings")
         if nanite.get_editor_property("enabled"):  # the full mesh, not the Nanite fallback (#2298)
             nanite.set_editor_property("enabled", False)
-            mesh.set_editor_property("nanite_settings", nanite)
+            static_mesh_editor().set_nanite_settings(mesh, nanite, True)  # rebuilds the render data now
         body = mesh.get_editor_property("body_setup")
         body.set_editor_property("collision_trace_flag", u.CollisionTraceFlag.CTF_USE_COMPLEX_AS_SIMPLE)
         body.set_editor_property("double_sided_geometry", True)  # not dependent on the import's winding (#2299)
