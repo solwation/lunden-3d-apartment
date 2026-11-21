@@ -8,10 +8,13 @@ Assets (one owner, #2284):
                                     until #2285 hooks its own door use in through player-extensions.json)
   Player/BP_LundenGameMode          GameMode: the pawn and controller above
   Player/Input/IMC_LundenPlayer, Player/Input/IA_Lunden*   Enhanced Input mapping and actions
+  Player/BPC_LundenStepSurface, Player/BPC_LundenRest      #2300 components (player_parts.py), on the character through
+                                    player-extensions.json rows StepSurface and Rest
 
 Every number comes from the #2245 export (unreal/Lunden/Import/measurements.json `spawn.player` and `spawn.fall`, which
-export-scene.js reads from src/config.js PLAYER, FALL and COMBAT.lives): the builder writes them into Blueprint variable
-defaults and movement settings, and the graphs read the variables, never literal web numbers.
+export-scene.js reads from src/config.js PLAYER, FALL and COMBAT.lives, and since #2300 `spawn.surface`, `spawn.rest` and
+`spawn.respawn` from export-player.js): the builder writes them into Blueprint variable defaults and movement settings,
+and the graphs read the variables, never literal web numbers.
 
 Steps:
 1. Move the #2246 pilot assets (Blueprints/Pilot/*, Blueprints/PilotDoors/BP_LundenDoorController) to Player/ with
@@ -31,6 +34,9 @@ import sys
 
 import unreal as u
 
+sys.path.insert(0, str(Path(__file__).parent))
+import player_parts  # noqa: E402  #2300: the step surface sensor and rest components, the sprint and death functions
+
 REPO = Path(__file__).resolve().parents[3]
 DIR = "/Game/Lunden/Player"
 INPUT = DIR + "/Input"
@@ -39,6 +45,8 @@ CONTROLLER = DIR + "/BP_LundenPlayerController"
 GAME_MODE = DIR + "/BP_LundenGameMode"
 MAPPING = INPUT + "/IMC_LundenPlayer"
 DOOR = "/Game/Lunden/Blueprints/PilotDoors/BP_LundenSwingDoor"
+STEP_SURFACE = DIR + "/BPC_LundenStepSurface"
+REST = DIR + "/BPC_LundenRest"
 SPEC_TAG = "Lunden.SpecHash"
 EXTENSION_TAG = "Lunden.PlayerExtensions"
 
@@ -69,16 +77,32 @@ VARIABLES = {
     "MaxLives": "int", "Lives": "int", "Deaths": "int",
     "FallHurt": "real", "FallFatal": "real", "FallMaxReport": "real",
     "FallFromZ": "real", "LastFallDrop": "real", "LastFallDamage": "int",
+    # #2300: the outdoor sprint (src/player.js runSpeed) and the blackout and wake of a death (src/fall.js)
+    "RunOutdoorSpeed": "real", "Running": "bool", "FloorClearance": "real",
+    "BlackoutT": "real", "BlackoutAlpha": "real", "BlackoutRed": "real", "FallRed": "real", "FallBlack": "real",
+    "FallHold": "real", "FallBack": "real", "RedAlpha": "real", "RedLinear": "real",
+    "ReviveYaw": "real", "LastRevive": "int", "Revives": "int", "LastFallFatal": "bool",
+    "ReviveStart": "int", "BlackoutBefore": "real",
 }
+ARRAY_VARIABLES = {"RevivePoints": "vector"}  # #2300: the web's accepted wake points (feet, cm)
+
+
+def srgb_to_linear(c):
+    return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
 
 
 def player_values(measurements):
     """Export values (web metres, m/s, rad) as Unreal centimetres, cm/s and degrees."""
     spawn = measurements["spawn"]
     p, f = spawn["player"], spawn["fall"]
-    for key in ("eye", "crouchEye", "radius", "walk", "run", "stepUp", "headroom", "jump", "crouchSpeed", "mouseSens"):
+    for key in ("eye", "crouchEye", "radius", "walk", "run", "runOutdoor", "stepUp", "headroom", "jump", "crouchSpeed", "mouseSens"):
         if p.get(key) is None:
             raise RuntimeError(f"measurements.json spawn.player.{key} is missing: re-export with this commit")
+    for key in ("surface", "rest", "respawn"):
+        if not spawn.get(key):
+            raise RuntimeError(f"measurements.json spawn.{key} is missing: re-export with this commit (#2300, export-player.js)")
+    wake = spawn["respawn"]
+    blackout = wake["blackout"]
     half = 50 * p["headroom"]
     # Crouched capsule: the crouched eye plus the same headroom over the eye as standing (assumption, the web has no
     # crouched body height).
@@ -94,7 +118,14 @@ def player_values(measurements):
             "MaxLives": int(f["lives"]), "Lives": int(f["lives"]), "Deaths": 0,
             "FallHurt": 100 * f["hurt"], "FallFatal": 100 * f["fatal"], "FallMaxReport": 100 * f["maxReport"],
             "FallFromZ": 0.0, "LastFallDrop": 0.0, "LastFallDamage": 0,
+            "RunOutdoorSpeed": 100 * p["runOutdoor"], "Running": False, "FloorClearance": FLOOR_CLEARANCE,
+            "BlackoutT": -1.0, "BlackoutAlpha": 0.0, "BlackoutRed": 0.0, "FallRed": blackout["red"],
+            "FallBlack": blackout["black"], "FallHold": blackout["hold"], "FallBack": blackout["back"],
+            "RedAlpha": blackout["redAlpha"], "RedLinear": srgb_to_linear(blackout["redColour"][0]),
+            "ReviveYaw": wake["yaw"], "LastRevive": -1, "Revives": 0, "LastFallFatal": False, "ReviveStart": 0, "BlackoutBefore": -1.0,
         },
+        "arrays": {"RevivePoints": [q["unreal"] for q in wake["points"]]},
+        "surface": spawn["surface"], "rest": spawn["rest"],
     }
 
 
@@ -263,7 +294,10 @@ def character_graph(char, mapping):
         if name not in names and not BP.add_member_variable(char, name, BP.get_basic_type_by_name(kind)):
             if name not in {str(n) for n in BP.list_member_variable_names(char)}:
                 raise RuntimeError("Could not add the variable " + name)
+    player_parts.variables(char, {name: player_parts.array(player_parts.VEC) for name in ARRAY_VARIABLES})
     BP.compile_blueprint(char)
+    # #2300: UpdateSprint, Die, Revive and UpdateBlackout (player_parts.py), before the events that call them
+    player_parts.character_functions(char, STEP_SURFACE, REST)
 
     def call(owner_and_name, x, y):
         node = graph.add_call_function_node("/Script/" + owner_and_name)
@@ -330,7 +364,8 @@ def character_graph(char, mapping):
             connect(action, "Triggered", look, "execute")
             connect(scale, "ReturnValue", look, "Val")
         elif name == "Run":
-            for idx, (trigger, speed) in enumerate((("Started", "RunSpeed"), ("Completed", "WalkSpeed"))):
+            # Shift: the indoor sprint at once; UpdateSprint (Tick, #2300) raises it to RunOutdoorSpeed outdoors
+            for idx, (trigger, speed, running) in enumerate((("Started", "RunSpeed", True), ("Completed", "WalkSpeed", False))):
                 movement = graph.add_get_member_variable_node("CharacterMovement", "/Script/Engine.Character")
                 BP.set_node_pos(movement, u.IntPoint(240, y + idx * 180 + 120))
                 setter = graph.add_set_member_variable_node("MaxWalkSpeed", "/Script/Engine.CharacterMovementComponent")
@@ -338,6 +373,9 @@ def character_graph(char, mapping):
                 connect(movement, "CharacterMovement", setter, "self")
                 connect(action, trigger, setter, "execute")
                 connect(get(speed, 300, y + idx * 180 + 60), speed, setter, "MaxWalkSpeed")
+                flag = put("Running", 860, y + idx * 180)
+                connect(setter, "then", flag, "execute")
+                constant(flag, "Running", "true" if running else "false")
         else:
             stop = "StopJumping" if name == "Jump" else "UnCrouch"
             connect(action, "Started", call("Engine.Character:" + name, 560, y), "execute")
@@ -436,18 +474,40 @@ def character_graph(char, mapping):
     connect(get("Deaths", 2850, y + 1050), "Deaths", deaths, "A")
     connect(death, "ReturnValue", deaths, "B")
 
-    chain = [("LastFallDrop", drop), ("LastFallDamage", damage), ("Deaths", deaths), ("Lives", new_lives)]
+    # LastFallFatal first: the pure nodes are evaluated again after Lives is set, so `dead` is read before that
+    chain = [("LastFallFatal", dead), ("LastFallDrop", drop), ("LastFallDamage", damage), ("Deaths", deaths), ("Lives", new_lives)]
     previous, pin = landed, "then"
     for index, (name, value) in enumerate(chain):
         setter = put(name, 2400 + index * 300, y)
         connect(previous, pin, setter, "execute")
         connect(value, "ReturnValue", setter, name)
         previous = setter
+    # #2300: a death blacks out and wakes outdoors (src/fall.js hurt -> wake); Die() is also #2293's hook
+    fatal = graph.add_branch_node()
+    BP.set_node_pos(fatal, u.IntPoint(2400 + len(chain) * 300, y))
+    connect(previous, "then", fatal, "execute")
+    connect(get("LastFallFatal", 2400 + len(chain) * 300, y + 200), "LastFallFatal", fatal, "Condition")
+    me = char.generated_class().get_path_name()
+    connect(fatal, "then", _self_call(graph, me, "Die", 2700 + len(chain) * 300, y), "execute")
 
-    BP.compile_blueprint(char)
-    broken = graph.list_nodes_with_errors()
-    if broken:
-        raise RuntimeError("BP_LundenPlayer failed to compile: " + ", ".join(n.get_name() for n in broken))
+    # #2300: every frame the outdoor sprint (while Shift is held) and the death's blackout
+    y += 1400
+    tick = event("AddEvent|EventTick", 0, y, "ReceiveTick")
+    sprint = _self_call(graph, me, "UpdateSprint", 300, y)
+    connect(tick, "then", sprint, "execute")
+    blackout = _self_call(graph, me, "UpdateBlackout", 600, y)
+    connect(sprint, "then", blackout, "execute")
+    connect(tick, "DeltaSeconds", blackout, "DeltaSeconds")
+
+    player_parts.compiled(char)  # every graph: the event graph and #2300's functions
+
+
+def _self_call(graph, class_path, function, x, y):
+    node = graph.add_call_function_node(f"{class_path}:{function}")
+    if not node:
+        raise RuntimeError(f"Could not create a call to {function} on BP_LundenPlayer")
+    BP.set_node_pos(node, u.IntPoint(x, y))
+    return node
 
 
 def character_defaults(char, values):
@@ -470,6 +530,8 @@ def character_defaults(char, values):
     movement.set_editor_property("nav_agent_props", nav)
     for name, value in values["vars"].items():
         default.set_editor_property(name, value)
+    for name, points in values["arrays"].items():
+        default.set_editor_property(name, [u.Vector(*p) for p in points])
 
 
 def extensions(bp, target, rows):
@@ -543,9 +605,13 @@ def check_defaults(values):
     cls = u.load_class(None, CHARACTER + ".BP_LundenPlayer_C")
     default = u.get_default_object(cls)
     got = {name: default.get_editor_property(name) for name in values["vars"]}
+    got = {k: (float(v) if isinstance(v, bool) else v) for k, v in got.items()}
     got["base_eye_height"] = default.base_eye_height
     got["jump_z_velocity"] = default.character_movement.jump_z_velocity
-    want = {**values["vars"], "base_eye_height": values["base_eye_height"], "jump_z_velocity": values["jump_z_velocity"]}
+    want = {**{k: float(v) for k, v in values["vars"].items()}, "base_eye_height": values["base_eye_height"],
+            "jump_z_velocity": values["jump_z_velocity"]}
+    if len(default.get_editor_property("RevivePoints")) != len(values["arrays"]["RevivePoints"]):
+        raise RuntimeError("BP_LundenPlayer.RevivePoints differs from measurements.json spawn.respawn.points")
     wrong = {k: (got[k], want[k]) for k in want if abs(float(got[k]) - float(want[k])) > 0.01}
     if wrong:
         raise RuntimeError(f"BP_LundenPlayer defaults differ from the export: {wrong}")
@@ -567,7 +633,8 @@ def main(argv):
     values = player_values(measurements)
     rows = load_rows(ext_file)
     check_only = "--check" in flags
-    spec = hashlib.sha256(json.dumps({"values": values, "rows": rows, "script": Path(__file__).read_text(encoding="utf-8")},
+    spec = hashlib.sha256(json.dumps({"values": values, "rows": rows, "script": Path(__file__).read_text(encoding="utf-8"),
+                                      "parts": (Path(__file__).parent / "player_parts.py").read_text(encoding="utf-8")},
                                      sort_keys=True).encode()).hexdigest()
 
     migrate(check_only)
@@ -589,6 +656,23 @@ def main(argv):
 
     _, mapping = input_assets()
     controller = controller_asset()
+    # #2300: the components first: the character's graph casts to them and the extension rows load them
+    if ASSETS.does_asset_exist(CHARACTER):
+        player_parts.clear_character(ASSETS.load_asset(CHARACTER))
+    # Each component keeps its own hash (its export data and player_parts.py), so a change elsewhere does not rewrite
+    # the large BPC_LundenStepSurface (its raster is about 1.6 MB of the export) in Git LFS again.
+    parts_text = (Path(__file__).parent / "player_parts.py").read_text(encoding="utf-8")
+    for path, build, data in ((STEP_SURFACE, player_parts.build_step_surface, values["surface"]),
+                              (REST, player_parts.build_rest, values["rest"])):
+        part_spec = hashlib.sha256(json.dumps({"data": data, "clearance": FLOOR_CLEARANCE, "parts": parts_text},
+                                              sort_keys=True).encode()).hexdigest()
+        if ASSETS.does_asset_exist(path) and ASSETS.get_metadata_tag(ASSETS.load_asset(path), SPEC_TAG) == part_spec:
+            u.log(f"LUNDEN_PLAYER {path}: unchanged")
+            continue
+        part = build(path)
+        player_parts.component_defaults(path, part, data, values)
+        ASSETS.set_metadata_tag(part, SPEC_TAG, part_spec)
+        save(part)
     char = ASSETS.load_asset(CHARACTER) if ASSETS.does_asset_exist(CHARACTER) else new_blueprint(CHARACTER, u.Character)
     character_graph(char, mapping)
     character_defaults(char, values)
@@ -605,7 +689,7 @@ def main(argv):
     save(char)
     check_defaults(values)
     u.log(f"LUNDEN_PLAYER {DIR}: saved; spec {spec[:16]}; {len(rows)} extension rows; values "
-          + json.dumps({k: round(v, 3) if isinstance(v, float) else v for k, v in values.items() if k != "vars"}))
+          + json.dumps({k: round(v, 3) if isinstance(v, float) else v for k, v in values.items() if k not in ("vars", "arrays", "surface", "rest")}))
     u.log("LUNDEN_PLAYER_OK")
 
 

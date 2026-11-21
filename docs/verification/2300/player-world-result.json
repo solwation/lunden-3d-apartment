@@ -1,0 +1,406 @@
+{
+  "engine": "5.8.4-58902052+++UE5+Release-5.8",
+  "map": "/Game/Lunden/Maps/L_Lunden",
+  "control": [
+    {
+      "name": "parquet (L1007 Vardagsrum)",
+      "unreal": [
+        250,
+        1000,
+        0
+      ],
+      "web": {
+        "surface": "wood",
+        "where": "indoor",
+        "road": false,
+        "stairs": false,
+        "outdoor": false
+      },
+      "atWebPoint": {
+        "surface": "wood",
+        "where": "indoor",
+        "road": false,
+        "stairs": false,
+        "outdoor": false,
+        "code": 15
+      },
+      "ok": true,
+      "standing": {
+        "surface": "wood",
+        "where": "indoor",
+        "road": false,
+        "stairs": false,
+        "outdoor": false,
+        "code": 15
+      },
+      "standingZ": 2.15,
+      "standingOk": true
+    },
+    {
+      "name": "tile (L1007 Badrum)",
+      "unreal": [
+        113,
+        624,
+        0
+      ],
+      "web": {
+        "surface": "hard",
+        "where": "indoor",
+        "road": false,
+        "stairs": false,
+        "outdoor": false
+      },
+      "atWebPoint": {
+        "surface": "hard",
+        "where": "indoor",
+        "road": false,
+        "stairs": false,
+        "outdoor": false,
+        "code": 13
+      },
+      "ok": true,
+      "standing": {
+        "surface": "hard",
+        "where": "indoor",
+        "road": false,
+        "stairs": false,
+        "outdoor": false,
+        "code": 13
+      },
+      "standingZ": 2.15,
+      "standingOk": true
+    },
+    {
+      "name": "parquet upstairs (L1007 Sovrum 1)",
+      "unreal": [
+        400,
+        175,
+        325
+      ],
+      "web": {
+        "surface": "wood",
+        "where": "indoor",
+        "road": false,
+        "stairs": false,
+        "outdoor": false
+      },
+      "atWebPoint": {
+        "surface": "wood",
+        "where": "indoor",
+        "road": false,
+        "stairs": false,
+        "outdoor": false,
+        "code": 15
+      },
+      "ok": true,
+      "standing": {
+        "surface": "wood",
+        "where": "indoor",
+        "road": false,
+        "stairs": false,
+        "outdoor": false,
+        "code": 15
+      },
+      "standingZ": 327.15,
+      "standingOk": true
+    },
+    {
+      "name": "patio slabs (L1007)",
+      "unreal": [
+        284.23,
+        1521.07,
+        0
+      ],
+      "web": {
+        "surface": "hard",
+        "where": "exposed",
+        "road": false,
+        "stairs": false,
+        "outdoor": true
+      },
+      "atWebPoint": {
+        "surface": "hard",
+        "where": "exposed",
+        "road": false,
+        "stairs": false,
+        "outdoor": true,
+        "code": 5
+      },
+      "ok": true,
+      "standing": {
+        "surface": "hard",
+        "where": "exposed",
+        "road": false,
+        "stairs": false,
+        "outdoor": true,
+        "code": 5
+      },
+      "standingZ": 1.15,
+      "standingOk": true
+    },
+    {
+      "name": "stairwell tread (Hus L)",
+      "unreal": [
+        -1875,
+        350,
+        314.29
+      ],
+      "web": {
+        "surface": "hard",
+        "where": "core",
+        "road": false,
+        "stairs": true,
+        "outdoor": false
+      },
+      "atWebPoint": {
+        "surface": "hard",
+        "where": "core",
+        "road": false,
+        "stairs": true,
+        "outdoor": false,
+        "code": 41
+      },
+      "ok": true,
+      "standing": {
+        "surface": "hard",
+        "where": "core",
+        "road": false,
+        "stairs": true,
+        "outdoor": false,
+        "code": 41
+      },
+      "standingZ": 319.29,
+      "standingOk": true
+    },
+    {
+      "name": "gravel (courtyard)",
+      "unreal": [
+        -2515,
+        2445,
+        0
+      ],
+      "web": {
+        "surface": "gravel",
+        "where": "ground",
+        "road": false,
+        "stairs": false,
+        "outdoor": true
+      },
+      "atWebPoint": {
+        "surface": "gravel",
+        "where": "ground",
+        "road": false,
+        "stairs": false,
+        "outdoor": true,
+        "code": 2
+      },
+      "ok": true,
+      "standing": {
+        "surface": "gravel",
+        "where": "ground",
+        "road": false,
+        "stairs": false,
+        "outdoor": true,
+        "code": 2
+      },
+      "standingZ": 1.15,
+      "standingOk": true
+    },
+    {
+      "name": "grass (south of the patio)",
+      "unreal": [
+        287.65,
+        1922.24,
+        0
+      ],
+      "web": {
+        "surface": "grass",
+        "where": "ground",
+        "road": false,
+        "stairs": false,
+        "outdoor": true
+      },
+      "atWebPoint": {
+        "surface": "grass",
+        "where": "ground",
+        "road": false,
+        "stairs": false,
+        "outdoor": true,
+        "code": 0
+      },
+      "ok": true,
+      "standing": {
+        "surface": "grass",
+        "where": "ground",
+        "road": false,
+        "stairs": false,
+        "outdoor": true,
+        "code": 0
+      },
+      "standingZ": 1.15,
+      "standingOk": true
+    },
+    {
+      "name": "road (START)",
+      "unreal": [
+        287.5,
+        -1200,
+        0
+      ],
+      "web": {
+        "surface": "hard",
+        "where": "ground",
+        "road": true,
+        "stairs": false,
+        "outdoor": true
+      },
+      "atWebPoint": {
+        "surface": "hard",
+        "where": "ground",
+        "road": true,
+        "stairs": false,
+        "outdoor": true,
+        "code": 17
+      },
+      "ok": true,
+      "standing": {
+        "surface": "hard",
+        "where": "ground",
+        "road": true,
+        "stairs": false,
+        "outdoor": true,
+        "code": 17
+      },
+      "standingZ": 3.35,
+      "standingOk": true
+    },
+    {
+      "name": "garage floor",
+      "unreal": [
+        -2968,
+        2615.74,
+        -300
+      ],
+      "web": {
+        "surface": "hard",
+        "where": "core",
+        "road": false,
+        "stairs": false,
+        "outdoor": false
+      },
+      "atWebPoint": {
+        "surface": "hard",
+        "where": "core",
+        "road": false,
+        "stairs": false,
+        "outdoor": false,
+        "code": 9
+      },
+      "ok": true,
+      "standing": {
+        "surface": "hard",
+        "where": "core",
+        "road": false,
+        "stairs": false,
+        "outdoor": false,
+        "code": 9
+      },
+      "standingZ": -297.55,
+      "standingOk": true
+    }
+  ],
+  "samples": {
+    "n": 300,
+    "agree": 296,
+    "exportCheck": {
+      "standing": {
+        "n": 15915,
+        "surface": 0.9801,
+        "where": 0.9814,
+        "road": 1,
+        "stairs": 0.9996,
+        "outdoor": 0.9849
+      },
+      "volume": {
+        "n": 20000,
+        "surface": 0.9705,
+        "where": 0.9743,
+        "road": 1,
+        "stairs": 0.9947,
+        "outdoor": 0.9859
+      },
+      "ground": {
+        "n": 20000,
+        "surface": 0.9951,
+        "where": 1,
+        "road": 0.9997,
+        "stairs": 1,
+        "outdoor": 1
+      }
+    }
+  },
+  "sprint": {
+    "outdoorCmS": {
+      "got": 480.0,
+      "want": 480.0
+    },
+    "indoorCmS": {
+      "got": 320.0,
+      "want": 320.0
+    }
+  },
+  "rest": {
+    "spot": 0,
+    "name": "soffan",
+    "item": "furn_sofa_l0_x410_z1126",
+    "picked": 0,
+    "sat": 0,
+    "count": 1,
+    "eyeOffCm": 0.0,
+    "yaw": -90.0,
+    "wantYaw": -90,
+    "pitch": 0.0,
+    "wantPitch": 0,
+    "limits": {
+      "view_yaw_min": -187.4,
+      "view_yaw_max": 7.4,
+      "view_pitch_min": -63.03,
+      "view_pitch_max": 45.84
+    },
+    "standFrom": [
+      432.3,
+      1049.5,
+      94.6
+    ],
+    "stoodUp": {
+      "spot": -1,
+      "offCm": 0.0,
+      "mode": "<MovementMode.MOVE_WALKING: 1>"
+    }
+  },
+  "death": {
+    "wakePoint": {
+      "region": "river-side",
+      "web": [
+        -25.992,
+        -3,
+        58.865
+      ],
+      "unreal": [
+        -2599.2,
+        5886.5,
+        -300
+      ]
+    },
+    "feet": [
+      -2599.2,
+      5886.5,
+      -297.1
+    ],
+    "offCm": 0.0,
+    "falling": false,
+    "dz": 2.95,
+    "yaw": 90.0,
+    "wantYaw": 90
+  }
+}

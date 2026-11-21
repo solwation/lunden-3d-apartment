@@ -57,6 +57,8 @@ tools/unreal-engine/coordinates.mjs                web metres ↔ Unreal centime
 tools/unreal-engine/wire/players.json              /players wire fixtures (#2292): Worker test cloudflare/playerswire.test.mjs; the Unreal network test uses the same file
 tools/unreal-engine/export-world.mjs          export driver (Node + Playwright): serves the repo, runs tools/unreal-engine/export.html +
                                    tools/unreal-engine/export-scene.js (the real buildWorld), writes unreal/Lunden/Import/
+tools/unreal-engine/export-player.js          the player data of the export (#2300): the step surface sampled from src/stepsurface.js,
+                                   rest spots (src/rest.js), wake points (src/respawn.js); loaded after the GLBs are written
 tools/unreal-engine/sources.mjs               the export's source list (import closure, data, models) and hashes
 tools/unreal-engine/check-export.mjs          staleness + schema check of an export, no Unreal or browser needed
 tools/unreal-engine/json-schema.mjs            small dependency-free JSON Schema validator for shared/schema/ (and GLB JSON reader)
@@ -93,8 +95,11 @@ unreal/Lunden/Content/Lunden/Maps/L_Lunden.umap  the persistent world map (LFS);
 tools/unreal-engine/python/build_player.py    the production player in /Game/Lunden/Player/ from the export (#2284;
                                    succeeds build_pilot_player.py); moves the pilot assets, extension components
 tools/unreal-engine/player-extensions.json    components other issues add to the player and its controller (#2284 owns the format)
-tools/unreal-engine/tests/test_player.py      PIE test: eye heights, speeds, jump, fall damage against measurements.json
-unreal/Lunden/Content/Lunden/Player/          BP_LundenPlayer, BP_LundenPlayerController, BP_LundenGameMode, Input/ (LFS)
+tools/unreal-engine/python/player_parts.py    #2300 part of build_player.py: BPC_LundenStepSurface, BPC_LundenRest, the sprint and death functions
+tools/unreal-engine/tests/test_player.py      PIE test: eye heights, speeds (indoor/outdoor sprint), jump, fall damage, blackout and wake
+tools/unreal-engine/tests/test_player_world.py  PIE test on L_Lunden (#2300): surface classes at the web's control points, sprint, rest, death
+unreal/Lunden/Content/Lunden/Player/          BP_LundenPlayer, BP_LundenPlayerController, BP_LundenGameMode, BPC_LundenStepSurface,
+                                   BPC_LundenRest, Input/ (LFS)
 tools/unreal-engine/python/build_seasons.py   the season rule /Game/Lunden/Seasons/BPC_LundenSeasons (#2295)
 tools/unreal-engine/tests/test_seasons.py     PIE test on L_Lunden: the Christmas tree shown/hidden per season-dates.json
 tools/unreal-engine/tests/season-rule.test.mjs  season-dates.json against the web's own inChristmas (Node)
@@ -553,9 +558,9 @@ the variables, never a literal web number. Capsule radius 22 cm, half height 92.
 45 cm, jump 370 cm/s (apex 69.8 cm with Unreal's default gravity of 980 cm/s², the web's 9.8 m/s²), walk 160, sprint
 320, crouched 80 cm/s (`walk × crouchSpeed`). Eye heights: standing 162, crouched 95 cm above the floor; the eye
 offsets subtract the 2.15 cm the walking capsule floats above the floor. *Assumption:* the crouched capsule keeps the
-standing headroom over the eye (half height 59 cm); the web has no crouched body height. Not yet ported: the faster
-outdoor sprint `runOutdoor` (needs an indoor/outdoor signal), rest (`src/rest.js`) and the footstep surface sensor
-(`src/stepsurface.js`).
+standing headroom over the eye (half height 59 cm); the web has no crouched body height. Since #2300 Shift is 480 cm/s
+outdoors (`runOutdoor`), the surface under the feet is known and the player can sit and lie down
+([Surface, outdoor sprint, rest and death](#surface-outdoor-sprint-rest-and-death-2300)).
 
 **Mouse look (#2294).** `src/main.js` turns the view by `PLAYER.mouseSens` (0.0013 rad, 0.0745°) per pixel of mouse
 movement, up looks up. The graph multiplies the raw MouseX / MouseY counts by `LookDegrees` (that value in degrees)
@@ -573,8 +578,8 @@ the landing height. Unreal only falls in free drops, since stairs and steps up t
 gap under the feet is never smaller than the drop. The rule is therefore: drop over `FallMaxReport` (100 m) costs
 nothing (the web reports no damage), over `FallFatal` (6 m) costs `MaxLives`, over `FallHurt` (3 m) costs
 ceil(`MaxLives` / 2), else nothing. Lives drop by the damage, and a death (damage ≥ lives) refills them and counts
-`Deaths`; `LastFallDrop` and `LastFallDamage` hold the latest landing for #2293's shared life and the HUD. The
-blackout, outdoor wake and suit protection stay with #2293/G08. Floor checks use a flat base
+`Deaths`; `LastFallDrop` and `LastFallDamage` hold the latest landing for #2293's shared life and the HUD. A death
+then blacks out and wakes outdoors (#2300, below); suit protection stays with #2293/G08. Floor checks use a flat base
 (`use_flat_base_for_floor_checks`): with the round capsule bottom the character sank up to 17 cm down a ledge before
 falling, and the drop came out short.
 
@@ -590,6 +595,63 @@ when the assets are missing, the hash differs or a pilot asset is still in its o
 the character's event graph from scratch and rewrites the defaults.
 
 Results: [docs/verification/2284/](../verification/2284/README.md).
+
+### Surface, outdoor sprint, rest and death (#2300)
+
+#2300 adds what #2284 left out. It keeps #2284's ownership (`/Game/Lunden/Player/`, `build_player.py`, the new
+`python/player_parts.py` it imports, `tests/test_player.py`) and adds `tests/test_player_world.py` and
+`tools/unreal-engine/export-player.js`.
+
+- **Data from the web's own code.** `export-player.js` runs on the export page after every GLB is written (so the GLBs
+  stay byte-identical) and adds three `measurements.json` blocks. `spawn.surface` samples `src/stepsurface.js`
+  `stepInfo` as a 0.5 m ground raster over `WALK` (grass, paving, gravel, road; one character per cell) and 0.25 m ×
+  0.1 m boxes, merged and bucketed in 8 m cells, for everything that depends on the height: the stairwells, the
+  garage, the visitable flats, L1007's rooms, the walkable roofs, the patio and the river park's deck. It also has the
+  stair levels, named control points and random points with the web's answers. `spawn.rest` holds the rest spots of
+  the exported furniture (`src/rest.js` `restTarget`): eye, aim point, yaw and start view, plus the `REST` limits.
+  `spawn.respawn` holds the `RESPAWN` grid candidates that the web's own `safeRespawnPoint` accepts, the wake yaw and
+  the `FALL` blackout timings.
+- **`BPC_LundenStepSurface`** (character, row `StepSurface`). `StepInfo(Location)` returns `Surface` (grass, hard,
+  gravel, wood), `Where` (ground, exposed, core, indoor), `Road`, `Stairs` (in a stairwell and not within `floorTol` of
+  a landing) and `Outdoor` (ground or exposed). The first box in the point's bucket that holds it decides; otherwise
+  the raster does. `FeetInfo()` does the same at the capsule bottom; #2287's footsteps read it. *Not covered:* the
+  playroom (not exported) and the roofs of the surrounding OSM buildings (`src/buildingroofs.js`). Those buildings
+  are not in the Unreal world, so nobody can stand on their roofs there.
+- **Outdoor sprint.** Shift sets `Running`. Every frame `UpdateSprint` sets `MaxWalkSpeed` to `RunOutdoorSpeed`
+  (`runOutdoor`, 480 cm/s) when `FeetInfo` says outdoors, else `RunSpeed` (320). That is `src/player.js` `runSpeed`:
+  outdoors and not in the garage or a stairwell.
+- **`BPC_LundenRest`** (character, row `Rest`). E calls `Use()`. When the player is not resting, `PickSpot()` takes the
+  spot whose aim point lies nearest the view ray: within `Reach` (`HOLD.reach`, 220 cm), within `PickRadius` of the ray
+  and not behind the first thing a visibility trace hits. `BeginRest` then stops walking and collision and glides the
+  eye to the spot over `REST.move` with smoothstep, turning to the spot's start view (`Rest.begin`). After that it
+  clamps the camera manager's view to the spot's yaw ± the kind's yaw and its pitch range (`Rest.clampLook`). E,
+  Space or Ctrl stand up where the player stood, facing the way they look; after lying down the view is level, as in
+  `standUp`. The keys are read with `WasInputKeyJustPressed`, so E still opens doors through the controller.
+  *Assumptions:* `PickRadius` 40 cm stands in for the web's ray hit on the piece. Getting up puts the player back
+  where they stood, not at the web's `standSpot` next to the seat. Moving seats, the outdoor gym and the car are not
+  included. Of the web's rest targets, 34 spots (7 for lying) on 20 exported pieces are in `spawn.rest`; four targets (two café chairs
+  and two cushion-box entries) have no exported node and are skipped (`spawn.rest.skipped`).
+- **Death.** A landing that kills (#2284's rule) calls `Die()`, which is also #2293's hook for other deaths. `Die()`
+  stands the player up, turns off pawn input and starts `BlackoutT`. `UpdateBlackout` paints `src/fall.js` `paint`
+  with `SetManualCameraFade`: red to alpha 0.55 over `red`, red fading to black over `black`, black for `hold`. Then
+  `Revive()` teleports the player to the first web wake point that fits, starting from a random one (the web picks a
+  random point in a random region and checks it). The player faces the wake yaw with a level view, input comes back
+  and the black fades out over `back`. *Not ported:* the cover text, the landing sounds and jolt, and the red flash
+  of a non-fatal hurt. The HUD and sounds belong to #2293 and #2287.
+
+```text
+run-python.ps1 tools/unreal-engine/python/build_player.py      (also builds both components; lock their .uasset files)
+copy tools\unreal-engine\tests\test_player_world.py unreal\Lunden\Content\Python\   (untracked copy, delete afterwards)
+run-tests.ps1 -Filter Editor.Python.Lunden.test_player_world   (PIE on the composed L_Lunden)
+```
+
+How close the sampled data is to the web: the export compares the Unreal lookup with `stepInfo` itself at 20,000 points
+where the web's player would stand (`spawn.surface.check.standing`: surface 98.0 %, where 98.1 %, stairs 99.96 %,
+outdoor 98.5 %) and 20,000 open-ground points (surface 99.5 %). The misses lie within a cell of an edge (0.25 m in plan,
+0.1 m in height) or on a boundary the web draws exactly at a floor height (Hus A/B/C's lowest stop and the garage
+floor, both at −3 m).
+
+Results: [docs/verification/2300/](../verification/2300/README.md).
 
 ## Seasons (#2295)
 

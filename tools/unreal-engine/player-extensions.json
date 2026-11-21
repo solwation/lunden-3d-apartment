@@ -23,6 +23,20 @@
       "class": "/Game/Lunden/UI/BPC_LundenUI.BPC_LundenUI_C",
       "owner": "#2286",
       "what": "the compass, the frame rate, the start and pause menu (Esc) and the saved graphics, mouse and volume settings (build_ui.py)"
+    },
+    {
+      "target": "character",
+      "name": "StepSurface",
+      "class": "/Game/Lunden/Player/BPC_LundenStepSurface.BPC_LundenStepSurface_C",
+      "owner": "#2300",
+      "what": "what is under the feet (surface grass/hard/gravel/wood, where ground/exposed/core/indoor, road, stairs, outdoor) from the web's src/stepsurface.js, sampled by export-player.js; FeetInfo() for #2287's footsteps and the outdoor sprint (player_parts.py)"
+    },
+    {
+      "target": "character",
+      "name": "Rest",
+      "class": "/Game/Lunden/Player/BPC_LundenRest.BPC_LundenRest_C",
+      "owner": "#2300",
+      "what": "sit and lie down on furniture with E (src/rest.js): the eye glides to the web's rest spot, the view is clamped, E, Space or Ctrl stands up (player_parts.py)"
     }
   ]
 }

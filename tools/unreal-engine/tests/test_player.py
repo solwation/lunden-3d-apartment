@@ -8,6 +8,10 @@
 3. Fall damage: the character walks off platforms of 2.9, 3.1, 4.5 and 6.1 m and lands on the ground. The lives lost
    must equal measurements.json `spawn.fall.samples`, which export-scene.js computes with the web's own
    src/falldamage.js, and a death must refill the lives as src/combat.js does.
+4. #2300: the sprint is PLAYER.run inside L1007's footprint and PLAYER.runOutdoor on the street at START
+   (src/player.js runSpeed, through BPC_LundenStepSurface); a death blacks out red, then black (src/fall.js paint) and
+   wakes the player on one of the web's accepted wake points (spawn.respawn.points) facing spawn.respawn.yaw.
+The world checks on the composed L_Lunden (surface classes, rest, a death there) are test_player_world.py.
 
 Run like the pilot tests: copy this file to unreal/Lunden/Content/Python/ (untracked) and
     run-tests.ps1 -Filter Editor.Python.Lunden.test_player
@@ -67,12 +71,60 @@ def box(x, y, top, sx, sy, height):
 
 
 box(0, 0, 0, 8000, 8000, 20)  # ground, top at z = 0
+# #2300: the web's wake points (and the way there) stand on ground too: one slab under all of them, top at z = 0
+WAKE = M["spawn"]["respawn"]
+xs, ys = [q["unreal"][0] for q in WAKE["points"]], [q["unreal"][1] for q in WAKE["points"]]
+box((min(xs) + max(xs)) / 2, (min(ys) + max(ys)) / 2, 0, max(xs) - min(xs) + 1000, max(ys) - min(ys) + 1000, 20)
+W_CM, D_CM = 100 * M["plan"]["size"]["x"], 100 * M["plan"]["size"]["z"]  # L1007's footprint from the plan origin
 PLATFORMS = {drop: (0, 1000 + i * 800) for i, drop in enumerate(DROPS)}
 for drop, (x, y) in PLATFORMS.items():
     box(x, y, drop * 100, 300, 300, drop * 100)
 actors.spawn_actor_from_class(u.PlayerStart, u.Vector(-2000, -2000, 100))
 saved_slot = save_isolation.isolate()
 levels.editor_request_begin_play()
+
+
+def blackout_and_wake(pawn, pc, game, seconds, result):
+    """#2300: src/fall.js paint (red to alpha RedAlpha, red to black, black, wake, fade back) and the wake on a web point."""
+    B = WAKE["blackout"]
+    samples = []
+    t0 = u.GameplayStatics.get_time_seconds(game)
+    while True:
+        t = pawn.get_editor_property("BlackoutT")
+        now = u.GameplayStatics.get_time_seconds(game) - t0
+        if t < 0 and now > 0.1:
+            break
+        if now > B["red"] + B["black"] + B["hold"] + B["back"] + 3:
+            raise RuntimeError("The blackout did not end")
+        samples.append({"t": round(t, 3), "alpha": round(pawn.get_editor_property("BlackoutAlpha"), 3),
+                        "red": round(pawn.get_editor_property("BlackoutRed"), 3)})
+        yield
+    out_t = B["red"] + B["black"] + B["hold"]
+
+    def web_alpha(t):  # src/fall.js paint, fatal
+        if t < B["red"]:
+            return B["redAlpha"] * t / B["red"]
+        if t < B["red"] + B["black"]:
+            return B["redAlpha"] + (1 - B["redAlpha"]) * (t - B["red"]) / B["black"]
+        if t < out_t:
+            return 1.0
+        return max(0.0, 1 - (t - out_t) / B["back"])
+    worst = max(abs(s["alpha"] - web_alpha(s["t"])) for s in samples if s["t"] >= 0)
+    dark = [s for s in samples if B["red"] + B["black"] <= s["t"] < out_t]
+    if worst > 0.01 or not dark or any(s["alpha"] < 0.999 or s["red"] > 0.001 for s in dark):
+        raise RuntimeError(f"The blackout differs from src/fall.js paint (worst alpha {worst}): {samples[::10]}")
+    index = pawn.get_editor_property("LastRevive")
+    feet = pawn.get_actor_location()
+    point = WAKE["points"][index]["unreal"]
+    off = math.hypot(feet.x - point[0], feet.y - point[1])
+    yaw = pc.get_control_rotation().yaw
+    row = {"samples": len(samples), "worstAlpha": round(worst, 4), "wakePoint": WAKE["points"][index], "offCm": round(off, 2),
+           "yaw": round(yaw, 2), "wantYaw": WAKE["yaw"], "revives": pawn.get_editor_property("Revives")}
+    u.log(f"LUNDEN_PLAYER_TEST death {json.dumps(row)}")
+    result["death"] = row
+    if off > 1 or abs(((yaw - WAKE["yaw"]) + 180) % 360 - 180) > 0.5:
+        raise RuntimeError(f"The wake is not on the web's point facing its yaw: {row}")
+    yield from seconds(0.3)
 
 
 @u.AutomationScheduler.add_latent_command
@@ -128,12 +180,21 @@ def player_test():
         key("LeftControl", False)
         yield from seconds(0.8)
         check("walkSpeedCmS", speed(), 100 * P["walk"], 1.0)
-        key("LeftShift", True)
-        yield from seconds(0.8)
-        check("runSpeedCmS", speed(), 100 * P["run"], 1.0)
-        key("LeftShift", False)
         key("W", False)
-        yield from seconds(0.8)
+        # #2300: Shift inside L1007's footprint is PLAYER.run, on the street at START PLAYER.runOutdoor
+        for label, (x, y), want in (("runSpeedCmS", (W_CM / 2, D_CM * 0.3), P["run"]),
+                                    ("runOutdoorSpeedCmS", tuple(M["spawn"]["start"]["unreal"][:2]), P["runOutdoor"])):
+            pawn.set_actor_location(u.Vector(x, y, movement.get_editor_property("max_step_height") + 100), False, True)
+            pc.set_control_rotation(u.Rotator(roll=0, pitch=0, yaw=90))  # south, along the footprint / the street
+            yield from seconds(0.6)
+            key("W", True)
+            key("LeftShift", True)
+            yield from seconds(0.5)
+            check(label, speed(), 100 * want, 1.0)
+            key("LeftShift", False)
+            key("W", False)
+            yield from seconds(0.5)
+        yield from seconds(0.3)
         check("gravityCmS2", -movement.get_gravity_z(), 100 * WEB_GRAVITY, 0.01)
         base = pawn.get_actor_location().z
         lives0 = pawn.get_editor_property("Lives")
@@ -188,6 +249,9 @@ def player_test():
             key("W", False)
             yield from seconds(0.3)
             after = pawn.get_editor_property("Lives")
+            at = pawn.get_actor_location()
+            u.log(f"LUNDEN_PLAYER_TEST after the {drop} m walk: at {at.x:.1f} {at.y:.1f} {at.z:.1f}, falling {movement.is_falling()}, "
+                  f"blackout {pawn.get_editor_property('BlackoutT'):.2f}, revives {pawn.get_editor_property('Revives')}")
             damage = DAMAGE[drop]  # the web's own fallDamage(drop, drop, COMBAT.lives)
             dead = damage > 0 and before <= damage  # src/combat.js fall()
             want = max_lives if dead else max(0, before - damage)
@@ -199,6 +263,10 @@ def player_test():
             u.log(f"LUNDEN_PLAYER_TEST fall {json.dumps(row)}")
             if abs(got_drop - 100 * drop) > 3 or got_damage != damage or after != want or row["dead"] != dead:
                 raise RuntimeError(f"Fall of {drop} m differs from the web: {row}, expected lives {want}, dead {dead}")
+            if dead:
+                yield from blackout_and_wake(pawn, pc, game, seconds, result)
+        if not result.get("death"):
+            raise RuntimeError("No fall was fatal, so the blackout and wake were not seen")
         (Path(u.Paths.project_saved_dir()) / "player-result.json").write_text(json.dumps(result, indent=2) + "\n")
         u.log("LUNDEN_PLAYER_TEST_OK")
     finally:
