@@ -35,10 +35,37 @@ node tools/unreal-engine/tests/stair-light-rays.mjs unreal/Lunden/Import
 python3 tools/unreal-engine/tests/living-wall-light.py unreal/Lunden/Import/measurements.json
 ```
 
-Windows-verifieringen återstår. Bygg och kontrollera belysningsnivån från samma export, komponera `L_Lunden` och kör `test_lighting.py` headless. Ta de två kamerabilderna från den uppdaterade kartan med `capture_lighting.py --exposure=game`. Lägg dem bredvid de två webbilderna och kör sedan följande.
+För att upprepa Windows-provet, bygg och kontrollera belysningsnivån från samma export, komponera `L_Lunden` och kör `test_lighting.py` headless. Ta de två kamerabilderna från den uppdaterade kartan med `capture_lighting.py --exposure=game`. Lägg dem bredvid de två webbilderna och kör sedan följande.
 
 ```sh
 node tools/unreal-engine/tests/crop-stats.cjs <bildkatalog> tools/unreal-engine/tests/pendant-lighting-crops.json --check-pendant
 ```
 
 #2313:s vänsterutsnitt och dess fyra delytor ska var för sig ligga mellan 0,8 och 1,25 gånger webbens luminans. Väggens ökning av ljus nedåt kontrolleras i båda kolumnerna. Ta även de tre kontrollvyerna från #2369 för hela vardagsrummet dag och kväll samt övre plan på kvällen. Den verkliga [äldre Unreal-bilden](../2313/unreal-living-room-evening.jpg) och [den tidigare mätningen](../2313/crop-stats.txt) visar utgångsläget. De båda nya bilderna ovan kommer från webben.
+
+## Eget Windows-prov den 21 november
+
+UnrealEditor-Cmd 5.8.4-58902052 byggde och återöppnade belysningsnivån. Spelprovet på `L_Lunden` passerade med 38 lampor och noll varningar. Solriktningen stämde vid alla 20 provtillfällen. Samma kamera som i webbreferensen användes med spelets fasta exponering.
+
+I den provade inställningen gav fönsterfältet och en Silvia-pendel på 16,632 cd följande medelluminans. Raderna avser samma kvällsbild med samtliga lampor tända.
+
+| Utsnitt | Webb | Unreal | Unreal/webb |
+|---|---:|---:|---:|
+| Vänster vägg | 0,2087 | 0,2167 | 1,04 |
+| Övre vänster | 0,1912 | 0,2088 | 1,09 |
+| Övre höger | 0,1670 | 0,2033 | 1,22 |
+| Nedre vänster | 0,2421 | 0,2267 | 0,94 |
+| Nedre höger | 0,2337 | 0,2277 | 0,97 |
+
+Båda kolumnerna blev ljusare nedåt och passerade formkravet i `crop-stats.cjs --check-pendant`. När Silvia släcktes sjönk vänsterväggens luminans med 0,0970 i Unreal och 0,0690 på webben. Kontrollerna för hela vardagsrummet dag och kväll samt övervåningen på kvällen gav 1,03, 0,88 och 1,04 gånger webbreferensen.
+
+| Tänd Silvia | Släckt Silvia |
+|---|---|
+| ![Vardagsrummet i Unreal med Silvia tänd](windows-pendant-trial/unreal-living-room-evening.png) | ![Samma kamera med Silvia släckt](windows-pendant-trial/unreal-living-room-without-pendant.png) |
+| ![Vardagsrummet på webben med Silvia tänd](web-living-room-evening.jpg) | ![Samma webbkamera med Silvia släckt](web-living-room-without-pendant.jpg) |
+
+Den extra kontrollen från trappan gav 1,39 gånger webbens helbild, över projektgränsen 1,25. I en separat körning från samma kamera, med den tidigare pendelstyrkan och fönsterfältet avstängt, blev kvoten 1,20. Strålar genom L1007-exporten visar att den högra tredjedelen av trappbilden innehåller vardagsrummets tak, vägg och sekretär. Bilderna dokumenterar en uppmätt provinställning under fortsatt kalibrering.
+
+| Trappkameran i Unreal | Webbreferens |
+|---|---|
+| ![Trappan och den synliga delen av vardagsrummet i Unreal](windows-pendant-trial/unreal-stairs-evening.png) | ![Trappan och vardagsrummet på webben](../2369/web-stairs-evening.jpg) |
