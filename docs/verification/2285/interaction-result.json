@@ -717,5 +717,9 @@
   "hiddenOn": false,
   "hiddenOff": true
  },
+ "liftButtons": {
+  "count": 49,
+  "litOnceAfterTwoPresses": 49
+ },
  "problems": []
 }

@@ -432,7 +432,8 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     const [{ Garage }, { Core }, { CoreHouse }] = await Promise.all([import('../../src/garage.js'), import('../../src/core.js'), import('../../src/corehouse.js')]);
     const garage = new Garage();
     const core = new Core();
-    for (const spec of [C.CORE_A, C.CORE_B, C.CORE_C]) core.attach(new CoreHouse(spec));
+    extra.lifts = [['l', core.lift]]; // #2285: the lifts' button panels (src/liftpanel.js targets)
+    for (const spec of [C.CORE_A, C.CORE_B, C.CORE_C]) { const house = new CoreHouse(spec); core.attach(house); extra.lifts.push([spec.house.slice(-1).toLowerCase(), house.lift]); }
     extra.objects.push(garage.object, garage.door.object, garage.parkObject, core.object); // (not garage.blackout: a web-only mask)
     for (const o of [garage.object, garage.door.object, garage.parkObject]) extra.group.set(o, 'garage');
     extra.group.set(core.own, 'core-l');
@@ -793,7 +794,7 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
   }
 
   // ---- measurement data ----
-  const measurements = measurementData({ world, planCopy, W, D, byZone, lightsInfo, materialTable, commit, ZONES, wanted });
+  const measurements = measurementData({ world, planCopy, W, D, byZone, lightsInfo, materialTable, commit, ZONES, wanted, lifts: extra.lifts ?? [] });
   measurements.buildings = buildings;
   if (ground) measurements.ground = ground;
   if (vegetation) measurements.vegetation = vegetation;
@@ -1002,7 +1003,7 @@ function fixtureScene(W, D, unique) {
   return root;
 }
 
-function measurementData({ world, planCopy, W, D, byZone, lightsInfo, materialTable, commit, ZONES, wanted }) {
+function measurementData({ world, planCopy, W, D, byZone, lightsInfo, materialTable, commit, ZONES, wanted, lifts }) {
   const P = (x, y, z) => ({ web: [r4(x), r4(y), r4(z)], unreal: webToUnrealRounded([x, y, z]) });
   const atomOf = new Map();
   for (const list of byZone.values()) for (const a of list) if (a.instance === undefined) atomOf.set(a.object, a);
@@ -1078,7 +1079,7 @@ function measurementData({ world, planCopy, W, D, byZone, lightsInfo, materialTa
     stair: { foot: P(C.STAIR.aX0, C.LEVELS[0].floor, (C.STAIR.aZ[0] + C.STAIR.aZ[1]) / 2), rise: r4(stairRise()), riser: r4(stairRiser()), treads: N_TREADS,
       flights: C.STAIR.treads, hole: C.STAIR.hole, railHeight: C.STAIR.railHeight, source: 'src/config.js#STAIR, src/stairs.js' },
     doors, windows, lights,
-    interaction: interactionExtras({ world, atomOf, lightsInfo, lights, P }),
+    interaction: interactionExtras({ world, atomOf, lightsInfo, lights, lifts, P }),
     terrain: null, // filled in by tools/unreal-engine/export-world.mjs (a reference to data/elevation.json, not a copy)
     site: { geo: C.SITE.geo, planNorthDeg: C.DAY?.planNorth ?? null, source: 'src/config.js#SITE.geo, DAY.planNorth',
       // #2283: the observer src/daycycle.js puts the sun and moon over (not the OSM anchor above), for Unreal's sun
@@ -1146,7 +1147,7 @@ function interactionData({ world, doors, windows, atomOf, P }) {
 }
 
 /** The room switches and the taps (main.js builds them next to the world; not nodes of their own in a tap's case). */
-function interactionExtras({ world, atomOf, lightsInfo, lights, P }) {
+function interactionExtras({ world, atomOf, lightsInfo, lights, lifts, P }) {
   const atomAbove = (o) => { for (; o; o = o.parent) if (atomOf.has(o)) return atomOf.get(o); return null; };
   const switches = (lightsInfo.switches ?? []).map((s) => {
     const p = s.object.getWorldPosition(new THREE.Vector3()), ry = s.object.rotation.y, n = [Math.sin(ry), Math.cos(ry)];
@@ -1166,6 +1167,19 @@ function interactionExtras({ world, atomOf, lightsInfo, lights, P }) {
     return { id, name: t.name ?? null, level: lv, shower: !!t.shower, outlet: P(x, y, z),
       landing: P(x + dir.x * k, y - len, z + dir.z * k), radius: r4(Math.max(t.r ?? 0, 0.009)), pick: P(...pick) };
   });
-  return { switches, taps, source: 'src/lights.js Switch/switchSpots (switches; a switch turns its room\'s lamps on and off), '
-    + 'src/water.js Tap + world.taps (taps; E turns the water on and off), src/doors.js, src/openables.js (#2285)' };
+  // the lifts' car buttons (one per stop) and landing call buttons (src/liftpanel.js; the lift itself is not ported yet)
+  const liftButtons = [];
+  for (const [house, lift] of lifts) {
+    const seen = new Map();
+    for (const t of lift?.targets ?? []) {
+      if (t.kind !== 'liftbtn' && t.kind !== 'liftcall') continue;
+      const kind = t.kind === 'liftbtn' ? 'car' : 'call', key = `${kind}_${t.stop}`, n = (seen.get(key) ?? 0) + 1;
+      seen.set(key, n);
+      const p = t.pickable.getWorldPosition(new THREE.Vector3());
+      liftButtons.push({ id: `lift_${house}_${key}${n > 1 ? '_' + n : ''}`, house, kind, stop: t.stop,
+        name: t.name ?? null, position: P(p.x, p.y, p.z) });
+    }
+  }
+  return { switches, taps, liftButtons, source: 'src/lights.js Switch/switchSpots (switches; a switch turns its room\'s lamps on and off), '
+    + 'src/water.js Tap + world.taps (taps; E turns the water on and off), src/doors.js, src/openables.js, src/liftpanel.js (lift buttons) (#2285)' };
 }

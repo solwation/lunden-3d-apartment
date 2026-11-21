@@ -82,6 +82,13 @@
       "builder": "build_vegetation.py (after import_world.py --zones vegetation,l1007-uteplats)",
       "streaming": "always",
       "what": "the site's trees (trunks and crown lobes), understory and pavement shrubs, courtyard plantings and pergola vines, the river bank's growth and the entrance boxwood as foliage instances with wind, plus a copy of L1007's patio hedge (its zone is not streamed)"
+    },
+    {
+      "package": "/Game/Lunden/Generated/Interaction/Level_lift_buttons",
+      "owner": "#2285",
+      "builder": "build_interaction.py",
+      "streaming": "always",
+      "what": "the four lifts' car and call buttons (src/liftpanel.js) as interactables: state and ChangeCount only until the lifts are ported"
     }
   ]
 }

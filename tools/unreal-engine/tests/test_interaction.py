@@ -10,6 +10,7 @@
 3. Player use: the production controller's E aimed at the front door (as the pilot's door test) opens it.
 4. A switch turns its room's real lamps (#2283's BP_LundenLamp actors tagged lamp:<id> in Level_lighting) on and off
    and leaves another room's lamp off; a tap shows and hides its water.
+5. The four lifts' 49 buttons (Level_lift_buttons) sit within 1 cm of the export and light once on two presses.
 
 Run: copy this file to unreal/Lunden/Content/Python/ (untracked) and
     run-tests.ps1 -Filter Editor.Python.Lunden.test_interaction
@@ -50,6 +51,7 @@ DOORS = {d["id"]: d for d in M["doors"] if d["zone"] == "l1007"}
 SASHES = {s["id"]: s for w in M["windows"] for s in w.get("sashes", [])}
 SWITCHES = M["interaction"]["switches"]
 TAPS = M["interaction"]["taps"]
+LIFT_BUTTONS = M["interaction"].get("liftButtons", [])
 
 
 def xyz(v):
@@ -95,7 +97,7 @@ def run():
 
         problems, evidence = [], {"engine": u.SystemLibrary.get_engine_version(), "map": MAP, "doors": {}, "sashes": {}}
         # 1. coverage
-        every = list(DOORS) + list(SASHES) + [s["id"] for s in SWITCHES] + [t["id"] for t in TAPS]
+        every = list(DOORS) + list(SASHES) + [s["id"] for s in SWITCHES] + [t["id"] for t in TAPS] + [b["id"] for b in LIFT_BUTTONS]
         act = {i: by_id(i) for i in every}
         cls = u.load_class(None, DOOR)
         total = len(u.GameplayStatics.get_all_actors_of_class(game, cls))
@@ -229,11 +231,25 @@ def run():
         evidence["tap"] = {"id": tap["id"], "hiddenBefore": hidden0, "hiddenOn": hidden1, "hiddenOff": hidden2}
         if not (hidden0 and not hidden1 and hidden2):
             problems.append(f"tap {tap['id']}: hidden {hidden0} -> {hidden1} -> {hidden2}")
+        # 5. the lifts' buttons: each sets its state and counts exactly once per change (the lifts are not ported yet)
+        for b in LIFT_BUTTONS:
+            a = act[b["id"]]
+            if math.dist(xyz(a.get_actor_location()), b["position"]["unreal"]) > 1:
+                problems.append(f"{b['id']} at {xyz(a.get_actor_location())} vs {b['position']['unreal']}")
+            a.call_method("OpenDoor")
+            a.call_method("OpenDoor")
+        yield from seconds(0.3)
+        pressed = {b["id"]: (act[b["id"]].get_editor_property("TargetOpen"), count(act[b["id"]])) for b in LIFT_BUTTONS}
+        bad = {k: v for k, v in pressed.items() if v != (True, 1)}
+        if bad:
+            problems.append(f"lift buttons not lit once: {bad}")
+        evidence["liftButtons"] = {"count": len(LIFT_BUTTONS), "litOnceAfterTwoPresses": len(pressed) - len(bad)}
         evidence["problems"] = problems
         (Path(u.Paths.project_saved_dir()) / "interaction-result.json").write_text(json.dumps(evidence, indent=1) + "\n", encoding="utf-8")
         if problems:
             raise RuntimeError("LUNDEN_INTERACTION_TEST failed: " + "; ".join(problems[:20]))
-        u.log(f"LUNDEN_INTERACTION_TEST_OK {len(DOORS)} doors, {len(SASHES)} sashes, {len(SWITCHES)} switches, {len(TAPS)} taps")
+        u.log(f"LUNDEN_INTERACTION_TEST_OK {len(DOORS)} doors, {len(SASHES)} sashes, {len(SWITCHES)} switches, {len(TAPS)} taps, "
+              f"{len(LIFT_BUTTONS)} lift buttons")
     finally:
         levels.editor_request_end_play()
         yield from save_isolation.restore_after_play(saved_slot, editor)

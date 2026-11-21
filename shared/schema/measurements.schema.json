@@ -96,7 +96,7 @@
     },
     "interaction": {
       "type": "object",
-      "description": "#2285: the room switches (node id, room and level: a switch turns that room's lights on and off) and the taps (outlet, landing point, pick point) for Unreal's interaction builder (tools/unreal-engine/python/build_interaction.py). Optional: absent in older exports.",
+      "description": "#2285: the room switches (node id, room and level: a switch turns that room's lights on and off) the taps (outlet, landing point, pick point) and the lifts' buttons for Unreal's interaction builder (tools/unreal-engine/python/build_interaction.py). Optional: absent in older exports.",
       "required": ["switches", "taps", "source"],
       "properties": {
         "switches": { "type": "array", "items": { "type": "object", "required": ["id", "level", "room", "lamps", "position", "normal"],
@@ -104,6 +104,8 @@
             "lamps": { "type": "array", "items": { "type": "string" }, "description": "ids of the room's lights (measurements.json lights, kind room) = #2283's lamp:<id> actor tags" }, "position": { "$ref": "#/$defs/point" } } } },
         "taps": { "type": "array", "items": { "type": "object", "required": ["id", "name", "level", "shower", "outlet", "landing", "radius", "pick"],
           "properties": { "id": { "type": "string" }, "shower": { "type": "boolean" }, "outlet": { "$ref": "#/$defs/point" }, "landing": { "$ref": "#/$defs/point" }, "pick": { "$ref": "#/$defs/point" } } } },
+        "liftButtons": { "type": "array", "description": "the lifts' car buttons (one per stop) and landing call buttons, src/liftpanel.js; house l/a/b/c", "items": { "type": "object", "required": ["id", "house", "kind", "stop", "position"],
+          "properties": { "id": { "type": "string" }, "house": { "type": "string" }, "kind": { "enum": ["car", "call"] }, "stop": { "type": "integer" }, "position": { "$ref": "#/$defs/point" } } } },
         "source": { "type": "string" }
       }
     },

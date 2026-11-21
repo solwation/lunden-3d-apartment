@@ -17,6 +17,8 @@
    pilot's door builder did) where each door leaf and window sash hangs on an interactable at its hinge / pivot with a
    blocking box for the use trace, each room switch and tap gets an interactable with a small use box, and each tap a
    hidden water stream (an engine cylinder from outlet to landing, src/water.js).
+3. Builds /Game/Lunden/Generated/Interaction/Level_lift_buttons: the four lifts' car and call buttons
+   (src/liftpanel.js) as interactables (Kind 3: state + ChangeCount only, since the lifts are not ported yet).
 Ends with LUNDEN_INTERACTION_OK. Lock BP_LundenSwingDoor.uasset first (git lfs lock); the level is generated, not versioned.
 """
 import hashlib
@@ -34,13 +36,16 @@ DOOR = "/Game/Lunden/Blueprints/PilotDoors/BP_LundenSwingDoor"
 LAMP = "/Game/Lunden/Lighting/BP_LundenLamp"
 SOURCE = "/Game/Lunden/Generated/l1007/Level_l1007"
 TARGET = "/Game/Lunden/Generated/Interaction/Level_l1007_interaction"
+LIFTS = "/Game/Lunden/Generated/Interaction/Level_lift_buttons"
 FOR_EACH = "/Engine/EditorBlueprintResources/StandardMacros.StandardMacros:ForEachLoop"  # as build_seasons.py
 CYLINDER = "/Engine/BasicShapes/Cylinder.Cylinder"  # 100 cm across, 100 cm high, pivot at its centre
 WATER_MATERIAL = "/Engine/BasicShapes/BasicShapeMaterial.BasicShapeMaterial"
 PROJECT = Path(u.Paths.convert_relative_path_to_full(u.Paths.project_dir()))
 USE_BOX = 6.0       # cm, half size of a switch's / tap's use box (the web picks the switch plate / tap lever)
 LEAF_HALF = 2.5     # cm, half thickness of a door leaf's / sash's blocking box (the pilot's)
-KIND_MOVE, KIND_SWITCH, KIND_TAP = 0, 1, 2
+KIND_MOVE, KIND_SWITCH, KIND_TAP, KIND_BUTTON = 0, 1, 2, 3  # a button: only its state and ChangeCount (no motion)
+BUTTON_BOX = 4.0    # cm, half size of a lift button's use box (LIFT_PANEL.radius 3.4 cm, ring x 1.32; pitch 12-15 cm)
+BUTTON_SECONDS = 0.22  # LIFT_PANEL.pressMs
 SPEC_TAG = "Lunden.SpecHash"
 # the class depends only on this script (line endings normalised, so a CRLF checkout does not rebuild it)
 SPEC = hashlib.sha256(Path(__file__).read_bytes().replace(b"\r\n", b"\n")).hexdigest()
@@ -345,7 +350,7 @@ def box(actors, parent, label, tag, centre, extent, rotation=None):
 def interactable(actors, cls, row_id, kind, location, rotation, **props):
     a = actors.spawn_actor_from_class(cls, u.Vector(*location), rotation)
     a.set_actor_label(row_id + " interact")
-    a.tags = [u.Name("interact:" + row_id), u.Name("kind:" + ("move", "switch", "tap")[kind])]
+    a.tags = [u.Name("interact:" + row_id), u.Name("kind:" + ("move", "switch", "tap", "liftbutton")[kind])]
     a.root_component.set_mobility(u.ComponentMobility.MOVABLE)
     a.set_editor_property("Id", row_id)
     a.set_editor_property("Kind", kind)
@@ -466,13 +471,35 @@ def build_level(cls, m):
     return counts
 
 
+def build_lift_level(cls, m):
+    """The lifts' car and call buttons (src/liftpanel.js) as interactables in their own sub-level. The lifts themselves
+    are not ported yet: a press only sets the button's state (lit) and raises ChangeCount, the hook a ported lift binds to."""
+    rows = (m.get("interaction") or {}).get("liftButtons", [])
+    levels = u.EditorLoadingAndSavingUtils
+    world = levels.new_blank_map(False)
+    actors = u.get_editor_subsystem(u.EditorActorSubsystem)
+    for b in rows:
+        xyz = b["position"]["unreal"]
+        a = interactable(actors, cls, b["id"], KIND_BUTTON, xyz, yaw(0), TargetOpen=False, Seconds=BUTTON_SECONDS,
+                         OpenLocation=u.Vector(*xyz), ClosedLocation=u.Vector(*xyz), OpenRotation=yaw(0), ClosedRotation=yaw(0))
+        a.tags = list(a.tags) + [u.Name(f"house:{b['house']}"), u.Name(f"lift:{b['kind']}"), u.Name(f"stop:{b['stop']}")]
+        box(actors, a, b["id"] + " use", "liftbutton-use:" + b["id"], xyz, (BUTTON_BOX, BUTTON_BOX, BUTTON_BOX))
+    if not levels.save_map(world, LIFTS):
+        raise RuntimeError("Could not save " + LIFTS)
+    u.log(f"LUNDEN_INTERACTION_LIFTS {LIFTS}: {len(rows)} buttons")
+
+
 def main(argv):
     path = Path(argv[0]) if argv else PROJECT / "Import/measurements.json"
     m = json.loads(path.read_text(encoding="utf-8"))
     if "interaction" not in m or not any(w.get("sashes") for w in m["windows"]):
         raise RuntimeError("measurements.json has no #2285 interaction data: export again (export-world.mjs)")
+    for level in (TARGET, LIFTS):  # generated: delete first, so a rebuilt class does not keep the old level loaded
+        if ASSETS.does_asset_exist(level) and not ASSETS.delete_asset(level):
+            raise RuntimeError("Could not delete the previous " + level)
     cls = build_class()
     build_level(cls, m)
+    build_lift_level(cls, m)
     u.log("LUNDEN_INTERACTION_OK")
 
 

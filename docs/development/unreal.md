@@ -450,6 +450,7 @@ open the map (see [Parallel work](#parallel-work-levels-and-blueprints)).
 | `/Game/Lunden/Generated/SiteWorld/Level_site_collision` | #2280 | `build_site.py` | walkable ground collision of `l1007-entre`, `gard` and `omgivning` (complex-as-simple full-mesh copies) |
 | `/Game/Lunden/Generated/Lighting/Level_lighting` | #2283 | `build_lighting.py` | `BP_LundenSky` (sun, moon, sky, fog, clouds, weather) and 36 `BP_LundenLamp`s tagged `lamp:<id>` ([Lighting](#lighting-sky-and-weather-2283)) |
 | `/Game/Lunden/Generated/VegetationWorld/Level_vegetation_foliage` | #2281 | `build_vegetation.py` | the site's trees, shrubs, courtyard plantings and vines, river bank growth and entrance boxwood as foliage instances with wind; a copy of L1007's patio hedge |
+| `/Game/Lunden/Generated/Interaction/Level_lift_buttons` | #2285 | `build_interaction.py` | the four lifts' 49 car and call buttons as interactables (state and `ChangeCount` until the lifts are ported) |
 
 `world-levels.json` format (version 1): `map`, `gameMode` (class path; #2284's `BP_LundenGameMode` since 2026-11-21), `playerStart` (always `measurements.json#/spawn/start`) and `levels`, an ordered list of
 `{package, owner, builder, streaming, what}`. `streaming` is `always` (`LevelStreamingAlwaysLoaded`) for now; add a
@@ -766,6 +767,16 @@ gave 41,188 actions with none containing `OnStateChanged` (not even Bind/Assign)
 Native dispatchers do appear (`…|CallOnX`). A declared dispatcher that never fires is deliberately not committed; the
 real broadcast is a follow-up linked to #2293. Not ported yet: water sound and splash, the switch rocker's tilt.
 
+**Lift buttons.** The lifts (Hus L's `src/core.js`, Hus A/B/C's `src/corehouse.js`) are not ported yet. Their button
+panels are: `measurements.json` `interaction.liftButtons` (49 buttons: each lift's car buttons, one per stop, and its
+landing call buttons; `src/liftpanel.js` targets) become interactables in their own sub-level
+`/Game/Lunden/Generated/Interaction/Level_lift_buttons` (an additive `world-levels.json` row), `Kind` 3, ids
+`lift_<house>_<car|call>_<stop>[_<n>]`, tags `house:<l|a|b|c>`, `lift:<car|call>`, `stop:<k>`. A press (E, or
+`OpenDoor` by id) sets `TargetOpen` (the lit ring) and raises `ChangeCount`; nothing else moves. **Hook for the lift
+port:** read `TargetOpen`/`ChangeCount` of the buttons tagged with its house, call `CloseDoor` on a button when the car
+arrives (the web clears the ring then). Differences from the web, until then: E toggles (the web keeps a lit button lit),
+and the plates have no lit look or click sound. The car buttons sit where the car rests in the export.
+
 **Level.** `/Game/Lunden/Generated/Interaction/Level_l1007_interaction` is a copy of the importer's `Level_l1007`
 where each door leaf and sash hangs on its interactable at the hinge/pivot with a blocking box (closed doors block
 now), and the switches and taps have small use boxes. It is generated, not versioned, and since #2285 it replaces
@@ -781,11 +792,11 @@ copy tools\unreal-engine\tests\test_interaction.py unreal\Lunden\Content\Python\
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-tests.ps1 -Filter Editor.Python.Lunden.test_interaction
 ```
 
-`test_interaction` (PIE on the composed `L_Lunden`): all 18 L1007 doors, 6 sashes, 13 switches and 6 taps have one interactable;
+`test_interaction` (PIE on the composed `L_Lunden`): all 18 L1007 doors, 6 sashes, 13 switches, 6 taps and 49 lift buttons have one interactable;
 opened and closed by id, every hinge/pivot is within 1 cm and every yaw / sash angle within 1° of `measurements.json`,
 sliders' boxes and sashes' check points within 1 cm of the open/closed points, `ChangeCount` 1 after open + repeated
 open and 2 after close; a wardrobe panel closes its partner; E opens the front door; a Hall switch turns both Hall
-lamps (#2283's real `BP_LundenLamp`s in `Level_lighting`) on and off and leaves the Badrum lamp off; the kitchen tap shows and hides its water. Results:
+lamps (#2283's real `BP_LundenLamp`s in `Level_lighting`) on and off and leaves the Badrum lamp off; the kitchen tap shows and hides its water; all 49 lift buttons sit within 1 cm of the export and are lit once after two presses. Results:
 [docs/verification/2285/](../verification/2285/README.md).
 
 ## Furnishing and pictures (#2289)
