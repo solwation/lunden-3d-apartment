@@ -754,6 +754,56 @@ open and 2 after close; a wardrobe panel closes its partner; E opens the front d
 lamps on and off and leaves the Badrum lamp off; the kitchen tap shows and hides its water. Results:
 [docs/verification/2285/](../verification/2285/README.md).
 
+## Furnishing and pictures (#2289)
+
+G11's release-1 part: L1007's furniture, appliances, lamps, curtains and every picture in `textures/` stand in Unreal
+where the web puts them, with the web's own images. #2289 owns `tests/test_furnishing.py`, the `furnishing` block of
+the export and the pictures section of `notices.mjs`.
+
+- **Images travel with the export (decision #2289, can be overturned in one sentence).** The issue planned hand-made
+  textures and materials in `/Game/Lunden/Furnishing/` with `build_furnishing.py`. The export already carries every
+  furniture mesh and its UVs, so the shorter route is to keep the web's base-colour image on the furnishing materials:
+  furniture, appliance and lamp nodes (`FURNISH_KINDS` in `export-scene.js`) and the curtain and blind cloth keep
+  `map` in the GLB, GLTFExporter writes the image (flipped for glTF, with `KHR_texture_transform` for repeat and
+  offset), and Interchange imports it with the zone as `Generated/<zone>/Textures/T_<file or canvas>_t<id>` on a
+  `MI_Default_Opaque`-based instance (`BaseColorTexture`). That covers the 10 picture files and the web's 77 canvas
+  textures (upholstery, rugs, bedding, towels, curtains, printed labels, the "THIS KITCHEN IS FOR DANCING" print) at
+  once, nothing is modelled twice, and the owner's photos are never versioned as `.uasset`s (they are rebuilt with
+  the generated assets, [below](#generated-assets-rebuilt-not-versioned-decided)). `/Game/Lunden/Furnishing/` and
+  `build_furnishing.py` therefore stay empty until something hand-made is needed. Not ported: normal, bump,
+  roughness and alpha maps, emissive maps, the web's `onBeforeCompile` tweaks, video and animated canvases (the TV
+  and the smart display show their first frame). The upholstery (vertex colours × image) reads darker than on the
+  web; not investigated.
+- **Keys.** A furnishing material's key gets the texture id: `<key>_t<10 hex>` (a hash of the image file path, or a
+  canvas's pixels at collection time, plus its repeat, offset, rotation, wrap and flip). Building and ground surfaces
+  keep their plain keys, so #2282's rules are untouched; the rugs and the cleaning cupboard no longer fall under the
+  tile and parquet rules they used to share a key with. `material-map.json`'s `_tex` default covers the tagged keys.
+- **Deterministic.** The export waits for every image the page started loading (and for canvases painted from them)
+  before writing the GLBs, and `canonicalImages` puts the image buffer views back in image order (GLTFExporter appends
+  them as its async encodes finish), so two exports of one commit stay byte-identical. `textures/*.jpg` are export
+  sources (`sources.mjs`). `l1007.glb` grew from 80.8 MB to 108.3 MB.
+- **`measurements.json` `furnishing`.** `items`: every exported furniture/appliance/lamp node with its web world
+  transform and the same in Unreal terms (location in cm; the actor's forward / right / up = the web's local x / z /
+  y; scale). `textures`: each kept texture with the repository images it shows (a canvas: the files drawn into it, so
+  the matted "Till mamma" is traced to `textures/teckning-till-mamma.jpg`), its keys, nodes and mesh nodes with their
+  world centres. Furniture placement corrections belong in the web data or the export, never in a generated level.
+- **Notices.** `notices.mjs` `PICTURES` names each picture file, what it shows and its source photo, and fails when a
+  file in `textures/` has no entry; `THIRD_PARTY_NOTICES.md` states the owner's approval for the original Windows
+  version only. Nothing of this goes to the public downstream copy.
+- **Patio.** `l1007-uteplats` (patio furniture, paving, fences, hedge) is imported but is not yet a line in
+  `world-levels.json`, so it is not in `L_Lunden`.
+
+```text
+copy tools\unreal-engine\tests\test_furnishing.py unreal\Lunden\Content\Python\   (untracked copy, delete afterwards)
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-tests.ps1 -Filter Editor.Python.Lunden.test_furnishing
+(or directly) powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/tests/test_furnishing.py
+```
+
+The test loads the two imported L1007 zone levels and every built level of `world-levels.json` and checks each
+`furnishing` item where its id appears (1 cm, 1°, 0.1 % scale), each texture on each of its mesh actors (centre within
+1 cm, the key's instance with a Texture2D of the exported size) and that every picture file is on a mesh and in the
+notices. Results: [docs/verification/2289/](../verification/2289/README.md).
+
 ## Pilot camera references (#2246)
 
 Use the [shared five-camera list](../../unreal/Lunden/Tests/views.json) when framing
@@ -1398,7 +1448,7 @@ What is exported:
 - **Mesh names:** `export-world.mjs` names every glTF mesh after the first node that uses it and the glTF scene
   `<zone>__scene` (GLTFExporter leaves them unnamed; Interchange would then name assets `<zone>_mesh_<index>`, so one
   added node renamed every later asset). Only the GLB's JSON chunk changes; still deterministic.
-- **Materials** are not the web's: canvas textures and `onBeforeCompile` shader tweaks do not travel. Each mesh gets a
+- **Materials** are not the web's: canvas textures (except the furnishing images, [#2289](#furnishing-and-pictures-2289)) and `onBeforeCompile` shader tweaks do not travel. Each mesh gets a
   plain PBR material named by a key built from its look (`std_f1f1ee_r85_m0` = standard, colour f1f1ee, roughness
   0.85, metalness 0; suffixes for opacity, emissive, vertex colours, textures, double-sided). `measurements.json`
   `materials` lists every key; Unreal maps keys to hand-made materials (#2246).
