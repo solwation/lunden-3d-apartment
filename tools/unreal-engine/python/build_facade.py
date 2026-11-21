@@ -77,6 +77,12 @@ def wall_controller(spec, weather, wall):
     return bp
 
 
+def custom_input(name):
+    pin = u.CustomInput()  # #2382: 5.8 structs take no keyword arguments; set fields as stair_lamp.py does
+    pin.set_editor_property("input_name", name)
+    return pin
+
+
 def material(kind, spec, weather, wall):
     mat = asset(DIR + "/M_Facade_" + kind, u.Material, u.MaterialFactoryNew())
     MEL.delete_all_material_expressions(mat)
@@ -86,7 +92,7 @@ def material(kind, spec, weather, wall):
     mat.set_editor_property("two_sided", kind == "wash")  # room face normals are exported individually
     names = facade.FIELDS[kind] + facade.INPUTS[kind]
     code = MEL.create_material_expression(mat, u.MaterialExpressionCustom, -300, 0)
-    code.set_editor_property("inputs", [u.CustomInput(input_name=n) for n in names])
+    code.set_editor_property("inputs", [custom_input(n) for n in names])
     code.set_editor_property("output_type", u.CustomMaterialOutputType.CMOT_FLOAT4)
     code.set_editor_property("code", facade.shader(kind, spec))
     sources = {"PositionWS": u.MaterialExpressionWorldPosition, "ViewDir": u.MaterialExpressionCameraVectorWS,
@@ -193,7 +199,9 @@ def main(argv):
     spec = json.loads((Path(paths[0]) if paths else PROJECT / "Import/measurements.json").read_text())["site"]["facadeLighting"]
     rows = facade.validate(spec)
     weather = ASSETS.load_asset(lighting.MPC)
-    if not weather or not {"Night","Hour","PowerAvailable"} <= {str(p.parameter_name) for p in weather.scalar_parameters}:
+    # #2382: struct and asset properties through get_editor_property (5.8 has no Python attributes for them)
+    names = {str(p.get_editor_property("parameter_name")) for p in weather.get_editor_property("scalar_parameters")} if weather else set()
+    if not {"Night","Hour","PowerAvailable"} <= names:
         raise RuntimeError("Run build_lighting.py with the facade clock/power collection first (#2373)")
     digest = hashlib.sha256(json.dumps(spec,sort_keys=True).encode())
     for p in (Path(__file__), Path(facade.__file__), *sorted(facade.SHADERS.glob("*.hlsl"))):
