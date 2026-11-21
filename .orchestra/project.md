@@ -208,7 +208,7 @@ UnrealEditor(-Cmd) run, take a slot atomically with `mkdir ~/.local/state/lunden
 WSL), write `<orchestra> #<issue>` into `slot-N/owner`, and remove the slot right after the run, also on failure. At
 most three editors on the PC, and only with at least 6 GB of Windows memory free. An orchestra holds at most two while
 another orchestra is waiting for a slot (it marks this with `mkdir ~/.local/state/lunden-editor-slots/waiting-<orchestra>`
-and removes the marker once it has a slot); otherwise it may use the third (user, 2026-11-21: speed up the queue).
+and removes the marker once it has a slot); otherwise it may use the third (user, 2026-11-21: speed up the queue), but only with at least 10 GB free at the moment it starts, because each editor grows to about 5 GB after launch and three at once once left 0.3 GB free. Check free memory immediately before each launch, not only when taking the slot.
 While no slot is free, do work that needs no editor. **Throughput (2026-11-21):** the editor is the bottleneck, so
 keep it busy and do everything else outside it. Each Unreal worker keeps one warm Windows checkout across issues:
 fast-forward it from `FETCH_HEAD`, re-export and run the incremental `sync-import.ps1` (about 4 minutes when unchanged)
