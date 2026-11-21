@@ -84,11 +84,18 @@ def render_game(world, out_dir, name, loc, rot, width, height, fov, excluded, hi
 def run(scene_path, out_dir, names=None, exposure="game", trial=None, bias_offset=0.0):
     scene = json.loads(Path(scene_path).read_text(encoding="utf-8"))
     cams = {c["id"]: c for c in scene["cameras"]}
-    wanted = names.split(",") if names else [s["name"] for s in SHOTS]
+    shots = scene.get("shots", SHOTS)
+    wanted = names.split(",") if names else [s["name"] for s in shots]
+    selected = [s for s in shots if s["name"] in wanted]
+    if not selected:
+        raise ValueError("No matching capture shots")
     if not u.EditorLoadingAndSavingUtils.load_map(MAP):
         raise RuntimeError(f"Cannot load {MAP}: run compose_world.py first")
     world = u.get_editor_subsystem(u.UnrealEditorSubsystem).get_editor_world()
     seasons = CaptureSeasons(world)
+    # Apply the first date before Nanite rebuilds register replacement physics proxies in this commandlet tick.
+    season_date = selected[0]["date"]
+    hidden = seasons.apply(season_date)
     fallback = 0
     for path in u.EditorAssetLibrary.list_assets("/Game/Lunden/Generated", recursive=True, include_folder=False):
         if "/StaticMeshes/" not in path:
@@ -115,7 +122,7 @@ def run(scene_path, out_dir, names=None, exposure="game", trial=None, bias_offse
     os.makedirs(out_dir, exist_ok=True)
     observed = []
     dusk_mid = (lamps[0].get_editor_property("DuskOn") + lamps[0].get_editor_property("DuskOff")) / 2
-    for shot in [s for s in SHOTS if s["name"] in wanted]:
+    for shot in selected:
         name, cam, weather = shot["name"], cams[shot["camera"]], shot["weather"]
         (year, month, day), hour = shot["date"], float(shot["hour"])
         for k, v in (("UseClock", False), ("TimeScale", 0.0), ("Year", year), ("Month", month), ("Day", day), ("Hour", hour),
@@ -135,7 +142,9 @@ def run(scene_path, out_dir, names=None, exposure="game", trial=None, bias_offse
                 enabled.append(lamp)
         date = [int(sky.get_editor_property(k)) for k in ("Year", "Month", "Day")]
         hour = sky.get_editor_property("Hour")
-        hidden = seasons.apply(date)
+        if date != season_date:
+            hidden = seasons.apply(date)
+            season_date = date
         settle_curtains(world)
         lit = sum(not lamp.get_editor_property("hidden") for lamp in enabled)
         shot_excluded = excluded + hidden
