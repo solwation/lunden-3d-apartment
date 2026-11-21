@@ -66,27 +66,39 @@ internal sealed class PlayerBridge : IAsyncDisposable
         return new PlayerBridge(directory, new PlayerRoom(testRoom ?? Players, Path.Combine(userData, "multiplayer-cap-month.txt")));
     }
 
+    static long PacketNumber(string name) =>
+        long.TryParse(Path.GetFileNameWithoutExtension(name).AsSpan(5), System.Globalization.NumberStyles.None,
+            System.Globalization.CultureInfo.InvariantCulture, out long value) ? value : -1;
+
     async Task ExchangeFiles()
     {
-        string input = Path.Combine(DirectoryPath, "game.csv");
         string output = Path.Combine(DirectoryPath, "peers.csv");
         string temporary = output + ".tmp";
-        string pending = Path.Combine(DirectoryPath, "reading.csv");
+        long lastConsumed = 0;
         string? lastOutput = null;
         var ct = stop.Token;
         while (!ct.IsCancellationRequested)
         {
             try
             {
-                // UE opens game.csv for exclusive write on Windows. Move a finished export before
-                // reading so that the next tick can create a fresh game.csv even while we're parsing.
-                if (File.Exists(input)) File.Move(input, pending, true);
-                var file = new FileInfo(pending);
-                if (file.Exists && file.Length is > 0 and <= 4096)
+                // UE exclusively opens each exported table. A new numbered file per tick lets a
+                // failed reader retry without preventing the game from writing its next state.
+                var inputs = new DirectoryInfo(DirectoryPath).EnumerateFiles("game-*.csv")
+                    .Select(file => (file, order: PacketNumber(file.Name)))
+                    .Where(item => item.order > 0).OrderBy(item => item.order);
+                foreach (var (file, order) in inputs)
                 {
-                    string? packet;
-                    using (var stream = new FileStream(pending, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
-                        packet = PresencePacket.Read(stream);
+                    if (order <= lastConsumed) { File.Delete(file.FullName); continue; }
+                    string? packet = null;
+                    try {
+                        if (file.Length is > 0 and <= 4096) {
+                            using var stream = new FileStream(file.FullName, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete);
+                            packet = PresencePacket.Read(stream);
+                        }
+                    }
+                    catch (IOException) { continue; }
+                    catch (MalformedLineException) { }
+                    if (packet == null && DateTime.UtcNow - file.LastWriteTimeUtc < TimeSpan.FromSeconds(2)) continue;
                     string? snapshot = null;
                     if (packet == "away")
                     {
@@ -105,8 +117,9 @@ internal sealed class PlayerBridge : IAsyncDisposable
                             File.Move(temporary, output, true);
                             lastOutput = snapshot;
                         }
-                        File.Delete(pending);
                     }
+                    File.Delete(file.FullName);
+                    lastConsumed = order;
                 }
             }
             catch (Exception e) when (e is IOException or UnauthorizedAccessException or MalformedLineException)
@@ -125,7 +138,9 @@ internal sealed class PlayerBridge : IAsyncDisposable
         await room.DisposeAsync();
         try
         {
-            foreach (string file in new[] { "game.csv", "peers.csv", "peers.csv.tmp", "reading.csv" })
+            foreach (string file in Directory.EnumerateFiles(DirectoryPath, "game-*.csv"))
+                if (PacketNumber(Path.GetFileName(file)) > 0) File.Delete(file);
+            foreach (string file in new[] { "peers.csv", "peers.csv.tmp" })
                 File.Delete(Path.Combine(DirectoryPath, file));
             Directory.Delete(DirectoryPath);
         }

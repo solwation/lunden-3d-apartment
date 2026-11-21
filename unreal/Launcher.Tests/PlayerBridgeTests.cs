@@ -59,9 +59,11 @@ public sealed class PlayerBridgeTests
         Assert.Null(PresenceFrame.Read(Frame(name: "not\na\nname")));
     }
 
+    static int nextPacket;
+
     static async Task<string> Sync(PlayerBridge bridge, string body)
     {
-        string input = Path.Combine(bridge.DirectoryPath, "game.csv");
+        string input = Path.Combine(bridge.DirectoryPath, $"game-{Interlocked.Increment(ref nextPacket)}.csv");
         await File.WriteAllTextAsync(input, PresencePacket.Write(body), Encoding.Unicode);
         string output = Path.Combine(bridge.DirectoryPath, "peers.csv");
         try {
@@ -118,8 +120,9 @@ public sealed class PlayerBridgeTests
     [Fact]
     public async Task LauncherAndWebPeerExchangeMovementAndResumeOneIdentityOnLocalWorker()
     {
-        bool browsers = Environment.GetEnvironmentVariable("LUNDEN_TEST_BROWSER_PEERS") == "1";
-        using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(browsers ? 120 : 25));
+        string? engine = Environment.GetEnvironmentVariable("LUNDEN_TEST_UE_EDITOR");
+        bool browsers = engine != null || Environment.GetEnvironmentVariable("LUNDEN_TEST_BROWSER_PEERS") == "1";
+        using var deadline = new CancellationTokenSource(TimeSpan.FromSeconds(engine != null ? 300 : browsers ? 120 : 25));
         var ct = deadline.Token;
         using var reservation = new TcpListener(IPAddress.Loopback, 0);
         reservation.Start();
@@ -140,42 +143,49 @@ public sealed class PlayerBridgeTests
         {
             Assert.Contains("localhost", await worker.StandardOutput.ReadLineAsync(ct));
             var endpoint = new Uri($"ws://127.0.0.1:{port}/players");
-            await using var bridge = PlayerBridge.Open(dir.FullName, endpoint);
-            using var web = new ClientWebSocket();
-            web.Options.SetRequestHeader("Origin", "https://solwation.github.io");
-            await web.ConnectAsync(new Uri(endpoint + "?n=Webb"), ct);
-            var welcome = await WaitFor(web, e => e.GetProperty("t").GetString() == "w", ct);
-            Assert.Empty(welcome.GetProperty("ps").EnumerateArray());
-            string webId = welcome.GetProperty("i").GetString()!;
-            var rows = await Until(() => Sync(bridge, Frame()), r => r[0].Length > 2, ct);
-            string nativeId = rows[0][2..];
-            var other = await WaitFor(web, e => e.GetProperty("t").GetString() == "s" && e.GetProperty("i").GetString() == nativeId, ct);
-            Assert.Equal(new[] { -4.5, 1.2, 7.25 }, other.GetProperty("p").EnumerateArray().Select(n => n.GetDouble()));
-            Assert.Equal("120310101175", other.GetProperty("av").GetString());
-            Assert.Equal("u1", other.GetProperty("ax").GetString());
-            await web.SendAsync(Encoding.UTF8.GetBytes("""{"p":[1,0.45,1],"r":3.14,"pose":1,"look":[0.4,-0.3],"av":"1203101"}""").AsMemory(), WebSocketMessageType.Text, true, ct);
-            rows = await Until(() => Sync(bridge, Frame()), r => r.Length == 2, ct);
-            var peer = rows[1].Split('\t');
-            Assert.Equal(new[] { webId, "Webb", "1203101", "100", "100", "45" }, peer[..6]);
-            Assert.Equal("1", peer[10]);
-            Assert.InRange(double.Parse(peer[11], CultureInfo.InvariantCulture), -22.93, -22.90);
-            await Sync(bridge, "away");
-            await WaitFor(web, e => e.TryGetProperty("aw", out var value) && value.GetInt32() == 1, ct);
-            rows = await Until(() => Sync(bridge, Frame(x: 210)), r => r[0] == "1\t" + nativeId && r.Length == 2, ct);
-            Assert.Equal(nativeId, rows[0][2..]);
-            await WaitFor(web, e => e.GetProperty("t").GetString() == "s" && e.GetProperty("i").GetString() == nativeId &&
-                e.GetProperty("p")[0].GetDouble() == 2.1, ct);
-            await web.CloseAsync(WebSocketCloseStatus.NormalClosure, "", ct);
-            await Until(() => Sync(bridge, Frame(x: 210)), r => r.Length == 1, ct);
+            await using (var bridge = PlayerBridge.Open(dir.FullName, endpoint))
+            {
+                using var web = new ClientWebSocket();
+                web.Options.SetRequestHeader("Origin", "https://solwation.github.io");
+                await web.ConnectAsync(new Uri(endpoint + "?n=Webb"), ct);
+                var welcome = await WaitFor(web, e => e.GetProperty("t").GetString() == "w", ct);
+                Assert.Empty(welcome.GetProperty("ps").EnumerateArray());
+                string webId = welcome.GetProperty("i").GetString()!;
+                var rows = await Until(() => Sync(bridge, Frame()), r => r[0].Length > 2, ct);
+                string nativeId = rows[0][2..];
+                var other = await WaitFor(web, e => e.GetProperty("t").GetString() == "s" && e.GetProperty("i").GetString() == nativeId, ct);
+                Assert.Equal(new[] { -4.5, 1.2, 7.25 }, other.GetProperty("p").EnumerateArray().Select(n => n.GetDouble()));
+                Assert.Equal("120310101175", other.GetProperty("av").GetString());
+                Assert.Equal("u1", other.GetProperty("ax").GetString());
+                await web.SendAsync(Encoding.UTF8.GetBytes("""{"p":[1,0.45,1],"r":3.14,"pose":1,"look":[0.4,-0.3],"av":"1203101"}""").AsMemory(), WebSocketMessageType.Text, true, ct);
+                rows = await Until(() => Sync(bridge, Frame()), r => r.Length == 2, ct);
+                var peer = rows[1].Split('\t');
+                Assert.Equal(new[] { webId, "Webb", "1203101", "100", "100", "45" }, peer[..6]);
+                Assert.Equal("1", peer[10]);
+                Assert.InRange(double.Parse(peer[11], CultureInfo.InvariantCulture), -22.93, -22.90);
+                await Sync(bridge, "away");
+                await WaitFor(web, e => e.TryGetProperty("aw", out var value) && value.GetInt32() == 1, ct);
+                rows = await Until(() => Sync(bridge, Frame(x: 210)), r => r[0] == "1\t" + nativeId && r.Length == 2, ct);
+                Assert.Equal(nativeId, rows[0][2..]);
+                await WaitFor(web, e => e.GetProperty("t").GetString() == "s" && e.GetProperty("i").GetString() == nativeId &&
+                    e.GetProperty("p")[0].GetDouble() == 2.1, ct);
+                await web.CloseAsync(WebSocketCloseStatus.NormalClosure, "", ct);
+                await Until(() => Sync(bridge, Frame(x: 210)), r => r.Length == 1, ct);
+            }
             if (browsers) {
+                await using var bridge = PlayerBridge.Open(dir.FullName, endpoint);
+                using var editor = engine == null ? null : new LiveNetworkEditor(engine, Root(), dir.FullName, bridge);
+                if (editor != null) await editor.Ready(bridge.DirectoryPath, ct);
                 var test = new ProcessStartInfo("node") { WorkingDirectory = Root(), UseShellExecute = false, CreateNoWindow = true };
                 test.ArgumentList.Add("tools/unreal-engine/tests/network-browser-peers.cjs");
                 test.ArgumentList.Add(port.ToString(CultureInfo.InvariantCulture));
                 test.ArgumentList.Add(bridge.DirectoryPath);
+                if (editor != null) test.ArgumentList.Add("pie");
                 using var browserTest = Process.Start(test)!;
                 try {
                     await browserTest.WaitForExitAsync(ct);
                     Assert.Equal(0, browserTest.ExitCode);
+                    if (editor != null) await editor.Verify(ct);
                 } finally {
                     if (!browserTest.HasExited) browserTest.Kill(entireProcessTree: true);
                 }

@@ -59,17 +59,17 @@ closing parenthesis in that argument are escaped as `%25`, `%20`, `%2C` and `%29
 Offline launches omit the argument. An online launch joins only after the first valid game packet. The
 launcher deletes its transient files on exit. The UTC month of a room cap is saved across launches.
 
-Both files are Unreal string tables with one entry named `Packet`. The optional editor-only `DevNotes` column
+Both directions use Unreal string tables with one entry named `Packet`. The optional editor-only `DevNotes` column
 and Unicode BOM are accepted. Unreal escapes its string-table cells before CSV quoting. Inside a packet,
 the name field escapes percent, backslash, apostrophe and double quote as `%25`, `%5C`, `%27` and `%22`;
 decode percent last. Personal save ids do not go to the room.
 
 | File | Value of the Packet entry |
 | --- | --- |
-| `game.csv` | Eleven LF-separated fields in order: version `1`, chosen display name, appearance code, foot X/Y/Z (cm), body yaw and camera pitch (degrees), crouch (`0/1`), pose (`0/1/2`), relative head yaw (degrees). A single `away` closes the socket with 4100. |
+| `game-1.csv`, `game-2.csv`, … | Eleven LF-separated fields in order: version `1`, chosen display name, appearance code, foot X/Y/Z (cm), body yaw and camera pitch (degrees), crouch (`0/1`), pose (`0/1/2`), relative head yaw (degrees). A single `away` closes the socket with 4100. |
 | `peers.csv` | Header `1<TAB>selfId`. Each subsequent LF-separated row contains id, name, appearance, foot X/Y/Z, yaw, pitch, crouch, away, pose and relative head yaw, separated by tabs. Empty fields are significant. A complete snapshot replaces the previous roster. |
 
-The game writes at most five updates a second while playing. A three-second break in writes handles a
+The game creates a new numbered file on each write. The launcher consumes them in numeric order and deletes each processed file. This avoids competing with the game for an exclusive Windows handle. The game writes at most five updates a second while playing. A three-second break in writes handles a
 suspended game. After two minutes without meaningful motion the socket goes away, as in `ghosts.js`.
 Moving more than two centimetres or turning more than 0.03 radians wakes it. A changed state is sent at
 most once per 210 ms and at most 256 UTF-8 bytes, with one settling resend and then ten-second heartbeats.
@@ -80,3 +80,10 @@ Chromium desktop and touch-phone peers, install the project's Three.js version a
 `LUNDEN_TEST_BROWSER_PEERS=1 tools/browsertest.sh dotnet test unreal/Launcher.Tests/Lunden.Launcher.Tests.csproj --filter FullyQualifiedName~LauncherAndWebPeer`.
 This uses the real browser avatar code and exercises the launcher with synthetic game-side packets. Actual
 headless PIE and packaged-game movement remain separate acceptance checks.
+
+
+For the three-client Windows acceptance run, build the network Blueprints and the player in an isolated
+Windows checkout, reserve the shared editor slot and set `LUNDEN_TEST_UE_EDITOR` to the installed
+`UnrealEditor-Cmd.exe` before running the same filtered .NET test with Playwright and Three.js available.
+The harness stages the automation script, starts a headless null-RHI editor with a temporary user directory
+and the local bridge, then checks both browsers and the interpolated actors actually present in PIE.
