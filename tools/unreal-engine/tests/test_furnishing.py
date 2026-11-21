@@ -3,7 +3,8 @@
 1. Placement: every exported furniture / appliance / lamp node (`furnishing.items`, zones l1007 and l1007-uteplats) is an
    actor named by its id, within 1 cm of the web's position, its forward / right / up axes within 1 degree of the web's
    (Unreal local X / Y / Z = web local x / z / y) and its scale within 0.1 %. Checked in every level that holds the id:
-   the imported zone levels and any derived level of the world map (world-levels.json) that copies them.
+   the imported zone levels, any derived level of the world map (world-levels.json) that copies them, and the composed
+   world map itself, which must hold every item and textured mesh (the patio is a world sub-level since #2289).
 2. Textures: every furnishing texture the export kept (`furnishing.textures`) is on each of its mesh nodes: the actor's
    bounds centre is within 1 cm of the web's mesh centre and one of its slots is the key's material instance with a
    Texture2D of the exported image's size.
@@ -61,7 +62,7 @@ def texture_sizes(material):
 
 items = {i["id"]: i for i in F["items"]}
 meshes = {m["id"]: (t, m) for t in F["textures"] for m in t["meshes"]}
-levels = list(ZONES.values()) + [l["package"] for l in WORLD["levels"] if l["package"] not in ZONES.values()]
+levels = list(ZONES.values()) + [l["package"] for l in WORLD["levels"] if l["package"] not in ZONES.values()] + [WORLD["map"]]
 placed, shown, errors = {}, {}, []
 for level in levels:
     if not u.EditorAssetLibrary.does_asset_exist(level):
@@ -112,6 +113,9 @@ for level in levels:
             errors.append(f"{mesh_id} ({t['id']} {t['images'] or t['kind']}) in {level}: centre {off:.3f} cm off, materials "
                           f"{[x.get_name() for x in mats]}, textures {sizes}, want {t['keys']} with {want_size}")
     result["levels"][level] = {"items": n_items, "textureMeshes": n_meshes}
+    if level == WORLD["map"] and (n_items, n_meshes) != (len(items), len(meshes)):
+        # the composed world (its sub-levels load with it) holds every furnishing item and textured mesh, patio included
+        errors.append(f"{level} holds {n_items} of {len(items)} furnishing items and {n_meshes} of {len(meshes)} textured meshes")
     log(f"{level}: {n_items} furnishing actors, {n_meshes} textured mesh actors checked")
 
 missing_items = sorted(set(items) - set(placed))

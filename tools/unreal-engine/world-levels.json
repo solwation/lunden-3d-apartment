@@ -21,6 +21,13 @@
       "what": "L1007 walkable collision (wall/floor boxes, stair treads)"
     },
     {
+      "package": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats",
+      "owner": "#2289",
+      "builder": "import_world.py --zones l1007-uteplats",
+      "streaming": "always",
+      "what": "L1007's patio as imported from the web (#2245): paving, fences, screen walls, the hedge, the patio furniture and lamps (#2289)"
+    },
+    {
       "package": "/Game/Lunden/Generated/l1007-entre/Level_l1007-entre",
       "owner": "#2279",
       "builder": "import_world.py --zones l1007-entre",
