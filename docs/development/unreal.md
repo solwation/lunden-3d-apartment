@@ -405,10 +405,14 @@ its own binaries, so the editor and the packaged game load only Epic-signed code
   materials and sub-levels headless (as `build_player.py` and `build_pilot_doors.py` do). The committed `.uasset`
   is the builder's output: review the script diff, regenerate with the lock, commit both. Agents never edit
   assets in the editor GUI.
-- **Builder stamps do not depend on line endings (#2309).** Builders that hash their own script into their stamp
-  or spec hash, and the importer's `material-map.json` hash, normalise CRLF to LF first, and `.gitattributes` keeps
-  `tools/unreal-engine/**/*.py` and `*.json` LF in every checkout. A Windows clone with `core.autocrlf=true` therefore
-  gets the same `--check` result as WSL instead of wanting to resave committed assets.
+- **Builder stamps do not depend on line endings (#2309).** `.gitattributes` keeps `tools/unreal-engine/**/*.py`
+  and `*.json` LF in every checkout, so a Windows clone with `core.autocrlf=true` gets the same `--check` result as
+  WSL instead of wanting to resave committed assets. An existing clone checked out before the rule needs its files
+  re-checked out once (`git rm -r --cached -q tools/unreal-engine && git reset -q --hard`, on a clean tree). Builders
+  whose stamp is local (`build_exterior/l1007/site/vegetation.py`) and the importer's `material-map.json` hash also
+  normalise CRLF to LF before hashing. `build_lighting.py` still hashes its raw bytes, because its spec hash is
+  stored in the committed `BP_LundenSky`: changing it would force a locked rebuild of `/Game/Lunden/Lighting`.
+  Normalise it (`.replace(b"\r\n", b"\n")`) the next time that script changes anyway and its assets are rebuilt.
 - **Python never ships.** The packaged game runs Blueprints and assets only. Editor Python covers import, builders
   and tests (`tools/unreal-engine/tests/test_<area>.py`, run through `PythonAutomationTest` in Play In Editor).
 - **Shared values come from data.** Read measurements, IDs and rules from the #2245 export (`measurements.json`,

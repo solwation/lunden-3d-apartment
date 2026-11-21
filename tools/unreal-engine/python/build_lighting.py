@@ -132,7 +132,7 @@ def spec_of(m):
     boxes, soffit = indoor_boxes(m)
     return {"sky": sky, "boxes": boxes, "soffit": soffit, "lamps": lamp_rows(m), "sunLux": SUN_LUX,
             "exposure": EXPOSURE, "wet": WET_RATE, "skyScale": SKY_SCALE, "fogGrey": FOG_GREY, "ambientRef": AMBIENT_REF, "fog": FOG,
-            "script": hashlib.sha256(Path(__file__).read_bytes().replace(b"\r\n", b"\n")).hexdigest()}  # CRLF-proof (#2309)
+            "script": hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
 
 
 def spec_hash(spec):
