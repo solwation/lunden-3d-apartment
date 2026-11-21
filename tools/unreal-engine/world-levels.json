@@ -103,6 +103,13 @@
       "builder": "build_avatar_looks.py",
       "streaming": "always",
       "what": "the hall mirror (BP_LundenMirror at the glass of src/config.js HALL_WALL.tall): the player's own figure in the current look, seen in it"
+    },
+    {
+      "package": "/Game/Lunden/Generated/fond/Level_fond",
+      "owner": "#2323",
+      "builder": "import_world.py --zones fond",
+      "streaming": "always",
+      "what": "the backdrop houses and land round the quarter as imported from the web: the west, north, east (campus) and south backdrops, the edge's houses and land beyond the terrain, HepCat, the clock tower's hands and Nordic Wellness's lettering"
     }
   ]
 }
