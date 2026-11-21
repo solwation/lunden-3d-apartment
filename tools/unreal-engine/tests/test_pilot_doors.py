@@ -46,6 +46,12 @@ def operate():
         doors = {str(h.tags[0]).removeprefix("pilot-door:"): h for h in hinges}
         if len(doors) != 10:
             raise RuntimeError(f"Expected ten imported swing doors, found {len(doors)}")
+        for door_id, actor in doors.items():
+            if str(actor.get_editor_property("Id")) != door_id or actor.get_editor_property("Seconds") <= 0:
+                raise RuntimeError(f"Missing swing-door identity or duration on {door_id}")
+            for endpoint in ("OpenLocation", "ClosedLocation"):
+                if (actor.get_editor_property(endpoint) - actor.get_actor_location()).length() > 0.01:
+                    raise RuntimeError(f"{door_id} {endpoint} differs from its placed hinge")
         hinge = doors[ENTRANCE]
         leaf, = [a for a in hinge.get_attached_actors() if a.actor_has_tag(ENTRANCE)]
         box, = [a for a in hinge.get_attached_actors() if a.actor_has_tag("pilot-door-leaf:" + ENTRANCE)]

@@ -1,4 +1,4 @@
-"""Build the content-only pilot's playable door Blueprints and derived L1007 sublevel using the stock editor."""
+"""Build the pilot's L1007 door sublevel with the versioned Lunden interactable."""
 import json
 import math
 from pathlib import Path
@@ -8,7 +8,7 @@ import unreal as u
 ASSETS = u.EditorAssetLibrary
 BP = u.BlueprintEditorLibrary
 GRAPH = u.BlueprintGraphEditor
-DIR = "/Game/Lunden/Blueprints/PilotDoors"
+DOOR = "/Game/Lunden/Blueprints/PilotDoors/BP_LundenSwingDoor.BP_LundenSwingDoor_C"
 SOURCE = "/Game/Lunden/Generated/l1007/Level_l1007"
 TARGET = "/Game/Lunden/Generated/PilotDoors/Level_l1007_doors"
 
@@ -49,43 +49,6 @@ def compile_save(bp, graph):
     BP.compile_blueprint(bp)
     if graph.list_nodes_with_errors() or not ASSETS.save_loaded_asset(bp, only_if_is_dirty=False):
         raise RuntimeError("Failed to compile/save " + bp.get_name())
-
-
-def door_class():
-    door, fresh = blueprint(DIR + "/BP_LundenSwingDoor", u.Actor)
-    if not fresh:
-        return door.generated_class()
-    graph = GRAPH.get_graph_editor_by_name(door, "EventGraph")
-    for name, typ in [("OpenRotation", BP.get_struct_type(u.Rotator.static_struct())),
-                      ("ClosedRotation", BP.get_struct_type(u.Rotator.static_struct())),
-                      ("TargetOpen", BP.get_basic_type_by_name("bool"))]:
-        if not BP.add_member_variable(door, name, typ):
-            raise RuntimeError("Could not create " + name)
-        BP.set_blueprint_variable_instance_editable(door, name, True)
-    BP.compile_blueprint(door)
-    toggle = pos(graph.add_custom_event_node("ToggleDoor"), 0, 0)
-    read = pos(graph.add_get_member_variable_node("TargetOpen"), 0, 180)
-    flip = call(graph, "KismetMathLibrary:Not_PreBool", 225, 180)
-    connect(read, "TargetOpen", flip, "A")
-    write = pos(graph.add_set_member_variable_node("TargetOpen"), 450, 0)
-    connect(toggle, "then", write, "execute")
-    connect(flip, "ReturnValue", write, "TargetOpen")
-    pick = call(graph, "KismetMathLibrary:SelectRotator", 740, 250)
-    for index, (name, pin) in enumerate((("OpenRotation", "A"), ("ClosedRotation", "B"), ("TargetOpen", "bPickA"))):
-        read = pos(graph.add_get_member_variable_node(name), 450, 250 + index * 90)
-        connect(read, name, pick, pin)
-    root = call(graph, "Actor:K2_GetRootComponent", 740, 480)
-    location = call(graph, "Actor:K2_GetActorLocation", 740, 590)
-    move = call(graph, "KismetSystemLibrary:MoveComponentTo", 1030, 0)
-    connect(write, "then", move, "Move")
-    connect(root, "ReturnValue", move, "Component")
-    connect(location, "ReturnValue", move, "TargetRelativeLocation")
-    connect(pick, "ReturnValue", move, "TargetRelativeRotation")
-    value(move, "OverTime", 1 / 1.8)  # src/doors.js SPEED * 0.6
-    for name in ("bEaseIn", "bEaseOut", "bForceShortestRotationPath"):
-        value(move, name, "true")
-    compile_save(door, graph)
-    return door.generated_class()
 
 
 def controller_class(door, path):
@@ -186,8 +149,14 @@ def build_level(door, measurements):
             raise RuntimeError(f"Unexpected initial pose {entry['id']}: {heading}")
         hinge = actors.spawn_actor_from_class(door, pivot, yaw(heading))
         hinge.set_actor_label(entry["id"] + " hinge")
-        hinge.tags = [u.Name("pilot-door:" + entry["id"])]
+        hinge.tags = [u.Name("pilot-door:" + entry["id"]), u.Name("interact:" + entry["id"]), u.Name("kind:move")]
         hinge.root_component.set_mobility(u.ComponentMobility.MOVABLE)
+        hinge.set_editor_property("Id", entry["id"])
+        hinge.set_editor_property("Kind", 0)  # BP_LundenSwingDoor's moving door/window
+        hinge.set_editor_property("ClosedLocation", pivot)
+        hinge.set_editor_property("OpenLocation", pivot)
+        # Original #2246 pilot exports predate the per-door duration.
+        hinge.set_editor_property("Seconds", entry.get("seconds", 1 / 1.8))
         hinge.set_editor_property("OpenRotation", yaw(opened))
         hinge.set_editor_property("ClosedRotation", yaw(closed))
         hinge.set_editor_property("TargetOpen", near(heading, opened))
@@ -218,4 +187,7 @@ def build_level(door, measurements):
 
 if __name__ == "__main__":
     # The door controller moved to /Game/Lunden/Player/BP_LundenPlayerController (#2284); build_player.py builds it.
-    build_level(door_class(), sys.argv[1])
+    door = u.load_class(None, DOOR)
+    if not door:
+        raise RuntimeError("Restore the versioned interactable from Git LFS before building the pilot: " + DOOR)
+    build_level(door, sys.argv[1])
