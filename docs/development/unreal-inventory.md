@@ -224,9 +224,20 @@ levels and builder scripts. Shared text files (`world-levels.json`, `player-exte
 | G16 (1/2) | #2292 Shared world: connection, presence and movement | `Network/` except `Network/Shared/`; wire fixtures in `tools/unreal-engine/wire/`; sole writer of additive `cloudflare/players.js` changes | WebSocket check (see the risk above); #2284, #2288, #2290 |
 | G16 (2/2) | #2293 Shared world: chat, doors, hits and life | `Network/Shared/` (chat widget, door sync, life component) | #2292, #2285, #2286 |
 
-The first wave after #2246 is #2278, #2282, #2284 and the WebSocket check in #2292. The dependency graph below
-controls the rest. Later and Not applicable groups have no issues yet. Their issues are created when release 1 is
-done or when the owner promotes a group.
+The first wave after #2246 comprised #2278, #2282, #2284 and the WebSocket check in #2292.
+The [release-1 boundary](#release-1-boundary) and [dependency graph](#dependency-graph) describe that release.
+
+## Full port after release 1
+
+The [full-port tracker and its sub-issues](https://github.com/solwation/lunden-3d-apartment/issues/2327) cover the
+Later groups, remaining behaviour in partially ported groups, and gaps found in earlier deliveries. Its group table
+links each area to implementation or evidence. The tracker also covers player-facing features wired through
+`main.js` or grouped with infrastructure, such as the fridge notes and freezer changelog. Browser startup, touch
+input on the web and the two engines' test harnesses keep their platform-specific implementations.
+
+The final checks use a signed, installed Windows build and the published desktop and mobile web clients. They cover
+a shared session, saved progress across an update, and representative visual, audio and interaction comparisons.
+The tracker records the tested revisions, outstanding differences and any agreed platform exceptions.
 
 ## Keeping Unreal in step with the web (#2304)
 
@@ -239,8 +250,10 @@ need nothing.
 
 ### Affected Later groups
 
-A web change in a Later group stays web-only. Add or update one row here so the group's future porting issue starts
-from the current web behaviour; the row is removed when that porting issue is created.
+A web change in a Later group stays web-only at this stage. Record the group, web issue, revision and behaviour
+here under the existing carry-over rule. Link the matching open porting issue in
+[the full-port tracker](https://github.com/solwation/lunden-3d-apartment/issues/2327) and carry that evidence
+into its acceptance. Remove the row once the information is recorded in the porting issue.
 
 | Group | Web issue / commit | What changed |
 |---|---|---|
