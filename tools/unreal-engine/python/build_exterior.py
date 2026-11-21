@@ -1,4 +1,5 @@
-"""#2279: build the walkable collision of Hus L's stairwell and the garage for the world map from the #2245 import.
+"""#2279/#2302: build the player collision of the buildings (Hus L's stairwell, the garage, and since #2302 the façades
+of Hus L, A, B and C) for the world map from the #2245 import.
 
     run-python.ps1 tools/unreal-engine/python/build_exterior.py [--force]
 
@@ -8,12 +9,16 @@ which compose_world.py streams next to them:
 
 - a collision copy of every imported mesh of Hus L's stairwell (export `source` src/core.js: walls, flights, landings,
   the lift shaft), of Hus A/B/C's stairwells, which open onto the garage on våning −1 (src/corehouse.js; their doors
-  stay as exported, closed), and of the garage (src/garage.js: floor, walls, ramps, doors), placed on the imported actor's transform
+  stay as exported, closed), of the garage (src/garage.js: floor, walls, ramps, doors), and (#2302) of the buildings'
+  outsides: Hus L's façades, loftgång, roofs, terraces, the neighbours' patios and the portik (src/exterior.js) and Hus
+  A/B/C's façades, loggias and roofs (src/surroundings.js), placed on the imported actor's transform
   and hidden in game. Each copy is complex-as-simple with double-sided triangles and Nanite off, so the capsule follows
   the full mesh: the imported meshes have no simple shapes (their complex collision was also single-sided until
   importer version 6, #2299, and the simplified Nanite fallback until version 5, #2298). Copies leave the imported
   meshes alone;
-- not the portik's glazed door leaf into the stairwell (doors that open are #2285), so the way in stays open.
+- not the portik's glazed door leaf into the stairwell (doors that open are #2285), so the way in stays open. The
+  façade meshes keep the web's openings: the portik stays a through-passage and the garage door's opening in the box
+  stays as garage.js has it (tests/test_facades.py).
 
 The street from START west to the portik and the portik's floor are the ground's collision level (build_site.py,
 #2280), which replaced the provisional street-level boxes this builder placed until then.
@@ -31,8 +36,9 @@ import unreal as u
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from prepare_nanite_materials import static_mesh_editor  # noqa: E402  set_editor_property leaves the fallback (#2297)
 
-SOURCES = {"hus-l": ("/Game/Lunden/Generated/hus-l/Level_hus-l", {"source:src/core.js"}),
-           "kvarteret": ("/Game/Lunden/Generated/kvarteret/Level_kvarteret", {"source:src/garage.js", "source:src/corehouse.js"})}
+SOURCES = {"hus-l": ("/Game/Lunden/Generated/hus-l/Level_hus-l", {"source:src/core.js", "source:src/exterior.js"}),
+           "kvarteret": ("/Game/Lunden/Generated/kvarteret/Level_kvarteret",
+                         {"source:src/garage.js", "source:src/corehouse.js", "source:src/surroundings.js"})}
 FOLDER = "/Game/Lunden/Generated/ExteriorWorld"
 TARGET = FOLDER + "/Level_exterior_collision"
 TAGS = ["kind:collision", "derived:exterior-collision"]
@@ -161,7 +167,7 @@ def main(argv):
         stamp_path.write_text(json.dumps({"inputs": wanted, "files": files}, indent=1, sort_keys=True) + "\n",
                               encoding="utf-8")
         u.log(f"LUNDEN_EXTERIOR_BUILD {TARGET}: {len(meshes)} collision actors from {copies} mesh copies "
-              f"(stairwells and garage), door leaf left open ({len(skipped)} parts: {skipped}), "
+              f"(stairwells, garage and façades), door leaf left open ({len(skipped)} parts: {skipped}), "
               f"{len(files)} packages")
     u.log("LUNDEN_EXTERIOR_BUILD_OK")
 

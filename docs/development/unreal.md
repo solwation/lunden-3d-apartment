@@ -76,8 +76,9 @@ tools/unreal-engine/python/compose_world.py   composes /Game/Lunden/Maps/L_Lunde
 tools/unreal-engine/python/build_l1007.py     L1007's derived collision sub-level Generated/L1007World/ (from the l1007 import)
 tools/unreal-engine/tests/test_l1007.py       PIE test on L_Lunden: sub-levels, 1 cm measurements, START → stairs → back
 tools/unreal-engine/tests/capture_l1007.py    GPU views of L_Lunden from the shared camera list (temporary light, nothing saved)
-tools/unreal-engine/python/build_exterior.py  Hus L's stairwell and the garage as walkable collision, Generated/ExteriorWorld/ (#2279)
+tools/unreal-engine/python/build_exterior.py  Hus L's stairwell, the garage and the façades of Hus L/A/B/C as collision, Generated/ExteriorWorld/ (#2279, #2302)
 tools/unreal-engine/tests/test_exterior_route.py  PIE route on L_Lunden: START → portik → stairwell → våning −1 → garage (#2279)
+tools/unreal-engine/tests/test_facades.py      PIE on L_Lunden: the façades of Hus L, A, B and C stop the player; portik and garage drive open (#2302)
 tools/unreal-engine/python/build_site.py     the ground's walkable collision (terrain, streets, paths), Generated/SiteWorld/ (#2280)
 tools/unreal-engine/tests/test_site.py       PIE test on L_Lunden: ground height at 17 control points (5 cm), START → courtyard → Höje å (#2280)
 tools/unreal-engine/python/build_vegetation.py  the site's trees, shrubs and hedges as foliage with wind: /Game/Lunden/Vegetation/ materials,
@@ -1965,8 +1966,17 @@ of the portik's glazed door leaf, which stays open until #2285), of Hus A/B/C's 
 våning −1 (src/corehouse.js; their door leaves stay closed as exported), and of the garage (src/garage.js), each with
 double-sided triangles and Nanite off on the copy (so neither #2298 nor #2299 applies to it), hidden in game on the
 imported actor's transform. The street west to the portik and the portik's floor are `build_site.py`'s ground
-collision since #2280, which removed the two provisional street-level boxes placed here before. Hus L's façades and
-Hus A/B/C's façades have no collision yet: the player can now walk up to them on #2280's ground and through them.
+collision since #2280, which removed the two provisional street-level boxes placed here before. Since #2302 the same
+builder also copies the buildings' outsides: Hus L's façades, loftgång, roofs, terraces, the neighbours' patios and the
+portik (`source` src/exterior.js, 130 actors, 74 meshes, about 110k triangles) and Hus A/B/C's façades, loggias and
+roofs (src/surroundings.js, 19 actors and meshes, about 46k triangles): 522 actors from 376 mesh copies in all. The
+copies keep the web's openings, so Hus L's portik stays a through-passage; the garage door and the A/B/C entrances keep
+the closed leaves and glazing of the garage and stairwell copies (blocking since #2279; doors that open are #2285).
+Hus L's visitable flats (src/world.js visitFlatParts) get no copy. `tests/test_facades.py` (PIE on `L_Lunden`) places
+the character 2.5 m outside each of the export's 16 façade and gable rays (four per house) and walks it towards a point
+6 m inside: before #2302 it got inside at 15 of 16 points, now it stops at all 16 (22–30 cm before the ray's
+façade point, 1.6 m past it under Hus C's south loggias), and the portik and the drive up to the garage door stay
+passable: see the [#2302 verification](../verification/2302/README.md).
 The skip rule is `build_l1007.py`'s (both import fingerprints, the script, the output packages).
 `tests/test_exterior_route.py` (PIE on `L_Lunden`) walks START → street → portik → through the stairwell door →
 landing → passage → down the flight to våning −1 → through the basement opening into the garage under Hus L, each
@@ -2006,7 +2016,8 @@ road bridge's asphalt, the timber bridge, the bus platform and world.js's level 
 portik; 31 nodes) and writes `Generated/SiteWorld/Level_site_collision`: a complex-as-simple, double-sided copy of
 each mesh with Nanite off (so neither #2298 nor #2299 applies), hidden in game on the imported actor's transform.
 The water surface, kerbs, street furniture and parked cars get none. It replaced the provisional street ground of
-`build_l1007.py` (#2278) and `build_exterior.py` (#2279). Hus L's and Hus A/B/C's façades still have no collision.
+`build_l1007.py` (#2278) and `build_exterior.py` (#2279). The façades of Hus L and Hus A/B/C are `build_exterior.py`'s
+since #2302.
 
 **Control points and route.** `groundProbes` in `export-scene.js` defines ten `elevation` points, on terrain-mesh
 vertices where the web's terrain is `data/elevation.json` itself (src/surroundings.js `elevationWeight` 1), and seven
