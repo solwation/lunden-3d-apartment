@@ -33,3 +33,12 @@ landing (350.7, 615.96, 419.65) → downstairs → patio (147.02, 1417.07, 94.65
 
 The first fall test measured the 2.9 m drop as 272.92 cm: the round capsule bottom sank down the ledge before the
 character fell. Flat-base floor checks fixed it (`unreal.md`, Player).
+
+**Packaged Development run** (`RunUAT BuildCookRun -clientconfig=Development -map=/Game/Lunden/Maps/L_Lunden`, default
+map set only in the local staging copy; `BUILD SUCCESSFUL`). Smart App Control blocks the unsigned staged
+`Lunden.exe`, so the run used the Epic-signed `Engine/Binaries/Win64/UnrealGame.exe` with the project argument,
+`-RenderOffScreen`, hidden, stopped after 30 s. The log shows `LoadMap: /Game/Lunden/Maps/L_Lunden`, `Game class is
+'BP_LundenGameMode_C'`, a possessed `BP_LundenPlayer_C` with `Lives = 10`, `MaxLives = 10`, `MaxWalkSpeed = 160`,
+`BP_LundenPlayerController_C` with `EnhancedPlayerInput`, and no errors. W and Shift were injected with the Enhanced
+Input console commands (`Input.+key`), which gave no error. The run did not record their effect. Real mouse and
+keyboard on a visible window were not exercised: that needs a desktop window, which agents do not open.
