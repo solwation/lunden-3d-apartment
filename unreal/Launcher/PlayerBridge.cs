@@ -71,18 +71,21 @@ internal sealed class PlayerBridge : IAsyncDisposable
         string input = Path.Combine(DirectoryPath, "game.csv");
         string output = Path.Combine(DirectoryPath, "peers.csv");
         string temporary = output + ".tmp";
-        DateTime lastInput = DateTime.MinValue;
+        string pending = Path.Combine(DirectoryPath, "reading.csv");
         string? lastOutput = null;
         var ct = stop.Token;
         while (!ct.IsCancellationRequested)
         {
             try
             {
-                var file = new FileInfo(input);
-                if (file.Exists && file.Length is > 0 and <= 4096 && file.LastWriteTimeUtc != lastInput)
+                // UE opens game.csv for exclusive write on Windows. Move a finished export before
+                // reading so that the next tick can create a fresh game.csv even while we're parsing.
+                if (File.Exists(input)) File.Move(input, pending, true);
+                var file = new FileInfo(pending);
+                if (file.Exists && file.Length is > 0 and <= 4096)
                 {
                     string? packet;
-                    using (var stream = new FileStream(input, FileMode.Open, FileAccess.Read, FileShare.Read | FileShare.Delete))
+                    using (var stream = new FileStream(pending, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete))
                         packet = PresencePacket.Read(stream);
                     string? snapshot = null;
                     if (packet == "away")
@@ -102,7 +105,7 @@ internal sealed class PlayerBridge : IAsyncDisposable
                             File.Move(temporary, output, true);
                             lastOutput = snapshot;
                         }
-                        lastInput = file.LastWriteTimeUtc;
+                        File.Delete(pending);
                     }
                 }
             }
@@ -122,7 +125,7 @@ internal sealed class PlayerBridge : IAsyncDisposable
         await room.DisposeAsync();
         try
         {
-            foreach (string file in new[] { "game.csv", "peers.csv", "peers.csv.tmp" })
+            foreach (string file in new[] { "game.csv", "peers.csv", "peers.csv.tmp", "reading.csv" })
                 File.Delete(Path.Combine(DirectoryPath, file));
             Directory.Delete(DirectoryPath);
         }
