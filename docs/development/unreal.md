@@ -79,6 +79,12 @@ tools/unreal-engine/python/build_exterior.py  Hus L's stairwell and the garage a
 tools/unreal-engine/tests/test_exterior_route.py  PIE route on L_Lunden: START → portik → stairwell → våning −1 → garage (#2279)
 tools/unreal-engine/python/build_site.py     the ground's walkable collision (terrain, streets, paths), Generated/SiteWorld/ (#2280)
 tools/unreal-engine/tests/test_site.py       PIE test on L_Lunden: ground height at 17 control points (5 cm), START → courtyard → Höje å (#2280)
+tools/unreal-engine/python/build_vegetation.py  the site's trees, shrubs and hedges as foliage with wind: /Game/Lunden/Vegetation/ materials,
+                                   Generated/VegetationWorld/ (mesh copies, foliage types, Level_vegetation_foliage) (#2281)
+tools/unreal-engine/tests/test_vegetation.py  PIE test on L_Lunden: every exported tree (trunk ≤ 10 cm, height class) and hedge (#2281)
+tools/unreal-engine/tests/capture_vegetation.py  GPU views of L_Lunden with every listed sub-level streamed in memory (nothing saved)
+tools/unreal-engine/tests/prepare_vegetation_profile.py  scratch map for the courtyard frame-time measurement (#2281)
+unreal/Lunden/Content/Lunden/Vegetation/      M_LundenFoliage, MI_LundenLeaf (LFS; made by build_vegetation.py)
 tools/unreal-engine/tests/test_exterior.py    PIE test: the export's 32 measurement rays through Hus L, A/B/C and the garage, 1 cm (#2279)
 tools/unreal-engine/tests/capture_exterior.py GPU views of L_Lunden with the #2279 zones streamed in memory (nothing saved)
 unreal/Lunden/Content/Lunden/Maps/L_Lunden.umap  the persistent world map (LFS); written only by compose_world.py
@@ -433,6 +439,7 @@ open the map (see [Parallel work](#parallel-work-levels-and-blueprints)).
 | `/Game/Lunden/Generated/omgivning/Level_omgivning` | #2280 (importer output) | `import_world.py --zones omgivning` | terrain, streets, pavements, parked cars, street furniture, the Höje å valley with paths, bridges and water surface |
 | `/Game/Lunden/Generated/SiteWorld/Level_site_collision` | #2280 | `build_site.py` | walkable ground collision of `l1007-entre`, `gard` and `omgivning` (complex-as-simple full-mesh copies) |
 | `/Game/Lunden/Generated/Lighting/Level_lighting` | #2283 | `build_lighting.py` | `BP_LundenSky` (sun, moon, sky, fog, clouds, weather) and 36 `BP_LundenLamp`s tagged `lamp:<id>` ([Lighting](#lighting-sky-and-weather-2283)) |
+| `/Game/Lunden/Generated/VegetationWorld/Level_vegetation_foliage` | #2281 | `build_vegetation.py` | the site's trees, shrubs, courtyard plantings and vines, river bank growth and entrance boxwood as foliage instances with wind; a copy of L1007's patio hedge |
 
 `world-levels.json` format (version 1): `map`, `gameMode` (class path; #2284's `BP_LundenGameMode` since 2026-11-21), `playerStart` (always `measurements.json#/spawn/start`) and `levels`, an ordered list of
 `{package, owner, builder, streaming, what}`. `streaming` is `always` (`LevelStreamingAlwaysLoaded`) for now; add a
@@ -1638,7 +1645,7 @@ the bus stop, street signs). Both are split zones listed after #2279's, so `l100
 L1007 and `kvarteret` the box walls; a merged mesh held by a later zone's box is still cut where it overlaps an
 earlier split zone that takes it. All earlier GLBs stay byte-identical. `skip` (`SITE_SKIP` in `export-scene.js`)
 leaves out what other issues own: vegetation for #2281 (trees, shrubs, pergola vines, hedges, shore growth, any
-leaf-material mesh, the autumn's fallen leaves), the backdrop houses and the land beyond the terrain, the east campus
+leaf-material mesh, the autumn's fallen leaves; since #2281 in the zone `vegetation`, [below](#vegetation-trees-shrubs-and-hedges-2281)), the backdrop houses and the land beyond the terrain, the east campus
 car parks, school yards and the football site, the boule balls, the web's `… far` stand-ins and L1007's own outdoor
 furniture (G11). Their material keys stay on Interchange's default instances (`material-map.json` is #2282's; its
 `scope` does not list these zones yet).
@@ -1674,6 +1681,57 @@ elevation grid or the drawn terrain, and against the export's own hit on the sam
 bounds against its visible actor, and walks the route START → street → ramp → courtyard → back → Sankt Lars väg → park
 level → shore path → Höje å valley, each checkpoint within 20 cm of the web's surface. The drawn terrain lies 1 cm under
 the elevation grid on purpose (src/surroundings.js `terrainSurface`). Results: [#2280 verification](../verification/2280/README.md).
+
+### Vegetation: trees, shrubs and hedges (#2281)
+
+**Zone.** `vegetation` (last in `zoneTable`, so every earlier GLB stays byte-identical) takes, with `only: VEGETATION`,
+what #2280's `SITE_SKIP` leaves out as vegetation: the site's `tree-trunks|birches|crowns <cell>` InstancedMeshes (one
+node per trunk and per crown lobe), the river park's understory and the pavement shrubs (lobes in the same batches), the
+courtyard plantings and pergola vines, the river bank's growth and the entrance boxwood. Never the web's `… far` LOD
+stand-ins, the backdrop's woodland, fallen leaves or furniture. Hus L's patio hedges and the entrance plants stay in
+`hus-l`, L1007's own patio hedge in `l1007-uteplats`. At `3c071946`: 4,164 nodes, 341,074 triangles, 2.5 MB, six
+shared meshes (crown lobe 3,129 instances, trunk 812, birch trunk 15, courtyard lobe 205, shore growth 1, boxwood 1).
+
+**Measurements.** `measurements.json` `vegetation` (`export-scene.js vegetationData`) lists every exported tree: a
+foot of `src/surroundings.js` `treeFeet` whose trunk instance is exported (507: all of them), with its crown radius
+(`aoTrees`), its lobes (each lobe goes to the tree whose foot is horizontally nearest in crown radii, within 1.5), its
+height (the highest top of the trunk's and its lobes' boxes above the foot) and `heightClass = round(height / 2 m)`;
+and every hedge in any zone (`patio-hedge`/`boxwood` by object or material name; 9: Hus L's seven, L1007's, the
+boxwood) with box centre, size and `heightClass = round(height / 0.25 m)`. `look` carries the leaf keys, the export
+month's darkest and lightest leaf colour (`SEASON.trees`, `src/seasons.js`'s per-tree spread) and `SITE_WIND`.
+
+**Builder.** `build_vegetation.py` (after `import_world.py --zones vegetation,l1007-uteplats`):
+
+- `/Game/Lunden/Vegetation/` (versioned, LFS): `M_LundenFoliage`, two-sided and masked, colour between `LeafDark` and
+  `LeafLight` per instance (`PerInstanceRandom`, as the web gives every tree its own tone) times the vertex AO; its
+  opacity mask draws the leaf atlas's cut-out procedurally in the cards' UVs (the canvas atlas does not travel: cell
+  (1, 0) is the opaque core, the others round clusters of small pointed leaves thinning to the edge); its world position
+  offset sways after `src/sitewind.js` (direction, gust envelope, flutter, clamped to `maxDisplacement`).
+  `MI_LundenLeaf` takes the numbers from `look`; `Power` 0.5 is a *guess* until a weather drives it. Spec-hash skip as
+  `build_materials.py` (`Lunden.SpecHash`); lock both `.uasset` before a build that changes them.
+- `Generated/VegetationWorld/` (not versioned, cleared on disk at each build): a copy of each imported vegetation mesh
+  with Nanite off (#2298) and `MI_LundenLeaf` on the `look.leafKeys` slots, one `FoliageType_InstancedStaticMesh` per
+  copy, and `Level_vegetation_foliage`: an `InstancedFoliageActor` with one instance per imported actor
+  (`InstancedFoliageActor.add_instances`), plus a tagged `StaticMeshActor` copy of each hedge whose zone level
+  world-levels.json does not stream (L1007's patio hedge). `vegetation-index.json` records each copy's role and count.
+  The mesh names carry the role (`SM_Veg_trunk_*`, `SM_Veg_crown_*`, `SM_Veg_hedge_*`, `SM_Veg_other_*`).
+- The trees have no collision yet (the web blocks on trunks; later). The courtyard perennials keep Interchange's
+  instance and do not sway.
+- **Folder (decision, can be overturned in one sentence):** the issue planned `Maps/Zones/Vegetation`; the level is
+  generated from the import like #2278–#2280's derived levels, references unversioned meshes and would store a new LFS
+  copy at every export change, so it lives in `Generated/VegetationWorld/`. Only the two materials are versioned.
+
+**Grass.** The web has no grass geometry: its lawns are the ground meshes with `src/grass.js`'s seasonal detail texture,
+which #2280's zones import with Interchange's green instance. A lawn look is a `material-map.json` rule (#2282's file)
+for the lawn keys; not done here.
+
+```text
+copy tools\unreal-engine\tests\test_vegetation.py unreal\Lunden\Content\Python\   (untracked copy, delete afterwards)
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/build_vegetation.py [--force | --check]
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-tests.ps1 -Filter Editor.Python.Lunden.test_vegetation
+```
+
+Results, pictures and the courtyard frame-time measurement: [#2281 verification](../verification/2281/README.md).
 
 ### Generated assets: rebuilt, not versioned (decided)
 

@@ -75,6 +75,13 @@
       "builder": "build_lighting.py",
       "streaming": "always",
       "what": "the sky and the clock (BP_LundenSky: sun and moon after the web's daycycle.js/moon.js, atmosphere, sky light, fog, clouds, rain/snow/wet post process) and one BP_LundenLamp per exported light, tagged lamp:<id>"
+    },
+    {
+      "package": "/Game/Lunden/Generated/VegetationWorld/Level_vegetation_foliage",
+      "owner": "#2281",
+      "builder": "build_vegetation.py (after import_world.py --zones vegetation,l1007-uteplats)",
+      "streaming": "always",
+      "what": "the site's trees (trunks and crown lobes), understory and pavement shrubs, courtyard plantings and pergola vines, the river bank's growth and the entrance boxwood as foliage instances with wind, plus a copy of L1007's patio hedge (its zone is not streamed)"
     }
   ]
 }

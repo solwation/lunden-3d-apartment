@@ -208,7 +208,7 @@ levels and builder scripts. Shared text files (`world-levels.json`, `player-exte
 | G01 (1/2) | #2278 L1007 both storeys and the world map | `Maps/L_Lunden` (via `compose_world.py`), `Buildings/L1007/`, `Generated/L1007World/` (not `L1007/`: case-insensitive paths would make it the importer's `l1007/`); owns the format of `world-levels.json`; keeps `Maps/Pilot_L1007` as a test map | #2246 |
 | G01 (2/2) | #2279 Hus L, Hus A/B/C, stairwells and garage as static shells | `Buildings/Exterior/`, `Maps/Zones/HusL`, `Maps/Zones/Kvarteret`; the exporter's zone split | #2278 |
 | G02 | #2280 Terrain, streets, courtyard and river valley | `Site/`, `Maps/Zones/Gard`, `Maps/Zones/Omgivning` | #2279 (export split), #2278 |
-| G03 | #2281 Trees, hedges and grass | `Vegetation/`, `Maps/Zones/Vegetation` | #2280 |
+| G03 | #2281 Trees, hedges and grass | `Vegetation/`, `Generated/VegetationWorld/` (not `Maps/Zones/Vegetation`: derived from the import like #2278–#2280's levels) | #2280 |
 | G04 | #2282 Surface materials | `Materials/` (including `M_LundenWallPaint`), order of `material-map.json` | #2246 |
 | G05 | #2283 Day light, sky and simulated weather | `Lighting/`, generated `Generated/Lighting/Level_lighting` (sun, sky, weather, lamp lights with id tags) | #2278 (#2280 for outdoors) |
 | G06 | #2284 Player movement and collision | `Player/` (character, GameMode, PlayerController, movement input; takes over `Blueprints/Pilot/` after #2246); owns the format of `player-extensions.json` | #2246, #2278 |

@@ -10,7 +10,7 @@ import * as THREE from 'three';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 import * as C from '../../src/config.js';
 import { buildWorld } from '../../src/world.js';
-import { groundY, renderedTerrainY } from '../../src/surroundings.js';
+import { groundY, renderedTerrainY, treeFeet, aoTrees } from '../../src/surroundings.js';
 import { gridGround } from '../../src/elevation.js';
 import { leafMaterial, windLeafMaterial } from '../../src/foliage.js';
 import { stairRise, stairRiser, N_TREADS } from '../../src/stairs.js';
@@ -55,12 +55,21 @@ export function zoneTable(W, D, patio, husL = husLLayout(W)) {
     { id: 'omgivning', what: 'terrain, streets, pavements, parked cars, street furniture, the Höje å valley with its paths, bridges and water surface (#2280)',
       status: 'exported', split: true, from: ['world', 'surroundings', 'surroundings-site'], skip: SITE_SKIP,
       box: { x0: C.SITE.backgroundGround.x0, x1: C.SITE.backgroundGround.x1, z0: C.SITE.backgroundGround.z0, z1: C.SITE.backgroundGround.z1, y0: -30, y1: 40 } },
+    // #2281: the vegetation #2280's zones leave out (SITE_SKIP): the site's trees (trunks and crown lobes, one node per
+    // instance), the understory and pavement shrubs, the courtyard plantings and pergola vines, the river bank's growth,
+    // the entrance boxwood and the hedges. `only` keeps every other object out; not split (instances and plantings are
+    // whole objects). Listed last so every earlier zone's GLB and ids stay byte-identical. Hus L's patio hedges and the
+    // entrance plants stay in `hus-l`, L1007's own patio hedge in `l1007-uteplats` (their zones took them first).
+    { id: 'vegetation', what: 'trees, shrubs, courtyard plantings and vines, river bank growth, entrance boxwood and hedges of the site (#2281)',
+      status: 'exported', from: ['world', 'surroundings', 'surroundings-site'], only: VEGETATION,
+      box: { x0: C.SITE.backgroundGround.x0, x1: C.SITE.backgroundGround.x1, z0: C.SITE.backgroundGround.z0, z1: C.SITE.backgroundGround.z1, y0: -30, y1: 60 } },
   ];
 }
 
 /** Builders whose objects only split zones with a matching `from` may take (main.js adds them; the l1007 zones never). */
 const EXTRA_GROUPS = new Set(['garage', 'core-l', 'core-abc']);
-const accepts = (z, group, atom) => (z.from ? z.from.includes(group) : !EXTRA_GROUPS.has(group)) && !(z.skip && atom && z.skip.test(atom));
+const accepts = (z, group, atom) => (z.from ? z.from.includes(group) : !EXTRA_GROUPS.has(group)) && !(z.skip && atom && z.skip.test(atom))
+  && !(z.only && !(atom && z.only.test(atom))); // #2281: a zone with `only` takes nothing else
 /** `source` of the buildings' static geometry (#2279): the builder module, as no single data row describes a merged mesh. */
 const GROUP_SOURCE = { exterior: 'src/exterior.js', visit: 'src/world.js (visitFlatParts)', 'core-l': 'src/core.js', 'core-abc': 'src/corehouse.js',
   garage: 'src/garage.js', surroundings: 'src/surroundings.js', 'surroundings-site': 'src/surroundings.js' };
@@ -80,6 +89,21 @@ const SITE_SKIP = { test({ object: o, kind }) {
   const ms = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : [];
   return ms.some((m) => m === leafMaterial() || m === windLeafMaterial().material);
 }, toString: () => `${SITE_SKIP_NAME}, a leaf material (src/foliage.js), fallen leaves or furniture` };
+/** #2281: the vegetation part of what SITE_SKIP leaves out, by the name of the object or one of its parents (the site's
+ *  `tree-crowns|trunks|birches <cell>` batches, the courtyard plantings, the river bank's growth, the entrance boxwood,
+ *  hedges) or a leaf material (src/foliage.js: pergola vines, perennials); never the web's `… far` LOD stand-ins, the
+ *  backdrop's woodland beyond the terrain, fallen leaves or furniture. */
+const VEGETATION_NAME = /^(tree-crowns|tree-trunks|tree-birches|courtyard-shrubs|park-shore-growth|front-boxwood)|hedge/;
+const BACKDROP_NAME = /^(south-|east-|west-|north-|edge-|hepcat-|school-|football)| far$/;
+const VEGETATION = { test({ object: o, kind }) {
+  if (kind === 'furniture') return false;
+  if (o.isInstancedMesh && o.geometry?.type === 'CircleGeometry') return false; // fallen leaves
+  let named = false;
+  for (let q = o; q; q = q.parent) { const n = q.name ?? ''; if (BACKDROP_NAME.test(n)) return false; if (VEGETATION_NAME.test(n)) named = true; }
+  if (named) return true;
+  const ms = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : [];
+  return ms.some((m) => m === leafMaterial() || m === windLeafMaterial().material);
+}, toString: () => `${VEGETATION_NAME} or a leaf material (src/foliage.js), not ${BACKDROP_NAME}, fallen leaves or furniture` };
 /** #2280: the walkable ground among the exported nodes (by the web mesh's name; also unnamed level plates, see the
  *  ground block in exportWorld): build_site.py gives these complex collision in its derived level; the water surface,
  *  kerbs, street furniture and cars stay without. */
@@ -377,7 +401,7 @@ function plainGeometry(g, keepColor) {
   return out;
 }
 
-export const DEFAULT_ZONES = ['l1007', 'l1007-uteplats', 'fixture', 'l1007-entre', 'hus-l', 'kvarteret', 'gard', 'omgivning'];
+export const DEFAULT_ZONES = ['l1007', 'l1007-uteplats', 'fixture', 'l1007-entre', 'hus-l', 'kvarteret', 'gard', 'omgivning', 'vegetation'];
 
 /** Builds the world and returns { glbs: {name: base64}, measurements, report }. `zones`: ids to export. */
 
@@ -746,6 +770,16 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     if (missing.length) throw new Error(`ground probes with no walkable ground under them: ${missing.join(', ')}`);
   }
 
+  // ---- the vegetation (#2281): every exported tree (its trunk instance and crown lobes) and hedge, with a height class ----
+  const hedgeIds = new Set();
+  for (const list of byZone.values()) for (const a of list) if (isHedge(a.object)) hedgeIds.add(a.id);
+  const leafKeys = new Set(); // the leaf-card materials (src/foliage.js) of the vegetation zone: the builder gives them wind
+  for (const a of byZone.get('vegetation') ?? []) {
+    const ms = [a.object.material ?? []].flat();
+    if (/^tree-crowns /.test(a.object.name ?? '') || ms.some((m) => m === leafMaterial() || m === windLeafMaterial().material)) for (const m of ms) leafKeys.add(materialInfo(m).key);
+  }
+  const vegetation = roots.vegetation ? vegetationData(roots, hedgeIds, [...leafKeys].sort()) : null;
+
   // ---- GLB per zone ----
   // #2289: the furnishing textures' images must have loaded (and canvases painted from them) before they are written
   if (textures.size) await settleImages();
@@ -762,6 +796,7 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
   const measurements = measurementData({ world, planCopy, W, D, byZone, lightsInfo, materialTable, commit, ZONES, wanted });
   measurements.buildings = buildings;
   if (ground) measurements.ground = ground;
+  if (vegetation) measurements.vegetation = vegetation;
   measurements.furnishing = furnishingData(byZone, textures, worldMatrix);
   return { glbs, measurements, report: { zones: zoneReport, kinds: stats, skipped, lightsError: lightsInfo.error, extraError: extra.error, atoms: atoms.length, split, unassigned } };
 }
@@ -832,6 +867,76 @@ function furnishingData(byZone, textures, worldMatrix) {
     note: 'items: each exported furniture/appliance/lamp node, its web world transform and the same in Unreal (location cm; axes = the actor\'s forward/right/up unit vectors; scale X/Y/Z). '
       + 'textures: each base-colour image kept in the GLB (#2289), `images` = the repository files it shows (a canvas: the files drawn into it), the material keys, nodes and mesh nodes (with their world centre) that show it.',
     source: 'tools/unreal-engine/export-scene.js furnishingTexture, furnishingData' };
+}
+
+/** #2281: the trees and hedges of the export, for tools/unreal-engine/tests/test_vegetation.py. A tree is a foot of
+ *  src/surroundings.js `treeFeet` whose trunk instance (a `tree-trunks|birches <cell>` node, its translation the foot)
+ *  is exported; its crown lobes (`tree-crowns <cell>` nodes) are those whose centre lies horizontally nearest to its foot
+ *  in units of its crown radius (`aoTrees` r), within LOBE_REACH radii. Height = the highest top of the trunk's and its
+ *  lobes' boxes (each node's local mesh box through its transform, as Unreal does) above the foot; heightClass =
+ *  round(height / TREE_CLASS_M). A hedge is a node of any zone that `isHedge`; its class is
+ *  round(box height / HEDGE_CLASS_M). Feet that no zone exported (beyond the terrain) are counted, not listed. */
+const LOBE_REACH = 1.5, TREE_CLASS_M = 2, HEDGE_CLASS_M = 0.25;
+const HEDGE_NAME = /hedge|boxwood/;
+/** A hedge: the object, a parent or its material is named hedge/boxwood (src/patiohedge.js `patio-hedge`, src/boxwood.js). */
+function isHedge(o) {
+  for (let q = o; q; q = q.parent) if (HEDGE_NAME.test(q.name ?? '')) return true;
+  return [o.material ?? []].flat().some((m) => HEDGE_NAME.test(m?.name ?? ''));
+}
+function vegetationData(roots, hedgeIds, leafKeys) {
+  const P = (v) => ({ web: [r4(v.x), r4(v.y), r4(v.z)], unreal: webToUnrealRounded([v.x, v.y, v.z]) });
+  const boxOf = (n) => new THREE.Box3().setFromObject(n);
+  const nodes = roots.vegetation.root.children.filter((n) => n.userData.kind !== 'collision-group');
+  for (const z of Object.values(roots)) z.root.updateMatrixWorld(true);
+  const byWeb = {};
+  for (const n of nodes) { const k = (n.userData.name ?? '(unnamed)').replace(/ -?\d+\|-?\d+$/, ''); byWeb[k] = (byWeb[k] ?? 0) + 1; }
+  const trunks = nodes.filter((n) => /^tree-(trunks|birches) /.test(n.userData.name ?? ''));
+  const lobes = nodes.filter((n) => /^tree-crowns /.test(n.userData.name ?? ''));
+  const key = (x, z) => `${Math.round(x * 100)}|${Math.round(z * 100)}`;
+  const trunkAt = new Map(trunks.map((n) => [key(n.position.x, n.position.z), n]));
+  const trees = [], missing = [];
+  treeFeet.forEach((f, i) => {
+    const t = trunkAt.get(key(f.x, f.z));
+    if (!t || Math.abs(t.position.y - f.y) > 0.01) return missing.push(i);
+    trees.push({ foot: f, r: aoTrees[i]?.r ?? 1, trunk: t, top: boxOf(t).max.y, lobes: 0 });
+  });
+  let loose = 0;
+  for (const l of lobes) {
+    let best = null, bd = LOBE_REACH;
+    for (const t of trees) { const d = Math.hypot(l.position.x - t.foot.x, l.position.z - t.foot.z) / t.r; if (d < bd) { bd = d; best = t; } }
+    if (!best) { loose++; continue; }
+    best.lobes++; best.top = Math.max(best.top, boxOf(l).max.y);
+  }
+  const hedges = [];
+  for (const [zone, { root }] of Object.entries(roots)) for (const n of root.children) {
+    if (!hedgeIds.has(n.userData.id)) continue;
+    const b = boxOf(n), c = b.getCenter(new THREE.Vector3()), h = b.max.y - b.min.y;
+    hedges.push({ id: n.userData.id, zone, name: n.userData.name, centre: P(c), size: [r4(b.max.x - b.min.x), r4(h), r4(b.max.z - b.min.z)],
+      height: r4(h), heightClass: Math.round(h / HEDGE_CLASS_M) });
+  }
+  return {
+    source: 'tools/unreal-engine/export-scene.js vegetationData; src/surroundings.js treeFeet, aoTrees (trees), hedge/boxwood nodes',
+    lobeReach: LOBE_REACH, treeClassM: TREE_CLASS_M, hedgeClassM: HEDGE_CLASS_M, byWebName: byWeb, look: vegetationLook(leafKeys),
+    notExported: { trees: missing.length, why: 'their foot lies beyond the drawn terrain (SITE.backgroundGround): no zone takes them' },
+    looseLobes: loose,
+    trees: trees.map((t) => { const h = t.top - t.foot.y; return { id: t.trunk.userData.id, kind: t.foot.kind, foot: P(t.trunk.position),
+      crownR: r4(t.r), lobes: t.lobes, height: r4(h), heightClass: Math.round(h / TREE_CLASS_M) }; }),
+    hedges,
+  };
+}
+
+/** #2281: what the export's plain materials lose on the leaves: the crowns' colour comes per instance from the season
+ *  (src/seasons.js applySeason: SEASON.trees[month] in HSL, each tree's own r1..r3 moving hue ±0.02, saturation ±0.075 and
+ *  light ±0.05), and they sway in the vertex shader (src/sitewind.js, SITE_WIND). The export's month (fixed date) gives
+ *  the darkest and lightest summer leaf colour; the builder's leaf material picks between them per instance. */
+function vegetationLook(leafKeys) {
+  const month = new Date().getMonth() + 1, [h, sat, l, leaves] = C.SEASON.trees[month];
+  const hsl = (dh, ds, dl) => '#' + new THREE.Color().setHSL(h + dh, sat + ds, l + dl).getHexString();
+  const W = C.SITE_WIND;
+  return { month, leafKeys, leaves, leafDark: hsl(-0.02, -0.075, -0.05), leafLight: hsl(0.02, 0.075, 0.05),
+    source: 'src/config.js SEASON.trees, SITE_WIND; src/seasons.js applySeason; src/sitewind.js',
+    wind: { dir: W.dir, amp: W.crown.amp, freq: W.crown.freq, flutter: W.crown.flutter, flutterFreq: W.crown.flutterFreq,
+      gustFreq: W.gust.freq, gustDepth: W.gust.depth, phase: W.phase, maxDisplacement: W.maxDisplacement } };
 }
 
 /** Simple collision boxes (kind `collision`): the full-height wall rectangles the web collides with and sees through
@@ -950,7 +1055,7 @@ function measurementData({ world, planCopy, W, D, byZone, lightsInfo, materialTa
     axes: { web: 'x = east, y = up, z = south (north = -z), right-handed', unreal: 'X = 100*x (east), Y = 100*z (south), Z = 100*y (up), left-handed',
       yaw: 'unrealYaw = -90 - webYawDeg (normalised); object rotation.y a (rad) -> unrealYaw = 90 - deg(a)' },
     zones: ZONES.map((z) => ({ id: z.id, what: z.what, status: z.status === 'exported' && (wanted.includes(z.id)) ? 'exported' : 'planned', box: z.box ?? null,
-      ...(z.from ? { from: z.from, split: !!z.split } : {}), ...(z.skip ? { skip: String(z.skip) } : {}) })),
+      ...(z.from ? { from: z.from, split: !!z.split } : {}), ...(z.skip ? { skip: String(z.skip) } : {}), ...(z.only ? { only: String(z.only) } : {}) })),
     plan: { size: { x: W, z: D }, source: planCopy.source ?? 'L1007_mattsatt_planritning.pdf', unitTop: C.UNIT_TOP,
       levels: C.LEVELS.map((l) => ({ name: l.name, storey: l.storey, floor: l.floor, ceiling: l.ceiling, top: r4(l.top),
         unreal: { floorZ: roundCm(l.floor * 100), ceilingZ: roundCm((l.floor + l.ceiling) * 100), topZ: roundCm(l.top * 100) } })),

@@ -23,7 +23,8 @@
           "box": { "type": ["object", "null"], "description": "plan metres {x0, x1, z0, z1, y0, y1}: a node belongs to the first zone that holds the centre of its world bounding box (and accepts its builder, `from`)" },
           "from": { "type": "array", "items": { "type": "string" }, "description": "#2279: the web builders this zone takes objects from (exterior, visit, core-l, portik, surroundings, surroundings-site, garage, core-abc); absent = any part of buildWorld (the l1007 zones)" },
           "split": { "type": "boolean", "description": "#2279: merged meshes are cut at this zone's box sides and each piece goes to the zone holding its centroid" },
-          "skip": { "type": "string", "description": "#2280: what this zone leaves to other issues (a name pattern of the object or its parents, or a leaf material)" }
+          "skip": { "type": "string", "description": "#2280: what this zone leaves to other issues (a name pattern of the object or its parents, or a leaf material)" },
+          "only": { "type": "string", "description": "#2281: the only objects this zone takes (a name pattern of the object or its parents, or a leaf material)" }
         }
       }
     },
@@ -104,6 +105,14 @@
         "taps": { "type": "array", "items": { "type": "object", "required": ["id", "name", "level", "shower", "outlet", "landing", "radius", "pick"],
           "properties": { "id": { "type": "string" }, "shower": { "type": "boolean" }, "outlet": { "$ref": "#/$defs/point" }, "landing": { "$ref": "#/$defs/point" }, "pick": { "$ref": "#/$defs/point" } } } },
         "source": { "type": "string" }
+      }
+    },
+    "vegetation": {
+      "type": "object", "required": ["source", "lobeReach", "treeClassM", "hedgeClassM", "trees", "hedges"],
+      "description": "#2281: every exported tree (trunk node id, foot, crown radius, lobe count, height above the foot and height class) and hedge (node id, zone, box centre and size, height class); tools/unreal-engine/tests/test_vegetation.py finds each in Unreal. Optional: absent in exports without the vegetation zone.",
+      "properties": {
+        "trees": { "type": "array", "items": { "type": "object", "required": ["id", "kind", "foot", "crownR", "lobes", "height", "heightClass"], "properties": { "foot": { "$ref": "#/$defs/point" } } } },
+        "hedges": { "type": "array", "items": { "type": "object", "required": ["id", "zone", "name", "centre", "size", "height", "heightClass"], "properties": { "centre": { "$ref": "#/$defs/point" } } } }
       }
     },
     "buildings": {
