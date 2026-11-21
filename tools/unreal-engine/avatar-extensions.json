@@ -1,0 +1,5 @@
+{
+ "formatVersion": 1,
+ "what": "#2290: components other issues add to /Game/Lunden/Avatar/Rig/BP_LundenAvatar (build_avatar_rig.py adds each row's component and removes rows it added earlier that are gone). #2291 adds its look component here as the row named \"Look\"; never open BP_LundenAvatar.",
+ "components": []
+}
