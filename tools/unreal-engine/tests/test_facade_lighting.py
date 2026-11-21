@@ -24,10 +24,21 @@ for i,r in enumerate(rows):
     xyz = a.get_actor_location()
     c = a.get_component_by_class(u.StaticMeshComponent)
     values = c.get_editor_property("custom_primitive_data").get_editor_property("data")
-    if (math.dist([xyz.x,xyz.y,xyz.z],r["xyz"]) > .1 or len(values)<len(r["values"]) or
-            any(not math.isclose(x,y,abs_tol=.005) for x,y in zip(values,r["values"])) or
-            c.get_material(0).get_name() != "M_Facade_"+r["kind"] or c.get_collision_enabled() != u.CollisionEnabled.NO_COLLISION):
-        raise RuntimeError("Facade transform, material, collision or per-face parameters differ: " + a.get_actor_label())
+    position = [xyz.x, xyz.y, xyz.z]
+    material = c.get_material(0)
+    material_name = material.get_name() if material else None
+    collision = c.get_collision_enabled()
+    differences = {}
+    if math.dist(position, r["xyz"]) > .1:
+        differences["position (actual, expected)"] = [position, r["xyz"]]
+    if len(values) < len(r["values"]) or any(not math.isclose(x,y,abs_tol=.005) for x,y in zip(values,r["values"])):
+        differences["custom primitive data (actual, expected)"] = [list(values), r["values"]]
+    if material_name != "M_Facade_" + r["kind"]:
+        differences["material"] = material_name
+    if collision != u.CollisionEnabled.NO_COLLISION:
+        differences["collision"] = str(collision)
+    if differences:
+        raise RuntimeError(f"{a.get_actor_label()}: {differences}")
 for s in spec["surfaces"]:
     mesh = faces[s["name"]].get_component_by_class(u.StaticMeshComponent).static_mesh
     triangles = mesh.get_num_triangles(0)

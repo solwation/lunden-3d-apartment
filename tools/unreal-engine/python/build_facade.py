@@ -117,10 +117,33 @@ def material(kind, spec, weather, wall):
         mask = MEL.create_material_expression(mat, u.MaterialExpressionComponentMask, -100, 0 if channels=="rgb" else 120)
         for ch in "rgba":
             mask.set_editor_property(ch, ch in channels)
-        if not MEL.connect_material_expressions(code, "", mask, "") or not MEL.connect_material_property(mask, "", prop):
+        if not MEL.connect_material_expressions(code, "", mask, ""):
             raise RuntimeError(f"{kind}: failed to connect {channels}")
+        output = mask
+        if prop == u.MaterialProperty.MP_EMISSIVE_COLOR:
+            # The desktop shader returns scene colour at its own exposure. Convert that colour to native
+            # radiance using the measured game exposure in the two November reference views (#2324).
+            output = MEL.create_material_expression(mat, u.MaterialExpressionMultiply, 80, -75)
+            if kind == "wash":
+                # Additive light overlays the already-lit wall or ground. Interpolate the two native
+                # render trials against the web's measured radial profile (gain 1 too dim, gain 5.86 too bright).
+                output.set_editor_property("const_b", 2.65)
+            else:
+                night = MEL.create_material_expression(mat, u.MaterialExpressionCollectionParameter, -300, -210)
+                night.set_editor_property("collection", weather)
+                night.set_editor_property("parameter_name", "Night")
+                gain = MEL.create_material_expression(mat, u.MaterialExpressionLinearInterpolate, -100, -210)
+                gain.set_editor_property("const_a", 2 ** 1.965)
+                gain.set_editor_property("const_b", 2 ** 2.55)
+                if not (MEL.connect_material_expressions(night, "", gain, "Alpha")
+                        and MEL.connect_material_expressions(gain, "", output, "B")):
+                    raise RuntimeError(f"{kind}: failed to connect the exposure-dependent radiance gain")
+            if not MEL.connect_material_expressions(mask, "", output, "A"):
+                raise RuntimeError(f"{kind}: failed to connect the facade radiance conversion")
+        if not MEL.connect_material_property(output, "", prop):
+            raise RuntimeError(f"{kind}: failed to connect {channels} output")
     MEL.recompile_material(mat)
-    ASSETS.set_metadata_tag(mat, "Lunden.Assumption", "guess: native facade radiance before matched camera/exposure calibration")
+    ASSETS.set_metadata_tag(mat, "Lunden.Assumption", "guess: native facade radiance calibrated to the matched November game views (#2324)")
     lighting.save(mat)
     return mat
 
@@ -171,7 +194,8 @@ def level(rows, spec, materials, manager):
         comp.set_static_mesh(mesh)
         comp.set_material(0, materials[kind])
         comp.set_editor_property("cast_shadow", False)
-        comp.set_collision_enabled(u.CollisionEnabled.NO_COLLISION)
+        # An explicit profile disables static mesh default collision when the saved sublevel registers again.
+        comp.set_collision_profile_name("NoCollision")
         comp.set_default_custom_primitive_data_float_array(0, [float(v) for v in values])
         comp.set_editor_property("translucency_sort_priority", {"wash":1,"window":3,"room":2}.get(kind,0))
         actor.set_actor_scale3d(scale)
