@@ -12,6 +12,7 @@ import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 import * as C from '../../src/config.js';
 import { christmasCoverage } from '../../src/christmas.js';
 import { FurnitureGroups } from '../../src/furnituregroups.js';
+import { cushionsOut } from '../../src/patio.js';
 import { buildWorld } from '../../src/world.js';
 import { buildStringLights, updateStringLights, updateParasols } from '../../src/patio.js';
 import { groundY, renderedTerrainY, treeFeet, aoTrees } from '../../src/surroundings.js';
@@ -723,6 +724,13 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
   // Coverage refreshes geometry bounds, so assign historical node IDs before checking furniture support.
   const tree = world.furniture.movable.find((p) => p.item.type === 'xmastree');
   const seasons = new Map();
+  // #2387: the patio's decorative cushions are out in src/patio.js cushionsOut's months (the parasol's) and in the
+  // cushion box otherwise. Its rain-cloud condition needs live weather, which the date window cannot carry (#2331).
+  const cushionWindow = patioCushionWindow();
+  for (const piece of world.furniture.movable) {
+    if (piece.item.type !== 'veronasofa') continue;
+    piece.object.traverse((o) => { if (o.isMesh && o.userData.cushion) seasons.set(o, cushionWindow); });
+  }
   if (tree) {
     const { from, to } = C.XMAS_TREE.season;
     seasons.set(tree.object, { what: 'christmas', from, to });
@@ -842,6 +850,8 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
       if (!s) continue;
       s.position.copy(c.position); s.quaternion.copy(c.quaternion); s.scale.copy(c.scale);
       s.name = `${atomId}__${counter.n++}`; s.userData = { id: s.name, kind: 'part', parent: atomId };
+      const season = seasons.get(c); // #2387: a seasonal part inside an all-year piece (the sofa's cushions)
+      if (season) s.userData.seasonal = season;
       n.add(s);
     }
     return n;
@@ -1574,4 +1584,15 @@ function interactionExtras({ world, atomOf, lightsInfo, lights, lifts, P }) {
   }
   return { switches, taps, liftButtons, source: 'src/lights.js Switch/switchSpots (switches; a switch turns its room\'s lamps on and off), '
     + 'src/water.js Tap + world.taps (taps; E turns the water on and off), src/doors.js, src/openables.js, src/liftpanel.js (lift buttons) (#2285)' };
+}
+
+/** #2387: src/patio.js cushionsOut's months as one inclusive date window for BPC_LundenSeasons (month, day pairs).
+ *  The months must be one run, possibly across the new year; the last day comes from a leap year (all keys exist). */
+export function patioCushionWindow() {
+  const out = Array.from({ length: 12 }, (_, i) => cushionsOut(i + 1));
+  const starts = out.flatMap((on, i) => (on && !out[(i + 11) % 12] ? [i + 1] : []));
+  if (starts.length !== 1) throw Error(`patio cushion months are not one run: ${out}`);
+  let last = starts[0];
+  while (out[last % 12]) last = (last % 12) + 1;
+  return { what: 'patioCushions', from: [starts[0], 1], to: [last, new Date(Date.UTC(2000, last, 0)).getUTCDate()] };
 }

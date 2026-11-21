@@ -226,6 +226,10 @@ const bubbleMat = new THREE.MeshStandardMaterial({ color: 0xfff4d6, roughness: 0
 const BUBBLES = 14, BEER_H = 0.12;
 const seasonal = { parasols: [], beers: [], cushions: [], boxes: [] };
 
+/** The cushions (#399): out in the parasol's months, in the cushion box in winter and under rain clouds (#248).
+ *  Also read by the Unreal export (#2387), which turns the months into a date window for the decorative cushions. */
+export const cushionsOut = (month, overcast = 0) => P.parasol.months.includes(month) && !(overcast > 0.6);
+
 /** A pint of lager with rising bubbles; base at the origin. */
 function beerGlass() {
   const g = new THREE.Group();
@@ -702,8 +706,7 @@ export class Patio {
       if (beers) b.traverse((m) => { if (m.userData.seeds) bubbleUpdate(m, this.t); });
     }
     this.snowman.visible = P.snowman.months.includes(day.month);
-    // the cushions (#399): out in the parasol's months, in the cushion box in winter and under rain clouds (#248)
-    const cushions = P.parasol.months.includes(day.month) && !(day.overcast > 0.6);
+    const cushions = cushionsOut(day.month, day.overcast);
     for (const c of seasonal.cushions) c.visible = cushions;
     for (const s of seasonal.boxes) s.visible = !cushions; // … and then they lie in the cushion box (#400)
     this.first = false;

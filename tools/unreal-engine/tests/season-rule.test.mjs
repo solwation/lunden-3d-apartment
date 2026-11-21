@@ -20,6 +20,7 @@ globalThis.window ??= globalThis; globalThis.localStorage ??= { getItem: () => n
 
 const { inChristmas, christmasCoverage } = await import(pathToFileURL(path.join(root, 'src/christmas.js')).href);
 const { XMAS_TREE } = await import(pathToFileURL(path.join(root, 'src/config.js')).href);
+const { cushionsOut } = await import(pathToFileURL(path.join(root, 'src/patio.js')).href); // #2387
 const table = JSON.parse(fs.readFileSync(path.join(here, 'season-dates.json'), 'utf8'));
 let failed = 0;
 const ok = (good, line) => { if (!good) failed++; console.log(`${good ? 'ok  ' : 'FAIL'} ${line}`); };
@@ -29,6 +30,8 @@ const from = key(XMAS_TREE.season.from), to = key(XMAS_TREE.season.to);
 for (const row of table.dates) {
   const [y, m, d] = row.date.split('-').map(Number), web = inChristmas(y, m, d);
   ok(web === row.christmas, `${row.date} web inChristmas ${web}, table ${row.christmas} (${row.why})`);
+  const out = cushionsOut(m);
+  ok(out === row.cushions, `${row.date} web cushionsOut ${out}, table ${row.cushions} (${row.why})`);
 }
 ok(from > to, `the web window ${from}..${to} wraps the new year, so the table exercises the wrap`);
 // A wide table touches the crown on one edge. Its supported piece and a loose item on the far edge
@@ -71,6 +74,21 @@ if (i > 0) {
   for (const [group, types] of Object.entries(groups)) {
     const actual = seasonal.filter(n => n.extras.seasonal.what === group).map(n => n.name.split('_')[1]).sort();
     ok(JSON.stringify(actual) === JSON.stringify(types), `${group}: web default corner, exported ${actual.join(', ')}`);
+  }
+  // #2387: the patio sofa's decorative cushions (one part node) carry cushionsOut's months as a date window.
+  const patio = fs.readFileSync(path.join(dir, 'l1007-uteplats.glb'));
+  const patioJson = JSON.parse(patio.subarray(20, 20 + patio.readUInt32LE(12)).toString('utf8'));
+  const cushions = patioJson.nodes.filter((n) => n.extras?.seasonal);
+  ok(cushions.length >= 1 && cushions.every((n) => n.extras.seasonal.what === 'patioCushions' && n.extras.kind === 'part'
+    && n.extras.parent?.startsWith('furn_veronasofa_')), `patio: seasonal nodes ${cushions.map((n) => n.name)} are the sofa's cushion parts`);
+  for (const n of cushions) {
+    const s = n.extras.seasonal, start = key(s.from), end = key(s.to), missing = [];
+    for (let date = new Date(Date.UTC(2028, 0, 1)); date.getUTCFullYear() === 2028; date.setUTCDate(date.getUTCDate() + 1)) {
+      const month = date.getUTCMonth() + 1, now = key([month, date.getUTCDate()]);
+      const visible = start <= end ? start <= now && now <= end : start <= now || now <= end;
+      if (visible !== cushionsOut(month)) missing.push(now);
+    }
+    ok(!missing.length, `${n.name}: patioCushions ${start}..${end}, 366 web dates, mismatches [${missing}]`);
   }
   const { lights } = JSON.parse(fs.readFileSync(path.join(dir, 'measurements.json')));
   const lit = lights.filter(l => l.seasonal).sort((a, b) => a.id.localeCompare(b.id));
