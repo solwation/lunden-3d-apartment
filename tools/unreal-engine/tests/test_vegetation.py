@@ -27,6 +27,7 @@ Writes Saved/vegetation-result.json and logs LUNDEN_VEGETATION_TREE / _HEDGE sum
 import datetime
 import json
 import math
+import os
 from pathlib import Path
 import time
 
@@ -63,6 +64,10 @@ for _entry in WORLD["levels"]:
             raise RuntimeError(f"Could not stream {_entry['package']}: build it with {_entry['builder']}")
         IN_MEMORY.append(_entry["package"])
 u.log(f"LUNDEN_VEGETATION streamed in memory (map not recomposed): {IN_MEMORY}")
+render_motion = os.environ.get("LUNDEN_VEGETATION_RENDER") == "1"
+if render_motion:
+    import perennial_motion
+    perennial_motion.setup()
 saved_slot = save_isolation.isolate()
 levels.editor_request_begin_play()
 
@@ -273,6 +278,9 @@ def vegetation_test():
                         raise RuntimeError("The courtyard perennials lost their wind material")
                     if not comp.get_editor_property("evaluate_world_position_offset"):
                         raise RuntimeError("The courtyard perennial component disabled wind displacement")
+                    if render_motion and n and "perennialMotion" not in result:
+                        bounds = world_box(local, instance_transform(comp, 0))
+                        result["perennialMotion"] = yield from perennial_motion.measure(world, comp, bounds)
                     perennial_instances += n
                 if role == "crown":
                     mats = [m.get_path_name().split(".")[0] for m in comp.get_materials() if m]
@@ -283,6 +291,8 @@ def vegetation_test():
                     inst[role].append((t.translation, world_box(local, t)))
         if "stillLeafKeys" in VEG["look"] and perennial_instances != VEG["byWebName"]["courtyard-shrubs"]:
             raise RuntimeError(f"The courtyard foliage must keep the perennials separate from its still vines: {perennial_instances}")
+        if render_motion and "perennialMotion" not in result:
+            raise RuntimeError("No courtyard perennial was available for the offscreen motion measurement")
         result["perennialWindInstances"] = perennial_instances
         if not leaf_ok:
             raise RuntimeError(f"The crown lobes do not use {LEAF}: {result.get('crownMaterials')}")
