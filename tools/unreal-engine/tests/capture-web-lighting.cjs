@@ -20,7 +20,7 @@ function url(base, view, shot) {
 }
 
 async function capture(page, shot, view, out) {
-  const {state, image} = await page.evaluate(({view, shot, eyeHeight}) => {
+  const {state, image} = await page.evaluate(async ({view, shot, eyeHeight}) => {
     const {camera, player, day, lights, visitLights, patio, weather, renderer, scene, step, frame} = window.__app;
     player.spawn(view.x, view.z, view.yawDeg * Math.PI / 180);
     player.pos.y = view.feetY;
@@ -38,11 +38,18 @@ async function capture(page, shot, view, out) {
     if (shot.lamps === 'dusk') lights.dark = undefined; // the next updateAuto is a first reading: the dusk lamps at once
     step(0);
     step(0);
+    // A teleport changes the four point-light slots. At dt=0 the old slots hold their fade; one render frame
+    // can leave a newly selected lamp at only 4% brightness. Settle just the light pool at the frozen pose.
+    const {LIGHTING} = await import('/src/config.js');
+    const dir = camera.getWorldDirection(camera.position.clone());
+    const level = player.aloft ? -1 : Math.max(0, player.level);
+    for (let i = 0; i < 2; i++) lights.update(level, player.pos, LIGHTING.poolFade, dir);
     renderer.shadowMap.needsUpdate = true;
     frame(1 / 60);
     renderer.render(scene, camera);
     const state = {eye: camera.position.toArray(), yaw: camera.rotation.y * 180 / Math.PI, pitch: camera.rotation.x * 180 / Math.PI,
       day: [day.year, day.month, day.date, day.hour, day.paused], daylight: day.daylight, overcast: day.overcast, weather: weather.force,
+      pool: lights.slots.filter(slot => slot.lamp).map(({lamp, f}) => ({position: lamp.pos.toArray(), level: lamp.level, share: f})),
       dark: lights.dark ?? null, smallLampsOn: lights.floorLamps.filter((f) => f.room.on).map((f) => f.name), forced: lights.forced,
       moon: {illum: day.moon.illum, elong: day.moon.elong, dir: day.moonDir.toArray()}, sun: day.sunDir.toArray()};
     return {state, image: renderer.domElement.toDataURL('image/jpeg', 0.92).split(',')[1]};
@@ -50,6 +57,7 @@ async function capture(page, shot, view, out) {
   const near = (a, b) => assert.ok(Math.abs(a - b) < 1e-5, `${shot.name}: ${a} != ${b}`);
   near(state.eye[0], view.x); near(state.eye[2], view.z); near(state.yaw, view.yawDeg); near(state.pitch, view.pitchDeg);
   assert.deepEqual(state.day, [...shot.date, shot.hour, true]);
+  assert.ok(state.pool.every(slot => slot.share >= 0.999), shot.name + ': lamp pool still fading');
   await fs.writeFile(path.join(out, `web-${shot.name}.jpg`), Buffer.from(image, 'base64'));
   console.log(shot.name, JSON.stringify(state));
   return {name: shot.name, ...state};

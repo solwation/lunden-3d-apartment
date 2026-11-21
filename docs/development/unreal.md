@@ -1093,6 +1093,12 @@ sky's brightness and the locked exposure.
   rooms about 3 × as bright and whiter ([docs/verification/2307/](../verification/2307/README.md)). No lamp casts
   shadows (one shadow-casting light, as the web).
 
+The L1007 stair and its entrance-floor passage use the web lamp wash's 192 angular visibility samples and floor split
+on the existing point lights (#2369). The lights that reach these two regions have generated light functions under
+`/Game/Lunden/Generated/Lighting/StairLightFunctions`. The rest of each light's volume keeps full transmission.
+Rerun `build_lighting.py` with the new measurements before taking the four paired captures.
+[Stair verification and capture gate](../verification/2369/README.md).
+
 ```text
 git lfs lock unreal/Lunden/Content/Lunden/Lighting/{BP_LundenSky,BP_LundenLamp,MPC_LundenWeather,M_LundenPrecipitation,M_LundenClouds,T_LundenHemisphere}.uasset
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/build_lighting.py [--force | --check]

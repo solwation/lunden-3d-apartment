@@ -51,7 +51,8 @@
         "respawn": { "type": "object", "description": "#2300: the wake points a death may use (src/respawn.js grid candidates the web accepts), the wake yaw and the src/fall.js blackout timings", "required": ["yaw", "points", "blackout", "source"] }
       }
     },
-    "stair": { "type": "object", "required": ["foot", "rise", "riser", "treads", "hole", "source"], "properties": { "foot": { "$ref": "#/$defs/point" } } },
+    "stair": { "type": "object", "required": ["foot", "rise", "riser", "treads", "hole", "source"], "properties": { "foot": { "$ref": "#/$defs/point" },
+      "lightBounds": { "description": "Stair shaft and ground-floor approach passage, metres [xMin,zMin,yMin,xMax,zMax,yMax].", "type": "array", "items": { "type": "array", "minItems": 6, "maxItems": 6, "items": { "type": "number" } } } } },
     "doors": {
       "type": "array",
       "items": {
@@ -92,6 +93,11 @@
       "type": "array",
       "items": { "type": "object", "required": ["id", "kind", "level", "position"],
         "properties": { "kind": { "enum": ["lamp", "room"], "description": "lamp = a light-giving object or patio fence-string light; room = a room's ceiling/pendant light point (src/lights.js)" },
+          "stairVisibility": { "description": "Lamp wash anchors within range of the stair and passage. An anchor outside both bounds retains only its weight in a multi-anchor lamp.",
+            "type": "array", "items": { "type": "object", "required": ["weight"], "properties": {
+              "origin": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number" } }, "level": { "enum": [0, 1] },
+              "split": { "type": "number" }, "viewerSplit": { "type": "number" }, "canPool": { "type": "boolean" }, "weight": { "type": "number", "minimum": 0 },
+              "rays": { "type": "array", "minItems": 2, "items": { "type": "number", "minimum": 0 } } } } },
           "patioDusk": { "type": "object", "required": ["on", "off", "fade"], "properties": { "on": { "type": "number" }, "off": { "type": "number" }, "fade": { "type": "number", "exclusiveMinimum": 0 } } },
           "patioBulbs": { "type": "object", "required": ["idle", "boost"], "properties": { "idle": { "type": "number" }, "boost": { "type": "number" } } }, "position": { "$ref": "#/$defs/point" },
           "objectPosition": { "$ref": "#/$defs/point", "description": "World origin of the fitting that supplies a lamp. Its x/z identify anonymous fittings even when the light is offset." } } }

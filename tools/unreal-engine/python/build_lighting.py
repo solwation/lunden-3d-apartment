@@ -44,6 +44,7 @@ import unreal as u
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from season_tags import season_tags
 import player_parts as pp
+import stair_lamp
 
 DIR = "/Game/Lunden/Lighting"
 SKY = DIR + "/BP_LundenSky"
@@ -172,7 +173,7 @@ def lamp_rows(m):
     rows = []
     for l in m["lights"]:
         rows.append({"id": l["id"], "kind": l["kind"], "level": l["level"], "room": l.get("room"), "name": l.get("name"),
-                     "seasonTags": season_tags({}, l), "patioBulbs": l.get("patioBulbs"), "patioDusk": l.get("patioDusk"),
+                     "stairVisibility": l.get("stairVisibility"), "seasonTags": season_tags({}, l), "patioBulbs": l.get("patioBulbs"), "patioDusk": l.get("patioDusk"),
                      "xyz": l["position"]["unreal"], "candela": CANDELA_PER_WEB * (l.get("intensity") or 0.0),
                      "radius": 100.0 * (l.get("distance") or LAMP_RANGE), "colour": l.get("color") or LAMP_COLOUR,
                      # the ceiling lamps (the room switches) are by hand only; a small lamp follows the dusk unless `auto: false`
@@ -186,6 +187,8 @@ def spec_of(m):
     return {"sky": sky, "boxes": boxes, "soffit": soffit, "lamps": lamp_rows(m), "sunLux": SUN_LUX,
             "exposureBias": EXPOSURE_BIAS, "hemiShare": HEMI_SHARE, "hemiNightSky": HEMI_NIGHT_SKY, "skyLuminance": SKY_LUMINANCE, "skyOvercast": SKY_OVERCAST, "wet": WET_RATE, "skyScale": SKY_SCALE, "fogGrey": FOG_GREY, "ambientRef": AMBIENT_REF, "fog": FOG,
             "snowOvercast": SNOW_OVERCAST, "cloudRange": CLOUD_RANGE,
+            "stairBounds": m["stair"].get("lightBounds"),
+            "stairShader": hashlib.sha256(Path(stair_lamp.__file__).read_bytes()).hexdigest(),
             "script": hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
 
 
@@ -1260,6 +1263,12 @@ def build_level(spec, sky_bp, lamp_bp):
         light = lamp.get_component_by_class(u.PointLightComponent)
         light.set_intensity(row["candela"])
         light.set_editor_property("attenuation_radius", row["radius"])
+        if row["stairVisibility"]:
+            mask = stair_lamp.build(row, spec["stairBounds"])
+            light.set_light_function_material(mask)
+            light.set_light_function_disabled_brightness(1.0)
+            if light.get_editor_property("light_function_material") != mask:
+                raise RuntimeError("Stair light function was not assigned to " + row["id"])
         r, g, b = bytes.fromhex(row["colour"].lstrip("#"))
         colour = u.LinearColor()
         colour.set_from_srgb(u.Color(r=r, g=g, b=b, a=255))
@@ -1288,19 +1297,27 @@ def main(argv):
     spec = spec_of(m)
     want = spec_hash(spec)
     assets = (SKY, LAMP, MPC, PRECIP, CLOUDS, AMBIENT_CUBE)
+    stair_assets = [stair_lamp.path_for(row) for row in spec["lamps"] if row["stairVisibility"]]
     have = ASSETS.does_asset_exist(SKY) and ASSETS.get_metadata_tag(ASSETS.load_asset(SKY), SPEC_TAG) == want
     complete = all(ASSETS.does_asset_exist(p) for p in assets)
     stamp = json.loads(STAMP.read_text(encoding="utf-8")) if STAMP.exists() else {}
-    level_ok = stamp.get("spec") == want and stamp.get("files") == file_hashes() and bool(stamp.get("files"))
+    level_ok = (stamp.get("spec") == want and stamp.get("files") == file_hashes() and bool(stamp.get("files"))
+                and all(ASSETS.does_asset_exist(path) for path in stair_assets))
     if check:
         problems = [p for p in assets if not ASSETS.does_asset_exist(p)]
+        for row in spec["lamps"]:
+            if row["stairVisibility"]:
+                path = stair_lamp.path_for(row)
+                material = ASSETS.load_asset(path) if ASSETS.does_asset_exist(path) else None
+                if not stair_lamp.graph_matches(material, stair_lamp.shader(spec["stairBounds"], row["stairVisibility"])):
+                    problems.append(f"{path}: missing or stale stair visibility graph")
         if not have:
             problems.append(f"{SKY} spec hash differs (run build_lighting.py)")
         if not level_ok:
             problems.append(f"{LEVEL} missing or stale (run build_lighting.py)")
         if problems:
             raise RuntimeError("LUNDEN_LIGHTING_CHECK failed: " + "; ".join(problems))
-        u.log("LUNDEN_LIGHTING_OK check passed")
+        u.log(f"LUNDEN_LIGHTING_OK check passed ({len(stair_assets)} stair light functions)")
         return
     if have and complete and not force:
         u.log("LUNDEN_LIGHTING assets unchanged, nothing saved")

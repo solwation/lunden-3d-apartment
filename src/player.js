@@ -174,7 +174,7 @@ export class Player {
   /** The flat's level the visitor is on (0 outdoors, up on the roofs too). */
   get level() {
     if (!this.inFootprint() || this.aloft) return 0;
-    return this.pos.y > LEVELS[0].floor + 1.6 ? 1 : 0;
+    return this.pos.y > LEVELS[0].floor + PLAYER.levelSwitchHeight ? 1 : 0;
   }
 
   /** Highest walkable surface at (x, z) that can be reached from feet height `feet`. */

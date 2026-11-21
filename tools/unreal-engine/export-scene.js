@@ -16,6 +16,7 @@ import { buildStringLights, updateStringLights, updateParasols } from '../../src
 import { groundY, renderedTerrainY, treeFeet, aoTrees } from '../../src/surroundings.js';
 import { gridGround } from '../../src/elevation.js';
 import { leafMaterial, windLeafMaterial } from '../../src/foliage.js';
+import { stairLampProfiles } from './export-stair-light.js';
 import { stairRise, stairRiser, N_TREADS } from '../../src/stairs.js';
 import { hedgeTexture } from './hedge-texture.js';
 import { husLLayout } from '../../src/exterior.js';
@@ -453,12 +454,13 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     const { Lights } = await import('../../src/lights.js');
     const group = new THREE.Group();
     const L = new Lights(group, world, { quality: { register() {} }, lowMemory: true }); // (no quality tiers in the export)
+    const stairLight = stairLampProfiles(world, L);
     const lamps = [];
     for (const R of L.rooms.values()) for (const l of R.lamps) lamps.push({ room: R.name, level: R.level, pos: l.pos.clone(),
-      intensity: l.intensity ?? null, distance: l.distance ?? null, color: typeof l.color === 'number' ? '#' + l.color.toString(16).padStart(6, '0') : null });
+      stairVisibility: stairLight.profiles.get(l), intensity: l.intensity ?? null, distance: l.range ?? null, color: typeof l.color === 'number' ? '#' + l.color.toString(16).padStart(6, '0') : null });
     // #2285: the room switches (their room decides which lamps they switch, src/lights.js Switch / Room)
     const switches = L.switches.map((s) => ({ object: s.object, room: s.room.name, level: s.room.level }));
-    lightsInfo = { lamps, group, switches, error: null };
+    lightsInfo = { lamps, group, switches, stairLight, error: null };
   } catch (e) { lightsInfo.error = String(e?.message ?? e); }
   // #2279: the garage under the courtyard and the four stairwells/lifts (Hus L's and Hus A/B/C's), which main.js builds
   // next to the world. Loaded after the world and the lights so their modules cannot shift the seeded random sequence
@@ -954,6 +956,7 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
   // ---- measurement data ----
   const measurements = measurementData({ world, planCopy, W, D, byZone, lightsInfo, seasons, materialTable, commit, ZONES, wanted, lifts: extra.lifts ?? [],
     coreDoors: extra.coreDoors ?? [], garage: extra.garage ?? null });
+  if (lightsInfo.stairLight) measurements.stair.lightBounds = lightsInfo.stairLight.bounds;
   measurements.site.riverSurface = riverMaterialData();
   measurements.buildings = buildings;
   if (wanted.includes('hus-l') || wanted.includes('kvarteret')) measurements.site.facadeLighting = facadeLightingData(world, wanted);
@@ -1222,6 +1225,7 @@ function measurementData({ world, planCopy, W, D, byZone, lightsInfo, seasons, m
   interactionData({ world, doors, windows, atomOf, lightsInfo, P });
   doors.push(...entranceDoors({ coreDoors, garage, byZone, atomOf, P }));
   const lights = [];
+  const stairProfiles = lightsInfo.stairLight?.profiles;
   const atomAbove = (o) => { for (; o; o = o.parent) if (atomOf.has(o)) return atomOf.get(o); return null; };
   for (const l of world.lamps ?? []) {
     const a = atomAbove(l.object), p = l.object.getWorldPosition(new THREE.Vector3());
@@ -1234,13 +1238,16 @@ function measurementData({ world, planCopy, W, D, byZone, lightsInfo, seasons, m
     // Keep the fitting's origin for stable IDs. A single web light supplies its exact world-space emitter position.
     const anchors = l.lamp?.room.lamps;
     const emitter = anchors?.length === 1 ? anchors[0].pos : null;
+    const stairVisibility = anchors?.map(anchor => stairProfiles?.get(anchor));
+    // A merged light represents every anchor. Retain unfiltered anchors at full weight when some fall outside the stair's range.
+    const profile = stairVisibility?.some(Boolean) ? stairVisibility.map((row, i) => row ?? { weight: anchors[i].intensity }) : null;
     const position = emitter ? P(emitter.x, emitter.y, emitter.z) : P(p.x, p.y + (l.height ?? 0), p.z);
     lights.push({ id: a?.id ?? null, kind: 'lamp', name: l.name ?? null, level: l.level ?? levelOf(p.y), room: l.room ?? null,
-      objectPosition: P(p.x, p.y, p.z), position, seasonal: seasons.get(a?.object),
+      objectPosition: P(p.x, p.y, p.z), position, ...(profile ? { stairVisibility: profile } : {}), seasonal: seasons.get(a?.object),
       intensity: r4(pools.reduce((sum, x) => sum + (x.intensity ?? 0), 0)), distance: pools[0].range ?? null, color: hex(pools[0].color), auto: l.auto !== false });
   }
   for (const l of lightsInfo.lamps) lights.push({ id: null, kind: 'room', name: null, level: l.level, room: l.room, position: P(l.pos.x, l.pos.y, l.pos.z),
-    intensity: l.intensity, distance: l.distance, color: l.color });
+    intensity: l.intensity, distance: l.distance, color: l.color, ...(l.stairVisibility ? { stairVisibility: [l.stairVisibility] } : {}) });
   for (const [index, l] of (lightsInfo.patioStrings ?? []).entries()) {
     const { on, off, fade, bulbIdle, bulbBoost } = C.PATIO.stringLights;
     lights.push({ id: null, kind: 'lamp', name: 'ljusslingan', room: null, level: l.level, auto: true,

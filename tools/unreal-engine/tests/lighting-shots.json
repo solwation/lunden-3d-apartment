@@ -3,6 +3,7 @@
   "shots": [
     { "name": "living-room-day", "camera": "living-room", "date": [2026, 6, 21], "hour": 14, "lamps": "none", "weather": "clear" },
     { "name": "living-room-evening", "camera": "living-room", "date": [2026, 6, 21], "hour": 22, "lamps": "all", "weather": "clear" },
+    { "name": "stairs-evening", "camera": "stairs", "date": [2026, 6, 21], "hour": 22, "lamps": "all", "weather": "clear" },
     { "name": "upper-floor-evening", "camera": "upper-floor", "date": [2026, 6, 21], "hour": 22, "lamps": "all", "weather": "clear" },
     { "name": "living-room-dusk", "camera": "living-room", "date": [2026, 6, 21], "hour": 22, "lamps": "dusk", "weather": "clear" },
     { "name": "start-day", "camera": "start", "date": [2026, 6, 21], "hour": 14, "lamps": "none", "weather": "clear" },

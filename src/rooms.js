@@ -51,6 +51,20 @@ export class RoomMap {
     return c >= 0 && this.owner[c] >= 0 ? this.rooms[this.owner[c]].name : null;
   }
 
+  /** Plan bounds of the labelled region containing this point (two labels can share a room name). */
+  regionBoundsAt(x, z) {
+    const index = this.cell(x, z), owner = this.owner[index];
+    if (index < 0 || owner < 0) return null;
+    let x0 = this.nx, z0 = this.nz, x1 = 0, z1 = 0;
+    for (let i = 0; i < this.owner.length; i++) {
+      if (this.owner[i] !== owner) continue;
+      const column = i % this.nx, row = Math.floor(i / this.nx);
+      x0 = Math.min(x0, column); z0 = Math.min(z0, row);
+      x1 = Math.max(x1, column + 1); z1 = Math.max(z1, row + 1);
+    }
+    return { x0: x0 * CELL, z0: z0 * CELL, x1: x1 * CELL, z1: z1 * CELL };
+  }
+
   /** Centre of each labelled region: [{ name, x, z, area }] (area in m²). */
   regions() {
     const acc = this.rooms.map((r) => ({ name: r.name, x: 0, z: 0, n: 0 }));
