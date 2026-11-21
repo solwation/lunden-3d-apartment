@@ -1015,7 +1015,8 @@ sky's brightness and the locked exposure.
   `LIGHTING.sky` sun, ambient and hemisphere colours, `DAY.moonlight/moonFloor/moonExp/nightAmbient`, `WEATHER.sunCut`,
   the rain and snow numbers).
   Sun by day, moon below −0.02 sun height, both dimmed by `1 − sunCut × overcast` as on the web.
-  *Assumption:* the web's clear sun 3.0 is 8 lux in Unreal (the pilot's calibration); everything else scales with it.
+  *Assumption:* the web's clear sun 3.0 is 20 lux in Unreal (`SUN_LUX`, #2386; the pilot's 8 lux left sun shadows
+  invisible next to the fill); the moon and the sky's scattering scale with it.
   Outputs: `SunDirection`, `MoonDirection` (unit vectors towards the body, Unreal axes), `SunElevation`, `Daylight`,
   `MoonIllumination`.
 - **Sky and fill.** `SkyAtmosphere` lit by both directional lights, a real-time captured `SkyLight`,
@@ -1041,8 +1042,16 @@ sky's brightness and the locked exposure.
     night colour (`daycycle.js` blends its sky colour `0xeaf3ff` to `0x6b7da8` by 1 − daylight; the weight takes the
     luminance ratio averaged over sky and ground, `HemiNight` 0.56). Without these two terms the 22:00 rooms were lit
     mostly by a neutral fill and came out grey-white (R/B 1.11 against the web's 1.50).
-  - **Sky.** `UpdateSky` sets the atmosphere's `SkyLuminanceFactor` to `SKY_LUMINANCE` (9) by a clear day, blended to
-    `SKY_OVERCAST` (1) at full overcast: the web paints a brighter sky than a physical atmosphere next to an 8 lux sun.
+  - **Sun against the fill (#2386).** The fill sits outside the exposure and the sun inside it, so at 8 lux a web unit of
+    sun reached the screen about 11 × weaker than a web unit of fill: sunlit and shaded brick differed by 1.1–1.4 × where
+    the web shows about 2 × (its December patio). `SUN_LUX` 20 and `CLEAR_FILL` 0.75 (× the web's clear `ambient` and
+    `hemi`) bring the sun's shadows back and keep the 14:00 pairs within 0.8–1.25 × the web; rain, 22:00 and the stairs
+    do not change ([#2386 pairs](../verification/2386/README.md)). Shadows were never missing from the captures alone:
+    `r.Shadow.Virtual.Enable 0` (cascaded shadow maps for one-shot captures) and the game's virtual shadow maps gave the
+    same picture.
+  - **Sky.** `UpdateSky` sets the atmosphere's `SkyLuminanceFactor` to `SKY_LUMINANCE` (9 × 8 ÷ `SUN_LUX`) by a clear day,
+    blended to `SKY_OVERCAST` (8 ÷ `SUN_LUX`) at full overcast, so the sky keeps #2313's level whatever the sun's lux:
+    the web paints a brighter sky than a physical atmosphere next to its sun.
     Under rain the web's sky is a fixed light grey (`OVERCAST`) that does not dim with the sun; in Unreal that grey is
     the height fog's inscattering, `FOG_GREY` (now 10, for the locked exposure; #2283's 0.6) × overcast. A trial that
     instead divided the sky factor by the sun's cut made the atmosphere show blue through the rain deck. The sky light's

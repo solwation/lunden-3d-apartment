@@ -92,7 +92,15 @@ FOG_GREY = 10.0
 # colour above, ground colour below (the pilot's blue T_PilotClearSky tinted floors blue).
 AMBIENT_REF = 0.6
 AMBIENT_CUBE = DIR + "/T_LundenHemisphere"
-SUN_LUX = 8.0
+# #2386: the sun against the unshadowed fill. The fill (the ambient cubemap below) is added outside the exposure and the
+# sun inside it, so at #2313's 8 lux a web unit of sun reached the screen about 11 x weaker than a web unit of fill: by day
+# the fill carried the light and sun shadows on a wall vanished (lit/shaded brick 1.1 ... 1.4 against the web's about 2 at
+# Christmas). SUN_LUX 20 with the clear-day fill x CLEAR_FILL shows them and keeps the 14:00 pairs within 0.8 ... 1.25 x the
+# web (docs/verification/2386/). SKY_LUMINANCE and SKY_OVERCAST are divided by the same factor, so the sky the atmosphere
+# scatters from the sun (and from the moon, which UpdateSky keeps at the web's Moonlight share of the sun) keeps its
+# #2313/#2307 level; the moonlit ground gets the sun's new share against the fill too. *guess*
+SUN_LUX = 20.0
+CLEAR_FILL = 0.75
 CANDELA_PER_WEB = 2.8
 LAMP_COLOUR = "#ffd59a"  # LIGHTING.floorLamp colour, where the export has none
 LAMP_RANGE = 5.0         # m, LIGHTING.floorLamp range, where the export has none
@@ -129,8 +137,8 @@ HEMI_SHARE = 0.72
 # its weight takes the luminance ratio, averaged over the sky and ground halves (a wall sees both). Without the two terms
 # the 22:00 rooms were lit mostly by a neutral fill and came out grey-white (R/B 1.11 against the web's 1.50).
 HEMI_NIGHT_SKY = "6b7da8"
-SKY_LUMINANCE = 9.0
-SKY_OVERCAST = 1.0
+SKY_LUMINANCE = 9.0 * 8.0 / SUN_LUX
+SKY_OVERCAST = 1.0 * 8.0 / SUN_LUX
 # Wet surfaces soak in about 10 minutes of rain and dry in about 30 (web: src/wetground.js integrates a film; *guess*).
 WET_RATE = {"soak": 1 / 600, "dry": 1 / 1800}
 FOG = {"clear": 0.004, "overcast": 0.03}  # ExponentialHeightFog density (web: fog far 80 m under rain, WEATHER.fogFar)
@@ -1080,8 +1088,8 @@ def build_sky(spec, mpc, precip, clouds):
         "SunCut": ("real", light["sunCut"]), "FogClear": ("real", FOG["clear"]), "FogOvercast": ("real", FOG["overcast"]),
         "SkyScale": ("real", SKY_SCALE), "FogGrey": ("real", FOG_GREY), "AmbientRef": ("real", ambient_ref(spec)),
         "HemiShare": ("real", HEMI_SHARE), "SkyLuminance": ("real", SKY_LUMINANCE), "SkyOvercast": ("real", SKY_OVERCAST),
-        "HemiOvercast": ("real", light["hemiOvercast"]), "HemiClear": ("real", light["hemiClear"]), "HemiNight": ("real", hemi_night(spec)),
-        "AmbientOvercast": ("real", light["ambientOvercast"]), "AmbientClear": ("real", light["ambientClear"]),
+        "HemiOvercast": ("real", light["hemiOvercast"]), "HemiClear": ("real", light["hemiClear"] * CLEAR_FILL), "HemiNight": ("real", hemi_night(spec)),
+        "AmbientOvercast": ("real", light["ambientOvercast"]), "AmbientClear": ("real", light["ambientClear"] * CLEAR_FILL),
         "NightAmbient": ("real", light["nightAmbient"]),
         "WetSoak": ("real", WET_RATE["soak"]), "WetDry": ("real", WET_RATE["dry"]),
         "SunDirection": ("vector", None), "MoonDirection": ("vector", None),
