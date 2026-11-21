@@ -109,6 +109,7 @@ jobs:
       - name: Test packaging with temporary copies of an already signed Windows fixture
         shell: pwsh
         run: ./tools/unreal-engine/tests/signed-launcher-package-test.ps1
+      # The client-secret login reaches Azure through EnvironmentCredential (as in booster-ai), so it must not be excluded.
       - name: Sign and timestamp only the verified launcher
         uses: azure/artifact-signing-action@c7ab2a863ab5f9a846ddb8265964877ef296ee82 # v2
         with:
@@ -119,7 +120,6 @@ jobs:
           signing-account-name: ${{ vars.SIGNING_ACCOUNT }}
           certificate-profile-name: ${{ vars.SIGNING_PROFILE }}
           files: ${{ runner.temp }}\unsigned\Lunden.exe
-          exclude-environment-credential: true
           file-digest: SHA256
           timestamp-rfc3161: http://timestamp.acs.microsoft.com
           timestamp-digest: SHA256
