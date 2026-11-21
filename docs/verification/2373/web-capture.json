@@ -1,0 +1,80 @@
+{
+ "commit": "9dedf90d (src/ identical to b442c723)",
+ "note": "each view loaded in its own page, so the dusk view starts at 23:30 (the web folds the parasol on arrival)",
+ "views": {
+  "patio-parasol": {
+   "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+   "eye": [
+    1,
+    1.62,
+    13.2
+   ],
+   "feet": [
+    1,
+    0,
+    13.2
+   ],
+   "yaw": -126,
+   "pitch": -6,
+   "verticalFov": 72,
+   "aspect": 1.7777777777777777,
+   "quality": 4,
+   "day": [
+    2026,
+    6,
+    21,
+    14,
+    true
+   ],
+   "lights": false,
+   "weather": "clear",
+   "desktop": true,
+   "contextLost": false,
+   "draws": 219,
+   "unrealEyeCm": [
+    100,
+    1320,
+    162
+   ],
+   "unrealYaw": 36,
+   "unrealPitch": -6
+  },
+  "patio-parasol-dusk": {
+   "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+   "eye": [
+    1,
+    1.62,
+    13.2
+   ],
+   "feet": [
+    1,
+    0,
+    13.2
+   ],
+   "yaw": -126,
+   "pitch": -6,
+   "verticalFov": 72,
+   "aspect": 1.7777777777777777,
+   "quality": 4,
+   "day": [
+    2026,
+    6,
+    21,
+    23.5,
+    true
+   ],
+   "lights": true,
+   "weather": "clear",
+   "desktop": true,
+   "contextLost": false,
+   "draws": 214,
+   "unrealEyeCm": [
+    100,
+    1320,
+    162
+   ],
+   "unrealYaw": 36,
+   "unrealPitch": -6
+  }
+ }
+}

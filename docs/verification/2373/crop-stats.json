@@ -1,0 +1,166 @@
+{
+ "crops": {
+  "patio-parasol": {
+   "canopy": [
+    0.4,
+    0.27,
+    0.52,
+    0.32
+   ],
+   "fence": [
+    0.18,
+    0.47,
+    0.3,
+    0.58
+   ],
+   "paving": [
+    0.45,
+    0.82,
+    0.65,
+    0.95
+   ]
+  },
+  "patio-parasol-dusk": {
+   "bulb-row": [
+    0.16,
+    0.415,
+    0.55,
+    0.435
+   ],
+   "fence-pool": [
+    0.36,
+    0.44,
+    0.48,
+    0.56
+   ],
+   "paving": [
+    0.45,
+    0.82,
+    0.65,
+    0.95
+   ]
+  }
+ },
+ "stats": {
+  "patio-parasol": {
+   "web": {
+    "canopy": {
+     "srgb": [
+      175.7,
+      169.8,
+      152.4
+     ],
+     "luminance": 0.4147,
+     "warmth": 1.153
+    },
+    "fence": {
+     "srgb": [
+      114.2,
+      109.2,
+      78.2
+     ],
+     "luminance": 0.156,
+     "warmth": 1.46
+    },
+    "paving": {
+     "srgb": [
+      168,
+      167.5,
+      166.4
+     ],
+     "luminance": 0.4069,
+     "warmth": 1.01
+    }
+   },
+   "unreal": {
+    "canopy": {
+     "srgb": [
+      201.7,
+      199.9,
+      191
+     ],
+     "luminance": 0.5816,
+     "warmth": 1.056
+    },
+    "fence": {
+     "srgb": [
+      144.7,
+      139.9,
+      109.8
+     ],
+     "luminance": 0.26,
+     "warmth": 1.318
+    },
+    "paving": {
+     "srgb": [
+      184.6,
+      185.2,
+      186.8
+     ],
+     "luminance": 0.4932,
+     "warmth": 0.988
+    }
+   }
+  },
+  "patio-parasol-dusk": {
+   "web": {
+    "bulb-row": {
+     "srgb": [
+      71.4,
+      56.9,
+      20.8
+     ],
+     "luminance": 0.1007,
+     "warmth": 3.435
+    },
+    "fence-pool": {
+     "srgb": [
+      57.6,
+      40.7,
+      4.3
+     ],
+     "luminance": 0.0296,
+     "warmth": 13.266
+    },
+    "paving": {
+     "srgb": [
+      87.4,
+      66.4,
+      42.4
+     ],
+     "luminance": 0.0665,
+     "warmth": 2.061
+    }
+   },
+   "unreal": {
+    "bulb-row": {
+     "srgb": [
+      60,
+      52.5,
+      34.7
+     ],
+     "luminance": 0.0703,
+     "warmth": 1.729
+    },
+    "fence-pool": {
+     "srgb": [
+      69.8,
+      65.6,
+      46.1
+     ],
+     "luminance": 0.0766,
+     "warmth": 1.515
+    },
+    "paving": {
+     "srgb": [
+      69.6,
+      56,
+      39.8
+     ],
+     "luminance": 0.047,
+     "warmth": 1.751
+    }
+   }
+  }
+ }
+}

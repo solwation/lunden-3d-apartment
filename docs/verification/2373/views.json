@@ -1,0 +1,51 @@
+{
+ "viewport": {
+  "width": 1440,
+  "height": 810
+ },
+ "verticalFovDeg": 72,
+ "standingEyeHeightM": 1.62,
+ "date": {
+  "year": 2026,
+  "month": 6,
+  "day": 21
+ },
+ "weather": "clear",
+ "lighting": {
+  "day": {
+   "hour": 14,
+   "lampsOn": false
+  },
+  "evening": {
+   "hour": 22,
+   "lampsOn": true
+  },
+  "dusk": {
+   "hour": 23.5,
+   "lampsOn": true
+  }
+ },
+ "lightingNote": "'dusk' was added to a local, uncommitted copy of unreal/Lunden/Tests/views.json for these captures",
+ "views": [
+  {
+   "id": "patio-parasol",
+   "subject": "L1007 patio from its north-west corner: parasol and fence string lights",
+   "x": 1.0,
+   "z": 13.2,
+   "feetY": 0.0,
+   "yawDeg": -126,
+   "pitchDeg": -6,
+   "lighting": "day"
+  },
+  {
+   "id": "patio-parasol-dusk",
+   "subject": "the same view at 23:30, string lights on",
+   "x": 1.0,
+   "z": 13.2,
+   "feetY": 0.0,
+   "yawDeg": -126,
+   "pitchDeg": -6,
+   "lighting": "dusk"
+  }
+ ]
+}
