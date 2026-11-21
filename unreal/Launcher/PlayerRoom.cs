@@ -83,6 +83,18 @@ internal sealed class PlayerRoom(Uri endpoint, string capFile) : IAsyncDisposabl
     readonly Dictionary<string, RoomPeer> peers = [];
     readonly Queue<string> events = new();
     long eventNumber;
+    readonly SharedRoom shared = new();
+    internal void OfferShared(string packet)
+    {
+        lock (gate) if (ownId.Length != 0 && Active() != null && shared.Offer(packet)) changed = Environment.TickCount64;
+    }
+    internal string Table(PresenceFrame? next)
+    {
+        lock (gate) {
+            string snapshot = next == null ? "1\t" : Sync(next);
+            return PresencePacket.Write(snapshot, Events(), shared.Snapshot(ownId));
+        }
+    }
     internal string Events() { lock (gate) return string.Join('\n', events); }
 
     readonly CancellationTokenSource stop = new();
@@ -123,9 +135,9 @@ internal sealed class PlayerRoom(Uri endpoint, string capFile) : IAsyncDisposabl
         }
     }
 
-    internal void Away() { lock (gate) { if (frame != null) generation++; frame = null; peers.Clear(); events.Clear(); ownId = ""; } }
+    internal void Away() { lock (gate) { if (frame != null) generation++; frame = null; peers.Clear(); events.Clear(); shared.Reset(); ownId = ""; } }
     PresenceFrame? Active() { lock (gate) return Environment.TickCount64 - touched < MissingGameMs && Environment.TickCount64 - changed < StillnessMs ? frame : null; }
-    void ClearPeers() { lock (gate) { peers.Clear(); events.Clear(); ownId = ""; } }
+    void ClearPeers() { lock (gate) { peers.Clear(); events.Clear(); shared.Reset(); ownId = ""; } }
 
     internal static string EventPayload(JsonElement message)
     {
@@ -145,18 +157,22 @@ internal sealed class PlayerRoom(Uri endpoint, string capFile) : IAsyncDisposabl
         if (!text.StartsWith('{')) return;
         using var data = JsonDocument.Parse(text);
         var m = data.RootElement;
-        if (m.ValueKind != JsonValueKind.Object || !m.TryGetProperty("t", out var tag) || tag.ValueKind != JsonValueKind.String || !m.TryGetProperty("i", out var key) || key.ValueKind != JsonValueKind.String) return;
-        string id = key.GetString()!;
-        if (id.Length > 80 || id.Any(char.IsControl)) return;
+        if (m.ValueKind != JsonValueKind.Object || !m.TryGetProperty("t", out var tag) || tag.ValueKind != JsonValueKind.String) return;
+        string kind = tag.GetString()!;
         lock (gate)
         {
             if (frame == null || generation != connectionGeneration) return;
+            if (kind == "w" && (!m.TryGetProperty("i", out var own) || own.ValueKind != JsonValueKind.String ||
+                own.GetString() is not { Length: > 0 and <= 80 } idValue || idValue.Any(char.IsControl))) return;
+            shared.Receive(kind, m, i => peers.TryGetValue(i, out var peer) ? peer.Name : "");
+            if (!m.TryGetProperty("i", out var key) || key.ValueKind != JsonValueKind.String) return;
+            string id = key.GetString()!;
+            if (id.Length > 80 || id.Any(char.IsControl)) return;
             void Upsert(string k, JsonElement row)
             {
                 if (k.Length is 0 or > 80 || k.Any(char.IsControl) || k == ownId || (!peers.ContainsKey(k) && peers.Count >= 30)) return;
                 peers[k] = (peers.GetValueOrDefault(k) ?? new RoomPeer()).Update(row);
             }
-            string? kind = tag.GetString();
             if (kind is not ("w" or "j" or "s" or "x")) return;
             if (kind == "w") events.Clear();
             if (events.Count == 64) events.Dequeue();
@@ -228,6 +244,13 @@ internal sealed class PlayerRoom(Uri endpoint, string capFile) : IAsyncDisposabl
                     await ws.SendAsync(Encoding.UTF8.GetBytes(outgoing).AsMemory(), WebSocketMessageType.Text, true, session.Token);
                     needsRepeat = fresh;
                     last = current.Message; lastWrite = now;
+                }
+                SharedRoom.Command? action;
+                lock (gate) action = generation == startingGeneration ? shared.Next() : null;
+                if (action != null) {
+                    await ws.SendAsync(Encoding.UTF8.GetBytes(action.Json).AsMemory(), WebSocketMessageType.Text, true, session.Token);
+                    if (action.LocalChat is { } line)
+                        lock (gate) if (generation == startingGeneration && ownId.Length != 0) shared.Local(current.Name, line);
                 }
                 await Task.WhenAny(receiver, Task.Delay(210, ct));
                 ct.ThrowIfCancellationRequested();

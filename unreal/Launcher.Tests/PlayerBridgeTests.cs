@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Lunden.Launcher.Tests;
 
-public sealed class PlayerBridgeTests
+public sealed partial class PlayerBridgeTests
 {
     // Both the stock launcher CI checkout and a local checkout contain these same wire fixtures.
     static string Root()

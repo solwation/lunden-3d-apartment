@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "source": "cloudflare/players.js, cloudflare/doors.js, src/chat.js and src/falldamage.js",
+  "gameCommands": [
+    ["shared", "m", "Hej från spelet"],
+    ["shared", "k", "1"],
+    ["shared", "dr", "w1", "1"],
+    ["shared", "fall", "1", "4", "4"]
+  ],
+  "sharedSnapshot": "1\tlocal\t5\t10\t2\tw1,q0\n12\tm\tremote\tWebb\tHej\n13\tk\tremote\tWebb\t1\n14\tfall\t1\t5\t0",
+  "recoveredSnapshot": "1\tlocal\t10\t10\t3\tq0\n15\tfall\t2\t0\t1"
+}

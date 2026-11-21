@@ -17,8 +17,8 @@ internal static class PresencePacket
     internal static string DecodeName(string name) =>
         name.Replace("%22", "\"").Replace("%27", "'").Replace("%5C", "\\").Replace("%25", "%");
 
-    internal static string Write(string packet, string? events = null) =>
-        "Key,SourceString\n" + Row("Packet", packet) + (events == null ? "" : Row("Events", events));
+    internal static string Write(string packet, string? events = null, string? shared = null) =>
+        "Key,SourceString\n" + Row("Packet", packet) + (events == null ? "" : Row("Events", events)) + (shared == null ? "" : Row("Shared", shared));
 
     static string Row(string key, string packet)
     {
@@ -111,25 +111,28 @@ internal sealed class PlayerBridge : IAsyncDisposable
                     catch (IOException) { break; }
                     catch (MalformedLineException) { }
                     if (packet == null && age < TimeSpan.FromSeconds(2)) break;
-                    string? snapshot = null;
+                    string? table = null;
                     if (packet == "away")
                     {
                         room.Away();
-                        snapshot = "1\t";
+                        table = room.Table(null);
+                    }
+                    else if (packet?.StartsWith("shared\t", StringComparison.Ordinal) == true)
+                    {
+                        // A Windows sharing retry must not send a chat line or a fall twice.
+                        File.Delete(file.FullName);
+                        room.OfferShared(packet);
+                        continue;
                     }
                     else if (packet != null && PresenceFrame.Read(packet) is { } frame)
                     {
-                        snapshot = room.Sync(frame);
+                        table = room.Table(frame);
                     }
-                    if (snapshot != null)
+                    if (table != null && table != lastOutput)
                     {
-                        string table = PresencePacket.Write(snapshot, room.Events());
-                        if (table != lastOutput)
-                        {
-                            await File.WriteAllTextAsync(temporary, table, new UTF8Encoding(true), ct);
-                            File.Move(temporary, output, true);
-                            lastOutput = table;
-                        }
+                        await File.WriteAllTextAsync(temporary, table, new UTF8Encoding(true), ct);
+                        File.Move(temporary, output, true);
+                        lastOutput = table;
                     }
                     File.Delete(file.FullName);
                 }
