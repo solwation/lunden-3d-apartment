@@ -637,6 +637,12 @@ def build_retargeter(core):
     ctl.set_preview_mesh(u.RetargetSourceOrTarget.TARGET, core)
     ctl.remove_all_ops()
     ctl.add_default_ops()
+    # #2367: no Root Motion op. The web rig's root bone is hips itself (no separate root bone above it), so the op put hips on
+    # the ground under the pelvis after Pelvis Motion and the FK chains had placed it: the pieces rigid on hips (the
+    # briefs, the fly) sank into the floor and the trousers' waist stretched down to them.
+    root_motion = ctl.get_index_of_op_by_name("Root Motion")
+    if root_motion < 0 or not ctl.remove_retarget_op(root_motion) or ctl.get_index_of_op_by_name("Root Motion") >= 0:
+        raise RuntimeError(f"{RTG}: could not remove the default Root Motion op")
     ctl.assign_ik_rig_to_all_ops(u.RetargetSourceOrTarget.SOURCE, src)
     ctl.assign_ik_rig_to_all_ops(u.RetargetSourceOrTarget.TARGET, dst)
     ctl.auto_map_chains(u.AutoMapChainType.CLEAR, True)

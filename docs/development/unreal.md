@@ -1451,7 +1451,10 @@ G15's second half: a web look code gives the same figure in Unreal. #2291 owns `
   A legacy code without a height takes 1 where the web uses the player's seeded `tall`. 10–21 draw calls per figure.
 - **Head scale.** `ABP_LundenLook` reads `Look.HeadScale` at every update (a look applied before the anim instance
   existed lost it before; the play test checks the child's head bone, 1.326).
-- **Open** (seen in the pictures, cause not found): a dark sliver on the inner thigh and a grey patch at one foot.
+- **No Root Motion op** (#2367). `RTG_LundenMannequinToWeb` keeps UE's default ops except Root Motion. The web rig's
+  root bone is `hips` itself, so that op put `hips` on the ground under the pelvis after the FK chains had placed the
+  legs. The pieces rigid on `hips` (the briefs, the fly) then showed as a grey patch at the feet, and the trousers'
+  waist, blended with `hips`, stretched into a dark sliver on the inner thigh.
 
 ```text
 node tools/unreal-engine/avatar-looks.mjs [--check]

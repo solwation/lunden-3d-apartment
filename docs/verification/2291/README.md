@@ -32,5 +32,5 @@ No picture of the look menu: a UMG widget does not reach a scene capture, and th
 not show in play; the menu is checked by the play test through the real button.
 
 Known differences (not ported or open, see `docs/development/unreal.md#avatars-looks-2291`): the top's pattern
-(stripes), face sliders, body build and hair length; a dark sliver on the inner thigh and a grey patch at one foot in
-Unreal (cause not found: not vertex welding, not skin weights).
+(stripes), face sliders, body build and hair length. The dark sliver on the inner thigh and the grey patch at one foot
+in these pictures were fixed in #2367 (the retargeter's Root Motion op, see [2367](../2367/README.md)).
