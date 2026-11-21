@@ -1,0 +1,774 @@
+{
+ "crops": {
+  "facade-l-day": {
+   "entrance-lens": [
+    0.5243056,
+    0.5765432,
+    0.5277778,
+    0.5851852
+   ],
+   "entrance-wash": [
+    0.5152778,
+    0.6,
+    0.5215278,
+    0.6135802
+   ],
+   "gallery-lens": [
+    0.5229167,
+    0.2580247,
+    0.5263889,
+    0.2666667
+   ],
+   "upper-room": [
+    0.6375,
+    0.4123457,
+    0.6493056,
+    0.4333333
+   ]
+  },
+  "facade-a-day": {
+   "loggia-lens": [
+    0.7118056,
+    0.4481481,
+    0.7152778,
+    0.4567901
+   ],
+   "lit-room": [
+    0.5173611,
+    0.4432099,
+    0.5263889,
+    0.4592593
+   ],
+   "dark-room": [
+    0.6291667,
+    0.4432099,
+    0.6381944,
+    0.4592593
+   ]
+  },
+  "facade-b-day": {
+   "loggia-lens": [
+    0.7048611,
+    0.4481481,
+    0.7083333,
+    0.4567901
+   ],
+   "lit-room": [
+    0.5090278,
+    0.4432099,
+    0.5180556,
+    0.4592593
+   ],
+   "dark-room": [
+    0.7263889,
+    0.4666667,
+    0.7354167,
+    0.482716
+   ]
+  },
+  "facade-c-day": {
+   "loggia-lens": [
+    0.3284722,
+    0.708642,
+    0.3319444,
+    0.717284
+   ],
+   "lit-room": [
+    0.5326389,
+    0.3592593,
+    0.5416667,
+    0.3753086
+   ],
+   "dark-room": [
+    0.7715278,
+    0.3592593,
+    0.7805556,
+    0.3753086
+   ]
+  },
+  "facade-l-dusk": {
+   "entrance-lens": [
+    0.5243056,
+    0.5765432,
+    0.5277778,
+    0.5851852
+   ],
+   "entrance-wash": [
+    0.5152778,
+    0.6,
+    0.5215278,
+    0.6135802
+   ],
+   "gallery-lens": [
+    0.5229167,
+    0.2580247,
+    0.5263889,
+    0.2666667
+   ],
+   "upper-room": [
+    0.6375,
+    0.4123457,
+    0.6493056,
+    0.4333333
+   ]
+  },
+  "facade-a-dusk": {
+   "loggia-lens": [
+    0.7118056,
+    0.4481481,
+    0.7152778,
+    0.4567901
+   ],
+   "lit-room": [
+    0.5173611,
+    0.4432099,
+    0.5263889,
+    0.4592593
+   ],
+   "dark-room": [
+    0.6291667,
+    0.4432099,
+    0.6381944,
+    0.4592593
+   ]
+  },
+  "facade-b-dusk": {
+   "loggia-lens": [
+    0.7048611,
+    0.4481481,
+    0.7083333,
+    0.4567901
+   ],
+   "lit-room": [
+    0.5090278,
+    0.4432099,
+    0.5180556,
+    0.4592593
+   ],
+   "dark-room": [
+    0.7263889,
+    0.4666667,
+    0.7354167,
+    0.482716
+   ]
+  },
+  "facade-c-dusk": {
+   "loggia-lens": [
+    0.3284722,
+    0.708642,
+    0.3319444,
+    0.717284
+   ],
+   "lit-room": [
+    0.5326389,
+    0.3592593,
+    0.5416667,
+    0.3753086
+   ],
+   "dark-room": [
+    0.7715278,
+    0.3592593,
+    0.7805556,
+    0.3753086
+   ]
+  },
+  "facade-l-courtyard-dusk": {
+   "patio-lens": [
+    0.4520833,
+    0.2864198,
+    0.4555556,
+    0.2950617
+   ],
+   "lit-room": [
+    0.525,
+    0.3790123,
+    0.5340278,
+    0.3950617
+   ],
+   "dark-room": [
+    0.4229167,
+    0.3839506,
+    0.4319444,
+    0.4
+   ]
+  }
+ },
+ "stats": {
+  "facade-l-day": {
+   "web": {
+    "entrance-lens": {
+     "srgb": [
+      120.7,
+      113.8,
+      110.7
+     ],
+     "luminance": 0.2076,
+     "warmth": 1.091
+    },
+    "entrance-wash": {
+     "srgb": [
+      127,
+      68.3,
+      52
+     ],
+     "luminance": 0.0987,
+     "warmth": 2.442
+    },
+    "gallery-lens": {
+     "srgb": [
+      153.5,
+      152.9,
+      147.2
+     ],
+     "luminance": 0.3392,
+     "warmth": 1.043
+    },
+    "upper-room": {
+     "srgb": [
+      122.8,
+      124,
+      119
+     ],
+     "luminance": 0.1997,
+     "warmth": 1.032
+    }
+   },
+   "unreal": {
+    "entrance-lens": {
+     "srgb": [
+      136.1,
+      133,
+      127.5
+     ],
+     "luminance": 0.2445,
+     "warmth": 1.067
+    },
+    "entrance-wash": {
+     "srgb": [
+      163.7,
+      116.8,
+      105
+     ],
+     "luminance": 0.227,
+     "warmth": 1.558
+    },
+    "gallery-lens": {
+     "srgb": [
+      178.4,
+      177.7,
+      173.7
+     ],
+     "luminance": 0.4603,
+     "warmth": 1.027
+    },
+    "upper-room": {
+     "srgb": [
+      113.9,
+      114.3,
+      108.5
+     ],
+     "luminance": 0.1679,
+     "warmth": 1.05
+    }
+   }
+  },
+  "facade-a-day": {
+   "web": {
+    "loggia-lens": {
+     "srgb": [
+      130.4,
+      130.7,
+      124
+     ],
+     "luminance": 0.2403,
+     "warmth": 1.051
+    },
+    "lit-room": {
+     "srgb": [
+      125.8,
+      129.7,
+      130.5
+     ],
+     "luminance": 0.2194,
+     "warmth": 0.964
+    },
+    "dark-room": {
+     "srgb": [
+      123.8,
+      124.8,
+      118.8
+     ],
+     "luminance": 0.2021,
+     "warmth": 1.042
+    }
+   },
+   "unreal": {
+    "loggia-lens": {
+     "srgb": [
+      150.8,
+      150.3,
+      146.4
+     ],
+     "luminance": 0.3172,
+     "warmth": 1.03
+    },
+    "lit-room": {
+     "srgb": [
+      121.2,
+      124,
+      123
+     ],
+     "luminance": 0.1993,
+     "warmth": 0.986
+    },
+    "dark-room": {
+     "srgb": [
+      116.1,
+      116.1,
+      109.2
+     ],
+     "luminance": 0.1734,
+     "warmth": 1.063
+    }
+   }
+  },
+  "facade-b-day": {
+   "web": {
+    "loggia-lens": {
+     "srgb": [
+      131.9,
+      133.4,
+      130.9
+     ],
+     "luminance": 0.2535,
+     "warmth": 1.008
+    },
+    "lit-room": {
+     "srgb": [
+      115,
+      114.1,
+      112.9
+     ],
+     "luminance": 0.1697,
+     "warmth": 1.019
+    },
+    "dark-room": {
+     "srgb": [
+      138.8,
+      143.2,
+      144.8
+     ],
+     "luminance": 0.2764,
+     "warmth": 0.959
+    }
+   },
+   "unreal": {
+    "loggia-lens": {
+     "srgb": [
+      157.7,
+      157.3,
+      153.9
+     ],
+     "luminance": 0.3526,
+     "warmth": 1.025
+    },
+    "lit-room": {
+     "srgb": [
+      111.3,
+      108.5,
+      106.7
+     ],
+     "luminance": 0.1536,
+     "warmth": 1.043
+    },
+    "dark-room": {
+     "srgb": [
+      147.6,
+      150.8,
+      150.9
+     ],
+     "luminance": 0.3331,
+     "warmth": 0.979
+    }
+   }
+  },
+  "facade-c-day": {
+   "web": {
+    "loggia-lens": {
+     "srgb": [
+      141.6,
+      139.3,
+      133.1
+     ],
+     "luminance": 0.2597,
+     "warmth": 1.064
+    },
+    "lit-room": {
+     "srgb": [
+      195.6,
+      195.6,
+      194.7
+     ],
+     "luminance": 0.5493,
+     "warmth": 1.005
+    },
+    "dark-room": {
+     "srgb": [
+      130.4,
+      136.4,
+      136.4
+     ],
+     "luminance": 0.2428,
+     "warmth": 0.956
+    }
+   },
+   "unreal": {
+    "loggia-lens": {
+     "srgb": [
+      151.4,
+      150,
+      143
+     ],
+     "luminance": 0.3041,
+     "warmth": 1.059
+    },
+    "lit-room": {
+     "srgb": [
+      180.1,
+      181,
+      180
+     ],
+     "luminance": 0.4605,
+     "warmth": 1
+    },
+    "dark-room": {
+     "srgb": [
+      116.9,
+      119.6,
+      118.9
+     ],
+     "luminance": 0.1845,
+     "warmth": 0.984
+    }
+   }
+  },
+  "facade-l-dusk": {
+   "web": {
+    "entrance-lens": {
+     "srgb": [
+      204.2,
+      177.4,
+      138.9
+     ],
+     "luminance": 0.5911,
+     "warmth": 1.47
+    },
+    "entrance-wash": {
+     "srgb": [
+      62.2,
+      44,
+      30.6
+     ],
+     "luminance": 0.0294,
+     "warmth": 2.031
+    },
+    "gallery-lens": {
+     "srgb": [
+      167.6,
+      144.4,
+      108.6
+     ],
+     "luminance": 0.414,
+     "warmth": 1.543
+    },
+    "upper-room": {
+     "srgb": [
+      4,
+      4,
+      1.8
+     ],
+     "luminance": 0.0012,
+     "warmth": 2.164
+    }
+   },
+   "unreal": {
+    "entrance-lens": {
+     "srgb": [
+      183,
+      170.6,
+      144
+     ],
+     "luminance": 0.4735,
+     "warmth": 1.271
+    },
+    "entrance-wash": {
+     "srgb": [
+      64.1,
+      45.8,
+      26.6
+     ],
+     "luminance": 0.0313,
+     "warmth": 2.414
+    },
+    "gallery-lens": {
+     "srgb": [
+      157.1,
+      146.6,
+      123.8
+     ],
+     "luminance": 0.3877,
+     "warmth": 1.269
+    },
+    "upper-room": {
+     "srgb": [
+      6.4,
+      5.4,
+      4.5
+     ],
+     "luminance": 0.0017,
+     "warmth": 1.417
+    }
+   }
+  },
+  "facade-a-dusk": {
+   "web": {
+    "loggia-lens": {
+     "srgb": [
+      183.9,
+      161.5,
+      124.2
+     ],
+     "luminance": 0.4733,
+     "warmth": 1.481
+    },
+    "lit-room": {
+     "srgb": [
+      194.1,
+      175.3,
+      141.2
+     ],
+     "luminance": 0.4429,
+     "warmth": 1.375
+    },
+    "dark-room": {
+     "srgb": [
+      5.2,
+      6.2,
+      1.2
+     ],
+     "luminance": 0.0017,
+     "warmth": 4.467
+    }
+   },
+   "unreal": {
+    "loggia-lens": {
+     "srgb": [
+      165.5,
+      152.4,
+      126.4
+     ],
+     "luminance": 0.4074,
+     "warmth": 1.309
+    },
+    "lit-room": {
+     "srgb": [
+      198,
+      185,
+      156.4
+     ],
+     "luminance": 0.4917,
+     "warmth": 1.266
+    },
+    "dark-room": {
+     "srgb": [
+      6.8,
+      6,
+      4.9
+     ],
+     "luminance": 0.0018,
+     "warmth": 1.391
+    }
+   }
+  },
+  "facade-b-dusk": {
+   "web": {
+    "loggia-lens": {
+     "srgb": [
+      181.2,
+      156.8,
+      124.4
+     ],
+     "luminance": 0.4552,
+     "warmth": 1.456
+    },
+    "lit-room": {
+     "srgb": [
+      216,
+      219.2,
+      225.1
+     ],
+     "luminance": 0.7093,
+     "warmth": 0.959
+    },
+    "dark-room": {
+     "srgb": [
+      2.3,
+      4.4,
+      4.1
+     ],
+     "luminance": 0.0012,
+     "warmth": 0.548
+    }
+   },
+   "unreal": {
+    "loggia-lens": {
+     "srgb": [
+      165.3,
+      151.8,
+      125.5
+     ],
+     "luminance": 0.4021,
+     "warmth": 1.317
+    },
+    "lit-room": {
+     "srgb": [
+      204.7,
+      206.3,
+      208.5
+     ],
+     "luminance": 0.6184,
+     "warmth": 0.981
+    },
+    "dark-room": {
+     "srgb": [
+      7.4,
+      7.6,
+      7.3
+     ],
+     "luminance": 0.0023,
+     "warmth": 1.009
+    }
+   }
+  },
+  "facade-c-dusk": {
+   "web": {
+    "loggia-lens": {
+     "srgb": [
+      253.6,
+      217,
+      162.8
+     ],
+     "luminance": 0.7328,
+     "warmth": 1.558
+    },
+    "lit-room": {
+     "srgb": [
+      215.7,
+      220.7,
+      226.7
+     ],
+     "luminance": 0.7169,
+     "warmth": 0.951
+    },
+    "dark-room": {
+     "srgb": [
+      2.5,
+      6.5,
+      8.1
+     ],
+     "luminance": 0.0018,
+     "warmth": 0.313
+    }
+   },
+   "unreal": {
+    "loggia-lens": {
+     "srgb": [
+      221.1,
+      205.8,
+      172.8
+     ],
+     "luminance": 0.6245,
+     "warmth": 1.28
+    },
+    "lit-room": {
+     "srgb": [
+      187.2,
+      189.1,
+      192.5
+     ],
+     "luminance": 0.5101,
+     "warmth": 0.972
+    },
+    "dark-room": {
+     "srgb": [
+      7,
+      6.7,
+      6
+     ],
+     "luminance": 0.002,
+     "warmth": 1.167
+    }
+   }
+  },
+  "facade-l-courtyard-dusk": {
+   "web": {
+    "patio-lens": {
+     "srgb": [
+      92.9,
+      84.5,
+      76.6
+     ],
+     "luminance": 0.1777,
+     "warmth": 1.213
+    },
+    "lit-room": {
+     "srgb": [
+      199.8,
+      156.8,
+      105.8
+     ],
+     "luminance": 0.3736,
+     "warmth": 1.889
+    },
+    "dark-room": {
+     "srgb": [
+      7.5,
+      8.5,
+      3.5
+     ],
+     "luminance": 0.0024,
+     "warmth": 2.13
+    }
+   },
+   "unreal": {
+    "patio-lens": {
+     "srgb": [
+      15.5,
+      11.8,
+      9.1
+     ],
+     "luminance": 0.0157,
+     "warmth": 1.716
+    },
+    "lit-room": {
+     "srgb": [
+      206.8,
+      178.1,
+      131.1
+     ],
+     "luminance": 0.4676,
+     "warmth": 1.578
+    },
+    "dark-room": {
+     "srgb": [
+      10.8,
+      9.7,
+      7.8
+     ],
+     "luminance": 0.003,
+     "warmth": 1.382
+    }
+   }
+  }
+ }
+}

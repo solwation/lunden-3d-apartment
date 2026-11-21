@@ -58,7 +58,7 @@ Unreals fasadradians är en uppskattning (*guess*). Den första Windows-renderin
 | C | 0,30414 / 0,62448 | 0,46053 / 0,51011 | 0,18448 / 0,00203 |
 | L, gård | — / 0,01567 | — / 0,46755 | — / 0,00298 |
 
-Loftgångslyktan i START gav 0,38770 mot webbens 0,41396 kl. 18.15. I gårdsvyn skymmer blad flera pixlar på lyktan. Det förklarar varför den lilla mätytan där är mörkare trots att lampan är tänd. Framför Hus A och B har webben också ljuspölar från de låga gångpollarna. De fyra exporterade fasadmaskerna kommer från entréer och loftgångar. Pollarna har [ett eget material i gårdsbyggaren](../../../src/courtyard.js).
+[Mätfilen från Chromium](facade-crop-stats.json) innehåller sRGB, linjär luminans och R/B för båda spelbilderna i alla 29 utsnitt. Loftgångslyktan i START gav 0,38770 mot webbens 0,41396 kl. 18.15. I gårdsvyn skymmer blad flera pixlar på lyktan. Det förklarar varför den lilla mätytan där är mörkare trots att lampan är tänd. Framför Hus A och B har webben också ljuspölar från de låga gångpollarna. De fyra exporterade fasadmaskerna kommer från entréer och loftgångar. Pollarna har [ett eget material i gårdsbyggaren](../../../src/courtyard.js).
 
 ## Upprepa jämförelsen
 
