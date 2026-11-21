@@ -1135,7 +1135,8 @@ PLAYWRIGHT_MODULE=… node tools/unreal-engine/tests/crop-stats.cjs <out> <crops
 ```
 
 The #2307 comparison shots (`tests/lighting-shots.json`: day, 22:00 with all lamps, 22:00 with only the dusk lamps,
-clear and overcast day, a night with the moon) are rendered by both capture scripts with the shared cameras;
+clear and overcast day, a night with the moon; #2326's patio pair on 21 June and 24 December, which sees the
+Christmas tree through the hall only at Christmas) are rendered by both capture scripts with the shared cameras;
 `crop-stats.cjs` gives the mean luminance and warmth of matching crops.
 
 Results: [docs/verification/2283/](../verification/2283/README.md), [docs/verification/2307/](../verification/2307/README.md), [docs/verification/2313/](../verification/2313/README.md).
