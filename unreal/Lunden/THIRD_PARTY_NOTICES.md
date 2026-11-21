@@ -171,6 +171,24 @@ Building footprints, roads, paths and other site geometry (`SITE` in `src/config
 `docs/references/`) are derived from OpenStreetMap data: © OpenStreetMap contributors, available under the Open
 Database License (ODbL) 1.0 (https://www.openstreetmap.org/copyright).
 
+## Pictures in the apartment (`textures/`)
+
+The pictures on L1007's walls and the cat's photo frame are the apartment owner's own photographs of the family's
+pictures, retouched for the game, and one family home drawing. They are included in this Windows version
+with the owner's approval (#2289) and are not licensed for any other use; the artworks they show remain their
+makers' work. Not part of the public web copy.
+
+- `textures/angsgras-sovrum1.jpg`: meadow-grass picture over the bed in Sovrum 1. Source: the owner's photo docs/tavla-sovrum1-angsgras.jpg, straightened, reflections painted out (#284).
+- `textures/eat-sleep-game-repeat-sovrum2.jpg`: neon print "EAT SLEEP GAME REPEAT" in Sovrum 2. Source: the owner's photo docs/tavla-sovrum2-eat-sleep-game-repeat.webp, cropped and straightened (#430).
+- `textures/linjeteckning-sovrum1.jpg`: framed line drawing over the chair in Sovrum 1. Source: the motif traced off the owner's photo (docs/tavla-sovrum1-linjeteckning.png), laid on paper and mount (#404).
+- `textures/miele.jpg`: framed photo of Miele, the family's cat (window board, Övre plan). Source: the owner's photo docs/miele-foto-ram.jpg, cropped and straightened (#322).
+- `textures/stair-pictures.jpg`: the four framed pictures on the upstairs stair wall (fikus, akvarell, peace, solros). Source: the owner's photos docs/tavla-trappa-*.jpg, cropped and straightened (#220, #233).
+- `textures/tavla-akvarell-schaslong.jpg`: watercolour over the chaise in the living room. Source: the owner's photo docs/tavla-akvarell-ansikte-foto.jpg, cropped and straightened (#133, #1095).
+- `textures/tavla-guld-lila-vardagsrum.jpg`: gold and purple painting by the TV in the living room. Source: the owner's photo docs/tavla-guld-lila-40x30.jpg, straightened (#1094).
+- `textures/tavla-svartvit-trappan.jpg`: black and white canvas at the foot of the stair. Source: the owner's photo docs/tavla-svartvit-trappan.jpg, straightened (#286).
+- `textures/teckning-till-mamma.jpg`: the framed home drawing "Till mamma" in the kitchen. Source: a family home drawing, drawn 2 Oct 2026 (#618, #1099, #1883).
+- `textures/the-gulag-sovrum2.jpg`: poster "THE GULAG" in Sovrum 2. Source: the owner's photo docs/tavla-sovrum2-the-gulag.jpg, cropped and straightened (#694).
+
 ## 3D models
 
 Every model file (`avatar-rigged.glb`, `bicycle.glb`, `car-megane.glb`, `car-parked.glb`, `cat-rigged.glb`, `duck-rigged.glb`, `fish-generic.glb`, `pingping.glb`, `pony-rigged.glb`, `santa.glb`, `shark.glb`, `squirrel-rigged.glb`) and all generated geometry are the project's own work,

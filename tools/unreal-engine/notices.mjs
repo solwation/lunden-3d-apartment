@@ -3,7 +3,7 @@
 // music/CREDITS.md (CC BY 4.0, verbatim), data/fonts/README.md + Kalam-OFL.txt (SIL OFL 1.1, verbatim), the
 // terrain licence string in data/elevation.json (Copernicus DEM), Lantmäteriet's elevation points (CC BY 4.0, via
 // kart-api.se; docs/references/elevation-hoje-a/) and OpenStreetMap (ODbL) for the mapped site, and the statement in
-// models/ATTRIBUTION.md that every model is project-authored. --check exits 1 when the committed file is out of date.
+// models/ATTRIBUTION.md that every model is project-authored, and the owner's pictures in textures/ (#2289, PICTURES). --check exits 1 when the committed file is out of date.
 // Packaging (#2248) copies the file next to the game executable. Add a section here for every new third-party source.
 import fs from 'node:fs';
 import path from 'node:path';
@@ -13,7 +13,26 @@ const OUT = path.join(ROOT, 'unreal/Lunden/THIRD_PARTY_NOTICES.md');
 const read = (p) => fs.readFileSync(path.join(ROOT, p), 'utf8').replace(/\r\n/g, '\n').trimEnd();
 const demote = (md) => md.replace(/^(#{1,4}) /gm, '##$1 '); // embedded headings below this file's own
 
+/** #2289: the picture files the furnishing materials carry (textures/; the export embeds each in the GLB it is used in).
+ *  What each shows and where it comes from, from the comments at its use in src/config.js. Approved by the owner for
+ *  the original's Windows version only; never for the public downstream copy. */
+export const PICTURES = [
+  ['angsgras-sovrum1.jpg', 'meadow-grass picture over the bed in Sovrum 1', 'the owner\'s photo docs/tavla-sovrum1-angsgras.jpg, straightened, reflections painted out (#284)'],
+  ['eat-sleep-game-repeat-sovrum2.jpg', 'neon print "EAT SLEEP GAME REPEAT" in Sovrum 2', 'the owner\'s photo docs/tavla-sovrum2-eat-sleep-game-repeat.webp, cropped and straightened (#430)'],
+  ['linjeteckning-sovrum1.jpg', 'framed line drawing over the chair in Sovrum 1', 'the motif traced off the owner\'s photo (docs/tavla-sovrum1-linjeteckning.png), laid on paper and mount (#404)'],
+  ['miele.jpg', 'framed photo of Miele, the family\'s cat (window board, Övre plan)', 'the owner\'s photo docs/miele-foto-ram.jpg, cropped and straightened (#322)'],
+  ['stair-pictures.jpg', 'the four framed pictures on the upstairs stair wall (fikus, akvarell, peace, solros)', 'the owner\'s photos docs/tavla-trappa-*.jpg, cropped and straightened (#220, #233)'],
+  ['tavla-akvarell-schaslong.jpg', 'watercolour over the chaise in the living room', 'the owner\'s photo docs/tavla-akvarell-ansikte-foto.jpg, cropped and straightened (#133, #1095)'],
+  ['tavla-guld-lila-vardagsrum.jpg', 'gold and purple painting by the TV in the living room', 'the owner\'s photo docs/tavla-guld-lila-40x30.jpg, straightened (#1094)'],
+  ['tavla-svartvit-trappan.jpg', 'black and white canvas at the foot of the stair', 'the owner\'s photo docs/tavla-svartvit-trappan.jpg, straightened (#286)'],
+  ['teckning-till-mamma.jpg', 'the framed home drawing "Till mamma" in the kitchen', 'a family home drawing, drawn 2 Oct 2026 (#618, #1099, #1883)'],
+  ['the-gulag-sovrum2.jpg', 'poster "THE GULAG" in Sovrum 2', 'the owner\'s photo docs/tavla-sovrum2-the-gulag.jpg, cropped and straightened (#694)'],
+];
+
 export function notices() {
+  const pictureFiles = fs.readdirSync(path.join(ROOT, 'textures')).filter((f) => /\.(jpe?g|png|webp)$/i.test(f)).sort();
+  const unlisted = pictureFiles.filter((f) => !PICTURES.some(([name]) => name === f));
+  if (unlisted.length) throw new Error(`textures/ has pictures without a notice entry in PICTURES: ${unlisted.join(', ')}`);
   const elevation = JSON.parse(read('data/elevation.json'));
   const models = fs.readdirSync(path.join(ROOT, 'models')).filter((f) => f.endsWith('.glb')).sort();
   return `# Third-party notices — Lunden for Windows
@@ -54,6 +73,15 @@ RH 2000) via the kart-api.se point API: © Lantmäteriet, licensed under CC BY 4
 Building footprints, roads, paths and other site geometry (\`SITE\` in \`src/config.js\`, snapshots in
 \`docs/references/\`) are derived from OpenStreetMap data: © OpenStreetMap contributors, available under the Open
 Database License (ODbL) 1.0 (https://www.openstreetmap.org/copyright).
+
+## Pictures in the apartment (\`textures/\`)
+
+The pictures on L1007's walls and the cat's photo frame are the apartment owner's own photographs of the family's
+pictures, retouched for the game, and one family home drawing. They are included in this Windows version
+with the owner's approval (#2289) and are not licensed for any other use; the artworks they show remain their
+makers' work. Not part of the public web copy.
+
+${PICTURES.map(([file, what, origin]) => `- \`textures/${file}\`: ${what}. Source: ${origin}.`).join('\n')}
 
 ## 3D models
 

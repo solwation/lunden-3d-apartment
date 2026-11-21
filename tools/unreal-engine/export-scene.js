@@ -797,6 +797,7 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
   measurements.buildings = buildings;
   if (ground) measurements.ground = ground;
   if (vegetation) measurements.vegetation = vegetation;
+  for (const { root } of Object.values(roots)) root.updateMatrixWorld(true); // (the mesh centres below)
   measurements.furnishing = furnishingData(byZone, textures, worldMatrix);
   return { glbs, measurements, report: { zones: zoneReport, kinds: stats, skipped, lightsError: lightsInfo.error, extraError: extra.error, atoms: atoms.length, split, unassigned } };
 }
