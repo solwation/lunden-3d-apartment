@@ -2877,7 +2877,11 @@ month's darkest and lightest leaf colour (`SEASON.trees`, `src/seasons.js`'s per
   (1, 0) is the opaque core, the others round clusters of small pointed leaves thinning to the edge); its world position
   offset sways after `src/sitewind.js` (direction, gust envelope, flutter, clamped to `maxDisplacement`).
   `MI_LundenLeaf` takes the numbers from `look`; `Power` 0.5 is a *guess* until a weather drives it. Spec-hash skip as
-  `build_materials.py` (`Lunden.SpecHash`); lock both `.uasset` before a build that changes them.
+  `build_materials.py` (`Lunden.SpecHash`); lock both `.uasset` before a build that changes them. The master's spec
+  also holds the GUIDs of the collection parameters it reads (`WindX`, `WindY` in `MPC_LundenWeather`, `Month` in
+  `MPC_LundenVegetation`, read with `export_text` because the struct's `Id` is protected; #2383). A master built
+  against other GUIDs compiles but reads nothing (its wind expressions lost their names after a collection rebuild), so
+  a changed GUID now rebuilds it and `--check` fails on it.
 - `Generated/VegetationWorld/` (not versioned, cleared on disk at each build): a copy of each imported vegetation mesh
   with Nanite off (#2298) and `MI_LundenLeaf` on the `look.leafKeys` slots, one `FoliageType_InstancedStaticMesh` per
   copy, and `Level_vegetation_foliage`: an `InstancedFoliageActor` with one instance per imported actor

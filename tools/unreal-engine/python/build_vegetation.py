@@ -34,6 +34,7 @@ unchanged (build-stamp.json). --check verifies the materials' spec hashes and th
 """
 import hashlib
 import json
+import re
 import os
 from pathlib import Path
 import shutil
@@ -172,10 +173,36 @@ return float4(light + (rgb - 0.5) * (1 - abs(2 * light - 1)) * sat, saturate(row
 """.replace("ROWS", ", ".join(rows)).replace("BLOSSOM", blossom)
 
 
+def collection_ids():
+    """#2383: the GUIDs of the collection parameters the master reads (WindX, WindY, Month). A CollectionParameter
+    expression stores the parameter's GUID and finds its name through it, so a collection rebuilt with new structs
+    left the master's wind reading nothing although the material still compiled. The GUIDs go into the master's spec
+    hash: a new GUID rebuilds the master, and --check fails on a master built against other GUIDs. The structs' Id is
+    protected from Python; export_text carries it."""
+    out = {}
+    for path, names in ((WEATHER, ("WindX", "WindY")), (CALENDAR, ("Month",))):
+        mpc = eal.load_asset(path)
+        if mpc is None:
+            raise RuntimeError(f"{path} is missing: run build_lighting.py / build_seasons.py first")
+        ids = {}
+        for prop in ("scalar_parameters", "vector_parameters"):
+            for p in mpc.get_editor_property(prop):
+                text = p.export_text()
+                g, n = re.search(r"Id=([0-9A-F]{32})", text), re.search(r'ParameterName="?([^",)]+)', text)
+                if g and n:
+                    ids[n.group(1)] = g.group(1)
+        missing = [n for n in names if n not in ids]
+        if missing:
+            raise RuntimeError(f"{path} has no parameter(s) {missing}")
+        out[path] = {n: ids[n] for n in names}
+    return out
+
+
 def material_specs(look):
     w = look["wind"]
     master = {"what": "two-sided leaf master with monthly colour and cover per vertex, leaf cut-out and weather-driven sway", "hlsl": WIND_HLSL,
-              "mask": MASK_HLSL, "weather": WEATHER, "calendar": CALENDAR, "crown": crown_shader(look)}
+              "mask": MASK_HLSL, "weather": WEATHER, "calendar": CALENDAR, "crown": crown_shader(look),
+              "collectionIds": collection_ids()}
     curve = w.get("power", LEGACY_WIND_CURVE)
     leaf = {"parent": MASTER, "vectors": {"LeafDark": look["leafDark"], "LeafLight": look["leafLight"]},
             "scalars": {"Roughness": 0.92, "Amp": w["amp"], "Freq": w["freq"], "Flutter": w["flutter"],
@@ -230,6 +257,10 @@ def build_master(spec, existing):
     m = existing or u.AssetToolsHelpers.get_asset_tools().create_asset(name, folder, u.Material, u.MaterialFactoryNew())
     if existing:
         mel.delete_all_material_expressions(m)
+        # #2383: delete_all_material_expressions left one old collection expression (WindX, its GUID orphaned by a
+        # collection rebuild) in the graph; remove whatever expression the material still owns
+        for e in [e for e in u.ObjectIterator(u.MaterialExpression) if e.get_outer() == m]:
+            mel.delete_material_expression(m, e)
     m.set_editor_property("blend_mode", u.BlendMode.BLEND_MASKED)
     m.set_editor_property("two_sided", True)
     m.set_editor_property("opacity_mask_clip_value", 0.5)
