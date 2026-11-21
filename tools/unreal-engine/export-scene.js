@@ -768,6 +768,17 @@ function measurementData({ world, planCopy, W, D, byZone, lightsInfo, materialTa
   }
   for (const l of lightsInfo.lamps) lights.push({ id: null, kind: 'room', name: null, level: l.level, room: l.room, position: P(l.pos.x, l.pos.y, l.pos.z),
     intensity: l.intensity, distance: l.distance, color: l.color });
+  // #2283: a light without an exported object (a room's ceiling light point, a lamp whose object is not a node) gets a
+  // stable id of its own from kind, name or room, level and plan position, so Unreal's light actors and #2285's
+  // switches share it. Lamps on an exported object keep that object's id.
+  const lightIds = new Set(lights.map((l) => l.id).filter(Boolean));
+  for (const l of lights) {
+    if (l.id) continue;
+    const [x, , z] = l.position.web, base = `${l.kind}_${slug(l.name ?? l.room) || 'light'}_l${l.level}_${tag('x', x)}_${tag('z', z)}`;
+    let id = base, n = 2;
+    while (lightIds.has(id)) id = `${base}_${n++}`;
+    lightIds.add(id); l.id = id;
+  }
   return {
     formatVersion: FORMAT_VERSION,
     kind: 'lunden-measurements',
@@ -799,7 +810,19 @@ function measurementData({ world, planCopy, W, D, byZone, lightsInfo, materialTa
       flights: C.STAIR.treads, hole: C.STAIR.hole, railHeight: C.STAIR.railHeight, source: 'src/config.js#STAIR, src/stairs.js' },
     doors, windows, lights,
     terrain: null, // filled in by tools/unreal-engine/export-world.mjs (a reference to data/elevation.json, not a copy)
-    site: { geo: C.SITE.geo, planNorthDeg: C.DAY?.planNorth ?? null, source: 'src/config.js#SITE.geo, DAY.planNorth' },
+    site: { geo: C.SITE.geo, planNorthDeg: C.DAY?.planNorth ?? null, source: 'src/config.js#SITE.geo, DAY.planNorth',
+      // #2283: the observer src/daycycle.js puts the sun and moon over (not the OSM anchor above), for Unreal's sun
+      // and the web's own light and weather numbers it scales (relative web units; Unreal calibrates them, #2283)
+      sky: { lat: C.DAY.lat, lon: C.DAY.lon, planNorthDeg: C.DAY.planNorth,
+        light: { sunOvercast: C.LIGHTING.sky.overcast.sun, sunClear: C.LIGHTING.sky.clear.sun, moonlight: C.DAY.moonlight, moonFloor: C.DAY.moonFloor,
+          moonExp: C.DAY.moonExp, sunCut: C.WEATHER.sunCut, fogFar: C.WEATHER.fogFar,
+          ambientOvercast: C.LIGHTING.sky.overcast.ambient, ambientClear: C.LIGHTING.sky.clear.ambient, nightAmbient: C.DAY.nightAmbient,
+          hemiSky: '#' + C.LIGHTING.sky.hemi.sky.toString(16).padStart(6, '0'), hemiGround: '#' + C.LIGHTING.sky.hemi.ground.toString(16).padStart(6, '0') },
+        rain: { speed: C.WEATHER.speed, len: C.WEATHER.len, radius: C.WEATHER.radius, height: C.WEATHER.height, drops: C.WEATHER.drops,
+          slantPerMs: C.WEATHER.slant.perMs, slantMax: C.WEATHER.slant.max },
+        snow: { speed: C.WEATHER.snow.speed, sway: C.WEATHER.snow.sway, size: C.WEATHER.snow.size, flakes: C.WEATHER.snow.flakes,
+          driftPerMs: C.WEATHER.snowDrift.perMs, driftMax: C.WEATHER.snowDrift.max },
+        source: 'src/config.js#DAY, LIGHTING.sky, WEATHER; src/daycycle.js sunDirection, src/moon.js moonState' } },
     materials: materialTable,
     fixture: { points: fixturePoints(W, D).map((p) => ({ id: p.id, name: p.name, ...P(...p.web) })),
       arrows: [{ id: 'fixture_arrow_north', direction: 'north', web: [0, 0, -1], unreal: webToUnrealRounded([0, 0, -1]) },

@@ -68,6 +68,13 @@
       "builder": "build_site.py",
       "streaming": "always",
       "what": "walkable ground collision of l1007-entre, gard and omgivning (incl. the street to and through the portik): full-mesh complex collision copies of the terrain, asphalt, paving, paths, bridge decks and the ground plates under Hus L"
+    },
+    {
+      "package": "/Game/Lunden/Generated/Lighting/Level_lighting",
+      "owner": "#2283",
+      "builder": "build_lighting.py",
+      "streaming": "always",
+      "what": "the sky and the clock (BP_LundenSky: sun and moon after the web's daycycle.js/moon.js, atmosphere, sky light, fog, clouds, rain/snow/wet post process) and one BP_LundenLamp per exported light, tagged lamp:<id>"
     }
   ]
 }

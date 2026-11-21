@@ -96,6 +96,14 @@ tools/unreal-engine/python/build_save.py      the save file /Game/Lunden/Save/: 
 tools/unreal-engine/tests/test_save.py        PIE test: v0 migration, place/facing/settings/name/look/id over a restart
 tools/unreal-engine/tests/save-v0.sav         frozen version-0 save (no SaveVersion, no PlayerId) for the migration test
 unreal/Lunden/Content/Lunden/Save/            SG_LundenSave, BFL_LundenSave, BPC_LundenSave (LFS; made by build_save.py)
+tools/unreal-engine/python/build_lighting.py  sky, sun/moon clock, weather post process and the lamps (#2283): Lighting/ assets and
+                                   the generated sub-level Generated/Lighting/Level_lighting
+tools/unreal-engine/tests/test_lighting.py    PIE test: lamp ids = export ids, lamp events, sun/moon cases, rain/snow toggles, PC clock
+tools/unreal-engine/check-sun.mjs             Unreal's sun and moon (lighting-result.json) against the web's daycycle.js/moon.js, 1°
+tools/unreal-engine/tests/capture_lighting.py GPU views of L_Lunden with its own lighting: day, evening, rain and snow (nothing saved)
+unreal/Lunden/Content/Lunden/Lighting/        BP_LundenSky, BP_LundenLamp, MPC_LundenWeather, M_LundenPrecipitation,
+                                   T_LundenHemisphere (LFS; made by build_lighting.py), T_PilotClearSky (the #2246
+                                   pilot's sky cubemap, still used by the capture scripts' temporary rig)
 ```
 
 The rendering values in `Config/DefaultEngine.ini` are **assumptions** modelled on what a UE 5.x Blank C++ template
@@ -424,6 +432,7 @@ open the map (see [Parallel work](#parallel-work-levels-and-blueprints)).
 | `/Game/Lunden/Generated/gard/Level_gard` | #2280 (importer output) | `import_world.py --zones gard` | the courtyard on the garage box: terrain, walks, pergolas, sandboxes, playground, boule court, benches, beds |
 | `/Game/Lunden/Generated/omgivning/Level_omgivning` | #2280 (importer output) | `import_world.py --zones omgivning` | terrain, streets, pavements, parked cars, street furniture, the Höje å valley with paths, bridges and water surface |
 | `/Game/Lunden/Generated/SiteWorld/Level_site_collision` | #2280 | `build_site.py` | walkable ground collision of `l1007-entre`, `gard` and `omgivning` (complex-as-simple full-mesh copies) |
+| `/Game/Lunden/Generated/Lighting/Level_lighting` | #2283 | `build_lighting.py` | `BP_LundenSky` (sun, moon, sky, fog, clouds, weather) and 36 `BP_LundenLamp`s tagged `lamp:<id>` ([Lighting](#lighting-sky-and-weather-2283)) |
 
 `world-levels.json` format (version 1): `map`, `gameMode` (class path; #2284's `BP_LundenGameMode` since 2026-11-21), `playerStart` (always `measurements.json#/spawn/start`) and `levels`, an ordered list of
 `{package, owner, builder, streaming, what}`. `streaming` is `always` (`LevelStreamingAlwaysLoaded`) for now; add a
@@ -464,8 +473,10 @@ door leaves therefore do not block either: closed doors that block and open are 
 front door is the ground collision of `build_site.py` ([Ground](#ground-terrain-streets-courtyard-and-höje-å-2280)),
 which replaced the provisional approach slab `build_l1007.py` placed until #2280.
 
-**Lighting.** The map has none yet; G05 (#2283) adds a lighting sub-level. `capture_l1007.py` adds the pilot's
-temporary sun, sky and room lamps for verification pictures and saves nothing.
+**Lighting.** Since #2283 the sub-level `Generated/Lighting/Level_lighting` lights the map: the sky, the sun and moon
+on the PC's clock, weather and the lamps ([Lighting, sky and weather](#lighting-sky-and-weather-2283)).
+`capture_l1007.py` and `capture_exterior.py` still add the pilot's temporary rig for their own comparison pictures;
+`capture_lighting.py` renders with the map's own lighting.
 
 **Results (2026-11-21, UE 5.8.4, export of ff93015a):** `import_world.py --check` kept the fixture within 0.000 cm over
 9 markers but failed on the l1007 content fingerprint, also without any #2278 asset: a fresh editor finds no simple box
@@ -621,6 +632,72 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-
 
 `build_save.py --v0-fixture <file>` rewrites the version-0 fixture; do that only to repair it, since its value is that
 it stays frozen. Results: [docs/verification/2288/](../verification/2288/README.md).
+
+## Lighting, sky and weather (#2283)
+
+G05's release-1 part: the sun and moon stand where the web puts them over Lund for the date and clock, the sky,
+fog and clouds follow, rain and snow can be switched on and off, and every exported lamp is an actor with its id.
+#2283 owns `/Game/Lunden/Lighting/` (including the pilot's `T_PilotClearSky`), `build_lighting.py`,
+`tests/test_lighting.py`, `tests/capture_lighting.py`, `check-sun.mjs` and the `Lighting` row of `world-levels.json`.
+
+- **Level.** The issue planned `/Game/Lunden/Maps/Zones/Lighting`; the lamps come from the export, so the level is
+  generated like #2278's and #2279's derived levels: `/Game/Lunden/Generated/Lighting/Level_lighting` (Git-ignored,
+  rebuilt by `build_lighting.py`, skipped while its `build-stamp.json` matches). The Blueprints, the material and the
+  parameter collection are versioned in `Lighting/` (LFS).
+- **The clock, in one place.** `BP_LundenSky` reads the PC's local date and time at BeginPlay (`UseClock`, on by
+  default) and runs at `TimeScale` (1 = real time, the web's `DAY.minutes` = 24 h), past midnight into the next date.
+  Tests and captures switch `UseClock` off, set `Year`, `Month`, `Day`, `Hour` and call `UpdateSky` (the test
+  override). `BPC_LundenSeasons` (#2295) reads the same `Now` for its date rule at game start; one source could
+  later feed both.
+- **Sun and moon = the web's formula.** `UpdateSky` is the web's `sunDirection` (Cooper's declination, Spencer's
+  equation of time, the day-of-year 87–300 summer-time rule, `DAY.lat`/`lon`/`planNorth`) and `moon.js`
+  `moonState` turned into a direction as `DayCycle.update` does. `build_lighting.py` keeps them as text and compiles
+  them into Blueprint math nodes, so the graph is a literal transcription. The observer and the web's light numbers
+  come from the export (`measurements.json` `site.sky`, added by #2283: `DAY.lat/lon/planNorth`,
+  `LIGHTING.sky` sun, ambient and hemisphere colours, `DAY.moonlight/moonFloor/moonExp/nightAmbient`, `WEATHER.sunCut`,
+  the rain and snow numbers).
+  Sun by day, moon below −0.02 sun height, both dimmed by `1 − sunCut × overcast` as on the web.
+  *Assumption:* the web's clear sun 3.0 is 8 lux in Unreal (the pilot's calibration); everything else scales with it.
+  Outputs: `SunDirection`, `MoonDirection` (unit vectors towards the body, Unreal axes), `SunElevation`, `Daylight`,
+  `MoonIllumination`.
+- **Sky and fill.** `SkyAtmosphere` lit by both directional lights, a real-time captured `SkyLight`,
+  `ExponentialHeightFog` (denser and greyer under rain or snow, as the web greys sky and fog) and Epic's
+  `VolumetricCloud` material at its default coverage. The sky light's intensity is divided by the sun's weather cut,
+  so the atmosphere it captures keeps the web's hemisphere light under rain (× (1 − 0.3 overcast), `daycycle.js`).
+  The web's flat fill becomes an ambient cubemap, `T_LundenHemisphere` (the web's `LIGHTING.sky.hemi` sky colour above,
+  ground colour below), on a second post-process component whose weight follows the web's `ambient` value (clear
+  0.25, overcast 0.6, `DAY.nightAmbient` at night). Auto exposure is kept within EV100 −4 … 3. Sky-light scale 2,
+  fog grey and the exposure range are *guesses* by eye against the web pictures. Stars, the moon's phase on its disc
+  and weather-driven cloud cover are not ported.
+- **Weather.** `Rain`, `Snow` (0–1), `Wet`, `WindSpeed` (m/s) and `WindFromDeg` (the direction the wind comes from,
+  as Open-Meteo gives it; #2287 reads `WindSpeed`) are public variables; `ToggleRain` and `ToggleSnow` switch one on
+  at full strength (and the other off) or off. Tick soaks `Wet` in about 10 minutes of rain and dries it in about 30
+  (*guess*; the web integrates a film in `src/wetground.js`). `UpdateSky` copies the state to `MPC_LundenWeather`.
+  `M_LundenPrecipitation`, a post-process material on the sky actor, draws the web's drop and flake numbers on eight
+  cylinders round the eye (1.2–14 m, the web's 13 m radius and 9 m height), slanted or drifting with the wind. A
+  sample is drawn only in front of the opaque scene, above the garage deck's soffit and outside four boxes round
+  Hus L (which holds L1007) and Hus A/B/C, taken from the export's measurement rays: so it rains outside and through
+  windows, not in the rooms or under the portik. Wet outdoor surfaces darken and catch a faint sky sheen in the same
+  pass (a simple form of `src/wetground.js` and `src/wetsurface.js`; no puddles or ripples). Not ported: real weather
+  (Open-Meteo), the seeded shower calendar, hail, thunder and lightning, snow cover, frost, rain sound.
+- **Lamps.** One `BP_LundenLamp` per `measurements.json` `lights` entry: 21 lamps on furniture and fittings and the 15
+  ceiling and pendant light points of the rooms, named `Lamp_<id>` and tagged `lamp:<id>`, `kind:lamp|room`, `level:<n>`,
+  `room:<room>`. The exporter now gives the lights without an exported object a stable id
+  (`room_<room>_l<level>_x<cm>_z<cm>`, `lamp_<name>_…`). Events `TurnOn`, `TurnOff`, `Toggle` and the variable `IsOn`
+  are what #2285's switches call (Get All Actors With Tag `lamp:<id>`). All start off; the web's dusk-following small
+  lamps (`LIGHTING.auto`) are not ported. Room light candela = 3.5 × the web intensity, lamps 2 cd, warm white where
+  the export has no colour (*guess*; the pilot's 7 × washed the 22:00 rooms out with all 36 on, and they are still
+  brighter than the web's). No lamp casts shadows (one shadow-casting light, as the web).
+
+```text
+git lfs lock unreal/Lunden/Content/Lunden/Lighting/{BP_LundenSky,BP_LundenLamp,MPC_LundenWeather,M_LundenPrecipitation,T_LundenHemisphere}.uasset
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/build_lighting.py [--force | --check]
+copy tools\unreal-engine\tests\test_lighting.py unreal\Lunden\Content\Python\   (untracked copy, delete afterwards)
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-tests.ps1 -Filter Editor.Python.Lunden.test_lighting
+node tools/unreal-engine/check-sun.mjs unreal/Lunden/Saved/lighting-result.json
+```
+
+Results: [docs/verification/2283/](../verification/2283/README.md).
 
 ## Pilot camera references (#2246)
 
@@ -1277,9 +1354,9 @@ What is exported:
 - **`measurements.json`** (`shared/schema/measurements.schema.json`): levels (FFL, RH, next floor, Unreal Z), START
   (feet/eye, Unreal location/yaw/pitch), player sizes and speeds, stair (foot, rise, riser, treads, opening), every door
   (swing: hinge, width, closed/open angle as web radians and Unreal yaw; sliding/wardrobe: centre and size), windows (plan
-  rectangle, sill, head, transom, opening sash ids), lights (world lamps and the rooms' ceiling/pendant light points),
+  rectangle, sill, head, transom, opening sash ids), lights (world lamps and the rooms' ceiling/pendant light points, each with a stable id since #2283),
   the terrain grid reference (`data/elevation.json` origin/step/size/hash and licence), site geo anchor and plan
-  north, material keys, and the fixture's expected positions. Points carry `web` (m) and `unreal` (cm).
+  north (`site.sky`: the web's sky observer, light and weather numbers, #2283), material keys, and the fixture's expected positions. Points carry `web` (m) and `unreal` (cm).
 - **`export-manifest.json`**: `formatVersion`, source commit (+ dirty flag), SHA-256 per file, and every source file
   with its hash.
 

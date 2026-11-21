@@ -210,7 +210,7 @@ levels and builder scripts. Shared text files (`world-levels.json`, `player-exte
 | G02 | #2280 Terrain, streets, courtyard and river valley | `Site/`, `Maps/Zones/Gard`, `Maps/Zones/Omgivning` | #2279 (export split), #2278 |
 | G03 | #2281 Trees, hedges and grass | `Vegetation/`, `Maps/Zones/Vegetation` | #2280 |
 | G04 | #2282 Surface materials | `Materials/` (including `M_LundenWallPaint`), order of `material-map.json` | #2246 |
-| G05 | #2283 Day light, sky and simulated weather | `Lighting/`, `Maps/Zones/Lighting` (sun, sky, weather, lamp lights with id tags) | #2278 (#2280 for outdoors) |
+| G05 | #2283 Day light, sky and simulated weather | `Lighting/`, generated `Generated/Lighting/Level_lighting` (sun, sky, weather, lamp lights with id tags) | #2278 (#2280 for outdoors) |
 | G06 | #2284 Player movement and collision | `Player/` (character, GameMode, PlayerController, movement input; takes over `Blueprints/Pilot/` after #2246); owns the format of `player-extensions.json` | #2246, #2278 |
 | G07 | #2285 Doors, windows, light switches and taps | `Interaction/`, `Generated/Interaction/` (takes over `Blueprints/PilotDoors/` after #2246) | #2284, #2278 (#2283 for switches) |
 | G08 | #2286 Menu, settings and compass | `UI/` (widgets, HUD class, menu input) | #2284, #2288 |
