@@ -557,6 +557,17 @@ def character_defaults(char, values):
         default.set_editor_property(name, [u.Vector(*p) for p in points])
 
 
+def network_dependencies(rows, measurements_file, check_only):
+    """Build the optional presence components before registering them on the player."""
+    if not any(row["owner"] == "#2292" for row in rows):
+        return
+    import build_network
+    import build_network_peers
+    flags = ["--check"] if check_only else []
+    build_network_peers.main(flags)
+    build_network.main([str(measurements_file), *flags])
+
+
 def extensions(bp, target, rows):
     """Add the rows' components to `bp`; remove components an earlier run added whose row is gone."""
     subsystem = u.get_engine_subsystem(u.SubobjectDataSubsystem)
@@ -674,6 +685,7 @@ def main(argv):
     char = ASSETS.load_asset(CHARACTER) if present else None
     stored = ASSETS.get_metadata_tag(char, SPEC_TAG) if char else ""
     if check_only:
+        network_dependencies(rows, measurements_file, True)
         if not present or stored != spec:
             raise RuntimeError(f"/Game/Lunden/Player is not built from these inputs (stored {stored[:16]}, want {spec[:16]})")
         check_defaults(values)
@@ -682,6 +694,7 @@ def main(argv):
         return
     if present and stored == spec and "--force" not in flags:
         check_defaults(values)
+        network_dependencies(rows, measurements_file, False)
         u.log(f"LUNDEN_PLAYER {DIR}: unchanged, nothing saved; spec {spec[:16]}")
         u.log("LUNDEN_PLAYER_OK")
         return
@@ -705,6 +718,7 @@ def main(argv):
         player_parts.component_defaults(path, part, data, values)
         ASSETS.set_metadata_tag(part, SPEC_TAG, part_spec)
         save(part)
+    network_dependencies(rows, measurements_file, False)
     char = ASSETS.load_asset(CHARACTER) if ASSETS.does_asset_exist(CHARACTER) else new_blueprint(CHARACTER, u.Character)
     character_graph(char, mapping)
     character_defaults(char, values)
