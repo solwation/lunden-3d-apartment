@@ -22,11 +22,39 @@ def emission(g, day, dusk, supply, lit, daylight_colour, lamp_colour):
     return g.op("Add_VectorVector", A=g.op("Multiply_VectorFloat", A=daylight_colour, B=sky), B=lamp)
 
 
+def lamp_visibility(signature):
+    # UE's variable spawner uses the declaring class of bHidden. In an Actor graph that
+    # getter always means self. A function library exposes the real target actor pin.
+    import unreal as u
+    import player_parts as pp
+    path = "/Game/Lunden/Generated/Interaction/BFL_LundenCurtainLighting"
+    method = "IsLampVisible"
+    assets = u.EditorAssetLibrary
+    if assets.does_asset_exist(path):
+        bp = assets.load_asset(path)
+        if assets.get_metadata_tag(bp, "Lunden.SpecHash") == signature:
+            return pp.class_path(path) + ":" + method
+        if u.BlueprintEditorLibrary.find_graph(bp, method):
+            u.BlueprintEditorLibrary.remove_function_graph(bp, method)
+    else:
+        folder, name = path.rsplit("/", 1)
+        bp = u.AssetToolsHelpers.get_asset_tools().create_asset(name, folder, u.Blueprint, u.BlueprintFunctionLibraryFactory())
+    actor = u.BlueprintEditorLibrary.get_object_reference_type(u.Actor.static_class())
+    g, pins = pp.function(bp, method, [("Lamp", actor)], [("Visible", pp.BOOL)], pure=True)
+    g.ret(Visible=g.op("Not_PreBool", A=g.get("bHidden", "/Script/Engine.Actor", pins["Lamp"])))
+    pp.compiled(bp)
+    assets.set_metadata_tag(bp, "Lunden.SpecHash", signature)
+    if not assets.save_loaded_asset(bp, only_if_is_dirty=False):
+        raise RuntimeError("Could not save " + path)
+    return pp.class_path(path) + ":" + method
+
+
 def controller():
     import unreal as u
     import player_parts as pp
     assets, bp_lib = u.EditorAssetLibrary, u.BlueprintEditorLibrary
     signature = hashlib.sha256(Path(__file__).read_bytes().replace(b"\r\n", b"\n")).hexdigest()
+    visible = lamp_visibility(signature)
     lamp = assets.load_asset(LAMP)
     weather = assets.load_asset(WEATHER)
     if not lamp or not weather:
@@ -50,14 +78,15 @@ def controller():
     g, _ = pp.function(bp, APPLY)
     g.set("RoomLit", False)
     # Using the lamp class index also finds a lighting sublevel that streamed in after this actor.
-    found = g.run("GameplayStatics:GetAllActorsOfClass", ActorClass=lamp.generated_class().get_path_name())
+    lamp_class = lamp.generated_class().get_path_name()
+    found = g.run("GameplayStatics:GetAllActorsOfClass", ActorClass=lamp_class)
     actor, _, complete = g.loop(pp.out(found, "OutActors"))
     typed = g.cast(actor, ["CastToActor", "Cast To Actor"], u.Actor.static_class(), lamp.generated_class())
-    g.branch(g.get("IsOn", lamp.generated_class().get_path_name(), typed))
-    g.branch(g.op("Not_PreBool", A=g.get("bHidden", "/Script/Engine.Actor", typed)))
+    g.branch(g.get("IsOn", lamp_class, typed))
+    g.branch(g.pure(visible, result="Visible", Lamp=typed))
     # Seasonal lamps and regular lamps carry the same stable lamp:<id> tag.
-    id_tag, _, _ = g.loop(g.get("Tags", "/Script/Engine.Actor", typed))
-    g.branch(g.pure("KismetArrayLibrary:Array_Contains", TargetArray=g.get("LampTags"), ItemToFind=id_tag))
+    id_tag, _, _ = g.loop(g.get("LampTags"))
+    g.branch(g.pure("Actor:ActorHasTag", target=typed, Tag=id_tag))
     g.set("RoomLit", True)
     g = g.fork(complete, 750)
 
