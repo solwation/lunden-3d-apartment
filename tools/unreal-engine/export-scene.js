@@ -251,6 +251,78 @@ const hex = (c) => (c ? '#' + c.getHexString() : null);
 const levelOf = (y) => (y < C.LEVELS[1].floor - 0.05 ? 0 : 1);
 const inBox = (b, p) => p.x >= b.x0 && p.x <= b.x1 && p.z >= b.z0 && p.z <= b.z1 && p.y >= b.y0 && p.y <= b.y1;
 
+// --- furnishing textures (#2289) -------------------------------------------------------------------------------------
+// Furniture, appliances and lamps (and the curtain/blind cloth) keep the web's base-colour texture in the GLB, so
+// Interchange imports each picture, rug, cushion and fabric with its image. Building and ground surfaces keep their
+// plain keys: #2282 rebuilds those looks in Unreal from material-map.json. The texture's id joins the material key
+// (`<key>_t<10 hex>`): one key per look and image. Images load after the synchronous collection, so the driver waits
+// for them (`settleImages`) before the GLBs are written; the collected geometry is unaffected.
+/** The object kinds whose textured materials travel with their image. */
+export const FURNISH_KINDS = new Set(['furniture', 'interactive', 'light']);
+const REPO_URL = new URL('../../', import.meta.url).href;
+/** A repository path for an image URL (the light profile's `textures/light/x.jpg` is the same picture as `textures/x.jpg`). */
+const repoPath = (url) => { const u = String(url ?? ''); const p = u.startsWith(REPO_URL) ? decodeURIComponent(u.slice(REPO_URL.length)) : u; return p.replace(/^textures\/light\//, 'textures/'); };
+const imageLoads = new Set(), canvasSources = new WeakMap();
+if (typeof HTMLImageElement !== 'undefined' && typeof CanvasRenderingContext2D !== 'undefined') {
+  // every image the web loads (to wait for it) and which images were drawn into which canvas (a picture's provenance:
+  // the matted "Till mamma" print is a canvas painted from textures/teckning-till-mamma.jpg); export page only
+  const d = Object.getOwnPropertyDescriptor(HTMLImageElement.prototype, 'src');
+  Object.defineProperty(HTMLImageElement.prototype, 'src', { configurable: true, enumerable: d.enumerable, get: d.get,
+    set(v) { imageLoads.add(this); d.set.call(this, v); } });
+  const draw = CanvasRenderingContext2D.prototype.drawImage;
+  CanvasRenderingContext2D.prototype.drawImage = function (img, ...rest) {
+    const from = img instanceof HTMLImageElement ? [repoPath(img.currentSrc || img.src)] : [...(canvasSources.get(img) ?? [])];
+    if (from.length && this.canvas) { const s = canvasSources.get(this.canvas) ?? new Set(); from.forEach((x) => s.add(x)); canvasSources.set(this.canvas, s); }
+    return draw.call(this, img, ...rest);
+  };
+}
+/** Waits until every image the page started loading has loaded or failed (and their onload painters have run). */
+export async function settleImages(limitMs = 60000) {
+  const t0 = Date.now();
+  for (;;) {
+    const pending = [...imageLoads].filter((i) => !i.complete);
+    if (!pending.length) {
+      await new Promise((r) => setTimeout(r, 50)); // onload handlers (canvas painters) run after `complete`
+      if (![...imageLoads].some((i) => !i.complete)) return;
+      continue;
+    }
+    if (Date.now() - t0 > limitMs) throw new Error(`images still loading after ${limitMs} ms: ${pending.map((i) => repoPath(i.src)).join(', ')}`);
+    await new Promise((r) => setTimeout(r, 50));
+  }
+}
+/** cyrb53: a fast, stable 53-bit string hash, as 14 hex digits. */
+function hash53(str) {
+  let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+  for (let i = 0; i < str.length; i++) { const c = str.charCodeAt(i); h1 = Math.imul(h1 ^ c, 2654435761); h2 = Math.imul(h2 ^ c, 1597334677); }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(16).padStart(14, '0');
+}
+/** One furnishing texture per image identity and sampling (repeat, offset, rotation, wrap, flipY): an image file by
+ *  its path, a canvas by its pixels at collection time, a data texture by its bytes. Returns the table entry or null. */
+function furnishingTexture(map, table, byMap) {
+  if (!map?.image) return null;
+  if (byMap.has(map)) return byMap.get(map);
+  const img = map.image;
+  let kind, ident, file = null;
+  if (typeof HTMLImageElement !== 'undefined' && img instanceof HTMLImageElement) { kind = 'image'; file = repoPath(img.src); ident = file; }
+  else if (typeof HTMLCanvasElement !== 'undefined' && img instanceof HTMLCanvasElement) { kind = 'canvas'; ident = `canvas ${img.width}x${img.height} ${hash53(img.toDataURL())}`; }
+  else if (img.data && img.width && img.height) { kind = 'data'; ident = `data ${img.width}x${img.height} ${hash53(Array.from(img.data, (v) => String.fromCharCode(v & 255)).join(''))}`; }
+  else { byMap.set(map, null); return null; }
+  const sampling = [map.flipY, map.wrapS, map.wrapT, map.offset.x, map.offset.y, map.repeat.x, map.repeat.y, map.rotation].map((v) => (typeof v === 'number' ? r4(v) : v)).join(' ');
+  const id = 't' + hash53(`${ident} | ${sampling}`).slice(-10);
+  let e = table.get(id);
+  if (!e) {
+    const out = map.clone(); // same image and sampling; GLTFExporter flips it for glTF and writes KHR_texture_transform
+    const base = file ? file.split('/').pop().replace(/\.[a-z0-9]+$/i, '') : kind;
+    out.name = `T_${slug(base).replace(/-/g, '_')}_${id}`; out.userData = {};
+    e = { id, kind, file, map, out, name: out.name, keys: new Set(), nodes: new Set(), meshes: new Map() };
+    table.set(id, e);
+  }
+  byMap.set(map, e);
+  return e;
+}
+
 /** Objects that only exist for the web renderer's look (overlays, fake shadows/AO, edge lines, glows): not geometry. */
 function webOnly(o) {
   if (['wall-ao', 'contact-shadows', 'architecture-edges'].includes(o.name)) return 'overlay name';
@@ -519,18 +591,25 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
   }
 
   // ---- build the export scenes ----
-  const materials = new Map(), matCache = new Map(), geoCache = new Map(), materialTable = {};
-  const exportMaterial = (m) => {
-    if (matCache.has(m)) return matCache.get(m);
-    const { key, info } = materialInfo(m);
+  const materials = new Map(), matCache = new Map(), furnishCache = new Map(), geoCache = new Map(), materialTable = {};
+  const textures = new Map(), textureOfMap = new Map(); // #2289: furnishing textures by id, and by web texture
+  // `furnish` (#2289): a furniture/appliance/lamp/curtain mesh keeps its base-colour image (FURNISH_KINDS)
+  const exportMaterial = (m, furnish = false) => {
+    const cache = furnish ? furnishCache : matCache;
+    if (cache.has(m)) return cache.get(m);
+    const { key: base, info } = materialInfo(m);
+    const tex = furnish ? furnishingTexture(m.map, textures, textureOfMap) : null;
+    const key = tex ? `${base}_${tex.id}` : base;
     let em = materials.get(key);
     if (!em) {
       em = new THREE.MeshStandardMaterial({ name: key, color: new THREE.Color(info.color), roughness: info.roughness, metalness: info.metalness,
         transparent: info.opacity < 1, opacity: info.opacity, side: info.doubleSided ? THREE.DoubleSide : THREE.FrontSide, vertexColors: info.vertexColors });
       if (info.emissive) em.emissive = new THREE.Color(info.emissive);
-      materials.set(key, em); materialTable[key] = info;
+      if (tex) { em.map = tex.out; em.userData.texture = tex.id; }
+      materials.set(key, em); materialTable[key] = tex ? { ...info, texture: tex.id } : info;
     }
-    matCache.set(m, em);
+    if (tex) tex.keys.add(key);
+    cache.set(m, em);
     return em;
   };
   const exportGeometry = (mesh, keepColor) => {
@@ -538,23 +617,25 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     if (!geoCache.has(k)) geoCache.set(k, plainGeometry(mesh.geometry, keepColor));
     return geoCache.get(k);
   };
-  const meshNode = (mesh) => {
+  // a curtain or blind cloth (src/curtains.js, src/blinds.js tag the cloth with the openable it belongs to) is a textile
+  const meshNode = (mesh, furnish = false) => {
     const ms = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
     const g = exportGeometry(mesh, ms.some((m) => m.vertexColors));
     if (!g) return null;
-    const em = ms.map(exportMaterial);
+    const cloth = furnish || !!mesh.userData?.door;
+    const em = ms.map((m) => exportMaterial(m, cloth));
     return new THREE.Mesh(g, Array.isArray(mesh.material) ? em : em[0]);
   };
   const stats = {};
-  const subtree = (o, atomId, counter, keys) => { // o's visible exported content, local transforms kept
-    const n = o.isMesh && !o.isInstancedMesh ? meshNode(o) : new THREE.Group();
+  const subtree = (o, atomId, counter, keys, furnish) => { // o's visible exported content, local transforms kept
+    const n = o.isMesh && !o.isInstancedMesh ? meshNode(o, furnish) : new THREE.Group();
     if (!n) return null;
     if (o.isMesh && !o.isInstancedMesh) (Array.isArray(n.material) ? n.material : [n.material]).forEach((m) => keys.add(m.name));
     for (const c of o.children) {
       if (!c.visible || webOnly(c)) continue;
       if (c.isInstancedMesh) {
         for (let i = 0; i < c.count; i++) {
-          const node = meshNode(c); if (!node) continue;
+          const node = meshNode(c, furnish); if (!node) continue;
           c.getMatrixAt(i, im); node.matrix.copy(c.matrix).multiply(im); node.matrix.decompose(node.position, node.quaternion, node.scale);
           node.name = `${atomId}__${counter.n++}`; node.userData = { id: node.name, kind: 'part', parent: atomId };
           (Array.isArray(node.material) ? node.material : [node.material]).forEach((m) => keys.add(m.name));
@@ -562,7 +643,7 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
         }
         continue;
       }
-      const s = subtree(c, atomId, counter, keys);
+      const s = subtree(c, atomId, counter, keys, furnish);
       if (!s) continue;
       s.position.copy(c.position); s.quaternion.copy(c.quaternion); s.scale.copy(c.scale);
       s.name = `${atomId}__${counter.n++}`; s.userData = { id: s.name, kind: 'part', parent: atomId };
@@ -578,14 +659,22 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     for (const a of list) {
       const keys = new Set(), counter = { n: 1 };
       let node;
-      if (a.instance !== undefined) node = meshNode(a.object), node && (Array.isArray(node.material) ? node.material : [node.material]).forEach((m) => keys.add(m.name));
-      else node = subtree(a.object, a.id, counter, keys);
+      const furnish = FURNISH_KINDS.has(a.kind);
+      if (a.instance !== undefined) node = meshNode(a.object, furnish), node && (Array.isArray(node.material) ? node.material : [node.material]).forEach((m) => keys.add(m.name));
+      else node = subtree(a.object, a.id, counter, keys, furnish);
       if (!node) continue;
       worldMatrix(a).decompose(node.position, node.quaternion, node.scale);
       node.name = a.id;
       node.userData = { id: a.id, kind: a.kind, zone: zoneId, level: a.level, source: a.source ?? null, name: a.name ?? null,
         webId: a.webId ?? null, materialKeys: [...keys].sort() };
       if (a.seasonal) node.userData.seasonal = a.seasonal;
+      node.traverse((m) => { // #2289: which nodes and meshes show each furnishing texture
+        if (!m.isMesh) return;
+        for (const mat of Array.isArray(m.material) ? m.material : [m.material]) {
+          const e = mat.userData.texture && textures.get(mat.userData.texture);
+          if (e) { e.nodes.add(a.id); if (!e.meshes.has(m.name)) e.meshes.set(m.name, m); }
+        }
+      });
       node.traverse((m) => { if (m.isMesh) tris += (m.geometry.index ? m.geometry.index.count : m.geometry.getAttribute('position').count) / 3; });
       root.add(node);
       stats[a.kind] = (stats[a.kind] ?? 0) + 1;
@@ -658,10 +747,12 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
   }
 
   // ---- GLB per zone ----
+  // #2289: the furnishing textures' images must have loaded (and canvases painted from them) before they are written
+  if (textures.size) await settleImages();
   const exporter = new GLTFExporter();
   const glbs = {}, zoneReport = [];
   for (const [zoneId, { root, triangles }] of Object.entries(roots)) {
-    const buf = await exporter.parseAsync(root, { binary: true, onlyVisible: true, includeCustomExtensions: false, trs: true });
+    const buf = canonicalImages(await exporter.parseAsync(root, { binary: true, onlyVisible: true, includeCustomExtensions: false, trs: true, maxTextureSize: FURNISH_TEXTURE_MAX }));
     let nodes = 0; root.traverse(() => nodes++);
     glbs[`${zoneId}.glb`] = btoa(Array.from(new Uint8Array(buf), (b) => String.fromCharCode(b)).join(''));
     zoneReport.push({ zone: zoneId, nodes, triangles, bytes: buf.byteLength });
@@ -671,7 +762,76 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
   const measurements = measurementData({ world, planCopy, W, D, byZone, lightsInfo, materialTable, commit, ZONES, wanted });
   measurements.buildings = buildings;
   if (ground) measurements.ground = ground;
+  measurements.furnishing = furnishingData(byZone, textures, worldMatrix);
   return { glbs, measurements, report: { zones: zoneReport, kinds: stats, skipped, lightsError: lightsInfo.error, extraError: extra.error, atoms: atoms.length, split, unassigned } };
+}
+
+/** GLTFExporter encodes images asynchronously (canvas.toBlob, FileReader) and appends each one's bytes when it is done,
+ *  so their order in the binary chunk varies between runs. This puts the image buffer views back in image order (they
+ *  are the last views, after all geometry), so two exports of one commit stay byte-identical (#2289). */
+function canonicalImages(buf) {
+  const dv = new DataView(buf), jsonLen = dv.getUint32(12, true);
+  const json = JSON.parse(new TextDecoder().decode(new Uint8Array(buf, 20, jsonLen)));
+  if (!json.images?.length || buf.byteLength <= 20 + jsonLen) return buf;
+  const binLen = dv.getUint32(20 + jsonLen, true), bin = new Uint8Array(buf, 20 + jsonLen + 8, binLen);
+  const views = json.images.map((im) => im.bufferView), slots = [...views].sort((x, y) => x - y), mine = new Set(views);
+  const start = Math.min(...views.map((v) => json.bufferViews[v].byteOffset ?? 0));
+  for (const [i, v] of json.bufferViews.entries()) if (!mine.has(i) && (v.byteOffset ?? 0) + v.byteLength > start) throw new Error('canonicalImages: image bytes are not the last views');
+  const pad4 = (n) => (n + 3) & ~3;
+  const parts = views.map((v) => { const d = json.bufferViews[v]; return bin.subarray(d.byteOffset ?? 0, (d.byteOffset ?? 0) + d.byteLength); });
+  const newViews = json.bufferViews.slice(), out = new Uint8Array(binLen);
+  out.set(bin.subarray(0, start));
+  let at = start;
+  parts.forEach((bytes, k) => {
+    newViews[slots[k]] = { ...json.bufferViews[views[k]], byteOffset: at, byteLength: bytes.byteLength };
+    json.images[k].bufferView = slots[k];
+    out.set(bytes, at); at += pad4(bytes.byteLength);
+  });
+  if (at > binLen) throw new Error('canonicalImages: images grew');
+  json.bufferViews = newViews;
+  const raw = new TextEncoder().encode(JSON.stringify(json)), jsonBytes = new Uint8Array(pad4(raw.length)).fill(0x20);
+  jsonBytes.set(raw);
+  const res = new ArrayBuffer(12 + 8 + jsonBytes.length + 8 + binLen), rv = new DataView(res), ru = new Uint8Array(res);
+  rv.setUint32(0, 0x46546c67, true); rv.setUint32(4, 2, true); rv.setUint32(8, res.byteLength, true);
+  rv.setUint32(12, jsonBytes.length, true); rv.setUint32(16, 0x4e4f534a, true); ru.set(jsonBytes, 20);
+  rv.setUint32(20 + jsonBytes.length, binLen, true); rv.setUint32(24 + jsonBytes.length, 0x004e4942, true); ru.set(out, 28 + jsonBytes.length);
+  return res;
+}
+
+/** Longest side of a texture image in the GLB (#2289): the web's largest canvases are 2048 px. */
+const FURNISH_TEXTURE_MAX = 2048;
+
+/** #2289: where the web puts every piece of furniture, appliance and lamp (its node's world transform) in Unreal terms,
+ *  and every furnishing texture with what it shows and where. Unreal's test (tools/unreal-engine/tests/test_furnishing.py)
+ *  checks the imported actors and materials against these. Axes: Unreal local X / Y / Z are the web's local x / z / y. */
+function furnishingData(byZone, textures, worldMatrix) {
+  const S = (v) => [r4(v.x), r4(v.z), r4(v.y)];
+  const items = [];
+  const p = new THREE.Vector3(), q = new THREE.Quaternion(), s = new THREE.Vector3(), e = new THREE.Vector3();
+  const axes = (quat) => ({ x: S(e.set(1, 0, 0).applyQuaternion(quat)), y: S(e.set(0, 0, 1).applyQuaternion(quat)), z: S(e.set(0, 1, 0).applyQuaternion(quat)) });
+  for (const [zone, list] of byZone) for (const a of list) {
+    if (!FURNISH_KINDS.has(a.kind)) continue;
+    worldMatrix(a).decompose(p, q, s); // (what the GLB node gets)
+    items.push({ id: a.id, kind: a.kind, zone, level: a.level, name: a.name ?? null, webId: a.webId ?? null, source: a.source ?? null,
+      web: { position: [r4(p.x), r4(p.y), r4(p.z)], quaternion: [r4(q.x), r4(q.y), r4(q.z), r4(q.w)], scale: [r4(s.x), r4(s.y), r4(s.z)] },
+      unreal: { location: webToUnrealRounded([p.x, p.y, p.z]), axes: axes(q), scale: [r4(s.x), r4(s.z), r4(s.y)] } });
+  }
+  const box = new THREE.Box3(), c = new THREE.Vector3();
+  const list = [...textures.values()].sort((x, y) => x.id.localeCompare(y.id)).map((t) => {
+    const img = t.map.image, from = t.kind === 'canvas' ? [...(canvasSources.get(img) ?? [])].sort() : t.file ? [t.file] : [];
+    const meshes = [...t.meshes].sort(([x], [y]) => x.localeCompare(y)).map(([id, mesh]) => {
+      if (!mesh.geometry.boundingBox) mesh.geometry.computeBoundingBox();
+      box.copy(mesh.geometry.boundingBox).applyMatrix4(mesh.matrixWorld).getCenter(c);
+      return { id, centre: { web: [r4(c.x), r4(c.y), r4(c.z)], unreal: webToUnrealRounded([c.x, c.y, c.z]) } };
+    });
+    return { id: t.id, name: t.name, kind: t.kind, file: t.file, images: from, width: img.width ?? null, height: img.height ?? null,
+      flipY: t.map.flipY, wrap: [t.map.wrapS, t.map.wrapT], repeat: [r4(t.map.repeat.x), r4(t.map.repeat.y)], offset: [r4(t.map.offset.x), r4(t.map.offset.y)],
+      rotation: r4(t.map.rotation), keys: [...t.keys].sort(), nodes: [...t.nodes].sort(), meshes };
+  });
+  return { kinds: [...FURNISH_KINDS], items, textures: list, maxTextureSize: FURNISH_TEXTURE_MAX,
+    note: 'items: each exported furniture/appliance/lamp node, its web world transform and the same in Unreal (location cm; axes = the actor\'s forward/right/up unit vectors; scale X/Y/Z). '
+      + 'textures: each base-colour image kept in the GLB (#2289), `images` = the repository files it shows (a canvas: the files drawn into it), the material keys, nodes and mesh nodes (with their world centre) that show it.',
+    source: 'tools/unreal-engine/export-scene.js furnishingTexture, furnishingData' };
 }
 
 /** Simple collision boxes (kind `collision`): the full-height wall rectangles the web collides with and sees through

@@ -1,7 +1,8 @@
 // What the Unreal export is built from (#2245): the source files whose change makes an export stale.
 // Shared by tools/unreal-engine/export-world.mjs (writes the list into export-manifest.json) and tools/unreal-engine/check-export.mjs.
 // The list is the static ES-module import closure of the export's entry modules (the same modules the page loads),
-// plus the data files and the exporter itself, plus models/*.glb (the web's ready-made models, #2245 point 7).
+// plus the data files and the exporter itself, plus models/*.glb (the web's ready-made models, #2245 point 7) and the
+// picture files in textures/ (#2289).
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -46,7 +47,11 @@ export const sha256File = (abs) => sha256(fs.readFileSync(abs));
 export function sourceList(root = ROOT) {
   const models = fs.existsSync(path.join(root, 'models'))
     ? fs.readdirSync(path.join(root, 'models')).filter((f) => f.endsWith('.glb')).map((f) => `models/${f}`) : [];
-  const paths = [...new Set([...importClosure(ENTRY_MODULES, root), ...EXTRA_SOURCES, ...models])]
+  // #2289: the furnishing materials carry the web's picture files (textures/*.jpg; the light copies in textures/light/
+  // are the same pictures) as base-colour images
+  const pictures = fs.existsSync(path.join(root, 'textures'))
+    ? fs.readdirSync(path.join(root, 'textures')).filter((f) => /\.(jpe?g|png|webp)$/i.test(f)).map((f) => `textures/${f}`) : [];
+  const paths = [...new Set([...importClosure(ENTRY_MODULES, root), ...EXTRA_SOURCES, ...models, ...pictures])]
     .filter((p) => fs.existsSync(path.join(root, p))).sort();
   const files = paths.map((p) => ({ path: p, sha256: sha256File(path.join(root, p)) }));
   return { files, sourceHash: sha256(files.map((f) => `${f.sha256}  ${f.path}\n`).join('')) };

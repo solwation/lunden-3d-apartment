@@ -120,6 +120,15 @@
         }
       }
     },
+    "furnishing": {
+      "type": "object",
+      "description": "#2289: every exported furniture/appliance/lamp node's web world transform in web and Unreal terms (`items`; Unreal axes = the actor's forward/right/up unit vectors), and every base-colour texture the GLBs keep for furnishing materials (`textures`: id, the repository images it shows, material keys, nodes and mesh nodes with their world centre). Checked in Unreal by tools/unreal-engine/tests/test_furnishing.py.",
+      "required": ["items", "textures"],
+      "properties": {
+        "items": { "type": "array", "items": { "type": "object", "required": ["id", "kind", "zone", "web", "unreal"] } },
+        "textures": { "type": "array", "items": { "type": "object", "required": ["id", "name", "kind", "images", "keys", "nodes", "meshes"] } }
+      }
+    },
     "fixture": {
       "type": "object", "required": ["points", "arrows"],
       "properties": {
