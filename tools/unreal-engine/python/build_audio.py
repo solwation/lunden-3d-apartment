@@ -10,6 +10,7 @@ Assets (one owner, #2287), all in /Game/Lunden/Audio/:
   MS_LundenStep_<p>      one-shot MetaSound per footstep profile p of src/config.js FOOTSTEPS.profiles (wood = parquet,
                          hard = tile/paving/stone, grass, gravel, and the variants stair, wet, snow, snowCold, leaves):
                          src/footsteps.js synthFootstep (a gliding sine body plus low-passed noise, crackle, partial)
+  MS_LundenWindowWind    one localized wind loop per opening sash, with ATT_LundenWindowWind
   MS_LundenWind          looping MetaSound: src/audio.js sfx.windBed (one noise, low-pass body + band-pass rustle/whistle)
   MS_LundenAmbience      looping MetaSound: river babble, city hum and the rain hiss/roof/metal/leaves/water of sfx.rain
   RE_LundenSoft/Bright/Concrete/Courtyard   ReverbEffects for src/config.js ROOM_REVERB's zones (simple form)
@@ -36,6 +37,7 @@ import sys
 import unreal as u
 
 sys.path.insert(0, str(Path(__file__).parent))
+import window_audio
 import player_parts as pp  # noqa: E402  graph helpers shared with the player (#2300)
 
 REPO = Path(__file__).resolve().parents[3]
@@ -78,7 +80,7 @@ def step_names(P):
 
 def asset_paths(P):
     return ([f"{DIR}/{n}" for n in CLASSES] + [f"{DIR}/MS_LundenStep_{p}" for p in step_names(P)]
-            + [DIR + "/MS_LundenWind", DIR + "/MS_LundenAmbience"]
+            + [DIR + "/MS_LundenWind", DIR + "/MS_LundenAmbience", window_audio.SOUND, window_audio.ATTENUATION]
             + [f"{DIR}/RE_Lunden{z.capitalize()}" for z in ZONES] + [COMPONENT])
 
 
@@ -393,6 +395,7 @@ def build_metasounds(P, classes):
         sounds[profile] = footstep(P, profile).save(f"{DIR}/MS_LundenStep_{profile}", classes["SC_LundenEffects"])
     wind = wind_bed(P).save(DIR + "/MS_LundenWind", classes["SC_LundenAmbience"])
     bed = ambient_bed(P).save(DIR + "/MS_LundenAmbience", classes["SC_LundenAmbience"])
+    window_audio.build_assets(P, classes["SC_LundenEffects"], MetaSound, load_or_create, save)
     return sounds, wind, bed
 
 
@@ -634,11 +637,12 @@ def component_variables(bp, sound_type, reverb_type):
         BP.set_blueprint_variable_instance_editable(bp, name, True)
 
 
-def build_component(P, trees, sounds, wind, bed, reverbs):
-    bp = pp.fresh_component(COMPONENT, FUNCTIONS)
+def build_component(P, trees, sounds, wind, bed, reverbs, sashes):
+    bp = pp.fresh_component(COMPONENT, FUNCTIONS + window_audio.FUNCTIONS)
     sound_type = BP.get_object_reference_type(u.SoundBase.static_class())
     reverb_type = BP.get_object_reference_type(u.ReverbEffect.static_class())
     component_variables(bp, sound_type, reverb_type)
+    window_audio.variables(bp, pp, sound_type)
     me = pp.class_path(COMPONENT)
     step_cls = pp.class_path(STEP_SURFACE)
     sky_cls = pp.class_path(SKY)
@@ -804,6 +808,8 @@ def build_component(P, trees, sounds, wind, bed, reverbs):
     zone = g.op("SelectName", A="concrete", B=zone, bPickA=g.op("EqualEqual_NameName", A=p["Where"], B="core"))
     g.ret(Zone=zone)
 
+    window_audio.graphs(bp, pp, me, P)
+
     # UpdateBeds(): every Every s (WIND_SOUND.every / AMBIENT_BED.every), as src/main.js
     g, _ = pp.function(bp, "UpdateBeds")
     g.run(me + ":ReadSky")
@@ -814,6 +820,7 @@ def build_component(P, trees, sounds, wind, bed, reverbs):
     t = g.pure("KismetSystemLibrary:GetGameTimeInSeconds")
     pw = g.pure(me + ":WindStrength", result="Strength", Speed=g.get("WindSpeed"), Gust=0.5)
     g.set("GustNow", g.pure(me + ":GustAt", result="Gust", T=t, Power=pw))
+    g.run(me + ":UpdateWindows")
     near = g.node_of(me + ":TreeNearness", Location=loc)
     g.set("Near", pp.out(near, "Near"))
     leaves = g.item(g.get("LeavesByMonth"), g.get("Month"))
@@ -888,8 +895,10 @@ def build_component(P, trees, sounds, wind, bed, reverbs):
     ev.run(me + ":UpdateBeds")
     ev.run(me + ":PushWind")
     ev.run(me + ":PushBed")
+    window_audio.end_play(ev, bp, pp)
     pp.compiled(bp)
     defaults(bp, P, trees, sounds, wind, bed, reverbs)
+    window_audio.defaults(u.get_default_object(bp.generated_class()), sashes, ASSETS.load_asset)
     return bp
 
 
@@ -939,11 +948,13 @@ def tree_feet(measurements):
     return sorted({(float(t["foot"]["unreal"][0]), float(t["foot"]["unreal"][1])) for t in measurements["vegetation"]["trees"]})
 
 
-def spec_hash(P, trees):
+def spec_hash(P, trees, sashes):
     text = Path(__file__).read_bytes().replace(b"\r\n", b"\n")
     h = hashlib.sha256(text)
     h.update(json.dumps(P, sort_keys=True).encode())
     h.update(json.dumps(trees).encode())
+    h.update(Path(window_audio.__file__).read_bytes().replace(b"\r\n", b"\n"))
+    h.update(json.dumps(sashes).encode())
     return h.hexdigest()
 
 
@@ -971,10 +982,12 @@ def main(argv):
     P = json.loads(PARAMS_FILE.read_text(encoding="utf-8"))
     if P.get("kind") != "lunden-audio-params" or P.get("formatVersion") != 1:
         raise RuntimeError(f"{PARAMS_FILE}: not a version 1 audio-params.json (run export-audio.mjs)")
-    trees = tree_feet(json.loads(MEASUREMENTS.read_text(encoding="utf-8")))
+    measurements = json.loads(MEASUREMENTS.read_text(encoding="utf-8"))
+    trees = tree_feet(measurements)
+    sashes = window_audio.sash_centres(measurements)
     if not trees:
         raise RuntimeError("measurements.json vegetation.trees is empty: re-export (#2281)")
-    want = spec_hash(P, trees)
+    want = spec_hash(P, trees, sashes)
     if "--check" in flags:
         check(P, want)
         u.log(f"LUNDEN_AUDIO_CHECK_OK {len(asset_paths(P))} assets, spec {want[:12]}")
@@ -995,7 +1008,7 @@ def main(argv):
     if "--metasounds-only" in flags:
         u.log("LUNDEN_AUDIO_OK metasounds only")
         return
-    bp = build_component(P, trees, sounds, wind, bed, reverbs)
+    bp = build_component(P, trees, sounds, wind, bed, reverbs, sashes)
     ASSETS.set_metadata_tag(bp, SPEC_TAG, want)
     save(bp)
     STAMP.write_text(json.dumps({"spec": want, "about": "build_audio.py input hash (#2287)"}, indent=1) + "\n", encoding="utf-8")

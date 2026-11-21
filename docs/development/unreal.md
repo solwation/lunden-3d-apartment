@@ -880,6 +880,12 @@ sound classes of the three `volumes` rows of `ui-extensions.json`.
   gain and a lower low-pass ceiling. *Approximations:* the ease is linear (`InterpTo`) where the web's
   `setTargetAtTime` is exponential. Tree nearness uses every exported tree, where the web uses `treeFeet` alone. A
   moving cut-off uses the engine's Q-to-bandwidth node, which leaves out the small `w0 / sin w0` correction.
+- **Wind through an open sash** (#2320). The audio builder uses the existing interaction IDs, top pivots and lower
+  rail positions from the window export. Each open sash has a stationary mono `MS_LundenWindowWind` at its centre.
+  The sky's wind speed and gust set its low-pass and gain every 0.25 s. Closing one sash fades that voice in 0.4 s.
+  The inverse attenuation matches the web's 1.2 m reference distance and 1.2 rolloff up to Unreal's 50.2 m cull
+  distance. `test_window_audio.py` exercises two sashes in the composed map and changes the sky's wind. Running
+  it with the silent mixer settings from `test_audio_render.py` also checks live voice identity and position.
 - **Room** (*guess*, a simple form of `ROOM_REVERB`'s convolvers). `ZoneFor` is `indoorRoomClass` from the same surface
   class: a core is `concrete`, an indoor hard floor is `bright`, any other indoor floor is `soft`. Outside that,
   `roomreverb.js`'s courtyard rectangle gives `courtyard`, and the rest is `open`. A change of zone calls
