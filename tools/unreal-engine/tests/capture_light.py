@@ -60,7 +60,7 @@ class MapLight:
         # sky once per view instead (in memory, never saved; the game keeps the real-time capture).
         self.skylight.set_editor_property("real_time_capture", False, u.PropertyAccessChangeNotifyMode.NEVER)
 
-    def use(self, name, preset, date=None):
+    def use(self, name, preset, date=None, *, applied_season=None):
         if date is None:
             date = [VIEWS["date"][k] for k in ("year", "month", "day")]
         hour = float(VIEWS["lighting"][name]["hour"])
@@ -71,7 +71,7 @@ class MapLight:
         update_sky_for_capture(self.world, self.sky)
         for lamp in self.lamps:
             lamp.call_method("TurnOn" if preset["lampsOn"] else "TurnOff")
-        hidden = self.seasons.apply(date)
+        hidden = self.seasons.apply(date) if applied_season is None else applied_season
         settle_furnishing_lights(self.world)
         self.skylight.recapture_sky()
         return hidden

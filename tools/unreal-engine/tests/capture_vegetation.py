@@ -41,6 +41,10 @@ def run(scene_path, out_dir, ids=None, iso_date=None):
         raise RuntimeError(f"Cannot load {MANIFEST['map']}: run compose_world.py first")
     world = u.get_editor_subsystem(u.UnrealEditorSubsystem).get_editor_world()
     light = light_for(world)
+    capture_date = (date.year, date.month, date.day)
+    # ApplySeason changes actor collision. Do it once, before the Nanite rebuild registers
+    # replacement physics proxies in this same commandlet tick (as in capture_lighting.py).
+    hidden_seasonal = light.seasons.apply(capture_date)
     fallback = 0
     if os.environ.get("LUNDEN_CAPTURE_NANITE") != "1":
         for path in u.EditorAssetLibrary.list_assets("/Game/Lunden/Generated", recursive=True, include_folder=False):
@@ -62,7 +66,7 @@ def run(scene_path, out_dir, ids=None, iso_date=None):
     observed = []
     for cam in [c for c in scene["cameras"] if c["id"] in wanted]:
         preset = VIEWS["lighting"][cam["lighting"]]
-        hidden_seasonal = light.use(cam["lighting"], preset, (date.year, date.month, date.day))
+        light.use(cam["lighting"], preset, capture_date, applied_season=hidden_seasonal)
         if u.MaterialLibrary.get_scalar_parameter_value(world, calendar, "Month") != date.month:
             raise RuntimeError("The vegetation materials did not receive the capture month")
         obs = render_view(world, out_dir, cam["id"], u.Vector(*cam["xyz"]),
