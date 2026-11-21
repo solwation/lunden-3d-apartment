@@ -36,6 +36,7 @@ import sys
 import unreal as u
 
 sys.path.insert(0, str(Path(__file__).parent))
+from player_pitch import pitch_limit_rad  # noqa: E402
 import player_parts  # noqa: E402  #2300: the step surface sensor and rest components, the sprint and death functions
 
 REPO = Path(__file__).resolve().parents[3]
@@ -97,22 +98,25 @@ def player_values(measurements):
     """Export values (web metres, m/s, rad) as Unreal centimetres, cm/s and degrees."""
     spawn = measurements["spawn"]
     p, f = spawn["player"], spawn["fall"]
-    for key in ("eye", "crouchEye", "radius", "walk", "run", "runOutdoor", "stepUp", "headroom", "jump", "crouchSpeed", "mouseSens", "pitchLimit"):
+    for key in ("eye", "crouchEye", "radius", "walk", "run", "runOutdoor", "stepUp", "headroom", "jump", "crouchSpeed", "mouseSens"):
         if p.get(key) is None:
             raise RuntimeError(f"measurements.json spawn.player.{key} is missing: re-export with this commit")
-    if not 0 < p["pitchLimit"] < math.pi / 2:
-        raise RuntimeError("spawn.player.pitchLimit must be in radians between zero and a quarter turn")
     for key in ("surface", "rest", "respawn"):
         if not spawn.get(key):
             raise RuntimeError(f"measurements.json spawn.{key} is missing: re-export with this commit (#2300, export-player.js)")
     wake = spawn["respawn"]
     blackout = wake["blackout"]
+    pitch_limit = math.degrees(pitch_limit_rad(p))
+    # Historical rest exports rounded degree values and could put a bed just past the standing stop.
+    rest = dict(spawn["rest"])
+    rest["limits"] = {kind: {**bounds, "pitch": [max(-pitch_limit, min(pitch_limit, x)) for x in bounds["pitch"]]}
+                      for kind, bounds in rest["limits"].items()}
     half = 50 * p["headroom"]
     # Crouched capsule: the crouched eye plus the same headroom over the eye as standing (assumption, the web has no
     # crouched body height).
     crouched_half = 50 * (p["crouchEye"] + p["headroom"] - p["eye"])
     return {
-        "pitch_limit": math.degrees(p["pitchLimit"]),
+        "pitch_limit": pitch_limit,
         "radius": 100 * p["radius"], "half_height": half, "crouched_half_height": crouched_half,
         "base_eye_height": 100 * p["eye"] - half - FLOOR_CLEARANCE,
         "crouched_eye_height": 100 * p["crouchEye"] - crouched_half - FLOOR_CLEARANCE,
@@ -130,7 +134,7 @@ def player_values(measurements):
             "ReviveYaw": wake["yaw"], "LastRevive": -1, "Revives": 0, "LastFallFatal": False, "ReviveStart": 0, "BlackoutBefore": -1.0,
         },
         "arrays": {"RevivePoints": [q["unreal"] for q in wake["points"]]},
-        "surface": spawn["surface"], "rest": spawn["rest"],
+        "surface": spawn["surface"], "rest": rest,
     }
 
 

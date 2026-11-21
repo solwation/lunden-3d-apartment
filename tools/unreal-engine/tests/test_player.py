@@ -29,6 +29,8 @@ sys.path.insert(0, str(Path(u.Paths.convert_relative_path_to_full(u.Paths.projec
 import save_isolation  # noqa: E402  #2311: start without the player's save file
 
 PROJECT = Path(u.Paths.convert_relative_path_to_full(u.Paths.project_dir()))
+sys.path.insert(0, str(PROJECT.parents[1] / "tools/unreal-engine/python"))
+from player_pitch import pitch_limit_rad  # noqa: E402
 WORLD = json.loads((PROJECT.parents[1] / "tools/unreal-engine/world-levels.json").read_text(encoding="utf-8"))
 M = json.loads((PROJECT / "Import/measurements.json").read_text(encoding="utf-8"))
 P, F = M["spawn"]["player"], M["spawn"]["fall"]
@@ -230,7 +232,7 @@ def player_test():
             check(f"look{axis}DegPerCount", moving[len(moving) // 2], per_count, 0.001)
         # Cross both stops through Enhanced Input and compare the controller and rendered view with the web limit.
         cam = u.GameplayStatics.get_player_camera_manager(game, 0)
-        limit = math.degrees(P["pitchLimit"])
+        limit = math.degrees(pitch_limit_rad(P))
         for sign, end in ((1, "max"), (-1, "min")):
             bound = sign * limit
             check(f"standingPitch{end}", cam.get_editor_property("view_pitch_" + end), bound, 0.0001)

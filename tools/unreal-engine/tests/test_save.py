@@ -22,10 +22,13 @@ import math
 from pathlib import Path
 import re
 import shutil
+import sys
 import time
 import unreal as u
 
 PROJECT = Path(u.Paths.convert_relative_path_to_full(u.Paths.project_dir()))
+sys.path.insert(0, str(PROJECT.parents[1] / "tools/unreal-engine/python"))
+from player_pitch import pitch_limit_rad  # noqa: E402
 TESTS = PROJECT.parents[1] / "tools/unreal-engine/tests"
 WORLD = json.loads((PROJECT.parents[1] / "tools/unreal-engine/world-levels.json").read_text(encoding="utf-8"))
 SAVED = Path(u.Paths.convert_relative_path_to_full(u.Paths.project_saved_dir()))
@@ -209,7 +212,7 @@ def save_test():
 
         # An older save could look past the web limit. Exercise the same RestorePlace used at startup.
         measurements = json.loads((PROJECT / "Import/measurements.json").read_text(encoding="utf-8"))
-        limit = math.degrees(measurements["spawn"]["player"]["pitchLimit"])
+        limit = math.degrees(pitch_limit_rad(measurements["spawn"]["player"]))
         legacy = disk()
         legacy.set_editor_property("PlaceRotation", u.Rotator(roll=0, pitch=-(90 + limit) / 2, yaw=facing.yaw))
         if not u.GameplayStatics.save_game_to_slot(legacy, SLOT, 0) or not state["save"].call_method("RestorePlace"):

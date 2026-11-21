@@ -595,7 +595,9 @@ one count is 0.0745° on both axes. The mouse speed and inverted-Y settings are 
 as `spawn.player.pitchLimit`. From a fresh export, `build_player.py` converts it to degrees and sets
 `ViewPitchMin/Max` on `BP_LundenCameraManager`. The production controller selects this camera class at spawn.
 Unreal's normal rotation update clamps free look and a restored save to ±83.079° (±1.45 rad). Sitting and lying
-temporarily apply their own exported ranges. Standing up restores the camera's original limits.
+temporarily apply their own exported ranges within those stops. Standing up restores the camera's original limits.
+A format-1 export predating `pitchLimit` uses the historical 1.45 rad limit. An explicitly invalid value fails the build.
+`python3 tools/unreal-engine/tests/player_pitch_legacy_test.py` exercises this compatibility path.
 With the local web server running, `node tools/unreal-engine/tests/player-pitch.cjs <web-url> <measurements.json>`
 checks pointer-locked mouse input against the export at both stops and when turning away from each one. The builder's `--check` verifies the controller binding
 and both camera defaults. After rebuilding the Player assets, run `test_player` for both mouse stops, `test_save`

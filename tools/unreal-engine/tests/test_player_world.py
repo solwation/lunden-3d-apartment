@@ -23,6 +23,8 @@ import time
 import unreal as u
 
 PROJECT = Path(u.Paths.convert_relative_path_to_full(u.Paths.project_dir()))
+sys.path.insert(0, str(PROJECT.parents[1] / "tools/unreal-engine/python"))
+from player_pitch import pitch_limit_rad  # noqa: E402
 sys.path.insert(0, str(PROJECT.parents[1] / "tools/unreal-engine/tests"))
 import save_isolation  # noqa: E402  #2311
 
@@ -206,12 +208,12 @@ def world_test():
             if any(abs(a - b) > 0.001 for a, b in zip(actual, expected)):
                 raise RuntimeError(f"{label}: pitch limits {actual}, expected {expected}")
 
-        limit = math.degrees(P["pitchLimit"])
+        limit = math.degrees(pitch_limit_rad(P))
         check_pitch_range("stoodFromSofa", [-limit, limit])
         bed = next(i for i, s in enumerate(spots) if s["kind"] == "lie")
         rest.call_method("BeginRest", (bed,))
         yield from seconds(R["move"] + 0.4)
-        check_pitch_range("lying", R["limits"]["lie"]["pitch"])
+        check_pitch_range("lying", [max(-limit, min(limit, x)) for x in R["limits"]["lie"]["pitch"]])
         if abs((pc.get_control_rotation().pitch - spots[bed]["startPitch"] + 180) % 360 - 180) > 0.01:
             raise RuntimeError("The lying view did not reach the exported bed pitch")
         rest.call_method("StandUp")
