@@ -2,7 +2,7 @@
 
 Build build_network_peers.py first, then this script with a fresh measurements.json,
 then build_player.py to attach both components. --check verifies without saving.
-Lock Network/BPC_LundenNetwork, ST_LundenGame and ST_LundenPeers before building.
+Lock Network/BPC_LundenNetwork, BP_LundenNetworkListener, ST_LundenGame and ST_LundenPeers before building.
 The Shipping game uses the stock string-table library. The launcher owns the socket.
 With -LundenPlayersBridge=<encoded directory>, the local pawn offers game-N.csv at the
 wire fixture's sampling rate (5 Hz) and reads peers.csv. Each actual write consumes a new
@@ -21,6 +21,7 @@ import unreal as u
 
 sys.path.insert(0, str(Path(__file__).parent))
 import player_parts as pp
+import network_events
 
 DIR = "/Game/Lunden/Network"
 COMPONENT = DIR + "/BPC_LundenNetwork"
@@ -37,7 +38,7 @@ T = "KismetStringTableLibrary:"
 K = "KismetSystemLibrary:"
 ASSETS = u.EditorAssetLibrary
 FUNCTIONS = ("SafeAppearance", "LookScale", "RefreshProfile", "ConfigureBridge", "WritePacket", "ReadPeers",
-             "SetPresenceAway", "FormatFrame", "LocalFrame", "SyncPresence")
+             "SetPresenceAway", "FormatFrame", "LocalFrame", "SyncPresence") + network_events.FUNCTIONS
 
 
 def join(g, fields, sep=""):
@@ -120,6 +121,7 @@ def exchange(bp):
     g.branch(pp.out(parse, "ReturnValue"))
     path = replace(g, pp.out(parse, "OutValue"), [("%29", ")"), ("%2C", ","), ("%20", " "), ("%25", "%")])
     g.branch(g.pure("BlueprintPathsLibrary:DirectoryExists", InPath=path))
+    g.run(ME + "SelectEventSession", Path=path)
     g.set("SessionPath", path)
     g.run(ME + "RefreshProfile")
 
@@ -151,6 +153,7 @@ def exchange(bp):
     g.branch(g.pure("BlueprintPathsLibrary:FileExists", InPath=filename))
     table = g.pure(T + "GetTableId", StringTable=g.get("PeerTable"))
     g.branch(g.pure(T + "ImportTableFromCSVFile", TableId=table, Filename=filename))
+    g.run(ME + "ReceiveEvents", Batch=g.pure(T + "GetTableEntrySourceString", TableId=table, Key="Events"))
     packet = g.pure(T + "GetTableEntrySourceString", TableId=table, Key="Packet")
     g.branch(g.pure(S + "StartsWith", SourceString=packet, InPrefix="1\t"))
     g.branch(g.pure(S + "NotEqual_StrStr", A=packet, B=g.get("LastPeersPacket")))
@@ -225,7 +228,7 @@ def player(bp):
     g.set("HasPublished", g.op("BooleanOR", A=g.get("HasPublished"), B=written))
 
 
-def build(rest, hz):
+def build(rest, hz, listener):
     bp = pp.fresh_component(COMPONENT, FUNCTIONS)
     table_type = pp.BP.get_object_reference_type(u.StringTable.static_class())
     pp.variables(bp, {"SessionPath": pp.STRING, "DisplayName": pp.STRING, "Appearance": pp.STRING, "LastPeersPacket": pp.STRING,
@@ -233,6 +236,7 @@ def build(rest, hz):
                       "LastGameFile": pp.STRING, "GameTable": table_type, "PeerTable": table_type, "FirstHeight": pp.INT,
                       "RootBases": pp.array(pp.VEC), "RootOffsets": pp.array(pp.VEC), "BodyScale": pp.REAL,
                       "HeightScales": pp.array(pp.REAL), "SeedScales": pp.array(pp.REAL)})
+    network_events.build(bp, listener)
     profile(bp)
     exchange(bp)
     player(bp)
@@ -273,10 +277,11 @@ def main(argv):
     fixture = json.loads((root / "tools/unreal-engine/wire/players.json").read_text(encoding="utf-8"))
     hz = fixture["limits"]["clientHz"]
     anchors = [s.get("networkRoot") for s in rest["spots"]]
-    spec = hashlib.sha256(Path(__file__).read_bytes() + Path(pp.__file__).read_bytes() +
+    spec = hashlib.sha256(Path(__file__).read_bytes() + Path(pp.__file__).read_bytes() + network_events.graph_sources() +
                           json.dumps([hz, anchors, rest.get("networkBodyScales")], sort_keys=True).encode()).hexdigest()
     if not u.load_class(None, pp.class_path(PEERS)):
         raise RuntimeError("Build build_network_peers.py before build_network.py")
+    listener = network_events.listener("--check" in argv)
     bp = ASSETS.load_asset(COMPONENT) if ASSETS.does_asset_exist(COMPONENT) else None
     current = bp and ASSETS.get_metadata_tag(bp, TAG) == spec
     if "--check" in argv or (current and "--force" not in argv):
@@ -287,7 +292,7 @@ def main(argv):
             if not ASSETS.does_asset_exist(path) or default.get_editor_property(prop) != ASSETS.load_asset(path):
                 raise RuntimeError(f"{COMPONENT}.{prop} must reference {path}")
     else:
-        bp = build(rest, hz)
+        bp = build(rest, hz, listener)
         ASSETS.set_metadata_tag(bp, TAG, spec)
         if not ASSETS.save_loaded_asset(bp, only_if_is_dirty=False):
             raise RuntimeError("Could not save " + COMPONENT)
