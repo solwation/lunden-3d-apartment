@@ -7,7 +7,8 @@ scene.json: `node tools/unreal-engine/pilot-scene.mjs measurements.json scene.js
 docs/verification/2281/). Loads and checks the complete composed L_Lunden, turns Nanite off in memory on the imported meshes (their full meshes,
 as capture_lighting.py: a one-shot commandlet capture draws Nanite meshes as coarse panels, #2298; the vegetation's own mesh copies have
 Nanite off already) and lights the views with the world's own sky (#2283's BP_LundenSky, set to views.json's date and
-each preset's hour exactly as capture_lighting.py does; no temporary rig). Renders with screenshot_level.render_view.
+each preset's hour exactly as capture_lighting.py does; no temporary rig) and takes the game's locked exposure
+(capture_light.game_bias, #2313; until #2390 this script used the pilot rig's fixed bias 0, about 2 EV brighter). Renders with screenshot_level.render_view.
 Nothing is saved. Logs LUNDEN_VEGETATION_CAPTURE_OK.
 """
 import datetime
@@ -66,10 +67,10 @@ def run(scene_path, out_dir, ids=None, iso_date=None):
             raise RuntimeError("The vegetation materials did not receive the capture month")
         obs = render_view(world, out_dir, cam["id"], u.Vector(*cam["xyz"]),
                           u.Rotator(roll=0, pitch=cam["pitch"], yaw=cam["yaw"]), scene["width"], scene["height"],
-                          scene["horizontalFov"], -0.7 if preset["lampsOn"] else 0, excluded + hidden_seasonal, lumen=True)
+                          scene["horizontalFov"], light.bias(preset), excluded + hidden_seasonal, lumen=True)
         if math.dist(obs["xyz"], cam["xyz"]) > 0.01 or any(abs(obs[k] - cam[k]) > 0.001 for k in ("pitch", "yaw")):
             raise RuntimeError("Camera transform mismatch: " + cam["id"])
-        observed.append({**obs, "id": cam["id"], "lighting": cam["lighting"], "hour": preset["hour"], "date": {"year": date.year, "month": date.month, "day": date.day}})
+        observed.append({**obs, "id": cam["id"], "lighting": cam["lighting"], "hour": preset["hour"], "exposureBias": light.bias(preset), "date": {"year": date.year, "month": date.month, "day": date.day}})
     (Path(out_dir) / "capture.json").write_text(json.dumps({"engine": u.SystemLibrary.get_engine_version(), "map": MANIFEST["map"],
         "date": date.isoformat(), "loadedLevels": light.seasons.loaded_levels, "streamedInMemory": [], "naniteOffInMemory": fallback, "hiddenCollisionActors": len(excluded), "lamps": len(light.lamps), "cameras": observed}, indent=2) + "\n")
     u.EditorLoadingAndSavingUtils.new_blank_map(False)  # discard the capture state
