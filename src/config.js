@@ -1909,6 +1909,8 @@ export const HUS_L = {
   // beside each door that lights up at dusk (no lights: colour only, like the pergola's bulbs)
   loft: { fascia: 0xd5d8d4, handrailR: 0.022, door: 0xf4f4f1, recess: 0.14, lamp: { dx: 0.25, y: 2.1, w: 0.12, h: 0.22 } },
   pilaster: 0.4,          // brick pilaster width at each unit boundary (render, street side)
+  // Glass colours at dusk, shared with the Unreal facade-lighting export (#2324).
+  facadeGlow: { on: 0.35, window: 0xffc98a, intensity: 0.6, lampOn: 0xffd9a0, lampOff: 0x8d8b84 },
   // #433: an outdoor wall light by every street-side front door of våning 1 (L1001–L1008, ours too; the units are not
   // mirrored, so the latch is on each door's east side — plan.json's front-door hinge is at its west jamb): a dark box
   // with a frosted glass front, `dx` m east of the door opening to its centre, centre `y` m up, `w` × `h` × `d` (all

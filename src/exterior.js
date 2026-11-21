@@ -229,6 +229,7 @@ function spiralStair(t, top, steel, slabs) {
 export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, mats, visits = [] }) {
   const group = new THREE.Group();
   const bricks = [], renders = [], glassGeo = [], frames = [], solids = [], rails = [], roofs = [], pilasters = [], panels = [];
+  const lampFixtures = []; // World-space placement of the exterior wall lights before their glass meshes are merged.
   const seals = [], openingHardware = [], neighborOpenings = [], flashings = []; // flashings: the windows' sill flashings (#1076)
   const patios = [], hedges = site.hedge ? [patioHedgeGeometry(site.hedge)] : [], fences = [], copings = [];
   const segments = []; // collision for the neighbours' screen walls and hedges (lawn side)
@@ -489,6 +490,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
       if (!real) staticEntry(o.x0+.01,o.x1-.01,o.y0,o.y1-o.y0-.01,zr+.025);
       const lx = o.x1 + Lf.lamp.dx, ly = o.y0 + Lf.lamp.y, { w: lw, h: lh } = Lf.lamp;
       lampBox.push(boxGeo(lx - lw / 2, lx + lw / 2, ly + lh / 2, ly + lh / 2 + 0.03, loftD - 0.12, loftD), boxGeo(lx - 0.03, lx + 0.03, ly - lh / 2, ly + lh / 2, loftD - 0.02, loftD));
+      lampFixtures.push({ kind: 'gallery', house: 'L', position: [lx, ly, loftD - 0.11], normal: [0, -1] });
       lampGlow.push(boxGeo(lx - lw / 2 + 0.01, lx + lw / 2 - 0.01, ly - lh / 2, ly + lh / 2, loftD - 0.11, loftD - 0.02));
     }
     // courtyard side, våning 3 (#337): brick flush with ours, up to the terrace parapet
@@ -682,7 +684,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   segments.push(...planting.userData.groundSegments);
   walls.push(...planting.userData.walls);
 
-  const patioGlow = patioLamps({ units, uppers, south, coreW, y3, deckY, zs, D, eps, open, shift, lampBox, lampGlow, frames }); // #1078 (before the frames are merged)
+  const patioGlow = patioLamps({ lampFixtures, units, uppers, south, coreW, y3, deckY, zs, D, eps, open, shift, lampBox, lampGlow, frames }); // #1078 (before the frames are merged)
   { // #1077: the downpipes join the wall lights' housings (one mesh); a thin collision box round each foot
     const dp = downpipes({ units, core: [coreX0, coreX1], loftX1, loftTop, roofTop, par, D, north, south, northOf, open });
     lampBox.push(...dp.geos); segments.push(...dp.segments);
@@ -727,6 +729,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   if (frontDoor) for (const { ox } of units) {
     const lx = ox + frontDoor.x1 + DL.dx, { w: lw, h: lh, d: ld, y: ly } = DL;
     lampBox.push(boxGeo(lx - lw / 2, lx + lw / 2, ly - lh / 2, ly + lh / 2, -ld, -eps), boxGeo(lx - lw / 2 - 0.015, lx + lw / 2 + 0.015, ly + lh / 2, ly + lh / 2 + 0.02, -ld - 0.015, -eps));
+    lampFixtures.push({ kind: 'entrance', house: 'L', position: [lx, ly, -ld - 0.004], normal: [0, -1] });
     lampGlow.push(boxGeo(lx - lw / 2 + 0.015, lx + lw / 2 - 0.015, ly - lh / 2 + 0.02, ly + lh / 2 - 0.02, -ld - 0.004, -ld + 0.01));
     doorWash.push(washGeometry(lx, DL.wash.y, -eps, 0, -1, DL.wash.w, DL.wash.h, undefined, streetHoles));
     doorPool.push(poolGeometry(lx - 0.3, DL.pool.z, 1, 0, DL.pool.rx, DL.pool.rz, groundY, { rings: 5, segs: 20 }));
@@ -763,17 +766,18 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
   if (glows.length) { glows[0].name = 'doorLampWash'; glows[1].name = 'doorLampPools'; }
   let doorLit = false, doorGlow = 0, doorT = performance.now();
   add(lampBox, new THREE.MeshStandardMaterial({ color: 0x2b2d30, roughness: 0.5, metalness: 0.4 }));
-  const glowMat = new THREE.MeshBasicMaterial({ color: 0x55534d, toneMapped: false }), lit = new THREE.Color(0xffd9a0), off = new THREE.Color(0x8d8b84);
+  const glowMat = new THREE.MeshBasicMaterial({ color: 0x55534d, toneMapped: false }), lit = new THREE.Color(H.facadeGlow.lampOn), off = new THREE.Color(H.facadeGlow.lampOff);
   add(lampGlow, glowMat, false);
+  group.userData.wallLampFixtures = lampFixtures;
   /** night 0 … 1 (with the window lights): the lanterns by the loftgång doors glow after dusk. */
   // the upper units' courtyard windows (#337): a share of them lit after dusk (one material, its emissive switched)
-  const litMat = interiorGlass(glassMaterial.clone());litMat.emissive.setHex(0xffc98a);
+  const litMat = interiorGlass(glassMaterial.clone());litMat.emissive.setHex(H.facadeGlow.window);
   add(paneTints(litGlass,0xffffff,GP.near,rooms), litMat, false).name="neighborLitGlass";
   group.userData.update = (night, power = true) => { // power false: a power cut in Kv. Lunden (#604): lanterns, windows, door lights out
     setRoomNight(night);
     glassMaterial.envMapIntensity=litMat.envMapIntensity=THREE.MathUtils.lerp(O.reflectionDay,O.reflectionNight,night);
-    glowMat.color.copy(night > 0.35 && power ? lit : off);
-    litMat.emissiveIntensity = night > 0.35 && power ? 0.6 : 0;
+    glowMat.color.copy(night > H.facadeGlow.on && power ? lit : off);
+    litMat.emissiveIntensity = night > H.facadeGlow.on && power ? H.facadeGlow.intensity : 0;
     // the front-door lights (#433): on after dusk with a short fade (hysteresis: no flicker)
     const now = performance.now(), dt = Math.min(1, (now - doorT) / 1000);
     doorT = now;
@@ -803,7 +807,7 @@ export function buildExterior({ W, D, roofTop, north, south, frame, wall, site, 
  * (the white window frames; so called before those are merged); returns the brick/render washes and the patio/deck
  * pools for the door lights' `doorWash` / `doorPool` — so no new mesh, material or light; they switch with doorLamp (after dusk, out in a power cut).
  */
-function patioLamps({ units, uppers, south, coreW, y3, deckY, zs, D, eps, open, shift, lampBox, lampGlow, frames }) {
+function patioLamps({ lampFixtures, units, uppers, south, coreW, y3, deckY, zs, D, eps, open, shift, lampBox, lampGlow, frames }) {
   const PL = H.patioLamp, { w: lw, h: lh, d: ld, socket: S } = PL, doorWash = [], doorPool = [];
   const lamp = (door, x0, x1, z, floorY, ground, depth, holes) => {
     // east of the door, unless that runs past the strip (then west)
@@ -815,6 +819,7 @@ function patioLamps({ units, uppers, south, coreW, y3, deckY, zs, D, eps, open, 
       boxGeo(lx - lw / 2 - 0.015, lx + lw / 2 + 0.015, ly + lh / 2, ly + lh / 2 + 0.02, z + eps, z + ld + 0.015), // its cap
       boxGeo(lx - 0.02, lx + 0.02, sy1, ly - lh / 2, z + eps, z + 0.03), // the stem down to the socket
       boxGeo(lx - S.w / 2, lx + S.w / 2, sy0, sy1, z + eps, z + S.d)); // the socket's housing
+    lampFixtures.push({ kind: 'patio', house: 'L', position: [lx, ly, z + ld + 0.004], normal: [0, 1] });
     lampGlow.push(boxGeo(lx - lw / 2 + 0.015, lx + lw / 2 - 0.015, ly - lh / 2 + 0.02, ly + lh / 2 - 0.02, z + ld - 0.01, z + ld + 0.004));
     frames.push(boxGeo(lx - S.w / 2 + 0.01, lx + S.w / 2 - 0.01, sy0 + 0.01, sy1 - 0.01, z + S.d, z + S.d + 0.008)); // its hinged cover
     doorWash.push(washGeometry(lx, floorY + PL.wash.y, z + eps, 0, 1, PL.wash.w, PL.wash.h, undefined, holes));

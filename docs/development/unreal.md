@@ -2408,6 +2408,26 @@ Verification: [#2318](../verification/2318/README.md).
 
 ### Buildings: Hus L, Hus A/B/C and the garage (#2279)
 
+For facade materials and dusk lighting (#2324), `measurements.site.facadeLighting` carries the desktop web scene's
+per-pane room boxes and wall fixtures. A/B/C glazing carries its originating building through the shared glass mesh.
+The garage retaining wall’s glazing shares this draw call and is excluded from the house data. Export `hus-l` for House L and `kvarteret` for A/B/C. Positions use Unreal
+world centimetres and horizontal unit normals use Unreal X/Y. Pane height and width are half extents. The floor,
+ceiling and lateral limits are offsets from the pane centre. Each pane retains the shader's seed, room colours,
+dressing and coverage from `src/interiormap.js`. `roomLevels` gives both endpoints of its day/night blend.
+
+House L marks its selected evening glass with `duskLit`. With power, use `facadeGlow.on` as the strict night-fraction
+threshold and its window colour and emissive intensity. The same threshold switches House L's wall-lamp glass.
+The facade wash and ground pools use `wallLight.on/off` hysteresis and `fade` seconds. A/B/C's loggia lamp glass follows
+that hysteresis. `fixtures` gives the emitting face and orientation of each street entrance, gallery, patio and loggia
+wall lamp. Its physical light intensity in Unreal still needs calibration.
+
+A/B/C also carry the actual `windows` light quads from `buildWindowLights`, including the exact routine shared by the
+panes of a detailed opening. The quad’s `routine` indexes `schedule.routines` by the web seed key. Use its local-hour
+intervals, fade and TV settings as in `src/windowschedule.js`.
+At night fraction `n = 1 − daylight`, hall intensity is `0.85 n` and a residential light scales its scheduled level by
+`0.25 + 0.75 n`. A local power cut extinguishes both. The source data can be inspected independently of the Unreal
+material and Blueprint build.
+
 **Builders and zones.** `export-scene.js` builds, after the world and the room lights, what `main.js` builds next to
 the world: the garage (`src/garage.js`, with its door and the park-level basement doors) and the four stairwells
 (`src/core.js` for Hus L, `src/corehouse.js` for A/B/C including their entrance shells). Loading them afterwards keeps

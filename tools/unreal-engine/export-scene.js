@@ -16,6 +16,7 @@ import { leafMaterial, windLeafMaterial } from '../../src/foliage.js';
 import { stairRise, stairRiser, N_TREADS } from '../../src/stairs.js';
 import { husLLayout } from '../../src/exterior.js';
 import { fallDamage } from '../../src/falldamage.js';
+import { facadeLightingData } from './export-facade-lighting.js';
 import { webToUnrealRounded, webYawToUnrealYaw, webPitchToUnrealPitch, webRotationYToUnrealYaw, roundCm } from './coordinates.mjs';
 
 export const FORMAT_VERSION = 1;
@@ -879,6 +880,7 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
   const measurements = measurementData({ world, planCopy, W, D, byZone, lightsInfo, materialTable, commit, ZONES, wanted, lifts: extra.lifts ?? [],
     coreDoors: extra.coreDoors ?? [], garage: extra.garage ?? null });
   measurements.buildings = buildings;
+  if (wanted.includes('hus-l') || wanted.includes('kvarteret')) measurements.site.facadeLighting = facadeLightingData(world, wanted);
   if (ground) measurements.ground = ground;
   if (vegetation) measurements.vegetation = vegetation;
   for (const { root } of Object.values(roots)) root.updateMatrixWorld(true); // (the mesh centres below)
