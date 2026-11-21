@@ -2079,6 +2079,13 @@ What is exported:
   and entrance shells, and the garage and förråd under the courtyard), and since #2280 the ground: `gard` (the
   courtyard) and `omgivning` (terrain, streets, the Höje å valley). See [Ground](#ground-terrain-streets-courtyard-and-höje-å-2280).
   See [Buildings](#buildings-hus-l-hus-abc-and-the-garage-2279).
+- **Patio parasol and string lights (#2373).** The parasol already belongs to the furniture list. The export applies
+  the web's clear daytime canopy pose after assigning its stable furniture ID. The fence strings come from
+  `buildStringLights` with the same plan fences as the game. Their cable, bulbs and the two pools of light are in
+  the patio export and lighting measurements. On import, each bulb receives the `patio:string-bulb` tag. The first
+  string light creates a shared unlit material instance on the bulbs and sets its base colour from the same dusk
+  fade that drives the point lights. The static canopy represents the export date. Reacting to later
+  changes of sun, season or manual folding in the Windows game requires runtime interaction.
 - **Fruit bowl and basketball (#2310).** `main.js` builds them next to the world, so `export-scene.js` constructs the
   same classes with main.js's arguments (`new FruitBowl(scene, camera)` from `src/fruit.js`; `new Basketball(scene,
   camera, { world })` from `src/basket.js`, without the bullet marks and the outdoor hoop, which only matter in play)

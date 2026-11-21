@@ -12,6 +12,7 @@ import * as C from '../../src/config.js';
 import { christmasCoverage } from '../../src/christmas.js';
 import { FurnitureGroups } from '../../src/furnituregroups.js';
 import { buildWorld } from '../../src/world.js';
+import { buildStringLights, updateStringLights, updateParasols } from '../../src/patio.js';
 import { groundY, renderedTerrainY, treeFeet, aoTrees } from '../../src/surroundings.js';
 import { gridGround } from '../../src/elevation.js';
 import { leafMaterial, windLeafMaterial } from '../../src/foliage.js';
@@ -498,6 +499,15 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     loose.of.set(bowl.group, { type: 'fruitbowl', name: 'fruktskålen', webId: null, source: 'src/config.js#FRUIT' });
     loose.of.set(holder.object, { type: holder.item.type, name: holder.name, webId: holder.id, source: 'src/config.js#BASKET.ball' });
     loose.of.set(ball.model, { type: 'basketball', name: ball.name, webId: null, source: 'src/config.js#BASKET.ball' });
+    const site = planCopy.floors[0].site;
+    if (site.fences?.length) {
+      const strings = buildStringLights(site.fences, site.patio ? (site.patio.x0 + site.patio.x1) / 2 : W / 2);
+      updateStringLights(strings, 1, 0, 1); // the export's clear daytime reference, power on
+      loose.root.add(strings.object);
+      loose.of.set(strings.object, { type: 'patiostringlights', name: 'ljusslingan', webId: null, source: 'src/config.js#PATIO.stringLights' });
+      lightsInfo.patioStrings = strings.lamps;
+      lightsInfo.patioBulb = strings.mat;
+    }
   } catch (e) { loose.error = String(e?.stack ?? e); }
   const scene = new THREE.Group();
   scene.add(world.object);
@@ -697,6 +707,14 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     }
   }
 
+  const { dayOfYear, sunDirection } = await import('../../src/daycycle.js');
+  const referenceDate = new Date(); // export-world.mjs pins the clock
+  const month = referenceDate.getUTCMonth() + 1;
+  const doy = dayOfYear(referenceDate.getUTCFullYear(), month, referenceDate.getUTCDate());
+  const hour = Number(new Intl.DateTimeFormat('sv-SE', { hour: '2-digit', hourCycle: 'h23', timeZone: 'Europe/Stockholm' }).format(referenceDate));
+  updateParasols({ month, sunDir: sunDirection(hour, doy), overcast: 0 }, 0, true);
+  world.object.updateMatrixWorld(true); // apply the canopy after the furniture IDs have been assigned
+
   // ---- build the export scenes ----
   const materials = new Map(), matCache = new Map(), furnishCache = new Map(), geoCache = new Map(), materialTable = {};
   const textures = new Map(), textureOfMap = new Map(); // #2289: furnishing textures by id, and by web texture
@@ -722,12 +740,14 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     const hedge = m.name === 'patio-hedge' || m.name === 'boxwood';
     const siteMap = m.map?.name === 'site-slatted-rail' || m.map?.name === 'site-house-letters';
     const tex = furnish && !hedge && !siteMap ? furnishingTexture(m.map, textures, textureOfMap) : null;
-    // Keep evergreen perennials, deciduous crown lobes and still pergola vines on separate foliage types.
-    const suffix = siteMap ? m.map.name.replaceAll('-', '_') : bark || LEAF_VARIANTS.get(m.name) || tex?.id;
+    const bulb = m === lightsInfo.patioBulb;
+    const siteSuffix = siteMap ? m.map.name.replaceAll('-', '_') : null;
+    // Keep the unlit bulbs, bark textures and three foliage types distinct from furnishing images.
+    const suffix = bulb ? 'patio_string_bulb' : siteSuffix || bark || LEAF_VARIANTS.get(m.name) || tex?.id;
     const key = suffix ? `${base}_${suffix}` : base;
     let em = materials.get(key);
     if (!em) {
-      em = new THREE.MeshStandardMaterial({ name: key, color: new THREE.Color(info.color), roughness: info.roughness, metalness: info.metalness,
+      em = bulb ? new THREE.MeshBasicMaterial({ name: key, color: m.color }) : new THREE.MeshStandardMaterial({ name: key, color: new THREE.Color(info.color), roughness: info.roughness, metalness: info.metalness,
         transparent: info.opacity < 1, opacity: info.opacity, side: info.doubleSided ? THREE.DoubleSide : THREE.FrontSide, vertexColors: info.vertexColors });
       if (info.emissive) em.emissive = new THREE.Color(info.emissive);
       if (hedge) em.map = hedgeTexture(m);
@@ -771,6 +791,7 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
           const node = meshNode(c, furnish); if (!node) continue;
           c.getMatrixAt(i, im); node.matrix.copy(c.matrix).multiply(im); node.matrix.decompose(node.position, node.quaternion, node.scale);
           node.name = `${atomId}__${counter.n++}`; node.userData = { id: node.name, kind: 'part', parent: atomId };
+          if (c.material === lightsInfo.patioBulb) node.userData.patioStringBulb = true;
           (Array.isArray(node.material) ? node.material : [node.material]).forEach((m) => keys.add(m.name));
           n.add(node);
         }
@@ -1205,6 +1226,11 @@ function measurementData({ world, planCopy, W, D, byZone, lightsInfo, seasons, m
   }
   for (const l of lightsInfo.lamps) lights.push({ id: null, kind: 'room', name: null, level: l.level, room: l.room, position: P(l.pos.x, l.pos.y, l.pos.z),
     intensity: l.intensity, distance: l.distance, color: l.color });
+  for (const [index, l] of (lightsInfo.patioStrings ?? []).entries()) {
+    lights.push({ id: null, kind: 'lamp', name: 'ljusslingan', room: null, level: l.level, auto: true,
+      ...(index === 0 ? { patioBulbs: { idle: C.PATIO.stringLights.bulbIdle, boost: C.PATIO.stringLights.bulbBoost } } : {}),
+      position: P(l.pos.x, l.pos.y, l.pos.z), intensity: l.intensity, distance: l.range, color: '#' + l.color.toString(16).padStart(6, '0') });
+  }
   // #2283: a light without an exported object (a room's ceiling light point, a lamp whose object is not a node) gets a
   // stable id of its own from kind, name or room, level and plan position, so Unreal's light actors and #2285's
   // switches share it. Lamps on an exported object keep that object's id.

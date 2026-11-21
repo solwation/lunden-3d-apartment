@@ -26,6 +26,7 @@
       "description": "collision: the box in web metres"
     },
     "direction": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3, "description": "fixture arrow: unit direction in web axes" },
+    "patioStringBulb": { "type": "boolean", "description": "Fence bulb using the shared unlit material driven by the patio dusk light." },
     "seasonal": {
       "type": "object", "required": ["what", "from", "to"], "additionalProperties": false,
       "properties": { "what": { "type": "string" }, "from": { "type": "array", "items": { "type": "integer" } }, "to": { "type": "array", "items": { "type": "integer" } } },

@@ -43,6 +43,7 @@ import unreal as u
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from season_tags import season_tags
+import player_parts as pp
 
 DIR = "/Game/Lunden/Lighting"
 SKY = DIR + "/BP_LundenSky"
@@ -171,7 +172,8 @@ def lamp_rows(m):
     rows = []
     for l in m["lights"]:
         rows.append({"id": l["id"], "kind": l["kind"], "level": l["level"], "room": l.get("room"), "name": l.get("name"),
-                     "seasonTags": season_tags({}, l), "xyz": l["position"]["unreal"], "candela": CANDELA_PER_WEB * (l.get("intensity") or 0.0),
+                     "seasonTags": season_tags({}, l), "patioBulbs": l.get("patioBulbs"),
+                     "xyz": l["position"]["unreal"], "candela": CANDELA_PER_WEB * (l.get("intensity") or 0.0),
                      "radius": 100.0 * (l.get("distance") or LAMP_RANGE), "colour": l.get("color") or LAMP_COLOUR,
                      # the ceiling lamps (the room switches) are by hand only; a small lamp follows the dusk unless `auto: false`
                      "auto": l["kind"] == "lamp" and l.get("auto", True)})
@@ -783,6 +785,39 @@ def hemisphere_cube(spec):
     return cube
 
 
+def patio_string_function(bp):
+    """Share one glTF unlit MID across the tagged bulbs. Only the designated lamp writes its fade."""
+    if BP.find_graph(bp, "ApplyPatioBulbs"):
+        BP.remove_function_graph(bp, "ApplyPatioBulbs")
+    pp.variables(bp, {"StringMaterial": BP.get_object_reference_type(u.MaterialInstanceDynamic.static_class())})
+    g, _ = pp.function(bp, "ApplyPatioBulbs")
+    g.branch(g.pure("Actor:ActorHasTag", Tag="patio:string-driver"))
+    needs_material = g.op("Not_PreBool", A=g.pure("KismetSystemLibrary:IsValid", Object=g.get("StringMaterial")))
+    existing = g.branch(needs_material)
+    found = g.node_of("GameplayStatics:GetAllActorsWithTag", Tag="patio:string-bulb")
+    bulbs = pp.out(found, "OutActors")
+    g.branch(g.op("Greater_IntInt", A=g.pure("KismetArrayLibrary:Array_Length", TargetArray=bulbs), B=0))
+
+    def bulb_component(graph, actor):
+        return graph.pure("Actor:GetComponentByClass", target=actor, ComponentClass="/Script/Engine.StaticMeshComponent")
+
+    first = bulb_component(g, g.item(bulbs, 0))
+    mid = g.pure("PrimitiveComponent:CreateDynamicMaterialInstance", target=first, ElementIndex=0)
+    g.set("StringMaterial", mid)
+    actor, _, done = g.loop(bulbs)
+    mesh = bulb_component(g, actor)
+    g.run("PrimitiveComponent:SetMaterial", target=mesh, ElementIndex=0, Material=g.get("StringMaterial"))
+    tail = g.fork(done, 650)
+    amount = tail.op("Add_DoubleDouble", A=tail.get("BulbIdle"),
+                     B=tail.op("Multiply_DoubleDouble", A=tail.get("BulbBoost"), B=tail.get("K")))
+    rgb = tail.op("Multiply_VectorFloat", A=tail.get("BulbColour"), B=amount)
+    color = tail.pure("KismetMathLibrary:Conv_VectorToLinearColor", InVec=rgb)
+    update = tail.run("MaterialInstanceDynamic:SetVectorParameterValue", target=tail.get("StringMaterial"),
+                      ParameterName="BaseColorFactor", Value=color)
+    pp.link(existing, pp.inp(update, "execute"))
+    BP.compile_blueprint(bp)
+
+
 def build_lamp(spec, mpc):
     """BP_LundenLamp: IsOn and the events #2285's switches call, plus the web's small-lamp behaviour (src/lights.js
     FloorLamp / Lights.updateAuto, #2307): K is how far on it is (the light's intensity is Candela x K); TurnOn, TurnOff and
@@ -800,7 +835,9 @@ def build_lamp(spec, mpc):
     sky = spec["sky"]["light"]
     variables(bp, {"IsOn": ("bool", False), "Auto": ("bool", False), "Candela": ("real", 0.0), "K": ("real", 0.0),
                    "Dusk": ("real", -1.0), "DuskOn": ("real", sky["duskOn"]), "DuskOff": ("real", sky["duskOff"]),
-                   "DuskFade": ("real", sky["duskFade"])})
+                   "DuskFade": ("real", sky["duskFade"]), "BulbIdle": ("real", 0.0),
+                   "BulbBoost": ("real", 0.0), "BulbColour": ("vector", u.Vector(0, 0, 0))})
+    patio_string_function(bp)
     G = Graph(bp)
 
     def show(chain):
@@ -821,6 +858,7 @@ def build_lamp(spec, mpc):
         connect(G.get("Light"), "Light", vis, "self")
         env.feed(vis, "bNewVisibility", env.run("v = K > 0.0001")["v"])
         chain.then(vis)
+        chain.then(G.call(LAMP + ".BP_LundenLamp_C:ApplyPatioBulbs"))
 
     for name, value in (("TurnOn", True), ("TurnOff", False), ("Toggle", None)):
         start = G.custom(name)
@@ -1177,6 +1215,8 @@ def build_level(spec, sky_bp, lamp_bp):
             tags.append(f"room:{row['room']}")
         if row["auto"]:
             tags.append("auto:dusk")
+        if row["patioBulbs"]:
+            tags.append("patio:string-driver")
         lamp.tags = [u.Name(t) for t in tags + row["seasonTags"]]
         lamp.set_editor_property("Candela", row["candela"])
         lamp.set_editor_property("Auto", row["auto"])
@@ -1187,6 +1227,10 @@ def build_level(spec, sky_bp, lamp_bp):
         colour = u.LinearColor()
         colour.set_from_srgb(u.Color(r=r, g=g, b=b, a=255))
         light.set_light_color(colour)
+        if row["patioBulbs"]:
+            lamp.set_editor_property("BulbColour", u.Vector(colour.r, colour.g, colour.b))
+            lamp.set_editor_property("BulbIdle", row["patioBulbs"]["idle"])
+            lamp.set_editor_property("BulbBoost", row["patioBulbs"]["boost"])
     if not levels.save_map(world, LEVEL):
         raise RuntimeError("Could not save " + LEVEL)
     u.log(f"LUNDEN_LIGHTING_LEVEL {LEVEL}: 1 sky, {len(spec['lamps'])} lamps")

@@ -80,7 +80,7 @@
     "lights": {
       "type": "array",
       "items": { "type": "object", "required": ["id", "kind", "level", "position"],
-        "properties": { "kind": { "enum": ["lamp", "room"], "description": "lamp = a light-giving object (world.lamps); room = a room's ceiling/pendant light point (src/lights.js)" }, "position": { "$ref": "#/$defs/point" },
+        "properties": { "kind": { "enum": ["lamp", "room"], "description": "lamp = a light-giving object or patio fence-string light; room = a room's ceiling/pendant light point (src/lights.js)" }, "patioBulbs": { "type": "object", "required": ["idle", "boost"], "properties": { "idle": { "type": "number" }, "boost": { "type": "number" } } }, "position": { "$ref": "#/$defs/point" },
           "objectPosition": { "$ref": "#/$defs/point", "description": "World origin of the fitting that supplies a lamp. Its x/z identify anonymous fittings even when the light is offset." } } }
     },
     "terrain": { "type": "object", "required": ["file", "sha256", "x0", "z0", "step", "cols", "rows", "unit", "source", "licence"], "description": "a reference to data/elevation.json (grid origin/step/size and its hash), not a copy of the heights" },

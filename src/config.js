@@ -6825,7 +6825,7 @@ export const PATIO = {
   // `on` daylight and off above `off` (hysteresis), fading over `fade` s; each string borrows a pool
   // light (lights.js) with a soft, short reach.
   stringLights: { y: 1.68, sag: 0.06, hookEvery: 1.2, spacing: 0.12, inset: 0.03, color: 0xffcf8a,
-    on: 0.3, off: 0.4, fade: 1, light: { intensity: 1.4, range: 4 } },
+    on: 0.3, off: 0.4, fade: 1, bulbIdle: 0.06, bulbBoost: 1.4, light: { intensity: 1.4, range: 4 } },
 };
 
 // Placement in plan metres. rot = direction the seat faces, degrees (0 = north/−z,

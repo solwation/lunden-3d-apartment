@@ -211,6 +211,8 @@ def apply_tags(extras):
         node_id = ex.get("id", label)
         tags = [node_id] + [f"{k}:{ex[k]}" for k in ("kind", "zone", "level", "webId", "source", "parent") if ex.get(k) is not None]
         tags += season_tags(extras, ex)
+        if ex.get("patioStringBulb"):
+            tags.append("patio:string-bulb")
         actor.tags = [unreal.Name(t) for t in tags]
         if actor.get_name() != node_id:
             actor.rename(node_id)  # Interchange names actors <zone>_node_<index>; the id is stable between exports

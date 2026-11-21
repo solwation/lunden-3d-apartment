@@ -633,6 +633,34 @@ function snowman() {
   return g;
 }
 
+/** Apply the actual daylight and power to the bulbs and the borrowed lights. */
+export function updateStringLights(sl, daylight, dt, supply) {
+  if (sl) { // on below `on` daylight, off above `off` (no flicker at dusk), a short fade
+    const L = P.stringLights;
+    if (sl.on && daylight > L.off && !sl.forced) sl.on = false;
+    else if (!sl.on && daylight < L.on) sl.on = true;
+    sl.glow = THREE.MathUtils.clamp(sl.glow + (sl.on ? 1 : -1) * dt / L.fade, 0, 1);
+    sl.mat.color.setHex(L.color).multiplyScalar(L.bulbIdle + L.bulbBoost * sl.glow * supply); // (a power cut, #604: the pool light lights.js scales)
+    for (const l of sl.lamps) l.k = sl.glow;
+  }
+}
+
+/** Set the canopy pose from the same day and manual state used by the patio in play. */
+export function updateParasols(day, dt, first) {
+  const sunUp = day.sunDir.y > 0.02;
+  const auto = P.parasol.months.includes(day.month) && sunUp && !(day.overcast > 0.6) ? 1 : 0; // folded under rain clouds too (#248)
+  for (const p of seasonal.parasols) {
+    // A choice made by hand (E) holds until the automatic state itself changes (sunset/sunrise,
+    // a new season): then the automatic one takes over again.
+    if (p.manual !== null && auto !== p.manualAuto) p.manual = null;
+    p.auto = auto;
+    const target = p.manual ?? auto;
+    const speed = p.manual !== null ? 2.5 : 0.5; // by hand: a quick flick; by itself: slowly
+    if (first) setParasol(p, target); // no unfolding on arrival
+    else if (p.open !== target) setParasol(p, THREE.MathUtils.clamp(p.open + Math.sign(target - p.open) * dt * speed, 0, 1));
+  }
+}
+
 /** The seasonal state of the patio, from the day cycle (month, hour, sun). */
 export class Patio {
   constructor() {
@@ -665,27 +693,8 @@ export class Patio {
 
   update(day, dt) {
     this.t += dt;
-    const sl = this.strings;
-    if (sl) { // on below `on` daylight, off above `off` (no flicker at dusk), a short fade
-      const L = P.stringLights;
-      if (sl.on && day.daylight > L.off && !sl.forced) sl.on = false;
-      else if (!sl.on && day.daylight < L.on) sl.on = true;
-      sl.glow = THREE.MathUtils.clamp(sl.glow + (sl.on ? 1 : -1) * dt / L.fade, 0, 1);
-      sl.mat.color.setHex(L.color).multiplyScalar(0.06 + 1.4 * sl.glow * this.supply); // (a power cut, #604: the pool light lights.js scales)
-      for (const l of sl.lamps) l.k = sl.glow;
-    }
-    const sunUp = day.sunDir.y > 0.02;
-    const auto = P.parasol.months.includes(day.month) && sunUp && !(day.overcast > 0.6) ? 1 : 0; // folded under rain clouds too (#248)
-    for (const p of seasonal.parasols) {
-      // A choice made by hand (E) holds until the automatic state itself changes (sunset/sunrise,
-      // a new season): then the automatic one takes over again.
-      if (p.manual !== null && auto !== p.manualAuto) p.manual = null;
-      p.auto = auto;
-      const target = p.manual ?? auto;
-      const speed = p.manual !== null ? 2.5 : 0.5; // by hand: a quick flick; by itself: slowly
-      if (this.first) setParasol(p, target); // no unfolding on arrival
-      else if (p.open !== target) setParasol(p, THREE.MathUtils.clamp(p.open + Math.sign(target - p.open) * dt * speed, 0, 1));
-    }
+    updateStringLights(this.strings, day.daylight, dt, this.supply);
+    updateParasols(day, dt, this.first);
     const [h0, h1] = P.beerHours;
     const beers = P.beerMonths.includes(day.month) && day.hour >= h0 && day.hour < h1;
     for (const b of seasonal.beers) {
