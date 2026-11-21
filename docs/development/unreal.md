@@ -2645,6 +2645,36 @@ under Hus L, each checkpoint on its floor: see the [#2279 verification](../verif
 also walks at Hus A's closed entrance and at the closed garage door from outside (both stop the character), opens each
 and walks through to a point inside ([#2314 verification](../verification/2314/README.md)).
 
+### Höje å water materials (#2325)
+
+The world export writes the near river's flow frame from `src/riverbridge.js` to the `bridges-water` mesh in
+`omgivning.glb`. UV0 stores the integer and fractional parts of chainage / 8 to retain phase in half-precision
+UVs. UV1 holds the downstream unit vector and UV2 carries signed distance across the channel and the bank fraction.
+The `edge-land` mesh in `fond.glb` keeps its original vertex colours. Its UV0.x selects water-coloured vertices
+at either water elevation using `RIVER_SURFACE.levelTolerance`. Roads, fields and riverbanks on that mesh retain
+their shading. The export writes the wave, clock, bank, sky and calendar snow parameters to
+`measurements.json → site.riverSurface`.
+
+The normal import of either zone builds `M_LundenRiverFlow` and `M_LundenRiverEdge` under
+`/Game/Lunden/Generated/RiverMaterials` and binds both keys through `material-map.json`. The standalone
+`build_materials.py --check` also checks both graphs. The materials use world-space ripple
+normals with distance and pixel-footprint filtering. A front-face Fresnel term adds reflected sky through Emissive
+Color. It follows the weather collection's sun, rain and snow at river level. The near-water pattern moves downstream
+and takes on the bank tint. The far continuation uses stationary world-space ripples. The far mesh also follows the
+web's calendar snow fallback through the vegetation collection's Month. The web’s measured snow-depth driver has no
+equivalent input in these collections.
+
+Run the two WSL checks after a world export. The first compares both GLBs with the source geometry and material
+keys. The second needs Linux DXC and VkRunner. It compiles the generated material bodies to Direct3D SM6 and
+SPIR-V, renders normals and reflected sky into a floating-point Vulkan attachment, and compares pixels with the
+web helpers. On Windows, build and check the masters, import both zones, and compare views at the bridge, bank
+and downstream continuation.
+
+```sh
+node tools/unreal-engine/tests/river-water.test.mjs
+python3 tools/unreal-engine/tests/river-shaders.py unreal/Lunden/Import/measurements.json --dxc dxc --runner vkrunner
+```
+
 ### Ground: terrain, streets, courtyard and Höje å (#2280)
 
 **Zones.** `gard` (the courtyard on the garage box, box x −71…14, z 12.1…53 m) and `omgivning` (the rest of the drawn

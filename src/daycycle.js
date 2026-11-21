@@ -207,6 +207,11 @@ const DAY_ZENITH = new THREE.Color(0x4f8fd0), DAY_HORIZON = new THREE.Color(0xcf
 const NIGHT_ZENITH = new THREE.Color(0x04070f), NIGHT_HORIZON = new THREE.Color(0x10182a);
 const DUSK_HORIZON = new THREE.Color(0xe8a070), GLOW = new THREE.Color(0xff8a3c);
 const OVERCAST = new THREE.Color(0x8d969f), FLASH = new THREE.Color(0xdfe4ff), tmpC = new THREE.Color(), mistOut = { near: 0, far: 0 };
+/** Linear endpoints used by the sky gradient and its reflection in the river. */
+export function skyGradientPalette() {
+  return { dayZenith: DAY_ZENITH.toArray(), dayHorizon: DAY_HORIZON.toArray(), nightZenith: NIGHT_ZENITH.toArray(),
+    nightHorizon: NIGHT_HORIZON.toArray(), duskHorizon: DUSK_HORIZON.toArray(), overcast: OVERCAST.toArray() };
+}
 const SUN_LOW = new THREE.Color(0xffb070), SUN_HIGH = new THREE.Color(0xfff1dc), MOON = new THREE.Color(0x9fb4ff);
 
 /** Dawn / dusk colour depth (#2124, SKY_DUSK; pure, for tests too): sky-shader colours (linear) for the sun height `sunY`, overcast

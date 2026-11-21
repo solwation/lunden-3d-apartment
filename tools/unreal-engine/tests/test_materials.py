@@ -173,7 +173,8 @@ def vertex_color_check(export_dir, table, rule_rx, errors):
             parent = mats.get(spec.get("parent"), {}) if "parent" in spec else spec
             weight = spec.get("params", {}).get("VertexColorWeight", 0)
             backdrop_vc = parent.get("graph") == "backdrop-texture" and parent.get("vertexColors") is True
-            if not (parent.get("graph") == GLTF_VC or backdrop_vc or (parent.get("graph") == "grass" and weight > 0)):
+            draws_land = parent.get("graph") == "river" and parent.get("mode") == "edge"
+            if not (parent.get("graph") == GLTF_VC or backdrop_vc or draws_land or (parent.get("graph") == "grass" and weight > 0)):
                 errors.append(f"vertex-coloured key {where}: rule material {target} does not multiply the vertex colour in")
         if not unruled:
             continue  # every mesh using the key gets a rule's material
@@ -221,7 +222,7 @@ def main(argv):
                 errors.append(f"{path}: the mortar footprint filter expects alternate half-brick rows")
             if unknown:
                 errors.append(f"{path}: {parent.get('graph')} master has no parameter(s) {sorted(unknown)}")
-        elif spec.get("graph", "constant") not in ("constant", GLTF_VC, *MASTER_PARAMS):
+        elif spec.get("graph", "constant") not in ("constant", "river", GLTF_VC, *MASTER_PARAMS):
             errors.append(f"{path}: unknown graph {spec.get('graph')}")
         if spec.get("graph") == "backdrop-texture":
             canvas = spec.get("canvas", "")

@@ -34,6 +34,7 @@ import unreal
 
 sys.path.insert(0, str(Path(__file__).parent))
 import backdrop_material  # noqa: E402
+import river_material  # noqa: E402
 
 eal = unreal.EditorAssetLibrary
 mel = unreal.MaterialEditingLibrary
@@ -191,6 +192,8 @@ def vector(value):
 
 def spec_hash(path, spec):
     parts = [path, spec, TILED_GRID + TILED_FINISH] + ([GRASS_HLSL] if spec.get("graph") == "grass" else [])  # other hashes unchanged
+    if spec.get("graph") == "river":
+        parts.append(Path(river_material.__file__).read_text(encoding="utf-8"))
     if spec.get("graph") == "tiled":
         parts.append(BRICK_FILTER)
     if spec.get("graph") == backdrop_material.GRAPH:
@@ -368,7 +371,7 @@ def uses_vertex_color(m, prop):
         isinstance(i, unreal.MaterialExpressionVertexColor) for i in mel.get_inputs_for_material_expression(m, node))
 
 
-GRAPHS = {"constant": constant_graph, "surface": surface_graph, "tiled": tiled_graph, "glass": glass_graph,
+GRAPHS = {"river": river_material.build, "constant": constant_graph, "surface": surface_graph, "tiled": tiled_graph, "glass": glass_graph,
           "grass": grass_graph}
 
 
@@ -458,6 +461,8 @@ def check(table):
                 problems.append(f"{path}: no persisted Nanite usage")
         if spec.get("graph") == backdrop_material.GRAPH and not backdrop_material.check(asset, spec, uses_vertex_color):
             problems.append(f"{path}: incorrect backdrop texture, vertex-colour wiring, or face settings")
+        if spec.get("graph") == "river":
+            problems.extend(f"{path}: {error}" for error in river_material.check(asset, spec))
         if spec.get("graph") == GLTF_VC and not uses_vertex_color(asset, VC_OUTPUTS[spec["output"]]):
             problems.append(f"{path}: {spec['output']} is not multiplied by the vertex colour")
         if "parent" in spec:
@@ -505,11 +510,20 @@ def build_entries(materials, force=False):
     unreal.log(f"LUNDEN_MATERIALS_OK {made} written, {kept} kept")
 
 
-def prepare_backdrops(table, check_only):
-    """The generated materials are import dependencies of fond and the Villa in omgivning."""
+def set_river_data(materials, surface):
+    for spec in materials.values():
+        if spec.get("graph") == "river":
+            spec["river"] = surface
+
+
+def prepare_landscape_materials(table, check_only, river_surface):
+    """Build or check the generated backdrop and water masters shared by fond and omgivning."""
     materials = table["materials"]
     masters = {path for path, spec in materials.items() if spec.get("graph") == backdrop_material.GRAPH}
     subset = {path: spec for path, spec in materials.items() if path in masters or spec.get("parent") in masters}
+    if river_surface:  # Older zone GLBs use plain glTF water and have no river frame.
+        subset.update((path, spec) for path, spec in materials.items() if spec.get("graph") == "river")
+        set_river_data(subset, river_surface)
     if check_only:
         check({"materials": subset})
     else:
@@ -519,6 +533,11 @@ def prepare_backdrops(table, check_only):
 def main(argv):
     with open(os.path.join(repo_root(), "tools", "unreal-engine", "material-map.json"), encoding="utf-8") as f:
         table = json.load(f)
+    with open(os.path.join(repo_root(), "unreal", "Lunden", "Import", "measurements.json"), encoding="utf-8") as f:
+        surface = json.load(f)["site"].get("riverSurface")
+    if not surface:
+        raise RuntimeError("Re-export the world to include the river surface measurements")
+    set_river_data(table["materials"], surface)
     if "--check" in argv:
         return check(table)
     build_entries(table["materials"], "--force" in argv)

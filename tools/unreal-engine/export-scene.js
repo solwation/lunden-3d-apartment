@@ -20,6 +20,7 @@ import { stairRise, stairRiser, N_TREADS } from '../../src/stairs.js';
 import { hedgeTexture } from './hedge-texture.js';
 import { husLLayout } from '../../src/exterior.js';
 import { fallDamage } from '../../src/falldamage.js';
+import { riverGeometry, riverMaterialData } from './export-river.js';
 import { facadeLightingData } from './export-facade-lighting.js';
 import { webToUnrealRounded, webYawToUnrealYaw, webPitchToUnrealPitch, webRotationYToUnrealYaw, roundCm } from './coordinates.mjs';
 
@@ -150,7 +151,7 @@ function splitMesh(mesh, zoneFor, cuts) {
   const vi = (t, k) => (idx ? idx.getX(t * 3 + k) : t * 3 + k);
   const multi = Array.isArray(mesh.material) && g.groups.length;
   const groups = multi ? g.groups : [{ start: 0, count: n * 3, materialIndex: 0 }];
-  const names = ['position', 'normal', 'uv', 'color'].filter((k) => g.getAttribute(k));
+  const names = ['position', 'normal', 'uv', 'color', 'riverFlow', 'riverShore'].filter((k) => g.getAttribute(k));
   const attrs = names.map((k) => g.getAttribute(k)), sizes = attrs.map((at) => at.itemSize);
   const m = mesh.matrixWorld, w = new THREE.Vector3();
   // a vertex: { v: original index or -1, a: [attribute arrays] (cut vertices), p: world position }
@@ -753,7 +754,9 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     const bulb = m === lightsInfo.patioBulb;
     const siteSuffix = siteMap ? m.map.name.replaceAll('-', '_') : null;
     // Keep the unlit bulbs, bark textures and three foliage types distinct from furnishing images.
-    const suffix = bulb ? 'patio_string_bulb' : siteSuffix || bark || LEAF_VARIANTS.get(m.name) || tex?.id;
+    const river = m.userData.riverSurface;
+    const riverSuffix = river && (river.flow ? 'river_flow' : 'river_edge');
+    const suffix = bulb ? 'patio_string_bulb' : riverSuffix || siteSuffix || bark || LEAF_VARIANTS.get(m.name) || tex?.id;
     const key = suffix ? `${base}_${suffix}` : base;
     let em = materials.get(key);
     if (!em) {
@@ -782,8 +785,9 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
   // a curtain or blind cloth (src/curtains.js, src/blinds.js tag the cloth with the openable it belongs to) is a textile
   const meshNode = (mesh, furnish = false) => {
     const ms = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-    const g = exportGeometry(mesh, ms.some((m) => m.vertexColors));
+    let g = exportGeometry(mesh, ms.some((m) => m.vertexColors));
     if (!g) return null;
+    if (mesh.material.userData?.riverSurface) g = riverGeometry(mesh, g.clone(), mesh.material.userData.riverSurface);
     const cloth = furnish || !!mesh.userData?.door;
     const trunk = mesh.geometry.userData.bark; // trunkGeometry marks both detailed species and the plain far LOD
     const em = ms.map((m) => exportMaterial(m, cloth, trunk === 'bark' || trunk === 'birch' ? trunk : null));
@@ -950,6 +954,7 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
   // ---- measurement data ----
   const measurements = measurementData({ world, planCopy, W, D, byZone, lightsInfo, seasons, materialTable, commit, ZONES, wanted, lifts: extra.lifts ?? [],
     coreDoors: extra.coreDoors ?? [], garage: extra.garage ?? null });
+  measurements.site.riverSurface = riverMaterialData();
   measurements.buildings = buildings;
   if (wanted.includes('hus-l') || wanted.includes('kvarteret')) measurements.site.facadeLighting = facadeLightingData(world, wanted);
   if (ground) measurements.ground = ground;
