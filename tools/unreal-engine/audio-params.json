@@ -17354,6 +17354,171 @@
    ]
   ]
  },
+ "rain": {
+  "source": "src/rainsurface.js rainSurfaceMix; src/weather.js Weather.update; src/audio.js sfx.rain",
+  "sound": 0.07,
+  "surface": {
+   "every": 0.25,
+   "ease": 0.4,
+   "near": 4,
+   "waterFull": 8,
+   "waterRange": 60,
+   "others": 0.25,
+   "indoorRoof": 0.6,
+   "thin": 0.45,
+   "grassHz": 4500,
+   "hardHz": 7000,
+   "roof": [
+    450,
+    0.9,
+    3
+   ],
+   "metal": [
+    3300,
+    6,
+    2
+   ],
+   "leaf": [
+    4800,
+    0.7,
+    1.3
+   ],
+   "water": [
+    1800,
+    0.5,
+    1.1
+   ]
+  },
+  "cloudTop": 190,
+  "cloudFade": 30,
+  "cases": [
+   {
+    "input": {},
+    "mix": {
+     "base": 1,
+     "baseHz": 7000,
+     "roof": 0,
+     "metal": 0,
+     "leaf": 0,
+     "water": 0
+    }
+   },
+   {
+    "input": {
+     "indoors": true
+    },
+    "mix": {
+     "base": 0.55,
+     "baseHz": 7000,
+     "roof": 1.8,
+     "metal": 0,
+     "leaf": 0,
+     "water": 0
+    }
+   },
+   {
+    "input": {
+     "underRoof": true
+    },
+    "mix": {
+     "base": 0.55,
+     "baseHz": 7000,
+     "roof": 3,
+     "metal": 0,
+     "leaf": 0,
+     "water": 0
+    }
+   },
+   {
+    "input": {
+     "trees": 1,
+     "leaves": 1,
+     "grass": 1
+    },
+    "mix": {
+     "base": 0.55,
+     "baseHz": 4500,
+     "roof": 0,
+     "metal": 0,
+     "leaf": 1.3,
+     "water": 0
+    }
+   },
+   {
+    "input": {
+     "trees": 1,
+     "leaves": 0,
+     "grass": 1
+    },
+    "mix": {
+     "base": 1,
+     "baseHz": 4500,
+     "roof": 0,
+     "metal": 0,
+     "leaf": 0,
+     "water": 0
+    }
+   },
+   {
+    "input": {
+     "underRoof": true,
+     "trees": 0.6,
+     "leaves": 0.5,
+     "riverDist": 15
+    },
+    "mix": {
+     "base": 0.55,
+     "baseHz": 7000,
+     "roof": 3,
+     "metal": 0,
+     "leaf": 0.0975,
+     "water": 0.261392
+    }
+   },
+   {
+    "input": {
+     "riverDist": 0,
+     "metal": 0.4
+    },
+    "mix": {
+     "base": 0.55,
+     "baseHz": 7000,
+     "roof": 0,
+     "metal": 0.8,
+     "leaf": 0,
+     "water": 1.1
+    }
+   },
+   {
+    "input": {
+     "indoors": true,
+     "metal": 1
+    },
+    "mix": {
+     "base": 0.55,
+     "baseHz": 7000,
+     "roof": 1.8,
+     "metal": 1,
+     "leaf": 0,
+     "water": 0
+    }
+   },
+   {
+    "input": {
+     "riverDist": 34,
+     "grass": 0.4
+    },
+    "mix": {
+     "base": 0.7525,
+     "baseHz": 6000,
+     "roof": 0,
+     "metal": 0,
+     "leaf": 0,
+     "water": 0.55
+    }
+   }
+  ]
+ },
  "ambient": {
   "source": "src/config.js AMBIENT_BED; src/ambientbed.js; src/riverbridge.js riverPath (Höje å centreline)",
   "bed": {

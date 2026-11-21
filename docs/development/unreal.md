@@ -951,6 +951,12 @@ The dry reference now includes the web master and the comparison rejects a diffe
 Rebuild the Audio assets and run the silent render above to measure the new output. Snowfall in BP_LundenSky describes
 falling flakes. Ground accumulation and temperature for snow footsteps are tracked in #2331.
 
+The audio builder also mixes the web rain hiss and four rain-surface bands into the dry ambient bed. The
+sky's Rain controls gain and an indoor listener receives 30% gain and a 900 Hz cutoff. Rain fades above the web
+cloud deck. The player uses its vegetation/river measurements and surface sensor. An upward visibility trace
+estimates overhead shelter (*guess*). Vehicle sound and sheet-metal distance wait for #2357. The headless audio
+test samples the web rain-surface cases, and the silent render records the rain alone indoors and outdoors.
+
 ## Lighting, sky and weather (#2283)
 
 G05's release-1 part: the sun and moon stand where the web puts them over Lund for the date and clock, the sky,

@@ -147,6 +147,14 @@ def pure_checks(comp, result):
             if not close(g, w):
                 bad.append(f"windSoundParams speed {speed} gust {gust} leaves {leaves} near {near} indoors {indoors}: "
                            f"{name} {g}, web {w}")
+    for row in A["rain"]["cases"]:
+        values = row["input"]
+        got = call(comp, "RainMix", values.get("indoors", False), values.get("underRoof", False),
+                   float(values.get("trees", 0)), float(values.get("leaves", 1)), float(values.get("riverDist", 1e6)),
+                   float(values.get("metal", 0)), float(values.get("grass", 0)))
+        want = [row["mix"][n] for n in ("base", "baseHz", "roof", "metal", "leaf", "water")]
+        if len(got) != len(want) or not all(close(g, w) for g, w in zip(got, want)):
+            bad.append(f"rainSurfaceMix({values}) {got}, web {want}")
     B = A["ambient"]
     for dist, indoors, *want in B["riverCases"]:
         got = call(comp, "RiverParams", float(dist), bool(indoors))
@@ -298,13 +306,16 @@ def audio_test():
         put(comp, "WindSpeed", 9.0)
         put(comp, "Month", 6)
         put(comp, "Hour", 8.0)
+        if abs(comp.get_editor_property("RainGain")) > 1e-6:
+            raise RuntimeError("Clear weather produced rain audio")
+        put(comp, "Rain", 1.0)
         beds = {}
         for label, c in (("outdoors", grass), ("indoors", parquet)):
             yield from stand(c)
             yield from seconds(comp.get_editor_property("Every") + 0.1)
             v = {n: comp.get_editor_property(n) for n in ("Indoors", "Near", "GustNow", "RiverDist", "Traffic", "WindGain",
                                                           "WindLpHz", "WindLpQ", "WindBandGain", "WindBandHz", "WindBandQ",
-                                                          "RiverGain", "RiverHz", "RiverQ", "CityGain", "CityHz")}
+                                                          "RiverGain", "RiverHz", "RiverQ", "CityGain", "CityHz", "RainGain", "RainCutoff", "Roof")}
             x, y, _ = c["unreal"]
             feet = [(t["foot"]["unreal"][0], t["foot"]["unreal"][1]) for t in M["vegetation"]["trees"]]
             near_cm = 100 * A["wind"]["sound"]["near"]
@@ -319,6 +330,14 @@ def audio_test():
         problems = []
         if out["Indoors"] or not ins["Indoors"]:
             problems.append("indoors/outdoors flags")
+        expected_rain = A["rain"]["sound"] * A["masterGain"]
+        for v, scale, hz in ((out, 1.0, 6500.0), (ins, 0.3, 900.0)):
+            if not close(v["RainGain"], scale * expected_rain) or not close(v["RainCutoff"], hz):
+                problems.append(f"rain at {v['Indoors']=}: {v['RainGain']} / {v['RainCutoff']} Hz")
+        put(comp, "Rain", 0.0)
+        yield from seconds(comp.get_editor_property("Every") + 0.1)
+        if abs(comp.get_editor_property("RainGain")) > 1e-6:
+            problems.append("rain gain stayed on after clearing the weather")
         for v in (out, ins):
             if abs(v["Near"] - v["webNear"]) > 1e-4:
                 problems.append(f"tree nearness {v['Near']} != {v['webNear']}")

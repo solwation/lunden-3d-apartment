@@ -31,6 +31,7 @@ const C = await import(src('config.js'));
 const { pickStep } = await import(src('footsteps.js'));
 const { gustAt, windStrength, windSoundParams } = await import(src('windsound.js'));
 const { riverBabbleParams, trafficLevel, cityHumParams, distToPolyline } = await import(src('ambientbed.js'));
+const { rainSurfaceMix } = await import(src('rainsurface.js'));
 const { windPower } = await import(src('windsim.js'));
 const { riverPath } = await import(src('riverbridge.js'));
 const { webToUnreal, rectToUnreal } = await import(pathToFileURL(path.join(here, 'coordinates.mjs')).href);
@@ -109,6 +110,17 @@ const params = round({
     gustCases: gust,
     columns: ['speed', 'gust', 'leaves', 'near', 'indoors', 'gain', 'lpHz', 'lpQ', 'bandGain', 'bandHz', 'bandQ'],
     cases: wind,
+  },
+  rain: {
+    source: 'src/rainsurface.js rainSurfaceMix; src/weather.js Weather.update; src/audio.js sfx.rain',
+    sound: C.WEATHER.sound,
+    surface: C.RAIN_SURFACE,
+    cloudTop: C.SKYLAYER.top, cloudFade: C.SKYLAYER.fade,
+    cases: [
+      {}, { indoors: true }, { underRoof: true }, { trees: 1, leaves: 1, grass: 1 },
+      { trees: 1, leaves: 0, grass: 1 }, { underRoof: true, trees: 0.6, leaves: 0.5, riverDist: 15 },
+      { riverDist: 0, metal: 0.4 }, { indoors: true, metal: 1 }, { riverDist: 34, grass: 0.4 },
+    ].map(input => ({ input, mix: rainSurfaceMix(input) })),
   },
   ambient: {
     source: 'src/config.js AMBIENT_BED; src/ambientbed.js; src/riverbridge.js riverPath (Höje å centreline)',

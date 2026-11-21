@@ -190,7 +190,7 @@ def main(argv):
         for b in range(len(sw[0]) - 1, -1, -1):
             sheet.append([shade(c[b], tops[0]) for c in sw] + [255, 255] + [shade(c[b], tops[1]) for c in su])
         sheet.append([255] * len(sheet[-1]))
-    for name in ("wind_out", "wind_in", "bed_out", "bed_in"):
+    for name in ("wind_out", "wind_in", "bed_out", "bed_in", "rain_out", "rain_in"):
         f = src / f"{name}.wav"
         if f.exists():
             x, rate, _ = read_wav(f)

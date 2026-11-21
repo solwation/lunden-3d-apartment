@@ -127,6 +127,17 @@ def render():
                 yield from record(f"{name}_{where}", 2.0)
                 loop.stop()
                 yield from seconds(0.3)
+            # A separate instance of the same bed plays only rain: its river and city gains
+            # default to zero. Sample the live player's recorded weather parameters at this spot.
+            put(comp, "Rain", 1.0)
+            yield from seconds(0.6)
+            rain = u.GameplayStatics.spawn_sound2d(game, comp.get_editor_property("BedSound"))
+            for name in ("RainGain", "RainCutoff", "Base", "BaseHz", "Roof", "Metal", "Leaf", "Water"):
+                rain.set_float_parameter(name, comp.get_editor_property(name))
+            yield from seconds(1.5)
+            yield from record(f"rain_{where}", 2.0)
+            rain.stop()
+            put(comp, "Rain", 0.0)
         u.log("LUNDEN_AUDIO_RENDER_OK")
     finally:
         levels.editor_request_end_play()

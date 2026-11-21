@@ -11,15 +11,15 @@ Assets (one owner, #2287), all in /Game/Lunden/Audio/:
                          hard = tile/paving/stone, grass, gravel, and the variants stair, wet, snow, snowCold, leaves):
                          src/footsteps.js synthFootstep (a gliding sine body plus low-passed noise, crackle, partial)
   MS_LundenWind          looping MetaSound: src/audio.js sfx.windBed (one noise, low-pass body + band-pass rustle/whistle)
-  MS_LundenAmbience      looping MetaSound: src/audio.js sfx.ambientBed (Höje å babble band-pass + city hum low-pass)
+  MS_LundenAmbience      looping MetaSound: river babble, city hum and the rain hiss/roof/metal/leaves/water of sfx.rain
   RE_LundenSoft/Bright/Concrete/Courtyard   ReverbEffects for src/config.js ROOM_REVERB's zones (simple form)
   BPC_LundenAudio        ActorComponent on BP_LundenPlayer (player-extensions.json row Audio): the stride clock and
                          pickStep, the wind and bed parameters a few times a second (windsound.js, ambientbed.js), the
                          room zone (roomreverb.js reverbZone)
 
-Every number comes from tools/unreal-engine/audio-params.json, which tools/unreal-engine/export-audio.mjs reads from the
+The web parameters come from tools/unreal-engine/audio-params.json, which tools/unreal-engine/export-audio.mjs reads from the
 web's modules, and from the #2245 export (unreal/Lunden/Import/measurements.json vegetation.trees: the tree feet of
-src/surroundings.js treeFeet). The formulas of windsound.js / ambientbed.js are kept below as text and compiled into
+src/surroundings.js treeFeet). The local step output trim is calibrated against #2287. The formulas of windsound.js / ambientbed.js are kept below as text and compiled into
 Blueprint math nodes (as build_lighting.py does), so the graph is a literal transcription; tests/test_audio.py compares
 it with the web's own answers stored in audio-params.json.
 
@@ -67,7 +67,7 @@ BS = u.get_engine_subsystem(u.MetaSoundBuilderSubsystem)
 MSE = u.get_editor_subsystem(u.MetaSoundEditorSubsystem)
 TOOLS = u.AssetToolsHelpers.get_asset_tools()
 OK = u.MetaSoundBuilderResult.SUCCEEDED
-LOWPASS, BANDPASS = 0, 2  # Audio::EBiquadFilter
+LOWPASS, HIGHPASS, BANDPASS = 0, 1, 2  # Audio::EBiquadFilter
 WHITE = 1  # ENoiseType
 TRIANGLE = 2  # ELfoWaveshapeType
 
@@ -315,8 +315,29 @@ def ambient_bed(P):
         ("RiverGain", 0.0), ("RiverHz", 900.0), ("RiverQ", 0.6), ("CityGain", 0.0), ("CityHz", 200.0))}
     river = ms.biquad(ms.noise(), BANDPASS, v["RiverHz"], ms.q_to_bandwidth(v["RiverQ"]))
     city = ms.biquad(ms.noise(), LOWPASS, v["CityHz"], ms.q_to_bandwidth(lowpass_q(0.7)))
-    ms.finish(ms.mix(ms.gain(river, v["RiverGain"]), ms.gain(city, v["CityGain"])))
+    ms.finish(ms.mix(ms.gain(river, v["RiverGain"]), ms.gain(city, v["CityGain"]), rain_audio(ms, P)))
     return ms
+
+
+def rain_audio(ms, P):
+    # src/audio.js sfx.rain: all five layers share the same noise signal. Rain later passes
+    # through one room cutoff and gain. The dry bed component already follows the listener.
+    S = P["rain"]["surface"]
+    rain = {name: ms.ease(ms.input(name, default), 0.3 if name in ("RainGain", "RainCutoff") else S["ease"])
+            for name, default in (("RainGain", 0.0), ("RainCutoff", 6500.0), ("Base", 1.0), ("BaseHz", S["hardHz"]),
+                                  ("Roof", 0.0), ("Metal", 0.0), ("Leaf", 0.0), ("Water", 0.0))}
+    noise = ms.noise()
+    # Web Audio's high/low-pass Biquad default Q is 1 dB. Band-pass Q is linear.
+    q = ms.q_to_bandwidth(lowpass_q(1.0))
+    high = ms.biquad(noise, HIGHPASS, 400.0, bandwidth(lowpass_q(1.0), 400.0))
+    hiss = ms.biquad(high, LOWPASS, rain["BaseHz"], q)
+    layers = [ms.gain(hiss, rain["Base"])]
+    for key in ("roof", "metal", "leaf", "water"):
+        hz, quality, _ = S[key]
+        band = ms.biquad(noise, BANDPASS, hz, bandwidth(quality, hz))
+        layers.append(ms.gain(band, rain[key.capitalize()]))
+    rainfall = ms.biquad(ms.mix(*layers), LOWPASS, rain["RainCutoff"], q)
+    return ms.gain(rainfall, rain["RainGain"])
 
 
 # Sound classes and rooms ------------------------------------------------------------------------------------------------
@@ -547,6 +568,26 @@ def wind_env(P):
             "indoorGain": W["indoor"]["gain"], "indoorHz": W["indoor"]["hz"], "indoorBand": W["indoor"]["band"]}
 
 
+def rain_env(P):
+    s = P["rain"]["surface"]
+    return {**{key: s[key] for key in ("others", "indoorRoof", "thin", "hardHz", "grassHz", "waterFull", "waterRange")},
+            **{key + "Gain": s[key][2] for key in ("roof", "metal", "leaf", "water")}}
+
+
+# src/rainsurface.js rainSurfaceMix. Keep nested maxima binary, as the Blueprint FMax node has two inputs.
+RAIN_MIX = """
+covered = Indoors or UnderRoof
+openness = select(covered, others, 1)
+Roof = select(Indoors, indoorRoof, select(UnderRoof, 1, 0)) * roofGain
+Metal = MetalNear * metalGain * select(Indoors, 0.5, 1)
+Leaf = Trees * Leaves * leafGain * openness
+Water = (1 - smooth(waterFull, waterRange, RiverDist)) * waterGain * openness
+busy = clamp(max(max(Roof, Metal), max(Leaf, Water)), 0, 1)
+Base = 1 - thin * busy
+BaseHz = hardHz + (grassHz - hardHz) * clamp(Grass, 0, 1) * select(covered, 0, 1)
+"""
+
+
 def bed_env(P):
     A = P["ambient"]["bed"]
     R, C, I = A["river"], A["city"], A["indoor"]
@@ -560,10 +601,12 @@ def bed_env(P):
 # BPC_LundenAudio ---------------------------------------------------------------------------------------------------------
 
 FUNCTIONS = ("PickStep", "PlayStep", "UpdateSteps", "ReadSky", "WindPower", "WindStrength", "GustAt", "WindParams",
-             "TreeNearness", "RiverDistance", "RiverParams", "TrafficLevel", "CityParams", "ZoneFor", "UpdateBeds", "PushWind", "PushBed")
+             "TreeNearness", "RiverDistance", "RiverParams", "TrafficLevel", "CityParams", "RainMix", "ZoneFor", "UpdateBeds", "PushWind", "PushBed")
 REAL, INT, BOOL, NAME, VEC = pp.REAL, pp.INT, pp.BOOL, pp.NAME, pp.VEC
 WIND_OUT = ["Gain", "LpHz", "LpQ", "BandGain", "BandHz", "BandQ"]
 BED_OUT = ["RiverGain", "RiverHz", "RiverQ", "CityGain", "CityHz"]
+RAIN_MIX_OUT = ["Base", "BaseHz", "Roof", "Metal", "Leaf", "Water"]
+RAIN_OUT = ["RainGain", "RainCutoff", *RAIN_MIX_OUT]
 
 
 def component_variables(bp, sound_type, reverb_type):
@@ -574,12 +617,12 @@ def component_variables(bp, sound_type, reverb_type):
         "StepCount": INT, "LastProfile": NAME, "LastSurface": NAME, "LastStepSound": sound_type, "LastStepTime": REAL,
         "StepsOn": BOOL,
         # the weather the sky gives (BP_LundenSky) or a test sets; snow cover and temperature are not ported yet
-        "WindSpeed": REAL, "Wet": REAL, "Month": INT, "Hour": REAL, "SnowCover": REAL, "Temperature": REAL,
+        "WindSpeed": REAL, "Wet": REAL, "Rain": REAL, "Month": INT, "Hour": REAL, "SnowCover": REAL, "Temperature": REAL,
         "UseSky": BOOL,
         # the beds
         "Every": REAL, "UpdateT": REAL, "TreeFeet": pp.array(VEC), "NearCm": REAL, "LeavesByMonth": pp.array(REAL),
         "RiverPath": pp.array(VEC), "Best": REAL, "Indoors": BOOL, "Near": REAL, "GustNow": REAL, "RiverDist": REAL,
-        "Traffic": REAL, "Updates": INT, **{"Wind" + n: REAL for n in WIND_OUT}, **{n: REAL for n in BED_OUT},
+        "Traffic": REAL, "Updates": INT, **{"Wind" + n: REAL for n in WIND_OUT}, **{n: REAL for n in (*BED_OUT, *RAIN_OUT)},
         "WindAudio": BP.get_object_reference_type(u.AudioComponent.static_class()),
         "BedAudio": BP.get_object_reference_type(u.AudioComponent.static_class()),
         "WindSound": sound_type, "BedSound": sound_type,
@@ -643,7 +686,7 @@ def build_component(P, trees, sounds, wind, bed, reverbs):
     g.step(cast)
     pp.link(actor, pp.inp(cast, "Object"))
     sky = pp.cast_out(cast)
-    for name in ("WindSpeed", "Wet", "Month", "Hour"):
+    for name in ("WindSpeed", "Wet", "Rain", "Month", "Hour"):
         g.set(name, g.get(name, SKY + "." + SKY.rsplit("/", 1)[1] + "_C", target=sky))
 
     # PlayStep(): the profile under the feet and its MetaSound (src/main.js footsteps -> sfx.step)
@@ -739,6 +782,12 @@ def build_component(P, trees, sounds, wind, bed, reverbs):
     env = Expr(g, {**B, **p}).run(traffic_text(rush) + CITY)
     g.ret(**{n: env[n] for n in BED_OUT[3:]})
 
+    g, p = pp.function(bp, "RainMix", [("Indoors", BOOL), ("UnderRoof", BOOL), ("Trees", REAL), ("Leaves", REAL),
+                                      ("RiverDist", REAL), ("MetalNear", REAL), ("Grass", REAL)],
+                       [(n, REAL) for n in RAIN_MIX_OUT], pure=True)
+    env = Expr(g, {**rain_env(P), **p}).run(RAIN_MIX)
+    g.ret(**{n: env[n] for n in RAIN_MIX_OUT})
+
     # ZoneFor(Where, Surface, Location) -> Zone: src/stepsurface.js indoorRoomClass from the same surface classes
     # (core -> concrete, indoor hard -> bright, indoor -> soft), else roomreverb.js's courtyard rectangle, else open
     court = P["reverb"]["courtyard"]
@@ -781,6 +830,27 @@ def build_component(P, trees, sounds, wind, bed, reverbs):
         g.set(n, pp.out(rp, n))
     for n in BED_OUT[3:]:
         g.set(n, pp.out(cp, n))
+    # Current R1 listener: shelter above the listener is measured in the composed level. Dynamic
+    # cars/cabins (#2357) do not yet supply sheet-metal distance. Use the existing surface sensor.
+    head = g.pure("PlayerCameraManager:GetCameraLocation", target=g.pure("GameplayStatics:GetPlayerCameraManager", PlayerIndex=0))
+    end = g.op("Add_VectorVector", A=head, B=g.op("MakeVector", X=0.0, Y=0.0, Z=100000.0))
+    roof = g.node_of("KismetSystemLibrary:LineTraceSingle", Start=head, End=end, TraceChannel="TraceTypeQuery1",
+                     bTraceComplex=True, DrawDebugType="None", bIgnoreSelf=True)
+    soft = g.op("EqualEqual_NameName", A=pp.out(info, "Surface"), B="grass")
+    mix = g.node_of(me + ":RainMix", Indoors=g.get("Indoors"), UnderRoof=pp.out(roof, "ReturnValue"),
+                    Trees=g.get("Near"), Leaves=leaves, RiverDist=g.get("RiverDist"), MetalNear=0.0,
+                    Grass=g.op("SelectFloat", A=1.0, B=0.0, bPickA=soft))
+    for name in RAIN_MIX_OUT:
+        g.set(name, pp.out(mix, name))
+    altitude = g.call("KismetMathLibrary:BreakVector")
+    pp.link(head, pp.inp(altitude, "InVec"))
+    env = Expr(g, {"Rain": g.get("Rain"), "inside": g.get("Indoors"), "height": pp.out(altitude, "Z"),
+                   "cloudTop": P["rain"]["cloudTop"] * 100, "cloudFade": P["rain"]["cloudFade"] * 100,
+                   "outputGain": P["rain"]["sound"] * P["masterGain"]}).run(
+        "above = smooth(cloudTop, cloudTop + cloudFade, height)\n"
+        "gain = Rain * (1 - above) * outputGain * select(inside, 0.3, 1)\ncutoff = select(inside, 900, 6500)")
+    g.set("RainGain", env["gain"])
+    g.set("RainCutoff", env["cutoff"])
     # the room: switch the reverb only when the zone changes
     zone = g.pure(me + ":ZoneFor", result="Zone", Where=pp.out(info, "Where"), Surface=pp.out(info, "Surface"), Location=loc)
     g.branch(g.op("NotEqual_NameName", A=zone, B=g.get("ReverbZone")))
@@ -794,7 +864,7 @@ def build_component(P, trees, sounds, wind, bed, reverbs):
 
     # PushWind() / PushBed(): the parameters to the running loops (no loop under -nosound or without an audio device)
     for fn, audio, names in (("PushWind", "WindAudio", [("Wind" + n, n) for n in WIND_OUT]),
-                             ("PushBed", "BedAudio", [(n, n) for n in BED_OUT])):
+                             ("PushBed", "BedAudio", [(n, n) for n in (*BED_OUT, *RAIN_OUT)])):
         g, _ = pp.function(bp, fn)
         g.branch(g.pure("KismetSystemLibrary:IsValid", Object=g.get(audio)))
         for var, param in names:
