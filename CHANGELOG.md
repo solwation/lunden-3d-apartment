@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+## 0.15.1 — 2026-11-21
+
+- `scripts/prune-worktrees.sh` no longer treats a submodule or other repository inside
+  a checkout's working tree as a checkout of its own. `--apply` classified the
+  submodule of a worker checkout as `integrated` and deleted it, even when the
+  surrounding checkout was `active` under its claim marker. Such a repository is now
+  part of its enclosing checkout and is not listed; worktrees of the enclosing
+  repository itself are still listed separately. A regression test covers a submodule
+  inside a claimed worktree (#83).
+
+- Link checker: `scripts/check-links.py` now also checks Markdown links whose text
+  wraps onto the next line of a paragraph (reported at the line where the target
+  starts); it scanned line by line before and skipped them, including two in
+  COORDINATION.md and ORCHESTRA.md. Fenced code and inline code stay excluded (#84).
+
 ## 0.15.0 — 2026-11-20
 
 - Trusted issue authors: ORCHESTRA.md *Trust issue authors and content* closes the

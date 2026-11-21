@@ -4,7 +4,9 @@
 #   scripts/prune-worktrees.sh [options] ROOT...
 #
 # Scans ROOT and its subdirectories (two levels) for git checkouts and prints one
-# line per checkout with its class. Nothing is changed unless --apply is given.
+# line per checkout with its class. Nothing is changed unless --apply is given. A
+# repository inside another checkout's working tree (a submodule, a vendored clone) is
+# part of that checkout and is not listed on its own.
 #
 #   integrated  clean tree and every local commit (or its patch) is on the remote
 #               main branch: removed with --apply
@@ -91,6 +93,23 @@ done
 if [ ${#candidates[@]} -gt 0 ]; then
   mapfile -t candidates < <(printf '%s\n' "${candidates[@]}" | awk 'NF && !seen[$0]++' | sort)
 fi
+
+# a repository nested in another checkout's working tree (a submodule, a vendored clone)
+# belongs to that checkout and is never classified or removed on its own; a worktree of
+# the enclosing repository (its common git dir) is a separate checkout and stays
+declare -A common_of
+for d in "${candidates[@]}"; do
+  common_of[$d]=$(git -C "$d" rev-parse --path-format=absolute --git-common-dir 2>/dev/null)
+done
+kept=()
+for d in "${candidates[@]}"; do
+  nested=0
+  for o in "${candidates[@]}"; do
+    if [ "$o" != "$d" ] && [ "${d#"$o"/}" != "$d" ] && [ "${common_of[$d]}" != "${common_of[$o]}" ]; then nested=1; break; fi
+  done
+  [ $nested -eq 0 ] && kept+=("$d")
+done
+candidates=(${kept[@]+"${kept[@]}"})
 
 # main repositories that back worktrees, and clones whose object store another clone
 # borrows (git clone --reference/--shared), are protected: removing them breaks the rest
