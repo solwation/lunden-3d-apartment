@@ -8,6 +8,7 @@ from pathlib import Path
 import re
 import struct
 import sys
+import types
 
 TOOLS = Path(__file__).resolve().parent
 sys.path.insert(0, str(TOOLS / "python"))
@@ -38,8 +39,10 @@ def lighting_signature(measurements):
             wanted.add(node)
             pending.extend(n.id for n in ast.walk(node) if isinstance(n, ast.Name) and n.id in definitions)
     tree.body = [node for node in tree.body if node in wanted]
+    # neutral_tonemap.py (#2396) builds an editor material and imports `unreal`; the specification only hashes its file.
+    neutral_tonemap = types.SimpleNamespace(__file__=str(TOOLS / "python/neutral_tonemap.py"))
     ns = dict(__file__=str(builder), Path=Path, hashlib=hashlib, json=json, season_tags=season_tags,
-              sky_clouds=sky_clouds, stair_lamp=stair_lamp)
+              sky_clouds=sky_clouds, stair_lamp=stair_lamp, neutral_tonemap=neutral_tonemap)
     exec(compile(tree, str(builder), "exec"), ns)
     return ns["spec_hash"](ns["spec_of"](ns["load_measurements"](measurements)))
 
