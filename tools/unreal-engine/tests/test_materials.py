@@ -8,7 +8,13 @@
      with that key in the export (a moved surface changes its id: the rule would silently stop applying);
   3. every instance names a listed master and only parameters that master has;
   4. every material carries `source` and an `assumption` field, and an entry whose source or note says *guess* keeps an
-     assumption text (plan-material's markers stay with the material).
+     assumption text (plan-material's markers stay with the material);
+  5. (#2308) every lawn key has a rule to a grass instance of its own colour;
+  6. (#2318) every web look with a patterned surface (brick, roof seams, asphalt, paving: PATTERNED) reaches a material that
+     draws that surface (its `surface` field), on every mesh that shows it, in every zone of the export. The class comes from
+     the export itself (measurements.json materials[].looks: the web's own weather class, or the colour map's name, or the
+     class of another look drawing the same canvas, `mapIndex`), never from a list of keys here. A look without a colour
+     map (the web's plain brick pilasters, a plain asphalt path) is drawn in full by Interchange's instance and may stay.
 --table prints one line per key: key, nodes, rule material or "default: <reason>".
 Exit 0 when all hold, 1 otherwise; prints MATERIAL_COVERAGE_OK.
 """
@@ -28,6 +34,56 @@ MASTER_PARAMS = {
               "TuftShade"},
 }
 GRASS_MAP = "shared-grass-detail"  # src/grass.js grassTexture's name; measurements.json materials[].map since #2308
+# #2318: web surface classes whose look is a pattern in the colour map (joints, seams, aggregate) that Interchange's plain
+# instance loses, and colour-map names that carry a class themselves (src/roofsurface.js roofMap, src/asphaltsurface.js)
+PATTERNED = ("brick", "roof", "asphalt", "paving")
+MAP_CLASS = {"roof-surface": "roof", "asphalt-aggregate-colour": "asphalt"}
+
+
+def look_classes(export_materials):
+    """[(key, look, class)] for every look of the export whose surface is PATTERNED and drawn by a colour map."""
+    by_map = {}
+    for info in export_materials.values():
+        for look in info.get("looks", []):
+            cls = MAP_CLASS.get(look.get("map")) or look.get("surface")
+            if look.get("mapIndex") is not None and cls:
+                by_map.setdefault(look["mapIndex"], set()).add(cls)
+    out = []
+    for key, info in export_materials.items():
+        for look in info.get("looks", []):
+            if look.get("mapIndex") is None:
+                continue  # no colour map: the key's colour, roughness and metalness are the whole web look
+            cls = MAP_CLASS.get(look.get("map")) or look.get("surface")
+            if not cls:  # an untagged material drawing a tagged one's canvas (the school wall's historic brick)
+                same = by_map.get(look["mapIndex"], set())
+                cls = next(iter(same)) if len(same) == 1 else None
+            if cls in PATTERNED:
+                out.append((key, look, cls))
+    return out
+
+
+def zone_meshes(export_dir):
+    """{node id: (zone, [(mesh name, keys)])} for every node with an id in every zone GLB of the export."""
+    out = {}
+    for name in sorted(os.listdir(export_dir)):
+        if not name.endswith(".glb") or name == "fixture.glb":
+            continue
+        j = glb_json(os.path.join(export_dir, name))
+        nodes, meshes, materials = j["nodes"], j.get("meshes", []), [m.get("name", "") for m in j.get("materials", [])]
+
+        def walk(i, acc):
+            n = nodes[i]
+            if "mesh" in n:
+                mesh = meshes[n["mesh"]]
+                acc.append((mesh.get("name", ""), {materials[p["material"]] for p in mesh.get("primitives", []) if "material" in p}))
+            for c in n.get("children", []):
+                walk(c, acc)
+            return acc
+        for i, n in enumerate(nodes):
+            nid = (n.get("extras") or {}).get("id")
+            if nid and (n.get("extras") or {}).get("kind") not in ("zone", "part"):
+                out[nid] = (name[:-4], walk(i, []))
+    return out
 
 
 def glb_json(path):
@@ -112,6 +168,27 @@ def main(argv):
                 errors.append(f"lawn key {key}: {rule['material']} Color {target['params'].get('Color')} is not the key's {info['color']}")
         print(f"lawn keys (map {GRASS_MAP}): {len(lawns)}, each on a grass material with its own colour")
 
+        # 6. #2318: patterned web surfaces never fall back to Interchange's plain instance or another surface's material
+        patterned, by_node, checked = look_classes(export_materials), zone_meshes(export_dir), {}
+        if not any("looks" in info for info in export_materials.values()):
+            errors.append("measurements.json has no materials[].looks: the export predates #2318, export again")
+        for key, look, cls in patterned:
+            nodes = look.get("nodes") or [nid for nid, (_, parts) in by_node.items() if any(key in k for _, k in parts)]
+            for nid in nodes:
+                zone, parts = by_node.get(nid, (None, []))
+                for mesh_name, mkeys in parts:
+                    if key not in mkeys:
+                        continue
+                    hit = next((r for rx, mx, r in rule_rx if rx.search(key) and (mx is None or mx.search(mesh_name))), None)
+                    target = mats.get(hit["material"].split(".")[0]) if hit else None
+                    got = target.get("surface") if target else None
+                    if got != cls:
+                        errors.append(f"{cls} look of key {key} on {zone}/{mesh_name} reaches "
+                                      f"{hit['material'].split('.')[-1] if hit else 'the import default'} (draws {got or 'no ' + cls})")
+                    checked.setdefault(cls, set()).add((zone, mesh_name, key))
+        print("patterned surfaces (#2318): " + ", ".join(f"{c} {len(checked.get(c, ()))} mesh(es)" for c in PATTERNED)
+              + f" from {len(patterned)} look(s); each on a material that draws its surface")
+
     # 1. coverage, per (key, mesh) so mesh selectors count
     nodes = scope_nodes(export_dir, table["scope"])
     per_key, selector_hits = {}, {i: 0 for i, r in enumerate(rules) if r.get("mesh")}
@@ -123,8 +200,13 @@ def main(argv):
                 hit = next(((i, r) for i, (rx, mx, r) in enumerate(rule_rx) if rx.search(key) and (mx is None or mx.search(mesh_name))), None)
                 if hit:
                     per_key.setdefault(key, {"nodes": 0, "targets": set()})["targets"].add(hit[1]["material"].split(".")[-1])
-                    if hit[0] in selector_hits:
-                        selector_hits[hit[0]] += 1
+    # a `mesh` selector may name a mesh of any zone (#2318: the façades, roofs and ground outside the scope zones)
+    for _, parts in zone_meshes(export_dir).values():
+        for mesh_name, mkeys in parts:
+            for key in mkeys:
+                hit = next((i for i, (rx, mx, r) in enumerate(rule_rx) if rx.search(key) and (mx is None or mx.search(mesh_name))), None)
+                if hit in selector_hits:
+                    selector_hits[hit] += 1
     for i, n in selector_hits.items():
         if n == 0:
             errors.append(f"rule {rules[i]['match']} with mesh {rules[i]['mesh']} selects no mesh in the export (moved surface?)")

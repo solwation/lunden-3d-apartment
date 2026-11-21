@@ -403,7 +403,11 @@ function materialInfo(m) {
   return { key, info: { type, color: '#' + color, roughness: r4(rough), metalness: r4(metal), opacity: transparent ? r4(m.opacity) : 1,
     emissive: emissive ? hex(m.emissive) : null, vertexColors: !!m.vertexColors, textured, doubleSided: m.side === THREE.DoubleSide,
     hint: m.userData?.roomProbe ?? (m.userData?.skin ? 'tile' : null),
-    map: m.map?.name || null } }; // #2308: the colour map's name (e.g. src/grass.js's 'shared-grass-detail' on the lawns)
+    map: m.map?.name || null, // #2308: the colour map's name (e.g. src/grass.js's 'shared-grass-detail' on the lawns)
+    // #2318: the web's own surface class (its weather layers tag it: src/wetsurface.js 'brick', 'roof', 'render' …,
+    // src/wetground.js 'asphalt', 'paving' …, src/snowground.js's ground class), so test_materials.py finds the brick, roof,
+    // asphalt and paving keys from the export
+    surface: m.userData?.wetSurface ?? m.userData?.wetGround ?? m.userData?.snowGround ?? null } };
 }
 
 /** A plain float geometry with position / normal / uv / colour and the index (no custom or quantised attributes). */
@@ -675,10 +679,22 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
   // ---- build the export scenes ----
   const materials = new Map(), matCache = new Map(), furnishCache = new Map(), geoCache = new Map(), materialTable = {};
   const textures = new Map(), textureOfMap = new Map(); // #2289: furnishing textures by id, and by web texture
+  // #2318: every web material one key collapses (`looks`: surface class, colour-map name, and `mapIndex`, the colour map's
+  // first-use order in this export, since canvas maps have no name: an untagged material drawing the same canvas as a tagged
+  // one shows the same picture) and, for a key with more than one look, the nodes showing each, so a rule can pick a look by
+  // mesh (the asphalt and the hall tiles share std_ffffff_r100_m0_tex)
+  const looks = new Map(), mapIndex = new Map(); let lookAtom = null;
+  const noteLook = (m, key) => {
+    if (m.map && !mapIndex.has(m.map)) mapIndex.set(m.map, mapIndex.size);
+    const info = materialInfo(m).info, look = JSON.stringify({ surface: info.surface, map: info.map, mapIndex: m.map ? mapIndex.get(m.map) : null });
+    const byLook = looks.get(key) ?? looks.set(key, new Map()).get(key);
+    const nodes = byLook.get(look) ?? byLook.set(look, new Set()).get(look);
+    if (lookAtom) nodes.add(lookAtom);
+  };
   // `furnish` (#2289): a furniture/appliance/lamp/curtain mesh keeps its base-colour image (FURNISH_KINDS)
   const exportMaterial = (m, furnish = false) => {
     const cache = furnish ? furnishCache : matCache;
-    if (cache.has(m)) return cache.get(m);
+    if (cache.has(m)) { noteLook(m, cache.get(m).name); return cache.get(m); }
     const { key: base, info } = materialInfo(m);
     const tex = furnish ? furnishingTexture(m.map, textures, textureOfMap) : null;
     const key = tex ? `${base}_${tex.id}` : base;
@@ -692,6 +708,7 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     }
     if (tex) tex.keys.add(key);
     cache.set(m, em);
+    noteLook(m, key);
     return em;
   };
   const exportGeometry = (mesh, keepColor) => {
@@ -742,6 +759,7 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
       const keys = new Set(), counter = { n: 1 };
       let node;
       const furnish = FURNISH_KINDS.has(a.kind);
+      lookAtom = a.id;
       if (a.instance !== undefined) node = meshNode(a.object, furnish), node && (Array.isArray(node.material) ? node.material : [node.material]).forEach((m) => keys.add(m.name));
       else node = subtree(a.object, a.id, counter, keys, furnish);
       if (!node) continue;
@@ -762,8 +780,15 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
       stats[a.kind] = (stats[a.kind] ?? 0) + 1;
     }
     const zone = ZONES.find((z) => z.id === zoneId);
+    lookAtom = null;
     if (zone.collision) tris += addCollision(root, world, zoneId, W, D, unique);
     roots[zoneId] = { root, triangles: Math.round(tris) };
+  }
+  lookAtom = null;
+  for (const [key, byLook] of looks) {
+    if (!materialTable[key]) continue;
+    const list = [...byLook].map(([l, nodes]) => ({ ...JSON.parse(l), ...(byLook.size > 1 ? { nodes: [...nodes].sort() } : {}) }));
+    materialTable[key].looks = list.sort((a, b) => JSON.stringify(a).localeCompare(JSON.stringify(b)));
   }
   if (wanted.includes('fixture')) roots.fixture = { root: fixtureScene(W, D, unique), triangles: 0 };
 

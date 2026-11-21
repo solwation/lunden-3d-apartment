@@ -2075,7 +2075,12 @@ What is exported:
 - **Materials** are not the web's: canvas textures (except the furnishing images, [#2289](#furnishing-and-pictures-2289)) and `onBeforeCompile` shader tweaks do not travel. Each mesh gets a
   plain PBR material named by a key built from its look (`std_f1f1ee_r85_m0` = standard, colour f1f1ee, roughness
   0.85, metalness 0; suffixes for opacity, emissive, vertex colours, textures, double-sided). `measurements.json`
-  `materials` lists every key; Unreal maps keys to hand-made materials (#2246).
+  `materials` lists every key; Unreal maps keys to hand-made materials (#2246). One key can stand for several web
+  materials (the key leaves the colour map out), so each entry also lists its `looks` (#2318): the web's own surface
+  class (`surface`: the weather layers' tag, `userData.wetSurface`/`wetGround`/`snowGround`, e.g. `brick`, `roof`,
+  `asphalt`, `paving`), the colour map's name (`map`) and its first-use order in the export (`mapIndex`; canvas maps
+  have no name, so an untagged material drawing a tagged one's canvas is recognised by it). A key with more than one
+  look lists the node ids showing each (`nodes`). The GLBs do not change; only `measurements.json` does.
 - **Left out** (web-only look, not geometry): `wall-ao`, contact shadows, architecture edge lines, glows/halos
   (non-normal blending), invisible pick/surface helpers, lights, hidden objects, instances scaled to zero (the web's way
   of hiding an instance, e.g. seven boule balls; their matrix has no rotation and wrote `null` quaternions). Instanced meshes become one node per
@@ -2344,7 +2349,7 @@ canvas textures do not travel. `tools/unreal-engine/material-map.json` therefore
   aggregate drawn by one Custom HLSL node in the export's metre UVs) and `M_LundenGlass` (translucent glazing, so its
   meshes use the raster path, #2276). Since #2308 `M_LundenGrass` draws the lawns (see [Vegetation](#vegetation-trees-shrubs-and-hedges-2281)). The `MI_Lunden*` instances take their sizes and colours from the web's
   `COLORS`, `FINISH`, `PATIO.paving` and `SCREEN_WALL`. `MI_LundenFacadeBrick`, `MI_LundenAsphalt` and
-  `MI_LundenRoofSeam` are prepared for the exterior and ground zones (#2279, #2280) and no export key uses them yet.
+  `MI_LundenRoofSeam` were prepared for the exterior and ground zones and are wired since #2318 (see below).
   Each entry names its web `source` and an `assumption`; `build_materials.py` writes both into the asset metadata
   (`Lunden.Source`, `Lunden.Assumption`), so plan-material's *guess* markers stay with the material.
 - `rules`: key → material. The tile key `std_ffffff_r100_m0_tex` is shared by the hall and wet-room floors, the wall
@@ -2367,6 +2372,39 @@ says *guess* has no assumption. `build_materials.py` skips an asset whose `Lunde
 second run writes nothing; `--force` rebuilds in place and `--check` verifies existence, spec hash, metadata,
 parameters and the persisted Nanite usage without writing. Take `git lfs lock` on every `Materials/*.uasset` before a
 build that writes. Results are in [the #2282 verification](../verification/2282/README.md).
+
+**Patterned surfaces: brick, roofs, asphalt and paving (#2318).** Until #2318 the façades of Hus L and A/B/C were
+white in Unreal: their keys (`std_ffffff_…_tex`: white times a canvas) fell to Interchange's instance, which keeps the
+white and loses the canvas, and the site's asphalt shared the tile key `std_ffffff_r100_m0_tex` and got the wall tiles.
+`test_materials.py` now finds every such look from the export itself (`materials[].looks`, never a key list): a look
+whose class is `brick`, `roof`, `asphalt` or `paving` (from `surface`, from the map names `roof-surface` and
+`asphalt-aggregate-colour`, or from another look drawing the same canvas) and that has a colour map must reach, on every
+mesh of every zone that shows it, a material whose `surface` field names that class. Otherwise it fails with the
+zone, mesh and the material it reached. A look without a colour map (Hus L's plain brick pilasters, a plain asphalt
+path) is drawn in full by Interchange's instance and may stay. The wiring at `7e3faf58`:
+
+| Web surface | Key (mesh selector) | Material | UV unit (measured on the export) |
+|---|---|---|---|
+| Hus L brick (`exterior.js` brickMat) | `std_ffffff_r100_m0_tex_ds` | `MI_LundenFacadeBrick` | 1.04 m × 0.6 m |
+| Hus A/B/C brick (`surroundings.js` facadeTexture(true)) | `std_ffffff_r95_m0_tex` (the Å-husen body) | `MI_LundenFacadeBrickAHus` | 3 m (a bay, a storey) |
+| retaining walls, school wall (historicBrick) | `std_ffffff_r95_m0_tex_ds`, `std_ffffff_r95_m0_tex` (school wall) | `MI_LundenBrickHistoric` | 2 m |
+| Hus L felt roofs | `std_616870_r90_m0_tex` | `MI_LundenRoofFeltHusL` | 8 m × 9 m (roofUV felt) |
+| Å-husen felt roofs | `std_8b9095_r90_m0_tex_ds` | `MI_LundenRoofFeltAHus` | 8 m × 9 m |
+| old S:t Lars standing seam | `std_43494e_r70_m15_tex_ds` | `MI_LundenRoofSeam` | 4.8 m × 6 m (roofUV metal) |
+| site asphalt | `std_ffffff_r100_m0_tex` (`mesh_site-asphalt_*`) | `MI_LundenAsphalt` | 1 m |
+| street asphalt patches | `std_cecece_r75_m0_tex` | `MI_LundenAsphaltPatch` | 1 m |
+| Hus L terrace paving, courtyard slabs | `std_ffffff_r100_m0_tex`, `std_ffffff_r95_m0_tex` (by mesh) | `MI_LundenPatioPaving` | 1 m |
+| courtyard brick pavers (herringbone) | `std_ffffff_r90_m0_tex` | `MI_LundenCourtBrickPaving` | 1 m |
+| cobbled corner | `std_ffffff_r80_m0_tex` | `MI_LundenCobbles` | 1 m |
+| street yard and bike place | `std_(f3efe6\|fdfcf8)_r85_m0_tex` | `MI_LundenStreetPaving` | 2.4 m |
+
+`M_LundenTiled` draws in UV units, so these instances give `Size` and `Joint` in the web's own UV units (a Hus L brick is
+0.25 × 0.125 units, the 8 px joint 0.0156), which keeps the web's brick and joint proportions on every surface. Colours
+are the canvases' (a roof's face and seam are its key colour times the roof map's linear face 0.613 and seam 0.300).
+Per-brick jitter, the herringbone (drawn as running bond), the cobbles' round stones (square setts), bump relief, moss,
+the asphalt's tracks and cracks, and roof mottle are not drawn: *guess* in each entry's `assumption`. Left on the
+import default: the old S:t Lars bays' painted window grid (`std_ffffff_r95_m0_tex`, no class) and the school façade.
+Verification: [#2318](../verification/2318/README.md).
 
 ### Buildings: Hus L, Hus A/B/C and the garage (#2279)
 
