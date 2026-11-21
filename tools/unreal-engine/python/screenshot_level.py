@@ -75,14 +75,19 @@ def capture(world, out_dir, name, view):
 def render_view(world, out_dir, name, loc, rot, width, height, fov, exposure_bias, excluded, lumen=False):
     cam = spawn(unreal.SceneCapture2D, loc, rot)
     comp = cam.capture_component2d
-    rt = unreal.RenderingLibrary.create_render_target2d(world, width, height, unreal.TextureRenderTargetFormat.RTF_RGBA8_SRGB)
+    # #2396: the picture the game displays: the final LDR colour, already display-encoded by the tonemapper (or by
+    # M_LundenNeutralTonemap in its place), into a plain 8-bit target. A view state is needed for any post-process
+    # material: without one Unreal skips them all (UMaterialInterface::OverrideBlendableSettings), so before #2396 the
+    # non-Lumen captures had neither the weather pass nor a replaced tonemapper. (The former tone-curve HDR source into
+    # an sRGB target was not the displayed picture for Unreal's own tonemapper either.)
+    rt = unreal.RenderingLibrary.create_render_target2d(world, width, height, unreal.TextureRenderTargetFormat.RTF_RGBA8)
     for actor in excluded:
         comp.hide_actor_components(actor)
     comp.set_editor_property("texture_target", rt)
-    comp.set_editor_property("capture_source", unreal.SceneCaptureSource.SCS_FINAL_TONE_CURVE_HDR)
+    comp.set_editor_property("capture_source", unreal.SceneCaptureSource.SCS_FINAL_COLOR_LDR)
     comp.set_editor_property("fov_angle", float(fov))
     comp.set_editor_property("capture_every_frame", False)
-    comp.set_editor_property("always_persist_rendering_state", lumen)
+    comp.set_editor_property("always_persist_rendering_state", True)
     pp = comp.get_editor_property("post_process_settings")
     pp.set_editor_property("override_auto_exposure_method", True)
     pp.set_editor_property("auto_exposure_method", unreal.AutoExposureMethod.AEM_MANUAL)

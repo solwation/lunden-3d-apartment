@@ -49,11 +49,11 @@ def render_game(world, out_dir, name, loc, rot, width, height, fov, excluded, hi
     exposure): the comparison that rejected it."""
     cam = spawn(u.SceneCapture2D, loc, rot)
     comp = cam.capture_component2d
-    rt = u.RenderingLibrary.create_render_target2d(world, width, height, u.TextureRenderTargetFormat.RTF_RGBA8_SRGB)
+    rt = u.RenderingLibrary.create_render_target2d(world, width, height, u.TextureRenderTargetFormat.RTF_RGBA8)
     for actor in excluded:
         comp.hide_actor_components(actor)
     comp.set_editor_property("texture_target", rt)
-    comp.set_editor_property("capture_source", u.SceneCaptureSource.SCS_FINAL_TONE_CURVE_HDR)
+    comp.set_editor_property("capture_source", u.SceneCaptureSource.SCS_FINAL_COLOR_LDR)  # the displayed picture (#2396)
     comp.set_editor_property("fov_angle", float(fov))
     comp.set_editor_property("capture_every_frame", False)
     comp.set_editor_property("always_persist_rendering_state", True)
