@@ -73,6 +73,9 @@ if ($args -contains '-build') { throw 'Content-only project must use the install
 $project = ($args -like '-project=*').Substring(9)
 if (-not (Test-Path -LiteralPath $project)) { throw "Invalid project path $project" }
 if ($env:LUNDEN_FIXTURE_MODE -eq 'dirty-during') { Add-Content $project 'changed during UAT fixture' }
+$stage = ($args -like '-stagingdirectory=*').Substring(18)
+Write-Output "FIXTURE STAGE=$stage"
+New-Item -ItemType Directory -Path $stage | Out-Null
 $archive = ($args -like '-archivedirectory=*').Substring(18)
 $dir = Join-Path $archive 'Windows\Engine\Binaries\Win64'
 New-Item -ItemType Directory -Path $dir | Out-Null
@@ -100,6 +103,9 @@ if ($env:LUNDEN_FIXTURE_MODE -eq 'changed-runtime') { Add-Content $game 'changed
     }
     $logs = @(Get-ChildItem -LiteralPath $out -Recurse -Filter BuildCookRun.log)
     Require ($logs.Count -eq 2 -and @(Select-String -Path $logs.FullName -Pattern 'FAKE BuildCookRun fixture').Count -eq 2) 'Missing UAT logs'
+    # UnrealPak derives the pak index's path-hash seed from the staged .pak path: every build must stage at one path.
+    $stages = @(Select-String -Path $logs.FullName -Pattern 'FIXTURE STAGE=(.*)$' | ForEach-Object { $_.Matches[0].Groups[1].Value.Trim() })
+    Require ($stages.Count -eq 2 -and $stages[0] -eq $stages[1] -and $stages[0] -eq (Join-Path $out 'stage')) "Builds staged at different paths: $stages"
     Run-Release (Join-Path $repo 'inside') 'outside the Git checkout'
     $dirty = Join-Path $repo 'dirty.txt'
     Set-Content $dirty 'untracked'
@@ -107,7 +113,7 @@ if ($env:LUNDEN_FIXTURE_MODE -eq 'changed-runtime') { Add-Content $game 'changed
     Git-Fixture add dirty.txt
     Run-Release $out 'clean Git worktree'
     Git-Fixture rm -q -f dirty.txt
-    Require (@(Get-ChildItem -LiteralPath $out).Count -eq 2) 'Dirty worktree started a build'
+    Require (@(Get-ChildItem -LiteralPath $out | Where-Object Name -ne 'stage').Count -eq 2) 'Dirty worktree started a build'
     $env:LUNDEN_FIXTURE_MODE = 'uat-failure'
     Run-Release $out 'exit 19'
     $env:LUNDEN_FIXTURE_MODE = 'no-game'
@@ -121,7 +127,7 @@ if ($env:LUNDEN_FIXTURE_MODE -eq 'changed-runtime') { Add-Content $game 'changed
     $env:LUNDEN_FIXTURE_MODE = 'dirty-during'
     Run-Release $out 'clean Git worktree'
     Require (@(Get-ChildItem -LiteralPath $out -Recurse -Filter build-info.json).Count -eq 2) 'Failed build got a completion marker'
-    Write-Host 'PASS: two clean fixture builds, provenance and logs, external-only output, dirty inputs, UAT failures, changed checkout.'
+    Write-Host 'PASS: two clean fixture builds, provenance and logs, one fixed staging path, external-only output, dirty inputs, UAT failures, changed checkout.'
 }
 finally {
     $env:LUNDEN_FIXTURE_MODE = $previousMode

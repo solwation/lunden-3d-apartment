@@ -34,7 +34,10 @@ if ($base -eq $project.RepoRoot -or $base.StartsWith($descendant, [StringCompari
 }
 $build = Join-Path $base ("{0}-{1}" -f $commit.Substring(0, 12), [guid]::NewGuid().ToString('N'))
 $archive = Join-Path $build 'archive'
-$stage = Join-Path $build 'stage'
+# UnrealPak seeds the pak's path-hash index with a CRC of the full output .pak path, so a per-build
+# staging directory gives every build a different Lunden-Windows.pak. Stage at one fixed path under
+# the output root instead; each build keeps its own log and archive.
+$stage = Join-Path $base 'stage'
 $uatArgs = @('BuildCookRun', "-project=$($project.UProject)", '-platform=Win64', '-clientconfig=Shipping',
     '-nocompileuat', '-nocompile', '-skipbuild', '-cook', '-stage', '-pak', '-iostore', '-package', '-nodebuginfo', '-nobootstrapexe', '-archive',
     "-stagingdirectory=$stage", "-archivedirectory=$archive", '-unattended', '-nop4', '-utf8output')
@@ -45,14 +48,25 @@ $report = Resolve-UnrealForRun $EngineDir 'release' {
 if (-not (Test-Path -LiteralPath $report.Engine.RunUAT -PathType Leaf)) { throw 'RunUAT.bat is missing from the engine installation.' }
 New-Item -ItemType Directory -Path $build | Out-Null
 $log = Join-Path $build 'BuildCookRun.log'
-Write-Host "Building $commit; UAT log: $log"
-# Windows PowerShell 5.1 wraps redirected native stderr as nonterminating errors.
-# Capture both streams, and take success from UAT's actual exit code.
+# The shared staging directory (and UAT's per-engine response files) allow one release build at a time.
+$lock = New-Object Threading.Mutex($false, 'Local\Lunden-release-BuildCookRun')
 try {
-    $ErrorActionPreference = 'Continue'
-    & $report.Engine.RunUAT @uatArgs 2>&1 | Out-File -LiteralPath $log -Encoding utf8
-    $code = $LASTEXITCODE
-} finally { $ErrorActionPreference = 'Stop' }
+    try {
+        if (-not $lock.WaitOne(0)) {
+            Write-Host 'Waiting for another release build on this PC to finish...'
+            [void]$lock.WaitOne()
+        }
+    } catch [Threading.AbandonedMutexException] { }
+    if (Test-Path -LiteralPath $stage) { Remove-Item -LiteralPath $stage -Recurse -Force }
+    Write-Host "Building $commit; staging: $stage; UAT log: $log"
+    # Windows PowerShell 5.1 wraps redirected native stderr as nonterminating errors.
+    # Capture both streams, and take success from UAT's actual exit code.
+    try {
+        $ErrorActionPreference = 'Continue'
+        & $report.Engine.RunUAT @uatArgs 2>&1 | Out-File -LiteralPath $log -Encoding utf8
+        $code = $LASTEXITCODE
+    } finally { $ErrorActionPreference = 'Stop' }
+} finally { $lock.ReleaseMutex(); $lock.Dispose() }
 if ($code -ne 0) { throw "BuildCookRun failed (exit $code); see $log" }
 
 $package = Join-Path $archive 'Windows'
