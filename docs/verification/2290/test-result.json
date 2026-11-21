@@ -1,0 +1,256 @@
+{
+ "engine": "5.8.4-58902052+++UE5+Release-5.8",
+ "seed": "lunden-6",
+ "zones": [
+  {
+   "name": "stand",
+   "rays": 124,
+   "edgeRays": 18,
+   "worstCm": 0.0,
+   "bodyEndsErrCm": 0.0,
+   "headBone": [
+    7.4,
+    155.0
+   ],
+   "radius": 40.0
+  },
+  {
+   "name": "crouch-half",
+   "rays": 126,
+   "edgeRays": 16,
+   "worstCm": 0.004,
+   "bodyEndsErrCm": 0.0,
+   "headBone": [
+    14.8,
+    124.9
+   ],
+   "radius": 40.0
+  },
+  {
+   "name": "crouch",
+   "rays": 128,
+   "edgeRays": 14,
+   "worstCm": 0.005,
+   "bodyEndsErrCm": 0.0,
+   "headBone": [
+    21.3,
+    92.3
+   ],
+   "radius": 40.0
+  },
+  {
+   "name": "sit",
+   "rays": 128,
+   "edgeRays": 14,
+   "worstCm": 0.004,
+   "bodyEndsErrCm": 0.006,
+   "headBone": [
+    7.4,
+    155.0
+   ],
+   "radius": 40.0
+  },
+  {
+   "name": "lie",
+   "rays": 136,
+   "edgeRays": 6,
+   "worstCm": 0.004,
+   "bodyEndsErrCm": 0.004,
+   "headBone": [
+    7.5,
+    154.7
+   ],
+   "radius": 40.0
+  }
+ ],
+ "states": {
+  "stand": {
+   "vars": {
+    "Speed": 0.0,
+    "Moving": false,
+    "Airborne": false,
+    "Sitting": false
+   },
+   "kneeX": 15.1,
+   "pelvisZ": 91.1,
+   "feetZ": [
+    8.3,
+    8.0
+   ],
+   "headXZ": [
+    7.4,
+    155.1
+   ]
+  },
+  "walk": {
+   "vars": {
+    "Speed": 160.0,
+    "Moving": true,
+    "Airborne": false,
+    "Sitting": false
+   },
+   "kneeX": -18.2,
+   "pelvisZ": 82.1,
+   "feetZ": [
+    12.9,
+    10.0
+   ],
+   "headXZ": [
+    7.6,
+    146.0
+   ]
+  },
+  "run": {
+   "vars": {
+    "Speed": 320.0,
+    "Moving": true,
+    "Airborne": false,
+    "Sitting": false
+   },
+   "kneeX": -10.9,
+   "pelvisZ": 83.2,
+   "feetZ": [
+    48.6,
+    8.6
+   ],
+   "headXZ": [
+    8.6,
+    143.0
+   ]
+  },
+  "crouch": {
+   "vars": {
+    "Speed": 0.0,
+    "Moving": false,
+    "Airborne": false,
+    "Sitting": false
+   },
+   "kneeX": 45.5,
+   "pelvisZ": 37.1,
+   "feetZ": [
+    8.3,
+    8.0
+   ],
+   "headXZ": [
+    21.5,
+    92.3
+   ]
+  },
+  "crouch-walk": {
+   "vars": {
+    "Speed": 80.0,
+    "Moving": true,
+    "Airborne": false,
+    "Sitting": false
+   },
+   "kneeX": 38.0,
+   "pelvisZ": 28.5,
+   "feetZ": [
+    8.6,
+    19.9
+   ],
+   "headXZ": [
+    23.5,
+    84.3
+   ]
+  },
+  "jump": {
+   "vars": {
+    "Speed": 0.0,
+    "Moving": false,
+    "Airborne": true,
+    "Sitting": false
+   },
+   "kneeX": 24.6,
+   "pelvisZ": 110.5,
+   "feetZ": [
+    48.7,
+    74.7
+   ],
+   "headXZ": [
+    5.7,
+    173.1
+   ]
+  },
+  "sit": {
+   "vars": {
+    "Speed": 0.0,
+    "Moving": false,
+    "Airborne": false,
+    "Sitting": true
+   },
+   "kneeX": 42.3,
+   "pelvisZ": 53.7,
+   "feetZ": [
+    10.5,
+    10.5
+   ],
+   "headXZ": [
+    13.9,
+    118.3
+   ]
+  }
+ },
+ "feet": [
+  {
+   "gait": "walk",
+   "speed": 160.0,
+   "plantedSamples": 205,
+   "medianFootSpeed": 10.79,
+   "limit": 24.0,
+   "ok": true,
+   "seconds": 2.03
+  },
+  {
+   "gait": "sprint",
+   "speed": 320.0,
+   "plantedSamples": 99,
+   "medianFootSpeed": 36.73,
+   "limit": 48.0,
+   "ok": true,
+   "seconds": 2.0
+  },
+  {
+   "gait": "crouch-walk",
+   "speed": 80.0,
+   "plantedSamples": 222,
+   "medianFootSpeed": 5.63,
+   "limit": 12.0,
+   "ok": true,
+   "seconds": 2.0
+  }
+ ],
+ "checks": [
+  {
+   "check": "crouch lowers the pelvis by hipDrop",
+   "ok": true,
+   "detail": "54.0 vs 54.0 cm"
+  },
+  {
+   "check": "crouched feet stay on the ground",
+   "ok": true,
+   "detail": "[8.3, 8.0]"
+  },
+  {
+   "check": "crouched head leans forward",
+   "ok": true,
+   "detail": "[21.5, 92.3] vs [7.4, 155.1]"
+  },
+  {
+   "check": "sitting lowers the pelvis",
+   "ok": true,
+   "detail": "53.7"
+  },
+  {
+   "check": "seated and crouched knees point forward",
+   "ok": true,
+   "detail": "knee ahead of the pelvis: sit 42.3, crouch 45.5 cm"
+  },
+  {
+   "check": "the jump pose differs from standing",
+   "ok": true,
+   "detail": "{'vars': {'Speed': 0.0, 'Moving': False, 'Airborne': True, 'Sitting': False}, 'kneeX': 24.6, 'pelvisZ': 110.5, 'feetZ': [48.7, 74.7], 'headXZ': [5.7, 173.1]} vs {'vars': {'Speed': 0.0, 'Moving': False, 'Airborne': False, 'Sitting': False}, 'kneeX': 15.1, 'pelvisZ': 91.1, 'feetZ': [8.3, 8.0], 'headXZ': [7.4, 155.1]}"
+  }
+ ],
+ "failures": []
+}

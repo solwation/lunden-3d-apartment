@@ -105,6 +105,14 @@ tools/unreal-engine/tests/save-v0.sav         frozen version-0 save (no SaveVers
 tools/unreal-engine/tests/save_isolation.py   the other PIE tests start without the save slot and put it back (#2311);
                                    save_isolation_test.py checks it without Unreal (plain python3)
 unreal/Lunden/Content/Lunden/Save/            SG_LundenSave, BFL_LundenSave, BPC_LundenSave (LFS; made by build_save.py)
+tools/unreal-engine/python/build_avatar_rig.py  the avatars' Mannequin rig, retargeter, ABP_LundenAvatar and BP_LundenAvatar (#2290)
+tools/unreal-engine/avatar-contract.mjs       writes/checks avatar-contract.json: hit zones, crouch, gait values and the web's own
+                                   ray answers from src/config.js (Node, no browser)
+tools/unreal-engine/avatar-extensions.json    components other issues add to BP_LundenAvatar (#2291's look: row "Look")
+tools/unreal-engine/tests/test_avatar_rig.py  PIE test: hit zones = web contract (1 cm), seven anim states, planted feet
+tools/unreal-engine/tests/capture_avatar_rig.py  PIE pictures of the poses and the hit zones (GPU, -RenderOffScreen)
+unreal/Lunden/Content/Lunden/Avatar/          Rig/ (Mannequin, web retarget source, IK Rigs, retargeter, BP_LundenAvatar) and
+                                   Animation/ (template clips, AS_LundenSit, ABP_LundenAvatar) (LFS; made by build_avatar_rig.py)
 tools/unreal-engine/python/build_ui.py        the menu, settings, compass and frame rate /Game/Lunden/UI/ (#2286)
 tools/unreal-engine/ui-extensions.json        menu buttons (#2291) and volume rows with sound classes (#2287) the UI builds from
 tools/unreal-engine/tests/test_ui.py          PIE test: compass = web for 9 yaws, menu, Esc, every setting, restart
@@ -929,6 +937,71 @@ The test loads the two imported L1007 zone levels, every built level of `world-l
 `furnishing` item where its id appears (1 cm, 1°, 0.1 % scale), each texture on each of its mesh actors (centre within
 1 cm, the key's instance with a Texture2D of the exported size) and that every picture file is on a mesh and in the
 notices. Results: [docs/verification/2289/](../verification/2289/README.md).
+
+## Avatars: skeleton and movement (#2290)
+
+G15's first half: human figures stand, walk, run, crouch, jump and sit on Epic's Mannequin, as other players (#2292)
+and in the mirror (#2291). #2290 owns `/Game/Lunden/Avatar/Rig/`, `/Game/Lunden/Avatar/Animation/`,
+`build_avatar_rig.py`, `avatar-contract.mjs`/`.json`, the format of `avatar-extensions.json`, `tests/test_avatar_rig.py`
+and `tests/capture_avatar_rig.py`.
+
+- **Mannequin from the engine.** The builder copies the Third Person template's `Characters/Mannequins` folder
+  (`Templates/TemplateResources/High`, part of the installed 5.8.4 engine, under the engine licence; no Fab content
+  and no new notice) to its own package path, moves `SK_Mannequin`, `SKM_Manny_Simple`, `PA_Mannequin` and the
+  `MM_Idle`, `MF_Unarmed_Walk_Fwd`, `MF_Unarmed_Jog_Fwd` and `MM_Jump` clips into `Avatar/` (references fixed by
+  the move) and deletes the rest of the copy. The mesh wears `M_LundenAvatarNeutral` (grey) until #2291's looks dress
+  it, so the template's 30 MB of textures stay out of LFS. About 21 MB of LFS in all, 16 MB of it the mesh.
+  `SK_Mannequin` keeps an editor-only retarget-source path to the template's `SKM_Quinn_Simple`, which is not in the
+  project; no Python API edits that list, and the builder fails if anything the game loads reaches a package outside
+  `Avatar/` (the web rig included).
+- **Retargeting.** `models/avatar-rigged.glb` is imported to `Rig/Web/` as the source (its 15-bone rig and the `sit`
+  clip). `IK_LundenWeb` has six chains named like the template's (Spine, Head, Left/RightArm, Left/RightLeg),
+  `IK_LundenMannequin` uses the engine's auto-generated Mannequin definition, and `RTG_LundenWebToMannequin` maps the
+  six chains and aligns the Mannequin's A-pose arms to the web's hanging arms. The batch retarget makes
+  `AS_LundenSit`. The imported web rig faces -Y and the Mannequin +Y, and the retargeter keeps the chains' global
+  directions, so the sit branch of the ABP turns that pose half a turn about the pelvis.
+- **Movement, as the web does it.** `ABP_LundenAvatar` (no state machine; Blueprint-built nodes):
+  idle (`MM_Idle`) or, above the web's `AVATAR.walkSpeed` (25 cm/s), walk/jog clips on explicit clocks advanced by
+  `DeltaTime × Speed / the clip's own ground speed`. That speed comes from the clip's root motion (walk 300, jog 600
+  cm/s; the clips play root-locked because #2292 moves the actor), so the planted feet keep the ground speed at any
+  pace. The jog takes over at 255 cm/s, the middle of the web's walk-to-run blend `AVATAR_GAIT.run` (2.1–3.0 m/s), so
+  the player's walk (160) walks and sprint (320) runs. The crouch is the web's own rule rather than a clip: hips down
+  by `hipDrop × Crouch` and back by `hipForward × Crouch`, the spine leaned by `crouchLean × Crouch`, the feet held on
+  the template's `ik_foot_*` bones by two-bone IK with knee poles ahead of the knees, so crouch-walking works at any
+  `Crouch` between 0 and 1. Airborne plays `MM_Jump` (restarting each jump) and `Pose` > 0 the sitting pose.
+- **`BP_LundenAvatar` (Actor) is the interface.** `SetMotion(Speed cm/s, Crouch 0..1, Airborne, Pose)` takes the web's
+  wire values (`c`, `pose`: 0 none, 1 sit, 2 lie, 3 long sit); #2292 also sets the actor's location (the feet) and
+  yaw (the way the figure faces). `Body` is the Mannequin `SkeletalMeshComponent`, scaled to the web's standard
+  1.75 m (`AVATAR_HEIGHT.base`, 0.969 × the 180.5 cm mesh), yaw −90 so its +Y faces the actor's +X, posed off screen
+  too. `LookCode`, `HeightScale` and `WidthScale` are for #2291, whose look component is the `Look` row of
+  `avatar-extensions.json` (`formatVersion` 1, rows `{name, class, owner, what}`, added and removed by the builder
+  like `player-extensions.json`).
+- **Hit zones follow the shared contract, not the skeleton** ([storage.md](storage.md#current-shared-head-contract-974-893-894-979)).
+  `HitZones/HeadPivot` holds `HeadLower`, `HeadMiddle`, `HeadTop` (boxes from `PVP_HEAD_BOXES`) and
+  `HitZones/BodyPivot/BodyZone` the body capsule (`COMBAT.body` 0.25–1.75 m, `hitRadius` 0.4 m). `SetMotion` puts the
+  pivot at the contract's hip and lean for standing/crouched, seated or lying, exactly as `rifleBoxPose` does;
+  `HitZones` scales by `WidthScale`/`HeightScale`. The zones are query-only overlaps tagged `hit:head`, `hit:head:<i>`
+  and `hit:body`, hidden in game. The rendered head is about 7 cm ahead of the boxes' centre when standing (the
+  Mannequin's idle stance) and slightly lower when crouched; the zones are deliberately independent of it.
+- **Values come from data.** `node tools/unreal-engine/avatar-contract.mjs` imports `src/config.js` (no browser) and
+  writes `avatar-contract.json`: the boxes, crouch and rest frames (sit/lie read back from `playerBodySegment`),
+  gait thresholds and the web's own answers (`rifleBoxHeadContact`, `playerBodySegment`, `rifleHeadBaseY`) for 710
+  rays through a standard figure in five states. `--check` fails when the file no longer matches `src/config.js`.
+  The builder hashes the script, the contract, the extension rows and the GLB (`Lunden.SpecHash`).
+
+```text
+node tools/unreal-engine/avatar-contract.mjs [--check]
+git lfs lock <every .uasset under unreal/Lunden/Content/Lunden/Avatar/>
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/build_avatar_rig.py [--force | --check]
+copy tools\unreal-engine\tests\test_avatar_rig.py unreal\Lunden\Content\Python\   (untracked copy, delete afterwards)
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-tests.ps1 -Filter Editor.Python.Lunden.test_avatar_rig
+```
+
+Not ported here: looks, height and the mirror (#2291); gestures, carrying, facial motion, the web's foot IK on
+stairs and slopes (`avatarfootik.js`, `avatarstairs.js`), turning steps, idle sway and the lying pose (lie shows the
+sitting pose; its hit zones are right). The template walk is a brisk 3 m/s stride, so at the web's 1.6 m/s the steps
+are longer and slower than the web's (`AVATAR_GAIT.stepHz`); stride warping would need another Epic plugin.
+Results: [docs/verification/2290/](../verification/2290/README.md).
 
 ## Pilot camera references (#2246)
 

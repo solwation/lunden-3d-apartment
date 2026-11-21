@@ -1,0 +1,129 @@
+{
+ "engine": "5.8.4-58902052+++UE5+Release-5.8",
+ "width": 600,
+ "height": 800,
+ "fov": 40.0,
+ "camera": "4.2 m to the figure's left, 0.95 m up, level",
+ "shots": [
+  {
+   "pose": "stand",
+   "setMotion": [
+    0,
+    0,
+    false,
+    0
+   ],
+   "zones": false,
+   "pelvisZ": 91.1,
+   "head": [
+    7.5,
+    155.2
+   ]
+  },
+  {
+   "pose": "walk",
+   "setMotion": [
+    160,
+    0,
+    false,
+    0
+   ],
+   "zones": false,
+   "pelvisZ": 82.9,
+   "head": [
+    9.5,
+    147.4
+   ]
+  },
+  {
+   "pose": "run",
+   "setMotion": [
+    320,
+    0,
+    false,
+    0
+   ],
+   "zones": false,
+   "pelvisZ": 81.0,
+   "head": [
+    12.7,
+    141.9
+   ]
+  },
+  {
+   "pose": "crouch",
+   "setMotion": [
+    0,
+    1,
+    false,
+    0
+   ],
+   "zones": false,
+   "pelvisZ": 37.1,
+   "head": [
+    21.5,
+    92.2
+   ]
+  },
+  {
+   "pose": "jump",
+   "setMotion": [
+    0,
+    0,
+    true,
+    0
+   ],
+   "zones": false,
+   "pelvisZ": 93.7,
+   "head": [
+    1.6,
+    155.7
+   ]
+  },
+  {
+   "pose": "sit",
+   "setMotion": [
+    0,
+    0,
+    false,
+    1
+   ],
+   "zones": false,
+   "pelvisZ": 53.7,
+   "head": [
+    13.9,
+    118.3
+   ]
+  },
+  {
+   "pose": "zones-stand",
+   "setMotion": [
+    0,
+    0,
+    false,
+    0
+   ],
+   "zones": true,
+   "pelvisZ": 91.0,
+   "head": [
+    7.6,
+    155.0
+   ]
+  },
+  {
+   "pose": "zones-crouch",
+   "setMotion": [
+    0,
+    1,
+    false,
+    0
+   ],
+   "zones": true,
+   "pelvisZ": 37.0,
+   "head": [
+    21.5,
+    91.9
+   ]
+  }
+ ]
+}
