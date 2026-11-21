@@ -46,9 +46,16 @@ async function capture(page, shot, view, out) {
     for (let i = 0; i < 2; i++) lights.update(level, player.pos, LIGHTING.poolFade, dir);
     renderer.shadowMap.needsUpdate = true;
     frame(1 / 60);
+    // Compare both skies at the initial tile phase, independent of the time needed to load each renderer.
+    if (shot.camera === 'start') {
+      const offset = day.uniforms.cloudShadowA.value;
+      offset.x = offset.y = 0;
+    }
     renderer.render(scene, camera);
     const state = {eye: camera.position.toArray(), yaw: camera.rotation.y * 180 / Math.PI, pitch: camera.rotation.x * 180 / Math.PI,
       day: [day.year, day.month, day.date, day.hour, day.paused], daylight: day.daylight, overcast: day.overcast, weather: weather.force,
+      sky: {procedural: day.uniforms.uSkyCl.value.toArray(), deck: Object.values(day.uniforms.cloudShadowA.value),
+        zenith: day.uniforms.uZenith.value.toArray(), horizon: day.uniforms.uHorizon.value.toArray()},
       pool: lights.slots.filter(slot => slot.lamp).map(({lamp, f}) => ({position: lamp.pos.toArray(), level: lamp.level, share: f})),
       dark: lights.dark ?? null, smallLampsOn: lights.floorLamps.filter((f) => f.room.on).map((f) => f.name), forced: lights.forced,
       moon: {illum: day.moon.illum, elong: day.moon.elong, dir: day.moonDir.toArray()}, sun: day.sunDir.toArray()};
@@ -56,6 +63,10 @@ async function capture(page, shot, view, out) {
   }, {view, shot, eyeHeight: spec.standingEyeHeightM});
   const near = (a, b) => assert.ok(Math.abs(a - b) < 1e-5, `${shot.name}: ${a} != ${b}`);
   near(state.eye[0], view.x); near(state.eye[2], view.z); near(state.yaw, view.yawDeg); near(state.pitch, view.pitchDeg);
+  if (shot.camera === 'start') {
+    assert.equal(state.sky.procedural[0], 1, 'desktop cloud field must be active');
+    assert.deepEqual(state.sky.deck.slice(0, 2), [0, 0], 'cloud phase must match the native capture');
+  }
   assert.deepEqual(state.day, [...shot.date, shot.hour, true]);
   assert.ok(state.pool.every(slot => slot.share >= 0.999), shot.name + ': lamp pool still fading');
   await fs.writeFile(path.join(out, `web-${shot.name}.jpg`), Buffer.from(image, 'base64'));

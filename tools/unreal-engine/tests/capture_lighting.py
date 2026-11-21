@@ -120,7 +120,7 @@ def run(scene_path, out_dir, names=None, exposure="game", trial=None, bias_offse
         (year, month, day), hour = shot["date"], float(shot["hour"])
         for k, v in (("UseClock", False), ("TimeScale", 0.0), ("Year", year), ("Month", month), ("Day", day), ("Hour", hour),
                      ("Rain", 1.0 if weather == "rain" else 0.0), ("Snow", 1.0 if weather == "snow" else 0.0),
-                     ("Wet", 1.0 if weather == "rain" else 0.0)):
+                     ("Wet", 1.0 if weather == "rain" else 0.0), ("CloudOffsetX", 0.0), ("CloudOffsetY", 0.0)):
             # NEVER notify: a property change in the editor world re-runs the construction script, which resets the lights
             sky.set_editor_property(k, v, u.PropertyAccessChangeNotifyMode.NEVER)
         for k, v in (trial or {}).items():
@@ -158,6 +158,7 @@ def run(scene_path, out_dir, names=None, exposure="game", trial=None, bias_offse
                          "hiddenSeasonalActors": len(hidden), "lamps": shot["lamps"], "lampsLit": lit, "exposureBias": bias,
                          "sunElevation": sky.get_editor_property("SunElevation"), "sunLux": sun.intensity,
                          "daylight": sky.get_editor_property("Daylight"), "duskLight": sky.get_editor_property("DuskLight"),
+                         "cloudOffset": [sky.get_editor_property(n) for n in ("CloudOffsetX", "CloudOffsetY")],
                          "cloudCover": sky.get_editor_property("CloudCover"), "moonIllumination": sky.get_editor_property("MoonIllumination")})
         u.log(f"LUNDEN_LIGHTING_CAPTURE {name}: sun elevation {sky.get_editor_property('SunElevation'):.3f}°, sun {sun.intensity:.3f} lux")
     (Path(out_dir) / "capture.json").write_text(json.dumps({"engine": u.SystemLibrary.get_engine_version(), "map": MAP, "loadedLevels": seasons.loaded_levels,

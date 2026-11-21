@@ -108,7 +108,26 @@ def mpc_state(game):
     scalar = lambda n: u.MaterialLibrary.get_scalar_parameter_value(game, mpc, n)
     ph = u.MaterialLibrary.get_vector_parameter_value(game, mpc, "MoonPh")
     return {"night": scalar("Night"), "cloudCover": scalar("CloudCover"), "cloudCoverage": scalar("CloudCoverage"),
+            "skyThreshold": scalar("SkyThreshold"), "overcast": scalar("Overcast"),
             "duskLight": scalar("DuskLight"), "moonPh": [ph.r, ph.g, ph.b]}
+
+
+def cloud_drift_run(game, sky):
+    """Observe the material's offsets over real game seconds, independent of the frozen daylight clock."""
+    mpc = u.load_asset(MPC)
+    def offset():
+        return [u.MaterialLibrary.get_scalar_parameter_value(game, mpc, n) for n in ("CloudOffsetX", "CloudOffsetY")]
+    steps = []
+    for speed, heading in ((12.0, 90.0), (0.0, 315.0), (30.0, 315.0)):
+        sky.set_editor_property("WindSpeed", speed)
+        sky.set_editor_property("WindFromDeg", heading)
+        first = offset()
+        t0 = u.GameplayStatics.get_time_seconds(game)
+        while u.GameplayStatics.get_time_seconds(game) - t0 < 0.2:
+            yield
+        steps.append({"speed": speed, "heading": heading, "before": first, "after": offset(),
+                      "dt": u.GameplayStatics.get_time_seconds(game) - t0})
+    result["cloudDrift"] = steps
 
 
 def dusk_lamps(game):
@@ -237,6 +256,7 @@ def clock_test():
         if advanced < 5:
             raise RuntimeError(f"Tick did not advance the clock: {result['clock']}")
         sun_and_weather(game, live)
+        yield from cloud_drift_run(game, live)
         yield from dusk_run(game, live)
         (Path(u.Paths.project_saved_dir()) / "lighting-result.json").write_text(json.dumps(result, indent=2) + "\n")
         log("result " + str(Path(u.Paths.project_saved_dir()) / "lighting-result.json"))

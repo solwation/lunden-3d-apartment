@@ -16,6 +16,7 @@ import { buildStringLights, updateStringLights, updateParasols } from '../../src
 import { groundY, renderedTerrainY, treeFeet, aoTrees } from '../../src/surroundings.js';
 import { gridGround } from '../../src/elevation.js';
 import { leafMaterial, windLeafMaterial } from '../../src/foliage.js';
+import { skyGradientPalette } from '../../src/daycycle.js';
 import { stairLampProfiles } from './export-stair-light.js';
 import { stairRise, stairRiser, N_TREADS } from '../../src/stairs.js';
 import { hedgeTexture } from './hedge-texture.js';
@@ -1313,7 +1314,9 @@ function measurementData({ world, planCopy, W, D, byZone, lightsInfo, seasons, m
           moonRadius: C.DAY.moonRadius, moonEarthshine: C.DAY.moonEarthshine },
         // #2307: the sky's cloud cover follows the weather's overcast (src/cloudshadow.js skyCloudState: the noise threshold
         // goes from `clearThr` over a clear sky to thr[0] -> thr[1] with overcast, reaching the shadows' from `ramp`)
-        clouds: { clearThr: C.CLOUD_SHADOW.sky.clearThr, thr: C.CLOUD_SHADOW.thr, ramp: C.CLOUD_SHADOW.sky.ramp },
+        clouds: { cell: C.CLOUD_SHADOW.cell, cells: C.CLOUD_SHADOW.cells, height: C.CLOUD_SHADOW.height, sky: C.CLOUD_SHADOW.sky,
+          wind: C.CLOUD_SHADOW.wind, windScale: C.CLOUD_SHADOW.windScale, drift: C.CLOUD_SHADOW.drift, thr: C.CLOUD_SHADOW.thr, clearThr: C.CLOUD_SHADOW.sky.clearThr, ramp: C.CLOUD_SHADOW.sky.ramp,
+          palette: skyGradientPalette(), top: C.SKYLAYER.top, fade: C.SKYLAYER.fade },
         rain: { speed: C.WEATHER.speed, len: C.WEATHER.len, radius: C.WEATHER.radius, height: C.WEATHER.height, drops: C.WEATHER.drops,
           slantPerMs: C.WEATHER.slant.perMs, slantMax: C.WEATHER.slant.max },
         snow: { speed: C.WEATHER.snow.speed, sway: C.WEATHER.snow.sway, size: C.WEATHER.snow.size, flakes: C.WEATHER.snow.flakes,

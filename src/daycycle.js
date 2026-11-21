@@ -77,7 +77,7 @@ const skyVert = /* glsl */`
     gl_Position.z = gl_Position.w; // always at the far plane
   }`;
 
-const skyFrag = /* glsl */`
+export const skyFragmentShader = /* glsl */`
   uniform vec3 uSun, uMoon, uMoonPh, uZenith, uHorizon, uGlow, uScatter;
   uniform float uNight, uGlowAmt, uOvercast, uFlash, uWhite, uAbove;
   uniform vec3 uCloudCol;
@@ -260,7 +260,7 @@ export class DayCycle {
     scene.add(this.deck);
     this.above = 0; // 0 = under the cloud deck … 1 = clearly above it (#1251): weather.js hides the rain then
     this.sky = new THREE.Mesh(new THREE.SphereGeometry(300, 32, 16), new THREE.ShaderMaterial({
-      uniforms: this.uniforms, vertexShader: skyVert, fragmentShader: skyFrag, side: THREE.BackSide, depthWrite: false, fog: false,
+      uniforms: this.uniforms, vertexShader: skyVert, fragmentShader: skyFragmentShader, side: THREE.BackSide, depthWrite: false, fog: false,
     }));
     this.sky.frustumCulled = false;
     this.sky.renderOrder = -1;

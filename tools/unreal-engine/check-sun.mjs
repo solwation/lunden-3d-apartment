@@ -18,7 +18,7 @@ import * as THREE from 'three';
 import { sunDirection, dayOfYear } from '../../src/daycycle.js';
 import { moonState } from '../../src/moon.js';
 import { DAY, LIGHTING, CLOUD_SHADOW } from '../../src/config.js';
-import { skyCloudState } from '../../src/cloudshadow.js';
+import { skyCloudState, stepCloudDrift } from '../../src/cloudshadow.js';
 import { webToUnreal } from './coordinates.mjs';
 
 const args = process.argv.slice(2);
@@ -81,9 +81,24 @@ for (const c of result.sun ?? []) {
   [Math.sin(moon.elong), -Math.cos(moon.elong), moon.illum].forEach((v, i) => near(`${at} moonPh[${i}]`, c.moonPh?.[i], v));
   near(`${at} cloudCover (clear)`, c.cloudCover, coverOf(0));
 }
+const drift = {}, period = CLOUD_SHADOW.cell * CLOUD_SHADOW.cells;
+for (const row of result.cloudDrift ?? []) {
+  const angle = (row.heading - DAY.planNorth) * Math.PI / 180;
+  // Seed each interval at its recorded phase and carry the last direction through calm weather.
+  [drift.dx, drift.dz] = row.before.map(v => -v);
+  stepCloudDrift(drift, row.dt, {x: -row.speed * Math.sin(angle), z: row.speed * Math.cos(angle)});
+  for (const [i, target] of [drift.x, drift.z].entries()) {
+    const delta = row.after[i] - target;
+    near(`cloud phase after ${row.dt.toFixed(3)} s at ${row.speed} m/s, axis ${i}`, delta - Math.round(delta / period) * period, 0);
+  }
+}
 for (const w of result.weather ?? []) {
   if (w.cloudCover === undefined) continue;
   const raw = w.rain || w.snow ? 1 : 0, oc = w.rain ? 1 : w.snow ? 0.7 : 0; // forced weather; day.overcast: snow x 0.7
+  if (w.skyThreshold !== undefined) {
+    near(`${w.event} sky threshold`, w.skyThreshold, skyCloudState(oc).thr);
+    near(`${w.event} overcast`, w.overcast, oc);
+  }
   near(`${w.event} -> rain ${w.rain} snow ${w.snow}: cloudCover`, w.cloudCover, coverOf(oc));
   near(`${w.event} -> rain ${w.rain} snow ${w.snow}: duskLight`, w.duskLight, daylightAt(w.year, w.month, w.day, w.hour) * (1 - 0.6 * raw));
 }

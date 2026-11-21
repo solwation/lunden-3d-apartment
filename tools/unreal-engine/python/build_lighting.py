@@ -45,6 +45,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from season_tags import season_tags
 import player_parts as pp
 import stair_lamp
+import sky_clouds
 
 DIR = "/Game/Lunden/Lighting"
 SKY = DIR + "/BP_LundenSky"
@@ -148,6 +149,8 @@ def load_measurements(path):
         raise RuntimeError("measurements.json lacks the hemisphere light: re-export with this commit (export-scene.js #2313)")
     if "duskOn" not in sky["light"] or "clouds" not in sky or any("auto" not in l for l in m["lights"] if l["kind"] == "lamp"):
         raise RuntimeError("measurements.json lacks the dusk, cloud and lamp numbers: re-export with this commit (export-scene.js #2307)")
+    if "palette" not in sky["clouds"]:
+        raise RuntimeError("Re-export measurements.json for the daylight cloud field (#2371)")
     ids = [l.get("id") for l in m["lights"]]
     if not all(ids) or len(set(ids)) != len(ids):
         raise RuntimeError("measurements.json lights need unique ids: re-export with this commit")
@@ -188,6 +191,7 @@ def spec_of(m):
             "exposureBias": EXPOSURE_BIAS, "hemiShare": HEMI_SHARE, "hemiNightSky": HEMI_NIGHT_SKY, "skyLuminance": SKY_LUMINANCE, "skyOvercast": SKY_OVERCAST, "wet": WET_RATE, "skyScale": SKY_SCALE, "fogGrey": FOG_GREY, "ambientRef": AMBIENT_REF, "fog": FOG,
             "snowOvercast": SNOW_OVERCAST, "cloudRange": CLOUD_RANGE,
             "stairBounds": m["stair"].get("lightBounds"),
+            "skyShader": hashlib.sha256(Path(sky_clouds.__file__).read_bytes()).hexdigest(),
             "stairShader": hashlib.sha256(Path(stair_lamp.__file__).read_bytes()).hexdigest(),
             "script": hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
 
@@ -524,6 +528,7 @@ def build_mpc(spec):
                "DriftPerMs": s["driftPerMs"], "DriftMax": s["driftMax"] * 100,
                # #2307: DuskLight (what the small lamps follow) -1 = the sky has not run yet (the lamps wait); the clouds; the moon disc
                "DuskLight": -1.0, "Daylight": -1.0, "Hour": 14.0, "PowerAvailable": 1.0,
+               "CloudOffsetX": 0.0, "CloudOffsetY": 0.0, "SkyThreshold": spec["sky"]["clouds"]["clearThr"], "Overcast": 0.0,
                "Night": 0.0, "CloudCover": 0.0, "CloudCoverage": 0.0,
                "MoonRadius": spec["sky"]["light"]["moonRadius"], "Earthshine": spec["sky"]["light"]["moonEarthshine"]}
     vectors = {"SunDir": u.LinearColor(0, 0, 1, 0), "MoonDir": u.LinearColor(0, 0, -1, 0), "MoonPh": u.LinearColor(0, 1, 1, 0)}
@@ -550,12 +555,12 @@ float3 d = WPos - Cam; float depth = length(d); float3 v = d / max(depth, 1e-3);
 float3 mn[4] = { B0n.xyz, B1n.xyz, B2n.xyz, B3n.xyz }; float3 mx[4] = { B0x.xyz, B1x.xyz, B2x.xyz, B3x.xyz };
 // wet outdoor surfaces: darker, glossier, with a faint sky sheen (src/wetground.js / wetsurface.js in a simple form)
 if (Wet > 0.001 && depth < 1e6) {
-  float3 q = WPos + N * 10.0; bool inside = q.z < Soffit;
-  for (int b = 0; b < 4; b++) inside = inside || all(q > mn[b] && q < mx[b]);
+  float3 q = WPos + N.xyz * 10.0; bool inside = q.z < Soffit;
+  for (int b = 0; b < 4; b++) inside = inside || (all(q > mn[b]) && all(q < mx[b]));
   if (!inside) {
     float up = saturate(N.z);
     float k = Wet * (0.35 + 0.25 * up);
-    float fres = 0.04 + 0.96 * pow(1.0 - saturate(dot(-v, N)), 5.0);
+    float fres = 0.04 + 0.96 * pow(1.0 - saturate(dot(-v, N.xyz)), 5.0);
     col = col * (1.0 - k) + Light * 0.5 * fres * up * Wet;
   }
 }
@@ -563,6 +568,8 @@ if (Wet > 0.001 && depth < 1e6) {
 // east, y up, z south) on the sky itself, in display units (x EAI); the clouds cover them as the web mixes its clouds in
 if (depth >= 1e6) {
   float3 dw = float3(v.x, v.z, v.y), sw = float3(SunDir.x, SunDir.z, SunDir.y), mw = float3(MoonDir.x, MoonDir.z, MoonDir.y);
+  WebClouds clouds;
+  col = clouds.daylight(col, dw, sw, Cam*0.01, float2(CloudOffsetX,CloudOffsetY), SkyThreshold, Overcast);
   // #2366: at START the clear night sky measured 0.0139 linear luminance at the game exposure
   // and 0.0257 at +1.76 EV; the web measured 0.0237. Log interpolation gives +1.53 EV (guess).
   // Lift the atmospheric background before drawing the exposure-independent stars and moon.
@@ -603,7 +610,7 @@ if (amt > 0.001 && hv > 0.02) {
     float3 p = Cam + v * t;
     if (p.z < Soffit || p.z > Cam.z + Height) continue;
     bool inside = false;
-    for (int b = 0; b < 4; b++) inside = inside || all(p > mn[b] && p < mx[b]);
+    for (int b = 0; b < 4; b++) inside = inside || (all(p > mn[b]) && all(p < mx[b]));
     if (inside) continue;
     float px = 0.0018 * t;                           // about one pixel at this distance
     float2 tang = float2(-sin(ang), cos(ang));
@@ -646,6 +653,24 @@ return float4(col, 1.0);
 """
 
 
+SKY_CLOUD_PARAMETERS = ("CloudOffsetX", "CloudOffsetY", "SkyThreshold", "Overcast")
+
+
+def precip_code(spec):
+    return sky_clouds.shader(spec["sky"]["clouds"]) + PRECIP_HLSL.strip()
+
+
+def precip_matches(spec):
+    mat = ASSETS.load_asset(PRECIP)
+    node = MEL.get_material_property_input_node(mat, u.MaterialProperty.MP_EMISSIVE_COLOR)
+    if not isinstance(node, u.MaterialExpressionCustom) or node.get_editor_property("code") != precip_code(spec):
+        return False
+    params = {str(source.get_editor_property("parameter_name"))
+              for source in MEL.get_inputs_for_material_expression(mat, node)
+              if isinstance(source, u.MaterialExpressionCollectionParameter)}
+    return all(name in params for name in SKY_CLOUD_PARAMETERS)
+
+
 def build_precip_material(spec, mpc):
     if ASSETS.does_asset_exist(PRECIP):
         mat = ASSETS.load_asset(PRECIP)
@@ -658,7 +683,7 @@ def build_precip_material(spec, mpc):
     names = ["Scene", "WPos", "Cam", "N", "Time", "Light", "Rain", "Snow", "Wet", "Wind", "Soffit", "Radius", "Height",
              "Speed", "Length", "SlantPerMs", "SlantMax", "SnowSpeed", "Sway", "Size", "DriftPerMs", "DriftMax",
              "B0n", "B0x", "B1n", "B1x", "B2n", "B2x", "B3n", "B3x",
-             "EAI", "SunDir", "MoonDir", "MoonPh", "Night", "CloudCover", "MoonRadius", "Earthshine"]
+             "EAI", "SunDir", "MoonDir", "MoonPh", "Night", "CloudCover", "MoonRadius", "Earthshine", *SKY_CLOUD_PARAMETERS]
     inputs = []
     for name in names:
         ci = u.CustomInput()
@@ -667,7 +692,7 @@ def build_precip_material(spec, mpc):
     custom.set_editor_property("inputs", inputs)
     custom.set_editor_property("output_type", u.CustomMaterialOutputType.CMOT_FLOAT4)
     custom.set_editor_property("description", "LundenPrecipitation")
-    custom.set_editor_property("code", PRECIP_HLSL.strip())
+    custom.set_editor_property("code", precip_code(spec))
     y = [0]
 
     def expr(cls, **props):
@@ -706,7 +731,7 @@ def build_precip_material(spec, mpc):
         for suffix, short in (("Min", "n"), ("Max", "x")):
             wire(param(f"Box{i}{suffix}"), f"B{i}{short}")
     wire(expr(u.MaterialExpressionEyeAdaptationInverse), "EAI")
-    for name in ("SunDir", "MoonDir", "MoonPh", "Night", "CloudCover", "MoonRadius", "Earthshine"):
+    for name in ("SunDir", "MoonDir", "MoonPh", "Night", "CloudCover", "MoonRadius", "Earthshine", *SKY_CLOUD_PARAMETERS):
         wire(param(name), name)
     MEL.connect_material_property(custom, "", u.MaterialProperty.MP_EMISSIVE_COLOR)
     MEL.recompile_material(mat)
@@ -1010,7 +1035,12 @@ def build_sky(spec, mpc, precip, clouds):
     ambient.set_editor_property("settings", pp)
 
     sky_data, light = spec["sky"], spec["sky"]["light"]
+    clouds = sky_data["clouds"]
+    wx, wy = clouds["wind"]
+    length = math.hypot(wx, wy)
     variables(bp, {
+        "CloudOffsetX": ("real", 0), "CloudOffsetY": ("real", 0),
+        "CloudDirectionX": ("real", wx / length), "CloudDirectionY": ("real", wy / length),
         "Latitude": ("real", sky_data["lat"]), "Longitude": ("real", sky_data["lon"]), "PlanNorth": ("real", sky_data["planNorthDeg"]),
         "UseClock": ("bool", True), "TimeScale": ("real", 1.0),
         "Year": ("int", 2026), "Month": ("int", 6), "Day": ("int", 21), "Hour": ("real", 14.0),
@@ -1050,7 +1080,6 @@ def build_sky(spec, mpc, precip, clouds):
     connect(j2000, "ReturnValue", span, "B")
     days = G.call("KismetMathLibrary:GetTotalDays")
     connect(span, "ReturnValue", days, "A")
-    clouds = spec["sky"]["clouds"]
     E = Expr(G, {**getters, "doy": (doy, "ReturnValue"), "days": (days, "ReturnValue"), "SnowOvercast": SNOW_OVERCAST,
                  "ClearThr": float(clouds["clearThr"]), "ThrA": float(clouds["thr"][0]), "ThrB": float(clouds["thr"][1]),
                  "Ramp": float(clouds["ramp"]), "CloudLo": float(CLOUD_RANGE[0]), "CloudHi": float(CLOUD_RANGE[1]),
@@ -1122,7 +1151,9 @@ def build_sky(spec, mpc, precip, clouds):
     connect(G.get("Fog"), "Fog", density, "self")
     E.feed(density, "Value", env["fog"])
     chain.then(density)
-    for name, value in (("Rain", env["Rain"]), ("Snow", env["Snow"]), ("Wet", env["Wet"]), ("WindX", env["windX"]),
+    for name, value in (("CloudOffsetX", (G.get("CloudOffsetX"), "CloudOffsetX")),
+                        ("CloudOffsetY", (G.get("CloudOffsetY"), "CloudOffsetY")),
+                        ("SkyThreshold", env["skyThr"]), ("Overcast", env["ocl"]), ("Rain", env["Rain"]), ("Snow", env["Snow"]), ("Wet", env["Wet"]), ("WindX", env["windX"]),
                         ("WindY", env["windY"]), ("Streak", env["streak"]), ("DuskLight", env["duskLight"]),
                         ("Daylight", env["day"]), ("Hour", env["Hour"]), ("Night", env["night"]), ("CloudCover", env["cover"]), ("CloudCoverage", env["coverage"])):
         setp = G.call("KismetMaterialLibrary:SetScalarParameterValue", ParameterName=name)
@@ -1190,12 +1221,26 @@ def build_sky(spec, mpc, precip, clouds):
     tick = G.event("Tick", "ReceiveTick")
     env4 = {n: (G.get(n), n) for n in ("Hour", "TimeScale", "Rain", "Wet", "WetSoak", "WetDry")}
     env4["dt"] = (tick, "DeltaSeconds")
+    for key in ("WindSpeed", "WindFromDeg", "PlanNorth", "CloudDirectionX", "CloudDirectionY", "CloudOffsetX", "CloudOffsetY"):
+        env4[key] = (G.get(key), key)
+    env4.update(DriftMin=float(clouds["drift"][0]), DriftMax=float(clouds["drift"][1]),
+                WindScale=float(clouds["windScale"]), Tile=float(clouds["cell"] * clouds["cells"]))
     E4 = Expr(G, env4)
     v = E4.run("""
+directionX = select(WindSpeed > 0.001, 0 - sind(WindFromDeg - PlanNorth), CloudDirectionX)
+directionY = select(WindSpeed > 0.001, cosd(WindFromDeg - PlanNorth), CloudDirectionY)
+speed = clamp(WindSpeed * WindScale, DriftMin, DriftMax)
+offsetX = wrap(CloudOffsetX - dt * speed * directionX, 0, Tile)
+offsetY = wrap(CloudOffsetY - dt * speed * directionY, 0, Tile)
 h = Hour + dt * TimeScale / 3600
 wet = clamp(Wet + dt * select(Rain > 0.05, WetSoak * Rain, 0 - WetDry), 0, 1)
 """)
     c = Chain(tick)
+    for name, key in (("CloudDirectionX", "directionX"), ("CloudDirectionY", "directionY"),
+                      ("CloudOffsetX", "offsetX"), ("CloudOffsetY", "offsetY")):
+        setter = G.place(G.g.add_set_member_variable_node(name))
+        E4.feed(setter, name, v[key])
+        c.then(setter)
     s = G.place(G.g.add_set_member_variable_node("Wet"))
     E4.feed(s, "Wet", v["wet"])
     c.then(s)
@@ -1299,7 +1344,8 @@ def main(argv):
     assets = (SKY, LAMP, MPC, PRECIP, CLOUDS, AMBIENT_CUBE)
     stair_assets = [stair_lamp.path_for(row) for row in spec["lamps"] if row["stairVisibility"]]
     have = ASSETS.does_asset_exist(SKY) and ASSETS.get_metadata_tag(ASSETS.load_asset(SKY), SPEC_TAG) == want
-    complete = all(ASSETS.does_asset_exist(p) for p in assets)
+    cloud_material_ok = ASSETS.does_asset_exist(PRECIP) and precip_matches(spec)
+    complete = all(ASSETS.does_asset_exist(p) for p in assets) and cloud_material_ok
     stamp = json.loads(STAMP.read_text(encoding="utf-8")) if STAMP.exists() else {}
     level_ok = (stamp.get("spec") == want and stamp.get("files") == file_hashes() and bool(stamp.get("files"))
                 and all(ASSETS.does_asset_exist(path) for path in stair_assets))
@@ -1311,6 +1357,8 @@ def main(argv):
                 material = ASSETS.load_asset(path) if ASSETS.does_asset_exist(path) else None
                 if not stair_lamp.graph_matches(material, stair_lamp.shader(spec["stairBounds"], row["stairVisibility"])):
                     problems.append(f"{path}: missing or stale stair visibility graph")
+        if not cloud_material_ok:
+            problems.append(f"{PRECIP} cloud shader or weather inputs missing or stale")
         if not have:
             problems.append(f"{SKY} spec hash differs (run build_lighting.py)")
         if not level_ok:
