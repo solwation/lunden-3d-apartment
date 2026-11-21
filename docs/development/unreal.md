@@ -2913,6 +2913,11 @@ side face as its reference. This is a *guess* for the static approximation of th
 tint, vertex shading, hedge shape and collision still come from the source mesh. The web adds
 view-dependent fading, fine bump relief and stem shading near the base at render time.
 
+`tests/check_site_details.py` (commandlet, `run-python.ps1`) reads these keys and the river keys from `Import/*.glb` and
+fails when any of them falls back to another material in the world levels: the rails, letters and hedges must keep
+Interchange's textured instance with the GLB's image size (rails masked and two-sided), the river keys their
+`material-map.json` masters. Results and picture pairs: [#2325 verification](../verification/2325/README.md).
+
 **Grass (#2308).** The web has no grass geometry: its lawns are the ground meshes with `src/grass.js`'s detail map. The
 export names each material's colour map (`measurements.json` `materials[].map`, `shared-grass-detail` on the lawns), and
 `material-map.json` maps the two lawn keys (`std_609548_r100_m0_tex`, GRASS.summer; `std_5f8a3e_r100_m0_tex`, the street
