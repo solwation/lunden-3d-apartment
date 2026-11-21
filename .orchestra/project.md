@@ -206,8 +206,16 @@ they do not set the total agent count. **Unreal editors share PC-wide slots (202
 orchestras run Unreal on the same Windows PC, and simultaneous starts once left 2.8 GB free. Before starting any
 UnrealEditor(-Cmd) run, take a slot atomically with `mkdir ~/.local/state/lunden-editor-slots/slot-N` (N = 1–3, in
 WSL), write `<orchestra> #<issue>` into `slot-N/owner`, and remove the slot right after the run, also on failure. At
-most three editors on the PC, at most two per orchestra, and only with at least 6 GB of Windows memory free; while no
-slot is free, do work that needs no editor. Maintain isolated checkouts and the agreed 2–3 scoped
+most three editors on the PC, and only with at least 6 GB of Windows memory free. An orchestra holds at most two while
+another orchestra is waiting for a slot (it marks this with `mkdir ~/.local/state/lunden-editor-slots/waiting-<orchestra>`
+and removes the marker once it has a slot); otherwise it may use the third (user, 2026-11-21: speed up the queue).
+While no slot is free, do work that needs no editor. **Throughput (2026-11-21):** the editor is the bottleneck, so
+keep it busy and do everything else outside it. Each Unreal worker keeps one warm Windows checkout across issues:
+fast-forward it from `FETCH_HEAD`, re-export and run the incremental `sync-import.ps1` (about 4 minutes when unchanged)
+instead of creating a fresh worktree and full import per issue. A fresh checkout is needed only to prove the import
+chain itself. Run related checks in one editor session where the scripts allow it. Prepare builder code, web
+measurements and reference images before taking a slot. Give issues that touch the same builder, zone or asset to the
+same worker in sequence. Maintain isolated checkouts and the agreed 2–3 scoped
 checks per change. In session status/checkpoints, report measured headroom and time,
 active roles / chosen capacity / runtime ceiling, pending browser/integration work,
 the scale-up/down decision and a concrete reason for unused suitable capacity.
