@@ -1813,7 +1813,8 @@ that touch `src/`, `data/`, `models/`, `textures/`, the exporter and checker (`t
 2. the export key: `node tools/unreal-engine/export-ci.mjs key` = the source hash of `sources.mjs`. An unexpired artifact
    `unreal-export-<first 16 hex>` means these exact sources were already exported: the run stops there (about 15 s).
    Most pushes to `src/` change nothing the export reads and end here;
-3. otherwise Playwright 1.58.2 (browser cached) and three 0.170.0 are installed without a lockfile, then
+3. otherwise Playwright 1.58.2 (browser cached) and three 0.170.0 are installed without a lockfile (on `ubuntu-24.04`:
+   1.58.2 has no Chromium for `ubuntu-latest`'s Ubuntu 26.04, which failed the first run, #2316), then
    `export-world.mjs`, `check-export.mjs` and `export-ci.mjs compare` against the previous run's
    `unreal-export-manifest` artifact: a zone table (unchanged / changed / new / gone, nodes, triangles, SHA-256) and the
    changed sources in the run summary;

@@ -43,7 +43,8 @@ env:
 
 jobs:
   export:
-    runs-on: ubuntu-latest
+    # pinned: Playwright 1.58.2 has no Chromium build for ubuntu-latest's Ubuntu 26.04 (first run, #2316)
+    runs-on: ubuntu-24.04
     timeout-minutes: 30
     env:
       GH_TOKEN: ${{ github.token }}
@@ -73,6 +74,7 @@ jobs:
             echo "found=false" >> "$GITHUB_OUTPUT"
           fi
       - name: Previous export manifest
+        id: prev
         if: steps.existing.outputs.found != 'true'
         run: |
           mkdir -p "$RUNNER_TEMP/prev"
@@ -89,8 +91,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
-          key: playwright-chromium-${{ env.PLAYWRIGHT_VERSION }}-${{ runner.os }}
+          key: playwright-chromium-${{ env.PLAYWRIGHT_VERSION }}-ubuntu-24.04
       - name: Install Playwright and three
+        id: install
         if: steps.existing.outputs.found != 'true'
         run: |
           npm install --no-save --no-package-lock --no-audit --no-fund "playwright@$PLAYWRIGHT_VERSION" "three@$THREE_VERSION"
@@ -129,7 +132,7 @@ jobs:
       - name: Report a failure or deviation in the tracking issue
         if: ${{ !cancelled() }}
         env:
-          FAILED: ${{ steps.tests.outcome == 'failure' && 'tool tests' || steps.key.outcome == 'failure' && 'export key' || steps.export.outcome == 'failure' && 'export' || steps.check.outcome == 'failure' && 'check-export' || steps.compare.outcome == 'failure' && 'compare' || steps.upload.outcome == 'failure' && 'upload' || '' }}
+          FAILED: ${{ steps.tests.outcome == 'failure' && 'tool tests' || steps.key.outcome == 'failure' && 'export key' || steps.existing.outcome == 'failure' && 'look for an existing export' || steps.prev.outcome == 'failure' && 'previous export manifest' || steps.install.outcome == 'failure' && 'install Playwright' || steps.export.outcome == 'failure' && 'export' || steps.check.outcome == 'failure' && 'check-export' || steps.compare.outcome == 'failure' && 'compare' || steps.upload.outcome == 'failure' && 'upload' || '' }}
         run: |
           outcome=success
           [ -n "$FAILED" ] && outcome=failure
