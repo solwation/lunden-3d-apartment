@@ -2390,7 +2390,7 @@ the bus stop, street signs). Both are split zones listed after #2279's, so `l100
 L1007 and `kvarteret` the box walls; a merged mesh held by a later zone's box is still cut where it overlaps an
 earlier split zone that takes it. All earlier GLBs stay byte-identical. `skip` (`SITE_SKIP` in `export-scene.js`)
 leaves out what other issues own: vegetation for #2281 (trees, shrubs, pergola vines, hedges, shore growth, any
-leaf-material mesh, the autumn's fallen leaves; since #2281 in the zone `vegetation`, [below](#vegetation-trees-shrubs-and-hedges-2281)), the backdrop houses and the land beyond the terrain, the east campus
+leaf-material mesh, the autumn's fallen leaves; since #2281 in the zone `vegetation`, [below](#vegetation-trees-shrubs-and-hedges-2281)), the backdrop houses and the land beyond the terrain (since #2323 in the zone `fond`, [below](#backdrop-houses-2323)), the east campus
 car parks, school yards and the football site, the boule balls, the web's `… far` stand-ins and L1007's own outdoor
 furniture (G11). Their material keys stay on Interchange's default instances (`material-map.json` is #2282's; its
 `scope` does not list these zones yet).
@@ -2490,6 +2490,29 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-
 
 Results, pictures and the courtyard frame-time measurement: [#2281 verification](../verification/2281/README.md); grass,
 trunk collision and the frame time after them: [#2308 verification](../verification/2308/README.md).
+
+### Backdrop houses (#2323)
+
+**Zone `fond`** (listed last, so every earlier GLB and id stays byte-identical, verified against the export before it):
+the houses and land round the quarter that `SITE_SKIP` leaves out of the ground zones, built by the web's own builders.
+`only: BACKDROP` takes objects named (or under a parent named) `west-`, `north-`, `east-`, `south-`, `edge-`, `hepcat-`,
+`tower-clock` or `nordic-wellness`: the west, north and east backdrops (`src/sitebackdrop.js`; the east one is the
+campus with its façades, arched windows and roofs from `src/campusfacades.js`, nodes `east-schoolBrick|Glass|Roof`),
+the south backdrop (`src/southbackdrop.js`), the edge's houses and land beyond the terrain (`src/edgebackdrop.js`, the
+web's ground where Unreal showed a dark band at Höje å), HepCat, the clock tower's hands and Nordic Wellness's lettering
+(`src/surroundings.js`). It leaves out their trees (instanced `-trunks`/`-crowns`, `tree-`, a leaf material), the web's
+far LOD stand-ins (`… far`, `…-far`), the school yards, the football site and the east campus car parks (G02 *Later*).
+Not split: each backdrop mesh is one node. The box (±3 km, y −100…300 m) is a guard round the edge land, not a cut.
+
+| Zone | Nodes | Triangles | GLB |
+|---|---|---|---|
+| `fond` | 42 | 212,516 | 23.3 MB |
+
+Every node's GLB centre equals the web's world-box centre in its id within 0.71 cm (export at `a1c78bf1` + #2323).
+**Still open in #2323 (Windows):** `import_world.py --zones fond`, a `world-levels.json` row for
+`/Game/Lunden/Generated/fond/Level_fond` (added only together with the imported level, since `compose_world.py` stops on
+a listed level that does not exist), materials (the façades' brick keys follow #2318's facade mechanism; the lawn key
+`std_609548_r100_m0_tex` already has its rule), picture pairs with the web and the courtyard view's frame budget (#2246).
 
 ### Generated assets: rebuilt, not versioned (decided)
 

@@ -63,6 +63,16 @@ export function zoneTable(W, D, patio, husL = husLLayout(W)) {
     { id: 'vegetation', what: 'trees, shrubs, courtyard plantings and vines, river bank growth, entrance boxwood and hedges of the site (#2281)',
       status: 'exported', from: ['world', 'surroundings', 'surroundings-site'], only: VEGETATION,
       box: { x0: C.SITE.backgroundGround.x0, x1: C.SITE.backgroundGround.x1, z0: C.SITE.backgroundGround.z0, z1: C.SITE.backgroundGround.z1, y0: -30, y1: 60 } },
+    // #2323: the backdrop houses round the quarter, which SITE_SKIP leaves out of #2280's ground zones: the west, north,
+    // east (the campus with its façades and windows, src/campusfacades.js) and south backdrops, the edge's houses and
+    // land beyond the terrain (src/edgebackdrop.js), HepCat, the clock tower and Nordic Wellness. Built by the web's own
+    // builders (src/sitebackdrop.js, src/southbackdrop.js, src/edgebackdrop.js, src/surroundings.js); `only` keeps their
+    // trees, the web's far LOD stand-ins and the later school yards, football site and campus car parks out. Not split:
+    // each backdrop mesh is one node. Listed last so every earlier zone's GLB and ids stay byte-identical. The box is a
+    // guard round the edge backdrop's land (the furthest content), not a cut.
+    { id: 'fond', what: 'the backdrop houses and land round the quarter: west, north, east (campus), south and edge backdrops, HepCat, the clock tower, Nordic Wellness (#2323)',
+      status: 'exported', from: ['world', 'surroundings', 'surroundings-site'], only: BACKDROP,
+      box: { x0: -3000, x1: 3000, z0: -3000, z1: 3000, y0: -100, y1: 300 } },
   ];
 }
 
@@ -104,6 +114,20 @@ const VEGETATION = { test({ object: o, kind }) {
   const ms = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : [];
   return ms.some((m) => m === leafMaterial() || m === windLeafMaterial().material);
 }, toString: () => `${VEGETATION_NAME} or a leaf material (src/foliage.js), not ${BACKDROP_NAME}, fallen leaves or furniture` };
+/** #2323: the backdrop houses and land (by the name of the object or one of its parents), never their trees (instanced
+ *  trunks and crowns, a leaf material), the web's far LOD stand-ins (`… far`, `…-far`, src/sitebackdrop.js BatchLod),
+ *  the school yards, the football site or the east campus car parks (G02 *Later*), fallen leaves or furniture. */
+const BACKDROP_HOUSES_NAME = /^(west-|north-|east-|south-|edge-|hepcat-|tower-clock|nordic-wellness)/;
+const BACKDROP_LEAVE_NAME = /^(east-lot-cars|school-|football|tree-)|-(trunks|crowns)$|[ -]far$/;
+const BACKDROP = { test({ object: o, kind }) {
+  if (kind === 'furniture') return false;
+  if (o.isInstancedMesh && o.geometry?.type === 'CircleGeometry') return false; // fallen leaves
+  let named = false;
+  for (let q = o; q; q = q.parent) { const n = q.name ?? ''; if (BACKDROP_LEAVE_NAME.test(n)) return false; if (BACKDROP_HOUSES_NAME.test(n)) named = true; }
+  if (!named) return false;
+  const ms = o.material ? (Array.isArray(o.material) ? o.material : [o.material]) : [];
+  return !ms.some((m) => m === leafMaterial() || m === windLeafMaterial().material);
+}, toString: () => `${BACKDROP_HOUSES_NAME}, not ${BACKDROP_LEAVE_NAME}, a leaf material (src/foliage.js), fallen leaves or furniture` };
 /** #2280: the walkable ground among the exported nodes (by the web mesh's name; also unnamed level plates, see the
  *  ground block in exportWorld): build_site.py gives these complex collision in its derived level; the water surface,
  *  kerbs, street furniture and cars stay without. */
@@ -402,7 +426,7 @@ function plainGeometry(g, keepColor) {
   return out;
 }
 
-export const DEFAULT_ZONES = ['l1007', 'l1007-uteplats', 'fixture', 'l1007-entre', 'hus-l', 'kvarteret', 'gard', 'omgivning', 'vegetation'];
+export const DEFAULT_ZONES = ['l1007', 'l1007-uteplats', 'fixture', 'l1007-entre', 'hus-l', 'kvarteret', 'gard', 'omgivning', 'vegetation', 'fond'];
 
 /** Builds the world and returns { glbs: {name: base64}, measurements, report }. `zones`: ids to export. */
 
