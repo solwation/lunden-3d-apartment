@@ -41,6 +41,11 @@ def sha(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
+def text_sha(path):
+    # line endings normalised, so a CRLF (autocrlf) checkout hashes the script like LF (#2309)
+    return hashlib.sha256(Path(path).read_bytes().replace(b"\r\n", b"\n")).hexdigest()
+
+
 def package_files():
     return sorted(p for p in out_dir.rglob("*") if p.suffix in (".umap", ".uasset"))
 
@@ -66,7 +71,7 @@ def inputs(collision):
         stamp = json.loads(path.read_text(encoding="utf-8"))
         stamps[zone] = {"fingerprint": stamp["contentFingerprint"], "glb": stamp["export"]["sha256"]}
     listed = hashlib.sha256(json.dumps(collision, sort_keys=True).encode()).hexdigest()
-    return {"zones": stamps, "collision": listed, "builder": sha(__file__), "engine": u.SystemLibrary.get_engine_version()}
+    return {"zones": stamps, "collision": listed, "builder": text_sha(__file__), "engine": u.SystemLibrary.get_engine_version()}
 
 
 def unchanged(wanted):

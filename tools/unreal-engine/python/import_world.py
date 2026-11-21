@@ -109,7 +109,9 @@ def material_map():
     path = os.path.join(repo_root(), "tools", "unreal-engine", "material-map.json")
     with open(path, encoding="utf-8") as f:
         table = json.load(f)
-    return table, sha256_file(path)
+    with open(path, "rb") as f:  # line endings normalised: a CRLF checkout keeps the stamp (#2309)
+        digest = hashlib.sha256(f.read().replace(b"\r\n", b"\n")).hexdigest()
+    return table, digest
 
 
 # ---------------------------------------------------------------- stamp and fingerprint

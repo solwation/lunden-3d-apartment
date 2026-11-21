@@ -45,6 +45,11 @@ def sha(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
+def text_sha(path):
+    # line endings normalised, so a CRLF (autocrlf) checkout hashes the script like LF (#2309)
+    return hashlib.sha256(Path(path).read_bytes().replace(b"\r\n", b"\n")).hexdigest()
+
+
 def package_files():
     return sorted(p for p in out_dir.rglob("*") if p.suffix in (".umap", ".uasset"))
 
@@ -53,7 +58,7 @@ def inputs():
     stamps = {z: json.loads((content / f"Lunden/Generated/{z}/import-stamp.json").read_text(encoding="utf-8")) for z in SOURCES}
     return {"importFingerprints": {z: s["contentFingerprint"] for z, s in stamps.items()},
             "importGlbs": {z: s["export"]["sha256"] for z, s in stamps.items()},
-            "builder": sha(__file__), "engine": u.SystemLibrary.get_engine_version()}
+            "builder": text_sha(__file__), "engine": u.SystemLibrary.get_engine_version()}
 
 
 def unchanged(wanted):

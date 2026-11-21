@@ -102,6 +102,11 @@ def sha(path):
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
+def text_sha(path):
+    # line endings normalised, so a CRLF (autocrlf) checkout hashes the script like LF (#2309)
+    return hashlib.sha256(Path(path).read_bytes().replace(b"\r\n", b"\n")).hexdigest()
+
+
 def linear(hex_text):
     v = hex_text.lstrip("#")
 
@@ -304,7 +309,7 @@ def inputs(veg, copies):
         s = json.loads(path.read_text(encoding="utf-8"))
         stamps[zone] = {"fingerprint": s["contentFingerprint"], "glb": s["export"]["sha256"]}
     data = hashlib.sha256(json.dumps(veg, sort_keys=True).encode()).hexdigest()
-    return {"zones": stamps, "vegetation": data, "builder": sha(__file__), "engine": u.SystemLibrary.get_engine_version()}
+    return {"zones": stamps, "vegetation": data, "builder": text_sha(__file__), "engine": u.SystemLibrary.get_engine_version()}
 
 
 def unchanged(wanted):

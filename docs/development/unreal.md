@@ -405,6 +405,10 @@ its own binaries, so the editor and the packaged game load only Epic-signed code
   materials and sub-levels headless (as `build_player.py` and `build_pilot_doors.py` do). The committed `.uasset`
   is the builder's output: review the script diff, regenerate with the lock, commit both. Agents never edit
   assets in the editor GUI.
+- **Builder stamps do not depend on line endings (#2309).** Builders that hash their own script into their stamp
+  or spec hash, and the importer's `material-map.json` hash, normalise CRLF to LF first, and `.gitattributes` keeps
+  `tools/unreal-engine/**/*.py` and `*.json` LF in every checkout. A Windows clone with `core.autocrlf=true` therefore
+  gets the same `--check` result as WSL instead of wanting to resave committed assets.
 - **Python never ships.** The packaged game runs Blueprints and assets only. Editor Python covers import, builders
   and tests (`tools/unreal-engine/tests/test_<area>.py`, run through `PythonAutomationTest` in Play In Editor).
 - **Shared values come from data.** Read measurements, IDs and rules from the #2245 export (`measurements.json`,
