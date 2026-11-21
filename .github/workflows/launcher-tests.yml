@@ -16,6 +16,9 @@ on:
       - 'tools/unreal-engine/launcher-release-inputs.mjs'
       - 'tools/unreal-engine/package-signed-launcher.ps1'
       - 'tools/unreal-engine/tests/signed-launcher-package-test.ps1'
+      - 'tools/unreal-engine/release-notes.mjs'
+      - 'tools/unreal-engine/release-notes/**'
+      - 'tools/unreal-engine/tests/release-notes.test.mjs'
       - '.github/workflows/launcher-tests.yml'
   workflow_dispatch:
 
@@ -49,6 +52,8 @@ jobs:
         env:
           LUNDEN_NODE_SIGNED_MANIFEST_DIR: ${{ runner.temp }}/node-signed-manifest
         run: node --test tools/unreal-engine/tests/sign-manifest.test.mjs
+      - name: Render the Swedish release notes (#2377)
+        run: node --test tools/unreal-engine/tests/release-notes.test.mjs
       - name: Run launcher tests on Windows
         env:
           LUNDEN_GENERATED_TEST_MANIFEST: ${{ runner.temp }}/generated-stock-manifest.json

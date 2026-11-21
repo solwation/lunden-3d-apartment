@@ -104,6 +104,17 @@ for (const channel of ['stable', 'test']) {
   });
 }
 
+test('the first stable release after test-only releases carries both pairs (#2377)', async t => {
+  const { seedChannel, dispatch, writes } = fixture(t);
+  seedChannel('test', true);
+  seedChannel('stable');
+  await assert.rejects(dispatch(), /Missing published asset lunden-manifest-test/);
+  assert.deepEqual(writes(), []);
+  seedChannel('test');
+  await dispatch();
+  assert.deepEqual(writes(), [['PATCH', 'https://api.github.com' + prefix + '/37']]);
+});
+
 test('missing file, invalid signature or incomplete pair prevents any write', async t => {
   const { state, seedChannel, dispatch, writes } = fixture(t);
   seedChannel('test');

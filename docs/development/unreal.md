@@ -2293,6 +2293,48 @@ Utan `--write` skrivs enbart den verifierade adressen ut. Lägg till svenska ver
 i `data/changelog.json` när länken publiceras. Avpubliceras en installation, ta bort länkarna i båda markerade
 områdena och återställ aktuell status i README.
 
+The menu entry that `stable-download.mjs --write` puts into `index.html` names the publisher from
+`unreal/Launcher/publisher-identity.json` and links to README's section "Windowsversionen av Lunden" for the
+SmartScreen help. Nothing in the marked areas is shown before that run.
+
+#### Swedish release notes (#2377)
+
+Every published Windows release carries Swedish notes as its GitHub release body. The release owner writes
+`tools/unreal-engine/release-notes/<tag>.md` with a `## Nytt` and a `## Kända begränsningar` section (plain player
+language, as the changelog). `tools/unreal-engine/release-notes.mjs` fills `release-notes/mall.md` with the version,
+the setup file and its download URL under the tag, the setup's SHA-256 from the protected artifact's `SHA256SUMS`
+(it must equal `launcherSha256` in `launcher-build.json`), the publisher (the artifact's signer must equal
+`publisher-identity.json`), the source commit, the channel, installation and removal steps, and the SmartScreen help
+that README also gives. It refuses missing sections, leftover placeholders, another publisher and a setup that is not
+the signed launcher, and it writes a new file only:
+
+```sh
+node tools/unreal-engine/release-notes.mjs --tag v0.2.0 --signed-launcher <signed-launcher dir> --channel stable --out notes-v0.2.0.md
+gh release create v0.2.0 --draft --verify-tag --notes-file notes-v0.2.0.md   # or: gh release edit v0.2.0 --notes-file …
+```
+
+Add a short summary of the same news to README's "Versionsnyheter för Windows". Tests:
+`node --test tools/unreal-engine/tests/release-notes.test.mjs` (also in `launcher-tests.yml`). `release-notes/v0.1.1.md`
+is the example; rendering it from the real `signed-launcher-v0.1.1-1` artifact gave 2,105 characters.
+
+#### Stable channel dry run (2026-11-21, nothing published)
+
+On the build PC, `make-manifest.mjs --channel stable` used the same inputs as the published test release v0.1.1. These
+were the archive `C:\LundenBuilds\release\85b805632097-…` (commit `85b80563`) and the protected artifact of run 44882237973,
+with `--published 2026-11-21T08:00:00Z`, the repository key with SPKI SHA-256 `e1af2471…0289` and output to a local folder.
+The draft `lunden-manifest.json` (9,686 bytes, SHA-256 `56eba0b4…02b7`) equals the published
+[`lunden-manifest-test.json`](../verification/2248/v0.1.1-lunden-manifest-test.json) except `"channel": "stable"`,
+and its `upload-plan.json` equals [the published plan](../verification/2248/v0.1.1-upload-plan.json) byte for byte.
+Signed locally with a throwaway P-256 key (`sign-manifest.mjs sign --channel stable --private-key-stdin`), then
+`verify-published.mjs --channel stable` downloaded and verified every object anonymously: `Verified 24 unique objects,
+537565490 bytes (stable).` (69 s). The same pair as `--channel test` fails (`Wrong release channel`).
+`stable-download.mjs` against the public release reports `Stable channel unavailable: lunden-manifest.json` and
+writes nothing. `promote-release.test.mjs` passes 9 of 9; the new case checks that the first stable release after test-only releases is promoted only with both pairs.
+What is left for the release owner: a stable app tag and its signed `lunden-manifest.json`, which needs the real
+private key in the `sign-manifest.yml` job. The test pair must be carried on the same release. Then come the
+promotion, a real install and update on Windows, the Swedish notes for that tag, the two links via
+`stable-download.mjs --write`, and a changelog entry.
+
 **Release gate.** `release.ps1` runs `node tools/unreal-engine/check-import.mjs` before BuildCookRun and builds nothing
 unless it exits 0: (1) the export in `Import/` is current for the checkout (`check-export.mjs`); (2) every zone's
 `import-stamp.json` names that zone's GLB SHA-256, the checkout's `IMPORTER_VERSION`, material map and locked engine,
