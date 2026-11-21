@@ -6,6 +6,7 @@
 //
 // Determinism: the caller fixes Date and seeds Math.random before any module loads; this module builds and collects
 // synchronously (nothing loaded later can slip in), walks the scene in its child order, and writes no time stamps.
+import { curtainProfiles, curtainRows } from './export-curtains.js';
 import * as THREE from 'three';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 import * as C from '../../src/config.js';
@@ -463,7 +464,8 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
       stairVisibility: stairLight.profiles.get(l), intensity: l.intensity ?? null, distance: l.range ?? null, color: typeof l.color === 'number' ? '#' + l.color.toString(16).padStart(6, '0') : null });
     // #2285: the room switches (their room decides which lamps they switch, src/lights.js Switch / Room)
     const switches = L.switches.map((s) => ({ object: s.object, room: s.room.name, level: s.room.level }));
-    lightsInfo = { lamps, group, switches, stairLight, error: null };
+    const floorRooms = new Map(L.floorLamps.filter(f => f.room.lamps[0]).map(f => [f.spec, L.lampRoom(f.room.lamps[0])]));
+    lightsInfo = { lamps, group, switches, stairLight, floorRooms, exportedFloorRooms: new Map(), error: null };
   } catch (e) { lightsInfo.error = String(e?.message ?? e); }
   // #2279: the garage under the courtyard and the four stairwells/lifts (Hus L's and Hus A/B/C's), which main.js builds
   // next to the world. Loaded after the world and the lights so their modules cannot shift the seeded random sequence
@@ -760,6 +762,7 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     if (lookAtom) nodes.add(lookAtom);
   };
   // `furnish` (#2289): a furniture/appliance/lamp/curtain mesh keeps its base-colour image (FURNISH_KINDS)
+  const curtains = wanted.includes('l1007') ? curtainProfiles(world.blinds) : new Map();
   const exportMaterial = (m, furnish = false, bark = null) => {
     const cache = furnish ? furnishCache : matCache;
     if (cache.has(m)) { noteLook(m, cache.get(m).name); return cache.get(m); }
@@ -788,6 +791,11 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
         em.map = m.map;
         em.roughnessMap = em.metalnessMap = m.roughnessMap;
       } else if (tex) { em.map = tex.out; em.userData.texture = tex.id; }
+      const curtain = curtains.get(m);
+      if (curtain) {
+        em.emissiveMap = em.map; // same sRGB texels, sampler, UV channel and transform
+        em.emissive.fromArray(curtain.daylight); // daylight fallback for an imported mesh without a running controller
+      }
       materials.set(key, em); materialTable[key] = tex ? { ...info, texture: tex.id } : info;
     }
     if (tex) tex.keys.add(key);
@@ -987,6 +995,7 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
   if (vegetation) measurements.vegetation = vegetation;
   for (const { root } of Object.values(roots)) root.updateMatrixWorld(true); // (the mesh centres below)
   measurements.furnishing = furnishingData(byZone, textures, worldMatrix);
+  if (curtains.size) measurements.furnishing.curtains = curtainRows(curtains, furnishCache, measurements.furnishing, measurements.lights, lightsInfo.exportedFloorRooms);
   // #2300: the footstep surface, outdoor sprint, rest and wake data from the web's own modules (export-player.js). Loaded
   // here, after every GLB is written, so its modules cannot shift the seeded random sequence the zones were built with.
   let playerReport = null;
@@ -1265,9 +1274,11 @@ function measurementData({ world, planCopy, W, D, byZone, lightsInfo, seasons, m
     // A merged light represents every anchor. Retain unfiltered anchors at full weight when some fall outside the stair's range.
     const profile = stairVisibility?.some(Boolean) ? stairVisibility.map((row, i) => row ?? { weight: anchors[i].intensity }) : null;
     const position = emitter ? P(emitter.x, emitter.y, emitter.z) : P(p.x, p.y + (l.height ?? 0), p.z);
-    lights.push({ id: a?.id ?? null, kind: 'lamp', name: l.name ?? null, level: l.level ?? levelOf(p.y), room: l.room ?? null,
+    const row = { id: a?.id ?? null, kind: 'lamp', name: l.name ?? null, level: l.level ?? levelOf(p.y), room: l.room ?? null,
       objectPosition: P(p.x, p.y, p.z), position, ...(profile ? { stairVisibility: profile } : {}), seasonal: seasons.get(a?.object),
-      intensity: r4(pools.reduce((sum, x) => sum + (x.intensity ?? 0), 0)), distance: pools[0].range ?? null, color: hex(pools[0].color), auto: l.auto !== false });
+      intensity: r4(pools.reduce((sum, x) => sum + (x.intensity ?? 0), 0)), distance: pools[0].range ?? null, color: hex(pools[0].color), auto: l.auto !== false };
+    lights.push(row);
+    lightsInfo.exportedFloorRooms?.set(row, lightsInfo.floorRooms.get(l));
   }
   for (const l of lightsInfo.lamps) lights.push({ id: null, kind: 'room', name: null, level: l.level, room: l.room, position: P(l.pos.x, l.pos.y, l.pos.z),
     intensity: l.intensity, distance: l.distance, color: l.color, ...(l.stairVisibility ? { stairVisibility: [l.stairVisibility] } : {}) });

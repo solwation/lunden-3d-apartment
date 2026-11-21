@@ -190,6 +190,11 @@
       "required": ["items", "textures"],
       "properties": {
         "items": { "type": "array", "items": { "type": "object", "required": ["id", "kind", "zone", "web", "unreal"] } },
+        "curtains": { "type": "array", "items": { "type": "object", "required": ["id", "level", "room", "nodes", "key", "lamps", "daylight", "lamp"], "properties": {
+          "id": { "type": "string" }, "level": { "type": "integer" }, "room": { "type": "string" }, "key": { "type": "string" },
+          "nodes": { "type": "array", "minItems": 1, "items": { "type": "string" } }, "lamps": { "type": "array", "minItems": 1, "items": { "type": "string" } },
+          "daylight": { "$ref": "#/$defs/vec3" }, "lamp": { "$ref": "#/$defs/vec3" }
+        } } },
         "textures": { "type": "array", "items": { "type": "object", "required": ["id", "name", "kind", "images", "keys", "nodes", "meshes"] } }
       }
     },

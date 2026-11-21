@@ -64,7 +64,7 @@ tools/unreal-engine/check-export.mjs          staleness + schema check of an exp
 tools/unreal-engine/check-import.mjs          release gate (#2305): the local import against the export (zone stamps, sync stamp)
 tools/unreal-engine/export-ci.mjs             export workflow helpers (#2305): export key, zone-by-zone comparison, tracking issue
 tools/unreal-engine/sync-import.ps1           Windows helper (#2305): export → build_seasons.py → import_world.py → derived levels → compose --check → checks
-.github/workflows/unreal-export.yml           exports, checks and compares on pushes that change the export's sources (#2305)
+.github/workflows/unreal-export.yml           checks versioned Lighting on every main push and exports when the source changes (#2305, #2385)
 tools/unreal-engine/json-schema.mjs            small dependency-free JSON Schema validator for shared/schema/ (and GLB JSON reader)
 tools/unreal-engine/notices.mjs               writes/checks unreal/Lunden/THIRD_PARTY_NOTICES.md from the web's attribution files
 tools/unreal-engine/python/import_world.py    Interchange scene import of the export into Content/Lunden/Generated/<zone>/
@@ -1135,7 +1135,8 @@ PLAYWRIGHT_MODULE=… node tools/unreal-engine/tests/crop-stats.cjs <out> <crops
 ```
 
 The #2307 comparison shots (`tests/lighting-shots.json`: day, 22:00 with all lamps, 22:00 with only the dusk lamps,
-clear and overcast day, a night with the moon) are rendered by both capture scripts with the shared cameras;
+clear and overcast day, a night with the moon; #2326's patio pair on 21 June and 24 December, which sees the
+Christmas tree through the hall only at Christmas) are rendered by both capture scripts with the shared cameras;
 `crop-stats.cjs` gives the mean luminance and warmth of matching crops.
 
 Results: [docs/verification/2283/](../verification/2283/README.md), [docs/verification/2307/](../verification/2307/README.md), [docs/verification/2313/](../verification/2313/README.md).
@@ -1281,7 +1282,7 @@ the export and the pictures section of `notices.mjs`.
   once, nothing is modelled twice, and the owner's photos are never versioned as `.uasset`s (they are rebuilt with
   the generated assets, [below](#generated-assets-rebuilt-not-versioned-decided)). `/Game/Lunden/Furnishing/` and
   `build_furnishing.py` therefore stay empty until something hand-made is needed. Not ported: normal, bump,
-  roughness and alpha maps, emissive maps, the web's `onBeforeCompile` tweaks, video and animated canvases (the TV
+  roughness and alpha maps, emissive maps other than printed curtain cloth, the web's `onBeforeCompile` tweaks, video and animated canvases (the TV
   and the smart display show their first frame). The lighting and material comparisons below cover the upholstery and other furnishing surfaces.
 - **Colour checks (#2322).** In the UE 5.8.4 L1007 import from `98f42f51`, the living-room rug, sofa and oak
   coffee table use sRGB colour textures. The rug has a white base factor and no vertex colours. Its two most frequent
@@ -1292,7 +1293,12 @@ the export and the pictures section of `notices.mjs`.
   The Unreal level represents the cabinet with one point light. Its export now takes the web emitter's actual position,
   40 cm in front of the fitting at the same height. Single-emitter fittings share this path. The fitting origin
   stays available for stable light IDs. The curtains also differ: `Curtain.glow` multiplies their printed pattern by
-  changing daylight and room-lamp emission on the web. The exported cloth has only its base-colour image.
+  changing daylight and room-lamp emission on the web. L1007 exports the same sRGB print, sampler and UV transform
+  for base colour and emission. The GLB's fallback factor is the cloth's linear RGB at full daylight with the room
+  lamps off. The six rows in `furnishing.curtains` give each fabric's two linear RGB coefficients, its mesh IDs
+  and the ceiling and small lamps in its real room. The daylight and warm gains are the web's visual estimates
+  (`CURTAIN_LIGHT`, *guess*). The export keeps the existing opacity, roughness and two-sided material.
+  Run `node tools/unreal-engine/tests/curtain-light.mjs unreal/Lunden/Import` to compare an L1007 GLB with the web.
   For comparable measurements, run `tests/crop-stats.cjs <paired-image-directory> tests/furnishing-crops.json` from
   `tools/unreal-engine/` on the shared daylight and evening camera pairs. Record the lighting revision and exposure
   with the ratios. In [the #2313 calibration](../verification/2313/README.md) the
@@ -2223,14 +2229,13 @@ Pages workflow (no export exists there); the Unreal export workflow and the rele
 
 Web changes reach the Unreal import without anyone running the export and import by hand, in two halves.
 
-**Export in GitHub Actions** (`.github/workflows/unreal-export.yml`, Linux, no secrets). It runs on pushes to `main`
-that touch `src/`, `data/`, `models/`, `textures/`, the exporter and checker (`tools/unreal-engine/*.js|*.mjs`,
-`export.html`), `shared/schema/` or the workflow, and on demand (`workflow_dispatch`, `force` re-exports). Steps:
+**Export in GitHub Actions** (`.github/workflows/unreal-export.yml`, Linux). Every push to `main` checks the versioned
+Lighting against its export. A manual run (`workflow_dispatch`, `force`) can also re-export the scene.
 
 1. the tool tests (`tools/unreal-engine/tests/export-ci.test.mjs`, `check-import.test.mjs`);
 2. the export key: `node tools/unreal-engine/export-ci.mjs key` = the source hash of `sources.mjs`. An unexpired artifact
-   `unreal-export-<first 16 hex>` means these exact sources were already exported: the run stops there (about 15 s).
-   Most pushes to `src/` change nothing the export reads and end here;
+   `unreal-export-<first 16 hex>` means these sources were already exported. The workflow reuses its measurements
+   and skips Chromium, the zone comparison and the full export upload;
 3. otherwise Playwright 1.58.2 (browser cached) and three 0.170.0 are installed without a lockfile (on `ubuntu-24.04`:
    1.58.2 has no Chromium for `ubuntu-latest`'s Ubuntu 26.04, which failed the first run, #2316), then
    `export-world.mjs`, `check-export.mjs` and `export-ci.mjs compare` against the previous run's
@@ -2238,7 +2243,12 @@ that touch `src/`, `data/`, `models/`, `textures/`, the exporter and checker (`t
    changed sources in the run summary;
 4. uploads the export as `unreal-export-<hash>` (30 days; about 185 MB uncompressed) and the manifest plus
    `export-diff.json` as `unreal-export-manifest` (90 days, the next run's baseline);
-5. `export-ci.mjs report` keeps **one tracking issue** (marker `<!-- unreal-export-ci -->`, `bug`, `priority: medium`,
+5. reads the real `Lunden.SpecHash` metadata on the committed LFS asset `BP_LundenSky` and compares it with
+   `build_lighting.py`'s signature of the current measurements and builder sources (#2385). This runs on fresh exports,
+   cached exports and pushes that only change a Blueprint or Python file. The small measurements cache is keyed by the
+   full export source hash. A cold cache reads `measurements.json` from the matching full artifact. The workflow
+   uploads newly exported inputs before this check, so they are available for a Windows rebuild on a failed run;
+6. `export-ci.mjs report` keeps **one tracking issue** (marker `<!-- unreal-export-ci -->`, `bug`, `priority: medium`,
    title `Bugg: Unreal-exporten i Actions misslyckas eller avviker`). A failed step or a deviation opens it, or comments
    on it while it is open; the first green run afterwards notes that once. Closing it stays with whoever fixes the
    cause. Deviations: a zone no longer exported, a zone's nodes or triangles at 0 or below half of the previous export
@@ -2247,7 +2257,18 @@ that touch `src/`, `data/`, `models/`, `textures/`, the exporter and checker (`t
    commands instead of running them.
 
 The Pages workflow is unchanged; this workflow only reads the repository, uploads artifacts and writes that one issue.
-Typical cost: one 15 s job per matching push, a 4–6 minute job when the sources really changed.
+Run the same Lighting check locally in WSL from the repository root after exporting or downloading the current scene:
+
+```sh
+git lfs pull --include='unreal/Lunden/Content/Lunden/Lighting/BP_LundenSky.uasset' --exclude=''
+python3 tools/unreal-engine/check-lighting.py unreal/Lunden/Import/measurements.json
+```
+
+WSL can also pass `--sky-asset /path/to/BP_LundenSky.uasset` to read a hydrated copy from another checkout. It must
+match this checkout's LFS object. On a stale signature, the Windows Lighting owner takes the LFS locks, runs
+`tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/build_lighting.py <path-to-measurements.json>`
+and commits the resulting changes under `unreal/Lunden/Content/Lunden/Lighting`. The generated level's local
+`build-stamp.json` is not a substitute for the Blueprint's tag.
 
 **One producer per PC.** The same sources give the same nodes, triangles and `measurements.json` on every machine,
 but zones with canvas-drawn pictures (signs, name plate: `l1007`, `hus-l`, `kvarteret`) differ in their embedded image
