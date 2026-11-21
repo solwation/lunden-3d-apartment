@@ -133,6 +133,13 @@ tools/unreal-engine/python/build_ui.py        the menu, settings, compass and fr
 tools/unreal-engine/ui-extensions.json        menu buttons (#2291) and volume rows with sound classes (#2287) the UI builds from
 tools/unreal-engine/tests/test_ui.py          PIE test: compass = web for 9 yaws, menu, Esc, every setting, restart
 tools/unreal-engine/tests/compass-rule.test.mjs  test_ui's compass rows against the web's src/compass.js (Node)
+tools/unreal-engine/export-audio.mjs          writes/checks audio-params.json: FOOTSTEPS, strides, WIND_SOUND, AMBIENT_BED, ROOM_REVERB,
+                                   the river line and the web's own sound-function answers (Node, no browser) (#2287)
+tools/unreal-engine/python/build_audio.py     footstep MetaSounds, wind and bed loops, sound classes, reverbs and BPC_LundenAudio (#2287)
+tools/unreal-engine/tests/test_audio.py       PIE test: formulas = web's answers, steps per surface and stride, room zone, indoor wind/bed
+tools/unreal-engine/tests/test_audio_render.py  silent render to WAV (needs an audio device, final gain 0; not via run-tests.ps1)
+tools/unreal-engine/tests/audio-render-compare.py  the WAVs against the web's synthFootstep: level, length, centroid, spectrograms
+unreal/Lunden/Content/Lunden/Audio/           sound classes, MS_Lunden* MetaSounds, RE_Lunden* reverbs, BPC_LundenAudio (LFS; build_audio.py)
 tools/unreal-engine/tests/capture_ui.py       PIE screenshots of the HUD, start/settings/pause menu (GPU, -RenderOffScreen)
 unreal/Lunden/Content/Lunden/UI/              BFL_LundenSettings, WBP_LundenHud, WBP_LundenMenu, BPC_LundenUI, SM_LundenVolumes,
                                    Input/IA_LundenMenu, IMC_LundenUI, IMC_LundenInvertY (LFS; made by build_ui.py)
@@ -801,9 +808,10 @@ an FPS text in the Windows game. #2286 owns `/Game/Lunden/UI/`, `build_ui.py`, `
   creates `widget` (a UserWidget class) with the menu's player as owner at Z 20 over the open menu; the widget removes
   itself when done and the menu keeps the input. #2291 adds its appearance button here. `volumes`
   `{key, label, soundClass, owner, what}`: a slider; with a `soundClass` the volume is applied to that class.
-  `audio.master` uses the engine's `/Engine/EngineSounds/Master` (the default class); `audio.music` and
-  `audio.effects` have no class until #2287 sets its own (making them children of Master keeps the master volume over
-  them). A changed list rebuilds the UI (two runs, below).
+  Since #2287 the three rows name `/Game/Lunden/Audio/SC_LundenMaster`, `SC_LundenMusic` and `SC_LundenEffects`
+  ([Footsteps, wind and outdoor sound](#footsteps-wind-and-outdoor-sound-2287)); the engine's own `Master` cannot be the
+  root, because a mix override reaches only the classes in its `ChildClasses` and that engine asset cannot list project
+  classes. A changed list rebuilds the UI (two runs, below).
 - **Not ported (later in G08):** minimap, measuring tool, inventory bar, chat (#2293), gamepad, touch; the web's
   instruction list, player switch, presence and leaderboard on the start screen; auto graphics level and 30/60 FPS
   target; hiding the compass under event badges (no badges yet).
@@ -827,6 +835,113 @@ Blueprint variables by default and Python cannot change that, so every text the 
 unless the Blueprint is compiled between them; `IMC.default_key_mappings.mappings` holds the mappings in 5.8.
 
 Results: [docs/verification/2286/](../verification/2286/README.md).
+
+## Footsteps, wind and outdoor sound (#2287)
+
+The web synthesises every sound with Web Audio and plays no sound files (`src/audio.js`). G09's release-1 part brings
+three of them to Unreal as procedural MetaSounds with the web's own numbers: footsteps that change with the surface,
+the outdoor wind and the outdoor bed (Höje å and the far city), plus a simple room reverb. #2287 owns
+`/Game/Lunden/Audio/`, `build_audio.py`, `export-audio.mjs` with its `audio-params.json`, `tests/test_audio.py`,
+`tests/test_audio_render.py`, `tests/audio-render-compare.py`, the `Audio` row of `player-extensions.json` and the
+sound classes of the three `volumes` rows of `ui-extensions.json`.
+
+- **Numbers from the web's modules.** `export-audio.mjs` imports `src/config.js` (`FOOTSTEPS`, `PLAYER.strideWalk/strideRun`,
+  `WIND_SOUND`, `WIND.power`, `AMBIENT_BED`, `ROOM_REVERB`, `SEASON`), `src/riverbridge.js` `riverPath` and the teleport
+  limit of `src/main.js` `footsteps()`, and writes `tools/unreal-engine/audio-params.json`. The file also holds the web's
+  own answers of `footsteps.js pickStep` (1,152 cases), `windsim.js windPower`, `windsound.js windStrength / gustAt /
+  windSoundParams` (324 cases) and `ambientbed.js riverBabbleParams / trafficLevel / cityHumParams / distToPolyline`.
+  `--check` fails when the file no longer matches the web. `build_audio.py` turns the constants into MetaSound node
+  defaults and into graph literals, and the tree feet come from the export (`measurements.json` `vegetation.trees`).
+- **Footsteps** (`MS_LundenStep_<profile>`, one one-shot MetaSound per `FOOTSTEPS.profiles` entry: `wood` = parquet,
+  `hard` = tile, paving, stone and the garage, `grass`, `gravel`, and `stair`, `wet`, `snow`, `snowCold`, `leaves`).
+  Each is `synthFootstep` built by the MetaSound builder. The sine body glides exponentially from `hz × v` to `endHz` over
+  `duration`. White noise goes through a low-pass biquad at `cutoff`, and the web's Q (dB for a low-pass, as the Web
+  Audio spec defines it) becomes the exact Unreal bandwidth for that cut-off. Both rise linearly to their peak × `v` over
+  `attack` and fall exponentially to `releaseFloor` at `duration`. Then come the `grain` crackle and the `partial`
+  (squeak, stair ring). `v` = 1 ± `variation` is drawn on every play. *Approximations:* the envelopes are block-rate
+  (5.3 ms segments, interpolated). The crackle is a triangle between one random trough per step and 1, where the web
+  draws a new trough each time. The web's last 30 ms from −80 dB to 0 is left out.
+- **`BPC_LundenAudio`** (character, `player-extensions.json` row `Audio`). Every tick it adds the ground covered while
+  `IsMovingOnGround`. A jump of more than `teleport` (0.5 m) between frames counts as nothing. A step sounds every
+  `StrideWalk` (62 cm), or every `StrideRun` (95 cm) while `Running` (Shift). The step asks #2300's
+  `BPC_LundenStepSurface.FeetInfo` for the class and runs the transcribed `PickStep` (stair in a core, snow, wet hard
+  ground, autumn leaves on grass or gravel, else the surface). Then it plays that profile's MetaSound with
+  `PlaySound2D` at `FOOTSTEPS.gain`, and records `StepCount`, `LastProfile` and `LastStepSound`. The weather comes from
+  the world's `BP_LundenSky` (`WindSpeed`, `Wet`, `Month`, `Hour`; `UseSky` off lets a test set them). `SnowCover` (0)
+  and `Temperature` (10 °C, the web's `weather.temp ?? 10`) wait for snow cover and temperature to be ported, so no
+  snow steps sound yet.
+- **Wind and outdoor bed** (`MS_LundenWind`, `MS_LundenAmbience`, looping, started with `SpawnSound2D` at BeginPlay).
+  Every `WIND_SOUND.every` (0.25 s) the component computes `windSoundParams` from the sky's wind and the web's gust
+  sweep. The other inputs are the month's leaf cover and `treeNearness` to the exported trees. The component also
+  computes `riverBabbleParams` from the distance to Höje å's centre line and `cityHumParams` from the hour. It pushes
+  them with `SetFloatParameter`, and the MetaSounds ease to them over `WIND_SOUND.ease` / `AMBIENT_BED.ease`.
+  `Indoors` is `not FeetInfo.Outdoor` (a flat, stairwell or garage), which applies the web's one indoor model: lower
+  gain and a lower low-pass ceiling. *Approximations:* the ease is linear (`InterpTo`) where the web's
+  `setTargetAtTime` is exponential. Tree nearness uses every exported tree, where the web uses `treeFeet` alone. A
+  moving cut-off uses the engine's Q-to-bandwidth node, which leaves out the small `w0 / sin w0` correction.
+- **Room** (*guess*, a simple form of `ROOM_REVERB`'s convolvers). `ZoneFor` is `indoorRoomClass` from the same surface
+  class: a core is `concrete`, an indoor hard floor is `bright`, any other indoor floor is `soft`. Outside that,
+  `roomreverb.js`'s courtyard rectangle gives `courtyard`, and the rest is `open`. A change of zone calls
+  `ActivateReverbEffect(RE_Lunden<Zone>)`, or `DeactivateReverbEffect` for open, over `ROOM_REVERB.fade`. Each
+  `RE_Lunden*` takes decay = `rt60`, gain = `wet`, late delay = `pre`, HF decay ratio = `damp[1] / damp[0]`, and for the
+  courtyard the first slap echo as the reflections.
+- **Sound classes and volumes.** `SC_LundenMaster` (root) > `SC_LundenEffects` (2D reverb send 1, as the web sends
+  every effect to the room) > `SC_LundenAmbience` (send 0: the beds are dry on the web) and `SC_LundenMaster` >
+  `SC_LundenMusic`. The steps are in Effects, the loops in Ambience. The menu's three sliders (#2286) now apply to
+  Master, Effects and Music, and a slider applies to its class's children too. The engine's own
+  `/Engine/EngineSounds/Master` is not the root, because a mix override reaches only the classes in its `ChildClasses`
+  and that engine asset cannot list project classes. A sound added later should use one of these classes, since a sound
+  without a class plays in the engine's Master, outside the Huvudvolym slider.
+- **Decided here (can be overturned in one sentence).** No `Maps/Zones/Audio` sub-level: the web's beds follow the
+  listener and its rooms come from the surface data, so the sources live on the player and `L_Lunden` is untouched.
+  The web's master gain 0.8 is not applied: Unreal has its own volume chain. The level offset is under Results.
+- **Builder findings (5.8.4).** The MetaSound builder works headless (`MetaSoundBuilderSubsystem` +
+  `MetaSoundEditorSubsystem.build_to_asset`). `BuildToAsset` only creates assets: the builder's own overwrite refuses a
+  saved asset, and a package deleted in the session cannot be created again. `build_audio.py` therefore removes the old
+  file of a MetaSound that nothing has loaded and rescans the registry first. It decides from
+  `Audio/build-stamp.json`, so nothing is loaded before that step. The Biquad Filter node is major version 2. In
+  Blueprint, a pure node runs again for every reader, so the moved distance is stored before `LastPos` moves on. A PIE
+  test sets component variables with `PropertyAccessChangeNotifyMode.NEVER`, because the editor's change notification
+  rebuilds the actor's components and leaves a stale copy.
+- **Not ported:** the open window's wind (`sfx.wind`, with #2285's windows), rain sound and the other weather sounds,
+  snow-cover and temperature steps, other players' steps, landing sounds (#2293), music, radios and animals (later),
+  sound occlusion (#2181; no positional sounds yet) and the playroom zone.
+
+```text
+THREE_DIR=<node_modules/three> node tools/unreal-engine/export-audio.mjs [--check]
+git lfs lock unreal/Lunden/Content/Lunden/Audio/<every .uasset>
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/build_audio.py [--force | --check]
+copy tools\unreal-engine\tests\test_audio.py unreal\Lunden\Content\Python\   (untracked copy, delete afterwards)
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-tests.ps1 -Filter Editor.Python.Lunden.test_audio
+```
+
+A new or changed `player-extensions.json` row needs `build_player.py`, and a changed `volumes` class needs `build_ui.py`
+twice (each with its own LFS locks).
+
+**Listening without the speakers.** `run-tests.ps1` and `run-python.ps1` start the editor with `-nosound`, so
+`test_audio` checks which MetaSound starts and with what parameters. `test_audio_render.py` renders the sounds to WAV
+files. It needs an audio device, so it is started like run-tests without `-nosound`, and it refuses to run unless
+`au.LinearGainScalarForFinalOutut` is 0. The mixer multiplies every buffer it hands the device by that value
+(AudioMixerCore `FOutputBuffer::MixNextBuffer`), while the submix recording is taken earlier. The hidden editor never
+has the focus, so `UnfocusedVolumeMultiplier=1.0` and `bAllowBackgroundAudio=True` are also needed; without them every
+source renders at volume 0:
+
+```text
+UnrealEditor-Cmd.exe <uproject> -EnablePlugins=PythonAutomationTest "-ExecCmds=Automation RunTests Editor.Python.Lunden.test_audio_render; Quit" "-TestExit=Automation Test Queue Empty" -unattended -nosplash -nop4 -nullrhi -dpcvars=au.LinearGainScalarForFinalOutut=0 -ini:Engine:[Audio]:UnfocusedVolumeMultiplier=1.0 -ini:EditorPerProjectUserSettings:[/Script/UnrealEd.LevelEditorMiscSettings]:bAllowBackgroundAudio=True
+python3 tools/unreal-engine/tests/audio-render-compare.py unreal/Lunden/Saved/audio-render <out>
+```
+
+**Results (2026-11-21, UE 5.8.4).** All pure functions agree with the web's answers: 1,152 pickStep cases exactly and
+the wind/bed formulas within 5·10⁻⁷. The player was tested on #2300's nine surface control points. Each point gave 2
+steps per 2.5 strides (also sprinting, on the parquet), with the web's profile: parquet `wood`, tile and patio slabs `hard`,
+stair tread `stair`, gravel, grass, road, garage. Wet road gave `wet`, and grass and gravel in autumn gave `leaves`.
+Each point also got the web's room zone. Indoors the wind and bed are the web's indoor model of the outdoor values. The
+silent render matches the web's synthesis in length (within 6 %; snow and snowCold +10 … 12 %) and in spectral centroid (−8 … +11 %, snow
+−45 % and leaves −18 % from the crackle approximation). The spectrograms show the same shapes, squeak and stair ring.
+Unreal is 9.6 ± 0.5 dB lower for every profile alike. That is engine output: −3 dB Windows platform headroom and the
+centre pan of a mono source, the rest not traced. The relative levels between surfaces match within ±1 dB. `build_audio.py`
+is idempotent, `--check` passes, and `test_player`, `test_ui` and `build_player.py --check` still pass. Evidence:
+[docs/verification/2287/](../verification/2287/README.md).
 
 ## Lighting, sky and weather (#2283)
 
