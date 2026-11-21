@@ -631,11 +631,7 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-
 ```
 
 `build_save.py --v0-fixture <file>` rewrites the version-0 fixture; do that only to repair it, since its value is that
-it stays frozen. Verified (2026-11-21): PIE restart within 0.000 cm and 0.000°, the v0 migration, a packaged Shipping
-restart that restored a place edited into the file, and the file unchanged across a signed launcher update
-(0.1.1 → 0.1.2, test channel) and a default uninstall. A Shipping game ignores a map given on its command line
-(`UE_ALLOW_MAP_OVERRIDE_IN_SHIPPING`); packaged tests set `GameDefaultMap` instead. Results:
-[docs/verification/2288/](../verification/2288/README.md).
+it stays frozen. Results: [docs/verification/2288/](../verification/2288/README.md).
 
 ## Lighting, sky and weather (#2283)
 

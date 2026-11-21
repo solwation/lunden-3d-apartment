@@ -324,7 +324,9 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     const lamps = [];
     for (const R of L.rooms.values()) for (const l of R.lamps) lamps.push({ room: R.name, level: R.level, pos: l.pos.clone(),
       intensity: l.intensity ?? null, distance: l.distance ?? null, color: typeof l.color === 'number' ? '#' + l.color.toString(16).padStart(6, '0') : null });
-    lightsInfo = { lamps, group, error: null };
+    // #2285: the room switches (their room decides which lamps they switch, src/lights.js Switch / Room)
+    const switches = L.switches.map((s) => ({ object: s.object, room: s.room.name, level: s.room.level }));
+    lightsInfo = { lamps, group, switches, error: null };
   } catch (e) { lightsInfo.error = String(e?.message ?? e); }
   // #2279: the garage under the courtyard and the four stairwells/lifts (Hus L's and Hus A/B/C's), which main.js builds
   // next to the world. Loaded after the world and the lights so their modules cannot shift the seeded random sequence
@@ -760,6 +762,7 @@ function measurementData({ world, planCopy, W, D, byZone, lightsInfo, materialTa
       sill: s.sill ?? null, head: s.head ?? null, transom: s.transom ?? null, opens: s.opens ?? null, maxDeg: s.max ?? null,
       floorY: C.LEVELS[li].floor });
   }));
+  interactionData({ world, doors, windows, atomOf, lightsInfo, P });
   const lights = [];
   const atomAbove = (o) => { for (; o; o = o.parent) if (atomOf.has(o)) return atomOf.get(o); return null; };
   for (const l of world.lamps ?? []) {
@@ -809,6 +812,7 @@ function measurementData({ world, planCopy, W, D, byZone, lightsInfo, materialTa
     stair: { foot: P(C.STAIR.aX0, C.LEVELS[0].floor, (C.STAIR.aZ[0] + C.STAIR.aZ[1]) / 2), rise: r4(stairRise()), riser: r4(stairRiser()), treads: N_TREADS,
       flights: C.STAIR.treads, hole: C.STAIR.hole, railHeight: C.STAIR.railHeight, source: 'src/config.js#STAIR, src/stairs.js' },
     doors, windows, lights,
+    interaction: interactionExtras({ world, atomOf, lightsInfo, lights, P }),
     terrain: null, // filled in by tools/unreal-engine/export-world.mjs (a reference to data/elevation.json, not a copy)
     site: { geo: C.SITE.geo, planNorthDeg: C.DAY?.planNorth ?? null, source: 'src/config.js#SITE.geo, DAY.planNorth',
       // #2283: the observer src/daycycle.js puts the sun and moon over (not the OSM anchor above), for Unreal's sun
@@ -828,4 +832,74 @@ function measurementData({ world, planCopy, W, D, byZone, lightsInfo, materialTa
       arrows: [{ id: 'fixture_arrow_north', direction: 'north', web: [0, 0, -1], unreal: webToUnrealRounded([0, 0, -1]) },
         { id: 'fixture_arrow_east', direction: 'east', web: [1, 0, 0], unreal: webToUnrealRounded([1, 0, 0]) }] },
   };
+}
+
+// ---- #2285: what Unreal needs to make the doors, windows, switches and taps usable ----
+const SWING_SECONDS = 1 / (3 * 0.6), SLIDE_SECONDS = 1 / (3 * 0.7); // src/doors.js SPEED 3.0 × 0.6 (swing) / × 0.7 (sliders)
+
+/** Adds to the `doors` and `windows` rows in place: every door's start state and animation time, the sliders' open
+ *  centre and wardrobe partner, and each window's opening sashes (pivot, axis, angle and a check point open/closed). */
+function interactionData({ world, doors, windows, atomOf, P }) {
+  world.doors.forEach((d, i) => {
+    const row = doors[i];
+    row.initiallyOpen = d.target === 1;
+    row.seconds = r4(d.kind === 'swing' ? SWING_SECONDS : SLIDE_SECONDS);
+    if (d.kind === 'swing') return;
+    const at = (pos) => (d.along ? [pos, d.y, d.face] : [d.face, d.y, pos]);
+    row.closedCentre = P(...at(d.closedPos));
+    row.openCentre = P(...at(d.openPos));
+    if (d.kind === 'wardrobe') { // src/doors.js wardrobeDoors: opening one panel slides its partner back
+      const other = world.doors.find((e) => e !== d && e.kind === 'wardrobe' && e.along === d.along && Math.abs(e.face - d.face) < 0.1
+        && Math.abs(e.closedPos - d.openPos) < 0.01 && Math.abs(e.openPos - d.closedPos) < 0.01);
+      row.partner = other ? atomOf.get(other.object)?.id ?? null : null;
+    }
+  });
+  const v = new THREE.Vector3(), q = new THREE.Quaternion();
+  for (const l of world.lids ?? []) {
+    if (l?.name !== 'fönstret' || !atomOf.has(l.object)) continue;
+    const a = atomOf.get(l.object), o = l.object, row = windows.find((w) => w.ids.includes(a.id));
+    if (!row) continue;
+    const sash = o.children.find((c) => c.isMesh && c.material?.transparent !== true) ?? o.children[0];
+    sash.geometry.computeBoundingBox();
+    const bb = sash.geometry.boundingBox, local = new THREE.Vector3((bb.min.x + bb.max.x) / 2, bb.min.y, (bb.min.z + bb.max.z) / 2);
+    o.updateMatrixWorld(true);
+    const point = () => local.clone().applyMatrix4(sash.matrixWorld);
+    const closed = point();
+    l.pose(1); o.updateMatrixWorld(true);
+    const opened = point();
+    l.pose(0); o.updateMatrixWorld(true);
+    o.getWorldQuaternion(q);
+    const axis = (l.mode === 'hinge' ? v.set(0, 1, 0) : v.copy(l.axis)).clone().applyQuaternion(q).normalize();
+    const p = o.getWorldPosition(new THREE.Vector3());
+    (row.sashes ??= []).push({ id: a.id, mode: l.mode, pivot: P(p.x, p.y, p.z),
+      axis: { web: [r4(axis.x), r4(axis.y), r4(axis.z)], unreal: [r4(axis.x), r4(axis.z), r4(axis.y)] },
+      angleDeg: r4(l.sign * l.max), seconds: r4(1 / l.speed), initiallyOpen: !!l.isOpen,
+      checkClosed: P(closed.x, closed.y, closed.z), checkOpen: P(opened.x, opened.y, opened.z),
+      check: 'the sash bottom rail centre (src/world.js addWindowFrame)', source: 'src/world.js addWindowFrame, src/openables.js Openable' });
+  }
+}
+
+/** The room switches and the taps (main.js builds them next to the world; not nodes of their own in a tap's case). */
+function interactionExtras({ world, atomOf, lightsInfo, lights, P }) {
+  const atomAbove = (o) => { for (; o; o = o.parent) if (atomOf.has(o)) return atomOf.get(o); return null; };
+  const switches = (lightsInfo.switches ?? []).map((s) => {
+    const p = s.object.getWorldPosition(new THREE.Vector3()), ry = s.object.rotation.y, n = [Math.sin(ry), Math.cos(ry)];
+    // the room's ceiling/pendant light points (#2283's lamp:<id> actors) are what a switch turns on and off
+    const lamps = lights.filter((l) => l.kind === 'room' && l.room === s.room && l.level === s.level).map((l) => l.id);
+    return { id: atomAbove(s.object)?.id ?? null, level: s.level, room: s.room, lamps, position: P(p.x, p.y, p.z),
+      normal: { web: [r4(n[0]), 0, r4(n[1])], unreal: [r4(n[0]), r4(n[1]), 0] } };
+  });
+  const ids = new Set();
+  const taps = (world.taps ?? []).map((t) => {
+    const [x, y, z] = t.pos, len = Math.max(0.05, y - t.basin), dir = new THREE.Vector3(...t.dir).normalize();
+    const k = len / Math.max(0.2, -dir.y), lv = levelOf(y), pick = t.lever?.pos ?? t.pick ?? t.pos;
+    const base = `tap_${slug(t.name) || 'tap'}_l${lv}_${tag('x', x)}_${tag('z', z)}`;
+    let id = base, n = 2;
+    while (ids.has(id)) id = `${base}_${n++}`;
+    ids.add(id);
+    return { id, name: t.name ?? null, level: lv, shower: !!t.shower, outlet: P(x, y, z),
+      landing: P(x + dir.x * k, y - len, z + dir.z * k), radius: r4(Math.max(t.r ?? 0, 0.009)), pick: P(...pick) };
+  });
+  return { switches, taps, source: 'src/lights.js Switch/switchSpots (switches; a switch turns its room\'s lamps on and off), '
+    + 'src/water.js Tap + world.taps (taps; E turns the water on and off), src/doors.js, src/openables.js (#2285)' };
 }
