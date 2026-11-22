@@ -1,0 +1,16 @@
+facade-a-day           pool-left    web lum 0.4820 R/B 1.19 sRGB 198.3,181,167.1   unreal lum 0.4145 R/B 0.96 sRGB 168.4,172.7,174.5 ratio 0.86
+facade-a-day           pool-centre  web lum 0.4309 R/B 1.13 sRGB 184.3,172.2,163.6 unreal lum 0.4080 R/B 0.96 sRGB 167.1,171.1,173.3 ratio 0.95
+facade-a-day           between      web lum 0.4222 R/B 1.12 sRGB 182,171.6,162.6   unreal lum 0.4089 R/B 0.97 sRGB 167.3,171.6,172.9 ratio 0.97
+facade-a-day           outside      web lum 0.1805 R/B 2.22 sRGB 120.2,121.2,54.1  unreal lum 0.1611 R/B 1.64 sRGB 103.6,117.4,63    ratio 0.89
+facade-a-dusk          pool-left    web lum 0.0461 R/B 1.24 sRGB 65.9,56.8,53.3    unreal lum 0.0320 R/B 3.25 sRGB 61.5,45,18.9      ratio 0.69
+facade-a-dusk          pool-centre  web lum 0.0804 R/B 1.43 sRGB 92,76.9,64.3      unreal lum 0.0627 R/B 2.89 sRGB 88.9,66.4,30.8    ratio 0.78
+facade-a-dusk          between      web lum 0.0169 R/B 1.21 sRGB 38.5,33.1,31.9    unreal lum 0.0074 R/B 4.35 sRGB 27.1,18.7,6.2     ratio 0.44
+facade-a-dusk          outside      web lum 0.0012 R/B 300.62 sRGB 2.6,4.9,0         unreal lum 0.0032 R/B 24763.00 sRGB 8.3,12.1,0        ratio 2.67
+facade-b-day           pool-left    web lum 0.3738 R/B 1.10 sRGB 160,151.9,145.4   unreal lum 0.4034 R/B 0.96 sRGB 158.4,161.8,164.2 ratio 1.08
+facade-b-day           pool-right   web lum 0.3616 R/B 1.11 sRGB 159.5,151.1,143.5 unreal lum 0.4074 R/B 0.97 sRGB 159.6,162.6,164.9 ratio 1.13
+facade-b-day           between      web lum 0.4456 R/B 1.14 sRGB 188.7,175.6,165.7 unreal lum 0.4487 R/B 0.97 sRGB 174.2,177.6,179.5 ratio 1.01
+facade-b-day           outside      web lum 0.4620 R/B 1.14 sRGB 186.8,179.4,164.5 unreal lum 0.8372 R/B 1.04 sRGB 235,237,226       ratio 1.81
+facade-b-dusk          pool-left    web lum 0.1053 R/B 1.41 sRGB 99.9,84,70.7      unreal lum 0.0752 R/B 2.60 sRGB 91.9,69.6,35.3    ratio 0.71
+facade-b-dusk          pool-right   web lum 0.1362 R/B 1.51 sRGB 113.8,94.4,75.1   unreal lum 0.0759 R/B 2.60 sRGB 92.5,70.1,35.6    ratio 0.56
+facade-b-dusk          between      web lum 0.0027 R/B 0.45 sRGB 7.5,8,16.9        unreal lum 0.0021 R/B 1.07 sRGB 6.5,6.6,6.1       ratio 0.78
+facade-b-dusk          outside      web lum 0.0281 R/B 1.25 sRGB 53.2,44.7,42.5    unreal lum 0.0230 R/B 2.60 sRGB 51.4,40.1,19.8    ratio 0.82

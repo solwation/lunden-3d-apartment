@@ -1,0 +1,12 @@
+facade-a-day           loggia-lens  web lum 0.2403 R/B 1.05 sRGB 130.4,130.7,124   unreal lum 0.2391 R/B 1.03 sRGB 129.2,128.7,125.1 ratio 1.00
+facade-a-day           lit-room     web lum 0.2194 R/B 0.96 sRGB 125.8,129.7,130.5 unreal lum 0.1261 R/B 0.99 sRGB 98,100,99         ratio 0.57
+facade-a-day           dark-room    web lum 0.2021 R/B 1.04 sRGB 123.8,124.8,118.8 unreal lum 0.1142 R/B 1.09 sRGB 96.5,95,88.3      ratio 0.57
+facade-b-day           loggia-lens  web lum 0.2535 R/B 1.01 sRGB 131.9,133.4,130.9 unreal lum 0.2660 R/B 1.03 sRGB 135.7,135.4,132   ratio 1.05
+facade-b-day           lit-room     web lum 0.1697 R/B 1.02 sRGB 115,114.1,112.9   unreal lum 0.0930 R/B 1.08 sRGB 89.2,84.9,82.8    ratio 0.55
+facade-b-day           dark-room    web lum 0.2764 R/B 0.96 sRGB 138.8,143.2,144.8 unreal lum 0.2393 R/B 0.97 sRGB 125.7,129.1,129.4 ratio 0.87
+facade-a-dusk          loggia-lens  web lum 0.4733 R/B 1.48 sRGB 183.9,161.5,124.2 unreal lum 0.3836 R/B 1.66 sRGB 166.5,140.2,100.3 ratio 0.81
+facade-a-dusk          lit-room     web lum 0.4429 R/B 1.38 sRGB 194.1,175.3,141.2 unreal lum 0.3981 R/B 1.45 sRGB 188.1,166.3,129.5 ratio 0.90
+facade-a-dusk          dark-room    web lum 0.0017 R/B 4.47 sRGB 5.2,6.2,1.2       unreal lum 0.0018 R/B 6.00 sRGB 7.8,5.7,1.3       ratio 1.06
+facade-b-dusk          loggia-lens  web lum 0.4552 R/B 1.46 sRGB 181.2,156.8,124.4 unreal lum 0.3765 R/B 1.67 sRGB 166.4,139.7,99.4  ratio 0.83
+facade-b-dusk          lit-room     web lum 0.7093 R/B 0.96 sRGB 216,219.2,225.1   unreal lum 0.6051 R/B 0.95 sRGB 200.3,204.4,209.7 ratio 0.85
+facade-b-dusk          dark-room    web lum 0.0012 R/B 0.55 sRGB 2.3,4.4,4.1       unreal lum 0.0013 R/B 0.88 sRGB 3.5,4.4,3.9       ratio 1.08
