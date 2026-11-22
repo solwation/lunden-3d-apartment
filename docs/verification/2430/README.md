@@ -75,5 +75,5 @@ Unreal-bilden kl. 14.00. På dagen är banden nu olysta som på webben. De ligge
 - Novemberträdens kronor är rosa och klumpiga: #2432.
 - Markljusets ton och nattscenens färg: #2421, och #2397:s dokumenterade avvikelse för pollarnas ljusfläckar.
 - Novemberhimlen kl. 14 är mättat blå: #2434. Teglet varierar mindre i färg: #2427.
-- Pergolans ljusslinga lyser inte i Unreal kl. 18.15 (längst till höger i bilden av Hus B): #PERGOLA.
-- Kvällshimlen har varken moln eller måne över Hus A och B i Unreal: #SKY.
+- Pergolans ljusslinga lyser inte i Unreal kl. 18.15 (längst till höger i bilden av Hus B): #2450.
+- Kvällshimlen har varken moln eller måne över Hus A och B i Unreal: #2451.
