@@ -1,0 +1,8 @@
+facade-a-dusk          hall-glass   web lum 0.4626 R/B 0.97 sRGB 166.7,171.5,171.6 unreal lum 0.0014 R/B 0.62 sRGB 3.1,5.1,5         ratio 0.00
+facade-a-dusk          transom      web lum 0.7489 R/B 1.02 sRGB 224.2,225,220.2   unreal lum 0.0024 R/B 0.88 sRGB 7,8,7.9           ratio 0.00
+facade-b-dusk          hall-glass   web lum 0.6695 R/B 0.96 sRGB 207.1,215,216.4   unreal lum 0.0014 R/B 0.58 sRGB 2.9,5,5.1         ratio 0.00
+facade-b-dusk          transom      web lum 0.7488 R/B 1.02 sRGB 224.1,225,220.2   unreal lum 0.0024 R/B 0.88 sRGB 7,8,8             ratio 0.00
+facade-a-day           hall-glass   web lum 0.5925 R/B 0.95 sRGB 187.4,195.6,197.4 unreal lum 0.4113 R/B 0.96 sRGB 163.4,168,169.3   ratio 0.69
+facade-a-day           transom      web lum 0.8138 R/B 1.02 sRGB 232.6,233.4,228.6 unreal lum 0.6180 R/B 0.99 sRGB 203.9,206.9,205.2 ratio 0.76
+facade-b-day           hall-glass   web lum 0.7880 R/B 0.96 sRGB 223,231,232.4     unreal lum 0.4276 R/B 0.97 sRGB 171.4,175.5,177.5 ratio 0.54
+facade-b-day           transom      web lum 0.8117 R/B 1.02 sRGB 232.4,233.1,228.3 unreal lum 0.6139 R/B 0.99 sRGB 204,206,205       ratio 0.76

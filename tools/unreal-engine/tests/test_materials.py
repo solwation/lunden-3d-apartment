@@ -45,6 +45,7 @@ MASTER_PARAMS = {
               "TuftShade"},
 }
 GLTF_VC = "gltf-vertex-color"  # #2321: build_materials.py's copy of an Interchange glTF master times the vertex colour
+BAKED = "baked-light"  # #2431: build_materials.py's unlit master, emissive = vertex colour x display gain x power
 GLTF_MASTERS = (("KHR_materials_unlit", "/InterchangeAssets/gltf/M_Unlit.M_Unlit"),  # Interchange's choice by extension
                 ("KHR_materials_transmission", "/InterchangeAssets/gltf/M_Transmission.M_Transmission"),
                 ("KHR_materials_clearcoat", "/InterchangeAssets/gltf/M_ClearCoat.M_ClearCoat"),
@@ -180,7 +181,7 @@ def vertex_color_check(export_dir, table, rule_rx, errors):
             weight = spec.get("params", {}).get("VertexColorWeight", 0)
             backdrop_vc = parent.get("graph") == "backdrop-texture" and parent.get("vertexColors") is True
             draws_land = parent.get("graph") == "river" and parent.get("mode") == "edge"
-            if not (parent.get("graph") == GLTF_VC or backdrop_vc or draws_land or (parent.get("graph") == "grass" and weight > 0)):
+            if not (parent.get("graph") in (GLTF_VC, BAKED) or backdrop_vc or draws_land or (parent.get("graph") == "grass" and weight > 0)):
                 errors.append(f"vertex-coloured key {where}: rule material {target} does not multiply the vertex colour in")
         if not unruled:
             continue  # every mesh using the key gets a rule's material
@@ -228,8 +229,14 @@ def main(argv):
                 errors.append(f"{path}: the mortar footprint filter expects alternate half-brick rows")
             if unknown:
                 errors.append(f"{path}: {parent.get('graph')} master has no parameter(s) {sorted(unknown)}")
-        elif spec.get("graph", "constant") not in ("constant", "river", GLTF_VC, *MASTER_PARAMS):
+        elif spec.get("graph", "constant") not in ("constant", "river", GLTF_VC, BAKED, *MASTER_PARAMS):
             errors.append(f"{path}: unknown graph {spec.get('graph')}")
+        if spec.get("graph") == BAKED and (not path.startswith("/Game/Lunden/Generated/")
+                                           or not 0 <= spec.get("emergency", -1) <= 1 or spec.get("twoSided") is not True
+                                           or not 0 < spec.get("opacity", 1) <= 1
+                                           or not re.fullmatch(r"#[0-9a-f]{6}", spec.get("color", "#ffffff"))):
+            errors.append(f"{path}: a {BAKED} master is generated (under /Game/Lunden/Generated/), two-sided, with emergency 0-1, "
+                          "an optional opacity 0-1 and an optional #rrggbb color")
         if spec.get("graph") == "backdrop-texture":
             canvas = spec.get("canvas", "")
             if not re.fullmatch(r"[A-Za-z]+", canvas) or not os.path.isfile(os.path.join(

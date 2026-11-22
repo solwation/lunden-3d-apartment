@@ -2650,6 +2650,8 @@ importing. It ends with `LUNDEN_IMPORT_OK` / `LUNDEN_CHECK_OK`; any failure rais
 `--check` run is the headless position test (no C++ Automation Test: the project becomes content-only, #2268).
 `--measure` logs the world bounds of named objects (`LUNDEN_IMPORT_MEASURE`), for round-trip checks.
 Run `build_materials.py` before an import when `material-map.json` changed (see [Surface materials](#surface-materials-2282)).
+The generated masters under `/Game/Lunden/Generated/` (backdrop, river and, since #2431, the stairwells' `baked-light`)
+are built by the importer itself.
 
 What 5.8.4 does, and what the importer does about it:
 
@@ -3003,6 +3005,23 @@ For native verification, rebuild the lighting and facade, compose the map under 
 Matched web/Unreal START images at 14:00 and November 18:15 and views of each house are the remaining visual checks.
 Inspect the courtyard panes for frame occlusion, the entrance/gallery lanterns for apparent brightness, and the
 clipped washes on walls and ground under the same exposure.
+
+**Stairwells and entrance halls (#2431).** The web has no light source in the stairwells. `src/corehouse.js` (Hus
+A/B/C, entrance shells included) and `src/core.js` (Hus L) bake the hall lamps into vertex colours and draw walls,
+floors and flights with an unlit `MeshBasicMaterial`, so the lobby behind each glazed entrance glows at night. The
+export gives them the key `bas_ffffff_r100_m0_vc_ds`, which only these four stairwells use. Imported lit, they were
+dark in Unreal after dusk. A `material-map.json` rule now maps that key, and by `mesh` the four white ceiling lamp
+discs (`bas_ffffff_r100_m0`, shared with L1007's fittings), to `Generated/StairwellMaterials/M_LundenStairwellLight`
+(graph `baked-light`). Its unlit emissive is vertex colour × 2^-`EXPOSURE_BIAS` (`river_material.display_gain`, the
+web's picture at the game's locked exposure, as the river in #2410) × (`POWER.emergency` + (1 − emergency) ×
+`MPC_LundenWeather.PowerAvailable`). The fixed glazed panes beside the entrance doors (`bas_bfd3dc_r100_m0_a35_ds`, an
+unlit 35 % pane on the web; Interchange's lit translucent instance darkened the hall to 0.7 × the web) get
+`M_LundenStairwellGlass`, the same graph with `color` and `opacity` (translucent, raster path).
+`import_world.py` builds both itself (`prepare_generated_materials`) before it imports `hus-l` or `kvarteret`. They are Git-ignored, need no LFS lock and only read the weather collection.
+`build_materials.py --check` checks that they are unlit, two-sided, blended as specified and multiply the vertex
+colour, and `tests/test_materials.py` accepts the graph as a vertex-colour material. *Not carried:* the web's
+daylight blend of the bake (`src/stairdaylight.js`, #2183: × 0.68 deep in a core by day and lifted near its panes), so the bake keeps its night
+level at every hour. Verification: [#2431](../verification/2431/README.md).
 
 **Builders and zones.** `export-scene.js` builds, after the world and the room lights, what `main.js` builds next to
 the world: the garage (`src/garage.js`, with its door and the park-level basement doors) and the four stairwells

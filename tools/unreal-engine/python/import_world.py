@@ -48,7 +48,7 @@ import unreal
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from prepare_nanite_materials import prepare_zone, static_mesh_editor
 from season_tags import season_tags
-from build_materials import prepare_landscape_materials
+from build_materials import prepare_generated_materials, prepare_landscape_materials
 
 SUPPORTED_FORMAT_VERSION = 1
 IMPORTER_VERSION = 7  # bump when the importer's output changes for the same export (forces a re-import)
@@ -664,6 +664,8 @@ def main(argv):
     entries = [e for e in manifest["files"] if e["kind"] == "glb" and (not zones or e["zone"] in zones)]
     if any(e["zone"] in ("fond", "omgivning") for e in entries):
         prepare_landscape_materials(table, check_only, measurements["site"].get("riverSurface"))
+    if any(e["zone"] in ("hus-l", "kvarteret") for e in entries):
+        prepare_generated_materials(table, check_only)  # #2431: the stairwells' baked-light master, before their rules run
     for entry in entries:
         zone, glb_path = entry["zone"], os.path.join(export_dir, entry["path"])
         if check_only:

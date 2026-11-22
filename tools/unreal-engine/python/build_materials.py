@@ -12,6 +12,12 @@ Every entry under `materials` becomes one asset in /Game/Lunden/Materials/:
   - "graph": "gltf-vertex-color"  (#2321) a copy of Interchange's glTF master `from` (M_Default, M_Unlit) whose `output`
                          (BaseColor, or EmissiveColor for the unlit master) is multiplied by the vertex colour: the
                          importer re-parents every vertex-coloured key's instance onto it (material-map.json `vertexColor`);
+  - "graph": "baked-light"  (#2431) an unlit master for the stairwells' MeshBasicMaterial walls (src/core.js,
+                         src/corehouse.js): the web bakes its hall lamps into the vertex colours and draws them unlit, so
+                         the glazed entrances glow at night. Emissive = vertex colour x the display gain (river_material
+                         .display_gain, 2^-EXPOSURE_BIAS) x `color` x (emergency + (1 - emergency) x PowerAvailable);
+                         with `opacity` it is translucent (a transparent pane: colour x opacity over the scene).
+                         Built under /Game/Lunden/Generated/ by import_world.py itself (no versioned asset, no LFS lock);
   - "parent": <master>   a MaterialInstanceConstant with the entry's `params`; `"twoSided": true` overrides the master's
                          face setting (an open wire or strip seen from inside, #2395), and `"raster": "<reason>"` is
                          stamped as Lunden.Raster, which sends every imported mesh wearing it to the raster path
@@ -241,6 +247,8 @@ def collection_reads(spec):
         return {CALENDAR: ("Month",)}
     if spec.get("graph") == "river":
         return river_material.reads(spec)
+    if spec.get("graph") == BAKED:
+        return {river_material.WEATHER: ("PowerAvailable",)}
     return {}
 
 
@@ -254,6 +262,8 @@ def spec_hash(path, spec):
         parts.append(TILED_HSL)  # #2427
     if spec.get("graph") == backdrop_material.GRAPH:
         parts.extend([backdrop_material.canvas_hash(spec), Path(backdrop_material.__file__).read_text(encoding="utf-8")])
+    if spec.get("graph") == BAKED:
+        parts.append(river_material.display_gain())  # follows build_lighting.EXPOSURE_BIAS, as the river (#2410)
     if spec.get("graph") == GLTF_VC:  # a copy of an engine material: a new engine version rebuilds it
         parts.append(unreal.SystemLibrary.get_engine_version())
     reads = collection_reads(spec)
@@ -422,6 +432,7 @@ def glass_graph(m, spec):
 
 
 GLTF_VC = "gltf-vertex-color"
+BAKED = "baked-light"  # #2431: generated at import time (prepare_generated_materials), so it lives under Generated/
 VC_OUTPUTS = {"BaseColor": unreal.MaterialProperty.MP_BASE_COLOR, "EmissiveColor": unreal.MaterialProperty.MP_EMISSIVE_COLOR}
 
 
@@ -457,6 +468,50 @@ def build_gltf_vertex_color(path, spec, existing):
     return m
 
 
+def baked_light_graph(m, spec):
+    """#2431: the web's unlit, lamp-baked stairwell surfaces. three.js shows a MeshBasicMaterial colour C at its exposure
+    and the game's locked exposure is that exposure x 2^EXPOSURE_BIAS, so C x 2^-EXPOSURE_BIAS renders the web's picture
+    at any hour (#2396's probe, #2410's river). The web dims the bake to POWER.emergency in a power cut (setPower)."""
+    m.set_editor_property("shading_model", unreal.MaterialShadingModel.MSM_UNLIT)
+    m.set_editor_property("two_sided", bool(spec.get("twoSided")))
+    if spec.get("opacity") is not None:  # a transparent MeshBasicMaterial pane: colour x opacity over the scene, as three blends it
+        m.set_editor_property("blend_mode", unreal.BlendMode.BLEND_TRANSLUCENT)
+        alpha = mel.create_material_expression(m, unreal.MaterialExpressionConstant, -400, 350)
+        alpha.set_editor_property("r", float(spec["opacity"]))
+        if not mel.connect_material_property(alpha, "", unreal.MaterialProperty.MP_OPACITY):
+            raise RuntimeError("could not connect the baked-light opacity")
+    weather = eal.load_asset(river_material.WEATHER)
+    if weather is None:
+        raise RuntimeError("Run build_lighting.py before building the baked-light master (it reads MPC_LundenWeather)")
+    vc = mel.create_material_expression(m, unreal.MaterialExpressionVertexColor, -700, -100)
+    power = mel.create_material_expression(m, unreal.MaterialExpressionCollectionParameter, -900, 150)
+    power.set_editor_property("collection", weather)
+    power.set_editor_property("parameter_name", "PowerAvailable")
+    supply = mel.create_material_expression(m, unreal.MaterialExpressionLinearInterpolate, -650, 150)
+    supply.set_editor_property("const_a", float(spec["emergency"]))
+    supply.set_editor_property("const_b", 1.0)
+    tint = mel.create_material_expression(m, unreal.MaterialExpressionConstant3Vector, -650, 300)
+    tint.set_editor_property("constant", linear(spec.get("color", "#ffffff")))
+    gain = mel.create_material_expression(m, unreal.MaterialExpressionMultiply, -500, 300)
+    gain.set_editor_property("const_b", river_material.display_gain())
+    level = mel.create_material_expression(m, unreal.MaterialExpressionMultiply, -400, 150)
+    out = mel.create_material_expression(m, unreal.MaterialExpressionMultiply, -200, 0)
+    if not (mel.connect_material_expressions(power, "", supply, "Alpha") and mel.connect_material_expressions(supply, "", level, "A")
+            and mel.connect_material_expressions(tint, "", gain, "A") and mel.connect_material_expressions(gain, "", level, "B")
+            and mel.connect_material_expressions(vc, "", out, "A") and mel.connect_material_expressions(level, "", out, "B")
+            and mel.connect_material_property(out, "", unreal.MaterialProperty.MP_EMISSIVE_COLOR)):
+        raise RuntimeError("could not wire the baked-light master")
+
+
+def baked_light_ok(m, spec):
+    """--check: unlit, the face and blend settings of the spec, and the emissive output multiplied by the vertex colour."""
+    blend = unreal.BlendMode.BLEND_TRANSLUCENT if spec.get("opacity") is not None else unreal.BlendMode.BLEND_OPAQUE
+    return (m.get_editor_property("shading_model") == unreal.MaterialShadingModel.MSM_UNLIT
+            and m.get_editor_property("blend_mode") == blend
+            and bool(m.get_editor_property("two_sided")) == bool(spec.get("twoSided"))
+            and uses_vertex_color(m, unreal.MaterialProperty.MP_EMISSIVE_COLOR))
+
+
 def uses_vertex_color(m, prop):
     """True when the expression on `prop` is a Multiply with a VertexColor input (what build_gltf_vertex_color makes)."""
     node = mel.get_material_property_input_node(m, prop)
@@ -465,7 +520,7 @@ def uses_vertex_color(m, prop):
 
 
 GRAPHS = {"river": river_material.build, "constant": constant_graph, "surface": surface_graph, "tiled": tiled_graph, "glass": glass_graph,
-          "grass": grass_graph}
+          "grass": grass_graph, BAKED: baked_light_graph}
 
 
 # ---------------------------------------------------------------- assets
@@ -494,7 +549,7 @@ def build_master(path, spec, existing):
         backdrop_material.build(m, spec, vector_param, scalar_param)
     else:
         GRAPHS[spec.get("graph", "constant")](m, spec)
-    if spec.get("graph") != "glass":
+    if spec.get("graph") != "glass" and spec.get("opacity") is None:  # translucent: the raster path (#2276)
         mel.set_base_material_usage(m, NANITE, True)
     mel.recompile_material(m)
     return m
@@ -569,6 +624,8 @@ def check(table):
         if isinstance(asset, unreal.Material):
             problems.extend(f"{path}: {error} (its collection was rebuilt; run build_materials.py)"
                             for error in collection_ids.unresolved(asset))
+        if spec.get("graph") == BAKED and not baked_light_ok(asset, spec):
+            problems.append(f"{path}: not unlit, wrong face setting, or emissive not multiplied by the vertex colour")
         if spec.get("graph") == GLTF_VC and not uses_vertex_color(asset, VC_OUTPUTS[spec["output"]]):
             problems.append(f"{path}: {spec['output']} is not multiplied by the vertex colour")
         if "parent" in spec:
@@ -610,6 +667,7 @@ def build_entries(materials, force=False):
         if (existing is not None and not force and eal.get_metadata_tag(existing, "Lunden.SpecHash") == want
                 and (spec.get("graph") != "grass" or seasonal_grass(existing, spec))
                 and (spec.get("graph") != backdrop_material.GRAPH or backdrop_material.check(existing, spec, uses_vertex_color))
+                and (spec.get("graph") != BAKED or baked_light_ok(existing, spec))
                 and not (isinstance(existing, unreal.Material) and collection_ids.unresolved(existing))):
             unreal.log(f"LUNDEN_MATERIAL {path}: kept (spec {want})")
             kept += 1
@@ -638,6 +696,19 @@ def prepare_landscape_materials(table, check_only, river_surface):
     if river_surface:  # Older zone GLBs use plain glTF water and have no river frame.
         subset.update((path, spec) for path, spec in materials.items() if spec.get("graph") == "river")
         set_river_data(subset, river_surface)
+    if check_only:
+        check({"materials": subset})
+    else:
+        build_entries(subset)
+
+
+def prepare_generated_materials(table, check_only):
+    """#2431: build or check the generated masters every zone import may need before its rules run (the baked-light
+    stairwells of hus-l and kvarteret). They live under /Game/Lunden/Generated/ (Git-ignored), so the importer makes
+    them on each machine; an unchanged spec hash keeps the asset."""
+    subset = {path: spec for path, spec in table["materials"].items() if spec.get("graph") == BAKED}
+    if not subset:
+        return
     if check_only:
         check({"materials": subset})
     else:

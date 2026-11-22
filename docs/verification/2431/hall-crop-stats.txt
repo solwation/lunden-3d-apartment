@@ -1,0 +1,14 @@
+facade-a-dusk          hall-glass   web lum 0.4626 R/B 0.97 sRGB 166.7,171.5,171.6 unreal lum 0.5482 R/B 0.99 sRGB 183.5,187.5,186.1 ratio 1.19
+facade-a-dusk          transom      web lum 0.7489 R/B 1.02 sRGB 224.2,225,220.2   unreal lum 0.7432 R/B 1.02 sRGB 224,224,220       ratio 0.99
+facade-b-dusk          hall-glass   web lum 0.6695 R/B 0.96 sRGB 207.1,215,216.4   unreal lum 0.6810 R/B 0.97 sRGB 209.7,216.6,216.5 ratio 1.02
+facade-b-dusk          transom      web lum 0.7488 R/B 1.02 sRGB 224.1,225,220.2   unreal lum 0.7429 R/B 1.02 sRGB 223.9,223.9,219.9 ratio 0.99
+entrance-c-dusk        recess-wall  web lum 0.8123 R/B 1.02 sRGB 232.2,233.2,228.2 unreal lum 0.8145 R/B 1.02 sRGB 233.3,233.3,228.7 ratio 1.00
+entrance-c-dusk        sidelight    web lum 0.6820 R/B 0.96 sRGB 209.1,216.3,217.5 unreal lum 0.6984 R/B 0.97 sRGB 212.5,218.3,218   ratio 1.02
+portik-l-dusk          door-glass   web lum 0.1843 R/B 0.94 sRGB 112.1,116.2,119.2 unreal lum 0.2702 R/B 1.02 sRGB 137.3,137.7,134.6 ratio 1.47
+facade-a-day           hall-glass   web lum 0.5925 R/B 0.95 sRGB 187.4,195.6,197.4 unreal lum 0.7605 R/B 0.99 sRGB 215.5,220.1,218.6 ratio 1.28
+facade-a-day           transom      web lum 0.8138 R/B 1.02 sRGB 232.6,233.4,228.6 unreal lum 0.9023 R/B 1.02 sRGB 244,244,240       ratio 1.11
+facade-b-day           hall-glass   web lum 0.7880 R/B 0.96 sRGB 223,231,232.4     unreal lum 0.8741 R/B 0.97 sRGB 235.4,241.6,242.2 ratio 1.11
+facade-b-day           transom      web lum 0.8117 R/B 1.02 sRGB 232.4,233.1,228.3 unreal lum 0.9023 R/B 1.02 sRGB 244,244,240       ratio 1.11
+entrance-c-day         recess-wall  web lum 0.8439 R/B 1.02 sRGB 236.2,237.2,232.2 unreal lum 0.9189 R/B 1.02 sRGB 246,246,241.9     ratio 1.09
+entrance-c-day         sidelight    web lum 0.7751 R/B 0.96 sRGB 221.5,229.1,229.8 unreal lum 0.8762 R/B 0.97 sRGB 235.2,242,241.5   ratio 1.13
+portik-l-day           door-glass   web lum 0.4886 R/B 1.00 sRGB 181.3,183.9,181.9 unreal lum 0.4514 R/B 1.00 sRGB 173.8,175.6,172.9 ratio 0.92
