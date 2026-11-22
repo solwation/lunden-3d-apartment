@@ -72,12 +72,15 @@ tools/unreal-engine/python/import_world.py    Interchange scene import of the ex
 tools/unreal-engine/python/build_materials.py        builds the hand-made materials that material-map.json lists (#2282);
                                    create_base_materials.py is the kept entry point that calls it
 tools/unreal-engine/python/collection_ids.py         collection parameter GUIDs for spec hashes and the unresolved-read check (#2408)
+tools/unreal-engine/python/ground_litter.py          autumn leaf litter HLSL, gravel HLSL and their exported textures for build_materials.py (#2433)
+tools/unreal-engine/tests/leaf-litter.test.mjs       the export's leaf litter and gravel map against src/config.js, and their masters (Node, #2433)
 tools/unreal-engine/tests/test_materials.py          key coverage of material-map.json against an export (plain Python)
 tools/unreal-engine/tests/test_brick_colour.py       the brick instances' per-brick HSL jitter against the web canvases' offsetHSL (plain Python, #2427)
 tools/unreal-engine/python/screenshot_level.py       headless GPU screenshots of an imported level (verification only)
 tools/unreal-engine/material-map.json         export material keys → hand-made Unreal materials, defaults with reasons (#2282)
-unreal/Lunden/Content/Lunden/Materials/       masters M_LundenSurface/Tiled/Glass, M_LundenWallPaint, M_LundenCollision and
-                                   their MI_Lunden* instances (LFS, 5–15 KB each; made by build_materials.py)
+unreal/Lunden/Content/Lunden/Materials/       masters M_LundenSurface/Tiled/Glass/Grass/Gravel, M_LundenWallPaint, M_LundenCollision and
+                                   their MI_Lunden* instances (LFS, 5–15 KB each; made by build_materials.py); Textures/ holds
+                                   T_LundenLeafLitter and T_LundenGravelColour/Surface, imported from measurements.json (#2433)
 unreal/Lunden/Content/Lunden/Generated/       importer output per zone + import-stamp.json; Git-ignored pending a decision
 tools/unreal-engine/world-levels.json         the world map's sub-level list (#2278 owns the format; other issues add their own line)
 tools/unreal-engine/python/compose_world.py   composes /Game/Lunden/Maps/L_Lunden from world-levels.json (+ START, GameMode)
@@ -3293,6 +3296,28 @@ checked by `tests/grass-material.test.mjs` (Node, against `src/config.js`) and `
 the export on a grass instance with its own colour). The lawn master uses `MPC_LundenVegetation.Month` and
 the web's twelve `GRASS.autumnMix` values to mix each instance's summer colour towards `GRASS.autumn`.
 The shader approximates the canvas detail and its response to lighting (*guess*).
+
+**Fallen leaves and gravel (#2433).** The web lays autumn leaves on its lit ground (`src/leaflitter.js`, `LEAF_LITTER`):
+a fragment step draws two jittered world-space grids of small pinched ellipses, as dense as an 8-bit map over `WALK`
+says (sparse everywhere, dense under the crowns and along the kerbs), times the month's share (September 0.2, October
+0.6, November 1, none in the other months) and the surface's share (`kinds`). Far away the leaves fade to their mean tone
+and a broken mulch. The export bakes that map with the web's own `bakeLitterDensity` and `litterRoads` and writes it, the
+monthly tones (linear) and the numbers to `measurements.json` `site.leafLitter`, and the shared gravel map
+(`src/gravelsurface.js gravelData`) to `site.gravelSurface`, as base64 PNGs with a hash of the texels.
+`build_materials.py` imports the PNGs as `Textures/T_LundenLeafLitter` (linear, clamped, no mips),
+`T_LundenGravelColour` (sRGB) and `T_LundenGravelSurface` (linear R relief, G roughness), stamped with that hash, before
+it builds the masters. A master with `"litter": <kind>` in `material-map.json` (`M_LundenGrass`: grass; `M_LundenGravel`:
+gravel) appends `ground_litter.litter_code` to its Custom node: the same grids and hashes in web metres (Unreal X / 100,
+Y / 100), read with `MPC_LundenVegetation.Month`, so the leaves lie where they lie on the web, and every month without
+leaves runs only the month lookup. `M_LundenGravel` draws the stone map in world-metre UVs times `Color / mean` (the web's
+`gravelColor`; the export key's own colour is clipped at 1), the vertex colour (`MI_LundenGravelCourtyard`: the boule
+court's sand tone, `BOULE_TINT`) and the broad tone; the park paths use `MI_LundenGravelPark`. The paving, asphalt and road
+paint that the web also covers are drawn by `M_LundenTiled` and do not carry the leaves yet (#2457). Checks:
+`tests/leaf-litter.test.mjs <export>` (months, tones, map and the masters against `src/config.js`), `test_materials.py`
+(every gravel key on a gravel instance whose colour over the mean is the key's, vertex colour where it has one) and
+`build_materials.py --check` (texel hashes, code, Month and texture wiring). After a change to the trees, roads or
+`LEAF_LITTER`, re-export, rebuild with `build_materials.py` and commit the textures and masters with their locks. Results:
+[#2433 verification](../verification/2433/README.md).
 
 For the optional offscreen perennial motion check, set `LUNDEN_VEGETATION_RENDER=1` and run the same PIE test
 with D3D12 and `-RenderOffScreen`. It frames one of the courtyard's actual foliage instances from above, lets
