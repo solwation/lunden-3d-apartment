@@ -89,6 +89,40 @@ if (FilterBrick > 0.5) {
     float detail = 1.0 - smoothstep(0.5, 2.0, max(cells.x, cells.y));
     Variation *= detail;
     Grain *= detail;
+    HueJitter *= detail;
+    SaturationJitter *= detail;
+    LightnessJitter *= detail;
+}
+"""
+# #2427: HueJitter, SaturationJitter and LightnessJitter are the full ranges of the web canvases' per-brick
+# THREE.Color.offsetHSL((rand - 0.5) * range, ...) (src/exterior.js brickTexture, src/surroundings.js facadeTexture and
+# brickCourses). three.js offsets the HSL of the linear (working-space) colour, and the face colour is linear here too,
+# so each cell draws from the same distribution as the canvas's bricks (its linear mean stays the face colour). The
+# block runs after the face line of TILED_FINISH (tiled_code), so the other materials' spec hashes stay unchanged.
+TILED_FACE = "float3 face = Color.rgb * saturate(1.0 + Variation * (h * 2.0 - 1.0));\n"
+TILED_HSL = r"""if (HueJitter + SaturationJitter + LightnessJitter > 0.0) {
+    float mx = max(face.r, max(face.g, face.b));
+    float mn = min(face.r, min(face.g, face.b));
+    float dc = mx - mn;
+    float hl = 0.5 * (mx + mn);
+    float hs = dc > 0.0 ? (hl <= 0.5 ? dc / (mx + mn) : dc / (2.0 - mx - mn)) : 0.0;
+    float hh = 0.0;
+    if (dc > 0.0) {
+        if (mx == face.r) hh = (face.g - face.b) / dc + (face.g < face.b ? 6.0 : 0.0);
+        else if (mx == face.g) hh = (face.b - face.r) / dc + 2.0;
+        else hh = (face.r - face.g) / dc + 4.0;
+        hh /= 6.0;
+    }
+    float3 jit = frac(sin(float3(dot(cell, float2(269.5, 183.3)), dot(cell, float2(419.2, 371.9)), dot(cell, float2(61.7, 97.3)))) * 43758.5453) - 0.5;
+    hh = frac(hh + HueJitter * jit.x);
+    hs = saturate(hs + SaturationJitter * jit.y);
+    hl = saturate(hl + LightnessJitter * jit.z);
+    float hi = hl <= 0.5 ? hl * (1.0 + hs) : hl + hs - hl * hs;
+    float lo = 2.0 * hl - hi;
+    float3 t = frac(hh + float3(1.0 / 3.0, 0.0, -1.0 / 3.0));
+    float3 rise = lo + (hi - lo) * 6.0 * t;
+    float3 fall = lo + (hi - lo) * 6.0 * (2.0 / 3.0 - t);
+    face = lerp(lerp(lerp(rise, hi, step(1.0 / 6.0, t)), fall, step(0.5, t)), lo, step(2.0 / 3.0, t));
 }
 """
 TILED_FINISH = r"""float h = frac(sin(dot(cell, float2(127.1, 311.7))) * 43758.5453);
@@ -175,7 +209,8 @@ GRASS_VECTORS = {"Color": "#609548", "Ground": (0.957, 0.094, 0.0), "BladeRange"
                  "BladeLength": (0.0125, 0.0438, 0.0), "PatchCells": (8.0, 17.0, 0.0), "Dry": (0.26, 0.17, 0.02),
                  "Lush": (0.19, 0.09, 0.22), "TuftRadius": (0.044, 0.0875, 0.0)}
 TILED_SCALARS = {"Joint": 0.003, "Bond": 0.0, "Stagger": 0.0, "Variation": 0.0, "Grain": 0.0, "Roughness": 0.8,
-                 "JointRoughness": 0.95, "FilterBrick": 0.0, "BedJoint": 0.0, "TexelBlur": 0.0}
+                 "JointRoughness": 0.95, "FilterBrick": 0.0, "BedJoint": 0.0, "TexelBlur": 0.0, "HueJitter": 0.0,
+                 "SaturationJitter": 0.0, "LightnessJitter": 0.0}
 TILED_VECTORS = {"Size": (0.2, 0.2, 0.0), "Color": "#ffffff", "JointColor": "#b9bbbb"}
 
 
@@ -216,6 +251,7 @@ def spec_hash(path, spec):
         parts.append(river_material.display_gain())  # #2410: follows build_lighting.EXPOSURE_BIAS
     if spec.get("graph") == "tiled":
         parts.append(BRICK_FILTER)
+        parts.append(TILED_HSL)  # #2427
     if spec.get("graph") == backdrop_material.GRAPH:
         parts.extend([backdrop_material.canvas_hash(spec), Path(backdrop_material.__file__).read_text(encoding="utf-8")])
     if spec.get("graph") == GLTF_VC:  # a copy of an engine material: a new engine version rebuilds it
@@ -257,6 +293,12 @@ def surface_graph(m, spec):
     mel.connect_material_property(scalar_param(m, "Metallic", 0.0, -400, 300), "", unreal.MaterialProperty.MP_METALLIC)
 
 
+def tiled_code():
+    if TILED_FACE not in TILED_FINISH:
+        raise RuntimeError("TILED_FINISH lost its face line")
+    return (TILED_GRID + BRICK_FILTER + TILED_FINISH.replace(TILED_FACE, TILED_FACE + TILED_HSL)).strip()
+
+
 def tiled_graph(m, spec):
     custom = mel.create_material_expression(m, unreal.MaterialExpressionCustom, -500, 0)
     names = ["UV"] + list(TILED_VECTORS) + list(TILED_SCALARS)
@@ -268,7 +310,7 @@ def tiled_graph(m, spec):
     custom.set_editor_property("inputs", inputs)
     custom.set_editor_property("output_type", unreal.CustomMaterialOutputType.CMOT_FLOAT4)
     custom.set_editor_property("description", "LundenTiled")
-    custom.set_editor_property("code", (TILED_GRID + BRICK_FILTER + TILED_FINISH).strip())
+    custom.set_editor_property("code", tiled_code())
     uv = mel.create_material_expression(m, unreal.MaterialExpressionTextureCoordinate, -900, -200)
     if not mel.connect_material_expressions(uv, "", custom, "UV"):
         raise RuntimeError("could not connect UV")

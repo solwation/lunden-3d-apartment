@@ -73,6 +73,7 @@ tools/unreal-engine/python/build_materials.py        builds the hand-made materi
                                    create_base_materials.py is the kept entry point that calls it
 tools/unreal-engine/python/collection_ids.py         collection parameter GUIDs for spec hashes and the unresolved-read check (#2408)
 tools/unreal-engine/tests/test_materials.py          key coverage of material-map.json against an export (plain Python)
+tools/unreal-engine/tests/test_brick_colour.py       the brick instances' per-brick HSL jitter against the web canvases' offsetHSL (plain Python, #2427)
 tools/unreal-engine/python/screenshot_level.py       headless GPU screenshots of an imported level (verification only)
 tools/unreal-engine/material-map.json         export material keys → hand-made Unreal materials, defaults with reasons (#2282)
 unreal/Lunden/Content/Lunden/Materials/       masters M_LundenSurface/Tiled/Glass, M_LundenWallPaint, M_LundenCollision and
@@ -2888,7 +2889,7 @@ path) is drawn in full by Interchange's instance and may stay. The wiring at `7e
 `M_LundenTiled` draws in UV units, so these instances give `Size` and `Joint` in the web's own UV units (a Hus L brick is
 0.25 × 0.125 units, the 8 px joint 0.0156), which keeps the web's brick and joint proportions on every surface. Colours
 are the canvases' (a roof's face and seam are its key colour times the roof map's linear face 0.613 and seam 0.300).
-Per-brick jitter, the herringbone (drawn as running bond), the cobbles' round stones (square setts), bump relief, moss,
+The courtyard pavers' per-brick jitter, the herringbone (drawn as running bond), the cobbles' round stones (square setts), bump relief, moss,
 the asphalt's tracks and cracks, and roof mottle are not drawn: *guess* in each entry's `assumption`. Left on the
 import default: the old S:t Lars bays' painted window grid (`std_ffffff_r95_m0_tex`, no class) and the school façade.
 The three running-bond brick instances use `FilterBrick` to integrate mortar over the pixel footprint. Close up, two
@@ -2899,7 +2900,18 @@ the two, so distant walls keep the plain integration. A narrower distant footpri
 L's courtyard façade. `BedJoint` sets the bed joint apart from the head joint: the Å-husen and the retaining walls draw
 1.5 px bed and 2 px head joints. Check joint share and lightness against the web with
 `PLAYWRIGHT_MODULE=… node tools/unreal-engine/tests/brick-joints.cjs DIR crops.json --check` (web-/unreal-<shot>
-pairs, crops that hold only brick; Otsu split of L*): [#2393](../verification/2393/README.md). The actual court
+pairs, crops that hold only brick; Otsu split of L*): [#2393](../verification/2393/README.md).
+**Per-brick colour (#2427).** The web's brick canvases give every brick its own colour with
+`THREE.Color.offsetHSL((rand - 0.5) * range, …)`: `src/exterior.js` brickTexture (Hus L: hue 0.02, saturation 0.1,
+lightness 0.07) and `src/surroundings.js` facadeTexture and brickCourses (the Å-husen and the retaining walls: 0, 0.1,
+0.08). three.js offsets the HSL of the *linear* colour. `M_LundenTiled`'s `HueJitter`, `SaturationJitter` and
+`LightnessJitter` are those full ranges, and the shader (`TILED_HSL`) does the same arithmetic per cell on the linear
+face colour. The cells therefore get the canvas's distribution, and the linear mean stays the face colour. The three
+brick instances keep `Variation` 0; it scaled lightness only. The jitter fades with `FilterBrick`'s `detail`, like
+`Variation`. `python3 tools/unreal-engine/tests/test_brick_colour.py` reads the ranges and base colours from the web
+source and fails when an instance drifts. It also checks a Python port of `TILED_HSL` against three.js's `offsetHSL`.
+`brick-joints.cjs --colour-check shot/crop` compares the per-brick spread of L* and hue in picture pairs, ±20 %:
+[#2427](../verification/2427/README.md). The actual court
 paint from `src/basket.js` lies across the adjacent `l1007-entre` and `omgivning` zones. Verify its paint and clearance
 against the web geometry with `node tools/unreal-engine/tests/court-markings.test.mjs` after exporting both zones.
 Verification: [#2318](../verification/2318/README.md).
