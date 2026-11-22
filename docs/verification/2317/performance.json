@@ -1,0 +1,18 @@
+{
+  "engine": "5.8.4-58902052+++UE5+Release-5.8",
+  "configuration": "Development",
+  "gpu": "NVIDIA GeForce RTX 3080",
+  "cpu": "GenuineIntel|Intel(R) Core(TM) i9-10900K CPU @ 3.70GHz",
+  "rhi": "D3D12",
+  "width": 2560,
+  "height": 1440,
+  "frames": 1158,
+  "seconds": 15.001,
+  "meanFps": 77.19,
+  "onePercentLowFps": 63.06,
+  "p99FrameMs": 14.868,
+  "meanFrameMs": 12.954,
+  "meanGameThreadMs": 3.654,
+  "meanRenderThreadMs": 12.953,
+  "meanGpuMs": 12.22
+}
