@@ -9,6 +9,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
 import { ROOT } from './sources.mjs';
+import { setupName } from './launcher-release-inputs.mjs';
 
 const NOTES = path.join(ROOT, 'tools/unreal-engine/release-notes');
 const DOWNLOAD = 'https://github.com/solwation/lunden-3d-apartment/releases/download/';
@@ -29,7 +30,7 @@ export function renderNotes({ tag, channel, template, news, build, sums, publish
   check(build.signer?.commonName === publisher.commonName && build.signer?.organization === publisher.organization,
     'launcher-build.json names another publisher than unreal/Launcher/publisher-identity.json.');
   check(/^[0-9a-f]{40}$/.test(build.commit ?? ''), 'launcher-build.json has no source commit.');
-  const setup = `Lunden-Setup-${build.tag?.replace(/^v/, '')}-win-x64.exe`;
+  const setup = setupName(build.tag?.replace(/^v/, ''));
   const line = sums.split('\n').map(l => l.trim().split(/\s+\*?/)).find(([, name]) => name === setup);
   check(line && /^[0-9a-f]{64}$/.test(line[0]), `SHA256SUMS has no line for ${setup}.`);
   check(line[0] === build.launcherSha256, `${setup} is not the signed launcher named in launcher-build.json.`);

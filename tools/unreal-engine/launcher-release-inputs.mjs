@@ -6,6 +6,9 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 // The reviewed publisher identity compiled into the launcher (#2277). Artifact Signing replaces the
 // leaf certificate every 72 hours, so a release binds the stable identity, never a leaf.
+// #2415: the player-facing setup name; GitHub turns spaces in asset names into dots, hence the hyphens.
+export const setupName = version => `Kv-Lunden-Unreal-L1007-Setup-${version}-win-x64.exe`;
+
 export const publisherIdentityFile = fileURLToPath(new URL('../../unreal/Launcher/publisher-identity.json', import.meta.url));
 const identityFields = ['commonName', 'organization', 'rootSha256', 'identityKeyUsage'];
 const objectIdentifier = /^[0-2](\.(0|[1-9]\d{0,9}))+$/;

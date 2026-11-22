@@ -7,7 +7,12 @@ internal sealed record SetupLayout(string LocalData, string StartMenu, string Ch
     internal string Name => Channel switch {
         "stable" => "Lunden", "test" => "Lunden-Test", _ => throw new ArgumentException("Okänd kanal.")
     };
-    internal string DisplayName => Channel == "test" ? "Lunden (test)" : "Lunden";
+    // #2415: the player-facing name; folders, the registry key and Lunden.exe keep "Lunden" so saves and updates stay put.
+    internal const string ProductName = "Kv. Lunden Unreal L1007";
+    internal const string SetupFilePrefix = "Kv-Lunden-Unreal-L1007-Setup";
+    internal string DisplayName => Channel == "test" ? ProductName + " (test)" : ProductName;
+    /// <summary>The Start menu entry of launchers before 0.1.3, renamed on the next start.</summary>
+    internal string LegacyShortcut => Path.Combine(StartMenu, (Channel == "test" ? "Lunden (test)" : "Lunden") + ".lnk");
     internal string LaunchArguments => Channel == "test" ? "--channel test" : "";
     internal string InstallDir => Path.Combine(LocalData, "Programs", Name);
     internal string Target => Path.Combine(InstallDir, "Lunden.exe");
@@ -135,6 +140,15 @@ internal sealed class Setup(SetupLayout layout, ISetupRegistration shell, Action
             File.Delete(nextReceipt);
         }
         File.Delete(backup);
+    }
+
+    /// <summary>Gives an installation from before #2415 the new Start menu name. Returns whether it changed anything.</summary>
+    internal bool RenameLegacyShortcut()
+    {
+        if (!File.Exists(layout.LegacyShortcut) || ReadReceipt() is not { } receipt) return false;
+        shell.Register(layout, receipt.Version);
+        File.Delete(layout.LegacyShortcut);
+        return true;
     }
 
     internal void PrepareUninstall(string id, bool deleteData) {

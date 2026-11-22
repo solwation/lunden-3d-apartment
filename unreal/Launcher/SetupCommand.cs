@@ -7,7 +7,9 @@ internal sealed record SetupCommand(bool Uninstall, bool Quiet, bool DryRun, str
 {
     internal static SetupCommand? Parse(string[] args, string image)
     {
-        bool namedSetup = Path.GetFileNameWithoutExtension(image).StartsWith("Lunden-Setup", StringComparison.OrdinalIgnoreCase);
+        string file = Path.GetFileNameWithoutExtension(image);
+        bool namedSetup = file.StartsWith(SetupLayout.SetupFilePrefix, StringComparison.OrdinalIgnoreCase)
+            || file.StartsWith("Lunden-Setup", StringComparison.OrdinalIgnoreCase); // setups up to 0.1.2
         if (!namedSetup && !args.Any(a => a is "--install" or "--uninstall" or "--dry-run-install")) return null;
         bool install = false, uninstall = false, quiet = false, dry = false;
         string channel = "stable";
@@ -52,6 +54,7 @@ internal sealed record SetupCommand(bool Uninstall, bool Quiet, bool DryRun, str
             if (typeof(Program).Assembly.GetManifestResourceInfo("Lunden.ManifestKey.pem") == null)
                 throw new InvalidDataException("Startprogrammet saknar den inbyggda publika manifestnyckeln.");
             setup.Install(image, version);
+            try { File.Delete(layout.LegacyShortcut); } catch (IOException) { /* A stale entry only duplicates the new one. */ }
             if (!Quiet) Console.WriteLine($"Installationen är klar. Starta {layout.DisplayName} från Start-menyn.");
         }
         else if (image.Equals(layout.Target, StringComparison.OrdinalIgnoreCase)) {

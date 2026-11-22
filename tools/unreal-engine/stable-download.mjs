@@ -5,6 +5,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
 import { ROOT } from './sources.mjs';
+import { setupName } from './launcher-release-inputs.mjs';
 import { currentStableManifest } from './promote-release.mjs';
 import { verifyDownload } from './verify-published.mjs';
 
@@ -17,7 +18,7 @@ export async function verifiedSetup(publicKey) {
   const source = launcher.url.slice(official.length);
   if (!launcher.url.startsWith(official) || !/^(?:app-)?v[0-9]+\.[0-9]+\.[0-9]+\/Lunden\.exe$/.test(source)
       || !/^\d+\.\d+\.\d+$/.test(launcher.version)) throw Error('Expected the signed launcher at an official versioned release.');
-  const setup = launcher.url.replace(/Lunden\.exe$/, 'Lunden-Setup-' + launcher.version + '-win-x64.exe');
+  const setup = launcher.url.replace(/Lunden\.exe$/, setupName(launcher.version));
   // The protected packaging job makes the setup and Lunden.exe byte-identical. A 200 response alone proves nothing.
   await verifyDownload(setup, launcher, 'stable', true);
   return setup;

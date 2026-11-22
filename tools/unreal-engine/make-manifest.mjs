@@ -6,7 +6,7 @@ import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { parseArgs } from 'node:util';
-import { readPublisherIdentity, releaseInputs } from './launcher-release-inputs.mjs';
+import { readPublisherIdentity, releaseInputs, setupName } from './launcher-release-inputs.mjs';
 import { readVerifiedManifest, validateReleaseManifest } from './verify-published.mjs';
 
 const download = 'https://github.com/solwation/lunden-3d-apartment/releases/download/';
@@ -150,7 +150,7 @@ export async function inspectLauncher(directory, inputs, commit, distributionTag
   const distributionVersion = /^(?:app-)?v(.+)$/.exec(distributionTag)?.[1];
   version(distributionVersion);
   const root = await regularRoot(directory);
-  const names = ['Lunden.exe', 'Lunden-Setup-' + inputs.version + '-win-x64.exe'];
+  const names = ['Lunden.exe', setupName(inputs.version)];
   const record = JSON.parse(await readSmall(path.join(root, 'launcher-build.json')));
   check(/^[a-f\d]{40}$/i.test(commit) && record.commit.toLowerCase() === commit.toLowerCase() &&
     record.tag === 'v' + inputs.version && sameIdentity(record.signer, inputs.signer) &&

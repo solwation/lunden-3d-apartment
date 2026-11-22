@@ -65,6 +65,35 @@ public sealed class SetupTests : IDisposable
     }
 
     [Fact]
+    public void BetaInstallationsGetTheNewStartMenuNameOnce()
+    {
+        // #2415: launchers before 0.1.3 created "Lunden.lnk"; the next start renames it and the registry entry.
+        foreach (string channel in new[] {"stable", "test"}) {
+            var layout = Layout(channel);
+            var setup = Engine(layout);
+            Write(Source, "signed fixture 1");
+            setup.Install(Source, "1");
+            File.Move(layout.Shortcut, layout.LegacyShortcut);
+            Assert.True(setup.RenameLegacyShortcut());
+            Assert.True(File.Exists(layout.Shortcut));
+            Assert.False(File.Exists(layout.LegacyShortcut));
+            Assert.Equal(layout.DisplayName, registry[layout.RegistryPath]["DisplayName"]);
+            Assert.False(setup.RenameLegacyShortcut());
+        }
+        Assert.Equal("Kv. Lunden Unreal L1007.lnk", Path.GetFileName(Layout().Shortcut));
+        Assert.Equal("Kv. Lunden Unreal L1007 (test).lnk", Path.GetFileName(Layout("test").Shortcut));
+        Assert.Equal(Path.Combine(temp, "local data", "Programs", "Lunden", "Lunden.exe"), Layout().Target);
+    }
+
+    [Fact]
+    public void BothSetupFileNamesSelectInstallation()
+    {
+        Assert.NotNull(SetupCommand.Parse([], Path.Combine(temp, "Kv-Lunden-Unreal-L1007-Setup-0.1.3-win-x64.exe")));
+        Assert.NotNull(SetupCommand.Parse([], Path.Combine(temp, "Lunden-Setup-0.1.1-win-x64.exe")));
+        Assert.Null(SetupCommand.Parse([], Path.Combine(temp, "Lunden.exe")));
+    }
+
+    [Fact]
     public void FailuresRestoreExistingLauncherShortcutAndRegistryAndCanRetry()
     {
         var layout = Layout();

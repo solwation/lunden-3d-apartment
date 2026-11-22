@@ -65,7 +65,7 @@ test('the protected artifact needs matching public trust, commit, final hashes a
   const signer = { commonName:'Test Publisher AB', organization:'Test Publisher AB', rootSha256:'AB'.repeat(32), identityKeyUsage:'1.3.6.1.4.1.311.97.1.2.3.4' };
   const leaf = 'CD'.repeat(32), inputs = { version:'1.0.0', signer, keyDigest:hash('key') };
   const record = { tag:'v1.0.0',commit,signer:{ ...signer, leafCertificateSha256:leaf },manifestPublicKeySha256:inputs.keyDigest,launcherSha256:sha };
-  const names = ['Lunden.exe','Lunden-Setup-1.0.0-win-x64.exe'];
+  const names = ['Lunden.exe','Kv-Lunden-Unreal-L1007-Setup-1.0.0-win-x64.exe'];
   for (const name of names) await writeFile(path.join(root,name),text);
   await writeFile(path.join(root,'SHA256SUMS'),names.map(name => sha + '  ' + name).join('\n')+'\n');
   await writeFile(path.join(root,'launcher-build.json'),JSON.stringify(record));
@@ -119,7 +119,7 @@ test('the native publisher check accepts a timestamped Windows fixture and rejec
       fileURLToPath(new URL('../get-signer-identity.ps1', import.meta.url)),'-Path',file,'-ExpectedFileSha256',sha],{encoding:'utf8'}));
     const fixture = { file, leaf:observed.leafSha256, signer:{ commonName:observed.subject, organization:observed.organization,
       rootSha256:observed.rootSha256, identityKeyUsage:'1.3.6.1.5.5.7.3.3' } };
-    const names = ['Lunden.exe','Lunden-Setup-0.3.2-win-x64.exe'];
+    const names = ['Lunden.exe','Kv-Lunden-Unreal-L1007-Setup-0.3.2-win-x64.exe'];
     for(const n of names) await copyFile(fixture.file,path.join(root,n));
     await writeFile(path.join(root,'SHA256SUMS'),names.map(n => sha+'  '+n).join('\n')+'\n');
     const inputs = { version:'0.3.2',signer:fixture.signer,keyDigest:hash('test key') }, commit='1'.repeat(40);

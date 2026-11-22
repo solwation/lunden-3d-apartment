@@ -6,6 +6,11 @@
     <Nullable>enable</Nullable>
     <AssemblyName>Lunden</AssemblyName>
     <Version>0.1.0</Version>
+    <!-- #2415: what Explorer, Task Manager and Windows security prompts show for Lunden.exe. -->
+    <ApplicationIcon>Lunden.ico</ApplicationIcon>
+    <Product>Kv. Lunden Unreal L1007</Product>
+    <AssemblyTitle>Kv. Lunden Unreal L1007</AssemblyTitle>
+    <Company>Svep Design Center AB</Company>
   </PropertyGroup>
   <Target Name="CheckManifestPublicKey" BeforeTargets="PrepareForBuild" Condition="'$(LundenManifestKey)' != ''">
     <PropertyGroup>

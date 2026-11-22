@@ -40,7 +40,7 @@ $parent = [IO.Path]::GetDirectoryName($final)
 $temp = Join-Path $parent ('.pack-launcher-' + [guid]::NewGuid().ToString('N'))
 [void][IO.Directory]::CreateDirectory($temp)
 try {
-    $names = @('Lunden.exe', "Lunden-Setup-$Version-win-x64.exe")
+    $names = @('Lunden.exe', "Kv-Lunden-Unreal-L1007-Setup-$Version-win-x64.exe")
     $lines = foreach ($name in $names) {
         $file = Join-Path $temp $name
         [IO.File]::Copy($source, $file)

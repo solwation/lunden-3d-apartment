@@ -160,7 +160,7 @@ test('reject unsafe tags before requests, and reject drafts and prereleases', as
 test('player links need a published stable channel and the actual matching versioned setup bytes', async t => {
   const { state, seedChannel } = fixture(t);
   const launcher = 'https://github.com/solwation/lunden-3d-apartment/releases/download/v1.2.3/Lunden.exe';
-  const setup = launcher.replace('Lunden.exe', 'Lunden-Setup-1.2.3-win-x64.exe');
+  const setup = launcher.replace('Lunden.exe', 'Kv-Lunden-Unreal-L1007-Setup-1.2.3-win-x64.exe');
   state.previous = state.target;
   seedChannel('test');
   await assert.rejects(verifiedSetup(pem), /Stable channel unavailable/);

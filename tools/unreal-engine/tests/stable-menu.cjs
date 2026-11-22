@@ -10,7 +10,7 @@ const label = 'Ladda ned Lunden för Windows (64 bitar)';
 const publisher = 'Installationsprogram signerat av Svep Design Center AB';
 const helpLabel = 'Så kontrollerar du signaturen';
 const helpUrl = 'https://github.com/solwation/lunden-3d-apartment#windowsversionen-av-lunden';
-const example = 'https://release-preview.invalid/app-v0.0.0/Lunden-Setup-0.0.0-win-x64.exe';
+const example = 'https://release-preview.invalid/app-v0.0.0/Kv-Lunden-Unreal-L1007-Setup-0.0.0-win-x64.exe';
 
 async function openSettings(page, touch) {
   await skipNameDialog(page, {timeout: 120000});
@@ -66,7 +66,7 @@ async function main() {
         const dialog = page.locator('#settings-dialog'), setup = dialog.getByRole('link', {name: new RegExp(label.replace(/[()]/g, '\\$&'))});
         const help = dialog.getByRole('link', {name: helpLabel});
         // #2377: once a stable release is linked, the normal menu carries the official signed setup; before that, nothing.
-        const published = readme.match(/\]\((https:\/\/github\.com\/solwation\/lunden-3d-apartment\/releases\/download\/(?:app-)?v\d+\.\d+\.\d+\/Lunden-Setup-[^)]+)\)/)?.[1];
+        const published = readme.match(/\]\((https:\/\/github\.com\/solwation\/lunden-3d-apartment\/releases\/download\/(?:app-)?v\d+\.\d+\.\d+\/(?:Kv-Lunden-Unreal-L1007|Lunden)-Setup-[^)]+)\)/)?.[1];
         if (name === 'android') {
           assert.equal(await dialog.locator('a.windows-only').count(), published ? 1 : 0); // present but not shown
           assert.equal(await setup.count(), 0);

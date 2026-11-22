@@ -49,7 +49,7 @@ internal sealed class WindowsShellRegistration : ISetupRegistration
 
     public void Unregister(SetupLayout layout)
     {
-        try { File.Delete(layout.Shortcut); }
+        try { File.Delete(layout.Shortcut); File.Delete(layout.LegacyShortcut); }
         catch (DirectoryNotFoundException) { /* No Start menu entry exists. */ }
         deleteEntry(layout.RegistryPath);
     }

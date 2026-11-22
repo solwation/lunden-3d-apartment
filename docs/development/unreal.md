@@ -2074,8 +2074,18 @@ N-to-N+1/offline pilot remain to be verified with #2246, #2248 and #2250.
 ### Per-user setup and removal (#2250)
 
 The self-contained launcher also handles setup. The distribution filename
-`Lunden-Setup-<version>-win-x64.exe` selects installation mode. It contains the launcher;
+`Kv-Lunden-Unreal-L1007-Setup-<version>-win-x64.exe` (`Lunden-Setup-…` up to 0.1.2) selects installation mode. It contains the launcher;
 the first game start downloads the verified packages described above.
+
+**Player-facing name and icon (#2415).** From launcher 0.1.3 the Start menu shortcut, the Apps list entry and the
+setup text say **Kv. Lunden Unreal L1007** (`SetupLayout.ProductName`; the test channel adds " (test)"), and
+`Lunden.exe` carries `unreal/Launcher/Lunden.ico` (the web app icon, `icons/icon-512.png`, at 16–256 px) and that name
+as product and file description. The setup filename comes from `setupName()` in
+`tools/unreal-engine/launcher-release-inputs.mjs`, which the packaging, manifest, notes and download tools share.
+`Lunden.exe`, the install folder `%LOCALAPPDATA%\Programs\Lunden`, the user folder and the registry key keep the old name, so
+saves and updates need no migration. An installation from an older launcher still has `Lunden.lnk`; the installed
+launcher renames it (and rewrites the Apps entry) on its next start, and uninstalling removes either name. The game
+window's own icon comes from Epic's stock `UnrealGame-Win64-Shipping.exe` and is unchanged.
 
 | Invocation | Effect |
 | --- | --- |
@@ -2139,7 +2149,7 @@ every leaf of the profile carries the same identity, so leaf rotation needs no c
 Only the tagged `Lunden.exe` enters the signing action. It uses SHA-256 and an RFC 3161 timestamp.
 Packaging requires Windows Authenticode status `Valid`, an embedded signature, a timestamper, the publisher
 identity (CN, O, root SHA-256 and identity usage) and successful Windows SDK `signtool verify /pa /all /tw`. Then it copies the
-signed executable as `Lunden-Setup-<version>-win-x64.exe` and verifies that copy. The
+signed executable as `Kv-Lunden-Unreal-L1007-Setup-<version>-win-x64.exe` (#2415) and verifies that copy. The
 `signed-launcher-<tag>-<attempt>` Actions artifact contains the two byte-identical executables,
 `SHA256SUMS` of their final bytes and `launcher-build.json` with their source commit, the publisher
 identity (`signer`, including the leaf that actually signed) and the manifest key's SHA-256.

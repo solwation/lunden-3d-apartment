@@ -31,8 +31,8 @@ try {
         PublisherIdentity = (Write-Identity 'fixture'); Commit = ('a' * 40); OutputDirectory = $out }
     & $pack @argsForPack
     $sums = [IO.File]::ReadAllLines((Join-Path $out 'SHA256SUMS'))
-    $setup = Join-Path $out 'Lunden-Setup-0.4.2-win-x64.exe'
-    if ($sums.Count -ne 2 -or $sums[0] -cne "$hash  Lunden.exe" -or $sums[1] -cne "$hash  Lunden-Setup-0.4.2-win-x64.exe" -or
+    $setup = Join-Path $out 'Kv-Lunden-Unreal-L1007-Setup-0.4.2-win-x64.exe'
+    if ($sums.Count -ne 2 -or $sums[0] -cne "$hash  Lunden.exe" -or $sums[1] -cne "$hash  Kv-Lunden-Unreal-L1007-Setup-0.4.2-win-x64.exe" -or
         (Get-FileHash -LiteralPath $setup -Algorithm SHA256).Hash -ne $hash) { throw 'Wrong post-signing file hashes.' }
     $record = Get-Content -Raw -LiteralPath (Join-Path $out 'launcher-build.json') | ConvertFrom-Json
     if ($record.signer.commonName -cne $observed.subject -or $record.signer.organization -cne $observed.organization -or

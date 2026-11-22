@@ -40,6 +40,13 @@ internal static class Program
             var store = new UpdateStore(root, http, (path, file, stock) => StockRuntime.Verify(path, file, stock, signer));
             using var maintenance = options.DryRun || !OperatingSystem.IsWindows() ? null : SetupLayout.Current(options.Channel).MaintenanceLock();
             using var lease = options.DryRun ? null : store.Lock();
+            if (maintenance != null && image.Equals(SetupLayout.Current(options.Channel).Target, StringComparison.OrdinalIgnoreCase)) {
+                try {
+                    var installed = new Setup(SetupLayout.Current(options.Channel), new WindowsShellRegistration(), file => Authenticode.Verify(file, signer));
+                    if (installed.RenameLegacyShortcut()) Console.WriteLine($"Start-menyn heter nu {SetupLayout.Current(options.Channel).DisplayName}.");
+                }
+                catch (Exception ex) when (ExpectedFailure(ex)) { Console.Error.WriteLine($"Start-menyns namn kunde inte uppdateras. {ex.Message}"); }
+            }
             var state = store.Load(options.Channel);
             if (!options.Offline) {
                 while (true) {
