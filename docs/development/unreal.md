@@ -2778,7 +2778,15 @@ are the canvases' (a roof's face and seam are its key colour times the roof map'
 Per-brick jitter, the herringbone (drawn as running bond), the cobbles' round stones (square setts), bump relief, moss,
 the asphalt's tracks and cracks, and roof mottle are not drawn: *guess* in each entry's `assumption`. Left on the
 import default: the old S:t Lars bays' painted window grid (`std_ffffff_r95_m0_tex`, no class) and the school façade.
-The three running-bond brick instances use `FilterBrick` to integrate mortar over the pixel footprint. The actual court
+The three running-bond brick instances use `FilterBrick` to integrate mortar over the pixel footprint. Close up, two
+more parameters give the web's softer joints (#2393). The web's 256 px canvases (512 px on Hus L) box-filter their 1.5-2 px
+joints, and the GPU then magnifies them bilinearly. `TexelBlur` (UV units) stands for that blur: 1.3 texels, the
+canvas's 1.73 less what Unreal's own anti-aliasing adds. It replaces the pixel footprint only while it is the wider of
+the two, so distant walls keep the plain integration. A narrower distant footprint brought #2318's moiré back on Hus
+L's courtyard façade. `BedJoint` sets the bed joint apart from the head joint: the Å-husen and the retaining walls draw
+1.5 px bed and 2 px head joints. Check joint share and lightness against the web with
+`PLAYWRIGHT_MODULE=… node tools/unreal-engine/tests/brick-joints.cjs DIR crops.json --check` (web-/unreal-<shot>
+pairs, crops that hold only brick; Otsu split of L*): [#2393](../verification/2393/README.md). The actual court
 paint from `src/basket.js` lies across the adjacent `l1007-entre` and `omgivning` zones. Verify its paint and clearance
 against the web geometry with `node tools/unreal-engine/tests/court-markings.test.mjs` after exporting both zones.
 Verification: [#2318](../verification/2318/README.md).

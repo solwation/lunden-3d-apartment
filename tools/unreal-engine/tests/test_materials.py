@@ -32,7 +32,7 @@ import sys
 ROOT = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", ".."))
 MASTER_PARAMS = {
     "surface": {"BaseColor", "Roughness", "Metallic"},
-    "tiled": {"FilterBrick", "Size", "Color", "JointColor", "Joint", "Bond", "Stagger", "Variation", "Grain", "Roughness", "JointRoughness"},
+    "tiled": {"FilterBrick", "BedJoint", "TexelBlur", "Size", "Color", "JointColor", "Joint", "Bond", "Stagger", "Variation", "Grain", "Roughness", "JointRoughness"},
     "backdrop-texture": {"BaseColor", "Roughness", "Metallic"},
     "glass": {"BaseColor", "Opacity", "Roughness", "Specular"},
     "grass": {"Color", "Ground", "BladeRange", "BladeLength", "Cell", "StrokeWidth", "StrawTint", "BladeTint",

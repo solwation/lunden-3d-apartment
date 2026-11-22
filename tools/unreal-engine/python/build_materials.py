@@ -61,10 +61,15 @@ float joint = Joint > 0.0 ? 1.0 - smoothstep(hj, hj + max(hj, 0.0006), edge) : 0
 """
 # A screen pixel covers an area of the web's running-bond texture. Integrate the periodic face width
 # over that footprint for each of the two alternating rows. The complement is the mortar coverage.
+# #2393: the web draws this brick from a canvas of a few hundred px per UV unit, whose 1.5-2 px joints the canvas
+# box-filters and the GPU then magnifies bilinearly. Close up that blur (TexelBlur, in UV units) shows as soft joints
+# that never reach the full mortar colour; it replaces the pixel footprint while it is the wider of the two, so distant
+# walls keep the plain pixel integration (a narrower footprint brings #2318's moiré back on Hus L's courtyard façade).
+# BedJoint, when > 0, is the bed joint along V (the web's canvases draw 1.5 px bed and 2 px head joints).
 BRICK_FILTER = r"""
 if (FilterBrick > 0.5) {
-    float2 footprint = fwidth(UV) / S;
-    float2 gap = saturate(Joint / S);
+    float2 footprint = max(fwidth(UV), TexelBlur) / S;
+    float2 gap = saturate(float2(Joint, BedJoint > 0.0 ? BedJoint : Joint) / S);
     float4 span = max(float4(footprint.xx, 0.5 * footprint.yy), 0.0001);
     float4 faceWidth = float4(1.0 - gap.xx, 0.5 * (1.0 - gap.yy));
     float x = frac(UV.x / S.x);
@@ -77,7 +82,8 @@ if (FilterBrick > 0.5) {
                 + min(frac(hi), faceWidth) - min(frac(lo), faceWidth);
     float4 coverage = saturate(area / span);
     joint = saturate(1.0 - dot(coverage.xy, coverage.zw));
-    float detail = 1.0 - smoothstep(0.5, 2.0, max(footprint.x, footprint.y));
+    float2 cells = fwidth(UV) / S;
+    float detail = 1.0 - smoothstep(0.5, 2.0, max(cells.x, cells.y));
     Variation *= detail;
     Grain *= detail;
 }
@@ -166,7 +172,7 @@ GRASS_VECTORS = {"Color": "#609548", "Ground": (0.957, 0.094, 0.0), "BladeRange"
                  "BladeLength": (0.0125, 0.0438, 0.0), "PatchCells": (8.0, 17.0, 0.0), "Dry": (0.26, 0.17, 0.02),
                  "Lush": (0.19, 0.09, 0.22), "TuftRadius": (0.044, 0.0875, 0.0)}
 TILED_SCALARS = {"Joint": 0.003, "Bond": 0.0, "Stagger": 0.0, "Variation": 0.0, "Grain": 0.0, "Roughness": 0.8,
-                 "JointRoughness": 0.95, "FilterBrick": 0.0}
+                 "JointRoughness": 0.95, "FilterBrick": 0.0, "BedJoint": 0.0, "TexelBlur": 0.0}
 TILED_VECTORS = {"Size": (0.2, 0.2, 0.0), "Color": "#ffffff", "JointColor": "#b9bbbb"}
 
 

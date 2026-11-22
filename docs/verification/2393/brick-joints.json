@@ -1,0 +1,191 @@
+{
+ "crops": {
+  "entrance-a": {
+   "wall-near": [
+    0.1,
+    0.15,
+    0.32,
+    0.7
+   ],
+   "wall-far": [
+    0.5,
+    0.03,
+    0.525,
+    0.28
+   ]
+  },
+  "courtyard": {
+   "husA-near": [
+    0,
+    0.32,
+    0.03,
+    0.62
+   ],
+   "husA-mid": [
+    0.25,
+    0.32,
+    0.27,
+    0.46
+   ],
+   "husL-far": [
+    0.885,
+    0.245,
+    0.99,
+    0.275
+   ],
+   "husL-mid2": [
+    0.81,
+    0.13,
+    0.83,
+    0.24
+   ]
+  }
+ },
+ "tolerance": 0.15,
+ "stats": {
+  "entrance-a": {
+   "web": {
+    "wall-near": {
+     "pixels": 141065,
+     "threshold": 43.5,
+     "share": 0.3717,
+     "mortarL": 58.03,
+     "brickL": 28.75,
+     "contrast": 29.27
+    },
+    "wall-far": {
+     "pixels": 7308,
+     "threshold": 41.5,
+     "share": 0.4154,
+     "mortarL": 55.28,
+     "brickL": 28.34,
+     "contrast": 26.95
+    }
+   },
+   "unreal": {
+    "wall-near": {
+     "pixels": 141065,
+     "threshold": 46.5,
+     "share": 0.3982,
+     "mortarL": 62.87,
+     "brickL": 29.77,
+     "contrast": 33.1
+    },
+    "wall-far": {
+     "pixels": 7308,
+     "threshold": 44.5,
+     "share": 0.4867,
+     "mortarL": 57.05,
+     "brickL": 32.62,
+     "contrast": 24.44
+    }
+   },
+   "wall-near": {
+    "shareRatio": 1.071,
+    "contrastRatio": 1.131,
+    "mortarRatio": 1.083,
+    "ok": true
+   },
+   "wall-far": {
+    "shareRatio": 1.172,
+    "contrastRatio": 0.907,
+    "mortarRatio": 1.032,
+    "ok": false
+   }
+  },
+  "courtyard": {
+   "web": {
+    "husA-near": {
+     "pixels": 10449,
+     "threshold": 48.5,
+     "share": 0.3971,
+     "mortarL": 64.45,
+     "brickL": 33.1,
+     "contrast": 31.35
+    },
+    "husA-mid": {
+     "pixels": 3277,
+     "threshold": 42.5,
+     "share": 0.3851,
+     "mortarL": 56.86,
+     "brickL": 28.18,
+     "contrast": 28.67
+    },
+    "husL-far": {
+     "pixels": 3624,
+     "threshold": 51.5,
+     "share": 0.3885,
+     "mortarL": 64.32,
+     "brickL": 38.28,
+     "contrast": 26.04
+    },
+    "husL-mid2": {
+     "pixels": 2581,
+     "threshold": 49.5,
+     "share": 0.5215,
+     "mortarL": 58.73,
+     "brickL": 39.91,
+     "contrast": 18.82
+    }
+   },
+   "unreal": {
+    "husA-near": {
+     "pixels": 10449,
+     "threshold": 51.5,
+     "share": 0.3884,
+     "mortarL": 68.79,
+     "brickL": 34.05,
+     "contrast": 34.75
+    },
+    "husA-mid": {
+     "pixels": 3277,
+     "threshold": 45.5,
+     "share": 0.4492,
+     "mortarL": 58.87,
+     "brickL": 32.57,
+     "contrast": 26.3
+    },
+    "husL-far": {
+     "pixels": 3624,
+     "threshold": 53.5,
+     "share": 0.3943,
+     "mortarL": 63.92,
+     "brickL": 42.69,
+     "contrast": 21.23
+    },
+    "husL-mid2": {
+     "pixels": 2581,
+     "threshold": 52.5,
+     "share": 0.4963,
+     "mortarL": 60.62,
+     "brickL": 43.8,
+     "contrast": 16.83
+    }
+   },
+   "husA-near": {
+    "shareRatio": 0.978,
+    "contrastRatio": 1.108,
+    "mortarRatio": 1.067,
+    "ok": true
+   },
+   "husA-mid": {
+    "shareRatio": 1.166,
+    "contrastRatio": 0.917,
+    "mortarRatio": 1.035,
+    "ok": false
+   },
+   "husL-far": {
+    "shareRatio": 1.015,
+    "contrastRatio": 0.815,
+    "mortarRatio": 0.994,
+    "ok": true
+   },
+   "husL-mid2": {
+    "shareRatio": 0.952,
+    "contrastRatio": 0.894,
+    "mortarRatio": 1.032,
+    "ok": true
+   }
+  }
+ }
+}
