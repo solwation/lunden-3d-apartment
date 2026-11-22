@@ -38,9 +38,21 @@ internal sealed record SetupCommand(bool Uninstall, bool Quiet, bool DryRun, str
         }
         if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException("Installationen kräver Windows.");
         var setup = new Setup(layout, new WindowsShellRegistration(), file => Authenticode.Verify(file, signer));
-        bool interactive = !Quiet && !Console.IsInputRedirected && !Console.IsOutputRedirected;
-        bool removeData = false;
-        if (interactive) {
+        bool interactive = !Quiet && !Ui.Windowed && !Console.IsInputRedirected && !Console.IsOutputRedirected;
+        bool removeData = false, startGame = false;
+        if (!Quiet && Ui.Windowed) {
+            // #2420: the setup and the Apps list's "Avinstallera" ask in a dialog instead of a console prompt.
+            var choice = Uninstall
+                ? TaskDialog.Ask($"Avinstallera {layout.DisplayName}?",
+                    $"Programmet och det nedladdade spelet tas bort från\n{layout.InstallDir}\n\nSparfiler och inställningar i {layout.UserData} behålls om du inte väljer annat.",
+                    [(101, "Avinstallera")], "Ta även bort sparfiler och inställningar")
+                : TaskDialog.Ask($"Installera {layout.DisplayName}",
+                    $"Spelet installeras för din Windowsanvändare, utan administratörsbehörighet, och får en genväg i Start-menyn.\n\nProgram: {layout.InstallDir}\nSparfiler: {layout.UserData}\n\nSpelet hämtas första gången du startar det.",
+                    [(101, "Installera\nKopierar startprogrammet och skapar genvägen")], "Starta spelet när installationen är klar", verificationChecked: true);
+            if (choice.Button != 101) return 0;
+            if (Uninstall) removeData = choice.Checked; else startGame = choice.Checked;
+        }
+        else if (interactive) {
             Console.WriteLine(Setup.Describe(layout, Uninstall));
             Console.Write(Uninstall ? "Avinstallera? [j/N] " : "Installera? [J/n] ");
             string? answer = Console.ReadLine()?.Trim().ToLowerInvariant();
@@ -56,6 +68,13 @@ internal sealed record SetupCommand(bool Uninstall, bool Quiet, bool DryRun, str
             setup.Install(image, version);
             try { File.Delete(layout.LegacyShortcut); } catch (IOException) { /* A stale entry only duplicates the new one. */ }
             if (!Quiet) Console.WriteLine($"Installationen är klar. Starta {layout.DisplayName} från Start-menyn.");
+            if (startGame) {
+                var info = new ProcessStartInfo(layout.Target) { UseShellExecute = false, WorkingDirectory = layout.InstallDir };
+                if (layout.Channel == "test") { info.ArgumentList.Add("--channel"); info.ArgumentList.Add("test"); }
+                using var game = Process.Start(info);
+            }
+            else if (!Quiet && Ui.Windowed)
+                TaskDialog.Ask($"{layout.DisplayName} är installerat", "Du hittar spelet i Start-menyn.", []);
         }
         else if (image.Equals(layout.Target, StringComparison.OrdinalIgnoreCase)) {
             UninstallHelper.Start(layout, setup, signer, removeData);
@@ -100,7 +119,7 @@ internal static class UninstallHelper
             string command = FormattableString.Invariant(
                 $"/d /v:off /q /c .\\{Image} {Switch} {id} {parent.Id} {ticks} {layout.Channel} {(removeData ? "delete" : "keep")} & del /q {Image} ready 2>nul & cd .. & rd Lunden-Uninstall-{id}");
             var info = new ProcessStartInfo(Path.Combine(Environment.SystemDirectory, "cmd.exe"), command) {
-                WorkingDirectory = dir, UseShellExecute = false
+                WorkingDirectory = dir, UseShellExecute = false, CreateNoWindow = true // #2420: no console flash
             };
             wrapper = Process.Start(info) ?? throw new IOException("Avinstallationen kunde inte startas.");
             var timer = Stopwatch.StartNew();

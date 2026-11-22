@@ -2087,6 +2087,20 @@ saves and updates need no migration. An installation from an older launcher stil
 launcher renames it (and rewrites the Apps entry) on its next start, and uninstalling removes either name. The game
 window's own icon comes from Epic's stock `UnrealGame-Win64-Shipping.exe` and is unchanged.
 
+**Dialogs instead of a console (#2420).** `Lunden.exe` is a GUI-subsystem program (`OutputType` WinExe,
+`app.manifest`: Common Controls 6, per-monitor DPI, `asInvoker` so the "...-Setup-..." name never triggers installer
+detection). `Ui.Init` decides the mode: with redirected output (scripts, tests, WSL) it writes as before; from a terminal
+it attaches to that console; otherwise text goes to `%LOCALAPPDATA%\Lunden\launcher.log` (one run). Dialogs are native
+task dialogs (`TaskDialog.cs`, no UI framework, so the Linux `win-x64` build is unchanged) and appear unless the output is
+redirected or the command is `--dry-run`, `--help`, `--quiet` or `--dry-run-install`:
+the setup and the Apps list's uninstall ask with command links (setup: "Starta spelet när installationen är klar",
+checked; uninstall: "Ta även bort sparfiler och inställningar"); a launch shows one progress dialog from the update check
+through the download (`UpdateStore.Progress`: "123 av 464 MB · 11,2 MB/s · cirka 30 s kvar") and the file check until the
+game's window appears; Cancel stops the download; failures show an error dialog with "Försök igen" and, when a version is
+installed, "Spela installerad version". The uninstall helper's `cmd.exe` runs with `CreateNoWindow`.
+`tools/unreal-engine/tests/launcher-dialogs.ps1` (launcher-tests workflow, artifact `launcher-dialogs`) checks the PE
+subsystem and opens, screenshots and closes the setup, progress and update-error dialogs.
+
 **No download mark on the installed launcher (#2418).** Setup copies itself into the install folder as plain data
 (`CopyWithoutStreams`) and deletes `Lunden.exe:Zone.Identifier` after the swap (`File.Replace` merges the old file's
 named streams). Before 0.1.4 the installed copy kept the browser's ZoneId=3 mark, and Windows 11 Smart App Control blocked

@@ -17,6 +17,7 @@ on:
       - 'tools/unreal-engine/launcher-release-inputs.mjs'
       - 'tools/unreal-engine/package-signed-launcher.ps1'
       - 'tools/unreal-engine/tests/signed-launcher-package-test.ps1'
+      - 'tools/unreal-engine/tests/launcher-dialogs.ps1'
       - 'tools/unreal-engine/release-notes.mjs'
       - 'tools/unreal-engine/release-notes/**'
       - 'tools/unreal-engine/tests/release-notes.test.mjs'
@@ -83,3 +84,13 @@ jobs:
       - name: Verify packaging with a signed Windows fixture
         shell: pwsh
         run: ./tools/unreal-engine/tests/signed-launcher-package-test.ps1
+      - name: Open the setup, progress and error dialogs without a console (#2420)
+        shell: pwsh
+        run: ./tools/unreal-engine/tests/launcher-dialogs.ps1 -Out "$env:RUNNER_TEMP/launcher-dialogs"
+      - name: Upload the dialog screenshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: launcher-dialogs
+          path: ${{ runner.temp }}/launcher-dialogs
+          if-no-files-found: ignore

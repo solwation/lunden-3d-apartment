@@ -14,11 +14,13 @@ internal static class Program
     static async Task<int> Main(string[] args)
     {
         var assembly = typeof(Program).Assembly;
+        TaskDialog.Progress? window = null;
         try {
             var signer = SignerIdentity.Compiled;
             if (SelfUpdate.IsHelper(args)) return SelfUpdate.Finish(args, signer);
             string image = Environment.ProcessPath ?? throw new IOException("Startprogrammets sökväg saknas.");
             if (args.FirstOrDefault() == UninstallHelper.Switch) return UninstallHelper.Finish(args, image, signer);
+            Ui.Init(args);
             if (args.Contains("--help")) {
                 Console.WriteLine("Lunden [--channel stable|test] [--manifest FIL/URL] [--dry-run] [--offline]");
                 Console.WriteLine("Lunden [--install | --uninstall | --dry-run-install] [--quiet] [--channel stable|test]");
@@ -38,6 +40,13 @@ internal static class Program
             string userData = Path.Combine(local, name);
             using var http = new HttpClient {Timeout = TimeSpan.FromSeconds(20)};
             var store = new UpdateStore(root, http, (path, file, stock) => StockRuntime.Verify(path, file, stock, signer));
+            // #2420: one progress dialog from the update check until the game window appears.
+            if (Ui.Windowed && !options.DryRun) window = new TaskDialog.Progress("Startar " + SetupLayout.ProductName);
+            var rate = new Ui.Rate();
+            string fetching = "Hämtar spelet";
+            store.Progress = (done, total) => window?.Set(fetching, rate.Describe(done, total, DateTime.UtcNow),
+                total > 0 ? done / (double)total : null);
+            var cancelled = window?.Cancelled ?? default;
             using var maintenance = options.DryRun || !OperatingSystem.IsWindows() ? null : SetupLayout.Current(options.Channel).MaintenanceLock();
             using var lease = options.DryRun ? null : store.Lock();
             if (maintenance != null && image.Equals(SetupLayout.Current(options.Channel).Target, StringComparison.OrdinalIgnoreCase)) {
@@ -51,6 +60,7 @@ internal static class Program
             if (!options.Offline) {
                 while (true) {
                     try {
+                        window?.Set("Söker efter uppdateringar", "", null);
                         byte[] bytes = await ReadManifestFile(http, options.Source, options.Channel, 4 * 1024 * 1024);
                         byte[] sig = await ReadManifestFile(http, SignatureSource(options.Source), options.Channel, 64);
                         var release = ReleaseManifest.Read(bytes, sig, key, options.Channel);
@@ -64,22 +74,35 @@ internal static class Program
                             string dir = Path.Combine(root, "staging", "launcher");
                             Directory.CreateDirectory(dir);
                             string staged = Path.Combine(dir, "Lunden.exe");
-                            await store.Download(launcher, staged, Path.Combine(dir, launcher.Sha256 + ".partial"), default);
+                            fetching = "Uppdaterar startprogrammet";
+                            store.ExpectDownload(launcher.Size);
+                            await store.Download(launcher, staged, Path.Combine(dir, launcher.Sha256 + ".partial"), cancelled);
+                            window?.Set("Uppdaterar startprogrammet", "Startar om…", null);
                             Authenticode.Verify(staged, signer);
                             SelfUpdate.Start(root, staged, launcher.Sha256, signer, args);
                             return 0;
                         }
                         Console.WriteLine($"Kontrollerar Lunden {release.App.Version}, innehåll {release.Content.Version}…");
-                        await store.Apply(release, bytes, sig, state, options.DryRun, default);
+                        window?.Set("Söker efter uppdateringar", $"Kontrollerar version {release.App.Version}…", null);
+                        await store.Apply(release, bytes, sig, state, options.DryRun, cancelled);
                         if (options.DryRun) return 0;
                         state = store.Load(options.Channel);
                         break;
                     }
                     catch (Exception ex) when (ExpectedFailure(ex)) {
+                        if (cancelled.IsCancellationRequested) return 0; // the player closed the progress dialog
                         Console.Error.WriteLine($"Uppdateringen kunde inte genomföras. {ex.Message}");
                         if (options.DryRun) return 1;
                         bool unavailable = ex is HttpRequestException or OperationCanceledException or EndOfStreamException;
-                        if ((!unavailable || state.Active == null) && !Console.IsInputRedirected && !Console.IsOutputRedirected) {
+                        if ((!unavailable || state.Active == null) && Ui.Windowed) {
+                            (int, string)[] buttons = state.Active == null ? [(201, "Försök igen")]
+                                : [(202, "Spela installerad version\nStartar den version som redan finns på datorn"), (201, "Försök igen")];
+                            string reason = unavailable ? "Kontrollera internetanslutningen. " + ex.Message : ex.Message;
+                            var choice = TaskDialog.Ask("Uppdateringen kunde inte genomföras", reason, buttons, error: true);
+                            if (choice.Button == 201) continue;
+                            if (choice.Button != 202) return state.Active == null ? 1 : 0;
+                        }
+                        else if ((!unavailable || state.Active == null) && !Console.IsInputRedirected && !Console.IsOutputRedirected) {
                             Console.Write(state.Active == null ? "Försök igen [R] eller avsluta [Enter]: "
                                 : "Spela installerad version [Enter] eller försök igen [R]: ");
                             if (Console.ReadKey(true).Key == ConsoleKey.R) continue;
@@ -93,6 +116,7 @@ internal static class Program
             PlayerBridge? bridge = null;
             Process? game = null;
             try {
+                window?.Set("Startar " + SetupLayout.ProductName, "Kontrollerar spelfilerna…", null);
                 int result = await RunInstalled(store, state, key, userData, async (info, _, pending) => {
                     if (!options.Offline && bridge == null) {
                         try { bridge = PlayerBridge.Open(userData); }
@@ -103,6 +127,7 @@ internal static class Program
                     if (bridge != null) info.ArgumentList.Add(bridge.GameArgument);
                     game?.Dispose();
                     game = Process.Start(info) ?? throw new IOException("Windows kunde inte starta spelet.");
+                    window?.Set("Startar " + SetupLayout.ProductName, "Spelet öppnas…", null);
                     if (!pending) return true;
                     var exit = game.WaitForExitAsync();
                     return await Task.WhenAny(exit, Task.Delay(TimeSpan.FromSeconds(FirstStartSeconds))) != exit || game.ExitCode == 0;
@@ -110,6 +135,12 @@ internal static class Program
                 // Confirm (or roll back) the update first. The bridge owns only the running game's lifetime.
                 lease?.Dispose();
                 maintenance?.Dispose();
+                if (window != null) {
+                    if (result == 0 && game != null) await WaitForWindow(game);
+                    window.Dispose();
+                    window = null;
+                    if (result != 0) return Ui.Fail("Spelet kunde inte startas", "Den installerade versionen startade inte.");
+                }
                 if (result == 0 && bridge != null && game != null) await game.WaitForExitAsync();
                 return result;
             } finally {
@@ -117,9 +148,26 @@ internal static class Program
                 if (bridge != null) await bridge.DisposeAsync();
             }
         }
-        catch (Exception ex) when (ExpectedFailure(ex)) {
-            Console.Error.WriteLine($"Lunden kunde inte startas. {ex.Message}");
-            return 1;
+        catch (Exception ex) when (ExpectedFailure(ex) || Ui.Windowed) {
+            window?.Dispose();
+            window = null;
+            if (!Ui.Windowed) { Console.Error.WriteLine($"Lunden kunde inte startas. {ex.Message}"); return 1; }
+            return Ui.Fail(SetupLayout.ProductName + " kunde inte startas", ex.Message);
+        }
+        finally { window?.Dispose(); }
+    }
+
+    /// <summary>Waits (at most a minute) until the game shows its window or exits, so the progress dialog hands over.</summary>
+    static async Task WaitForWindow(Process game)
+    {
+        var timer = Stopwatch.StartNew();
+        while (timer.Elapsed < TimeSpan.FromMinutes(1)) {
+            try {
+                game.Refresh();
+                if (game.HasExited || game.MainWindowHandle != IntPtr.Zero) return;
+            }
+            catch (InvalidOperationException) { return; }
+            await Task.Delay(250);
         }
     }
 

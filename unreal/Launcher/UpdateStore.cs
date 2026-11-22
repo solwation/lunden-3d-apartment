@@ -15,6 +15,10 @@ internal sealed record InstallState(string Channel, Installation? Active = null,
 internal sealed class UpdateStore(string root, HttpClient client, Action<string, ReleaseFile, bool> verifyPublisher)
 {
     string StatePath => Path.Combine(root, "state.json");
+    /// <summary>#2420: (received, expected) bytes of the current download, for the progress dialog.</summary>
+    internal Action<long, long>? Progress { get; set; }
+    long progressDone, progressTotal;
+    internal void ExpectDownload(long total) { progressDone = 0; progressTotal = total; Progress?.Invoke(0, total); }
     internal string PathFor(Installation item) => Path.Combine(root, "versions", item.Directory);
     internal FileStream Lock() {
         Directory.CreateDirectory(root);
@@ -50,6 +54,9 @@ internal sealed class UpdateStore(string root, HttpClient client, Action<string,
         string tree = Path.Combine(staging, "tree");
         var files = manifest.Files.ToArray();
         long missing = 0, downloaded = 0;
+        // A cheap size-only estimate of what must be fetched; the loop below still decides by hash.
+        if (!dryRun) ExpectDownload(files.Where(f => !SameLength(Path.Combine(tree, f.Path), f)
+            && (state.Active == null || !SameLength(GameFile(state.Active, f.Path), f))).Sum(f => f.Size));
         foreach (var file in files)
         {
             ct.ThrowIfCancellationRequested();
@@ -172,6 +179,8 @@ internal sealed class UpdateStore(string root, HttpClient client, Action<string,
         File.Move(tmp, StatePath, overwrite: true);
     }
 
+    static bool SameLength(string path, ReleaseFile file) { var info = new FileInfo(path); return info.Exists && info.Length == file.Size; }
+
     static async Task<bool> Matches(string path, ReleaseFile file, CancellationToken ct)
     {
         var info = new FileInfo(path);
@@ -236,6 +245,8 @@ internal sealed class UpdateStore(string root, HttpClient client, Action<string,
                 await output.WriteAsync(buffer.AsMemory(0, n), ct);
                 count += n;
                 received(n);
+                progressDone += n;
+                Progress?.Invoke(progressDone, Math.Max(progressTotal, progressDone));
             }
             if (count != file.Size) throw new EndOfStreamException($"Hämtningen avbröts: {file.Path}.");
         }
