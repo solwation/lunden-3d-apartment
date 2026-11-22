@@ -1,0 +1,13 @@
+hus-a                  wall         web lum 0.8347 R/B 1.02 sRGB 235.1,236.1,231.1 unreal lum 0.9168 R/B 1.03 sRGB 246,246,238       ratio 1.10
+hus-a                  wall-low     web lum 0.8071 R/B 1.02 sRGB 231.6,232.6,227.6 unreal lum 0.9168 R/B 1.03 sRGB 246,246,238       ratio 1.14
+hus-a                  door         web lum 0.1437 R/B 2.13 sRGB 132,100,62        unreal lum 0.1578 R/B 2.07 sRGB 138.2,104.3,66.8  ratio 1.10
+hus-b                  wall         web lum 0.8341 R/B 1.02 sRGB 235,236,231       unreal lum 0.9168 R/B 1.03 sRGB 246,246,238       ratio 1.10
+hus-b                  wall-low     web lum 0.8084 R/B 1.02 sRGB 231.7,232.7,227.7 unreal lum 0.9168 R/B 1.03 sRGB 246,246,238       ratio 1.13
+hus-b                  door         web lum 0.1437 R/B 2.13 sRGB 132,100,62        unreal lum 0.1719 R/B 1.92 sRGB 142.4,108.8,74.3  ratio 1.20
+hus-c                  wall         web lum 0.8539 R/B 1.02 sRGB 237.4,238.4,233.4 unreal lum 0.9168 R/B 1.03 sRGB 246,246,238       ratio 1.07
+hus-c                  wall-low     web lum 0.8330 R/B 1.02 sRGB 234.8,235.8,230.8 unreal lum 0.9168 R/B 1.03 sRGB 246,246,238       ratio 1.10
+hus-c                  door         web lum 0.1523 R/B 2.08 sRGB 135,103,65        unreal lum 0.1715 R/B 1.92 sRGB 142.3,108.7,74.1  ratio 1.13
+hus-l                  wall         web lum 0.8728 R/B 1.02 sRGB 239.7,240.7,235.7 unreal lum 0.9168 R/B 1.03 sRGB 246,246,238       ratio 1.05
+hus-l                  wall-low     web lum 0.8691 R/B 1.02 sRGB 239.3,240.3,235.3 unreal lum 0.9168 R/B 1.03 sRGB 246,246,238       ratio 1.05
+hus-l                  door         web lum 0.1157 R/B 2.29 sRGB 120.1,90.1,52.3   unreal lum 0.1642 R/B 2.02 sRGB 139.1,106.9,69    ratio 1.42
+hus-l                  floor        web lum 0.4646 R/B 0.91 sRGB 172.3,183.2,189.3 unreal lum 0.6293 R/B 0.92 sRGB 200,209,217.8     ratio 1.35
