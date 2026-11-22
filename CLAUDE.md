@@ -275,6 +275,7 @@ When adding, changing or removing a cheat code, update the shared `src/cheats.js
 | [Rendering performance](docs/development/performance.md) | mesh merging, culling, warm-up, resolution or render budgets |
 | [Apartment facts, materials and references](docs/development/plan-material.md) | verified apartment/site facts, furniture references and chosen finishes |
 | [Unreal Engine version](docs/development/unreal.md) | the Windows Unreal project in `unreal/`, `tools/unreal-engine/` scripts, the web → Unreal export and `shared/` data contract, Git LFS, engine lock, MCP or Unreal build/packaging |
+| [README archive](docs/development/readme-archive.md) | looking for old feature or development notes that lived in the README before #2412 |
 | [Unreal inventory and release split](docs/development/unreal-inventory.md) | grouping of web features, dependencies and the release-1/later split for porting to Unreal (#2247) |
 
 Common routes: a wall or door change → architecture + plan/material facts + verification; a touch control → interactions + verification; a life item → life + food + storage; startup/update → deployment + storage + verification. Read several topics when a change crosses their responsibilities. The per-topic module/test maps retain the detailed historical implementation notes.
