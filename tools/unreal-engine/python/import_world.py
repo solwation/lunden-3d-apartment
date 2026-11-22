@@ -543,6 +543,81 @@ def check_unlit_labels(zone, table, labels):
     unreal.log(f"LUNDEN_IMPORT_UNLIT_LABELS zone {zone}: {len(seen)} unlit label keys, each unlit with its image and power share")
 
 
+def instance_overrides(table, zone):
+    """#2440: material-map.json `instanceOverrides.entries` that apply to the zone, with their key regex."""
+    entries = (table.get("instanceOverrides") or {}).get("entries", [])
+    return [(re.compile(e["match"]), e) for e in entries if not e.get("zones") or zone in e["zones"]]
+
+
+def overridden_instances(zone, table):
+    """(instance, entry) once per imported instance of the zone whose key an instanceOverrides entry matches (first
+    match wins). A rule's hand-made material is not the import's to change."""
+    entries, seen = instance_overrides(table, zone), set()
+    if not entries:
+        return
+    for _, mesh in zone_meshes(zone):
+        for slot in mesh.static_materials:
+            mi = slot.material_interface
+            if not isinstance(mi, unreal.MaterialInstanceConstant) or mi.get_path_name() in seen:
+                continue
+            seen.add(mi.get_path_name())
+            if not mi.get_path_name().startswith(f"{GENERATED_ROOT}/{zone}/"):
+                continue
+            entry = next((e for rx, e in entries if rx.search(mi.get_name())), None)
+            if entry is not None:
+                yield mi, entry
+
+
+def apply_instance_overrides(zone, table):
+    """#2440: change Interchange's own instance of a listed key instead of replacing it, so it keeps the export's colour,
+    roughness, metalness and emissive. `blend: opaque` draws a translucent key opaque (Unreal lights a translucent surface
+    from its translucency volume, which lit the patio beer at about 0.3 of an opaque surface and added blue sky light);
+    `masters` re-parents the instance from its Interchange master onto the listed project copy (a `gltf-surface-forward`
+    master: Surface ForwardShading instead of the volume), keeping the parent chain's blend and two-sided overrides."""
+    loaded, done = {}, 0
+    for mi, entry in overridden_instances(zone, table):
+        blend = mi.get_blend_mode()
+        overrides = effective_overrides(mi)
+        masters = entry.get("masters") or {}
+        if masters:
+            base = mi.get_base_material().get_path_name()
+            target = masters.get(base)
+            if target is None:
+                raise RuntimeError(f"{mi.get_path_name()} has glTF master {base}, which instanceOverrides entry {entry['match']} "
+                                   f"does not map")
+            if target not in loaded:
+                loaded[target] = eal.load_asset(target)
+                if loaded[target] is None:
+                    raise RuntimeError(f"material-map.json names {target}, which does not exist: run tools/unreal-engine/python/build_materials.py")
+            unreal.MaterialEditingLibrary.set_material_instance_parent(mi, loaded[target])
+        if entry.get("blend") == "opaque":
+            overrides.set_editor_property("override_blend_mode", True)
+            overrides.set_editor_property("blend_mode", unreal.BlendMode.BLEND_OPAQUE)
+        mi.set_editor_property("base_property_overrides", overrides)
+        unreal.MaterialEditingLibrary.update_material_instance(mi)
+        want = unreal.BlendMode.BLEND_OPAQUE if entry.get("blend") == "opaque" else blend
+        if mi.get_blend_mode() != want:
+            raise RuntimeError(f"{mi.get_path_name()}: blend mode {mi.get_blend_mode()} after the override, wanted {want}")
+        done += 1
+    unreal.log(f"LUNDEN_IMPORT_INSTANCE_OVERRIDES zone {zone}: {done} imported instances changed")
+    return done
+
+
+def check_instance_overrides(zone, table):
+    """--check (#2440): every imported instance an instanceOverrides entry matches carries the override."""
+    bad, n = [], 0
+    for mi, entry in overridden_instances(zone, table):
+        n += 1
+        if entry.get("blend") == "opaque" and mi.get_blend_mode() != unreal.BlendMode.BLEND_OPAQUE:
+            bad.append(f"{mi.get_name()} is {mi.get_blend_mode()}, not opaque")
+        masters = {v.split(".")[0] for v in (entry.get("masters") or {}).values()}
+        if masters and mi.get_base_material().get_path_name().split(".")[0] not in masters:
+            bad.append(f"{mi.get_name()} is on {mi.get_base_material().get_path_name()}, not {sorted(masters)}")
+    if bad:
+        raise RuntimeError(f"{zone}: {len(bad)} imported instances without their instanceOverrides entry, e.g. {bad[:3]}: run import_world.py")
+    unreal.log(f"LUNDEN_IMPORT_INSTANCE_OVERRIDES zone {zone}: {n} overridden instances, each as listed")
+
+
 def clear_zone(zone):
     """Remove everything an earlier import wrote for the zone. EditorAssetLibrary.delete_directory is unusable at this
     size on 5.8.4: it left the .umap behind, logged "Error opening file" for every package and took > 7 minutes for
@@ -586,6 +661,7 @@ def import_zone(zone, glb_path, glb_entry, manifest, table, map_sha, labels):
     materials = apply_materials(zone, table)
     apply_vertex_color(zone, table)  # after the rules: a key a rule maps keeps its hand-made material
     apply_unlit_labels(zone, table, labels)  # #2435 (textured, so the vertex-colour step left them on Interchange's master)
+    apply_instance_overrides(zone, table)  # #2440: before prepare_zone, which reads the blend mode for Nanite
     double = apply_double_sided(zone)
     shadows = apply_shadows(by_id, extras)
     prepare_zone(zone)
@@ -781,6 +857,7 @@ def main(argv):
         check_shadows(zone, glb_path)
         check_vertex_color(zone, table)
         check_unlit_labels(zone, table, labels)
+        check_instance_overrides(zone, table)
         if zone == "fixture":
             check_fixture(measurements)
         log_measures(zone, measure)

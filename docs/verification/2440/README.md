@@ -46,6 +46,7 @@ similar amount (orange cushion web 117, 46, 9, Unreal 128, 59, 35; yellow 136, 1
 |---|---|
 | `python3 tools/unreal-engine/tests/test_materials.py <export of 0422fa87>` | pass: 2 overridden keys; with the old `material-map.json` it fails on `translucent emissive key l1007-uteplats/std_d88a1c_r20_m0_a88_e6a3a05 stays on Interchange's translucent instance` |
 | `import_world.py --zones l1007-uteplats` | pass: `M_LundenGltfSurfaceForward` generated, `LUNDEN_IMPORT_INSTANCE_OVERRIDES … 2 imported instances changed`, its check `2 overridden instances, each as listed`, `LUNDEN_IMPORT_OK` |
+| `import_world.py <export of 49f726d7> --zones l1007-uteplats`, after rebasing onto #2435's unlit labels | pass: the same 2 overrides and checks, fingerprint `451dc53a56e10104` as in the picture run |
 | Beer colour, 21 June 14:00 | golden; R +2 %, G −9 %, B −20 % against the web; R/B 3.6 against 2.8 (before 1.4) |
 
 ## Pictures

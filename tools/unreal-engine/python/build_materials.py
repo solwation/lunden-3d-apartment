@@ -23,6 +23,10 @@ Every entry under `materials` becomes one asset in /Game/Lunden/Materials/:
                          .display_gain, 2^-EXPOSURE_BIAS) x `color` x (emergency + (1 - emergency) x PowerAvailable);
                          with `opacity` it is translucent (a transparent pane: colour x opacity over the scene).
                          Built under /Game/Lunden/Generated/ by import_world.py itself (no versioned asset, no LFS lock);
+  - "graph": "gltf-surface-forward"  (#2440) a copy of Interchange's glTF master `from` whose translucency lighting is
+                         Surface ForwardShading instead of the translucency volume: the importer re-parents the imported
+                         instances that material-map.json `instanceOverrides` lists onto it; generated like the
+                         baked-light masters;
   - "graph": "gltf-unlit-label"  (#2435) a copy of Interchange's unlit glTF master `from` (M_Unlit) whose EmissiveColor is
                          multiplied by the display gain and (PowerCut + (1 - PowerCut) x PowerAvailable), PowerCut a scalar
                          parameter (default 1): the web's unlit signs and labels with their image (MeshBasicMaterial with a
@@ -286,7 +290,7 @@ def spec_hash(path, spec):
         parts.extend([backdrop_material.canvas_hash(spec), Path(backdrop_material.__file__).read_text(encoding="utf-8")])
     if spec.get("graph") == BAKED:
         parts.append(river_material.display_gain())  # follows build_lighting.EXPOSURE_BIAS, as the river (#2410)
-    if spec.get("graph") in (GLTF_VC, GLTF_LABEL):  # a copy of an engine material: a new engine version rebuilds it
+    if spec.get("graph") in (GLTF_VC, GLTF_LABEL, GLTF_FORWARD):  # a copy of an engine material: a new engine version rebuilds it
         parts.append(unreal.SystemLibrary.get_engine_version())
     if spec.get("graph") == GLTF_LABEL:
         parts.append(river_material.display_gain())  # #2435: follows build_lighting.EXPOSURE_BIAS
@@ -584,6 +588,7 @@ def glass_graph(m, spec):
 
 GLTF_VC = "gltf-vertex-color"
 BAKED = "baked-light"  # #2431: generated at import time (prepare_generated_materials), so it lives under Generated/
+GLTF_FORWARD = "gltf-surface-forward"  # #2440: Interchange's master with ForwardShading translucency, generated at import
 GLTF_LABEL = "gltf-unlit-label"  # #2435: Interchange's unlit master x display gain x power, also generated at import time
 POWER_CUT = "PowerCut"  # #2435: the share of an unlit label's colour a power cut leaves (the instance's scalar parameter)
 VC_OUTPUTS = {"BaseColor": unreal.MaterialProperty.MP_BASE_COLOR, "EmissiveColor": unreal.MaterialProperty.MP_EMISSIVE_COLOR}
@@ -619,6 +624,32 @@ def build_gltf_vertex_color(path, spec, existing):
     mel.set_base_material_usage(m, NANITE, True)
     mel.recompile_material(m)
     return m
+
+
+def build_gltf_forward(path, spec, existing):
+    """#2440: duplicate Interchange's glTF master with Surface ForwardShading translucency (TLM_SURFACE_PER_PIXEL_LIGHTING).
+    Interchange's masters light a translucent instance from the translucency volume (TLM_SURFACE), which lit the patio
+    beer at about 0.3 of an opaque surface and gave its 24 % glass a blue sky veil. The copy keeps every parameter name,
+    so a re-parented instance keeps its values. An existing asset is deleted first, as for the vertex-colour copies."""
+    folder, name = path.rsplit("/", 1)
+    unreal.AssetRegistryHelpers.get_asset_registry().scan_paths_synchronous([spec["from"].rsplit("/", 1)[0]], True)
+    source = eal.load_asset(spec["from"])
+    if not isinstance(source, unreal.Material):
+        raise RuntimeError(f"{path}: source master {spec['from']} does not exist")
+    if existing is not None and not eal.delete_asset(path):
+        raise RuntimeError(f"could not delete {path} to rebuild it")
+    m = unreal.AssetToolsHelpers.get_asset_tools().duplicate_asset(name, folder, source)
+    if m is None:
+        raise RuntimeError(f"could not duplicate {spec['from']} to {path}")
+    m.set_editor_property("translucency_lighting_mode", unreal.TranslucencyLightingMode.TLM_SURFACE_PER_PIXEL_LIGHTING)
+    mel.set_base_material_usage(m, NANITE, True)
+    mel.recompile_material(m)
+    return m
+
+
+def gltf_forward_ok(m):
+    return (isinstance(m, unreal.Material) and m.get_editor_property("translucency_lighting_mode")
+            == unreal.TranslucencyLightingMode.TLM_SURFACE_PER_PIXEL_LIGHTING)
 
 
 def build_gltf_unlit_label(path, spec, existing):
@@ -837,6 +868,8 @@ def check(table):
                             for error in collection_ids.unresolved(asset))
         if spec.get("graph") == BAKED and not baked_light_ok(asset, spec):
             problems.append(f"{path}: not unlit, wrong face setting, or emissive not multiplied by the vertex colour")
+        if spec.get("graph") == GLTF_FORWARD and not gltf_forward_ok(asset):
+            problems.append(f"{path}: translucency lighting is not Surface ForwardShading")
         if spec.get("graph") == GLTF_LABEL and not unlit_label_ok(asset):
             problems.append(f"{path}: not unlit, or EmissiveColor not multiplied by the display gain and {POWER_CUT} supply")
         if spec.get("graph") == GLTF_VC and not uses_vertex_color(asset, VC_OUTPUTS[spec["output"]]):
@@ -882,12 +915,14 @@ def build_entries(materials, force=False):
                 and (spec.get("graph") != backdrop_material.GRAPH or backdrop_material.check(existing, spec, uses_vertex_color))
                 and (spec.get("graph") != BAKED or baked_light_ok(existing, spec))
                 and (spec.get("graph") != GLTF_LABEL or unlit_label_ok(existing))
+                and (spec.get("graph") != GLTF_FORWARD or gltf_forward_ok(existing))
                 and not (isinstance(existing, unreal.Material) and collection_ids.unresolved(existing))):
             unreal.log(f"LUNDEN_MATERIAL {path}: kept (spec {want})")
             kept += 1
             continue
         build = (build_instance if "parent" in spec else build_gltf_vertex_color if spec.get("graph") == GLTF_VC
-                 else build_gltf_unlit_label if spec.get("graph") == GLTF_LABEL else build_master)
+                 else build_gltf_unlit_label if spec.get("graph") == GLTF_LABEL
+                 else build_gltf_forward if spec.get("graph") == GLTF_FORWARD else build_master)
         asset = build(path, spec, existing)
         stamp(asset, path, spec)
         if not eal.save_loaded_asset(asset, only_if_is_dirty=False):
@@ -919,10 +954,10 @@ def prepare_landscape_materials(table, check_only, river_surface):
 
 def prepare_generated_materials(table, check_only):
     """#2431: build or check the generated masters every zone import may need before its rules run (the baked-light
-    stairwells of hus-l and kvarteret, #2435's unlit label master of every zone with a sign, label or screen). They live
-    under /Game/Lunden/Generated/ (Git-ignored), so the importer makes them on each machine; an unchanged spec hash keeps
-    the asset."""
-    subset = {path: spec for path, spec in table["materials"].items() if spec.get("graph") in (BAKED, GLTF_LABEL)}
+    stairwells of hus-l and kvarteret, #2435's unlit label master of every zone with a sign, label or screen, #2440's
+    Surface ForwardShading copies that `instanceOverrides` re-parents onto). They live under /Game/Lunden/Generated/
+    (Git-ignored), so the importer makes them on each machine; an unchanged spec hash keeps the asset."""
+    subset = {path: spec for path, spec in table["materials"].items() if spec.get("graph") in (BAKED, GLTF_LABEL, GLTF_FORWARD)}
     if not subset:
         return
     if check_only:

@@ -35,6 +35,11 @@
      map) is marked `unlit` with a power-cut share 0-1, carries KHR_materials_unlit and its base colour texture in every GLB,
      and is not replaced by a rule, and material-map.json `unlitLabel` names a generated gltf-unlit-label copy of
      Interchange's unlit master, so the importer can put it on that master (import_world.py --check verifies the assets).
+ 12. (#2440) `instanceOverrides`: every entry matches a key of the export in its zones that no rule replaces, says why,
+     draws only a near-opaque key opaque (web opacity >= OPAQUE_MIN), and maps the key's Interchange master onto a listed
+     `gltf-surface-forward` copy of that master under /Game/Lunden/Generated/. Every translucent key with an emissive
+     colour (a glowing translucent fitting: the patio beer) has a rule or an override: on Interchange's translucent
+     instance the translucency volume lit the beer at about 0.3 of an opaque surface (grey-brown instead of golden).
 --table prints one line per key: key, nodes, rule material or "default: <reason>".
 Exit 0 when all hold, 1 otherwise; prints MATERIAL_COVERAGE_OK.
 """
@@ -56,6 +61,8 @@ MASTER_PARAMS = {
     "gravel": {"Color", "VertexColorWeight"},
 }
 GLTF_VC = "gltf-vertex-color"  # #2321: build_materials.py's copy of an Interchange glTF master times the vertex colour
+GLTF_FORWARD = "gltf-surface-forward"  # #2440: build_materials.py's copy of an Interchange master with ForwardShading
+OPAQUE_MIN = 0.85  # #2440: a translucent key drawn opaque loses at most this much see-through
 BAKED = "baked-light"  # #2431: build_materials.py's unlit master, emissive = vertex colour x display gain x power
 GLTF_LABEL = "gltf-unlit-label"  # #2435: Interchange's unlit master x display gain x power, for the web's unlit labels
 GLTF_MASTERS = (("KHR_materials_unlit", "/InterchangeAssets/gltf/M_Unlit.M_Unlit"),  # Interchange's choice by extension
@@ -225,6 +232,59 @@ def vertex_color_check(export_dir, table, rule_rx, errors):
     return len(keys)
 
 
+def glb_master(m):
+    """The glTF master Interchange gives a GLB material (its extensions decide, else M_Default)."""
+    return next((path for ext, path in GLTF_MASTERS if ext in (m.get("extensions") or {})), GLTF_DEFAULT)
+
+
+def instance_override_check(export_dir, table, rule_rx, errors):
+    """#2440: `instanceOverrides.entries` against the export; returns {key: entry match} of the overridden keys."""
+    mats = table["materials"]
+    entries = (table.get("instanceOverrides") or {}).get("entries", [])
+    mpath = os.path.join(export_dir, "measurements.json")
+    info = json.load(open(mpath, encoding="utf-8")).get("materials", {}) if os.path.isfile(mpath) else {}
+    used = {}  # (zone, key) -> GLB material
+    for name in sorted(os.listdir(export_dir)):
+        if name.endswith(".glb") and name != "fixture.glb":
+            for m in glb_json(os.path.join(export_dir, name)).get("materials", []):
+                used[(name[:-4], m.get("name", ""))] = m
+    replaced = lambda key: any(rx.search(key) for rx, _, _ in rule_rx)
+    hits = {}
+    for e in entries:
+        rx = re.compile(e["match"])
+        where = [(z, k, m) for (z, k), m in used.items() if rx.search(k) and (not e.get("zones") or z in e["zones"])]
+        if not str(e.get("reason", "")).strip():
+            errors.append(f"instanceOverrides {e['match']} has no reason")
+        if not where:
+            errors.append(f"instanceOverrides {e['match']} matches no key of the export in {e.get('zones') or 'any zone'}")
+        if not ({"blend", "masters"} & set(e)):
+            errors.append(f"instanceOverrides {e['match']} changes nothing (needs blend or masters)")
+        if e.get("blend") not in (None, "opaque"):
+            errors.append(f"instanceOverrides {e['match']}: blend {e['blend']!r} is not supported (only \"opaque\")")
+        for src, dst in (e.get("masters") or {}).items():
+            spec = mats.get(dst.split(".")[0])
+            if not spec or spec.get("graph") != GLTF_FORWARD or str(spec.get("from")).split(".")[0] != src.split(".")[0] or not dst.startswith("/Game/Lunden/Generated/"):
+                errors.append(f"instanceOverrides {e['match']}: {src} -> {dst} is not a listed generated {GLTF_FORWARD} copy of {src}")
+        for zone, key, m in where:
+            hits[key] = e["match"]
+            if replaced(key):
+                errors.append(f"instanceOverrides {e['match']}: a rule replaces {key}, so the override never applies")
+            opacity = (info.get(key) or {}).get("opacity", 1)
+            if e.get("blend") == "opaque" and opacity < OPAQUE_MIN:
+                errors.append(f"instanceOverrides {e['match']}: {key} is {opacity:.0%} opaque on the web; drawing it opaque "
+                              f"needs at least {OPAQUE_MIN:.0%}")
+            if e.get("masters") and glb_master(m) not in e["masters"]:
+                errors.append(f"instanceOverrides {e['match']}: {zone}/{key} gets {glb_master(m)} from Interchange, which it does not map")
+    for (zone, key), m in sorted(used.items()):
+        if re.search(r"_a\d+", key) and re.search(r"_e[0-9a-f]{6}", key) and not replaced(key):
+            first = next((e for e in entries if re.search(e["match"], key)), None)
+            if first is None or (first.get("zones") and zone not in first["zones"]):
+                errors.append(f"translucent emissive key {zone}/{key} stays on Interchange's translucent instance: its "
+                              "translucency volume lit the patio beer at about 0.3 of an opaque surface (#2440); add an "
+                              "instanceOverrides entry or a rule")
+    return hits
+
+
 def two_sided(mats, path):
     """The material's effective two-sidedness: its own `twoSided`, else its master's (a master without one is single-sided)."""
     spec = mats.get(path.split(".")[0], {})
@@ -331,7 +391,7 @@ def main(argv):
                 errors.append(f"{path}: the mortar footprint filter expects alternate half-brick rows")
             if unknown:
                 errors.append(f"{path}: {parent.get('graph')} master has no parameter(s) {sorted(unknown)}")
-        elif spec.get("graph", "constant") not in ("constant", "river", GLTF_VC, BAKED, GLTF_LABEL, *MASTER_PARAMS):
+        elif spec.get("graph", "constant") not in ("constant", "river", GLTF_VC, GLTF_FORWARD, BAKED, GLTF_LABEL, *MASTER_PARAMS):
             errors.append(f"{path}: unknown graph {spec.get('graph')}")
         if spec.get("graph") == BAKED and (not path.startswith("/Game/Lunden/Generated/")
                                            or not 0 <= spec.get("emergency", -1) <= 1 or spec.get("twoSided") is not True
@@ -468,6 +528,10 @@ def main(argv):
     for r in rules:
         if "singleSided" in r and not str(r["singleSided"]).strip():
             errors.append(f"rule {r['match']} has an empty singleSided reason")
+
+    # 12. #2440: overrides on Interchange's own instances
+    overridden = instance_override_check(export_dir, table, rule_rx, errors)
+    print(f"instance overrides (#2440): {len(overridden)} key(s) changed on Interchange's instance ({', '.join(sorted(overridden))})")
 
     # 7. #2321: vertex colours drawn in every zone
     vc_keys = vertex_color_check(export_dir, table, rule_rx, errors)

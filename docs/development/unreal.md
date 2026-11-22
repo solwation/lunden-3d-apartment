@@ -2730,7 +2730,8 @@ What 5.8.4 does, and what the importer does about it:
   narrowed by a `mesh` regex on the StaticMesh name) replace the imported instances on the mesh slots by hand-made
   materials ([Surface materials](#surface-materials-2282)). Other keys keep Interchange's glTF material instance
   (colour, roughness, metalness, opacity and emissive from the export); a vertex-coloured key's instance is then
-  re-parented onto a master that draws the vertex colour ([Vertex colours](#vertex-colours-2321)).
+  re-parented onto a master that draws the vertex colour ([Vertex colours](#vertex-colours-2321)), and a key listed
+  under `instanceOverrides` gets its override (#2440, [Surface materials](#surface-materials-2282)).
 - **Clearing a zone.** `EditorAssetLibrary.delete_directory` left the `.umap` behind, logged *Error opening file* for
   every package and was still working after 7 minutes on l1007's 2,426 assets (killed). `Generated/<zone>/` belongs to
   the importer alone, so it removes the folder on disk and rescans the asset registry when none of its packages is
@@ -2846,6 +2847,24 @@ canvas textures do not travel. `tools/unreal-engine/material-map.json` therefore
   `tests/test_furnishing.py` checks every such rule in every level (see [Furnishing](#furnishing-and-pictures-2289)).
 - `defaults`: keys left on Interchange's instance, each with a reason (plain opaque fittings, transparent and
   emissive fittings, textured fittings that belong to furnishing #2289, grass for #2281).
+- **Instance overrides (#2440).** `instanceOverrides.entries` change Interchange's own instance of a key instead of
+  replacing it, so the instance keeps the export's colour, roughness, metalness and emissive. Each entry has a key regex
+  (`match`), optional `zones` and a `reason`. `import_world.py` applies it after the rules and vertex colours, before
+  the Nanite step, and `--check` verifies it.
+  - `"blend": "opaque"` draws a translucent key opaque. It is allowed only for keys at least 85 % opaque on the web.
+  - `masters` re-parents the instance from its Interchange master onto a `gltf-surface-forward` copy and keeps the
+    parent chain's blend and two-sided overrides. The copy is `M_LundenGltfSurfaceForward`, generated under
+    `Generated/ImportMaterials/` like the baked-light master: M_Default with Surface ForwardShading translucency.
+
+  Interchange's masters, and `M_LundenGlass` too, light a translucent surface from the translucency volume
+  (`TLM_SURFACE`). In the patio view of 21 June at 14:00 the volume lit the beer (`std_d88a1c_r20_m0_a88_e6a3a05`,
+  88 %) at about 0.3 of the same colour drawn opaque. It also gave the 24 % pint glass (`phys_f5fafb_r4_m0_a24_ds`) a
+  blue sky veil. The beer was grey-brown (sRGB 108, 87, 73 against the web's 176, 131, 55). The patio beer is now drawn
+  opaque and its glasses use the forward copy, both in `l1007-uteplats` only. The same glass key on the Bestå's crystal
+  glasses in l1007 is unchanged. The general rule for translucent lighting is #2459. Emissive keys lack the web's
+  `emissiveIntensity` and the display gain (#2460). For the beer that moves the colour by 1–2 levels.
+  `tests/test_materials.py` (check 11) checks the entries against the export. It fails when a translucent emissive key
+  stays on Interchange's translucent instance. [Verification](../verification/2440/README.md).
 
 `scope` lists the zones and node kinds whose keys count as building and ground surfaces. Before an import, after the
 export, run the coverage check (no Unreal needed):
