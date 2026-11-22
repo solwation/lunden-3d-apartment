@@ -1042,6 +1042,8 @@ sky's brightness and the locked exposure.
   background at astronomical night. The correction fades out with cloud cover and between astronomical and
   civil twilight. Run the paired captures and `crop-stats.cjs <out> <crops.json> --check-lighting` to check
   the three START sky crops and the accepted living-room and upper-floor views against 0.8–1.25 × the web.
+  Measured after #2396's tone mapping, on ea08ec2d: the night sky 1.22 × the web (0.59 before), the day and rain skies
+  1.13 and 0.87, and the 22:00 and 14:00 room frames 0.82–1.06 ([#2366 pairs](../verification/2366/README.md)).
 - **Daylight indoors, the sky's brightness and the exposure (#2313).** Measured with `crop-stats.cjs` against the web,
   the 14:00 living room was 0.26 × and the rain sky at START 0.37 × the web's mean luminance. The web lights every
   surface with its hemisphere light (`LIGHTING.sky` overcast.hemi 2.0 → clear.hemi 1.5, × daylight, + `DAY.nightAmbient`,
