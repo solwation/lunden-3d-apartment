@@ -14,7 +14,9 @@ const example = 'https://release-preview.invalid/app-v0.0.0/Kv-Lunden-Unreal-L10
 
 async function openSettings(page, touch) {
   await skipNameDialog(page, {timeout: 120000});
-  const early = page.locator('#loading-settings');
+  // #2414: once the visit is ready, #loading fades out (.done: no pointer events, hidden 400 ms later); its button is
+  // still "visible" during the fade, so only a cover that is not fading offers the early trigger.
+  const early = page.locator('#loading:not(.done) #loading-settings');
   const trigger = await early.isVisible() ? early : page.locator('#menu-settings');
   if (touch) await trigger.tap();
   else await trigger.click();
