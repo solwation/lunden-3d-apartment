@@ -1,0 +1,95 @@
+{
+  "engine": "5.8.4-58902052+++UE5+Release-5.8",
+  "map": "/Game/Lunden/Maps/L_Lunden",
+  "date": "2026-06-21",
+  "loadedLevels": [
+    "/Game/Lunden/Generated/Interaction/Level_l1007_interaction",
+    "/Game/Lunden/Generated/L1007World/Level_l1007_collision",
+    "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats",
+    "/Game/Lunden/Generated/l1007-entre/Level_l1007-entre",
+    "/Game/Lunden/Generated/Interaction/Level_hus-l_interaction",
+    "/Game/Lunden/Generated/Interaction/Level_kvarteret_interaction",
+    "/Game/Lunden/Generated/ExteriorWorld/Level_exterior_collision",
+    "/Game/Lunden/Generated/gard/Level_gard",
+    "/Game/Lunden/Generated/omgivning/Level_omgivning",
+    "/Game/Lunden/Generated/SiteWorld/Level_site_collision",
+    "/Game/Lunden/Generated/Lighting/Level_lighting",
+    "/Game/Lunden/Generated/FacadeLighting/Level_facade_lighting",
+    "/Game/Lunden/Generated/VegetationWorld/Level_vegetation_foliage",
+    "/Game/Lunden/Generated/Interaction/Level_lift_buttons",
+    "/Game/Lunden/Avatar/Looks/Level_LundenMirror",
+    "/Game/Lunden/Generated/fond/Level_fond"
+  ],
+  "streamedInMemory": [],
+  "naniteOffInMemory": 3491,
+  "hiddenCollisionActors": 1033,
+  "lamps": 38,
+  "cameras": [
+    {
+      "xyz": [
+        -5600.0,
+        5850.0,
+        -138.0
+      ],
+      "yaw": -90.00000000000003,
+      "pitch": 5.000000000000003,
+      "roll": -0.0,
+      "horizontalFov": 104.50486755371094,
+      "width": 1440,
+      "height": 810,
+      "id": "retaining-wall",
+      "lighting": "day",
+      "hour": 14,
+      "exposureBias": -1.96503746509552,
+      "date": {
+        "year": 2026,
+        "month": 6,
+        "day": 21
+      }
+    },
+    {
+      "xyz": [
+        -1650.0,
+        3900.0,
+        -138.0
+      ],
+      "yaw": -90.00000000000003,
+      "pitch": 5.000000000000003,
+      "roll": -0.0,
+      "horizontalFov": 104.50486755371094,
+      "width": 1440,
+      "height": 810,
+      "id": "box-wall-b",
+      "lighting": "day",
+      "hour": 14,
+      "exposureBias": -1.96503746509552,
+      "date": {
+        "year": 2026,
+        "month": 6,
+        "day": 21
+      }
+    },
+    {
+      "xyz": [
+        -8000.0,
+        3000.0,
+        -66.0
+      ],
+      "yaw": 0.0,
+      "pitch": 5.000000000000001,
+      "roll": -0.0,
+      "horizontalFov": 104.50486755371094,
+      "width": 1440,
+      "height": 810,
+      "id": "box-wall-west",
+      "lighting": "day",
+      "hour": 14,
+      "exposureBias": -1.96503746509552,
+      "date": {
+        "year": 2026,
+        "month": 6,
+        "day": 21
+      }
+    }
+  ]
+}

@@ -1,0 +1,40 @@
+{
+ "width": 1440,
+ "height": 810,
+ "horizontalFov": 104.50486755371094,
+ "cameras": [
+  {
+   "id": "retaining-wall",
+   "xyz": [
+    -5600,
+    5850,
+    -138
+   ],
+   "yaw": -90,
+   "pitch": 5.0,
+   "lighting": "day"
+  },
+  {
+   "id": "box-wall-b",
+   "xyz": [
+    -1650,
+    3900,
+    -138
+   ],
+   "yaw": -90,
+   "pitch": 5.0,
+   "lighting": "day"
+  },
+  {
+   "id": "box-wall-west",
+   "xyz": [
+    -8000,
+    3000,
+    -66
+   ],
+   "yaw": 0,
+   "pitch": 5.0,
+   "lighting": "day"
+  }
+ ]
+}

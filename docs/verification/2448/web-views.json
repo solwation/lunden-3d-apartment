@@ -1,0 +1,32 @@
+[
+ {
+  "id": "retaining-wall",
+  "subject": "the box retaining wall south of Hus C (z 52.5) from the park, looking north (#2427, #2448)",
+  "x": -56,
+  "z": 58.5,
+  "feetY": -3,
+  "yawDeg": 0,
+  "pitchDeg": 5,
+  "lighting": "day"
+ },
+ {
+  "id": "box-wall-b",
+  "subject": "the box retaining wall north of the park (z 33.3, x -41.7..-9.76) with its three windows, looking north (#2448)",
+  "x": -16.5,
+  "z": 39,
+  "feetY": -3,
+  "yawDeg": 0,
+  "pitchDeg": 5,
+  "lighting": "day"
+ },
+ {
+  "id": "box-wall-west",
+  "subject": "the box's west retaining wall (x -70.5) from Karpv\u00e4gen, looking east (#2448)",
+  "x": -80,
+  "z": 30,
+  "feetY": -2.282,
+  "yawDeg": -90,
+  "pitchDeg": 5,
+  "lighting": "day"
+ }
+]
