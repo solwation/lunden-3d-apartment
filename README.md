@@ -7,7 +7,7 @@ Allt i webbläsaren, utan installation.
 
 ### ▶ [Spela nu](https://solwation.github.io/lunden-3d-apartment/)
 
-Fungerar på dator, surfplatta och mobil.
+Fungerar på dator, surfplatta och mobil, och finns som [beta för Windows](#windowsversionen-av-lunden).
 
 ## Det här kan du göra
 
@@ -44,8 +44,11 @@ upp när det finns något att göra. På iPhone lägger du först till sidan på
 
 ## Windowsversionen av Lunden
 
+**Beta.** Lunden finns nu också som en tidig betaversion för Windows. Den har ännu färre saker att göra än
+webbversionen, men uppdaterar sig själv när nya versioner kommer.
+
 <!-- stable-windows-download -->
-Den stabila Windowsversionen är ännu inte publicerad.
+[Ladda ned Lunden för Windows (64 bitar)](https://github.com/solwation/lunden-3d-apartment/releases/download/v0.1.1/Lunden-Setup-0.1.1-win-x64.exe)
 <!-- /stable-windows-download -->
 
 **Om Windows visar en SmartScreen-varning.** En ny signerad fil kan vara ovanlig. Stäng varningen och högerklicka på den

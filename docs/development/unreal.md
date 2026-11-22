@@ -2453,6 +2453,20 @@ private key in the `sign-manifest.yml` job. The test pair must be carried on the
 promotion, a real install and update on Windows, the Swedish notes for that tag, the two links via
 `stable-download.mjs --write`, and a changelog entry.
 
+#### Stable channel published as beta (2026-11-22)
+
+The first stable release is `app-v0.1.1` (latest since 2026-11-22). It holds only the manifests: `lunden-manifest.json`
+(made by `make-manifest.mjs --channel stable --tag v0.1.1 --content-version 1 --published 2026-11-22T12:00:00Z` from the
+v0.1.1 archive and launcher, so every URL points at the v0.1.1 assets; identical to the test manifest except channel and
+instant) with its signature from `sign-manifest.yml` (run 45001029869, dispatched from `v0.1.1`), and the v0.1.1 test
+pair carried over unchanged. `promote-unreal-release.yml` (run 45001140733) verified both channels anonymously
+(24 objects, 537,565,490 bytes each) and promoted it. The signed `Lunden.exe --dry-run` resolves the default stable channel
+(463,898,610 bytes to fetch) and `--channel test` still works. `stable-download.mjs --write` linked the setup from README and
+the web menu; the menu entries carry `windows-only` and `index.html` hides them unless the user agent says Windows, so
+phones, iPads and Macs do not offer them while a Surface in touch mode does. README calls it a beta. Not done here: a real
+install and update on Windows (it opens the game window), notes rendered with `release-notes.mjs`, and the build PC
+preparation; they remain in #2377.
+
 **Release gate.** `release.ps1` runs `node tools/unreal-engine/check-import.mjs` before BuildCookRun and builds nothing
 unless it exits 0: (1) the export in `Import/` is current for the checkout (`check-export.mjs`); (2) every zone's
 `import-stamp.json` names that zone's GLB SHA-256, the checkout's `IMPORTER_VERSION`, material map and locked engine,

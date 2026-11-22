@@ -30,12 +30,13 @@ export function linkedSources(readme, html, setup) {
     return source.slice(0, source.indexOf(begin) + begin.length) + '\n' + content + '\n' + source.slice(source.indexOf(end));
   };
   const label = 'Ladda ned Lunden för Windows (64 bitar)';
+  // #2377: the menu entries are Windows-only (index.html hides .windows-only unless the user agent says Windows).
   // #2377: the menu carries the same SmartScreen help as README (its section "Windowsversionen av Lunden")
   const help = 'https://github.com/solwation/lunden-3d-apartment#windowsversionen-av-lunden';
   return [substitute(readme, `[${label}](${setup})`),
-    substitute(html, `        <a class="menu-btn" href="${setup}"><span class="btn-text"><b>${label}</b>` +
+    substitute(html, `        <a class="menu-btn windows-only" href="${setup}"><span class="btn-text"><b>${label}</b>` +
       `<span class="btn-desc">Installationsprogram signerat av ${PUBLISHER}</span></span></a>\n` +
-      `        <p class="resume">Varnar Windows SmartScreen? <a class="windows-signature-help" href="${help}" target="_blank" rel="noopener">Så kontrollerar du signaturen</a>.</p>`)];
+      `        <p class="resume windows-only">Varnar Windows SmartScreen? <a class="windows-signature-help" href="${help}" target="_blank" rel="noopener">Så kontrollerar du signaturen</a>.</p>`)];
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {

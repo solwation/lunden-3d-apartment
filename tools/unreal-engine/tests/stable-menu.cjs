@@ -42,7 +42,10 @@ async function main() {
   const readme = await fs.readFile(path.resolve(__dirname, '../../../README.md'), 'utf8');
   const browser = await launch();
   try {
-    for (const [name, options] of [['desktop', { viewport: {width: 1280, height: 800} }], ['touch', devices['Pixel 7']]]) {
+    // #2377: the download is offered on Windows only: a desktop and a touch-mode Windows tablet (Surface) show it, Android hides it.
+    const windows = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36';
+    for (const [name, options] of [['desktop', { viewport: {width: 1280, height: 800}, userAgent: windows }],
+                                   ['android', devices['Pixel 7']], ['touch', { ...devices['Pixel 7'], userAgent: windows }]]) {
       console.log(name, 'opening the normal menu and the local preview');
       const ctx = await browser.newContext({ ...options, serviceWorkers: 'block', acceptDownloads: false });
       try {
@@ -62,8 +65,22 @@ async function main() {
         await openSettings(page, name === 'touch');
         const dialog = page.locator('#settings-dialog'), setup = dialog.getByRole('link', {name: new RegExp(label.replace(/[()]/g, '\\$&'))});
         const help = dialog.getByRole('link', {name: helpLabel});
-        assert.equal(await setup.count(), 0);
-        assert.equal(await help.count(), 0);
+        // #2377: once a stable release is linked, the normal menu carries the official signed setup; before that, nothing.
+        const published = readme.match(/\]\((https:\/\/github\.com\/solwation\/lunden-3d-apartment\/releases\/download\/(?:app-)?v\d+\.\d+\.\d+\/Lunden-Setup-[^)]+)\)/)?.[1];
+        if (name === 'android') {
+          assert.equal(await dialog.locator('a.windows-only').count(), published ? 1 : 0); // present but not shown
+          assert.equal(await setup.count(), 0);
+          assert.equal(await help.count(), 0);
+          await dialog.locator('.card').screenshot({path: path.join(out, 'android-menu.png')});
+          console.log('android: no Windows download in the menu');
+          continue;
+        }
+        assert.equal(await setup.count(), published ? 1 : 0);
+        assert.equal(await help.count(), published ? 1 : 0);
+        if (published) {
+          assert.equal(await setup.getAttribute('href'), published);
+          if (name === 'desktop') await dialog.locator('.card').screenshot({path: path.join(out, 'desktop-menu.png')});
+        }
         preview = true;
         const ready = new URL(base);
         ready.searchParams.set('test', 'lazy'); // Keep the normal settings UI; skip continuous drawing behind its opaque card.

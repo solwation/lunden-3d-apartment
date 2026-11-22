@@ -2,6 +2,7 @@
 <html lang="sv">
 <head>
   <meta charset="utf-8">
+  <script>/* #2377: the Windows download only makes sense on Windows (incl. a Surface in touch mode) */ if (!/Windows/.test(navigator.userAgent)) document.documentElement.classList.add('not-windows');</script>
   <script>
     // Carrying on after a reload (#222: "Ladda om", the automatic reload, F5)? Decided before anything is drawn, so
     // the start screen never flashes up: a valid record with an input mode sets html.resuming (the start screen is
@@ -529,6 +530,7 @@
     #jump-btn { position: fixed; right: calc(178px + var(--sr)); bottom: calc(100px + var(--sb)); width: 48px; height: 48px; border: 0; border-radius: 50%; background: var(--panel); font-size: 22px; touch-action: none; user-select: none; -webkit-user-select: none; }
     .resume { font-size: 14px; background: #e8f2f6; border-radius: 6px; padding: 8px 10px; }
     .resume[hidden] { display: none; }
+    .not-windows .windows-only { display: none; }
     @media (pointer: coarse) { .windows-signature-help { display: inline-flex; align-items: center; min-height: 44px; } }
     .resume .linkish { margin: 0 0 0 6px; }
     .linkish { border: 0; background: none; color: #6a7c84; font: 13px system-ui, sans-serif; text-decoration: underline; cursor: pointer; padding: 0; margin-top: 12px; }
@@ -1263,6 +1265,8 @@
         </button>
         </div>
 <!-- stable-windows-download -->
+        <a class="menu-btn windows-only" href="https://github.com/solwation/lunden-3d-apartment/releases/download/v0.1.1/Lunden-Setup-0.1.1-win-x64.exe"><span class="btn-text"><b>Ladda ned Lunden för Windows (64 bitar)</b><span class="btn-desc">Installationsprogram signerat av Svep Design Center AB</span></span></a>
+        <p class="resume windows-only">Varnar Windows SmartScreen? <a class="windows-signature-help" href="https://github.com/solwation/lunden-3d-apartment#windowsversionen-av-lunden" target="_blank" rel="noopener">Så kontrollerar du signaturen</a>.</p>
 <!-- /stable-windows-download -->
         <button id="menu-privacy" class="menu-btn" type="button">
           <span class="btn-text">
