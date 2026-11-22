@@ -1,0 +1,12 @@
+facade-a-day           lawn-foreground web lum 0.1764 R/B 2.33 sRGB 120.9,119.2,51.8  unreal lum 0.2025 R/B 1.79 sRGB 124.6,127.9,69.8  ratio 1.15
+facade-a-day           lawn-left    web lum 0.2032 R/B 2.22 sRGB 135.6,125.2,61    unreal lum 0.2204 R/B 1.80 sRGB 135.3,131.3,75    ratio 1.08
+facade-a-day           paving-walk  web lum 0.4341 R/B 1.10 sRGB 183.7,173.3,166.5 unreal lum 0.5071 R/B 1.04 sRGB 191.8,187.6,184.1 ratio 1.17
+facade-b-day           boule-court  web lum 0.5232 R/B 1.52 sRGB 211.1,187.4,139.3 unreal lum 0.5525 R/B 1.38 sRGB 209,194.6,151     ratio 1.06
+facade-b-day           gravel-left  web lum 0.4854 R/B 1.17 sRGB 192.7,182.6,165.3 unreal lum 0.5403 R/B 1.13 sRGB 199.8,192.5,177.7 ratio 1.11
+facade-b-day           lawn-by-trunk web lum 0.1893 R/B 2.34 sRGB 132.6,119,56.7    unreal lum 0.2145 R/B 1.87 sRGB 135,127.7,72.3    ratio 1.13
+facade-b-day           gravel-right web lum 0.2418 R/B 1.84 sRGB 136,129.2,74      unreal lum 0.2921 R/B 1.47 sRGB 145.3,144.1,98.7  ratio 1.21
+facade-a-june          lawn-foreground web lum 0.3640 R/B 1.69 sRGB 116.3,178.8,68.7  unreal lum 0.4152 R/B 1.45 sRGB 125.9,188.9,86.7  ratio 1.14
+facade-b-june          boule-court  web lum 0.7408 R/B 1.46 sRGB 242.4,220.3,166.1 unreal lum 0.7816 R/B 1.38 sRGB 244.2,227.3,176.6 ratio 1.06
+facade-b-june          gravel-left  web lum 0.8068 R/B 1.21 sRGB 244.7,230.3,202.7 unreal lum 0.8286 R/B 1.18 sRGB 245.1,233.8,207.4 ratio 1.03
+facade-b-june          lawn-by-trunk web lum 0.3715 R/B 1.66 sRGB 120.1,179,72.4    unreal lum 0.4296 R/B 1.44 sRGB 130.2,190.6,90.4  ratio 1.16
+facade-a-january       lawn-foreground web lum 0.8204 R/B 0.98 sRGB 234.5,232.9,238.9 unreal lum 0.2031 R/B 1.78 sRGB 131,126.1,73.5    ratio 0.25

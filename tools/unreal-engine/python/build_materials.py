@@ -9,6 +9,11 @@ Every entry under `materials` becomes one asset in /Game/Lunden/Materials/:
   - "graph": "glass"     the translucent glazing master M_LundenGlass;
   - "graph": "grass"     the lawn master M_LundenGrass (#2308): src/grass.js's detail map rebuilt procedurally in UV
                          metres (a grey ground with short random blade strokes, tinted by the lawn's colour);
+  - "graph": "gravel"    the gravel master M_LundenGravel (#2433): src/gravelsurface.js's stone map (exported, as
+                         T_LundenGravelColour / T_LundenGravelSurface) in world-metre UVs times the colour and vertex colour;
+  - "litter": <kind>     (#2433, grass and gravel) the fallen autumn leaves of src/leaflitter.js after the surface's own
+                         colour, by MPC_LundenVegetation.Month, from the exported density map T_LundenLeafLitter
+                         (ground_litter.py; the textures are imported from measurements.json before the masters);
   - "graph": "gltf-vertex-color"  (#2321) a copy of Interchange's glTF master `from` (M_Default, M_Unlit) whose `output`
                          (BaseColor, or EmissiveColor for the unlit master) is multiplied by the vertex colour: the
                          importer re-parents every vertex-coloured key's instance onto it (material-map.json `vertexColor`);
@@ -43,6 +48,7 @@ import unreal
 
 sys.path.insert(0, str(Path(__file__).parent))
 import backdrop_material  # noqa: E402
+import ground_litter  # noqa: E402
 import river_material  # noqa: E402
 import collection_ids  # noqa: E402
 
@@ -207,7 +213,8 @@ float3 vc = lerp(float3(1.0, 1.0, 1.0), VertexColor.rgb, VertexColorWeight);
 // src/grass.js grassMaterial: the summer lawn/roadside tint grades towards GRASS.autumn in linear space.
 const float autumnMix[12] = { AUTUMN_MIX };
 float3 lawn = lerp(Color.rgb, Autumn.rgb, autumnMix[clamp((int)round(Month), 1, 12) - 1]);
-return float4(lin * lawn * vc, Roughness);
+float3 litRGB = lin * lawn * vc;
+float litRough = Roughness;
 """
 GRASS_SCALARS = {"Cell": 0.0334, "StrokeWidth": 0.0044, "StrawTint": 0.94, "BladeTint": 0.91, "VertexColorWeight": 0.0,
                  "Roughness": 1.0, "Tile": 1.6, "PatchContrast": 1.5, "TuftCount": 22.0, "TuftShade": 0.14}
@@ -243,7 +250,7 @@ def vector(value):
 
 def collection_reads(spec):
     """#2408: {collection: parameter names} the entry's graph reads through CollectionParameter expressions."""
-    if spec.get("graph") == "grass":
+    if spec.get("graph") in ("grass", "gravel"):
         return {CALENDAR: ("Month",)}
     if spec.get("graph") == "river":
         return river_material.reads(spec)
@@ -254,6 +261,8 @@ def collection_reads(spec):
 
 def spec_hash(path, spec):
     parts = [path, spec, TILED_GRID + TILED_FINISH] + ([GRASS_HLSL] if spec.get("graph") == "grass" else [])  # other hashes unchanged
+    if spec.get("litter"):  # #2433: the litter / gravel code generators (the numbers are in spec["ground"])
+        parts.append(Path(ground_litter.__file__).read_text(encoding="utf-8").replace("\r\n", "\n"))
     if spec.get("graph") == "river":
         parts.append(Path(river_material.__file__).read_text(encoding="utf-8"))
         parts.append(river_material.display_gain())  # #2410: follows build_lighting.EXPOSURE_BIAS
@@ -348,8 +357,54 @@ def tiled_graph(m, spec):
     mel.connect_material_property(metal, "", unreal.MaterialProperty.MP_METALLIC)
 
 
+def ground_data(spec):
+    if "ground" not in spec:
+        raise RuntimeError("build_materials.main injects measurements.json's leaf-litter data before building " + spec.get("graph", "?"))
+    return spec["ground"]
+
+
 def grass_code(spec):
-    return GRASS_HLSL.strip().replace("AUTUMN_MIX", ", ".join(map(str, spec["autumnMix"])))
+    code = GRASS_HLSL.strip().replace("AUTUMN_MIX", ", ".join(map(str, spec["autumnMix"])))
+    return code + "\n" + ground_litter.litter_code(ground_data(spec), spec["litter"])
+
+
+def gravel_code(spec):
+    return ground_litter.gravel_code(ground_data(spec)) + "\n" + ground_litter.litter_code(ground_data(spec), spec["litter"])
+
+
+GROUND_CODE = {"grass": grass_code, "gravel": gravel_code}
+GROUND_TEXTURES = {"grass": {"LitterMap": ground_litter.LITTER},
+                   "gravel": {"LitterMap": ground_litter.LITTER, "GravelColour": ground_litter.GRAVEL_COLOUR,
+                              "GravelSurface": ground_litter.GRAVEL_SURFACE}}
+
+
+def seasonal_ground(material, spec):
+    """#2433: grass and gravel: the saved base-colour path reads the current code, Month and the litter textures."""
+    rgb = mel.get_material_property_input_node(material, unreal.MaterialProperty.MP_BASE_COLOR)
+    if not isinstance(rgb, unreal.MaterialExpressionComponentMask):
+        return False
+    sources = mel.get_inputs_for_material_expression(material, rgb)
+    if len(sources) != 1 or not isinstance(sources[0], unreal.MaterialExpressionCustom):
+        return False
+    shader = sources[0]
+    if shader.get_editor_property("code").splitlines() != GROUND_CODE[spec["graph"]](spec).splitlines():
+        return False
+    pins = dict(zip(mel.get_material_expression_input_names(shader), mel.get_inputs_for_material_expression(material, shader)))
+    for name, path in GROUND_TEXTURES[spec["graph"]].items():
+        tex = pins.get(name)
+        if not isinstance(tex, unreal.MaterialExpressionTextureObject) or not tex.get_editor_property("texture") \
+                or tex.get_editor_property("texture").get_path_name().split(".")[0] != path:
+            return False
+    if not isinstance(pins.get("WorldCm"), unreal.MaterialExpressionWorldPosition) \
+            or not isinstance(pins.get("Normal"), unreal.MaterialExpressionVertexNormalWS):
+        return False
+    month = pins.get("Month")
+    calendar = eal.load_asset(CALENDAR)
+    if not (calendar is not None and isinstance(month, unreal.MaterialExpressionCollectionParameter)
+            and month.get_editor_property("collection") == calendar
+            and str(month.get_editor_property("parameter_name")) == "Month"):
+        return False
+    return spec["graph"] != "grass" or seasonal_grass(material, spec)
 
 
 def seasonal_grass(material, spec):
@@ -373,9 +428,83 @@ def seasonal_grass(material, spec):
             and str(autumn.get_editor_property("parameter_name")) == "Autumn")
 
 
+GROUND_PINS = ["WorldCm", "Normal"]
+
+
+def ground_pins(m, custom, graph):
+    """#2433: the litter step's inputs: world position, vertex normal and the texture objects (Month is wired by the graph)."""
+    pos = mel.create_material_expression(m, unreal.MaterialExpressionWorldPosition, -900, -700)
+    normal = mel.create_material_expression(m, unreal.MaterialExpressionVertexNormalWS, -900, -640)
+    if not mel.connect_material_expressions(pos, "", custom, "WorldCm") or not mel.connect_material_expressions(normal, "", custom, "Normal"):
+        raise RuntimeError("could not connect WorldCm / Normal")
+    y = -1000
+    for name, path in GROUND_TEXTURES[graph].items():
+        tex = eal.load_asset(path)
+        if not isinstance(tex, unreal.Texture2D):
+            raise RuntimeError(f"{path} is missing: build_materials.main imports it from measurements.json first")
+        obj = mel.create_material_expression(m, unreal.MaterialExpressionTextureObject, -900, y)
+        obj.set_editor_property("texture", tex)
+        if not mel.connect_material_expressions(obj, "", custom, name):
+            raise RuntimeError("could not connect " + name)
+        y += 100
+
+
+GRAVEL_SCALARS = {"VertexColorWeight": 0.0}
+GRAVEL_VECTORS = {"Color": "#cfc6b2"}
+
+
+def gravel_graph(m, spec):
+    """#2433: src/gravelsurface.js gravelMaterial (stone map, colour / mean, vertex colour, broad tone) plus the leaf litter."""
+    custom = mel.create_material_expression(m, unreal.MaterialExpressionCustom, -500, 0)
+    names = ["UV", "VertexColor", "Month"] + list(GRAVEL_VECTORS) + list(GRAVEL_SCALARS) + GROUND_PINS + list(GROUND_TEXTURES["gravel"])
+    inputs = []
+    for name in names:
+        ci = unreal.CustomInput()
+        ci.set_editor_property("input_name", name)
+        inputs.append(ci)
+    custom.set_editor_property("inputs", inputs)
+    custom.set_editor_property("output_type", unreal.CustomMaterialOutputType.CMOT_FLOAT4)
+    custom.set_editor_property("description", "LundenGravel")
+    custom.set_editor_property("code", gravel_code(spec))
+    calendar = eal.load_asset(CALENDAR)
+    if not calendar:
+        raise RuntimeError("Run build_seasons.py before building the gravel master")
+    month = mel.create_material_expression(m, unreal.MaterialExpressionCollectionParameter, -900, -500)
+    month.set_editor_property("collection", calendar)
+    month.set_editor_property("parameter_name", "Month")
+    uv = mel.create_material_expression(m, unreal.MaterialExpressionTextureCoordinate, -900, -300)
+    vc = mel.create_material_expression(m, unreal.MaterialExpressionVertexColor, -900, -200)
+    for src, pin in ((month, "Month"), (uv, "UV"), (vc, "VertexColor")):
+        if not mel.connect_material_expressions(src, "", custom, pin):
+            raise RuntimeError("could not connect " + pin)
+    ground_pins(m, custom, "gravel")
+    y = 0
+    for name, value in GRAVEL_VECTORS.items():
+        if not mel.connect_material_expressions(vector_param(m, name, value, -900, y), "", custom, name):
+            raise RuntimeError("could not connect " + name)
+        y += 150
+    for name, value in GRAVEL_SCALARS.items():
+        if not mel.connect_material_expressions(scalar_param(m, name, value, -900, y), "", custom, name):
+            raise RuntimeError("could not connect " + name)
+        y += 100
+    rgb = mel.create_material_expression(m, unreal.MaterialExpressionComponentMask, -250, 0)
+    for c, on in (("r", True), ("g", True), ("b", True), ("a", False)):
+        rgb.set_editor_property(c, on)
+    rough = mel.create_material_expression(m, unreal.MaterialExpressionComponentMask, -250, 200)
+    for c, on in (("r", False), ("g", False), ("b", False), ("a", True)):
+        rough.set_editor_property(c, on)
+    mel.connect_material_expressions(custom, "", rgb, "")
+    mel.connect_material_expressions(custom, "", rough, "")
+    mel.connect_material_property(rgb, "", unreal.MaterialProperty.MP_BASE_COLOR)
+    mel.connect_material_property(rough, "", unreal.MaterialProperty.MP_ROUGHNESS)
+    metal = mel.create_material_expression(m, unreal.MaterialExpressionConstant, -250, 350)
+    metal.set_editor_property("r", 0.0)
+    mel.connect_material_property(metal, "", unreal.MaterialProperty.MP_METALLIC)
+
+
 def grass_graph(m, spec):
     custom = mel.create_material_expression(m, unreal.MaterialExpressionCustom, -500, 0)
-    names = ["UV", "VertexColor", "Month", "Autumn"] + list(GRASS_VECTORS) + list(GRASS_SCALARS)
+    names = ["UV", "VertexColor", "Month", "Autumn"] + list(GRASS_VECTORS) + list(GRASS_SCALARS) + GROUND_PINS + list(GROUND_TEXTURES["grass"])
     inputs = []
     for name in names:
         ci = unreal.CustomInput()
@@ -394,6 +523,7 @@ def grass_graph(m, spec):
     autumn = vector_param(m, "Autumn", spec["autumn"], -900, -430)
     if not mel.connect_material_expressions(month, "", custom, "Month") or not mel.connect_material_expressions(autumn, "", custom, "Autumn"):
         raise RuntimeError("Could not connect the grass month and autumn tint")
+    ground_pins(m, custom, "grass")
     uv = mel.create_material_expression(m, unreal.MaterialExpressionTextureCoordinate, -900, -300)
     vc = mel.create_material_expression(m, unreal.MaterialExpressionVertexColor, -900, -200)
     if not mel.connect_material_expressions(uv, "", custom, "UV") or not mel.connect_material_expressions(vc, "", custom, "VertexColor"):
@@ -520,7 +650,7 @@ def uses_vertex_color(m, prop):
 
 
 GRAPHS = {"river": river_material.build, "constant": constant_graph, "surface": surface_graph, "tiled": tiled_graph, "glass": glass_graph,
-          "grass": grass_graph, BAKED: baked_light_graph}
+          "grass": grass_graph, "gravel": gravel_graph, BAKED: baked_light_graph}
 
 
 # ---------------------------------------------------------------- assets
@@ -536,7 +666,7 @@ def stamp(asset, path, spec):
 
 
 def build_master(path, spec, existing):
-    if spec["graph"] == "grass" and not eal.load_asset(CALENDAR):
+    if spec["graph"] in ("grass", "gravel") and not eal.load_asset(CALENDAR):
         raise RuntimeError("Run build_seasons.py before rebuilding the grass material")
     folder, name = path.rsplit("/", 1)
     if existing is None:
@@ -615,8 +745,8 @@ def check(table):
                 usage = usage and mel.has_material_usage_override(asset, NANITE)
             if not usage:
                 problems.append(f"{path}: no persisted Nanite usage")
-        if spec.get("graph") == "grass" and not seasonal_grass(asset, spec):
-            problems.append(f"{path}: incorrect seasonal grass code or disconnected Month/Autumn input")
+        if spec.get("graph") in GROUND_CODE and not seasonal_ground(asset, spec):
+            problems.append(f"{path}: incorrect seasonal {spec['graph']} code, or disconnected Month/Autumn/litter inputs (#2433)")
         if spec.get("graph") == backdrop_material.GRAPH and not backdrop_material.check(asset, spec, uses_vertex_color):
             problems.append(f"{path}: incorrect backdrop texture, vertex-colour wiring, or face settings")
         if spec.get("graph") == "river":
@@ -665,7 +795,7 @@ def build_entries(materials, force=False):
         existing = eal.load_asset(path) if eal.does_asset_exist(path) else None
         want = spec_hash(path, spec)
         if (existing is not None and not force and eal.get_metadata_tag(existing, "Lunden.SpecHash") == want
-                and (spec.get("graph") != "grass" or seasonal_grass(existing, spec))
+                and (spec.get("graph") not in GROUND_CODE or seasonal_ground(existing, spec))
                 and (spec.get("graph") != backdrop_material.GRAPH or backdrop_material.check(existing, spec, uses_vertex_color))
                 and (spec.get("graph") != BAKED or baked_light_ok(existing, spec))
                 and not (isinstance(existing, unreal.Material) and collection_ids.unresolved(existing))):
@@ -715,16 +845,34 @@ def prepare_generated_materials(table, check_only):
         build_entries(subset)
 
 
+def set_ground_data(materials, measurements):
+    """#2433: the leaf-litter and gravel numbers of the export for every entry with `litter` (its spec hash follows them)."""
+    data = ground_litter.spec_data(measurements)
+    for spec in materials.values():
+        if spec.get("litter"):
+            spec["ground"] = data
+
+
 def main(argv):
     with open(os.path.join(repo_root(), "tools", "unreal-engine", "material-map.json"), encoding="utf-8") as f:
         table = json.load(f)
     with open(os.path.join(repo_root(), "unreal", "Lunden", "Import", "measurements.json"), encoding="utf-8") as f:
-        surface = json.load(f)["site"].get("riverSurface")
+        measurements = json.load(f)
+    surface = measurements["site"].get("riverSurface")
     if not surface:
         raise RuntimeError("Re-export the world to include the river surface measurements")
     set_river_data(table["materials"], surface)
+    set_ground_data(table["materials"], measurements)
     if "--check" in argv:
+        problems = ground_litter.check_textures(measurements)
+        for p in problems:
+            unreal.log_error("LUNDEN_MATERIAL_CHECK " + p)
+        if problems:
+            raise RuntimeError(f"{len(problems)} ground texture problems")
         return check(table)
+    scratch = os.path.join(repo_root(), "unreal", "Lunden", "Saved", "ground-textures")
+    for path, what in ground_litter.build_textures(measurements, scratch).items():
+        unreal.log(f"LUNDEN_MATERIAL {path}: {what}")
     build_entries(table["materials"], "--force" in argv)
 
 

@@ -1,0 +1,334 @@
+{
+ "crops": {
+  "facade-a-day": {
+   "lawn-foreground": [
+    0.35,
+    0.88,
+    0.75,
+    0.99
+   ],
+   "lawn-left": [
+    0.02,
+    0.9,
+    0.18,
+    0.99
+   ],
+   "paving-walk": [
+    0.05,
+    0.815,
+    0.3,
+    0.835
+   ]
+  },
+  "facade-b-day": {
+   "boule-court": [
+    0.53,
+    0.905,
+    0.83,
+    0.985
+   ],
+   "gravel-left": [
+    0.083,
+    0.94,
+    0.18,
+    0.995
+   ],
+   "lawn-by-trunk": [
+    0.35,
+    0.89,
+    0.44,
+    0.99
+   ],
+   "gravel-right": [
+    0.875,
+    0.86,
+    0.99,
+    0.92
+   ]
+  },
+  "facade-a-june": {
+   "lawn-foreground": [
+    0.35,
+    0.88,
+    0.75,
+    0.99
+   ]
+  },
+  "facade-b-june": {
+   "boule-court": [
+    0.53,
+    0.905,
+    0.83,
+    0.985
+   ],
+   "gravel-left": [
+    0.083,
+    0.94,
+    0.18,
+    0.995
+   ],
+   "lawn-by-trunk": [
+    0.35,
+    0.89,
+    0.44,
+    0.99
+   ]
+  },
+  "facade-a-january": {
+   "lawn-foreground": [
+    0.35,
+    0.88,
+    0.75,
+    0.99
+   ]
+  }
+ },
+ "stats": {
+  "facade-a-day": {
+   "web": {
+    "lawn-foreground": {
+     "srgb": [
+      120.9,
+      119.2,
+      51.8
+     ],
+     "luminance": 0.1764,
+     "warmth": 2.334
+    },
+    "lawn-left": {
+     "srgb": [
+      135.6,
+      125.2,
+      61
+     ],
+     "luminance": 0.2032,
+     "warmth": 2.222
+    },
+    "paving-walk": {
+     "srgb": [
+      183.7,
+      173.3,
+      166.5
+     ],
+     "luminance": 0.4341,
+     "warmth": 1.103
+    }
+   },
+   "unreal": {
+    "lawn-foreground": {
+     "srgb": [
+      124.6,
+      127.9,
+      69.8
+     ],
+     "luminance": 0.2025,
+     "warmth": 1.787
+    },
+    "lawn-left": {
+     "srgb": [
+      135.3,
+      131.3,
+      75
+     ],
+     "luminance": 0.2204,
+     "warmth": 1.804
+    },
+    "paving-walk": {
+     "srgb": [
+      191.8,
+      187.6,
+      184.1
+     ],
+     "luminance": 0.5071,
+     "warmth": 1.042
+    }
+   }
+  },
+  "facade-b-day": {
+   "web": {
+    "boule-court": {
+     "srgb": [
+      211.1,
+      187.4,
+      139.3
+     ],
+     "luminance": 0.5232,
+     "warmth": 1.516
+    },
+    "gravel-left": {
+     "srgb": [
+      192.7,
+      182.6,
+      165.3
+     ],
+     "luminance": 0.4854,
+     "warmth": 1.166
+    },
+    "lawn-by-trunk": {
+     "srgb": [
+      132.6,
+      119,
+      56.7
+     ],
+     "luminance": 0.1893,
+     "warmth": 2.337
+    },
+    "gravel-right": {
+     "srgb": [
+      136,
+      129.2,
+      74
+     ],
+     "luminance": 0.2418,
+     "warmth": 1.837
+    }
+   },
+   "unreal": {
+    "boule-court": {
+     "srgb": [
+      209,
+      194.6,
+      151
+     ],
+     "luminance": 0.5525,
+     "warmth": 1.384
+    },
+    "gravel-left": {
+     "srgb": [
+      199.8,
+      192.5,
+      177.7
+     ],
+     "luminance": 0.5403,
+     "warmth": 1.125
+    },
+    "lawn-by-trunk": {
+     "srgb": [
+      135,
+      127.7,
+      72.3
+     ],
+     "luminance": 0.2145,
+     "warmth": 1.867
+    },
+    "gravel-right": {
+     "srgb": [
+      145.3,
+      144.1,
+      98.7
+     ],
+     "luminance": 0.2921,
+     "warmth": 1.473
+    }
+   }
+  },
+  "facade-a-june": {
+   "web": {
+    "lawn-foreground": {
+     "srgb": [
+      116.3,
+      178.8,
+      68.7
+     ],
+     "luminance": 0.364,
+     "warmth": 1.692
+    }
+   },
+   "unreal": {
+    "lawn-foreground": {
+     "srgb": [
+      125.9,
+      188.9,
+      86.7
+     ],
+     "luminance": 0.4152,
+     "warmth": 1.453
+    }
+   }
+  },
+  "facade-b-june": {
+   "web": {
+    "boule-court": {
+     "srgb": [
+      242.4,
+      220.3,
+      166.1
+     ],
+     "luminance": 0.7408,
+     "warmth": 1.46
+    },
+    "gravel-left": {
+     "srgb": [
+      244.7,
+      230.3,
+      202.7
+     ],
+     "luminance": 0.8068,
+     "warmth": 1.207
+    },
+    "lawn-by-trunk": {
+     "srgb": [
+      120.1,
+      179,
+      72.4
+     ],
+     "luminance": 0.3715,
+     "warmth": 1.658
+    }
+   },
+   "unreal": {
+    "boule-court": {
+     "srgb": [
+      244.2,
+      227.3,
+      176.6
+     ],
+     "luminance": 0.7816,
+     "warmth": 1.383
+    },
+    "gravel-left": {
+     "srgb": [
+      245.1,
+      233.8,
+      207.4
+     ],
+     "luminance": 0.8286,
+     "warmth": 1.182
+    },
+    "lawn-by-trunk": {
+     "srgb": [
+      130.2,
+      190.6,
+      90.4
+     ],
+     "luminance": 0.4296,
+     "warmth": 1.441
+    }
+   }
+  },
+  "facade-a-january": {
+   "web": {
+    "lawn-foreground": {
+     "srgb": [
+      234.5,
+      232.9,
+      238.9
+     ],
+     "luminance": 0.8204,
+     "warmth": 0.982
+    }
+   },
+   "unreal": {
+    "lawn-foreground": {
+     "srgb": [
+      131,
+      126.1,
+      73.5
+     ],
+     "luminance": 0.2031,
+     "warmth": 1.784
+    }
+   }
+  }
+ }
+}

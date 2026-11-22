@@ -20,6 +20,9 @@ import { gridGround } from '../../src/elevation.js';
 import { leafAtlas, leafMaterial, windLeafMaterial } from '../../src/foliage.js';
 import { skyGradientPalette } from '../../src/daycycle.js';
 import { crownSeeds } from '../../src/seasons.js';
+import { bakeLitterDensity, litterRoads, leafShare } from '../../src/leaflitter.js';
+import { samples as roadSamples } from '../../src/roads.js';
+import { gravelData } from '../../src/gravelsurface.js';
 import { livingWallLight } from './export-living-wall.js';
 import { stairLampProfiles } from './export-stair-light.js';
 import { stairRise, stairRiser, N_TREADS } from '../../src/stairs.js';
@@ -1038,6 +1041,8 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
   };
   for (const v of measurements.site.parkedVehicles.vehicles) if (!v.parts.length) throw Error('Missing parked vehicle: ' + v.id);
   measurements.site.riverSurface = riverMaterialData();
+  measurements.site.leafLitter = leafLitterData(); // #2433
+  measurements.site.gravelSurface = gravelSurfaceData(); // #2433
   measurements.buildings = buildings;
   if (wanted.includes('hus-l') || wanted.includes('kvarteret')) measurements.site.facadeLighting = facadeLightingData(world, wanted);
   if (ground) measurements.ground = ground;
@@ -1184,6 +1189,52 @@ function vegetationData(roots, hedgeIds, leafKeys, stillLeafKeys, lobeSeeds = ne
     trees: trees.map((t) => { const h = t.top - t.foot.y; return { id: t.trunk.userData.id, kind: t.foot.kind, foot: P(t.trunk.position),
       crownR: r4(t.r), lobes: t.lobes, height: r4(h), heightClass: Math.round(h / TREE_CLASS_M), blocks: trunkBlocks(t.foot) }; }),
     hedges,
+  };
+}
+
+/** The texels' own hash (not the PNG's bytes, which depend on the browser's encoder): what the Unreal textures and the
+ *  materials' spec hashes follow (#2433). */
+const bytesHash = (bytes) => hash53(Array.from(bytes, (v) => String.fromCharCode(v)).join(''));
+
+/** An 8-bit grey (one channel per texel, row 0 first) or RGBA byte array as a base64 PNG, through a canvas (lossless). */
+function pngBase64(bytes, width, height, channels) {
+  const canvas = document.createElement('canvas');
+  canvas.width = width; canvas.height = height;
+  const g = canvas.getContext('2d'), img = g.createImageData(width, height);
+  for (let i = 0; i < width * height; i++) for (let c = 0; c < 4; c++) img.data[i * 4 + c] = c === 3 && channels === 1 ? 255 : bytes[i * channels + (channels === 1 ? 0 : c)];
+  g.putImageData(img, 0, 0);
+  return canvas.toDataURL('image/png').split(',')[1];
+}
+
+/** #2433: the fallen autumn leaves (src/leaflitter.js, LEAF_LITTER): the density map the web bakes over WALK from the
+ *  site crowns (aoTrees) and the road kerbs, as a grey PNG (row j = z0 + j cell, column i = x0 + i cell), and the numbers
+ *  its ground patch draws with: the share by month (0 in the snow months, as litterAmount without real weather), each
+ *  month's [fresh, old] tones as linear RGB, the per-surface share (`kinds`), the leaf grids and the far-tint mulch. */
+function leafLitterData() {
+  const L = C.LEAF_LITTER, density = bakeLitterDensity({ trees: aoTrees, roads: litterRoads(C.SITE.roads, roadSamples), P: L });
+  const tone = (h) => new THREE.Color().setHex(h).toArray().map(r4);
+  const month = (m) => (C.SEASON.snowMonths.includes(m) ? 0 : L.months[m] ?? 0);
+  return {
+    source: 'src/leaflitter.js bakeLitterDensity, litterRoads, litterGLSL; src/config.js LEAF_LITTER; src/surroundings.js aoTrees',
+    months: Array.from({ length: 12 }, (_, i) => month(i + 1)),
+    fresh: Array.from({ length: 12 }, (_, i) => tone(L.colors[i + 1]?.[0] ?? 0)),
+    old: Array.from({ length: 12 }, (_, i) => tone(L.colors[i + 1]?.[1] ?? 0)),
+    kinds: { ...L.kinds }, cells: [...L.cells], len: [...L.len], wide: L.wide, aa: [...L.aa], mulch: [...L.mulch], rough: L.rough,
+    share: r4(leafShare(L)),
+    density: { box: { x0: density.box.x0, x1: density.box.x1, z0: density.box.z0, z1: density.box.z1 }, cell: L.cell,
+      width: density.nx, height: density.nz, hash: bytesHash(density.data), png: pngBase64(density.data, density.nx, density.nz, 1) },
+  };
+}
+
+/** #2433: the shared gravel map (src/gravelsurface.js gravelData, GRAVEL_SURFACE): its sRGB colour and its linear
+ *  relief (R) / roughness (G) tiles as PNGs, `tile` m each in world-metre UVs, and the numbers the web's shader adds. */
+function gravelSurfaceData() {
+  const G = C.GRAVEL_SURFACE, { color, surface, width, height } = gravelData(G);
+  return {
+    source: 'src/gravelsurface.js gravelData, gravelMaterial, gravelColor; src/config.js GRAVEL_SURFACE',
+    tile: G.tile, mean: G.mean, depth: G.depth, roughness: [...G.roughness], broadStrength: G.broadStrength, broadScale: [...G.broadScale],
+    size: width, colorHash: bytesHash(color), surfaceHash: bytesHash(surface),
+    colorPng: pngBase64(color, width, height, 4), surfacePng: pngBase64(surface, width, height, 4),
   };
 }
 

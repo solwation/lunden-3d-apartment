@@ -9,7 +9,8 @@
   3. every instance names a listed master and only parameters that master has;
   4. every material carries `source` and an `assumption` field, and an entry whose source or note says *guess* keeps an
      assumption text (plan-material's markers stay with the material);
-  5. (#2308) every lawn key has a rule to a grass instance of its own colour;
+  5. (#2308) every lawn key has a rule to a grass instance of its own colour; (#2433) every gravel key (the shared stone
+     map) a rule to a gravel instance whose colour over the map's mean is the key's, vertex colour drawn where it has one;
   6. (#2318) every web look with a patterned surface (brick, roof seams, asphalt, paving: PATTERNED) reaches a material that
      draws that surface (its `surface` field), on every mesh that shows it, in every zone of the export. The class comes from
      the export itself (measurements.json materials[].looks: the web's own weather class, or the colour map's name, or the
@@ -43,6 +44,7 @@ MASTER_PARAMS = {
     "grass": {"Color", "Ground", "BladeRange", "BladeLength", "Cell", "StrokeWidth", "StrawTint", "BladeTint",
               "VertexColorWeight", "Roughness", "Tile", "PatchCells", "PatchContrast", "Dry", "Lush", "TuftCount", "TuftRadius",
               "TuftShade"},
+    "gravel": {"Color", "VertexColorWeight"},
 }
 GLTF_VC = "gltf-vertex-color"  # #2321: build_materials.py's copy of an Interchange glTF master times the vertex colour
 BAKED = "baked-light"  # #2431: build_materials.py's unlit master, emissive = vertex colour x display gain x power
@@ -52,12 +54,26 @@ GLTF_MASTERS = (("KHR_materials_unlit", "/InterchangeAssets/gltf/M_Unlit.M_Unlit
                 ("KHR_materials_sheen", "/InterchangeAssets/gltf/M_Sheen.M_Sheen"),
                 ("KHR_materials_pbrSpecularGlossiness", "/InterchangeAssets/gltf/M_SpecularGlossiness.M_SpecularGlossiness"))
 GLTF_DEFAULT = "/InterchangeAssets/gltf/M_Default.M_Default"
+GRAVEL_MAP = "gravel-stones-colour"  # #2433: src/gravelsurface.js gravelTextures' colour map name
 GRASS_MAP = "shared-grass-detail"  # src/grass.js grassTexture's name; measurements.json materials[].map since #2308
 # #2318: web surface classes whose look is a pattern in the colour map (joints, seams, aggregate) that Interchange's plain
 # instance loses, and colour-map names that carry a class themselves (src/roofsurface.js roofMap, src/asphaltsurface.js)
 PATTERNED = ("brick", "roof", "asphalt", "paving")
 MAP_CLASS = {"roof-surface": "roof", "asphalt-aggregate-colour": "asphalt"}
 SOLDIER_MAP = "site-opening-soldiers"  # #2425: src/surroundings.js openingTexture's name
+
+
+def hex_channels(text):
+    v = text.lstrip("#")
+    return [int(v[i:i + 2], 16) / 255 for i in (0, 2, 4)]
+
+
+def linear_of(c):
+    return c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4
+
+
+def srgb_byte(lin):
+    return 255 * (lin * 12.92 if lin <= 0.0031308 else 1.055 * lin ** (1 / 2.4) - 0.055)
 
 
 def look_classes(export_materials):
@@ -181,7 +197,7 @@ def vertex_color_check(export_dir, table, rule_rx, errors):
             weight = spec.get("params", {}).get("VertexColorWeight", 0)
             backdrop_vc = parent.get("graph") == "backdrop-texture" and parent.get("vertexColors") is True
             draws_land = parent.get("graph") == "river" and parent.get("mode") == "edge"
-            if not (parent.get("graph") in (GLTF_VC, BAKED) or backdrop_vc or draws_land or (parent.get("graph") == "grass" and weight > 0)):
+            if not (parent.get("graph") in (GLTF_VC, BAKED) or backdrop_vc or draws_land or (parent.get("graph") in ("grass", "gravel") and weight > 0)):
                 errors.append(f"vertex-coloured key {where}: rule material {target} does not multiply the vertex colour in")
         if not unruled:
             continue  # every mesh using the key gets a rule's material
@@ -266,6 +282,28 @@ def main(argv):
             elif target["params"].get("Color", "").lower() != info["color"].lower():
                 errors.append(f"lawn key {key}: {rule['material']} Color {target['params'].get('Color')} is not the key's {info['color']}")
         print(f"lawn keys (map {GRASS_MAP}): {len(lawns)}, each on a grass material with its own colour")
+
+        # 5b. #2433: every gravel key (the shared stone map) has a rule to a gravel instance whose Color, divided by the map's
+        # linear mean as the web's gravelColor does, gives the key's colour (the export clips it to 1 per channel)
+        mean = (json.load(open(mpath, encoding="utf-8")).get("site", {}).get("gravelSurface") or {}).get("mean")
+        gravels = {k: v for k, v in export_materials.items() if v.get("map") == GRAVEL_MAP}
+        for key, info in sorted(gravels.items()):
+            rule = next((r for rx, mx, r in rule_rx if rx.search(key) and mx is None), None)
+            target = mats.get(rule["material"].split(".")[0]) if rule else None
+            parent = mats.get(target.get("parent")) if target else None
+            if not parent or parent.get("graph") != "gravel":
+                errors.append(f"gravel key {key} (map {GRAVEL_MAP}) has no rule to a gravel material")
+            elif not mean:
+                errors.append("measurements.json has no site.gravelSurface.mean: re-export (#2433)")
+            else:
+                want = [srgb_byte(min(1.0, linear_of(c) / mean)) for c in hex_channels(target["params"].get("Color", "#000000"))]
+                got = hex_channels(info["color"])
+                if any(abs(w - g * 255) > 1.01 for w, g in zip(want, got)):
+                    errors.append(f"gravel key {key}: {rule['material']} Color {target['params'].get('Color')} / mean {mean} "
+                                  f"is not the key's {info['color']}")
+            if info.get("vertexColors") and target and target.get("params", {}).get("VertexColorWeight", 0) <= 0:
+                errors.append(f"gravel key {key} is vertex-coloured (the boule court's tint) but {rule['material']} ignores it")
+        print(f"gravel keys (map {GRAVEL_MAP}): {len(gravels)}, each on a gravel material with the web's colour")
 
         # 6. #2318: patterned web surfaces never fall back to Interchange's plain instance or another surface's material
         patterned, by_node, checked = look_classes(export_materials), zone_meshes(export_dir), {}

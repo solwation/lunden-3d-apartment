@@ -120,6 +120,38 @@
             "hemiOvercast": { "type": "number" }, "hemiClear": { "type": "number" }
           }
         },
+        "leafLitter": {
+          "type": "object", "description": "#2433: fallen autumn leaves (src/leaflitter.js, LEAF_LITTER): the web's density map over WALK as a grey PNG (row j at z0 + (j + 0.5) cell, column i at x0 + (i + 0.5) cell, web metres) and the ground patch's numbers. months, fresh and old run January to December; colours are linear RGB.",
+          "required": ["source", "months", "fresh", "old", "kinds", "cells", "len", "wide", "aa", "mulch", "rough", "share", "density"],
+          "properties": {
+            "months": { "type": "array", "minItems": 12, "maxItems": 12, "items": { "type": "number", "minimum": 0, "maximum": 1 } },
+            "fresh": { "type": "array", "minItems": 12, "maxItems": 12, "items": { "type": "array", "minItems": 3, "maxItems": 3, "items": { "type": "number" } } },
+            "old": { "type": "array", "minItems": 12, "maxItems": 12, "items": { "type": "array", "minItems": 3, "maxItems": 3, "items": { "type": "number" } } },
+            "kinds": { "type": "object", "additionalProperties": { "type": "number", "minimum": 0 } },
+            "cells": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number", "exclusiveMinimum": 0 } },
+            "len": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number" } },
+            "aa": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number" } },
+            "mulch": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number" } },
+            "density": {
+              "type": "object", "required": ["box", "cell", "width", "height", "hash", "png"],
+              "properties": {
+                "box": { "type": "object", "required": ["x0", "x1", "z0", "z1"] },
+                "cell": { "type": "number", "exclusiveMinimum": 0 }, "width": { "type": "integer", "minimum": 1 }, "height": { "type": "integer", "minimum": 1 },
+                "hash": { "type": "string", "description": "hash of the texels (not of the PNG bytes)" }, "png": { "type": "string" }
+              }
+            }
+          }
+        },
+        "gravelSurface": {
+          "type": "object", "description": "#2433: the shared gravel map (src/gravelsurface.js gravelData): an sRGB colour tile and a linear relief (R) / roughness (G) tile, `size` px per `tile` m of world-metre UVs, as base64 PNGs; `mean` is the colour map's linear mean that the web divides each surface's colour by.",
+          "required": ["source", "tile", "mean", "depth", "roughness", "broadStrength", "broadScale", "size", "colorHash", "surfaceHash", "colorPng", "surfacePng"],
+          "properties": {
+            "tile": { "type": "number", "exclusiveMinimum": 0 }, "mean": { "type": "number", "exclusiveMinimum": 0 },
+            "roughness": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number" } },
+            "broadScale": { "type": "array", "minItems": 4, "maxItems": 4, "items": { "type": "number" } },
+            "size": { "type": "integer", "minimum": 1 }, "colorPng": { "type": "string" }, "surfacePng": { "type": "string" }
+          }
+        },
         "facadeLighting": {
           "type": "object", "description": "#2324: room and wall-light data for the requested building zones. Positions and lengths are in Unreal centimetres, normals are horizontal unit [X,Y], routine times are local hours.",
           "required": ["panes", "fixtures", "windows", "roomLevels", "facadeGlow", "wallLight", "schedule"],

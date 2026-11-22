@@ -68,6 +68,11 @@ export function bakeLitterDensity({ trees = [], roads = [], box = WALK, P = L } 
   return { data, nx, nz, box };
 }
 
+/** The kerb lines bakeLitterDensity takes from SITE.roads: a sample list along each path road (roads.js samples()), and the
+ *  closed outline of each rectangular one (width 0). Shared by main.js and the Unreal export (#2433). */
+export const litterRoads = (roads, samples) => roads.filter((r) => r.path || r.x1 !== undefined)
+  .map((r) => (r.path ? samples(r) : [[r.x0, r.z0], [r.x1, r.z0], [r.x1, r.z1], [r.x0, r.z1], [r.x0, r.z0]].map(([x, z]) => ({ x, z, w: 0 }))));
+
 /** The litter state: `trees()` (the site crowns, surroundings.js aoTrees) and `roads()` (sample lists) are read once, on the first autumn month. */
 export class LeafLitter {
   constructor({ trees = () => [], roads = () => [], P = L } = {}) {

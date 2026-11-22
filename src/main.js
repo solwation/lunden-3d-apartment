@@ -243,7 +243,7 @@ import { Weather } from './weather.js';
 import { RoofSteam } from './roofsteam.js'; // #2204: shared cold roof condensation
 import { paintDetail } from './paintsurface.js';
 import { GroundWetness, bindWetSky } from './wetground.js';
-import { LeafLitter } from './leaflitter.js';
+import { LeafLitter, litterRoads } from './leaflitter.js';
 import { createRealWeather } from './realweather.js';
 import { Posters, HeldDrawing, paperOnly } from './posters.js';
 import { PaperBalls } from './paperball.js';
@@ -527,7 +527,7 @@ const weather = new Weather(scene, camera, day, params0.get('weather')); // rain
 const roofSteam = new RoofSteam({ scene, camera, weather, day, phone: lowMemory });
 const groundWet = new GroundWetness(weather, day); // #2099: wet ground in and after rain (shared uniform of the ground materials)
 bindWetSky(day.uniforms.uHorizon.value, day.uniforms.uZenith.value);
-const leafLitter = new LeafLitter({ trees: () => aoTrees, roads: () => SITE.roads.filter((r) => r.path || r.x1 !== undefined).map((r) => (r.path ? roadSamples(r) : [[r.x0, r.z0], [r.x1, r.z0], [r.x1, r.z1], [r.x0, r.z1], [r.x0, r.z0]].map(([x, z]) => ({ x, z, w: 0 })))) }).register(); // #2105: fallen autumn leaves on the ground (month-driven shared uniforms)
+const leafLitter = new LeafLitter({ trees: () => aoTrees, roads: () => litterRoads(SITE.roads, roadSamples) }).register(); // #2105: fallen autumn leaves on the ground (month-driven shared uniforms)
 const balloon = new Balloon({ scene, camera, forced: params0.has('balloon') }); world.balloon = balloon; // #1646: the hot-air balloon above the cloud deck (hidden / no work outside its scheduled window)
 // #2129: where the birds may land — only surfaces the world already has (src/birdflock.js checks each spot on them)
 function birdSources() {
