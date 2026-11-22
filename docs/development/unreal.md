@@ -1389,8 +1389,11 @@ the export and the pictures section of `notices.mjs`.
   garage) without a `baseColorTexture`, so the A1004 sign rendered white in Unreal. Each canvas now has its own
   `<key>_t<id>` and is listed in `furnishing.textures`, so `tests/test_furnishing.py` checks it on its mesh actors.
   The export is still lit (`MeshStandardMaterial`, roughness 1), unlike the web's unlit material, so a sign's brightness
-  follows the scene's light. `node tools/unreal-engine/tests/sign-textures.mjs <export dir>` fails when an unlit
-  textured key loses its image or the four houses' atlases collapse into one.
+  follows the scene's light (#2435). `node tools/unreal-engine/tests/sign-textures.mjs <export dir>` fails when an unlit
+  textured key loses its image or the four houses' atlases collapse into one. `tests/sign-views.mjs` writes paired
+  web/Unreal cameras in front of the A/B/C/L number signs and the garage plate for `capture-web-views.cjs`
+  (`LUNDEN_CAPTURE_VIEWS`) and `tests/capture_flat_signs.py` (PIE, `-RenderOffScreen`); see
+  [the sign pictures](../verification/2400/README.md).
 - **Keys.** A furnishing material's key gets the texture id: `<key>_t<10 hex>` (a hash of the image file path, or a
   canvas's pixels at collection time, plus its repeat, offset, rotation, wrap and flip). Building and ground surfaces
   keep their plain keys, so #2282's rules are untouched; the rugs and the cleaning cupboard no longer fall under the
