@@ -51,7 +51,12 @@ def close(got, want, tol=TOL):
 
 
 # 1. Assets ------------------------------------------------------------------------------------------------------------------
-load = u.EditorAssetLibrary.load_asset
+def load(path):
+    """Not an alias `load = u.EditorAssetLibrary.load_asset`: a bound Unreal method kept in this file's globals crashed
+    the next test's garbage collection (#2401, closure_alias_test.py)."""
+    return u.EditorAssetLibrary.load_asset(path)
+
+
 classes = {n: load(f"{DIR}/{n}") for n in ("SC_LundenMaster", "SC_LundenEffects", "SC_LundenAmbience", "SC_LundenMusic")}
 tree = {n: (c.get_editor_property("parent_class").get_name() if c.get_editor_property("parent_class") else None)
         for n, c in classes.items()}

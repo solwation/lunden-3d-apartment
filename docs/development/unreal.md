@@ -116,6 +116,8 @@ tools/unreal-engine/tests/test_save.py        PIE test: v0 migration, place/faci
 tools/unreal-engine/tests/save-v0.sav         frozen version-0 save (no SaveVersion, no PlayerId) for the migration test
 tools/unreal-engine/tests/save_isolation.py   the other PIE tests start without the save slot and put it back (#2311);
                                    save_isolation_test.py checks it without Unreal (plain python3)
+tools/unreal-engine/tests/closure_alias_test.py  plain python3: no editor Python file keeps a bound Unreal method in its
+                                   module globals (#2401, see "Bound Unreal methods and the cycle collector")
 unreal/Lunden/Content/Lunden/Save/            SG_LundenSave, BFL_LundenSave, BPC_LundenSave (LFS; made by build_save.py)
 tools/unreal-engine/python/build_avatar_rig.py  the avatars' Mannequin rig, retargeter, ABP_LundenAvatar and BP_LundenAvatar (#2290)
 tools/unreal-engine/avatar-contract.mjs       writes/checks avatar-contract.json: hit zones, crouch, gait values and the web's own
@@ -311,6 +313,23 @@ With the material removed from that copy, the same test reported one failure
 and exit 255. The check produced no project DLL and no new Code Integrity
 3033/3077 events for Lunden DLLs. These command lines ran directly through
 the installed editor on the Smart App Control host.
+
+**Bound Unreal methods and the cycle collector (#2401).** The PythonAutomationTest plugin runs every `test_*.py` in
+its own copy of the globals dict. The test's functions point back at that dict, so after the test it is cyclic
+garbage, and Python's cycle collector frees it at the next garbage collection, usually when the next test loads a map.
+UE 5.8.4's PythonScriptPlugin returns a bound method (`u.EditorAssetLibrary.load_asset`, or any method of a wrapped
+object) as a `builtin_function_or_method_with_closure`. That type inherits `PyCFunction_Type`'s weak-reference offset
+of 40 bytes, but the object itself is only 40 bytes long (`PyMethodWithClosure.cpp` sets the base as a doc-generation
+"hack"). Freeing such an object by reference count is safe. The cycle collector is not: `handle_weakrefs` reads the 8
+bytes after the object as its weak-reference list, so the editor dies with `EXCEPTION_ACCESS_VIOLATION` in
+`python311.dll` whenever those bytes are not zero. That is an engine bug, and this is the workaround: never keep a
+bound Unreal method in module globals, or in anything else that may outlive a test as cyclic garbage. Write a `def`
+that calls it instead. `test_audio.py`'s module-level `load = u.EditorAssetLibrary.load_asset` crashed
+`test_window_audio` while it loaded `L_Lunden` in the same process. A memory probe found that object's weak-reference
+slot full of stale bytes, and the minidump put the crash in the weak-reference loop.
+`python3 tools/unreal-engine/tests/closure_alias_test.py` flags module-level `<unreal>.<Class>.<method>` aliases. It
+cannot tell a method alias on a wrapped object (`f = actor.some_method`) from a property, so do not write one of those
+either.
 
 For local Shipping archives, see [Build location](#build-location-decision-2244).
 
