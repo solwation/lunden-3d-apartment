@@ -79,7 +79,7 @@ with tempfile.TemporaryDirectory(prefix="facade-shader-") as tmp:
             src = folder / (kind + ".hlsl")
             src.write_text(generate(kind,pixel=True))
             subprocess.run([opt.dxc,"-T","ps_6_6","-E","main","-Ges","-WX","-Fo",str(folder / (kind+".dxil")),str(src)],check=True)
-        print("Direct3D SM6: four pixel shader bodies passed")
+        print(f"Direct3D SM6: {len(scene.FIELDS)} pixel shader bodies passed")
     rooms = []
     for r in (r for r in rows if r["kind"]=="room"):
         nx,ny = r["normal"]
@@ -121,3 +121,7 @@ with tempfile.TemporaryDirectory(prefix="facade-shader-") as tmp:
     expected = [[c*s["peak"]*k*round(255*(1-abs(uv*2-1))**1.5)/255 for c in scene.linear_colour(s["colour"])]+[1]
                 for s in surfaces for uv in [.5,.65,1] for k in [0,.3,1]]
     compare("wash",run(folder,"wash",generate("wash"),samples),expected,1e-6)
+    bands = spec["bollardBands"]  # #2430: courtyard.js update(): lit while night > on with power, else the day colour
+    samples = [scene.band_values(bands)+[n,p] for n in [0,bands["on"]-.01,bands["on"],bands["on"]+.01,1] for p in [0,1]]
+    expected = [scene.linear_colour(bands["lit" if n>bands["on"] and p else "off"])+[1] for *_,n,p in samples]
+    compare("band",run(folder,"band",generate("band"),samples),expected,1e-6)

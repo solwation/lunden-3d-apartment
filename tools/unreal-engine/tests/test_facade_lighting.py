@@ -17,7 +17,7 @@ if not world:
     raise RuntimeError("Could not load the composed world")
 actors = u.get_editor_subsystem(u.EditorActorSubsystem).get_all_level_actors()
 faces = {a.get_actor_label():a for a in actors if any(str(t).startswith("facade:") for t in a.tags)}
-if len(faces) != len(rows) + len(spec["surfaces"]):
+if len(faces) != len(rows) + len(spec["surfaces"]) + 1:
     raise RuntimeError("Facade actors missing or duplicated in the composed world")
 for i,r in enumerate(rows):
     a = faces[f"Facade_{r['house']}_{r['kind']}_{i}"]
@@ -44,6 +44,16 @@ for s in spec["surfaces"]:
     triangles = mesh.get_num_triangles(0)
     if triangles != len(s["indices"])//3 or mesh.get_name() != "SM_"+s["name"]:
         raise RuntimeError("The native light wash/pool is missing its measured geometry: " + s["name"])
+# #2430: the bollard bands: their own mesh and material, the threshold and colours as custom primitive data
+bands = spec["bollardBands"]
+band = faces[bands["name"]].get_component_by_class(u.StaticMeshComponent)
+band_values = list(band.get_editor_property("custom_primitive_data").get_editor_property("data"))
+band_material = band.get_material(0)
+if (band.static_mesh.get_num_triangles(0) != len(bands["indices"])//3 or band.static_mesh.get_name() != "SM_"+bands["name"]
+        or not band_material or band_material.get_name() != "M_Facade_band"
+        or band.get_collision_enabled() != u.CollisionEnabled.NO_COLLISION
+        or len(band_values) < 7 or any(not math.isclose(x,y,abs_tol=1e-4) for x,y in zip(band_values,facade_scene.band_values(bands)))):
+    raise RuntimeError(f"The courtyard bollard bands lost their mesh, material or switch data: {band_values}")
 
 ctrl, = (a for a in actors if "lunden:facade-controller" in map(str,a.tags))
 weather,wall = u.load_asset(builder.lighting.MPC),u.load_asset(builder.LOCAL_MPC)
@@ -77,4 +87,4 @@ try:
 finally:
     for mpc,name,v in saved:
         set_value(mpc,name,v)
-u.log(f"LUNDEN_FACADE_LIGHTING_OK {len(rows)} saved faces, {len(spec['surfaces'])} meshes and seven controller steps")
+u.log(f"LUNDEN_FACADE_LIGHTING_OK {len(rows)} saved faces, {len(spec['surfaces'])} meshes, the bollard bands and seven controller steps")

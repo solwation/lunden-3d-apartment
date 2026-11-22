@@ -129,7 +129,8 @@
             "windows": { "type": "array", "items": { "type": "object", "required": ["house", "position", "normal", "width", "height", "hall", "routine"] } },
             "surfaces": { "type": "array", "description": "the additive wall washes and ground pools (web triangles in Unreal cm, uv per vertex); colour is the web's sRGB hex, peak its full-fade opacity. #2397: courtyardBollardPools when gard is exported.",
               "items": { "type": "object", "required": ["name", "colour", "peak", "vertices", "indices"] } },
-            "bollardLight": { "type": "object", "description": "#2397: the courtyard bollard pools' on/off night thresholds, fade seconds, colour and peak (src/config.js COURTYARD.bollards.pool)", "required": ["on", "off", "fade", "colour", "peak"] }
+            "bollardLight": { "type": "object", "description": "#2397: the courtyard bollard pools' on/off night thresholds, fade seconds, colour and peak (src/config.js COURTYARD.bollards.pool)", "required": ["on", "off", "fade", "colour", "peak"] },
+            "bollardBands": { "type": "object", "description": "#2430: the courtyard bollards' bands under the caps (src/courtyard.js; when gard is exported): lit sRGB hex while the night fraction is strictly above `on` with power, else `off`; upright band triangles in Unreal cm, 1 mm proud of the imported band, uv per vertex", "required": ["name", "on", "lit", "off", "vertices", "indices"] }
           }
         }
       }

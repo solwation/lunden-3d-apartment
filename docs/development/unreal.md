@@ -2974,7 +2974,14 @@ bollards' ground pools from `src/courtyard.js` (`COURTYARD.bollards.pool`). They
 absent from the gard GLB. They use the same additive material and the wall lamps' latch, because the web fades
 both from the same night fraction. `facade_scene.validate` refuses an export whose `bollardLight` on/off/fade
 differ from `wallLight`. The web fades the pools into its scene fog (`fadeGlowWithFog`). Unreal relies on its own
-translucency fogging, which has not been compared at a distance. The material and Blueprint share `MPC_LundenWeather.Night`, `Hour` and
+translucency fogging, which has not been compared at a distance. Since #2430 `gard` also adds `bollardBands`: the
+upright triangles of the band under each bollard's cap (`courtyard.js` keeps the merged mesh in its group's
+`userData.bollardBands`), moved 1 mm out along their normals to clear the imported band. `COURTYARD.bollards.band`
+holds the switch both versions read: `lit` while the night fraction is strictly above `on` with power, else `off`,
+with no latch or fade. `build_facade.py` draws the mesh with the opaque unlit `M_Facade_band`, whose custom primitive
+data carry the threshold and both linear colours; it uses the lens materials' exposure-dependent radiance gain.
+A capture shot's `power: 0` (`capture_lighting.py`) sets `PowerAvailable` to 0 for a power-cut picture.
+The material and Blueprint share `MPC_LundenWeather.Night`, `Hour` and
 `PowerAvailable` (1 for normal power, 0 for an outage). The individual panes and lenses have no ticks or collision.
 To compare the material code in WSL run `python3 tools/unreal-engine/tests/facade-shaders.py <export>/measurements.json`
 with `glslangValidator`, `vkrunner` and a Vulkan device, including Mesa lavapipe. Add `--dxc <path>` to compile

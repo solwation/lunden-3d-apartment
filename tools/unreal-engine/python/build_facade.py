@@ -106,7 +106,7 @@ def material(kind, spec, weather, wall):
     mat = asset(DIR + "/M_Facade_" + kind, u.Material, u.MaterialFactoryNew())
     collection_ids.clear_graph(mat)  # #2408: no orphaned collection expression survives a rebuild
     mat.set_editor_property("shading_model", u.MaterialShadingModel.MSM_UNLIT)
-    blend = {"room": u.BlendMode.BLEND_TRANSLUCENT, "lens": u.BlendMode.BLEND_OPAQUE}
+    blend = {"room": u.BlendMode.BLEND_TRANSLUCENT, "lens": u.BlendMode.BLEND_OPAQUE, "band": u.BlendMode.BLEND_OPAQUE}
     mat.set_editor_property("blend_mode", blend.get(kind, u.BlendMode.BLEND_ADDITIVE))
     mat.set_editor_property("two_sided", kind == "wash")  # room face normals are exported individually
     names = facade.FIELDS[kind] + facade.INPUTS[kind]
@@ -227,6 +227,9 @@ def level(rows, spec, materials, manager):
               template, r["kind"], r["values"], u.Vector(*r["xyz"]), rot, u.Vector(w/100,h/100,1))
     for s in spec["surfaces"]:
         place(s["name"], ["facade:wash"], glow_mesh(s,template), "wash", facade.wash_values(s), u.Vector(), u.Rotator(), u.Vector(1,1,1))
+    # #2430: the bollards' bands, one mesh 1 mm proud of the imported gard band, switched by the material alone
+    bands = spec["bollardBands"]
+    place(bands["name"], ["facade:band"], glow_mesh(bands,template), "band", facade.band_values(bands), u.Vector(), u.Rotator(), u.Vector(1,1,1))
     if not levels.save_map(world, LEVEL):
         raise RuntimeError("Could not save " + LEVEL)
 
@@ -263,7 +266,7 @@ def main(argv):
     level(rows,spec,materials,manager)
     stamp["files"] = hashes()
     STAMP.write_text(json.dumps(stamp,sort_keys=True,indent=2)+"\n")
-    u.log(f"LUNDEN_FACADE_OK {len(rows)} room, window and lens faces, {len(spec['surfaces'])} glow meshes")
+    u.log(f"LUNDEN_FACADE_OK {len(rows)} room, window and lens faces, {len(spec['surfaces'])} glow meshes, the bollard bands")
 
 
 if __name__ == "__main__":

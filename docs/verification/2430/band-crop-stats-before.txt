@@ -1,0 +1,8 @@
+facade-a-dusk          band-left    web lum 0.6257 R/B 1.76 sRGB 240.3,198.8,136.9 unreal lum 0.0006 R/B 2.00 sRGB 2,2,1             ratio 0.00
+facade-a-dusk          band-centre  web lum 0.6790 R/B 1.80 sRGB 253.1,207.9,140.7 unreal lum 0.0006 R/B 2.00 sRGB 2,2,1             ratio 0.00
+facade-b-dusk          band-left    web lum 0.6796 R/B 1.80 sRGB 252.4,208.3,139.9 unreal lum 0.0006 R/B 2.00 sRGB 2,2,1             ratio 0.00
+facade-b-dusk          band-right   web lum 0.6800 R/B 1.79 sRGB 251.5,208.8,140.2 unreal lum 0.0006 R/B 2.00 sRGB 2,2,1             ratio 0.00
+facade-a-day           band-left    web lum 0.2400 R/B 1.05 sRGB 134.2,133.5,127.2 unreal lum 0.1869 R/B 1.04 sRGB 120.2,120,115.5   ratio 0.78
+facade-a-day           band-centre  web lum 0.2561 R/B 1.07 sRGB 142.1,137.9,132.3 unreal lum 0.1888 R/B 1.04 sRGB 121,120.5,116.2   ratio 0.74
+facade-b-day           band-left    web lum 0.2590 R/B 1.09 sRGB 142,139.2,130.1   unreal lum 0.1903 R/B 1.04 sRGB 121.2,121,116.1   ratio 0.73
+facade-b-day           band-right   web lum 0.2579 R/B 1.08 sRGB 141.5,138.9,131.3 unreal lum 0.1887 R/B 1.04 sRGB 120.8,120.5,115.9 ratio 0.73

@@ -34,9 +34,25 @@ test('the shared site glass keeps its builder’s house and omits the garage', (
   const PL = COURTYARD.bollards.pool;
   const pools = new THREE.Mesh(poolGeometry(-20, 17.85, 1, 0, PL.r, PL.r, () => 0, { rings: 2, segs: 4 }));
   Object.assign(pools, { name: 'courtyard-bollard-pools', visible: false });
+  // #2430: the bands under the caps (courtyard.js keeps their merged mesh in its group's userData)
+  const { h, r } = COURTYARD.bollards, courtyard = new THREE.Group();
+  courtyard.userData.bollardBands = new THREE.Mesh(new THREE.CylinderGeometry(r - 0.005, r - 0.005, 0.08, 12).translate(-20, h - 0.08, 17.85).toNonIndexed());
+  courtyard.position.y = 0.5;
+  courtyard.add(courtyard.userData.bollardBands);
   const world = { object: new THREE.Group() };
-  world.object.add(group, pools);
+  world.object.add(group, pools, courtyard);
   world.object.updateMatrixWorld(true);
+
+  const bands = facadeLightingData(world, ['kvarteret', 'gard']).bollardBands;
+  assert.deepEqual([bands.name, bands.on, bands.lit, bands.off], ['courtyardBollardBands', ...Object.values(COURTYARD.bollards.band)]);
+  assert.equal(bands.indices.length, 3 * 2 * 12); // the upright faces only: the caps lie inside the bollard
+  for (const [x, y, z, u, v] of bands.vertices) {
+    // Unreal cm: x = web x, y = web z; 1 mm proud of the imported band, at the group's height
+    assert.ok(Math.abs(Math.hypot(x + 2000, y - 1785) - 100 * (r - 0.004)) < 0.02, `band radius at ${x},${y}`);
+    assert.ok(z > 100 * (0.5 + h - 0.121) && z < 100 * (0.5 + h - 0.039), `band height ${z}`);
+    assert.ok(u >= 0 && u <= 1 && v >= 0 && v <= 1);
+  }
+  assert.equal(facadeLightingData(world, ['kvarteret']).bollardBands, undefined);
 
   const bollard = facadeLightingData(world, ['kvarteret', 'gard']).surfaces.at(-1);
   assert.equal(bollard.name, 'courtyardBollardPools');

@@ -1681,7 +1681,10 @@ export const COURTYARD = {
     // #1525: each bollard lights the ground round it at night: an additive pool (groundglow.js, no light object) of
     // radius `r` m, warm `color` at `peak` opacity; lit above `on` night, out below `off`, `fade` s (sizes/strength *guess*
     // by eye, like the street lamps' #434 pools); 5 rings × 20 segments keep it to ~180 triangles a bollard
-    pool: { r: 3.4, color: 0xffcf8f, peak: 0.45, on: 0.35, off: 0.3, fade: 1.5, rings: 5, segs: 20 } },
+    pool: { r: 3.4, color: 0xffcf8f, peak: 0.45, on: 0.35, off: 0.3, fade: 1.5, rings: 5, segs: 20 },
+    // #112: the band under each cap shows `lit` while night is strictly above `on` and the power is on, else `off`
+    // (sRGB, unlit; colours by eye). #2430: the Unreal facade export reads them from here.
+    band: { on: 0.35, lit: 0xffd08a, off: 0x8d8b84 } },
   // #1525: lit ground-floor windows of Hus A–C spill a faint pool onto the ground in front of them at night (one additive
   // mesh, its per-window strength the window's own lit level). Windows whose sill is within `maxUp` m of the ground
   // outside; the pool's centre `out` m out, radii `along` × window width and `across` m; `peak` opacity (all *guess* by eye)

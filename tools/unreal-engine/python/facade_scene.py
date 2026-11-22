@@ -10,10 +10,11 @@ FIELDS = {
     "room": COMMON + "HalfW HalfH Depth FloorZ Ceiling Left Right Kind Cover Seed DuskLit WallR WallG WallB FloorR FloorG FloorB FabricR FabricG FabricB".split(),
     "window": COMMON + "Width Height Hall Home OnHour OffHour Morning Wake Leave LampR LampG LampB Rate Phase PhaseMillis GlowSeed".split(),
     "lens": ["Direct"], "wash": ["Peak", "ColourR", "ColourG", "ColourB"],  # #2397: each surface's own linear colour
+    "band": "On LitR LitG LitB OffR OffG OffB".split(),  # #2430: the courtyard bollards' bands
 }
 INPUTS = {"room": ["PositionWS", "ViewDir", "Night", "PowerAvailable"],
           "window": ["PositionWS", "Hour", "Night", "PowerAvailable", "Seconds"],
-          "lens": ["Night", "PowerAvailable", "WallOn"], "wash": ["UV", "WallLevel"]}
+          "lens": ["Night", "PowerAvailable", "WallOn"], "wash": ["UV", "WallLevel"], "band": ["Night", "PowerAvailable"]}
 KINDS = ("open", "curtain", "blind", "sheer", "roller")
 
 
@@ -44,6 +45,11 @@ def shader(kind, spec):
 def wash_values(surface):
     """#2397: a wash/pool mesh's custom primitive data (FIELDS["wash"])."""
     return [surface["peak"], *linear_colour(surface["colour"])]
+
+
+def band_values(bands):
+    """#2430: the bollard bands' custom primitive data (FIELDS["band"]): threshold, lit and day colour (linear)."""
+    return [bands["on"], *linear_colour(bands["lit"]), *linear_colour(bands["off"])]
 
 
 def planes(spec):
@@ -96,4 +102,11 @@ def validate(spec):
     wall, bollard = spec["wallLight"], spec.get("bollardLight", {})
     if any(bollard.get(k) != wall[k] for k in ("on", "off", "fade")):
         raise ValueError("The courtyard bollard pools need their own latch: their on/off/fade differ from wallLight")
+    bands = spec.get("bollardBands")
+    if not bands or bands.get("name") != "courtyardBollardBands":
+        raise ValueError("Missing the courtyard bollards' bands (#2430): export gard with hus-l and kvarteret")
+    v, i = bands["vertices"], bands["indices"]
+    if (not v or not i or len(i)%3 or min(i)<0 or max(i)>=len(v) or any(len(p)!=5 or not all(map(isfinite,p)) for p in v)
+            or not 0 < bands["on"] < 1 or not all(isinstance(bands[k], int) for k in ("lit", "off"))):
+        raise ValueError("Invalid courtyard bollard bands")
     return list(planes(spec))

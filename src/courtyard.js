@@ -600,8 +600,8 @@ export function buildCourtyard() {
     bicycle.target = { name: 'Cykeln', kind: 'bicycle', verb: 'cykla', bicycle, pickable: pick };
     pick.userData.door = bicycle.target; pick.position.copy(bicycle.position); pick.position.y += .525;
   }
-  const bollardGlow = new THREE.MeshBasicMaterial({ color: 0x8d8b84, toneMapped: false });
-  add(glow, bollardGlow, false);
+  const BAND = C.bollards.band, bollardGlow = new THREE.MeshBasicMaterial({ color: BAND.off, toneMapped: false });
+  group.userData.bollardBands = add(glow, bollardGlow, false); // #2430: the Unreal facade export reads the bands' triangles
   const PL = C.bollards.pool, bollardPools = new THREE.Mesh(mergeGeometries(pools), fadeGlowWithFog(glowMaterial(PL.color)));
   Object.assign(bollardPools, { name: 'courtyard-bollard-pools', visible: false, renderOrder: 2 }); bollardPools.material.side = THREE.FrontSide; // seen from above only: one pass
   group.add(bollardPools);
@@ -658,7 +658,7 @@ export function buildCourtyard() {
     group.add(new CeilingBatchGate([far]));
     bulbLods.push(new BatchLod(bulb, far, { start: BL.start, end: BL.end, margin: BL.margin, material: bulbMaterial }));
   }
-  const lit = new THREE.Color(0xffd08a), off = new THREE.Color(0x2a2620); const bollardOff = new THREE.Color(0x8d8b84);
+  const lit = new THREE.Color(0xffd08a), off = new THREE.Color(0x2a2620);
   return { object: group, segments, seats, targets, surfaces, bicycles, swings, bulbLods,
     lamps: { at: Float32Array.from(lampAt), get glow() { return poolLevel; } }, // #2039: the bollards as a light set for the avatars
     updateSwings(dt, target) {
@@ -677,7 +677,7 @@ export function buildCourtyard() {
       }
     },
     /** night 0 … 1 (with the window lights): the pergola's bulbs glow after dusk (no lights, colour only). */
-    update(night, power = true) { const on = night > 0.35 && power; for (const mat of bulbMats) mat.color.copy(on ? lit : off); bollardGlow.color.copy(on ? lit : bollardOff); // the bollards too (#112); power: not in a power cut (#604)
+    update(night, power = true) { const on = night > 0.35 && power; for (const mat of bulbMats) mat.color.copy(on ? lit : off); bollardGlow.color.setHex(night > BAND.on && power ? BAND.lit : BAND.off); // the bollards too (#112); power: not in a power cut (#604)
       // #1525: the bollards' ground pools fade in after dusk (hysteresis like the street lamps), out in a power cut
       const now = performance.now(), dt = Math.min(1, (now - poolT) / 1000); poolT = now;
       if (!poolLit && night > PL.on && power) poolLit = true; else if (poolLit && (night < PL.off || !power)) poolLit = false;

@@ -83,6 +83,26 @@ function glowSurface(mesh, colour, peak, name = mesh.name) {
   return { name, colour, peak, vertices, indices };
 }
 
+// #2430: the courtyard bollards' bands under the caps (courtyard.js `bollardBands`), their upright faces only (the caps
+// lie inside the bollard), each corner moved `clear` m out along its normal so the band clears the imported gard band.
+function bandSurface(mesh, clear = 0.001) {
+  const { position, normal, uv } = mesh.geometry.attributes, index = mesh.geometry.index;
+  const point = new THREE.Vector3(), n = new THREE.Vector3(), normals = new THREE.Matrix3().getNormalMatrix(mesh.matrixWorld);
+  const vertices = [], indices = [], seen = new Map(), corner = (i) => index ? index.getX(i) : i;
+  for (let t = 0; t < (index?.count ?? position.count); t += 3) {
+    const face = [0, 1, 2].map((k) => corner(t + k));
+    if (face.some((v) => Math.abs(n.fromBufferAttribute(normal, v).applyMatrix3(normals).normalize().y) > 0.5)) continue;
+    for (const v of face) {
+      n.fromBufferAttribute(normal, v).applyMatrix3(normals).normalize();
+      point.fromBufferAttribute(position, v).applyMatrix4(mesh.matrixWorld).addScaledVector(n, clear);
+      const vertex = [...webToUnrealRounded(point.toArray()), uv.getX(v), uv.getY(v)], key = vertex.join(',');
+      if (!seen.has(key)) { seen.set(key, vertices.length); vertices.push(vertex); }
+      indices.push(seen.get(key));
+    }
+  }
+  return { name: 'courtyardBollardBands', vertices, indices };
+}
+
 export function facadeLightingData(world, zones) {
   const panes = [], fixtures = [], windows = [], surfaces = [], routines = {};
   for (const group of world.object.children) {
@@ -111,9 +131,13 @@ export function facadeLightingData(world, zones) {
     if (!pools) throw new Error('courtyard-bollard-pools missing from the world');
     surfaces.push(glowSurface(pools, PL.color, PL.peak, 'courtyardBollardPools'));
   }
+  // #2430: the bands' colour switch (a strict night threshold with power, no fade or latch), with the gard zone too
+  const bandMesh = zones.includes('gard') && world.object.children.find((c) => c.userData.bollardBands)?.userData.bollardBands;
+  if (zones.includes('gard') && !bandMesh) throw new Error('courtyard bollardBands missing from the world');
+  const bollardBands = bandMesh ? { ...COURTYARD.bollards.band, ...bandSurface(bandMesh) } : undefined;
   const dl = HUS_L.doorLamp;
   return { panes, fixtures, surfaces, windows, roomLevels: { day: roomLevels(0), night: roomLevels(1), strength: ROOM_MAP.strength },
     facadeGlow: HUS_L.facadeGlow, wallLight: { on: dl.on, off: dl.off, fade: dl.fade, colour: dl.color, washPeak: dl.wash.peak, poolPeak: dl.pool.peak },
-    bollardLight: { on: PL.on, off: PL.off, fade: PL.fade, colour: PL.color, peak: PL.peak },
+    bollardLight: { on: PL.on, off: PL.off, fade: PL.fade, colour: PL.color, peak: PL.peak }, bollardBands,
     schedule: { routines, fade: WINDOW_SCHEDULE.fade, tv: WINDOW_SCHEDULE.tv, glow: ROOM_MAP.glow } };
 }

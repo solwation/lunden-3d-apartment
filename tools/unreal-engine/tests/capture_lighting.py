@@ -127,6 +127,7 @@ def run(scene_path, out_dir, names=None, exposure="game", trial=None, bias_offse
         facade_collection = u.load_asset(build_facade.LOCAL_MPC)
         if facade_collection is None:
             raise RuntimeError("The composed world needs its facade lighting collection")
+    weather_collection = u.load_asset("/Game/Lunden/Lighting/MPC_LundenWeather")
     dusk_mid = (lamps[0].get_editor_property("DuskOn") + lamps[0].get_editor_property("DuskOff")) / 2
     for shot in selected:
         name, cam, weather = shot["name"], cams[shot["camera"]], shot["weather"]
@@ -138,6 +139,8 @@ def run(scene_path, out_dir, names=None, exposure="game", trial=None, bias_offse
             sky.set_editor_property(k, v, u.PropertyAccessChangeNotifyMode.NEVER)
         for k, v in (trial or {}).items():
             sky.set_editor_property(k, v, u.PropertyAccessChangeNotifyMode.NEVER)
+        # #2430: a shot's `power` 0 is a local power cut (MPC_LundenWeather.PowerAvailable, read by the facade and bollards)
+        u.MaterialLibrary.set_scalar_parameter_value(world, weather_collection, "PowerAvailable", float(shot.get("power", 1)))
         update_sky_for_capture(world, sky)
         dark = sky.get_editor_property("DuskLight") < dusk_mid
         enabled = []
@@ -174,7 +177,7 @@ def run(scene_path, out_dir, names=None, exposure="game", trial=None, bias_offse
             obs["facade"] = {key: u.MaterialLibrary.get_scalar_parameter_value(world, facade_collection, key)
                              for key in ("WallOn", "WallLevel")}
         observed.append({**obs, "name": name, "camera": shot["camera"], "date": date, "hour": hour, "weather": weather,
-                         "hiddenSeasonalActors": len(hidden), "lamps": shot["lamps"], "lampsLit": lit, "exposureBias": bias,
+                         "hiddenSeasonalActors": len(hidden), "lamps": shot["lamps"], "power": shot.get("power", 1), "lampsLit": lit, "exposureBias": bias,
                          "sunElevation": sky.get_editor_property("SunElevation"), "sunLux": sun.intensity,
                          "daylight": sky.get_editor_property("Daylight"), "duskLight": sky.get_editor_property("DuskLight"),
                          "cloudOffset": [sky.get_editor_property(n) for n in ("CloudOffsetX", "CloudOffsetY")],
