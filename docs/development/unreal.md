@@ -2478,6 +2478,13 @@ phones, iPads and Macs do not offer them while a Surface in touch mode does. REA
 install and update on Windows (it opens the game window), notes rendered with `release-notes.mjs`, and the build PC
 preparation; they remain in #2377.
 
+**Launcher 0.1.3 (#2415, 2026-11-22).** Release `v0.1.3` replaced it as latest: the signed launcher from `release.yml`
+(run 45002710146, commit `a381761c`) as `Lunden.exe` and `Kv-Lunden-Unreal-L1007-Setup-0.1.3-win-x64.exe`, both channels'
+manifests (`--min-launcher 0.1.3 --published 2026-11-22T13:00:00Z`, app files still on v0.1.1) signed by
+`sign-manifest.yml`, notes from `release-notes/v0.1.3.md`, promoted after verification (run 45003309356). A 0.1.1 install
+reports "Nytt startprogram krävs: 0.1.3." and self-updates on its next start. While the Windows checkout did not sync,
+`make-manifest.mjs` ran from `git archive a381761 tools/unreal-engine unreal/Launcher shared` on the build PC.
+
 **Release gate.** `release.ps1` runs `node tools/unreal-engine/check-import.mjs` before BuildCookRun and builds nothing
 unless it exits 0: (1) the export in `Import/` is current for the checkout (`check-export.mjs`); (2) every zone's
 `import-stamp.json` names that zone's GLB SHA-256, the checkout's `IMPORTER_VERSION`, material map and locked engine,

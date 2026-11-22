@@ -48,7 +48,7 @@ upp när det finns något att göra. På iPhone lägger du först till sidan på
 webbversionen, men uppdaterar sig själv när nya versioner kommer.
 
 <!-- stable-windows-download -->
-[Ladda ned Lunden för Windows (64 bitar)](https://github.com/solwation/lunden-3d-apartment/releases/download/v0.1.1/Lunden-Setup-0.1.1-win-x64.exe)
+[Ladda ned Lunden för Windows (64 bitar)](https://github.com/solwation/lunden-3d-apartment/releases/download/v0.1.3/Kv-Lunden-Unreal-L1007-Setup-0.1.3-win-x64.exe)
 <!-- /stable-windows-download -->
 
 **Om Windows visar en SmartScreen-varning.** En ny signerad fil kan vara ovanlig. Stäng varningen och högerklicka på den
