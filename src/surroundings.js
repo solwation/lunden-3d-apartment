@@ -814,6 +814,7 @@ function openingTexture() {
   }
   const tex = canvasTex(c);
   tex.wrapS = tex.wrapT = THREE.ClampToEdgeWrapping;
+  tex.name = 'site-opening-soldiers'; // #2425: the Unreal export keeps this canvas by name
   return tex;
 }
 

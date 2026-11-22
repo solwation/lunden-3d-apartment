@@ -22,6 +22,9 @@
      `vertexColor.masters` and built as a `gltf-vertex-color` material from that master.
   8. (#2416) meshes drawing the same web canvas (measurements.json materials[].looks[].mapIndex), in any zone, reach the
      same material: a `mesh` selector that misses a sibling (Hus L's screen walls) would send it to the key's catch-all.
+  9. (#2425) the A/B/C windows' soldier courses (src/surroundings.js openingTexture, map `site-opening-soldiers`) are in
+     the export, every key drawing them carries that canvas as its GLB base colour texture, and no rule replaces it, so
+     they cannot fall back to Interchange's plain white instance (the wide white surround #2425 found).
 --table prints one line per key: key, nodes, rule material or "default: <reason>".
 Exit 0 when all hold, 1 otherwise; prints MATERIAL_COVERAGE_OK.
 """
@@ -53,6 +56,7 @@ GRASS_MAP = "shared-grass-detail"  # src/grass.js grassTexture's name; measureme
 # instance loses, and colour-map names that carry a class themselves (src/roofsurface.js roofMap, src/asphaltsurface.js)
 PATTERNED = ("brick", "roof", "asphalt", "paving")
 MAP_CLASS = {"roof-surface": "roof", "asphalt-aggregate-colour": "asphalt"}
+SOLDIER_MAP = "site-opening-soldiers"  # #2425: src/surroundings.js openingTexture's name
 
 
 def look_classes(export_materials):
@@ -299,6 +303,24 @@ def main(argv):
                 elif reach and sum(len(w) for w in reach.values()) > 1:
                     shared += 1
         print(f"shared web canvases (#2416): {canvases} look(s), {shared} drawn on several meshes, each mesh on the same material")
+        # 9. #2425: the soldier courses keep their canvas (a plain white key drew a wide white band round every window)
+        soldier = sorted(k for k, v in export_materials.items()
+                         if v.get("map") == SOLDIER_MAP or any(l.get("map") == SOLDIER_MAP for l in v.get("looks", [])))
+        if not soldier:
+            errors.append(f"no export key draws the soldier courses (map {SOLDIER_MAP}): openingTexture lost its name?")
+        textured = set()
+        for name in sorted(os.listdir(export_dir)):
+            if name.endswith(".glb"):
+                for m in glb_json(os.path.join(export_dir, name)).get("materials", []):
+                    if m.get("name") in soldier and "baseColorTexture" in m.get("pbrMetallicRoughness", {}):
+                        textured.add(m["name"])
+        for key in soldier:
+            if key not in textured:
+                errors.append(f"soldier-course key {key} has no base colour texture in its GLB")
+            hit = next((r for rx, mx, r in rule_rx if rx.search(key)), None)
+            if hit:
+                errors.append(f"soldier-course key {key}: rule {hit['match']} replaces its canvas with {hit['material']}")
+        print(f"soldier courses (#2425): {', '.join(soldier) or 'none'}, each with its canvas in the GLB")
 
     # 7. #2321: vertex colours drawn in every zone
     vc_keys = vertex_color_check(export_dir, table, rule_rx, errors)

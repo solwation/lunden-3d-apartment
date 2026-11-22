@@ -7,7 +7,7 @@ material in Unreal:
 
 - slatted rails (`*_site_slatted_rail`, the A/B/C loggias and the courtyard-edge fence), the house letters
   (`*_site_house_letters`) and the garage storage cages' wire mesh (`*_garage_cage_mesh`, walls and door leaves,
-  #2399): Interchange's instance of that key, with its base-colour texture switched on and a Texture2D the size of
+  #2399) and the A/B/C windows' soldier courses (`*_site_opening_soldiers`, #2425): Interchange's instance of that key, with its base-colour texture switched on and a Texture2D the size of
   the GLB's PNG; the rails and the cage mesh also masked and two-sided, as the glTF says (MASK, doubleSided);
 - patio hedges and boxwood (`std_78a64b_r95_m0_vc_tex`, `std_48733c_r92_m0_vc_tex`): the same texture rule;
 - the river keys (`*_river_flow`, `*_river_edge`): the material material-map.json names for them.
@@ -29,7 +29,7 @@ TOOLS = PROJECT.parents[1] / "tools/unreal-engine"
 IMPORT = PROJECT / "Import"
 WORLD = json.loads((TOOLS / "world-levels.json").read_text(encoding="utf-8"))
 MAP = json.loads((TOOLS / "material-map.json").read_text(encoding="utf-8"))
-KEYS = re.compile(r"_site_slatted_rail$|_site_house_letters$|_garage_cage_mesh$|^std_(78a64b_r95|48733c_r92)_m0_vc_tex$|_river_(flow|edge)$")
+KEYS = re.compile(r"_site_slatted_rail$|_site_house_letters$|_garage_cage_mesh$|_site_opening_soldiers$|^std_(78a64b_r95|48733c_r92)_m0_vc_tex$|_river_(flow|edge)$")
 TEXTURED = "bHasBaseColorTexture"
 VEG = "/Game/Lunden/Generated/VegetationWorld"
 

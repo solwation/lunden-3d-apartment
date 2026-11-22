@@ -795,7 +795,8 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     // In particular the pilot ground builder loads the original patio-hedge material path.
     const hedge = m.name === 'patio-hedge' || m.name === 'boxwood';
     const siteMap = m.map?.name === 'site-slatted-rail' || m.map?.name === 'site-house-letters' || m.map?.name === 'parked-bicycle-spokes'
-      || m.map?.name === 'garage-cage-mesh'; // #2399: the storage cages' wire mesh
+      || m.map?.name === 'garage-cage-mesh' // #2399: the storage cages' wire mesh
+      || m.map?.name === 'site-opening-soldiers'; // #2425: the A/B/C windows' soldier courses (openingTexture)
     // #2400: an unlit web material (MeshBasicMaterial) with a colour map is a sign, label or pictogram whose image is its whole
     // look (the flats' number signs and name plates in Hus A, B, C and L, the garage's sign plates, exit pictograms and floor
     // markings, the stairwells' floor numbers): it keeps that image like a furnishing texture, one key per canvas, since each
