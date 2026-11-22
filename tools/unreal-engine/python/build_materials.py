@@ -213,6 +213,7 @@ def spec_hash(path, spec):
     parts = [path, spec, TILED_GRID + TILED_FINISH] + ([GRASS_HLSL] if spec.get("graph") == "grass" else [])  # other hashes unchanged
     if spec.get("graph") == "river":
         parts.append(Path(river_material.__file__).read_text(encoding="utf-8"))
+        parts.append(river_material.display_gain())  # #2410: follows build_lighting.EXPOSURE_BIAS
     if spec.get("graph") == "tiled":
         parts.append(BRICK_FILTER)
     if spec.get("graph") == backdrop_material.GRAPH:

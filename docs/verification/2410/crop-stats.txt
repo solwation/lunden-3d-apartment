@@ -1,0 +1,51 @@
+before   river         lawn-far    web 118,180,71   ue 134,195,103  lum 1.22 sat 0.78 ch% 14/8/45      share 1.00/1.00
+before   river         lawn-near   web 159,170,136  ue 169,183,154  lum 1.14 sat 0.80 ch% 7/8/13       share 1.00/1.00
+before   river         water-far   web 116,153,175  ue 130,155,175  lum 1.03 sat 0.77 ch% 11/1/-0      share 0.13/0.14
+before   river         sky         web 150,178,207  ue 154,185,217  lum 1.06 sat 1.07 ch% 3/4/5        share 1.00/1.00
+test-grass-specular-0 river         lawn-far    web 118,180,71   ue 112,181,65   lum 1.00 sat 1.05 ch% -5/1/-8      share 1.00/1.00
+test-grass-specular-0 river         lawn-near   web 159,170,136  ue 165,181,146  lum 1.10 sat 0.96 ch% 4/6/7        share 1.00/1.00
+test-grass-specular-0 river         water-far   web 116,153,175  ue 130,154,175  lum 1.03 sat 0.77 ch% 11/1/-0      share 0.13/0.14
+test-grass-specular-0 river         sky         web 150,178,207  ue 154,185,217  lum 1.06 sat 1.07 ch% 3/4/5        share 1.00/1.00
+test-water-specular-0 river         water-far   web 116,153,175  ue 153,184,209  lum 1.51 sat 0.80 ch% 31/21/20     share 0.13/0.14
+test-water-no-reflection river         water-far   web 116,153,175  ue 114,152,180  lum 0.97 sat 1.10 ch% -2/-0/3      share 0.13/0.14
+after    river         lawn-far    web 118,180,71   ue 134,195,103  lum 1.22 sat 0.78 ch% 14/8/45      share 1.00/1.00
+after    river         lawn-near   web 159,170,136  ue 169,183,154  lum 1.14 sat 0.80 ch% 7/8/13       share 1.00/1.00
+after    river         water-far   web 116,153,175  ue 114,152,180  lum 0.97 sat 1.10 ch% -2/-0/3      share 0.13/0.15
+after    river         sky         web 150,178,207  ue 154,185,217  lum 1.06 sat 1.07 ch% 3/4/5        share 1.00/1.00
+before   river-bridge  lawn-left   web 111,173,66   ue 123,184,86   lum 1.17 sat 0.86 ch% 10/7/30      share 1.00/1.00
+before   river-bridge  lawn-right  web 59,112,36    ue 74,125,59    lum 1.23 sat 0.78 ch% 27/12/62     share 1.00/1.00
+before   river-bridge  water       web 83,125,150   ue 96,135,161   lum 1.19 sat 0.90 ch% 15/8/7       share 0.89/0.92
+before   river-bridge  water-far   web 159,197,220  ue 172,197,216  lum 1.02 sat 0.72 ch% 9/-0/-2      share 0.46/0.50
+before   river-bridge  sky         web 141,173,189  ue 146,180,190  lum 1.05 sat 0.90 ch% 4/4/1        share 1.00/1.00
+test-grass-specular-0 river-bridge  lawn-left   web 111,173,66   ue 108,176,60   lum 1.03 sat 1.06 ch% -3/2/-9      share 1.00/1.00
+test-grass-specular-0 river-bridge  lawn-right  web 59,112,36    ue 67,121,44    lum 1.12 sat 0.94 ch% 15/8/22      share 1.00/1.00
+test-grass-specular-0 river-bridge  water       web 83,125,150   ue 96,135,161   lum 1.19 sat 0.90 ch% 15/8/7       share 0.89/0.92
+test-grass-specular-0 river-bridge  water-far   web 159,197,220  ue 172,197,215  lum 1.02 sat 0.72 ch% 8/-0/-2      share 0.46/0.50
+test-grass-specular-0 river-bridge  sky         web 141,173,189  ue 146,180,190  lum 1.05 sat 0.90 ch% 4/4/1        share 1.00/1.00
+test-water-specular-0 river-bridge  water       web 83,125,150   ue 93,137,166   lum 1.22 sat 0.98 ch% 12/9/10      share 0.89/0.92
+test-water-specular-0 river-bridge  water-far   web 159,197,220  ue 192,220,241  lum 1.31 sat 0.73 ch% 21/12/10     share 0.46/0.50
+test-water-no-reflection river-bridge  water       web 83,125,150   ue 84,128,156   lum 1.06 sat 1.03 ch% 1/3/4        share 0.89/0.91
+test-water-no-reflection river-bridge  water-far   web 159,197,220  ue 158,197,223  lum 1.00 sat 1.05 ch% -1/0/1       share 0.46/0.51
+after    river-bridge  lawn-left   web 111,173,66   ue 123,184,86   lum 1.17 sat 0.86 ch% 10/7/30      share 1.00/1.00
+after    river-bridge  lawn-right  web 59,112,36    ue 74,125,59    lum 1.23 sat 0.78 ch% 27/12/62     share 1.00/1.00
+after    river-bridge  water       web 83,125,150   ue 84,129,156   lum 1.06 sat 1.03 ch% 1/3/4        share 0.89/0.91
+after    river-bridge  water-far   web 159,197,220  ue 158,197,223  lum 1.00 sat 1.05 ch% -1/0/2       share 0.46/0.51
+after    river-bridge  sky         web 141,173,189  ue 146,180,190  lum 1.05 sat 0.90 ch% 4/4/1        share 1.00/1.00
+before   entrance-a    lawn        web 112,173,65   ue 121,184,82   lum 1.15 sat 0.89 ch% 7/6/26       share 1.00/1.00
+test-grass-specular-0 entrance-a    lawn        web 112,173,65   ue 108,177,59   lum 1.03 sat 1.06 ch% -4/2/-8      share 1.00/1.00
+node:fs:561
+  return binding.open(
+                 ^
+
+Error: ENOENT: no such file or directory, open 'test-water-specular-0/entrance-a.png'
+    at Object.openSync (node:fs:561:18)
+    at Object.readFileSync (node:fs:445:35)
+    at stat (/home/olof/wt/opus-2410/docs/verification/2410/masked-crop-stats.cjs:11:143)
+    at /home/olof/wt/opus-2410/docs/verification/2410/masked-crop-stats.cjs:14:38 {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'test-water-specular-0/entrance-a.png'
+}
+
+Node.js v24.18.1

@@ -1,8 +1,27 @@
 """Höje å: the near river frame and masked far-water planes exported from src/riversurface.js."""
+import ast
 import math
+from pathlib import Path
 
 WEATHER = "/Game/Lunden/Lighting/MPC_LundenWeather"
 CALENDAR = "/Game/Lunden/Seasons/MPC_LundenVegetation"
+# Unreal's specular input of a dielectric (F0 = 0.08 x Specular); 0.5 is the engine default, the web's 0.04.
+DEFAULT_SPECULAR = 0.5
+
+
+WATER_SPECULAR = f"return Frame.x > 0.5 && SnowLies < 0.5 ? 0.0 : {DEFAULT_SPECULAR};"
+
+
+def display_gain():
+    """#2410: the web adds its reflected sky in its own radiance units, shown at three's toneMappingExposure. The game's
+    locked exposure is that exposure times 2^EXPOSURE_BIAS (build_lighting.py, #2313), and an emissive value E renders as
+    three.js renders E at exposure 1 (#2396's probe), so the same picture needs E x 2^-EXPOSURE_BIAS at any hour. Read
+    from build_lighting.py's source so the two never drift (that module needs the editor to import)."""
+    tree = ast.parse((Path(__file__).with_name("build_lighting.py")).read_text(encoding="utf-8"))
+    for node in tree.body:
+        if isinstance(node, ast.Assign) and any(getattr(t, "id", None) == "EXPOSURE_BIAS" for t in node.targets):
+            return 2.0 ** -float(ast.literal_eval(node.value))
+    raise RuntimeError("build_lighting.py has no EXPOSURE_BIAS")
 
 
 def number(n):
@@ -136,20 +155,34 @@ def build(material, spec):
     else:
         sky_inputs.update(Frame=normal_inputs["Frame"], SnowLies=snow_lies)
     sky = custom("Web river sky reflection", reflection_code, sky_inputs, -260, 450)
+    # #2410: the web has no environment map, so its water reflects only the sky added above and the sun; its indirect
+    # light reaches the diffuse colour, which three scales by (1 - metalness). Unreal would reflect its own sky on top
+    # (Lumen / sky light, the whole sky at grazing angles): a second, grey reflection that made the far water pale. The
+    # water therefore takes the web's diffuse colour, Metallic 0 and Specular 0, and the added sky is the only reflection.
+    # The sun's glint on the ripples goes with it (#2362). The edge mesh's land and lying snow keep the engine default.
     if flowing:
         color = u.LinearColor()
         rgb = bytes.fromhex(data["color"].lstrip("#"))
         color.set_from_srgb(u.Color(r=rgb[0], g=rgb[1], b=rgb[2], a=255))
-        base = expr(u.MaterialExpressionConstant3Vector, -500, -200, constant=color)
+        k = 1.0 - float(spec["metallic"])
+        base = expr(u.MaterialExpressionConstant3Vector, -500, -200, constant=u.LinearColor(color.r * k, color.g * k, color.b * k, 1.0))
+        specular = expr(u.MaterialExpressionConstant, -500, -560, r=0.0)
     else:
         base = custom("Web edge-land vertex colours and lying snow",
                       f"return lerp(Land.rgb, {vec(data['snowGround'])}, SnowLies);",
                       {"Land": expr(u.MaterialExpressionVertexColor, -780, -200), "SnowLies": snow_lies}, -500, -200)
+        if float(spec["metallic"]) != 0.0:
+            raise ValueError("The edge-land water is a plain diffuse surface on the web (metalness 0)")
+        specular = custom("Web edge-land: no engine reflection on the water", WATER_SPECULAR,
+                          {"Frame": normal_inputs["Frame"], "SnowLies": snow_lies}, -500, -560, u.CustomMaterialOutputType.CMOT_FLOAT1)
+    shown = expr(u.MaterialExpressionMultiply, -60, 450, const_b=display_gain())
+    if not mel.connect_material_expressions(sky, "", shown, "A"):
+        raise RuntimeError("Cannot scale the river sky to display units")
     # UE flips tangent-space normals automatically. This graph supplies the signed world normal itself.
     for source, prop in ((base, u.MaterialProperty.MP_BASE_COLOR), (norm, u.MaterialProperty.MP_NORMAL),
-                         (sky, u.MaterialProperty.MP_EMISSIVE_COLOR),
+                         (shown, u.MaterialProperty.MP_EMISSIVE_COLOR), (specular, u.MaterialProperty.MP_SPECULAR),
                          (expr(u.MaterialExpressionConstant, -500, -320, r=spec["roughness"]), u.MaterialProperty.MP_ROUGHNESS),
-                         (expr(u.MaterialExpressionConstant, -500, -440, r=spec["metallic"]), u.MaterialProperty.MP_METALLIC)):
+                         (expr(u.MaterialExpressionConstant, -500, -440, r=0.0), u.MaterialProperty.MP_METALLIC)):
         if not mel.connect_material_property(source, "", prop):
             raise RuntimeError(f"Cannot wire river material output {prop}")
 
@@ -160,10 +193,25 @@ def check(material, spec):
     mel = u.MaterialEditingLibrary
     normal, sky = shaders(spec["river"], spec["mode"] == "flow")
     problems = []
-    for prop, expected in ((u.MaterialProperty.MP_NORMAL, normal), (u.MaterialProperty.MP_EMISSIVE_COLOR, sky)):
-        node = mel.get_material_property_input_node(material, prop)
+    shown = mel.get_material_property_input_node(material, u.MaterialProperty.MP_EMISSIVE_COLOR)
+    gain = display_gain()
+    if not isinstance(shown, u.MaterialExpressionMultiply) or abs(shown.get_editor_property("const_b") - gain) > 1e-4 * gain:
+        problems.append(f"river sky is not scaled to display units (x {gain:.4f}, #2410)")
+        shown = None
+    sky_node = (mel.get_inputs_for_material_expression(material, shown) or [None])[0] if shown else None
+    for prop, node, expected in ((u.MaterialProperty.MP_NORMAL, mel.get_material_property_input_node(material, u.MaterialProperty.MP_NORMAL), normal),
+                                 (u.MaterialProperty.MP_EMISSIVE_COLOR, sky_node, sky)):
         if not isinstance(node, u.MaterialExpressionCustom) or node.get_editor_property("code") != expected:
             problems.append(f"missing or stale river shader on {prop}")
+    specular = mel.get_material_property_input_node(material, u.MaterialProperty.MP_SPECULAR)
+    if spec["mode"] == "flow":
+        if not isinstance(specular, u.MaterialExpressionConstant) or specular.get_editor_property("r") != 0.0:
+            problems.append("the near water must not take Unreal's own reflection (Specular 0, #2410)")
+    elif not isinstance(specular, u.MaterialExpressionCustom) or specular.get_editor_property("code") != WATER_SPECULAR:
+        problems.append("the edge-land water must not take Unreal's own reflection (#2410)")
+    metallic = mel.get_material_property_input_node(material, u.MaterialProperty.MP_METALLIC)
+    if not isinstance(metallic, u.MaterialExpressionConstant) or metallic.get_editor_property("r") != 0.0:
+        problems.append("expected Metallic 0 (the web's metalness is in the base colour, #2410)")
     if not material.get_editor_property("two_sided") or material.get_editor_property("tangent_space_normal"):
         problems.append("expected a two-sided material with world-space normals")
     if spec["mode"] == "edge":
