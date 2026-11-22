@@ -86,6 +86,23 @@ public sealed class SetupTests : IDisposable
     }
 
     [Fact]
+    public void InstalledLauncherDoesNotCarryTheDownloadMark()
+    {
+        // #2418: Smart App Control blocked the installed copy because it kept the setup's Zone.Identifier stream.
+        if (!OperatingSystem.IsWindows()) return;
+        var layout = Layout();
+        var setup = Engine(layout);
+        foreach (string version in new[] {"1", "2"}) {
+            Write(Source, "signed fixture " + version);
+            File.WriteAllText(Source + ":Zone.Identifier", "[ZoneTransfer]\r\nZoneId=3\r\n");
+            if (version == "2") File.WriteAllText(layout.Target + ":Zone.Identifier", "[ZoneTransfer]\r\nZoneId=3\r\n");
+            setup.Install(Source, version);
+            Assert.Equal("signed fixture " + version, File.ReadAllText(layout.Target));
+            Assert.False(File.Exists(layout.Target + ":Zone.Identifier"));
+        }
+    }
+
+    [Fact]
     public void BothSetupFileNamesSelectInstallation()
     {
         Assert.NotNull(SetupCommand.Parse([], Path.Combine(temp, "Kv-Lunden-Unreal-L1007-Setup-0.1.3-win-x64.exe")));

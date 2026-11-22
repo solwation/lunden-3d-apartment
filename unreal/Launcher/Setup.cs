@@ -109,7 +109,7 @@ internal sealed class Setup(SetupLayout layout, ISetupRegistration shell, Action
         bool swapped = false, registrationStarted = false;
         try {
             if (!same) {
-                File.Copy(source, staged);
+                CopyWithoutStreams(source, staged);
                 verifyPublisher(staged);
             }
             File.WriteAllBytes(nextReceipt, JsonSerializer.SerializeToUtf8Bytes(new SetupReceipt(layout.Name, version)));
@@ -120,6 +120,7 @@ internal sealed class Setup(SetupLayout layout, ISetupRegistration shell, Action
                 else File.Move(staged, layout.Target);
                 swapped = true;
             }
+            RemoveInternetMark(layout.Target);
             registrationStarted = true;
             shell.Register(layout, version);
             File.Move(nextReceipt, layout.Receipt, true);
@@ -140,6 +141,21 @@ internal sealed class Setup(SetupLayout layout, ISetupRegistration shell, Action
             File.Delete(nextReceipt);
         }
         File.Delete(backup);
+    }
+
+    // #2418: File.Copy keeps the download's Zone.Identifier stream and File.Replace merges the old file's streams, so the
+    // installed launcher looked "downloaded from the internet" and Smart App Control refused to start it. The signature
+    // is verified before the copy is used, so the installed file carries only its data.
+    static void CopyWithoutStreams(string source, string target)
+    {
+        using var input = new FileStream(source, FileMode.Open, FileAccess.Read, FileShare.Read);
+        using var output = new FileStream(target, FileMode.CreateNew, FileAccess.Write, FileShare.None);
+        input.CopyTo(output);
+    }
+
+    internal static void RemoveInternetMark(string path)
+    {
+        if (OperatingSystem.IsWindows()) File.Delete(path + ":Zone.Identifier");
     }
 
     /// <summary>Gives an installation from before #2415 the new Start menu name. Returns whether it changed anything.</summary>

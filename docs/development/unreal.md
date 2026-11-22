@@ -2087,6 +2087,13 @@ saves and updates need no migration. An installation from an older launcher stil
 launcher renames it (and rewrites the Apps entry) on its next start, and uninstalling removes either name. The game
 window's own icon comes from Epic's stock `UnrealGame-Win64-Shipping.exe` and is unchanged.
 
+**No download mark on the installed launcher (#2418).** Setup copies itself into the install folder as plain data
+(`CopyWithoutStreams`) and deletes `Lunden.exe:Zone.Identifier` after the swap (`File.Replace` merges the old file's
+named streams). Before 0.1.4 the installed copy kept the browser's ZoneId=3 mark, and Windows 11 Smart App Control blocked
+it from the Start menu ("files of this type from the internet") even though its signature was valid; nothing was logged
+in CodeIntegrity/Operational. The setup itself is allowed to run from Downloads. Self-updates write with `File.Move` from
+an HTTP download and never carried the mark.
+
 | Invocation | Effect |
 | --- | --- |
 | `Lunden.exe --dry-run-install` | Print the planned executable, Start menu shortcut, HKCU uninstall registration and save location. |
