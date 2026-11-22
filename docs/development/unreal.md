@@ -138,11 +138,14 @@ tools/unreal-engine/ui-extensions.json        menu buttons (#2291) and volume ro
 tools/unreal-engine/tests/test_ui.py          PIE test: compass = web for 9 yaws, menu, Esc, every setting, restart
 tools/unreal-engine/tests/compass-rule.test.mjs  test_ui's compass rows against the web's src/compass.js (Node)
 tools/unreal-engine/export-audio.mjs          writes/checks audio-params.json: FOOTSTEPS, strides, WIND_SOUND, AMBIENT_BED, ROOM_REVERB,
-                                   the river line and the web's own sound-function answers (Node, no browser) (#2287)
+                                   the river line and the web's own sound-function answers (Node, no browser) (#2287);
+                                   hail and the thunder measured from the web's sfx.thunder (#2402)
 tools/unreal-engine/python/build_audio.py     footstep MetaSounds, wind and bed loops, sound classes, reverbs and BPC_LundenAudio (#2287)
-tools/unreal-engine/tests/test_audio.py       PIE test: formulas = web's answers, steps per surface and stride, room zone, indoor wind/bed
+tools/unreal-engine/python/weather_audio.py   MS_LundenThunder and the strike clock for build_audio.py (#2402)
+tools/unreal-engine/tests/test_audio.py       PIE test: formulas = web's answers, steps per surface and stride, room zone, indoor wind/bed,
+                                   hail level and the strike rule (#2402)
 tools/unreal-engine/tests/test_audio_render.py  silent render to WAV (needs an audio device, final gain 0; not via run-tests.ps1)
-tools/unreal-engine/tests/audio-render-compare.py  the WAVs against the web's synthFootstep: level, length, centroid, spectrograms
+tools/unreal-engine/tests/audio-render-compare.py  the WAVs against the web's synthesis (steps, rain, hail, window, thunder): level, length, centroid
 unreal/Lunden/Content/Lunden/Audio/           sound classes, MS_Lunden* MetaSounds, RE_Lunden* reverbs, BPC_LundenAudio (LFS; build_audio.py)
 tools/unreal-engine/tests/capture_ui.py       PIE screenshots of the HUD, start/settings/pause menu (GPU, -RenderOffScreen)
 unreal/Lunden/Content/Lunden/UI/              BFL_LundenSettings, WBP_LundenHud, WBP_LundenMenu, BPC_LundenUI, SM_LundenVolumes,
@@ -942,6 +945,23 @@ sound classes of the three `volumes` rows of `ui-extensions.json`.
   The inverse attenuation matches the web's 1.2 m reference distance and 1.2 rolloff up to Unreal's 50.2 m cull
   distance. `test_window_audio.py` exercises two sashes in the composed map and changes the sky's wind. Running
   it with the silent mixer settings from `test_audio_render.py` also checks live voice identity and position.
+- **Hail and thunder** (#2402, `weather_audio.py`). Hail is weather.js's rain sound for the kind `hail`: the same
+  rain path of `MS_LundenAmbience`, `hail.loud` (1.6) times louder and low-passed at `hail.cutoff` (9 kHz) outdoors;
+  indoors it keeps the rain's 0.3 and 900 Hz. Thunder is `MS_LundenThunder`, one one-shot MetaSound of `sfx.thunder`:
+  after `Delay` s a high-passed crack when `Near` is over 0.6, a low-passed rumble whose length, cut-off, level and
+  attack follow `Near` (a fixed 160 Hz cut-off when `Inside`), and three rolls at random places in the rumble. Each
+  burst is a fresh white noise with the web noise()'s linear attack and exponential fall to 10⁻⁴; `Inside` scales
+  the whole by 0.45. `export-audio.mjs` gets the numbers by running the web's own `sfx.thunder` against a recording
+  stand-in for the AudioContext. It fits them to that shape and fails when a grid of captures no longer matches, so a
+  changed web thunder cannot pass unnoticed. The hail factors, the storm rule and the 343 m/s are literals in
+  `weather.js` and are read from its text, as the teleport limit is. `BPC_LundenAudio` runs weather.js's strike
+  clock. While `Storm` and `Rain` > `thunder.strike.minRain` (0.5), `NextStrike` counts down. A strike draws the
+  distance (400–4000 m), sets the nearness and the delay (distance / 343 m/s), and draws the next strike (6–22 s, the
+  first one at BeginPlay). It then plays the thunder with `CreateSound2D`, the parameters and `Play`, in
+  `SC_LundenEffects` at the web master. *Pending (#2439):* `BP_LundenSky` has no hail or storm yet (only rain and snow
+  on and off) and no lightning, so `Hail` and `Storm` are component variables that a test sets. Once the sky has them,
+  `ReadSky` reads them with one more pair of names. Our car's cabin (`cabinMix`) is not ported, so the thunder has no
+  `level` input.
 - **Room** (*guess*, a simple form of `ROOM_REVERB`'s convolvers). `ZoneFor` is `indoorRoomClass` from the same surface
   class: a core is `concrete`, an indoor hard floor is `bright`, any other indoor floor is `soft`. Outside that,
   `roomreverb.js`'s courtyard rectangle gives `courtyard`, and the rest is `open`. A change of zone calls
@@ -972,7 +992,7 @@ sound classes of the three `volumes` rows of `ui-extensions.json`.
   Blueprint, a pure node runs again for every reader, so the moved distance is stored before `LastPos` moves on. A PIE
   test sets component variables with `PropertyAccessChangeNotifyMode.NEVER`, because the editor's change notification
   rebuilds the actor's components and leaves a stale copy.
-- **Not ported:** the other weather sounds (hail, thunder), snow-cover and temperature steps (#2331), other
+- **Not ported:** the sky's own hail and storm with the lightning (#2439), snow-cover and temperature steps (#2331), other
   players' steps, landing sounds (#2293), music, radios and animals (later), sound occlusion (#2181; the window voices
   are positioned but, like the web's, never occluded) and the playroom zone.
 
@@ -1022,6 +1042,14 @@ silent render matches the web's synthesis: every footstep profile within ±0.8 d
 the rain within ±0.6 dB outdoors and indoors, and an open sash's wind 1 m ahead 0.0 dB, centred.
 `audio-render-compare.py` fails on any difference over ±2 dB. Evidence: [docs/verification/2320/](../verification/2320/README.md).
 Snow steps are built and level-matched but do not sound yet: snow cover and temperature wait for #2331.
+
+**Hail and thunder (#2402).** In the same silent render, the hail matches the web's rain synthesis with the hail
+parameters: −0.9 dB outdoors and +0.1 dB indoors. The thunder is compared as the power mean of four Unreal takes
+against twelve web draws, because each draw has its own length and rolls. Near and outdoors (with the crack) it is
+−0.4 dB; far (0.2) and indoors it is −0.2 dB. A thunder asked for 1 s late starts at 1.01 s. `test_audio` checks the hail
+level and cut-off at both places and the strike rule: no strike without a storm or at only 0.5 rain, the countdown,
+and 16 strikes with the web's distance, nearness, delay and next draw, outdoors and indoors. Evidence:
+[docs/verification/2402/](../verification/2402/README.md).
 
 The audio builder also mixes the web rain hiss and four rain-surface bands into the dry ambient bed. The
 sky's Rain controls gain and an indoor listener receives 30% gain and a 900 Hz cutoff. Rain fades above the web

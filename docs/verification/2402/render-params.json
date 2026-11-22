@@ -1,0 +1,73 @@
+{
+ "stepVolume": 0.30400000000000005,
+ "rain": {
+  "out": {
+   "RainGain": 0.05600000000000001,
+   "RainCutoff": 6500.0,
+   "Base": 0.55,
+   "BaseHz": 4500.0,
+   "Roof": 0.0,
+   "Metal": 0.0,
+   "Leaf": 1.1190601904553306,
+   "Water": 0.0
+  },
+  "in": {
+   "RainGain": 0.016800000000000002,
+   "RainCutoff": 900.0,
+   "Base": 0.55,
+   "BaseHz": 7000.0,
+   "Roof": 1.7999999999999998,
+   "Metal": 0.0,
+   "Leaf": 0.08142693496569844,
+   "Water": 0.0
+  }
+ },
+ "hail": {
+  "out": {
+   "RainGain": 0.08960000000000001,
+   "RainCutoff": 9000.0,
+   "Base": 0.55,
+   "BaseHz": 4500.0,
+   "Roof": 0.0,
+   "Metal": 0.0,
+   "Leaf": 1.1190601904553306,
+   "Water": 0.0
+  },
+  "in": {
+   "RainGain": 0.026880000000000005,
+   "RainCutoff": 900.0,
+   "Base": 0.55,
+   "BaseHz": 7000.0,
+   "Roof": 1.7999999999999998,
+   "Metal": 0.0,
+   "Leaf": 0.08142693496569844,
+   "Water": 0.0
+  }
+ },
+ "window": {
+  "Gain": 0.1881534736294317,
+  "LpHz": 609.712219938827,
+  "volume": 0.48,
+  "distanceCm": 100.0
+ },
+ "thunder": {
+  "volume": 0.8,
+  "seconds": 8.850000000000001,
+  "cases": {
+   "near": {
+    "Near": 1.0,
+    "Inside": 0.0
+   },
+   "far_in": {
+    "Near": 0.2,
+    "Inside": 1.0
+   }
+  },
+  "takes": 4,
+  "delay": {
+   "Near": 1.0,
+   "Inside": 0.0,
+   "Delay": 1.0
+  }
+ }
+}

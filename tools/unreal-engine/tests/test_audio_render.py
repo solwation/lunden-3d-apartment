@@ -17,8 +17,11 @@ Each step MetaSound is played three times on its own (the player's loops stopped
 room is 'open'), recording the main submix to Saved/audio-render/step_<profile>.wav (and _2, _3); then the wind and the bed at 9 m/s
 outdoors on the grass and indoors on the parquet (wind_out.wav, wind_in.wav, bed_out.wav, bed_in.wav), the rain alone
 at both places (rain_out.wav, rain_in.wav) and one open sash's wind 1 m in front of the camera on the road, dry (window.wav,
-#2320: the component's own WindowSound, WindowAttenuation and Gain/LpHz, as SyncWindowVoice spawns it). The parameters
-used go to render-params.json. The comparison with the web's synthesis is tests/audio-render-compare.py. Logs
+#2320: the component's own WindowSound, WindowAttenuation and Gain/LpHz, as SyncWindowVoice spawns it). #2402: the hail
+alone at both places (hail_out.wav, hail_in.wav: the rain loop with the component's hail parameters) and the thunder on
+the road, created and played as Strike does it, without the light's delay: THUNDER_TAKES takes near and outdoors
+(thunder_near*.wav, with the crack) and far and indoors (thunder_far_in*.wav), plus one near take with a 1 s delay
+(thunder_delay.wav, for the onset). The parameters used go to render-params.json. The comparison with the web's synthesis is tests/audio-render-compare.py. Logs
 LUNDEN_AUDIO_RENDER lines and LUNDEN_AUDIO_RENDER_OK.
 """
 import json
@@ -45,6 +48,8 @@ OUT = PROJECT / "Saved/audio-render"
 OUT.mkdir(parents=True, exist_ok=True)
 DIR = "/Game/Lunden/Audio"
 TAKES = 3  # plays per step profile: one take's level varies with the random variation and crackle trough
+THUNDER_TAKES = 4  # each thunder draws its own length and rolls (#2402)
+THUNDER_CASES = {"near": {"Near": 1.0, "Inside": 0.0}, "far_in": {"Near": 0.2, "Inside": 1.0}}
 
 editor = u.get_editor_subsystem(u.UnrealEditorSubsystem)
 levels = u.get_editor_subsystem(u.LevelEditorSubsystem)
@@ -122,7 +127,7 @@ def render():
             for take in range(TAKES):  # each play draws its own variation and crackle trough (#2320)
                 yield from record("step_" + profile + (f"_{take + 1}" if take else ""), 0.6,
                                   lambda s=sound: u.GameplayStatics.play_sound2d(game, s, volume))
-        params = {"stepVolume": volume, "rain": {}, "window": {}}
+        params = {"stepVolume": volume, "rain": {}, "hail": {}, "window": {}, "thunder": {}}
         put(comp, "WindSpeed", 9.0)
         put(comp, "Hour", 8.0)
         put(comp, "Month", 6)
@@ -148,6 +153,18 @@ def render():
             yield from seconds(1.5)
             yield from record(f"rain_{where}", 2.0)
             rain.stop()
+            # #2402: hail is the same loop with the component's hail level and cut-off
+            put(comp, "Hail", True)
+            yield from seconds(0.6)
+            hail = u.GameplayStatics.spawn_sound2d(game, comp.get_editor_property("BedSound"))
+            params["hail"][where] = {}
+            for name in ("RainGain", "RainCutoff", "Base", "BaseHz", "Roof", "Metal", "Leaf", "Water"):
+                params["hail"][where][name] = comp.get_editor_property(name)
+                hail.set_float_parameter(name, params["hail"][where][name])
+            yield from seconds(1.5)
+            yield from record(f"hail_{where}", 2.0)
+            hail.stop()
+            put(comp, "Hail", False)
             put(comp, "Rain", 0.0)
         # #2320: one open sash's voice inside the web's 1.2 m full-level distance. On the road the room is 'open', so no
         # reverb is active and the recording compares with the web's dry path (its room send depends on the room).
@@ -167,6 +184,27 @@ def render():
         yield from seconds(1.5)
         yield from record("window", 2.0)
         voice.stop()
+        # #2402: the thunder as Strike plays it (CreateSound2D, the parameters, Play), on the road (no room reverb)
+        sound, tvol = comp.get_editor_property("ThunderSound"), comp.get_editor_property("ThunderVolume")
+        P = A["thunder"]
+        longest = max(sum(P["rumble"]["duration"]), P["rolls"]["start"][0] + P["rolls"]["start"][1]
+                      * sum(P["rumble"]["duration"]) + sum(P["rolls"]["duration"])) + P["tail"]
+        params["thunder"] = {"volume": tvol, "seconds": longest + 0.3, "cases": THUNDER_CASES, "takes": THUNDER_TAKES,
+                             "delay": {"Near": 1.0, "Inside": 0.0, "Delay": 1.0}}
+
+        def thunder(values):
+            def start():
+                voice = u.GameplayStatics.create_sound2d(game, sound, tvol)
+                for name, value in values.items():
+                    voice.set_float_parameter(name, value)
+                voice.play(0.0)
+            return start
+
+        for case, values in THUNDER_CASES.items():
+            for take in range(THUNDER_TAKES):
+                yield from record(f"thunder_{case}" + (f"_{take + 1}" if take else ""), longest + 0.3,
+                                  thunder({**values, "Delay": 0.0}))
+        yield from record("thunder_delay", longest + 1.3, thunder(params["thunder"]["delay"]))
         (OUT / "render-params.json").write_text(json.dumps(params, indent=1) + "\n", encoding="utf-8")
         u.log("LUNDEN_AUDIO_RENDER_OK")
     finally:

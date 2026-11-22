@@ -1,0 +1,456 @@
+{
+ "steps": {
+  "grass": {
+   "unreal": {
+    "rmsDb": -45.5,
+    "peakDb": -33.96,
+    "lengthMs": 161.8,
+    "centroidHz": 66.1,
+    "below200Hz": 0.981
+   },
+   "web": {
+    "rmsDb": -44.94,
+    "peakDb": -33.14,
+    "lengthMs": 157.7,
+    "centroidHz": 68.6,
+    "below200Hz": 0.978
+   },
+   "channels": 8,
+   "takes": 3,
+   "levelUnrealDb": -44.78,
+   "levelWebDb": -44.93,
+   "levelDiffDb": 0.15,
+   "centroidRatio": 0.964
+  },
+  "gravel": {
+   "unreal": {
+    "rmsDb": -41.22,
+    "peakDb": -28.38,
+    "lengthMs": 134.1,
+    "centroidHz": 127.3,
+    "below200Hz": 0.935
+   },
+   "web": {
+    "rmsDb": -42.47,
+    "peakDb": -29.08,
+    "lengthMs": 141.0,
+    "centroidHz": 138.7,
+    "below200Hz": 0.923
+   },
+   "channels": 8,
+   "takes": 3,
+   "levelUnrealDb": -42.2,
+   "levelWebDb": -42.49,
+   "levelDiffDb": 0.29,
+   "centroidRatio": 0.918
+  },
+  "hard": {
+   "unreal": {
+    "rmsDb": -36.36,
+    "peakDb": -25.51,
+    "lengthMs": 105.6,
+    "centroidHz": 101.6,
+    "below200Hz": 0.986
+   },
+   "web": {
+    "rmsDb": -36.61,
+    "peakDb": -24.15,
+    "lengthMs": 103.7,
+    "centroidHz": 97.9,
+    "below200Hz": 0.987
+   },
+   "channels": 8,
+   "takes": 3,
+   "levelUnrealDb": -36.66,
+   "levelWebDb": -36.59,
+   "levelDiffDb": -0.06,
+   "centroidRatio": 1.038
+  },
+  "leaves": {
+   "unreal": {
+    "rmsDb": -45.4,
+    "peakDb": -29.43,
+    "lengthMs": 134.4,
+    "centroidHz": 830.7,
+    "below200Hz": 0.679
+   },
+   "web": {
+    "rmsDb": -46.13,
+    "peakDb": -30.43,
+    "lengthMs": 143.7,
+    "centroidHz": 724.9,
+    "below200Hz": 0.723
+   },
+   "channels": 8,
+   "takes": 3,
+   "levelUnrealDb": -45.86,
+   "levelWebDb": -46.01,
+   "levelDiffDb": 0.15,
+   "centroidRatio": 1.146
+  },
+  "snow": {
+   "unreal": {
+    "rmsDb": -46.05,
+    "peakDb": -31.19,
+    "lengthMs": 151.5,
+    "centroidHz": 268.1,
+    "below200Hz": 0.821
+   },
+   "web": {
+    "rmsDb": -46.33,
+    "peakDb": -31.46,
+    "lengthMs": 150.4,
+    "centroidHz": 297.4,
+    "below200Hz": 0.801
+   },
+   "channels": 8,
+   "takes": 3,
+   "levelUnrealDb": -47.23,
+   "levelWebDb": -46.55,
+   "levelDiffDb": -0.68,
+   "centroidRatio": 0.901
+  },
+  "snowCold": {
+   "unreal": {
+    "rmsDb": -45.49,
+    "peakDb": -30.2,
+    "lengthMs": 162.6,
+    "centroidHz": 817.7,
+    "below200Hz": 0.631
+   },
+   "web": {
+    "rmsDb": -45.87,
+    "peakDb": -31.74,
+    "lengthMs": 161.5,
+    "centroidHz": 760.1,
+    "below200Hz": 0.639
+   },
+   "channels": 8,
+   "takes": 3,
+   "levelUnrealDb": -45.72,
+   "levelWebDb": -45.69,
+   "levelDiffDb": -0.02,
+   "centroidRatio": 1.076
+  },
+  "stair": {
+   "unreal": {
+    "rmsDb": -36.99,
+    "peakDb": -23.84,
+    "lengthMs": 211.0,
+    "centroidHz": 126.6,
+    "below200Hz": 0.993
+   },
+   "web": {
+    "rmsDb": -36.79,
+    "peakDb": -23.8,
+    "lengthMs": 212.2,
+    "centroidHz": 130.9,
+    "below200Hz": 0.988
+   },
+   "channels": 8,
+   "takes": 3,
+   "levelUnrealDb": -36.56,
+   "levelWebDb": -36.75,
+   "levelDiffDb": 0.18,
+   "centroidRatio": 0.967
+  },
+  "wet": {
+   "unreal": {
+    "rmsDb": -38.84,
+    "peakDb": -24.18,
+    "lengthMs": 151.6,
+    "centroidHz": 354.5,
+    "below200Hz": 0.83
+   },
+   "web": {
+    "rmsDb": -39.47,
+    "peakDb": -25.57,
+    "lengthMs": 158.4,
+    "centroidHz": 332.3,
+    "below200Hz": 0.846
+   },
+   "channels": 8,
+   "takes": 3,
+   "levelUnrealDb": -39.67,
+   "levelWebDb": -39.81,
+   "levelDiffDb": 0.14,
+   "centroidRatio": 1.067
+  },
+  "wood": {
+   "unreal": {
+    "rmsDb": -37.25,
+    "peakDb": -26.59,
+    "lengthMs": 119.6,
+    "centroidHz": 76.2,
+    "below200Hz": 0.995
+   },
+   "web": {
+    "rmsDb": -36.89,
+    "peakDb": -26.51,
+    "lengthMs": 117.9,
+    "centroidHz": 80.7,
+    "below200Hz": 0.996
+   },
+   "channels": 8,
+   "takes": 3,
+   "levelUnrealDb": -37.01,
+   "levelWebDb": -36.82,
+   "levelDiffDb": -0.19,
+   "centroidRatio": 0.944
+  }
+ },
+ "beds": {
+  "wind_out": {
+   "rmsDb": -36.39,
+   "peakDb": -24.97,
+   "lengthMs": 1300.0,
+   "centroidHz": 2634.2,
+   "below200Hz": 0.107
+  },
+  "wind_in": {
+   "rmsDb": -54.71,
+   "peakDb": -42.35,
+   "lengthMs": 1300.0,
+   "centroidHz": 451.6,
+   "below200Hz": 0.252
+  },
+  "bed_out": {
+   "rmsDb": -46.55,
+   "peakDb": -34.49,
+   "lengthMs": 1300.0,
+   "centroidHz": 255.7,
+   "below200Hz": 0.403
+  },
+  "bed_in": {
+   "rmsDb": -59.45,
+   "peakDb": -49.1,
+   "lengthMs": 1300.0,
+   "centroidHz": 121.2,
+   "below200Hz": 0.892
+  },
+  "rain_out": {
+   "unreal": {
+    "rmsDb": -33.53,
+    "peakDb": -21.85,
+    "lengthMs": 1300.0,
+    "centroidHz": 4260.9,
+    "below200Hz": 0.0
+   },
+   "web": {
+    "rmsDb": -32.93,
+    "peakDb": -21.43,
+    "lengthMs": 1300.0,
+    "centroidHz": 4391.5,
+    "below200Hz": 0.0
+   },
+   "levelDiffDb": -0.6,
+   "centroidRatio": 0.97
+  },
+  "rain_in": {
+   "unreal": {
+    "rmsDb": -48.46,
+    "peakDb": -36.65,
+    "lengthMs": 1300.0,
+    "centroidHz": 643.4,
+    "below200Hz": 0.018
+   },
+   "web": {
+    "rmsDb": -48.86,
+    "peakDb": -36.25,
+    "lengthMs": 1300.0,
+    "centroidHz": 657.2,
+    "below200Hz": 0.019
+   },
+   "levelDiffDb": 0.4,
+   "centroidRatio": 0.979
+  },
+  "hail_out": {
+   "unreal": {
+    "rmsDb": -29.25,
+    "peakDb": -17.96,
+    "lengthMs": 1300.0,
+    "centroidHz": 4756.6,
+    "below200Hz": 0.0
+   },
+   "web": {
+    "rmsDb": -28.37,
+    "peakDb": -16.47,
+    "lengthMs": 1300.0,
+    "centroidHz": 5124.2,
+    "below200Hz": 0.0
+   },
+   "levelDiffDb": -0.88,
+   "centroidRatio": 0.928
+  },
+  "hail_in": {
+   "unreal": {
+    "rmsDb": -44.56,
+    "peakDb": -33.39,
+    "lengthMs": 1300.0,
+    "centroidHz": 649.1,
+    "below200Hz": 0.017
+   },
+   "web": {
+    "rmsDb": -44.66,
+    "peakDb": -33.08,
+    "lengthMs": 1300.0,
+    "centroidHz": 659.0,
+    "below200Hz": 0.017
+   },
+   "levelDiffDb": 0.1,
+   "centroidRatio": 0.985
+  },
+  "window": {
+   "unreal": {
+    "rmsDb": -38.36,
+    "peakDb": -27.12,
+    "lengthMs": 1300.0,
+    "centroidHz": 656.3,
+    "below200Hz": 0.146
+   },
+   "web": {
+    "rmsDb": -38.24,
+    "peakDb": -26.88,
+    "lengthMs": 1300.0,
+    "centroidHz": 664.3,
+    "below200Hz": 0.132
+   },
+   "levelDiffDb": -0.12,
+   "centroidRatio": 0.988
+  }
+ },
+ "thunder": {
+  "near": {
+   "near": 1.0,
+   "inside": false,
+   "takes": 4,
+   "webTakes": 12,
+   "unreal": {
+    "rmsDb": -30.53,
+    "peakDb": -6.81,
+    "lengthMs": 3181.6,
+    "centroidHz": 4112.3,
+    "below200Hz": 0.163
+   },
+   "web": {
+    "rmsDb": -30.21,
+    "peakDb": -6.89,
+    "lengthMs": 3019.0,
+    "centroidHz": 5060.9,
+    "below200Hz": 0.154
+   },
+   "levelUnrealDb": -30.37,
+   "levelWebDb": -30.01,
+   "levelDiffDb": -0.36,
+   "takeRmsUnrealDb": [
+    -30.53,
+    -30.3,
+    -29.67,
+    -31.1
+   ],
+   "takeRmsWebDb": [
+    -30.21,
+    -29.69,
+    -30.75,
+    -30.42,
+    -30.63,
+    -30.71,
+    -30.25,
+    -29.74,
+    -29.66,
+    -28.9,
+    -29.71,
+    -29.85
+   ],
+   "takeLengthUnrealMs": [
+    3181.6,
+    3124.9,
+    2638.5,
+    3436.7
+   ],
+   "takeLengthWebMs": [
+    3019.0,
+    3039.6,
+    3953.5,
+    3047.4,
+    3759.0,
+    3124.7,
+    3678.1,
+    2652.5,
+    2992.9,
+    2405.9,
+    3058.4,
+    3338.4
+   ],
+   "centroidRatio": 0.813
+  },
+  "far_in": {
+   "near": 0.2,
+   "inside": true,
+   "takes": 4,
+   "webTakes": 12,
+   "unreal": {
+    "rmsDb": -44.44,
+    "peakDb": -27.97,
+    "lengthMs": 3436.3,
+    "centroidHz": 120.7,
+    "below200Hz": 0.877
+   },
+   "web": {
+    "rmsDb": -45.75,
+    "peakDb": -26.37,
+    "lengthMs": 4640.9,
+    "centroidHz": 125.7,
+    "below200Hz": 0.883
+   },
+   "levelUnrealDb": -45.72,
+   "levelWebDb": -45.52,
+   "levelDiffDb": -0.2,
+   "takeRmsUnrealDb": [
+    -44.44,
+    -46.31,
+    -46.17,
+    -46.27
+   ],
+   "takeRmsWebDb": [
+    -45.75,
+    -46.47,
+    -44.97,
+    -44.91,
+    -45.59,
+    -44.97,
+    -45.69,
+    -46.36,
+    -45.85,
+    -45.48,
+    -45.59,
+    -45.0
+   ],
+   "takeLengthUnrealMs": [
+    3436.3,
+    5140.2,
+    4520.3,
+    5430.0
+   ],
+   "takeLengthWebMs": [
+    4640.9,
+    5226.7,
+    3694.2,
+    4068.1,
+    3933.2,
+    4330.8,
+    4912.8,
+    4799.7,
+    4555.5,
+    4486.7,
+    4130.7,
+    4021.2
+   ],
+   "centroidRatio": 0.96
+  },
+  "delay": {
+   "wantS": 1.0,
+   "onsetS": 1.01
+  }
+ }
+}

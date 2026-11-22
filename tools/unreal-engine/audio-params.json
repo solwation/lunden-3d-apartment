@@ -17519,6 +17519,77 @@
    }
   ]
  },
+ "hail": {
+  "source": "src/weather.js Weather.update (the rain sound for kind hail); src/audio.js sfx.rain",
+  "loud": 1.6,
+  "cutoff": 9000,
+  "rainCutoff": 6500,
+  "inside": 0.3,
+  "insideCutoff": 900
+ },
+ "thunder": {
+  "source": "src/audio.js sfx.thunder (measured through a recording AudioContext) and noise(); src/weather.js strike; src/config.js WEATHER.flash",
+  "inside": 0.45,
+  "floor": 0.0001,
+  "tail": 0.05,
+  "crack": {
+   "above": 0.6,
+   "duration": 0.35,
+   "type": "highpass",
+   "hz": 900,
+   "q": 1,
+   "gainPerNear": 0.5,
+   "attack": 0.002
+  },
+  "rumble": {
+   "duration": [
+    3.5,
+    3,
+    2
+   ],
+   "hz": [
+    260,
+    300
+   ],
+   "insideHz": 160,
+   "q": 0.7,
+   "gain": [
+    0.55,
+    0.35
+   ],
+   "attack": [
+    0.08,
+    0.4
+   ]
+  },
+  "rolls": {
+   "count": 3,
+   "start": [
+    0.4,
+    0.6
+   ],
+   "duration": [
+    1.2,
+    1.5
+   ],
+   "hz": 140,
+   "q": 1,
+   "gain": 0.35,
+   "attack": 0.15
+  },
+  "strike": {
+   "every": [
+    6,
+    22
+   ],
+   "dist": [
+    400,
+    4000
+   ],
+   "soundSpeed": 343,
+   "minRain": 0.5
+  }
+ },
  "ambient": {
   "source": "src/config.js AMBIENT_BED; src/ambientbed.js; src/riverbridge.js riverPath (Höje å centreline)",
   "bed": {

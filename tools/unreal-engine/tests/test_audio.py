@@ -14,6 +14,10 @@
    variants (wet paving, autumn leaves) and the stair. The room zone there must be roomreverb.js's.
 4. Wind and bed: outdoors on the grass and indoors on the parquet at the same wind, the indoor values must be the web's
    indoor model of the outdoor ones (quieter, duller), and the tree nearness and river distance must be the web's.
+5. Hail and thunder (#2402): hail must give the rain loop weather.js's hail level and cut-off outdoors and indoors; the
+   strike clock must follow weather.js (no strike without a storm or with only `thunder.strike.minRain` of rain, the
+   countdown while it storms, and each strike's distance, nearness, delay after the light and next draw in the web's
+   ranges, muffled indoors).
 
 The run has no audio device (run-tests.ps1 starts the editor with -nosound): nothing is played aloud, so the test checks
 which MetaSound is started and with which parameters, not the sound itself.
@@ -73,6 +77,9 @@ for profile in F["profiles"]:
 for name in ("MS_LundenWind", "MS_LundenAmbience"):
     if load(f"{DIR}/{name}").get_editor_property("sound_class_object") != classes["SC_LundenAmbience"]:
         raise RuntimeError(name + " is not in SC_LundenAmbience")
+thunder = load(f"{DIR}/MS_LundenThunder")
+if not isinstance(thunder, u.MetaSoundSource) or thunder.get_editor_property("sound_class_object") != classes["SC_LundenEffects"]:
+    raise RuntimeError("MS_LundenThunder is missing or not in SC_LundenEffects")
 rows = {r["key"]: r["soundClass"] for r in UI["volumes"]}
 want_rows = {"audio.master": "SC_LundenMaster", "audio.effects": "SC_LundenEffects", "audio.music": "SC_LundenMusic"}
 for key, name in want_rows.items():
@@ -360,6 +367,86 @@ def audio_test():
             problems.append("indoors is not quieter")
         if problems:
             raise RuntimeError("Wind/bed: " + "; ".join(problems))
+
+        # 5. Hail: weather.js's rain sound for kind 'hail' (louder, brighter outdoors; the rain's indoor model)
+        H = A["hail"]
+        put(comp, "Rain", 1.0)
+        put(comp, "Hail", True)
+        hail = {}
+        for label, c, scale, hz in (("outdoors", grass, H["loud"], H["cutoff"]),
+                                    ("indoors", parquet, H["loud"] * H["inside"], H["insideCutoff"])):
+            yield from stand(c)
+            yield from seconds(comp.get_editor_property("Every") + 0.1)
+            hail[label] = {"RainGain": comp.get_editor_property("RainGain"), "RainCutoff": comp.get_editor_property("RainCutoff"),
+                           "webGain": scale * expected_rain, "webCutoff": hz}
+            if not close(hail[label]["RainGain"], scale * expected_rain) or not close(hail[label]["RainCutoff"], hz):
+                problems.append(f"hail {label}: {hail[label]}")
+        put(comp, "Hail", False)
+        yield from seconds(comp.get_editor_property("Every") + 0.1)
+        if not close(comp.get_editor_property("RainCutoff"), H["insideCutoff"]) or \
+                not close(comp.get_editor_property("RainGain"), H["inside"] * expected_rain):
+            problems.append("rain indoors after the hail stopped")
+        result["hail"] = hail
+        u.log(f"LUNDEN_AUDIO_TEST hail {json.dumps(hail)}")
+
+        # 5. Thunder: weather.js update/strike
+        S = A["thunder"]["strike"]
+        lo, hi, speed = 100 * S["dist"][0], 100 * S["dist"][1], 100 * S["soundSpeed"]
+        for name, want in (("StormRain", S["minRain"]), ("SoundSpeed", speed), ("StrikeEveryMin", S["every"][0]),
+                           ("StrikeEveryMax", S["every"][1]), ("StrikeDistMin", lo), ("StrikeDistMax", hi)):
+            if not close(comp.get_editor_property(name), want):
+                problems.append(f"{name} {comp.get_editor_property(name)}, web {want}")
+        thunder_rows = {"quiet": []}
+        for storm, rain in ((False, 1.0), (True, S["minRain"]), (True, 0.0)):  # weather.js: storm && rain > minRain
+            put(comp, "Storm", storm)
+            put(comp, "Rain", rain)
+            put(comp, "ThunderCount", 0)
+            put(comp, "NextStrike", 0.05)
+            yield from seconds(0.4)
+            row = {"storm": storm, "rain": rain, "strikes": comp.get_editor_property("ThunderCount"),
+                   "next": comp.get_editor_property("NextStrike")}
+            thunder_rows["quiet"].append(row)
+            if row["strikes"] or abs(row["next"] - 0.05) > 1e-9:
+                problems.append(f"thunder without the web's storm: {row}")
+        put(comp, "Storm", True)
+        put(comp, "Rain", 1.0)
+        put(comp, "NextStrike", 5.0)
+        start = u.GameplayStatics.get_time_seconds(game)
+        yield from seconds(0.5)
+        counted = 5.0 - comp.get_editor_property("NextStrike")
+        elapsed = u.GameplayStatics.get_time_seconds(game) - start
+        thunder_rows["countdown"] = {"counted": counted, "elapsed": elapsed}
+        if abs(counted - elapsed) > 0.15 or comp.get_editor_property("ThunderCount"):  # one frame either way
+            problems.append(f"storm countdown {thunder_rows['countdown']}")
+        strikes = []
+        for label, c in (("outdoors", grass), ("indoors", parquet)):
+            yield from stand(c)
+            yield from seconds(comp.get_editor_property("Every") + 0.1)
+            for _ in range(8):
+                before = comp.get_editor_property("ThunderCount")
+                put(comp, "NextStrike", 0.01)
+                yield
+                yield
+                v = {n: comp.get_editor_property(n) for n in ("ThunderCount", "StrikeDist", "ThunderNear", "ThunderDelay",
+                                                              "ThunderInside", "NextStrike", "Indoors")}
+                v["place"], v["voice"] = label, bool(comp.get_editor_property("LastThunder"))
+                strikes.append(v)
+                web_near = 1 - (v["StrikeDist"] - lo) / (hi - lo)
+                bad = (v["ThunderCount"] != before + 1 or not lo <= v["StrikeDist"] <= hi
+                       or not close(v["ThunderNear"], web_near) or not close(v["ThunderDelay"], v["StrikeDist"] / speed)
+                       or not S["every"][0] - 0.1 <= v["NextStrike"] <= S["every"][1]
+                       or v["ThunderInside"] != (label == "indoors") or v["Indoors"] != (label == "indoors"))
+                if bad:
+                    problems.append(f"strike differs from weather.js: {v}")
+        thunder_rows["strikes"] = strikes
+        delays = [v["ThunderDelay"] for v in strikes]
+        thunder_rows["delayRange"] = [min(delays), max(delays)]
+        put(comp, "Storm", False)
+        put(comp, "Rain", 0.0)
+        result["thunder"] = thunder_rows
+        u.log(f"LUNDEN_AUDIO_TEST thunder {json.dumps(thunder_rows)}")
+        if problems:
+            raise RuntimeError("Hail/thunder: " + "; ".join(problems))
         (Path(u.Paths.project_saved_dir()) / "audio-result.json").write_text(json.dumps(result, indent=2) + "\n")
         u.log("LUNDEN_AUDIO_TEST_OK")
     finally:

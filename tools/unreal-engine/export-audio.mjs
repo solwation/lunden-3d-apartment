@@ -5,6 +5,9 @@
 // AMBIENT_BED, ROOM_REVERB, SEASON) it stores answers of the web's own functions (footsteps.js pickStep, windsound.js
 // gustAt / windStrength / windSoundParams, ambientbed.js riverBabbleParams / trafficLevel / cityHumParams /
 // distToPolyline) for the test to compare with.
+// #2402: hail (weather.js: the rain loop louder and brighter) and thunder (audio.js sfx.thunder, played by weather.js
+// strike). Thunder's numbers are measured from the web's own sfx.thunder through a recording stand-in for the
+// AudioContext, fitted to the shape below and checked against every capture of a grid, so a changed web thunder fails here.
 //
 //   THREE_DIR=<node_modules/three> node tools/unreal-engine/export-audio.mjs [--check]
 //
@@ -44,6 +47,90 @@ const round = (o) => JSON.parse(JSON.stringify(o, (_, v) => r6(v)));
 const mainText = fs.readFileSync(path.join(root, 'src/main.js'), 'utf8');
 const tele = /if \(d > ([\d.]+) \|\| player\.vy !== 0/.exec(mainText);
 if (!tele) { console.error('export-audio: main.js footsteps() teleport test not found'); process.exit(3); }
+
+// #2402 weather.js: hail is the rain loop `loud` times louder and with a `cutoff` low-pass outdoors (the indoor
+// muffling and level are the rain's); a storm strikes while more than `minRain` falls, the thunder `dist / soundSpeed`
+// s after the flash. These are literals in weather.js, so they are read from the source text as the teleport is.
+const weatherText = fs.readFileSync(path.join(root, 'src/weather.js'), 'utf8');
+const need = (re, what) => { const m = re.exec(weatherText); if (!m) { console.error(`export-audio: weather.js ${what} not found`); process.exit(3); } return m; };
+const loud = need(/const loud = this\.kind === 'snow' \? 0 : this\.kind === 'hail' \? ([\d.]+) : 1;/, 'hail loudness');
+const room = need(/\(inside \? ([\d.]+) : 1\) \* \(mix\?\.gain \?\? 1\), Math\.min\(inside \? ([\d.]+) : this\.kind === 'hail' \? ([\d.]+) : ([\d.]+),/, 'rain/hail level and cutoff');
+const stormRule = need(/if \(this\.storm && this\.rain > ([\d.]+)\) \{\s*this\.next -= dt;\s*if \(this\.next <= 0\) this\.strike\(inside, mix\);/, 'storm strike rule');
+const delayRule = need(/sfx\.thunder\(dist \/ ([\d.]+), near, inside \|\| \(mix && mix\.thunder < 1\), mix\?\.thunder \?\? 1\);/, 'thunder delay');
+need(/const dist = between\(Math\.random, W\.flash\.dist\);\s*const near = 1 - \(dist - W\.flash\.dist\[0\]\) \/ \(W\.flash\.dist\[1\] - W\.flash\.dist\[0\]\);/, 'strike distance and nearness');
+need(/this\.next = between\(Math\.random, W\.flash\.every\);\s*sfx\.thunder/, 'next strike draw');
+const hail = {
+  source: 'src/weather.js Weather.update (the rain sound for kind hail); src/audio.js sfx.rain',
+  loud: Number(loud[1]), cutoff: Number(room[3]), rainCutoff: Number(room[4]), inside: Number(room[1]), insideCutoff: Number(room[2]),
+};
+
+// #2402 sfx.thunder, measured. A stand-in AudioContext records every node, its settings and connections; each noise()
+// burst is a buffer source -> biquad -> gain (linear attack, exponential fall to `floor`) -> the effect's out() gain.
+class Param { constructor(v) { this.value = v; this.events = []; }
+  setValueAtTime(v, t) { this.events.push(['set', v, t]); } linearRampToValueAtTime(v, t) { this.events.push(['lin', v, t]); }
+  exponentialRampToValueAtTime(v, t) { this.events.push(['exp', v, t]); } setTargetAtTime(v, t) { this.events.push(['target', v, t]); }
+  cancelScheduledValues() {} }
+class Rec { constructor(kind, ctx) { this.kind = kind; this.out = []; ctx.nodes.push(this); } connect(n) { this.out.push(n); return n; } disconnect() {} }
+class Recorder {
+  constructor() { this.nodes = []; this.currentTime = 0; this.sampleRate = 48000; this.state = 'running'; this.destination = new Rec('destination', this); this.listener = {}; recorder = this; }
+  createGain() { const n = new Rec('gain', this); n.gain = new Param(1); return n; }
+  createBiquadFilter() { const n = new Rec('biquad', this); n.type = 'lowpass'; n.frequency = new Param(350); n.Q = new Param(1); return n; }
+  createBufferSource() { const n = new Rec('source', this); n.start = (t) => { n.t0 = t; }; n.stop = (t) => { n.t1 = t; }; return n; }
+  createOscillator() { const n = this.createBufferSource(); n.kind = 'osc'; n.frequency = new Param(440); return n; }
+  createBuffer(ch, len) { const d = new Float32Array(len); return { getChannelData: () => d }; }
+  createConvolver() { throw new Error('no room reverb in the recorder'); }
+  createPanner() { const n = new Rec('panner', this); for (const k of ['positionX', 'positionY', 'positionZ']) n[k] = new Param(0); return n; }
+  resume() {}
+}
+let recorder = null;
+const realContext = globalThis.AudioContext;
+globalThis.AudioContext = Recorder;
+const audio = await import(src('audio.js'));
+audio.initAudio();
+globalThis.AudioContext = realContext;
+function thunderCapture(near, inside, rand) {
+  recorder.nodes.length = 0;
+  const random = Math.random; Math.random = () => rand;
+  try { audio.sfx.thunder(0, near, inside, 1); } finally { Math.random = random; }
+  return recorder.nodes.filter((n) => n.kind === 'source').map((s) => {
+    const f = s.out[0], g = f.out[0], d = g.out[0], lin = g.gain.events.find((e) => e[0] === 'lin'), fall = g.gain.events.find((e) => e[0] === 'exp');
+    return { t0: s.t0, dur: fall[2] - s.t0, stop: s.t1 - fall[2], type: f.type, hz: f.frequency.value, q: f.Q.value, gain: lin[1],
+      attack: lin[2] - s.t0, floor: fall[1], out: d.gain.value };
+  });
+}
+const cap = (near, inside, rand) => thunderCapture(near, inside, rand);
+const near1 = cap(1, false, 0), near0 = cap(0, false, 0), half = cap(1, false, 0.5), inside0 = cap(0, true, 0);
+const crackAt = (n) => cap(n, false, 0)[0].type === 'highpass';
+let lo = 0, hi = 1; // the crack's threshold: present at hi, absent at lo
+for (let k = 0; k < 40; k++) { const m = (lo + hi) / 2; if (crackAt(m)) hi = m; else lo = m; }
+const above = Math.round(hi * 1e6) / 1e6; // `near > above`: absent at it, present just over it
+if (crackAt(above) || !crackAt(above + 1e-6)) { console.error(`export-audio: sfx.thunder's crack threshold is not a plain near > ${above}`); process.exit(4); }
+const [crack, rumble1, roll1] = near1, rumble0 = near0[0], roll0 = near0[1];
+const thunder = {
+  source: 'src/audio.js sfx.thunder (measured through a recording AudioContext) and noise(); src/weather.js strike; src/config.js WEATHER.flash',
+  inside: inside0[0].out / near0[0].out, floor: rumble1.floor, tail: rumble1.stop,
+  crack: { above, duration: crack.dur, type: crack.type, hz: crack.hz, q: crack.q, gainPerNear: crack.gain, attack: crack.attack },
+  rumble: { duration: [rumble1.dur, rumble0.dur - rumble1.dur, 2 * (half[1].dur - rumble1.dur)], hz: [rumble0.hz, rumble1.hz - rumble0.hz],
+    insideHz: inside0[0].hz, q: rumble1.q, gain: [rumble0.gain, rumble1.gain - rumble0.gain], attack: [rumble1.attack, rumble0.attack - rumble1.attack] },
+  rolls: { count: near0.length - 1, start: [roll1.t0, (half[2].t0 - roll1.t0) / (0.5 * half[1].dur)], duration: [roll1.dur, 2 * (half[2].dur - roll1.dur)],
+    hz: roll1.hz, q: roll1.q, gain: roll1.gain, attack: roll1.attack },
+  strike: { every: C.WEATHER.flash.every, dist: C.WEATHER.flash.dist, soundSpeed: Number(delayRule[1]), minRain: Number(stormRule[1]) },
+};
+/** The fitted thunder for (near, inside, rand), in the capture's form: what build_audio.py builds as MS_LundenThunder. */
+function thunderModel(near, inside, rand) {
+  const T = thunder, R = T.rumble, L = T.rolls, out = inside ? T.inside : 1, list = [];
+  const burst = (t0, dur, type, hz, q, gain, attack) => ({ t0, dur, stop: T.tail, type, hz, q, gain, attack, floor: T.floor, out });
+  if (near > T.crack.above) list.push(burst(0, T.crack.duration, T.crack.type, T.crack.hz, T.crack.q, T.crack.gainPerNear * near, T.crack.attack));
+  const dur = R.duration[0] + R.duration[1] * (1 - near) + R.duration[2] * rand;
+  list.push(burst(0, dur, 'lowpass', inside ? R.insideHz : R.hz[0] + R.hz[1] * near, R.q, R.gain[0] + R.gain[1] * near, R.attack[0] + R.attack[1] * (1 - near)));
+  for (let k = 0; k < L.count; k++) list.push(burst(L.start[0] + rand * dur * L.start[1], L.duration[0] + rand * L.duration[1], 'lowpass', L.hz, L.q, L.gain, L.attack));
+  return list;
+}
+for (const near of [0, 0.25, 0.6, 0.61, 0.9, 1]) for (const inside of [false, true]) for (const rand of [0, 0.37, 0.999]) {
+  const web = thunderCapture(near, inside, rand), fit = thunderModel(near, inside, rand);
+  const same = web.length === fit.length && web.every((w, i) => Object.keys(w).every((k) => typeof w[k] === 'string' ? w[k] === fit[i][k] : Math.abs(w[k] - fit[i][k]) < 1e-9));
+  if (!same) { console.error(`export-audio: sfx.thunder(near ${near}, inside ${inside}, random ${rand}) no longer has the fitted shape:\n web ${JSON.stringify(web)}\n fit ${JSON.stringify(fit)}`); process.exit(4); }
+}
 
 const F = C.FOOTSTEPS;
 const footsteps = {
@@ -122,6 +209,8 @@ const params = round({
       { riverDist: 0, metal: 0.4 }, { indoors: true, metal: 1 }, { riverDist: 34, grass: 0.4 },
     ].map(input => ({ input, mix: rainSurfaceMix(input) })),
   },
+  hail,
+  thunder,
   ambient: {
     source: 'src/config.js AMBIENT_BED; src/ambientbed.js; src/riverbridge.js riverPath (Höje å centreline)',
     bed: C.AMBIENT_BED,

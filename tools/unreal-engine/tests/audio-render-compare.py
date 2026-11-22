@@ -5,6 +5,10 @@
 #2320: with render-params.json from the same render, the rain (rain_out, rain_in: src/audio.js sfx.rain) and the open
 window's wind (window: sfx.wind, panned to the front inside its 1.2 m reference distance) are also computed on the web
 side with the parameters Unreal used, and their RMS over the same 1.3 s must agree within +-2 dB as well.
+#2402: the hail (hail_out, hail_in: the same rain loop with the hail parameters) likewise; the thunder (thunder_<case>*.wav:
+src/audio.js sfx.thunder from audio-params.json `thunder`, which export-audio.mjs measures from the web's own function)
+as the power mean of the takes' RMS against WEB_THUNDER_TAKES web draws, within +-2 dB; and thunder_delay.wav must start
+its sound after the requested delay (within 50 ms).
 
 The web side is src/footsteps.js synthFootstep computed here sample by sample at 48 kHz with the numbers of
 tools/unreal-engine/audio-params.json (export-audio.mjs): the sine body with its exponential glide, white noise through a
@@ -153,6 +157,44 @@ def web_window(p, rng, seconds):
     return [y * (r + W["gust"] * v) * 0.6 * math.cos(math.pi / 4) * A["masterGain"] for y, r, v in zip(low, ramp, lfo)]
 
 
+WEB_THUNDER_TAKES = 12  # each draw has its own length and rolls; the mean of many is the web's expected level
+
+
+def web_thunder(near, inside, rng):
+    """src/audio.js sfx.thunder at delay 0, times the web master: every noise() burst is a fresh stretch of white noise
+    through its Web Audio biquad, rising linearly to its gain over `attack` and falling exponentially to `floor` at its
+    duration, held there to the source's stop `tail` s later; all through out(null, inside ? T.inside : 1)."""
+    T = A["thunder"]
+    C, R, L = T["crack"], T["rumble"], T["rolls"]
+    bursts = []
+    if near > C["above"]:
+        bursts.append((0.0, C["duration"], C["type"], C["hz"], C["q"], C["gainPerNear"] * near, C["attack"]))
+    dur = R["duration"][0] + R["duration"][1] * (1 - near) + R["duration"][2] * rng.random()
+    bursts.append((0.0, dur, "lowpass", R["insideHz"] if inside else R["hz"][0] + R["hz"][1] * near, R["q"],
+                   R["gain"][0] + R["gain"][1] * near, R["attack"][0] + R["attack"][1] * (1 - near)))
+    for _ in range(L["count"]):
+        t0 = L["start"][0] + rng.random() * dur * L["start"][1]
+        bursts.append((t0, L["duration"][0] + rng.random() * L["duration"][1], "lowpass", L["hz"], L["q"], L["gain"],
+                       L["attack"]))
+    end = max(t0 + d for t0, d, *_ in bursts) + T["tail"]
+    out = [0.0] * int(end * RATE + 1)
+    level = (T["inside"] if inside else 1.0) * A["masterGain"]
+    for t0, d, kind, hz, q, gain, attack in bursts:
+        n = int((d + T["tail"]) * RATE)
+        y = biquad([rng.random() * 2 - 1 for _ in range(n)], kind, hz, q, RATE)
+        i0 = int(t0 * RATE)
+        for i in range(n):
+            t = i / RATE
+            if t < attack:
+                e = gain * t / attack
+            elif t < d:
+                e = gain * (T["floor"] / gain) ** ((t - attack) / (d - attack))
+            else:
+                e = T["floor"]
+            out[i0 + i] += y[i] * e * level
+    return out
+
+
 def fft(x):
     n = len(x)
     j = 0
@@ -259,7 +301,7 @@ def main(argv):
         for b in range(len(sw[0]) - 1, -1, -1):
             sheet.append([shade(c[b], tops[0]) for c in sw] + [255, 255] + [shade(c[b], tops[1]) for c in su])
         sheet.append([255] * len(sheet[-1]))
-    for name in ("wind_out", "wind_in", "bed_out", "bed_in", "rain_out", "rain_in", "window"):
+    for name in ("wind_out", "wind_in", "bed_out", "bed_in", "rain_out", "rain_in", "hail_out", "hail_in", "window"):
         f = src / f"{name}.wav"
         if f.exists():
             x, rate, _ = read_wav(f)
@@ -270,6 +312,7 @@ def main(argv):
     if params.exists():
         R = json.loads(params.read_text(encoding="utf-8"))
         cases = [(f"rain_{w}", lambda w=w: web_rain(R["rain"][w], rng, 3.0)[int(1.5 * RATE):]) for w in R["rain"]]
+        cases += [(f"hail_{w}", lambda w=w: web_rain(R["hail"][w], rng, 3.0)[int(1.5 * RATE):]) for w in R.get("hail", {})]
         if R.get("window"):  # recorded from 1.5 s after the voice started
             cases.append(("window", lambda: web_window(R["window"], rng, 3.5)[int(1.5 * RATE):]))
         for name, synth in cases:
@@ -280,12 +323,46 @@ def main(argv):
             report["beds"][name] = {"unreal": row, "web": mw, "levelDiffDb": round(row["rmsDb"] - mw["rmsDb"], 2),
                                     "centroidRatio": round(row["centroidHz"] / mw["centroidHz"], 3)}
             print(f"{name:9s} web {mw}  diff {report['beds'][name]['levelDiffDb']:+.2f} dB")
+    if params.exists() and R.get("thunder"):
+        report["thunder"] = {}
+        for case, values in R["thunder"]["cases"].items():
+            takes = sorted(src.glob(f"thunder_{case}.wav")) + sorted(src.glob(f"thunder_{case}_[0-9].wav"))
+            if not takes:
+                continue
+            ue = [read_wav(f)[0] for f in takes]
+            near, inside = values["Near"], values["Inside"] > 0.5
+            mus = [metrics(x, RATE) for x in ue]
+            mws = [metrics(web_thunder(near, inside, rng), RATE) for _ in range(WEB_THUNDER_TAKES)]
+
+            def level(ms):
+                return 10 * math.log10(sum(10 ** (m["rmsDb"] / 10) for m in ms) / len(ms))
+            mu, mw, lu, lw = mus[0], mws[0], level(mus), level(mws)
+            report["thunder"][case] = {"near": near, "inside": inside, "takes": len(ue), "webTakes": len(mws),
+                                       "unreal": mu, "web": mw, "levelUnrealDb": round(lu, 2), "levelWebDb": round(lw, 2),
+                                       "levelDiffDb": round(lu - lw, 2),
+                                       "takeRmsUnrealDb": [m["rmsDb"] for m in mus], "takeRmsWebDb": [m["rmsDb"] for m in mws],
+                                       "takeLengthUnrealMs": [m["lengthMs"] for m in mus],
+                                       "takeLengthWebMs": [m["lengthMs"] for m in mws],
+                                       "centroidRatio": round(mu["centroidHz"] / mw["centroidHz"], 3)}
+            print(f"thunder {case}: level over {len(ue)} / {len(mws)} takes {lu - lw:+.2f} dB, unreal {mu}, web {mw}")
+        f = src / "thunder_delay.wav"
+        if f.exists():
+            x, rate, _ = read_wav(f)
+            peak = max(abs(v) for v in x) or 1e-12
+            onset = next(i for i, v in enumerate(x) if abs(v) > peak * 0.01) / rate
+            want = R["thunder"]["delay"]["Delay"]
+            report["thunder"]["delay"] = {"wantS": want, "onsetS": round(onset, 3)}
+            print(f"thunder delay: onset {onset:.3f} s for {want} s")
     png(out / "audio-render.png", [[v for v in r for _ in (0, 1)] for r in sheet])  # twice as wide
     (out / "audio-render.json").write_text(json.dumps(report, indent=1) + "\n", encoding="utf-8")
     rows = list(report["steps"].items()) + [(n, r) for n, r in report["beds"].items() if "levelDiffDb" in r]
+    rows += [("thunder_" + n, r) for n, r in report.get("thunder", {}).items() if "levelDiffDb" in r]
     failed = [f"{name} {row['levelDiffDb']:+.2f} dB" for name, row in rows if abs(row["levelDiffDb"]) > 2.0]
+    delay = report.get("thunder", {}).get("delay")
+    if delay and abs(delay["onsetS"] - delay["wantS"]) > 0.05:
+        failed.append(f"thunder onset {delay['onsetS']} s, wanted {delay['wantS']} s")
     if failed:
-        raise SystemExit("RMS outside ±2 dB of the web output: " + ", ".join(failed))
+        raise SystemExit("RMS outside ±2 dB of the web output (or a late thunder): " + ", ".join(failed))
 
 
 if __name__ == "__main__":

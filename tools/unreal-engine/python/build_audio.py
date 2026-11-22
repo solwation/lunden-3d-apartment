@@ -13,10 +13,13 @@ Assets (one owner, #2287), all in /Game/Lunden/Audio/:
   MS_LundenWindowWind    one localized wind loop per opening sash, with ATT_LundenWindowWind
   MS_LundenWind          looping MetaSound: src/audio.js sfx.windBed (one noise, low-pass body + band-pass rustle/whistle)
   MS_LundenAmbience      looping MetaSound: river babble, city hum and the rain hiss/roof/metal/leaves/water of sfx.rain
+                         (hail: the same rain, louder and brighter, #2402)
+  MS_LundenThunder       one-shot MetaSound: src/audio.js sfx.thunder, played by the web's strike clock (#2402,
+                         weather_audio.py)
   RE_LundenSoft/Bright/Concrete/Courtyard   ReverbEffects for src/config.js ROOM_REVERB's zones (simple form)
   BPC_LundenAudio        ActorComponent on BP_LundenPlayer (player-extensions.json row Audio): the stride clock and
                          pickStep, the wind and bed parameters a few times a second (windsound.js, ambientbed.js), the
-                         room zone (roomreverb.js reverbZone)
+                         room zone (roomreverb.js reverbZone), and the thunder's strike clock (weather.js, #2402)
 
 The web parameters come from tools/unreal-engine/audio-params.json, which tools/unreal-engine/export-audio.mjs reads from the
 web's modules, and from the #2245 export (unreal/Lunden/Import/measurements.json vegetation.trees: the tree feet of
@@ -39,6 +42,7 @@ import unreal as u
 
 sys.path.insert(0, str(Path(__file__).parent))
 import window_audio
+import weather_audio  # noqa: E402  #2402: thunder and the strike clock
 import player_parts as pp  # noqa: E402  graph helpers shared with the player (#2300)
 
 REPO = Path(__file__).resolve().parents[3]
@@ -77,7 +81,8 @@ def step_names(P):
 
 def asset_paths(P):
     return ([f"{DIR}/{n}" for n in CLASSES] + [f"{DIR}/MS_LundenStep_{p}" for p in step_names(P)]
-            + [DIR + "/MS_LundenWind", DIR + "/MS_LundenAmbience", window_audio.SOUND, window_audio.ATTENUATION]
+            + [DIR + "/MS_LundenWind", DIR + "/MS_LundenAmbience", window_audio.SOUND, window_audio.ATTENUATION,
+               weather_audio.SOUND]
             + [f"{DIR}/RE_Lunden{z.capitalize()}" for z in ZONES] + [COMPONENT])
 
 
@@ -396,6 +401,9 @@ def build_metasounds(P, classes):
     wind = wind_bed(P).save(DIR + "/MS_LundenWind", classes["SC_LundenAmbience"])
     bed = ambient_bed(P).save(DIR + "/MS_LundenAmbience", classes["SC_LundenAmbience"])
     window_audio.build_assets(P, classes["SC_LundenEffects"], MetaSound, load_or_create, save)
+    # the web plays thunder through out(), so it is an effect with the room's send
+    weather_audio.thunder(P, MetaSound, LOWPASS, HIGHPASS, bandwidth, lowpass_q).save(weather_audio.SOUND,
+                                                                                    classes["SC_LundenEffects"])
     return sounds, wind, bed
 
 
@@ -638,11 +646,12 @@ def component_variables(bp, sound_type, reverb_type):
 
 
 def build_component(P, trees, sounds, wind, bed, reverbs, sashes):
-    bp = pp.fresh_component(COMPONENT, FUNCTIONS + window_audio.FUNCTIONS)
+    bp = pp.fresh_component(COMPONENT, FUNCTIONS + window_audio.FUNCTIONS + weather_audio.FUNCTIONS)
     sound_type = BP.get_object_reference_type(u.SoundBase.static_class())
     reverb_type = BP.get_object_reference_type(u.ReverbEffect.static_class())
     component_variables(bp, sound_type, reverb_type)
     window_audio.variables(bp, pp, sound_type)
+    weather_audio.variables(bp, pp, sound_type)
     me = pp.class_path(COMPONENT)
     step_cls = pp.class_path(STEP_SURFACE)
     sky_cls = pp.class_path(SKY)
@@ -809,6 +818,7 @@ def build_component(P, trees, sounds, wind, bed, reverbs, sashes):
     g.ret(Zone=zone)
 
     window_audio.graphs(bp, pp, me, P)
+    weather_audio.graphs(bp, pp, me)
 
     # UpdateBeds(): every Every s (WIND_SOUND.every / AMBIENT_BED.every), as src/main.js
     g, _ = pp.function(bp, "UpdateBeds")
@@ -851,11 +861,16 @@ def build_component(P, trees, sounds, wind, bed, reverbs, sashes):
         g.set(name, pp.out(mix, name))
     altitude = g.call("KismetMathLibrary:BreakVector")
     pp.link(head, pp.inp(altitude, "InVec"))
-    env = Expr(g, {"Rain": g.get("Rain"), "inside": g.get("Indoors"), "height": pp.out(altitude, "Z"),
+    # weather.js: the rain's level and muffling; hail rattles `hail.loud` times louder and brighter (#2402)
+    H = P["hail"]
+    env = Expr(g, {"Rain": g.get("Rain"), "inside": g.get("Indoors"), "hail": g.get("Hail"), "height": pp.out(altitude, "Z"),
                    "cloudTop": P["rain"]["cloudTop"] * 100, "cloudFade": P["rain"]["cloudFade"] * 100,
-                   "outputGain": P["rain"]["sound"] * P["masterGain"]}).run(
+                   "outputGain": P["rain"]["sound"] * P["masterGain"], "loud": float(H["loud"]),
+                   "hailHz": float(H["cutoff"]), "rainHz": float(H["rainCutoff"]), "insideGain": float(H["inside"]),
+                   "insideHz": float(H["insideCutoff"])}).run(
         "above = smooth(cloudTop, cloudTop + cloudFade, height)\n"
-        "gain = Rain * (1 - above) * outputGain * select(inside, 0.3, 1)\ncutoff = select(inside, 900, 6500)")
+        "gain = Rain * (1 - above) * outputGain * select(hail, loud, 1) * select(inside, insideGain, 1)\n"
+        "cutoff = select(inside, insideHz, select(hail, hailHz, rainHz))")
     g.set("RainGain", env["gain"])
     g.set("RainCutoff", env["cutoff"])
     # the room: switch the reverb only when the zone changes
@@ -881,6 +896,7 @@ def build_component(P, trees, sounds, wind, bed, reverbs, sashes):
     pp.event(ev, bp, "AddEvent|EventBeginPlay", "ReceiveBeginPlay", 0)
     ev.set("HaveLast", False)
     ev.set("Stride", 0.0)
+    weather_audio.begin_play(ev)
     for var, snd in (("WindAudio", "WindSound"), ("BedAudio", "BedSound")):
         comp = ev.pure("GameplayStatics:SpawnSound2D", Sound=ev.get(snd), bAutoDestroy=False)
         ev.set(var, comp)
@@ -889,6 +905,7 @@ def build_component(P, trees, sounds, wind, bed, reverbs, sashes):
     ev.run(me + ":PushBed")
     tick = pp.event(ev, bp, "AddEvent|EventTick", "ReceiveTick", 900)
     ev.run(me + ":UpdateSteps")
+    weather_audio.tick(ev, me, pp.out(tick, "DeltaSeconds"))
     ev.set("UpdateT", ev.op("Add_DoubleDouble", A=ev.get("UpdateT"), B=pp.out(tick, "DeltaSeconds")))
     ev.branch(ev.op("GreaterEqual_DoubleDouble", A=ev.get("UpdateT"), B=ev.get("Every")))
     ev.set("UpdateT", 0.0)
@@ -899,6 +916,7 @@ def build_component(P, trees, sounds, wind, bed, reverbs, sashes):
     pp.compiled(bp)
     defaults(bp, P, trees, sounds, wind, bed, reverbs)
     window_audio.defaults(u.get_default_object(bp.generated_class()), sashes, ASSETS.load_asset)
+    weather_audio.defaults(u.get_default_object(bp.generated_class()), P, ASSETS.load_asset)
     return bp
 
 
@@ -954,6 +972,7 @@ def spec_hash(P, trees, sashes):
     h.update(json.dumps(P, sort_keys=True).encode())
     h.update(json.dumps(trees).encode())
     h.update(Path(window_audio.__file__).read_bytes().replace(b"\r\n", b"\n"))
+    h.update(Path(weather_audio.__file__).read_bytes().replace(b"\r\n", b"\n"))
     h.update(json.dumps(sashes).encode())
     return h.hexdigest()
 
@@ -971,10 +990,10 @@ def check(P, want):
         got = classes[name].get_editor_property("parent_class")
         if (got.get_name() if got else None) != parent:
             raise RuntimeError(f"build_audio --check: {name} has the parent {got}, expected {parent}")
-    for profile in step_names(P):
-        ms = ASSETS.load_asset(f"{DIR}/MS_LundenStep_{profile}")
+    for path in [f"{DIR}/MS_LundenStep_{p}" for p in step_names(P)] + [weather_audio.SOUND]:
+        ms = ASSETS.load_asset(path)
         if ms.get_editor_property("sound_class_object") != classes["SC_LundenEffects"]:
-            raise RuntimeError(f"build_audio --check: MS_LundenStep_{profile} is not in SC_LundenEffects")
+            raise RuntimeError(f"build_audio --check: {path} is not in SC_LundenEffects")
 
 
 def main(argv):
@@ -1013,7 +1032,7 @@ def main(argv):
     save(bp)
     STAMP.write_text(json.dumps({"spec": want, "about": "build_audio.py input hash (#2287)"}, indent=1) + "\n", encoding="utf-8")
     u.log(f"LUNDEN_AUDIO built {len(asset_paths(P))} assets: {len(sounds)} step MetaSounds ({', '.join(sounds)}), "
-          f"wind, ambience, {len(classes)} sound classes, {len(reverbs)} reverbs, BPC_LundenAudio with {len(trees)} trees")
+          f"wind, ambience, thunder, {len(classes)} sound classes, {len(reverbs)} reverbs, BPC_LundenAudio with {len(trees)} trees")
     u.log("LUNDEN_AUDIO_OK")
 
 
