@@ -313,8 +313,8 @@ const levelOf = (y) => (y < C.LEVELS[1].floor - 0.05 ? 0 : 1);
 const inBox = (b, p) => p.x >= b.x0 && p.x <= b.x1 && p.z >= b.z0 && p.z <= b.z1 && p.y >= b.y0 && p.y <= b.y1;
 
 // --- furnishing textures (#2289) -------------------------------------------------------------------------------------
-// Furniture, appliances and lamps (and the curtain/blind cloth) keep the web's base-colour texture in the GLB, so
-// Interchange imports each picture, rug, cushion and fabric with its image. Building and ground surfaces keep their
+// Furniture, appliances and lamps (and the curtain/blind cloth, and every unlit sign or label, #2400) keep the web's
+// base-colour texture in the GLB, so Interchange imports each picture, rug, cushion, fabric and sign with its image. Building and ground surfaces keep their
 // plain keys: #2282 rebuilds those looks in Unreal from material-map.json. The texture's id joins the material key
 // (`<key>_t<10 hex>`): one key per look and image. Images load after the synchronous collection, so the driver waits
 // for them (`settleImages`) before the GLBs are written; the collected geometry is unaffected.
@@ -780,7 +780,12 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     const hedge = m.name === 'patio-hedge' || m.name === 'boxwood';
     const siteMap = m.map?.name === 'site-slatted-rail' || m.map?.name === 'site-house-letters' || m.map?.name === 'parked-bicycle-spokes'
       || m.map?.name === 'garage-cage-mesh'; // #2399: the storage cages' wire mesh
-    const tex = furnish && !hedge && !siteMap ? furnishingTexture(m.map, textures, textureOfMap) : null;
+    // #2400: an unlit web material (MeshBasicMaterial) with a colour map is a sign, label or pictogram whose image is its whole
+    // look (the flats' number signs and name plates in Hus A, B, C and L, the garage's sign plates, exit pictograms and floor
+    // markings, the stairwells' floor numbers): it keeps that image like a furnishing texture, one key per canvas, since each
+    // house paints its own atlas under the same plain key
+    const label = !!(m.isMeshBasicMaterial && m.map);
+    const tex = (furnish || label) && !hedge && !siteMap ? furnishingTexture(m.map, textures, textureOfMap) : null;
     const bulb = m === lightsInfo.patioBulb;
     const siteSuffix = siteMap ? m.map.name.replaceAll('-', '_') : null;
     // Keep the unlit bulbs, bark textures and three foliage types distinct from furnishing images.

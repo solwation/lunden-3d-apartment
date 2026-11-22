@@ -1382,6 +1382,15 @@ the export and the pictures section of `notices.mjs`.
   cabinet front 2.14/0.11 and sofa 1.14/1.04. The upper-floor curtain at 22:00 is 0.62. The web renders with
   `THREE.NeutralToneMapping`. Correcting every furnishing with a single brighter tint would amplify the daytime
   error on the table and cabinet.
+- **Signs and labels (#2400).** The same route carries every unlit web material (`MeshBasicMaterial`) that has a colour
+  map, whatever node it is on: the flats' number signs and name plates (Hus A, B and C paint one `flat-door-atlas` each,
+  Hus L a fourth), the garage's sign plates, exit pictograms, floor markings and wall plans, and the stairwells' floor
+  numbers. Before, all of them shared the plain key `bas_ffffff_r100_m0_tex` (or `bas_353535_r100_m0_vc_tex` in the
+  garage) without a `baseColorTexture`, so the A1004 sign rendered white in Unreal. Each canvas now has its own
+  `<key>_t<id>` and is listed in `furnishing.textures`, so `tests/test_furnishing.py` checks it on its mesh actors.
+  The export is still lit (`MeshStandardMaterial`, roughness 1), unlike the web's unlit material, so a sign's brightness
+  follows the scene's light. `node tools/unreal-engine/tests/sign-textures.mjs <export dir>` fails when an unlit
+  textured key loses its image or the four houses' atlases collapse into one.
 - **Keys.** A furnishing material's key gets the texture id: `<key>_t<10 hex>` (a hash of the image file path, or a
   canvas's pixels at collection time, plus its repeat, offset, rotation, wrap and flip). Building and ground surfaces
   keep their plain keys, so #2282's rules are untouched; the rugs and the cleaning cupboard no longer fall under the
@@ -2297,7 +2306,7 @@ What is exported:
 - **Mesh names:** `export-world.mjs` names every glTF mesh after the first node that uses it and the glTF scene
   `<zone>__scene` (GLTFExporter leaves them unnamed; Interchange would then name assets `<zone>_mesh_<index>`, so one
   added node renamed every later asset). Only the GLB's JSON chunk changes; still deterministic.
-- **Materials** are not the web's: canvas textures (except the furnishing images, [#2289](#furnishing-and-pictures-2289)) and `onBeforeCompile` shader tweaks do not travel. Each mesh gets a
+- **Materials** are not the web's: canvas textures (except the furnishing images, [#2289](#furnishing-and-pictures-2289), and the unlit signs, [#2400](#furnishing-and-pictures-2289)) and `onBeforeCompile` shader tweaks do not travel. Each mesh gets a
   plain PBR material named by a key built from its look (`std_f1f1ee_r85_m0` = standard, colour f1f1ee, roughness
   0.85, metalness 0; suffixes for opacity, emissive, vertex colours, textures, double-sided). `measurements.json`
   `materials` lists every key; Unreal maps keys to hand-made materials (#2246). One key can stand for several web
