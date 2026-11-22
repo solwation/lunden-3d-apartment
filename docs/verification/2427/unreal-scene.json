@@ -1,0 +1,51 @@
+{
+ "width": 1440,
+ "height": 810,
+ "horizontalFov": 104.50486755371094,
+ "cameras": [
+  {
+   "id": "courtyard",
+   "xyz": [
+    1250.0,
+    2600.0,
+    562.0
+   ],
+   "yaw": -170.0,
+   "pitch": -13.999999999999996,
+   "lighting": "day"
+  },
+  {
+   "id": "entrance-a",
+   "xyz": [
+    650.0,
+    2700.0,
+    162.0
+   ],
+   "yaw": 155.0,
+   "pitch": 5.000000000000002,
+   "lighting": "day"
+  },
+  {
+   "id": "retaining-wall",
+   "xyz": [
+    -5600.0,
+    5850.0,
+    -138.0
+   ],
+   "yaw": -90.0,
+   "pitch": 5.0,
+   "lighting": "day"
+  },
+  {
+   "id": "patio",
+   "xyz": [
+    230.0,
+    1610.0,
+    162.0
+   ],
+   "yaw": -82.0,
+   "pitch": 12.0,
+   "lighting": "day"
+  }
+ ]
+}

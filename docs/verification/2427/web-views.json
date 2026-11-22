@@ -1,0 +1,22 @@
+[
+ {
+  "id": "retaining-wall",
+  "subject": "the box retaining wall south of Hus C (z 52.5) from the park, looking north (#2427)",
+  "x": -56.0,
+  "z": 58.5,
+  "feetY": -3.0,
+  "yawDeg": 0,
+  "pitchDeg": 5,
+  "lighting": "day"
+ },
+ {
+  "id": "patio",
+  "subject": "South facade from the patio",
+  "x": 2.3,
+  "z": 16.1,
+  "feetY": 0,
+  "yawDeg": -8,
+  "pitchDeg": 12,
+  "lighting": "day"
+ }
+]
