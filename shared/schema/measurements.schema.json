@@ -234,7 +234,9 @@
         } } },
         "textures": { "type": "array", "items": { "type": "object", "required": ["id", "name", "kind", "images", "keys", "nodes", "meshes"] } },
         "patioBeers": { "type": "object", "required": ["glasses", "seasonal"], "description": "#2406: the slat table's two pints: each glass group node, its base and its meshes' world centres (web m, Unreal cm), and their date and hour window.",
-          "properties": { "glasses": { "type": "array", "minItems": 1, "items": { "type": "object", "required": ["id", "base", "meshes"] } }, "seasonal": { "type": "object", "required": ["what", "from", "to", "hours"] } } }
+          "properties": { "glasses": { "type": "array", "minItems": 1, "items": { "type": "object", "required": ["id", "base", "meshes"] } }, "seasonal": { "type": "object", "required": ["what", "from", "to", "hours"] } } },
+        "snowman": { "type": "object", "required": ["id", "zone", "position", "seasonal"], "description": "#2445: the snowman on the lawn beyond the patio hedge: its node id and zone, its origin (web m, Unreal cm) and its date window (src/patio.js snowmanOut).",
+          "properties": { "id": { "type": "string" }, "zone": { "type": "string" }, "position": { "type": "object", "required": ["web", "unreal"] }, "seasonal": { "type": "object", "required": ["what", "from", "to"] } } }
       }
     },
     "fixture": {

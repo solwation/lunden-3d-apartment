@@ -234,6 +234,10 @@ export const cushionsOut = (month, overcast = 0) => P.parasol.months.includes(mo
  *  Also read by the Unreal export (#2406), which turns it into a date window with an hour window. */
 export const beersOut = (month, hour) => P.beerMonths.includes(month) && hour >= P.beerHours[0] && hour < P.beerHours[1];
 
+/** The snowman (#73): on the lawn in `PATIO.snowman.months`. Also read by the Unreal export (#2445), which turns the
+ *  months into a date window. */
+export const snowmanOut = (month) => P.snowman.months.includes(month);
+
 /** A pint of lager with rising bubbles; base at the origin. */
 function beerGlass() {
   const g = new THREE.Group();
@@ -709,7 +713,7 @@ export class Patio {
       b.visible = beers;
       if (beers) b.traverse((m) => { if (m.userData.seeds) bubbleUpdate(m, this.t); });
     }
-    this.snowman.visible = P.snowman.months.includes(day.month);
+    this.snowman.visible = snowmanOut(day.month);
     const cushions = cushionsOut(day.month, day.overcast);
     for (const c of seasonal.cushions) c.visible = cushions;
     for (const s of seasonal.boxes) s.visible = !cushions; // … and then they lie in the cushion box (#400)

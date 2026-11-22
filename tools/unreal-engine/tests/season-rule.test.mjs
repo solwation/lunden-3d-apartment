@@ -2,6 +2,7 @@
 // XMAS_TREE.season in src/config.js), and the export's season window against src/config.js. test_seasons.py checks the
 // Unreal rule (/Game/Lunden/Seasons/BPC_LundenSeasons) against the same rows, so both sides answer alike.
 // #2406: also the patio beers' date and hour window (src/patio.js beersOut) on the beerTimes rows and in the export.
+// #2445: also the snowman's date window (src/patio.js snowmanOut), which wraps the new year like the tree's.
 // Run: THREE_DIR=/path/to/node_modules/three node tools/unreal-engine/tests/season-rule.test.mjs [--export unreal/Lunden/Import]
 import fs from 'node:fs';
 import path from 'node:path';
@@ -21,7 +22,7 @@ globalThis.window ??= globalThis; globalThis.localStorage ??= { getItem: () => n
 
 const { inChristmas, christmasCoverage } = await import(pathToFileURL(path.join(root, 'src/christmas.js')).href);
 const { XMAS_TREE } = await import(pathToFileURL(path.join(root, 'src/config.js')).href);
-const { cushionsOut, beersOut } = await import(pathToFileURL(path.join(root, 'src/patio.js')).href); // #2387, #2406
+const { cushionsOut, beersOut, snowmanOut } = await import(pathToFileURL(path.join(root, 'src/patio.js')).href); // #2387, #2406, #2445
 const table = JSON.parse(fs.readFileSync(path.join(here, 'season-dates.json'), 'utf8'));
 let failed = 0;
 const ok = (good, line) => { if (!good) failed++; console.log(`${good ? 'ok  ' : 'FAIL'} ${line}`); };
@@ -33,6 +34,8 @@ for (const row of table.dates) {
   ok(web === row.christmas, `${row.date} web inChristmas ${web}, table ${row.christmas} (${row.why})`);
   const out = cushionsOut(m);
   ok(out === row.cushions, `${row.date} web cushionsOut ${out}, table ${row.cushions} (${row.why})`);
+  const snow = snowmanOut(m); // #2445
+  ok(snow === row.snowman, `${row.date} web snowmanOut ${snow}, table ${row.snowman} (${row.why})`);
 }
 for (const row of table.beerTimes) { // #2406
   const [, m] = row.date.split('-').map(Number), out = beersOut(m, row.hour);
@@ -86,7 +89,25 @@ if (i > 0) {
   const patioSeasonal = patioJson.nodes.filter((n) => n.extras?.seasonal);
   const cushions = patioSeasonal.filter((n) => n.extras.seasonal.what === 'patioCushions');
   const beers = patioSeasonal.filter((n) => n.extras.seasonal.what === 'patioBeers');
-  ok(cushions.length + beers.length === patioSeasonal.length, `patio: seasonal nodes are the cushions and the beers, ${patioSeasonal.length} nodes`);
+  const snowmen = patioSeasonal.filter((n) => n.extras.seasonal.what === 'snowman'); // #2445
+  ok(cushions.length + beers.length + snowmen.length === patioSeasonal.length,
+    `patio: seasonal nodes are the cushions, the beers and the snowman, ${patioSeasonal.length} nodes`);
+  // #2445: the snowman is one furniture node (its parts inherit the window in season_tags) at PATIO.snowman, with
+  // snowmanOut's months as a window across the new year.
+  const { PATIO } = await import(pathToFileURL(path.join(root, 'src/config.js')).href);
+  ok(snowmen.length === 1 && snowmen[0].extras.kind === 'furniture' && snowmen[0].name.startsWith('furn_snowman_'),
+    `patio: one snowman node, ${snowmen.map((n) => `${n.name} (${n.extras.kind})`)}`);
+  for (const n of snowmen) {
+    const s = n.extras.seasonal, start = key(s.from), end = key(s.to), missing = [];
+    for (let date = new Date(Date.UTC(2028, 0, 1)); date.getUTCFullYear() === 2028; date.setUTCDate(date.getUTCDate() + 1)) {
+      const month = date.getUTCMonth() + 1, now = key([month, date.getUTCDate()]);
+      const visible = start <= end ? start <= now && now <= end : start <= now || now <= end;
+      if (visible !== snowmanOut(month)) missing.push(now);
+    }
+    ok(!missing.length && start > end, `${n.name}: snowman ${start}..${end} (wraps the new year), 366 web dates, mismatches [${missing}]`);
+    const [x, y, z] = n.translation ?? [0, 0, 0], off = Math.hypot(x - PATIO.snowman.x, y, z - PATIO.snowman.z);
+    ok(off < 0.01, `${n.name}: at web (${x}, ${y}, ${z}), PATIO.snowman (${PATIO.snowman.x}, 0, ${PATIO.snowman.z}), ${(off * 100).toFixed(2)} cm off`);
+  }
   ok(cushions.length >= 1 && cushions.every((n) => n.extras.kind === 'part'
     && n.extras.parent?.startsWith('furn_veronasofa_')), `patio: seasonal nodes ${cushions.map((n) => n.name)} are the sofa's cushion parts`);
   // #2406: the slat table's pints (group, two glasses, four meshes each) carry beersOut's months and clock hours.

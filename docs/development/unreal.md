@@ -111,8 +111,8 @@ tools/unreal-engine/tests/test_player_world.py  PIE test on L_Lunden (#2300): su
 unreal/Lunden/Content/Lunden/Player/          BP_LundenPlayer, BP_LundenPlayerController, BP_LundenGameMode, BP_LundenCameraManager,
                                    BPC_LundenStepSurface, BPC_LundenRest, Input/ (LFS)
 tools/unreal-engine/python/build_seasons.py   the season rule /Game/Lunden/Seasons/BPC_LundenSeasons (#2295)
-tools/unreal-engine/tests/test_seasons.py     PIE test on L_Lunden: the Christmas tree, its corner, the patio cushions and beers per season-dates.json
-tools/unreal-engine/tests/season-rule.test.mjs  season-dates.json against the web's own inChristmas, cushionsOut and beersOut (Node)
+tools/unreal-engine/tests/test_seasons.py     PIE test on L_Lunden: the Christmas tree, its corner, the patio cushions and beers, the snowman per season-dates.json
+tools/unreal-engine/tests/season-rule.test.mjs  season-dates.json against the web's own inChristmas, cushionsOut, beersOut and snowmanOut (Node)
 tools/unreal-engine/tests/capture_seasons.py  GPU views of the tree corner on June 21 and December 24
 unreal/Lunden/Content/Lunden/Seasons/         BPC_LundenSeasons, MPC_LundenVegetation (LFS; made by build_seasons.py)
 tools/unreal-engine/python/build_save.py      the save file /Game/Lunden/Save/: SG_LundenSave, BFL_LundenSave, BPC_LundenSave (#2288)
@@ -721,7 +721,8 @@ The web shows the Christmas tree only from `XMAS_TREE.season.from` to `.to`, inc
 [porting plan](unreal-inventory.md)): what the web hides out of season is hidden in Unreal too. #2295 owns
 `/Game/Lunden/Seasons/`, `build_seasons.py`, `tests/test_seasons.py`, `tests/season-dates.json`,
 `tests/season-rule.test.mjs`, `tests/capture_seasons.py` and the `Seasons` row of `player-extensions.json`.
-#2387 added the patio cushions to the same data, rule and tests, and #2406 the patio beers with their clock hours.
+#2387 added the patio cushions to the same data, rule and tests, #2406 the patio beers with their clock hours and
+#2445 the snowman.
 
 - **Data.** The exporter marks the tree `extras.seasonal = {what, from, to}` from `src/config.js`. It uses the web's
   `christmasCoverage` at the exported poses, including supported furniture and loose items. At the default position
@@ -744,6 +745,16 @@ The web shows the Christmas tree only from `XMAS_TREE.season.from` to `.to`, inc
   `seasonHourFrom:12`, `seasonHourTo:23`), and every node of the group carries it, since a part's `parent` names the
   table. `measurements.json` `furnishing.patioBeers` holds each glass's base and mesh centres for `test_furnishing`.
   *Not ported:* the rising bubbles, a web animation whose instance matrices are unset at export.
+- **Snowman (#2445).** The web stands a snowman on the lawn just beyond the patio hedge's gap (`PATIO.snowman`,
+  1.4, 18.4, facing the house) in `src/patio.js` `snowmanOut`'s months (December to February), whatever the weather:
+  it also stands with `?snow=0`, so the date window is its whole rule. The exporter builds the web's own `Patio` (as
+  `main.js` does) as a loose furniture node `furn_snowman_…` with its parts (`source` `src/config.js#PATIO.snowman`).
+  It stands 0.4 m south of `l1007-uteplats`'s box, but belongs to the patio module and the courtyard zone takes no
+  furniture, so the loose object's own `zone` places it in `l1007-uteplats`. `patioSnowmanWindow` turns the months
+  into 1 Dec – 29 Feb (`season:snowman`, wrapping the new year like the tree's; 28 February is inside in a common year)
+  on the root; `season_tags` gives the parts the same tags. `measurements.json` `furnishing.snowman` holds its id,
+  origin and window for `test_furnishing`. *Not ported:* the web's snowman has no collision; in Unreal its actors keep
+  the collision every seasonal actor gets in season.
 - **Rule, in one place.** `BPC_LundenSeasons` (ActorComponent, built by `build_seasons.py`) has `InSeason(Year, Month,
   Day, From, To)`: key = month × 100 + min(day, days in the month); inside when From ≤ key ≤ To, or for a window that
   wraps the new year (From > To) when key ≥ From or key ≤ To. `TagValue(Actor, Prefix)` reads a window tag.
@@ -1495,6 +1506,8 @@ the export and the pictures section of `notices.mjs`.
   the matted "Till mamma" is traced to `textures/teckning-till-mamma.jpg`), its keys, nodes and mesh nodes with their
   world centres. Furniture placement corrections belong in the web data or the export, never in a generated level. `patioBeers` (#2406): the slat table's two pints, each glass's base and the world centres of its
   four meshes, with their date and hour window; `test_furnishing.py` checks the meshes within 1 cm and their season tags.
+  `snowman` (#2445): the snowman's node id, zone, origin and date window; `test_furnishing.py` checks it within 1 cm and
+  its season tags, and that the export holds it (its `source` among the loose furnishings).
 - **Notices.** `notices.mjs` `PICTURES` names each picture file, what it shows and its source photo, and fails when a
   file in `textures/` has no entry; `THIRD_PARTY_NOTICES.md` states the owner's approval for the original Windows
   version only. Nothing of this goes to the public downstream copy.

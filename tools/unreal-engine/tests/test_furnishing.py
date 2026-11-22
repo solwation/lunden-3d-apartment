@@ -20,6 +20,8 @@
 6. Furnishings main.js builds next to the world (#2310, #2429): the export holds the fruit bowl, the basketball and the
    TV remote (by their `source`), so they cannot silently drop out of the export (point 1 only checks what is exported);
    the remote's body carries its export material key (the web's black plastic) in every level that holds it.
+7. The snowman (#2445, `furnishing.snowman`, src/patio.js): exported (by its `source`, as point 6), its actor within 1 cm
+   of the web's PATIO.snowman spot in every level that holds it, and carrying the export's date window as season tags.
 
 Editor world only (no Play In Editor needed). Run like the other tests: copy this file to unreal/Lunden/Content/Python/
 (untracked, delete afterwards) and
@@ -137,7 +139,8 @@ def handmade_errors(mesh_actors, level):
 
 
 # 6. (#2310, #2429) source → a material key that must be on the node's meshes (None: placement only)
-LOOSE = {"src/config.js#FRUIT": None, "src/config.js#BASKET.ball": None, "src/config.js#REMOTE": "std_17181b_r55_m10"}
+LOOSE = {"src/config.js#FRUIT": None, "src/config.js#BASKET.ball": None, "src/config.js#REMOTE": "std_17181b_r55_m10",
+         "src/config.js#PATIO.snowman": None}  # #2445
 loose_seen = {}
 
 
@@ -167,6 +170,13 @@ else:
     w = BEERS["seasonal"]
     BEER_TAGS = {"seasonal", f"season:{w['what']}", f"seasonFrom:{w['from'][0] * 100 + w['from'][1]}",
                  f"seasonTo:{w['to'][0] * 100 + w['to'][1]}", f"seasonHourFrom:{w['hours'][0]}", f"seasonHourTo:{w['hours'][1]}"}
+SNOWMAN = F.get("snowman")  # #2445
+snowman_seen = {}
+if not SNOWMAN:
+    errors.append("measurements.json has no furnishing.snowman: re-export (#2445)")
+else:
+    w = SNOWMAN["seasonal"]
+    SNOWMAN_TAGS = {"seasonal", f"season:{w['what']}", f"seasonFrom:{w['from'][0] * 100 + w['from'][1]}", f"seasonTo:{w['to'][0] * 100 + w['to'][1]}"}
 for level in levels:
     if not u.EditorAssetLibrary.does_asset_exist(level):
         if level in ZONES.values():
@@ -247,6 +257,17 @@ for level in levels:
         if off > TOL_CM or not BEER_TAGS.issubset(tags):
             errors.append(f"patio beer {mesh_id} in {level}: centre {off:.3f} cm off the web, season tags "
                           f"{sorted(t for t in tags if t.startswith('season'))}, want {sorted(BEER_TAGS)}")
+    # 7. the snowman (#2445)
+    a = by_name.get(SNOWMAN["id"]) if SNOWMAN else None
+    if a is not None:
+        off = math.dist(vec(a.get_actor_location()), SNOWMAN["position"]["unreal"])
+        tags = {str(t) for t in a.tags}
+        row = snowman_seen.setdefault(SNOWMAN["id"], {"levels": [], "maxCm": 0.0, "tags": sorted(t for t in tags if t.startswith("season"))})
+        row["levels"].append(level.rsplit("/", 1)[-1])
+        row["maxCm"] = max(row["maxCm"], off)
+        if off > TOL_CM or not SNOWMAN_TAGS.issubset(tags):
+            errors.append(f"snowman {SNOWMAN['id']} in {level}: {off:.3f} cm off the web, season tags "
+                          f"{sorted(t for t in tags if t.startswith('season'))}, want {sorted(SNOWMAN_TAGS)}")
     result["levels"][level] = {"items": n_items, "textureMeshes": n_meshes}
     if level == WORLD["map"] and (n_items, n_meshes) != (len(items), len(meshes)):
         # the composed world (its sub-levels load with it) holds every furnishing item and textured mesh, patio included
@@ -276,6 +297,10 @@ if missing_beers:
 result["patioBeers"] = {"export": len(beer_meshes), "placed": len(beers_seen),
                         "maxCm": round(max([r["maxCm"] for r in beers_seen.values()] or [0]), 4), "detail": beers_seen}
 log(f"patio beers {json.dumps(result['patioBeers'])}")
+if SNOWMAN and not snowman_seen:
+    errors.append(f"snowman {SNOWMAN['id']} has no actor in any level")
+result["snowman"] = {"id": SNOWMAN and SNOWMAN["id"], "detail": snowman_seen}
+log(f"snowman {json.dumps(result['snowman'])}")
 if missing_meshes:
     errors.append(f"textured mesh nodes with no actor in any level: {missing_meshes}")
 result["items"] = {"export": len(items), "placed": len(placed), "maxCm": round(max([r["maxCm"] for r in placed.values()] or [0]), 4),

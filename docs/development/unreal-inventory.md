@@ -298,7 +298,7 @@ The initial reconciliation covered the closing or latest comments for #2243–#2
 | Fishing and the roof picnic | G17/G13 | O | — | #2355 |
 | Tools, toys, targets and play combat | G18 | O | — | #2356 |
 | Bicycle, scooter, car, passengers, traffic | G19 | O | — | #2357 (web fixes #2269/#2273/#2274 included) |
-| Christmas tree by date | G20 | D | #2295; [June and December Windows views of the same tree corner](https://github.com/solwation/lunden-3d-apartment/blob/118ba96819c0d8ac38f7c31d5ca0a4a95e7a1a9c/docs/verification/2326/README.md) (#2303, #2326). | Winter patio cushions #2387. |
+| Christmas tree by date | G20 | D | #2295; [June and December Windows views of the same tree corner](https://github.com/solwation/lunden-3d-apartment/blob/118ba96819c0d8ac38f7c31d5ca0a4a95e7a1a9c/docs/verification/2326/README.md) (#2303, #2326). | Winter patio cushions #2387, patio beers #2406 and the winter snowman #2445 use the same date rule. |
 | Christmas, New Year, Santa and calendar visits | G20 | O | — | #2359 |
 | Crash reports and the player's report dialog | G21 | O | — | #2360 |
 | Fridge notes, freezer changelog with "Nytt", welcome and help | G22/G08 | O | — | #2361 |

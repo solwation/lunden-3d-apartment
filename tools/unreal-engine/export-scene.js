@@ -12,7 +12,7 @@ import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 import * as C from '../../src/config.js';
 import { christmasCoverage } from '../../src/christmas.js';
 import { FurnitureGroups } from '../../src/furnituregroups.js';
-import { beersOut, cushionsOut } from '../../src/patio.js';
+import { beersOut, cushionsOut, snowmanOut, Patio } from '../../src/patio.js';
 import { buildWorld } from '../../src/world.js';
 import { buildStringLights, updateStringLights, updateParasols } from '../../src/patio.js';
 import { groundY, renderedTerrainY, treeFeet, aoTrees } from '../../src/surroundings.js';
@@ -540,6 +540,14 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     const remote = new Remote(loose.root, camera, () => null);
     loose.carryables.push(remote);
     loose.of.set(remote.model, { type: 'remote', name: remote.name, webId: null, source: 'src/config.js#REMOTE' });
+    // #2445: the snowman on the lawn beyond the patio hedge (src/patio.js Patio, which main.js builds next to the world):
+    // the same class, so it stands where the game stands it. Its season window is set with the others below. It stands
+    // just south of the patio zone's box (PATIO.snowman, z 18.4), but belongs to the patio module and is seen from the
+    // patio, so `zone` places it in l1007-uteplats rather than the courtyard zone (which takes no furniture).
+    const patio = new Patio();
+    loose.root.add(patio.object);
+    loose.of.set(patio.object, { type: 'snowman', name: 'snögubben', webId: null, source: 'src/config.js#PATIO.snowman', zone: 'l1007-uteplats' });
+    loose.snowman = patio.object;
   } catch (e) { loose.error = String(e?.stack ?? e); }
   // main.js adds Hoop outside buildWorld. Keep the static court paint at the same world transform,
   // including its clearance above the car park. The scoring volumes and the hoop stay in the game.
@@ -657,7 +665,8 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
       continue;
     }
     const group = sourceGroup(a.object);
-    const zone = exportedZones.find((z) => accepts(z, group, a) && inBox(z.box, centre));
+    const zone = a.loose?.zone ? exportedZones.find((z) => z.id === a.loose.zone) // #2445: a loose object's own zone
+      : exportedZones.find((z) => accepts(z, group, a) && inBox(z.box, centre));
     const cuttable = a.instance === undefined && a.object.isMesh && !a.object.isInstancedMesh
       && !a.object.children.some((c) => c.visible && c.isMesh) && a.kind == null;
     // a merged mesh is cut when it reaches past its zone's box, or (#2280: the ground zones' boxes hold the others') into
@@ -765,6 +774,9 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     o.traverse((d) => { seasons.set(d, beerWindow); beerParts.set(d, null); });
     beerGlasses.push(...o.children);
   });
+  // #2445: the snowman stands on the lawn in src/patio.js snowmanOut's months (December to February, across the new year).
+  const snowmanWindow = patioSnowmanWindow();
+  if (loose.snowman) seasons.set(loose.snowman, snowmanWindow);
   if (tree) {
     const { from, to } = C.XMAS_TREE.season;
     seasons.set(tree.object, { what: 'christmas', from, to });
@@ -1072,6 +1084,8 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
   for (const { root } of Object.values(roots)) root.updateMatrixWorld(true); // (the mesh centres below)
   measurements.furnishing = furnishingData(byZone, textures, worldMatrix);
   if (beerGlasses.length) measurements.furnishing.patioBeers = patioBeerRows(beerGlasses, beerParts, beerWindow);
+  const snowmanAtom = loose.snowman && atoms.find((a) => a.object === loose.snowman && a.id);
+  if (snowmanAtom) measurements.furnishing.snowman = snowmanRow(snowmanAtom, worldMatrix, snowmanWindow);
   if (curtains.size) measurements.furnishing.curtains = curtainRows(curtains, furnishCache, measurements.furnishing, measurements.lights, lightsInfo.exportedFloorRooms);
   // #2300: the footstep surface, outdoor sprint, rest and wake data from the web's own modules (export-player.js). Loaded
   // here, after every GLB is written, so its modules cannot shift the seeded random sequence the zones were built with.
@@ -1728,6 +1742,9 @@ function interactionExtras({ world, atomOf, lightsInfo, lights, lifts, P }) {
 /** #2387: src/patio.js cushionsOut's months as one inclusive date window for BPC_LundenSeasons. */
 export const patioCushionWindow = () => monthWindow('patioCushions', (month) => cushionsOut(month));
 
+/** #2445: src/patio.js snowmanOut's months as one inclusive date window (1 Dec – 29 Feb, wrapping the new year). */
+export const patioSnowmanWindow = () => monthWindow('snowman', (month) => snowmanOut(month));
+
 /** #2406: src/patio.js beersOut as a date window plus `hours`, a half-open run of clock hours [from, to) on its days.
  *  The web compares decimal hours with whole-hour edges, so the PC clock's whole hour gives the same answer. */
 export function patioBeerWindow() {
@@ -1757,6 +1774,15 @@ function monthWindow(what, on) {
   let last = starts[0];
   while (out[last % 12]) last = (last % 12) + 1;
   return { what, from: [starts[0], 1], to: [last, new Date(Date.UTC(2000, last, 0)).getUTCDate()] };
+}
+
+/** #2445: where the web stands the snowman (its node's origin on the lawn) and its season window, for test_furnishing.py. */
+function snowmanRow(atom, worldMatrix, window) {
+  const p = new THREE.Vector3().setFromMatrixPosition(worldMatrix(atom));
+  return { id: atom.id, zone: atom.zone, position: { web: [r4(p.x), r4(p.y), r4(p.z)], unreal: webToUnrealRounded([p.x, p.y, p.z]) },
+    seasonal: window, source: 'src/config.js PATIO.snowman, src/patio.js snowman and snowmanOut; tools/unreal-engine/export-scene.js patioSnowmanWindow',
+    note: 'The snowman on the lawn beyond the patio hedge (#73, #2445), facing the house, shown in the web\'s snowman months. '
+      + 'The web shows it whatever the weather (also with ?snow=0), so the date window is its whole rule.' };
 }
 
 /** #2406: where the web stands each pint (its base on the table top) and the world centre of each of its exported meshes,

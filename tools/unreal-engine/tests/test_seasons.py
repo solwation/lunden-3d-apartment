@@ -2,14 +2,16 @@
 
 1. Editor world: the tree and its parts have the Christmas window. The four furnishings covered by the tree in
    the web's default layout and all their parts have the complementary window (#2303). The patio sofa's decorative
-   cushions (a part of the all-year sofa) have the window of src/patio.js cushionsOut's months (#2387).
+   cushions (a part of the all-year sofa) have the window of src/patio.js cushionsOut's months (#2387). The snowman on
+   the lawn beyond the patio hedge (one furniture root and its parts) has snowmanOut's window across the new year (#2445).
 2. PIE with the world's GameMode: BP_LundenPlayerController carries BPC_LundenSeasons (player-extensions.json), and its
    BeginPlay left the tree as the rule says for the PC's local date today.
 3. For every row of tools/unreal-engine/tests/season-dates.json (checked against the web's own function by
    season-rule.test.mjs) the test hook ApplySeason(year, month, day) shows the tree with collision on the Christmas
    dates and hides it without collision on the others (summer, the days around the window, the new-year wrap);
    the covered furniture always has the opposite visibility and collision, and the patio cushions show with
-   collision exactly on the rows' `cushions` dates (out 1 April - 30 September, in the cushion box otherwise).
+   collision exactly on the rows' `cushions` dates (out 1 April - 30 September, in the cushion box otherwise), and the
+   snowman exactly on the rows' `snowman` dates (1 December - end of February, #2445).
    Other furniture retains its state.
 4. #2406: the slat table's pints (parts of the all-year table) carry src/patio.js beersOut's date window and clock hours.
    BeginPlay left them as the rule says for the PC's date and hour and left the clock driving (ClockDriven); for every
@@ -52,8 +54,8 @@ def tag_value(actor, prefix):
 if not u.EditorLoadingAndSavingUtils.load_map(MAP):
     raise RuntimeError(f"Cannot load {MAP}: run compose_world.py first")
 editor_actors = u.get_editor_subsystem(u.EditorActorSubsystem).get_all_level_actors()
-roots = [a for a in editor_actors if "kind:furniture" in tags(a) and "seasonal" in tags(a)]
-TREE, CORNER = "season:christmas", "season:outsideChristmas"
+TREE, CORNER, SNOWMAN = "season:christmas", "season:outsideChristmas", "season:snowman"
+roots = [a for a in editor_actors if "kind:furniture" in tags(a) and "seasonal" in tags(a) and SNOWMAN not in tags(a)]
 expected_types = {TREE: ["xmastree"], CORNER: ["armchair", "floorlamp", "ottoman", "randerstable"]}
 types = {TREE: [], CORNER: []}
 actor_ids = {TREE: set(), CORNER: set()}
@@ -108,6 +110,21 @@ for actor in beer_actors:
         raise RuntimeError(f"{tags(actor)[0]}: not a slat-table beer part with one date and hour window: {tags(actor)}")
     actor_ids.setdefault(BEERS, set()).add(tags(actor)[0])
 u.log(f"LUNDEN_SEASONS_TEST patio beers {len(actor_ids[BEERS])} actors: window {windows[BEERS]}")
+# #2445: the snowman, one seasonal furniture root (with its parts) across the new year.
+snowman_roots = [a for a in editor_actors if "kind:furniture" in tags(a) and SNOWMAN in tags(a)]
+if len(snowman_roots) != 1 or not tags(snowman_roots[0])[0].startswith("furn_snowman_"):
+    raise RuntimeError(f"Want one snowman root with a season window, found {[tags(a)[0] for a in snowman_roots]}: "
+                       "re-export (#2445), re-import l1007-uteplats and compose L_Lunden")
+sid = tags(snowman_roots[0])[0]
+windows[SNOWMAN] = (tag_value(snowman_roots[0], "seasonFrom:"), tag_value(snowman_roots[0], "seasonTo:"))
+snowman_parts = [a for a in editor_actors if f"parent:{sid}" in tags(a)]
+if not snowman_parts or None in windows[SNOWMAN] or windows[SNOWMAN][0] <= windows[SNOWMAN][1]:
+    raise RuntimeError(f"{sid}: {len(snowman_parts)} parts, window {windows[SNOWMAN]} (want parts and a window across the new year)")
+for actor in [snowman_roots[0], *snowman_parts]:
+    if not {"seasonal", SNOWMAN, f"seasonFrom:{windows[SNOWMAN][0]}", f"seasonTo:{windows[SNOWMAN][1]}"}.issubset(tags(actor)):
+        raise RuntimeError(f"{sid}: missing snowman window on {tags(actor)}")
+    actor_ids.setdefault(SNOWMAN, set()).add(tags(actor)[0])
+u.log(f"LUNDEN_SEASONS_TEST snowman {sid}: window {windows[SNOWMAN][0]}..{windows[SNOWMAN][1]}, {len(snowman_parts)} parts tagged")
 untouched_ids = [tags(a)[0] for a in editor_actors if "kind:furniture" in tags(a) and "seasonal" not in tags(a)][:5]
 
 
@@ -172,6 +189,8 @@ def seasons_test():
         corner_hidden, corner_solid = state(CORNER, not want)
         cushions_out = web_rule(today.year, today.month, today.day, *windows[CUSHIONS])
         cushions_hidden, _ = state(CUSHIONS, cushions_out)
+        snowman_out = web_rule(today.year, today.month, today.day, *windows[SNOWMAN])
+        snowman_hidden, _ = state(SNOWMAN, snowman_out)
         # #2406: BeginPlay ran ApplyClock (the PC's date and hour) and left the clock driving. Read the hour again if the
         # clock turned an hour during the check.
         bw = windows[BEERS]
@@ -189,7 +208,8 @@ def seasons_test():
         u.log(f"LUNDEN_SEASONS_TEST BeginPlay beers {json.dumps(result['todayBeers'])}")
         result["today"] = {"date": str(today), "hidden": hidden, "collision": solid, "web": want,
                            "cornerHidden": corner_hidden, "cornerCollision": corner_solid,
-                           "cushionsHidden": cushions_hidden, "cushionsOut": cushions_out}
+                           "cushionsHidden": cushions_hidden, "cushionsOut": cushions_out,
+                           "snowmanHidden": snowman_hidden, "snowmanOut": snowman_out}
         u.log(f"LUNDEN_SEASONS_TEST BeginPlay {json.dumps(result['today'])}")
 
         for row in DATES:
@@ -200,15 +220,18 @@ def seasons_test():
             corner_hidden, corner_solid = state(CORNER, not row["christmas"])
             cushions_hidden, cushions_solid = state(CUSHIONS, row["cushions"])
             cushion_rule = seasons.call_method("InSeason", (y, m, d, *windows[CUSHIONS]))
+            snowman_hidden, snowman_solid = state(SNOWMAN, row["snowman"])
+            snowman_rule = seasons.call_method("InSeason", (y, m, d, *windows[SNOWMAN]))
             rule = seasons.call_method("InSeason", (y, m, d, FROM, TO))
             after = [(a.get_editor_property("hidden"), a.get_actor_enable_collision()) for a in untouched]
             others = sorted({hidden for hidden, _ in after})
             entry = {**row, "hidden": hidden, "collision": solid, "inSeason": rule, "untouchedHidden": others,
                      "cornerHidden": corner_hidden, "cornerCollision": corner_solid,
-                     "cushionsHidden": cushions_hidden, "cushionsCollision": cushions_solid, "cushionRule": cushion_rule}
+                     "cushionsHidden": cushions_hidden, "cushionsCollision": cushions_solid, "cushionRule": cushion_rule,
+                     "snowmanHidden": snowman_hidden, "snowmanCollision": snowman_solid, "snowmanRule": snowman_rule}
             result["dates"].append(entry)
             u.log(f"LUNDEN_SEASONS_TEST {json.dumps(entry)}")
-            if rule != row["christmas"] or cushion_rule != row["cushions"] or after != initial or others != [False]:
+            if rule != row["christmas"] or cushion_rule != row["cushions"] or snowman_rule != row["snowman"] or after != initial or others != [False]:
                 raise RuntimeError(f"{row['date']}: {entry}, the web: christmas {row['christmas']}")
         result["beerTimes"] = []
         for row in BEER_TIMES:
