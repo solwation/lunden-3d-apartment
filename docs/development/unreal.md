@@ -2093,6 +2093,9 @@ named streams). Before 0.1.4 the installed copy kept the browser's ZoneId=3 mark
 it from the Start menu ("files of this type from the internet") even though its signature was valid; nothing was logged
 in CodeIntegrity/Operational. The setup itself is allowed to run from Downloads. Self-updates write with `File.Move` from
 an HTTP download and never carried the mark.
+Verified on the build PC with Smart App Control on (2026-11-22): the v0.1.4 setup with an added ZoneId=3 stream,
+`--install --quiet --channel test`, left the installed `Lunden.exe` with only `:$DATA`, a `Valid` signature and a shell
+start (`Start-Process`) exiting 0; `--uninstall --quiet` removed it. Release `v0.1.4` (run 45004645409) is latest.
 
 | Invocation | Effect |
 | --- | --- |
