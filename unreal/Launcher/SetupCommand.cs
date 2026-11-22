@@ -48,7 +48,7 @@ internal sealed record SetupCommand(bool Uninstall, bool Quiet, bool DryRun, str
                     [(101, "Avinstallera")], "Ta även bort sparfiler och inställningar")
                 : TaskDialog.Ask($"Installera {layout.DisplayName}",
                     $"Spelet installeras för din Windowsanvändare, utan administratörsbehörighet, och får en genväg i Start-menyn.\n\nProgram: {layout.InstallDir}\nSparfiler: {layout.UserData}\n\nSpelet hämtas första gången du startar det.",
-                    [(101, "Installera\nKopierar startprogrammet och skapar genvägen")], "Starta spelet när installationen är klar", verificationChecked: true);
+                    [(101, "Installera")], "Starta spelet när installationen är klar", verificationChecked: true);
             if (choice.Button != 101) return 0;
             if (Uninstall) removeData = choice.Checked; else startGame = choice.Checked;
         }
