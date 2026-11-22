@@ -16,7 +16,7 @@ roofs (`MI_LundenRoofFeltAHus`) and the old S:t Lars roofs (`MI_LundenRoofSeam`)
 
 | Check | Result |
 |---|---|
-| `python3 tools/unreal-engine/tests/test_materials.py <export of 33c6c991>` with main's `material-map.json` | **fails**: 29 double-sided key/mesh pairs under rules, 4 on a single-sided material (the four above) |
+| `python3 tools/unreal-engine/tests/test_materials.py <export>` with main's `material-map.json` (exports of 33c6c991 and, after rebasing on #2433, ff9342f1) | **fails**: 29 double-sided key/mesh pairs under rules, 4 on a single-sided material (the four above) |
 | the same with this change | **passes** (`MATERIAL_COVERAGE_OK`, 29 pairs, each on a two-sided material) |
 | `build_materials.py --check` (Windows checkout, after the rebuild) | `LUNDEN_MATERIALS_CHECK_OK` (spec hash and two-sided override per entry) |
 | `sync-import.ps1 -ExportFrom <export of 33c6c991>` | `LUNDEN_SYNC_IMPORT_OK`, import current, `import_world.py --check` OK |
@@ -37,7 +37,7 @@ same mesh and material as the walls above.
 ## Remaining differences (each with an open issue)
 
 - The garage windows show plain glass in Unreal; the web draws rooms with blinds behind them: #2456.
-- Hus C's plain lower façade along Karpvägen is browner in Unreal than the web's rust red: filed from this verification.
+- Hus C's plain lower façade along Karpvägen is browner in Unreal than the web’s rust red: #2458.
 - The park bush in front of the z 33.3 wall is darker and more see-through in Unreal: #2449.
 - Lawn and crowns are a little paler in Unreal: #2437. Brick tone at a distance: #2428. Glass reflects the sky: #2424.
 - Karpvägen's asphalt has no cracks or broad tone in Unreal: documented in `MI_LundenAsphalt`'s assumption (#2318).

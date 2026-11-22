@@ -2833,7 +2833,13 @@ python3 tools/unreal-engine/tests/test_materials.py [<export dir>] [--table]
 
 It fails when a key on those nodes has neither a rule nor a default, a rule names an unlisted material, a `mesh`
 selector selects nothing (a moved surface changes its id), an instance names an unknown parameter, or an entry that
-says *guess* has no assumption, or (#2416) meshes sharing one web canvas reach different materials. `build_materials.py` skips an asset whose `Lunden.SpecHash` matches its entry, so a
+says *guess* has no assumption, or (#2416) meshes sharing one web canvas reach different materials, or (#2448) a rule
+sends a double-sided web surface (GLB `doubleSided`, the export's `_ds`) to a single-sided material. Interchange's own
+instance keeps the glTF flag, but a hand-made instance is single-sided unless its entry says `"twoSided": true` (or its
+master is two-sided; the river masters always are). The garage box's retaining walls face into the box, so with a
+single-sided `MI_LundenBrickHistoric` the park saw the terrain's grass step 4 cm behind them. `MI_LundenBrickHistoric`,
+`MI_LundenFacadeBrick`, `MI_LundenRoofFeltAHus` and `MI_LundenRoofSeam` are two-sided for that reason; a rule that
+really needs only one side names why in a `singleSided` field. `build_materials.py` skips an asset whose `Lunden.SpecHash` matches its entry, so a
 second run writes nothing; `--force` rebuilds in place and `--check` verifies existence, spec hash, metadata,
 parameters and the persisted Nanite usage without writing. Take `git lfs lock` on every `Materials/*.uasset` before a
 build that writes. Results are in [the #2282 verification](../verification/2282/README.md).
@@ -2964,7 +2970,7 @@ the hedges, `std_78a64b_…`) were unaffected, which is why they were green.
 
 For facade materials and dusk lighting (#2324), `measurements.site.facadeLighting` carries the desktop web scene's
 per-pane room boxes and wall fixtures. A/B/C glazing carries its originating building through the shared glass mesh.
-The garage retaining wall’s glazing shares this draw call and is excluded from the house data. Export `hus-l` for House L and `kvarteret` for A/B/C. Positions use Unreal
+The garage retaining wall’s glazing shares this draw call and is excluded from the house data (the web’s rooms behind it: #2456). Export `hus-l` for House L and `kvarteret` for A/B/C. Positions use Unreal
 world centimetres and horizontal unit normals use Unreal X/Y. Pane height and width are half extents. The floor,
 ceiling and lateral limits are offsets from the pane centre. Each pane retains the shader's seed, room colours,
 dressing and coverage from `src/interiormap.js`. `roomLevels` gives both endpoints of its day/night blend.

@@ -26,6 +26,11 @@
   9. (#2425) the A/B/C windows' soldier courses (src/surroundings.js openingTexture, map `site-opening-soldiers`) are in
      the export, every key drawing them carries that canvas as its GLB base colour texture, and no rule replaces it, so
      they cannot fall back to Interchange's plain white instance (the wide white surround #2425 found).
+ 10. (#2448) a rule never makes a double-sided web surface single-sided: every mesh whose GLB material is `doubleSided`
+     (the web's THREE.DoubleSide, the export's `_ds`), in every zone, reaches a two-sided material when a rule replaces
+     Interchange's instance (which keeps the glTF flag), unless the rule says why one side is enough (`singleSided`).
+     The garage box's retaining walls face into the box; with a single-sided brick the park saw the terrain's grass step
+     4 cm behind them (#2448).
 --table prints one line per key: key, nodes, rule material or "default: <reason>".
 Exit 0 when all hold, 1 otherwise; prints MATERIAL_COVERAGE_OK.
 """
@@ -213,6 +218,44 @@ def vertex_color_check(export_dir, table, rule_rx, errors):
     return len(keys)
 
 
+def two_sided(mats, path):
+    """The material's effective two-sidedness: its own `twoSided`, else its master's (a master without one is single-sided)."""
+    spec = mats.get(path.split(".")[0], {})
+    if spec.get("graph") == "river":
+        return True  # river_material.py builds both river masters two-sided (the camera may be under the bridge's water)
+    if "twoSided" in spec:
+        return bool(spec["twoSided"])
+    return bool(mats.get(spec.get("parent"), {}).get("twoSided")) if "parent" in spec else False
+
+
+def double_sided_check(export_dir, mats, rule_rx, errors):
+    """#2448: (key, mesh) pairs of double-sided GLB materials a rule replaces, and the rules that keep them single-sided
+    with a reason. A rule without a reason sending one to a single-sided material is an error."""
+    checked, excused = set(), set()
+    for name in sorted(os.listdir(export_dir)):
+        if not name.endswith(".glb"):
+            continue
+        j = glb_json(os.path.join(export_dir, name))
+        materials = j.get("materials", [])
+        for mesh in j.get("meshes", []):
+            for p in mesh.get("primitives", []):
+                if "material" not in p or not materials[p["material"]].get("doubleSided"):
+                    continue
+                key, mesh_name = materials[p["material"]].get("name", ""), mesh.get("name", "")
+                hit = next((r for rx, mx, r in rule_rx if rx.search(key) and (mx is None or mx.search(mesh_name))), None)
+                if not hit or (key, mesh_name) in checked:
+                    continue
+                checked.add((key, mesh_name))
+                if two_sided(mats, hit["material"]):
+                    continue
+                if hit.get("singleSided"):
+                    excused.add(hit["match"] + (" " + hit["mesh"] if hit.get("mesh") else ""))
+                    continue
+                errors.append(f"double-sided key {key} on {name[:-4]}/{mesh_name}: rule {hit['match']} sends it to single-sided "
+                              f"{hit['material'].split('.')[-1]} (set twoSided on the material, or give the rule a singleSided reason)")
+    return checked, excused
+
+
 def main(argv):
     args = [a for a in argv if not a.startswith("--")]
     export_dir = args[0] if args else os.path.join(ROOT, "unreal", "Lunden", "Import")
@@ -366,6 +409,17 @@ def main(argv):
             if hit:
                 errors.append(f"soldier-course key {key}: rule {hit['match']} replaces its canvas with {hit['material']}")
         print(f"soldier courses (#2425): {', '.join(soldier) or 'none'}, each with its canvas in the GLB")
+
+    # 10. #2448: double-sided web surfaces stay double-sided under a rule's material
+    before = len(errors)
+    checked, excused = double_sided_check(export_dir, mats, rule_rx, errors)
+    single = len(errors) - before
+    print(f"double-sided surfaces under rules (#2448): {len(checked)} key/mesh pair(s), "
+          + (f"{single} on a single-sided material" if single else "each on a two-sided material")
+          + (f" or a rule with a singleSided reason ({len(excused)}: {', '.join(sorted(excused))})" if excused else ""))
+    for r in rules:
+        if "singleSided" in r and not str(r["singleSided"]).strip():
+            errors.append(f"rule {r['match']} has an empty singleSided reason")
 
     # 7. #2321: vertex colours drawn in every zone
     vc_keys = vertex_color_check(export_dir, table, rule_rx, errors)
