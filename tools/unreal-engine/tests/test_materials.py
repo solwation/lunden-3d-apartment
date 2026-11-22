@@ -20,6 +20,8 @@
      itself), or the key matches `vertexColor.match` and the glTF master Interchange gives it (from the GLB material:
      KHR_materials_unlit, transmission, clearcoat, sheen, else M_Default) has a vertex-colour copy listed under
      `vertexColor.masters` and built as a `gltf-vertex-color` material from that master.
+  8. (#2416) meshes drawing the same web canvas (measurements.json materials[].looks[].mapIndex), in any zone, reach the
+     same material: a `mesh` selector that misses a sibling (Hus L's screen walls) would send it to the key's catch-all.
 --table prints one line per key: key, nodes, rule material or "default: <reason>".
 Exit 0 when all hold, 1 otherwise; prints MATERIAL_COVERAGE_OK.
 """
@@ -274,6 +276,29 @@ def main(argv):
                     checked.setdefault(cls, set()).add((zone, mesh_name, key))
         print("patterned surfaces (#2318): " + ", ".join(f"{c} {len(checked.get(c, ()))} mesh(es)" for c in PATTERNED)
               + f" from {len(patterned)} look(s); each on a material that draws its surface")
+
+        # 6b. #2416: meshes drawing the same web canvas (a look's mapIndex) reach the same material in every zone. A
+        # `mesh` selector names surfaces one by one; a sibling it misses (Hus L's patio and terrace screen walls next to
+        # L1007's) falls through to the shared key's catch-all (white wall tiles) although the web paints it alike
+        canvases = shared = 0
+        for key, info in sorted(export_materials.items()):
+            for look in info.get("looks", []):
+                if look.get("mapIndex") is None:
+                    continue
+                reach = {}
+                for nid in look.get("nodes") or []:
+                    zone, parts = by_node.get(nid, (None, []))
+                    for mesh_name, mkeys in parts:
+                        if key in mkeys:
+                            hit = next((r for rx, mx, r in rule_rx if rx.search(key) and (mx is None or mx.search(mesh_name))), None)
+                            reach.setdefault(hit["material"].split(".")[-1] if hit else "the import default", []).append(f"{zone}/{mesh_name}")
+                canvases += 1
+                if len(reach) > 1:
+                    errors.append(f"key {key} canvas {look['mapIndex']} ({look.get('surface') or look.get('map') or 'untagged'}) "
+                                  "reaches different materials: " + "; ".join(f"{m}: {', '.join(sorted(w))}" for m, w in sorted(reach.items())))
+                elif reach and sum(len(w) for w in reach.values()) > 1:
+                    shared += 1
+        print(f"shared web canvases (#2416): {canvases} look(s), {shared} drawn on several meshes, each mesh on the same material")
 
     # 7. #2321: vertex colours drawn in every zone
     vc_keys = vertex_color_check(export_dir, table, rule_rx, errors)

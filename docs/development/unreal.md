@@ -2795,7 +2795,11 @@ canvas textures do not travel. `tools/unreal-engine/material-map.json` therefore
 - `rules`: key → material. The tile key `std_ffffff_r100_m0_tex` is shared by the hall and wet-room floors, the wall
   tiles, the splashback, the patio paving and the screen walls, so its rules add a `mesh` selector (the StaticMesh
   name is the id of the first export node that uses it). The last rule for that key has no selector and catches any
-  other surface with white wall tiles.
+  other surface with white wall tiles. A sibling a selector misses therefore renders as white tiles: until #2416 Hus L's
+  patio fences and roof-terrace screens (one merged mesh, `mesh_l0_xm1509_z1425_y563`) did, while L1007's screen walls
+  were boards. The coverage check now fails when meshes drawing the same web canvas (a look's `mapIndex` in
+  `measurements.json`) reach different materials in any zone; the portik paving and the visitable flats' wet rooms
+  have canvases of their own and are #2442.
 - **Furnishing rules (#2395).** A rule may also give one furnishing mesh a hand-made material. The fruit bowl's copper
   wire (`std_c8845e_r22_m90_ds`, mesh `^furn_fruitbowl_`) wears `MI_LundenCopperWire`: `M_LundenSurface` with the
   web's colour, roughness and metalness. Two instance fields support it:
@@ -2817,7 +2821,7 @@ python3 tools/unreal-engine/tests/test_materials.py [<export dir>] [--table]
 
 It fails when a key on those nodes has neither a rule nor a default, a rule names an unlisted material, a `mesh`
 selector selects nothing (a moved surface changes its id), an instance names an unknown parameter, or an entry that
-says *guess* has no assumption. `build_materials.py` skips an asset whose `Lunden.SpecHash` matches its entry, so a
+says *guess* has no assumption, or (#2416) meshes sharing one web canvas reach different materials. `build_materials.py` skips an asset whose `Lunden.SpecHash` matches its entry, so a
 second run writes nothing; `--force` rebuilds in place and `--check` verifies existence, spec hash, metadata,
 parameters and the persisted Nanite usage without writing. Take `git lfs lock` on every `Materials/*.uasset` before a
 build that writes. Results are in [the #2282 verification](../verification/2282/README.md).
