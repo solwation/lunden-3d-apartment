@@ -219,13 +219,21 @@ float3 vc = lerp(float3(1.0, 1.0, 1.0), VertexColor.rgb, VertexColorWeight);
 const float autumnMix[12] = { AUTUMN_MIX };
 float3 lawn = lerp(Color.rgb, Autumn.rgb, autumnMix[clamp((int)round(Month), 1, 12) - 1]);
 float3 litRGB = lin * lawn * vc;
+// #2441: src/grass.js grassMaterial's river-bed variant (the site terrain): the export's COLOR_0 red is 1 - bedMud
+// (src/surroundings.js), so the mud / sand tone MUSSELS.bed with its broad lighter / darker patches replaces the lawn
+// where the terrain dips under Höje å's water line, interpolated up the bank as on the web; no leaves on the mud.
+float grassBed = BedWeight * saturate(1.0 - VertexColor.r);
+if (grassBed > 0.0) {
+  float bedTone = 0.88 + 0.12 * sin(UV.x * 2.9 + sin(UV.y * 1.7)) * sin(UV.y * 3.3 - UV.x * 0.6);
+  litRGB = lerp(litRGB, BedColor.rgb * bedTone, grassBed);
+}
 float litRough = Roughness;
 """
 GRASS_SCALARS = {"Cell": 0.0334, "StrokeWidth": 0.0044, "StrawTint": 0.94, "BladeTint": 0.91, "VertexColorWeight": 0.0,
-                 "Roughness": 1.0, "Tile": 1.6, "PatchContrast": 1.5, "TuftCount": 22.0, "TuftShade": 0.14}
+                 "Roughness": 1.0, "Tile": 1.6, "PatchContrast": 1.5, "TuftCount": 22.0, "TuftShade": 0.14, "BedWeight": 0.0}
 GRASS_VECTORS = {"Color": "#609548", "Ground": (0.957, 0.094, 0.0), "BladeRange": (0.745, 0.957, 0.0),
                  "BladeLength": (0.0125, 0.0438, 0.0), "PatchCells": (8.0, 17.0, 0.0), "Dry": (0.26, 0.17, 0.02),
-                 "Lush": (0.19, 0.09, 0.22), "TuftRadius": (0.044, 0.0875, 0.0)}
+                 "Lush": (0.19, 0.09, 0.22), "TuftRadius": (0.044, 0.0875, 0.0), "BedColor": "#74664b"}
 TILED_SCALARS = {"Joint": 0.003, "Bond": 0.0, "Stagger": 0.0, "Variation": 0.0, "Grain": 0.0, "Roughness": 0.8,
                  "JointRoughness": 0.95, "FilterBrick": 0.0, "BedJoint": 0.0, "TexelBlur": 0.0, "HueJitter": 0.0,
                  "SaturationJitter": 0.0, "LightnessJitter": 0.0}
@@ -372,7 +380,13 @@ def ground_data(spec):
 
 def grass_code(spec):
     code = GRASS_HLSL.strip().replace("AUTUMN_MIX", ", ".join(map(str, spec["autumnMix"])))
-    return code + "\n" + ground_litter.litter_code(ground_data(spec), spec["litter"])
+    litter = ground_litter.litter_code(ground_data(spec), spec["litter"])
+    # #2441: no leaves on the river bed's mud (src/grass.js passes leafLitter the mask '1.0 - grassBed'); spliced in here so
+    # ground_litter.py, part of every litter master's spec hash, and with it the gravel masters stay unchanged
+    density = "litC = Texture2DSampleLevel(LitterMap, LitterMapSampler, litUV, 0.0).r"
+    if litter.count(density) != 1:
+        raise RuntimeError("ground_litter.litter_code changed: update the river-bed mask in build_materials.grass_code")
+    return code + "\n" + litter.replace(density, density + " * (1.0 - grassBed)")
 
 
 def gravel_code(spec):

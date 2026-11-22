@@ -2722,7 +2722,10 @@ What 5.8.4 does, and what the importer does about it:
   gard 20 of 24, l1007-uteplats 84 of 124 (the string lights), hus-l 143 of 1,195, l1007 444 of 2,117 (lamps, rugs,
   vents, small fittings), fond and omgivning their ground and backdrop. Unreal has no per-component receive-shadow
   switch for opaque surfaces, so `receiveShadow` does not travel. Test: `node tools/unreal-engine/tests/shadow-flags.test.mjs
-  <export dir>` ([verification](../verification/2426/README.md)).
+  <export dir>` ([verification](../verification/2426/README.md)). Intended deviation (#2441): the web's sun shadow map
+  covers only ±14 m round a box that follows the visitor, and beyond it `src/groundao.js` draws solid baked discs under
+  the crowns (G22, not ported), so on a slope further away the web shows dark, straight-edged shade where Unreal, whose
+  shadows reach every distance, shows the crowns' dappled shadows ([#2441](../verification/2441/README.md)).
 - **Materials.** `tools/unreal-engine/material-map.json` rules (a regex on the key, first match wins, optionally
   narrowed by a `mesh` regex on the StaticMesh name) replace the imported instances on the mesh slots by hand-made
   materials ([Surface materials](#surface-materials-2282)). Other keys keep Interchange's glTF material instance
@@ -3323,6 +3326,17 @@ checked by `tests/grass-material.test.mjs` (Node, against `src/config.js`) and `
 the export on a grass instance with its own colour). The lawn master uses `MPC_LundenVegetation.Month` and
 the web's twelve `GRASS.autumnMix` values to mix each instance's summer colour towards `GRASS.autumn`.
 The shader approximates the canvas detail and its response to lighting (*guess*).
+
+**River-bed mud (#2441).** The site terrain is `src/grass.js`'s bed variant: `src/surroundings.js bedMud` gives each terrain
+vertex a share (0 … 1, a byte) of `MUSSELS.bed`'s mud tone where it lies under Höje å's water line, and the triangles
+interpolate it up the bank, so the slopes closest to the water read olive. The export carries the share as COLOR_0 =
+(1 − bedMud, 1, 1) on the terrain pieces that hold any mud (`export-river.js riverBedGeometry`; only `omgivning.glb`
+changes) and `splitMesh` interpolates it across the zone cuts. `M_LundenGrass` mixes `BedColor` × the web's `bedTone`
+patches in by `BedWeight` × (1 − vertex colour red) and keeps the fallen leaves off the mud; `MI_LundenGrassLawn` sets
+`BedWeight` 1, and lawns without COLOR_0 read Unreal's white default. Interchange stores COLOR_0 so that the shader reads
+the glTF value. `tests/grass-material.test.mjs` checks `BedColor` and the `bedTone` code against the web, `test_materials.py`
+accepts the lawn key's COLOR_0 on that instance. The web's whole-material snow switch on the bed is not carried
+([#2441 verification](../verification/2441/README.md)).
 
 **Fallen leaves and gravel (#2433).** The web lays autumn leaves on its lit ground (`src/leaflitter.js`, `LEAF_LITTER`):
 a fragment step draws two jittered world-space grids of small pinched ellipses, as dense as an 8-bit map over `WALK`

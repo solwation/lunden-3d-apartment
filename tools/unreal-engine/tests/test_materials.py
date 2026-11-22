@@ -52,7 +52,7 @@ MASTER_PARAMS = {
     "glass": {"BaseColor", "Opacity", "Roughness", "Specular"},
     "grass": {"Color", "Ground", "BladeRange", "BladeLength", "Cell", "StrokeWidth", "StrawTint", "BladeTint",
               "VertexColorWeight", "Roughness", "Tile", "PatchCells", "PatchContrast", "Dry", "Lush", "TuftCount", "TuftRadius",
-              "TuftShade"},
+              "TuftShade", "BedColor", "BedWeight"},
     "gravel": {"Color", "VertexColorWeight"},
 }
 GLTF_VC = "gltf-vertex-color"  # #2321: build_materials.py's copy of an Interchange glTF master times the vertex colour
@@ -207,7 +207,9 @@ def vertex_color_check(export_dir, table, rule_rx, errors):
             weight = spec.get("params", {}).get("VertexColorWeight", 0)
             backdrop_vc = parent.get("graph") == "backdrop-texture" and parent.get("vertexColors") is True
             draws_land = parent.get("graph") == "river" and parent.get("mode") == "edge"
-            if not (parent.get("graph") in (GLTF_VC, BAKED) or backdrop_vc or draws_land or (parent.get("graph") in ("grass", "gravel") and weight > 0)):
+            # #2441: a grass instance with BedWeight reads COLOR_0 red as the terrain's river-bed mud share
+            bed = parent.get("graph") == "grass" and spec.get("params", {}).get("BedWeight", 0) > 0
+            if not (parent.get("graph") in (GLTF_VC, BAKED) or backdrop_vc or draws_land or bed or (parent.get("graph") in ("grass", "gravel") and weight > 0)):
                 errors.append(f"vertex-coloured key {where}: rule material {target} does not multiply the vertex colour in")
         if not unruled:
             continue  # every mesh using the key gets a rule's material

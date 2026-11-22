@@ -7,7 +7,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { GRASS } from '../../../src/config.js';
+import { GRASS, MUSSELS } from '../../../src/config.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const table = JSON.parse(fs.readFileSync(path.join(here, '../material-map.json'), 'utf8'));
@@ -42,4 +42,13 @@ for (const [name, spec] of instances) {
 }
 const lawn = table.materials['/Game/Lunden/Materials/MI_LundenGrassLawn'];
 assert.equal(lawn.params.Color.toLowerCase(), '#' + GRASS.summer.toString(16).padStart(6, '0'), 'the lawn colour is GRASS.summer');
-console.log(`GRASS_MATERIAL_OK ${instances.length} grass instances match src/config.js GRASS`);
+// #2441: the site terrain's river-bed mud (src/grass.js grassMaterial's bed variant) on the lawn instance only, with the
+// web's own bedTone patches in the master's code (the export's COLOR_0 red = 1 - bedMud)
+assert.equal(lawn.params.BedColor?.toLowerCase(), '#' + MUSSELS.bed.color.toString(16).padStart(6, '0'), 'the lawn instance mixes MUSSELS.bed.color in');
+assert.equal(lawn.params.BedWeight, 1, 'the lawn instance reads the terrain\'s bed share');
+for (const [name, spec] of instances) if (spec !== lawn) assert.ok(!spec.params.BedWeight, `${name} has no river bed`);
+const tone = fs.readFileSync(path.join(here, '../../../src/grass.js'), 'utf8').match(/float bedTone = ([^;]+);/)?.[1];
+assert.ok(tone, 'src/grass.js has its bedTone');
+const hlsl = fs.readFileSync(path.join(here, '../python/build_materials.py'), 'utf8');
+assert.ok(hlsl.includes(`float bedTone = ${tone.replaceAll('grassMeters', 'UV')};`), 'M_LundenGrass draws the web\'s bedTone in UV metres');
+console.log(`GRASS_MATERIAL_OK ${instances.length} grass instances match src/config.js GRASS, the lawn's river bed MUSSELS.bed`);

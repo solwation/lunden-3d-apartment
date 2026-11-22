@@ -30,7 +30,7 @@ import { hedgeTexture } from './hedge-texture.js';
 import { husLLayout } from '../../src/exterior.js';
 import { fallDamage } from '../../src/falldamage.js';
 import { parkedVehicles, recordParkedPart, parkedCollision, parkedMaterial } from './export-parked-vehicles.js';
-import { riverGeometry, riverMaterialData } from './export-river.js';
+import { riverBedGeometry, riverGeometry, riverMaterialData } from './export-river.js';
 import { facadeLightingData } from './export-facade-lighting.js';
 import { webToUnrealRounded, webYawToUnrealYaw, webPitchToUnrealPitch, webRotationYToUnrealYaw, roundCm } from './coordinates.mjs';
 
@@ -161,7 +161,7 @@ function splitMesh(mesh, zoneFor, cuts) {
   const vi = (t, k) => (idx ? idx.getX(t * 3 + k) : t * 3 + k);
   const multi = Array.isArray(mesh.material) && g.groups.length;
   const groups = multi ? g.groups : [{ start: 0, count: n * 3, materialIndex: 0 }];
-  const names = ['position', 'normal', 'uv', 'color', 'riverFlow', 'riverShore'].filter((k) => g.getAttribute(k));
+  const names = ['position', 'normal', 'uv', 'color', 'riverFlow', 'riverShore', 'bedMud'].filter((k) => g.getAttribute(k));
   const attrs = names.map((k) => g.getAttribute(k)), sizes = attrs.map((at) => at.itemSize);
   const m = mesh.matrixWorld, w = new THREE.Vector3();
   // a vertex: { v: original index or -1, a: [attribute arrays] (cut vertices), p: world position }
@@ -870,6 +870,7 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     let g = exportGeometry(mesh, ms.some((m) => m.vertexColors));
     if (!g) return null;
     if (mesh.material.userData?.riverSurface) g = riverGeometry(mesh, g.clone(), mesh.material.userData.riverSurface);
+    else if (mesh.geometry.getAttribute('bedMud')) g = riverBedGeometry(mesh, g); // #2441: the terrain's river-bed mud
     const cloth = furnish || !!mesh.userData?.door;
     const trunk = mesh.geometry.userData.bark; // trunkGeometry marks both detailed species and the plain far LOD
     const em = ms.map((m) => exportMaterial(m, cloth, trunk === 'bark' || trunk === 'birch' ? trunk : null));

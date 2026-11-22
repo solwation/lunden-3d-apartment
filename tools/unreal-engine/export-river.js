@@ -41,3 +41,21 @@ export function riverGeometry(mesh, geometry, surface) {
   }
   return geometry.setAttribute('uv', uv);
 }
+
+/** #2441: the terrain's river-bed mud share (src/surroundings.js `bedMud`, 0 … 1 per vertex, the web's bed variant of
+ *  src/grass.js grassMaterial) as COLOR_0 = (1 − bedMud, 1, 1): M_LundenGrass mixes MUSSELS.bed's tone in by
+ *  BedWeight × (1 − VertexColor.r), and a lawn without COLOR_0 reads Unreal's white default (no mud). Only a piece that
+ *  holds some mud gets the colour, so the zones away from Höje å keep their GLBs. Interchange stores COLOR_0 so that the
+ *  shader reads the glTF value (GLTFMeshFactory.cpp undoes the engine's sRGB step), 8 bits as the web's byte. */
+export function riverBedGeometry(mesh, geometry) {
+  const bed = mesh.geometry.getAttribute('bedMud'), pos = geometry.getAttribute('position');
+  if (!bed || bed.count !== pos.count) throw Error(`${mesh.name}: bedMud does not match the exported vertices`);
+  let any = false;
+  const color = new Float32Array(pos.count * 3).fill(1);
+  for (let i = 0; i < pos.count; i++) { const t = bed.getX(i); if (t > 0) { color[i * 3] = 1 - t; any = true; } }
+  if (!any) return geometry;
+  if (geometry.getAttribute('color')) throw Error(`${mesh.name}: a river-bed lawn with vertex colours of its own`);
+  const out = geometry.clone();
+  out.setAttribute('color', new THREE.BufferAttribute(color, 3));
+  return out;
+}
