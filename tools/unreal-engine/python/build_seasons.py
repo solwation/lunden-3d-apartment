@@ -5,6 +5,7 @@ The web shows the Christmas tree only from XMAS_TREE.season.from to .to, inclusi
 import_world.py turns that into actor tags on the piece and all its parts:
 
     seasonal, season:<what>, seasonFrom:<month * 100 + day>, seasonTo:<month * 100 + day>
+    and, for an item that also keeps clock hours (#2406, the patio beers): seasonHourFrom:<h>, seasonHourTo:<h>
 
 BPC_LundenSeasons is an ActorComponent that BP_LundenPlayerController carries through
 tools/unreal-engine/player-extensions.json. It holds the rule in one place for every seasonal item:
@@ -12,10 +13,19 @@ tools/unreal-engine/player-extensions.json. It holds the rule in one place for e
 - InSeason(Year, Month, Day, From, To) -> InSeason: key = Month * 100 + min(Day, DaysInMonth(Year, Month)); inside
   when From <= key <= To, or, for a window that wraps the new year (From > To), when key >= From or key <= To.
   The same comparison as src/christmas.js inChristmas, with the window from the actor instead of src/config.js.
+- InHours(Hour, From, To) -> InHours (#2406): From <= Hour < To, or, for hours that wrap midnight (From > To), Hour >= From
+  or Hour < To. The web's src/patio.js beersOut compares its decimal clock hour with whole-hour edges, so the whole hour
+  gives the same answer.
 - TagValue(Actor, Prefix) -> Value, Found: the integer after `Prefix` in one of the actor's tags.
-- ApplySeason(Year, Month, Day): publishes Month to MPC_LundenVegetation for crowns and lawns. Every actor tagged `seasonal` whose window tags it can read is shown with collision
-  inside its window and hidden without collision outside it. Also the test hook: tests call it with a fixed date.
-- BeginPlay: ApplySeason with the PC's local date (Now), once, at game start, as the web does on a new visit.
+- ApplySeason(Year, Month, Day): publishes Month to MPC_LundenVegetation for crowns and lawns. Every actor tagged
+  `seasonal` whose window tags it can read is shown with collision inside its window and hidden without collision outside
+  it; an actor that also has hour tags is shown only when the variable Hour is inside them as well. Also the test hook:
+  tests call it with a fixed date. It stops the clock (ClockDriven false), so a fixed date stays.
+- ApplySeasonAt(Year, Month, Day, Hour): sets Hour, then ApplySeason (the test hook for the hour window).
+- ApplyClock(): ApplySeasonAt with the PC's local date and hour (Now), then ClockDriven = true.
+- ClockTick(): ApplyClock while ClockDriven, on a CLOCK_SECONDS looping timer, so hour windows follow the PC's clock as
+  the web's follow its day clock.
+- BeginPlay: ApplyClock with the PC's local date, as the web does on a new visit, and starts the ClockTick timer.
 
 Run (Windows checkout; lock Seasons/BPC_LundenSeasons.uasset and Seasons/MPC_LundenVegetation.uasset first):
     powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools/unreal-engine/run-python.ps1 tools/unreal-engine/python/build_seasons.py [--force | --check]
@@ -41,7 +51,9 @@ GRAPH = u.BlueprintGraphEditor
 INT = BP.get_basic_type_by_name("int")
 BOOL = BP.get_basic_type_by_name("bool")
 STRING = BP.get_basic_type_by_name("string")
-FUNCTIONS = ("InSeason", "TagValue", "ApplySeason")
+FUNCTIONS = ("InSeason", "InHours", "TagValue", "ApplySeason", "ApplySeasonAt", "ApplyClock", "ClockTick")
+VARIABLES = (("Hour", INT), ("ClockDriven", BOOL))  # #2406: the hour ApplySeason uses; whether the PC clock drives it
+CLOCK_SECONDS = 60.0  # #2406: how often the PC clock is read again; an hour window turns at most this late
 
 
 def pins(node, find):
@@ -92,6 +104,12 @@ class Graph:
     def branch(self, x, y):
         return self.at(self.g.add_branch_node(), x, y)
 
+    def get(self, name, owner, x, y):
+        return self.at(self.g.add_get_member_variable_node(name, owner), x, y)
+
+    def set(self, name, owner, x, y):
+        return self.at(self.g.add_set_member_variable_node(name, owner), x, y)
+
 
 def function(bp, name, inputs, outputs):
     """A new function graph with typed parameters; returns (Graph, entry pins by name, result node)."""
@@ -112,6 +130,35 @@ def function(bp, name, inputs, outputs):
     return Graph(editor), params, result
 
 
+def window_answer(g, key, start, end, before_fn, x):
+    """start <= key (before_fn) end, or for a window that wraps (start > end) key >= start or key (before_fn) end."""
+    after = g.call("KismetMathLibrary:GreaterEqual_IntInt", x, 100)  # key >= from
+    link(key, inp(after, "A"))
+    link(start, inp(after, "B"))
+    before = g.call("KismetMathLibrary:" + before_fn, x, 250)  # key <= to (dates) or key < to (hours)
+    link(key, inp(before, "A"))
+    link(end, inp(before, "B"))
+    ordered = g.call("KismetMathLibrary:LessEqual_IntInt", x, 400)  # from <= to: no wrap
+    link(start, inp(ordered, "A"))
+    link(end, inp(ordered, "B"))
+    both = g.call("KismetMathLibrary:BooleanAND", x + 250, 100)
+    link(out(after, "ReturnValue"), inp(both, "A"))
+    link(out(before, "ReturnValue"), inp(both, "B"))
+    either = g.call("KismetMathLibrary:BooleanOR", x + 250, 250)
+    link(out(after, "ReturnValue"), inp(either, "A"))
+    link(out(before, "ReturnValue"), inp(either, "B"))
+    wraps = g.call("KismetMathLibrary:Not_PreBool", x + 250, 400)
+    link(out(ordered, "ReturnValue"), inp(wraps, "A"))
+    wrapped = g.call("KismetMathLibrary:BooleanAND", x + 500, 300)  # wrapping window: after or before
+    link(out(wraps, "ReturnValue"), inp(wrapped, "A"))
+    link(out(either, "ReturnValue"), inp(wrapped, "B"))
+    # ordered: after AND before; wrapping: (after AND before) OR after OR before = after OR before
+    answer = g.call("KismetMathLibrary:BooleanOR", x + 750, 150)
+    link(out(both, "ReturnValue"), inp(answer, "A"))
+    link(out(wrapped, "ReturnValue"), inp(answer, "B"))
+    return out(answer, "ReturnValue")
+
+
 def in_season(bp):
     g, p, result = function(bp, "InSeason", [(n, INT) for n in ("Year", "Month", "Day", "From", "To")], [("InSeason", BOOL)])
     link(g.g.find_graph_entry_pin(), inp(result, "execute"))
@@ -127,32 +174,18 @@ def in_season(bp):
     key = g.call("KismetMathLibrary:Add_IntInt", 800, 150)
     link(out(month100, "ReturnValue"), inp(key, "A"))
     link(out(day, "ReturnValue"), inp(key, "B"))
-    after = g.call("KismetMathLibrary:GreaterEqual_IntInt", 1050, 100)  # key >= from
-    link(out(key, "ReturnValue"), inp(after, "A"))
-    link(p["From"], inp(after, "B"))
-    before = g.call("KismetMathLibrary:LessEqual_IntInt", 1050, 250)  # key <= to
-    link(out(key, "ReturnValue"), inp(before, "A"))
-    link(p["To"], inp(before, "B"))
-    ordered = g.call("KismetMathLibrary:LessEqual_IntInt", 1050, 400)  # from <= to: no new-year wrap
-    link(p["From"], inp(ordered, "A"))
-    link(p["To"], inp(ordered, "B"))
-    both = g.call("KismetMathLibrary:BooleanAND", 1300, 100)
-    link(out(after, "ReturnValue"), inp(both, "A"))
-    link(out(before, "ReturnValue"), inp(both, "B"))
-    either = g.call("KismetMathLibrary:BooleanOR", 1300, 250)
-    link(out(after, "ReturnValue"), inp(either, "A"))
-    link(out(before, "ReturnValue"), inp(either, "B"))
-    wraps = g.call("KismetMathLibrary:Not_PreBool", 1300, 400)
-    link(out(ordered, "ReturnValue"), inp(wraps, "A"))
-    wrapped = g.call("KismetMathLibrary:BooleanAND", 1550, 300)  # wrapping window: key >= from or key <= to
-    link(out(wraps, "ReturnValue"), inp(wrapped, "A"))
-    link(out(either, "ReturnValue"), inp(wrapped, "B"))
-    # ordered: after AND before; wrapping: (after AND before) OR after OR before = after OR before
-    answer = g.call("KismetMathLibrary:BooleanOR", 1800, 150)
-    link(out(both, "ReturnValue"), inp(answer, "A"))
-    link(out(wrapped, "ReturnValue"), inp(answer, "B"))
+    answer = window_answer(g, out(key, "ReturnValue"), p["From"], p["To"], "LessEqual_IntInt", 1050)
     g.at(result, 2050, 0)
-    link(out(answer, "ReturnValue"), inp(result, "InSeason"))
+    link(answer, inp(result, "InSeason"))
+
+
+def in_hours(bp):
+    """#2406: From <= Hour < To, or across midnight (From > To) Hour >= From or Hour < To."""
+    g, p, result = function(bp, "InHours", [(n, INT) for n in ("Hour", "From", "To")], [("InHours", BOOL)])
+    link(g.g.find_graph_entry_pin(), inp(result, "execute"))
+    answer = window_answer(g, p["Hour"], p["From"], p["To"], "Less_IntInt", 300)
+    g.at(result, 1300, 0)
+    link(answer, inp(result, "InHours"))
 
 
 def tag_value(bp):
@@ -212,6 +245,8 @@ def vegetation_calendar(check):
 def apply_season(bp, calendar):
     g, p, _ = function(bp, "ApplySeason", [(n, INT) for n in ("Year", "Month", "Day")], [])
     cls = bp.generated_class().get_path_name()
+    stop = g.set("ClockDriven", cls, -250, 0)  # a date from outside (a test) stays until ApplyClock runs again
+    value(stop, "ClockDriven", "false")
     find = g.call("GameplayStatics:GetAllActorsWithTag", 250, 0)
     value(find, "Tag", SEASON_TAG)
     publish = g.call("KismetMaterialLibrary:SetScalarParameterValue", 0, -240)
@@ -220,14 +255,15 @@ def apply_season(bp, calendar):
     real_month = g.call("KismetMathLibrary:Conv_IntToDouble", -250, -380)
     link(p["Month"], inp(real_month, "InInt"))
     link(out(real_month, "ReturnValue"), inp(publish, "ParameterValue"))
-    link(g.g.find_graph_entry_pin(), inp(publish, "execute"))
+    link(g.g.find_graph_entry_pin(), inp(stop, "execute"))
+    link(out(stop, "then"), inp(publish, "execute"))
     link(out(publish, "then"), inp(find, "execute"))
     each = g.loop(550, 0)
     link(out(find, "then"), inp(each, "Exec"))
     link(out(find, "OutActors"), inp(each, "Array"))
     window = []
     previous = out(each, "LoopBody")
-    for index, prefix in enumerate(("seasonFrom:", "seasonTo:")):
+    for index, prefix in enumerate(("seasonFrom:", "seasonTo:", "seasonHourFrom:", "seasonHourTo:")):
         read = g.call(cls + ":TagValue", 850 + index * 300, 0)
         link(previous, inp(read, "execute"))
         link(out(each, "Array Element"), inp(read, "Actor"))
@@ -246,16 +282,71 @@ def apply_season(bp, calendar):
         link(p[name], inp(rule, name))
     link(out(window[0], "Value"), inp(rule, "From"))
     link(out(window[1], "Value"), inp(rule, "To"))
-    hidden = g.call("KismetMathLibrary:Not_PreBool", 1950, 250)
-    link(out(rule, "InSeason"), inp(hidden, "A"))
-    hide = g.call("Actor:SetActorHiddenInGame", 2150, 0)
-    link(out(rule, "then"), inp(hide, "execute"))
+    hours = g.call(cls + ":InHours", 1950, 0)  # #2406: an actor with hour tags keeps them as well
+    link(out(rule, "then"), inp(hours, "execute"))
+    link(out(g.get("Hour", cls, 1700, 500), "Hour"), inp(hours, "Hour"))
+    link(out(window[2], "Value"), inp(hours, "From"))
+    link(out(window[3], "Value"), inp(hours, "To"))
+    timed = g.call("KismetMathLibrary:BooleanAND", 1950, 400)
+    link(out(window[2], "Found"), inp(timed, "A"))
+    link(out(window[3], "Found"), inp(timed, "B"))
+    any_hour = g.call("KismetMathLibrary:Not_PreBool", 2200, 400)
+    link(out(timed, "ReturnValue"), inp(any_hour, "A"))
+    hour_ok = g.call("KismetMathLibrary:BooleanOR", 2450, 300)
+    link(out(any_hour, "ReturnValue"), inp(hour_ok, "A"))
+    link(out(hours, "InHours"), inp(hour_ok, "B"))
+    shown = g.call("KismetMathLibrary:BooleanAND", 2700, 250)
+    link(out(rule, "InSeason"), inp(shown, "A"))
+    link(out(hour_ok, "ReturnValue"), inp(shown, "B"))
+    hidden = g.call("KismetMathLibrary:Not_PreBool", 2950, 250)
+    link(out(shown, "ReturnValue"), inp(hidden, "A"))
+    hide = g.call("Actor:SetActorHiddenInGame", 3150, 0)
+    link(out(hours, "then"), inp(hide, "execute"))
     link(out(each, "Array Element"), inp(hide, "self"))
     link(out(hidden, "ReturnValue"), inp(hide, "bNewHidden"))
-    solid = g.call("Actor:SetActorEnableCollision", 2450, 0)
+    solid = g.call("Actor:SetActorEnableCollision", 3450, 0)
     link(out(hide, "then"), inp(solid, "execute"))
     link(out(each, "Array Element"), inp(solid, "self"))
-    link(out(rule, "InSeason"), inp(solid, "bNewActorEnableCollision"))
+    link(out(shown, "ReturnValue"), inp(solid, "bNewActorEnableCollision"))
+
+
+def apply_season_at(bp):
+    """#2406: ApplySeason with an hour for the hour windows (the test hook)."""
+    g, p, _ = function(bp, "ApplySeasonAt", [(n, INT) for n in ("Year", "Month", "Day", "Hour")], [])
+    cls = bp.generated_class().get_path_name()
+    hour = g.set("Hour", cls, 250, 0)
+    link(g.g.find_graph_entry_pin(), inp(hour, "execute"))
+    link(p["Hour"], inp(hour, "Hour"))
+    apply = g.call(cls + ":ApplySeason", 550, 0)
+    link(out(hour, "then"), inp(apply, "execute"))
+    for name in ("Year", "Month", "Day"):
+        link(p[name], inp(apply, name))
+
+
+def apply_clock(bp):
+    """ApplySeasonAt with the PC's local date and hour, then the clock keeps driving it (ClockTick)."""
+    g, _, _ = function(bp, "ApplyClock", [], [])
+    cls = bp.generated_class().get_path_name()
+    now = g.call("KismetMathLibrary:Now", 250, 150)  # the PC's local date and time
+    date = g.call("KismetMathLibrary:BreakDateTime", 500, 150)
+    link(out(now, "ReturnValue"), inp(date, "InDateTime"))
+    apply = g.call(cls + ":ApplySeasonAt", 800, 0)
+    link(g.g.find_graph_entry_pin(), inp(apply, "execute"))
+    for name in ("Year", "Month", "Day", "Hour"):
+        link(out(date, name), inp(apply, name))
+    driven = g.set("ClockDriven", cls, 1100, 0)
+    link(out(apply, "then"), inp(driven, "execute"))
+    value(driven, "ClockDriven", "true")
+
+
+def clock_tick(bp):
+    g, _, _ = function(bp, "ClockTick", [], [])
+    cls = bp.generated_class().get_path_name()
+    driven = g.branch(300, 0)
+    link(g.g.find_graph_entry_pin(), inp(driven, "execute"))
+    link(out(g.get("ClockDriven", cls, 100, 200), "ClockDriven"), inp(driven, "Condition"))
+    apply = g.call(cls + ":ApplyClock", 600, 0)
+    link(out(driven, "then"), inp(apply, "execute"))
 
 
 def event_graph(bp):
@@ -264,13 +355,13 @@ def event_graph(bp):
     start = g.g.create_node_from_name("AddEvent|EventBeginPlay", u.Vector2D(0, 0), []) \
         or BP.add_event_override(bp, "ReceiveBeginPlay", u.IntPoint(0, 0))
     g.at(start, 0, 0)
-    now = g.call("KismetMathLibrary:Now", 250, 150)  # the PC's local date and time
-    date = g.call("KismetMathLibrary:BreakDateTime", 500, 150)
-    link(out(now, "ReturnValue"), inp(date, "InDateTime"))
-    apply = g.call(bp.generated_class().get_path_name() + ":ApplySeason", 800, 0)
+    apply = g.call(bp.generated_class().get_path_name() + ":ApplyClock", 300, 0)
     link(out(start, "then"), inp(apply, "execute"))
-    for name in ("Year", "Month", "Day"):
-        link(out(date, name), inp(apply, name))
+    every = g.call("KismetSystemLibrary:K2_SetTimer", 600, 0)  # #2406: hour windows follow the PC's clock
+    link(out(apply, "then"), inp(every, "execute"))
+    value(every, "FunctionName", "ClockTick")
+    value(every, "Time", CLOCK_SECONDS)
+    value(every, "bLooping", "true")
 
 
 def build(calendar):
@@ -293,10 +384,23 @@ def build(calendar):
         bp = u.AssetToolsHelpers.get_asset_tools().create_asset(name, folder, u.Blueprint, factory)
         if not bp:
             raise RuntimeError("Could not create " + COMPONENT)
+    have = {str(n) for n in BP.list_member_variable_names(bp)}
+    for name, kind in VARIABLES:
+        if name not in have and not BP.add_member_variable(bp, name, kind):
+            raise RuntimeError("Could not add the variable " + name)
+        BP.set_blueprint_variable_instance_editable(bp, name, True)  # editor Python (tests) reads them
+    BP.compile_blueprint(bp)
     in_season(bp)
+    in_hours(bp)
     tag_value(bp)
-    BP.compile_blueprint(bp)  # ApplySeason calls the two functions above by class path
+    BP.compile_blueprint(bp)  # ApplySeason calls the functions above by class path
     apply_season(bp, calendar)
+    BP.compile_blueprint(bp)
+    apply_season_at(bp)
+    BP.compile_blueprint(bp)
+    apply_clock(bp)
+    BP.compile_blueprint(bp)
+    clock_tick(bp)
     BP.compile_blueprint(bp)
     event_graph(bp)
     BP.compile_blueprint(bp)

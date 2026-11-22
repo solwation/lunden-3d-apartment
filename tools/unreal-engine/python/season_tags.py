@@ -10,5 +10,8 @@ def season_tags(extras, ex):
     if not ex or "seasonal" not in ex:
         return []
     s = ex["seasonal"]
-    return ["seasonal", f"season:{s['what']}", f"seasonFrom:{s['from'][0] * 100 + s['from'][1]}",
+    tags = ["seasonal", f"season:{s['what']}", f"seasonFrom:{s['from'][0] * 100 + s['from'][1]}",
             f"seasonTo:{s['to'][0] * 100 + s['to'][1]}"]
+    if s.get("hours"):  # #2406: also only from clock hour [0] until [1] on the window's days (the patio beers)
+        tags += [f"seasonHourFrom:{s['hours'][0]}", f"seasonHourTo:{s['hours'][1]}"]
+    return tags

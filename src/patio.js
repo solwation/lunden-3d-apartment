@@ -230,6 +230,10 @@ const seasonal = { parasols: [], beers: [], cushions: [], boxes: [] };
  *  Also read by the Unreal export (#2387), which turns the months into a date window for the decorative cushions. */
 export const cushionsOut = (month, overcast = 0) => P.parasol.months.includes(month) && !(overcast > 0.6);
 
+/** The two pints on the slat table: in `beerMonths` from `beerHours[0]` until `beerHours[1]` (clock hours, decimal).
+ *  Also read by the Unreal export (#2406), which turns it into a date window with an hour window. */
+export const beersOut = (month, hour) => P.beerMonths.includes(month) && hour >= P.beerHours[0] && hour < P.beerHours[1];
+
 /** A pint of lager with rising bubbles; base at the origin. */
 function beerGlass() {
   const g = new THREE.Group();
@@ -268,6 +272,7 @@ export function slattable(item = {}) {
   if (item.beers) {
     const beers = new THREE.Group();
     beers.visible = false;
+    beers.userData.patioBeers = true; // (the Unreal export finds them by this, #2406)
     for (const [x, z] of [[-0.18, 0.08], [0.06, -0.1]]) {
       const b = beerGlass();
       b.position.set(x, h, z);
@@ -699,8 +704,7 @@ export class Patio {
     this.t += dt;
     updateStringLights(this.strings, day.daylight, dt, this.supply);
     updateParasols(day, dt, this.first);
-    const [h0, h1] = P.beerHours;
-    const beers = P.beerMonths.includes(day.month) && day.hour >= h0 && day.hour < h1;
+    const beers = beersOut(day.month, day.hour);
     for (const b of seasonal.beers) {
       b.visible = beers;
       if (beers) b.traverse((m) => { if (m.userData.seeds) bubbleUpdate(m, this.t); });

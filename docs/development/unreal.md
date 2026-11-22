@@ -107,8 +107,8 @@ tools/unreal-engine/tests/test_player_world.py  PIE test on L_Lunden (#2300): su
 unreal/Lunden/Content/Lunden/Player/          BP_LundenPlayer, BP_LundenPlayerController, BP_LundenGameMode, BP_LundenCameraManager,
                                    BPC_LundenStepSurface, BPC_LundenRest, Input/ (LFS)
 tools/unreal-engine/python/build_seasons.py   the season rule /Game/Lunden/Seasons/BPC_LundenSeasons (#2295)
-tools/unreal-engine/tests/test_seasons.py     PIE test on L_Lunden: the Christmas tree, its corner and the patio cushions per season-dates.json
-tools/unreal-engine/tests/season-rule.test.mjs  season-dates.json against the web's own inChristmas and cushionsOut (Node)
+tools/unreal-engine/tests/test_seasons.py     PIE test on L_Lunden: the Christmas tree, its corner, the patio cushions and beers per season-dates.json
+tools/unreal-engine/tests/season-rule.test.mjs  season-dates.json against the web's own inChristmas, cushionsOut and beersOut (Node)
 tools/unreal-engine/tests/capture_seasons.py  GPU views of the tree corner on June 21 and December 24
 unreal/Lunden/Content/Lunden/Seasons/         BPC_LundenSeasons, MPC_LundenVegetation (LFS; made by build_seasons.py)
 tools/unreal-engine/python/build_save.py      the save file /Game/Lunden/Save/: SG_LundenSave, BFL_LundenSave, BPC_LundenSave (#2288)
@@ -717,7 +717,7 @@ The web shows the Christmas tree only from `XMAS_TREE.season.from` to `.to`, inc
 [porting plan](unreal-inventory.md)): what the web hides out of season is hidden in Unreal too. #2295 owns
 `/Game/Lunden/Seasons/`, `build_seasons.py`, `tests/test_seasons.py`, `tests/season-dates.json`,
 `tests/season-rule.test.mjs`, `tests/capture_seasons.py` and the `Seasons` row of `player-extensions.json`.
-#2387 added the patio cushions to the same data, rule and tests.
+#2387 added the patio cushions to the same data, rule and tests, and #2406 the patio beers with their clock hours.
 
 - **Data.** The exporter marks the tree `extras.seasonal = {what, from, to}` from `src/config.js`. It uses the web's
   `christmasCoverage` at the exported poses, including supported furniture and loose items. At the default position
@@ -732,15 +732,31 @@ The web shows the Christmas tree only from `XMAS_TREE.season.from` to `.to`, inc
   closed box are never exported, because the web draws them only with the lid open. *Not ported:* the web also takes
   the cushions in under rain clouds (`overcast` > 0.6), which a date window cannot carry; that is weather (#2331).
   [Verification](../verification/2387/README.md).
+- **Patio beers (#2406).** The web stands two pints on the slat table in `src/patio.js` `beersOut`'s months and clock
+  hours (June to August, from 12:00 until 23:00; `PATIO.beerMonths`, `beerHours`). The web's scene hides the group until
+  `Patio.update` shows it, so the exporter shows it after the furniture ids are set and exports each glass's glass,
+  bottom, beer and foam as parts of the table, after the table's own two parts (whose ids stay). `patioBeerWindow` turns
+  `beersOut` into the date window 1 Jun – 31 Aug plus `hours: [12, 23]` (half-open; `season:patioBeers`,
+  `seasonHourFrom:12`, `seasonHourTo:23`), and every node of the group carries it, since a part's `parent` names the
+  table. `measurements.json` `furnishing.patioBeers` holds each glass's base and mesh centres for `test_furnishing`.
+  *Not ported:* the rising bubbles, a web animation whose instance matrices are unset at export.
 - **Rule, in one place.** `BPC_LundenSeasons` (ActorComponent, built by `build_seasons.py`) has `InSeason(Year, Month,
   Day, From, To)`: key = month × 100 + min(day, days in the month); inside when From ≤ key ≤ To, or for a window that
   wraps the new year (From > To) when key ≥ From or key ≤ To. `TagValue(Actor, Prefix)` reads a window tag.
   `ApplySeason(Year, Month, Day)` shows every `seasonal` actor with collision inside its window and hides it without
-  collision outside it; an actor without readable window tags is left alone. A new seasonal item needs only the
-  export's `seasonal` extras.
-- **When.** BeginPlay runs `ApplySeason` once with the PC's local date (`Now`), as the web takes today on a new visit.
+  collision outside it; an actor without readable window tags is left alone. An actor that also has hour tags is shown
+  only while the component's `Hour` is inside them: `InHours(Hour, From, To)` is From ≤ Hour < To, or across midnight
+  Hour ≥ From or Hour < To. The web compares its decimal hour with whole-hour edges, so the whole hour answers alike.
+  A new seasonal item needs only the export's `seasonal` extras.
+- **When.** BeginPlay runs `ApplyClock`: `ApplySeasonAt(Year, Month, Day, Hour)` with the PC's local date and hour
+  (`Now`), as the web takes today on a new visit, and starts a 60-second looping timer (`ClockTick`) that applies the PC
+  clock again, so the beers come out at 12:00 and go at 23:00 during play, at most a minute late. It follows the PC
+  clock, not `BP_LundenSky`'s `TimeScale` (1 by default, the same). `ApplySeason` from outside (a test or capture) stops
+  the clock (`ClockDriven` false), so a fixed date stays; captures use `CaptureSeasons.apply(date, hour)` or, for one
+  application across views, `hidden_at(hidden, date, hour)`.
   The component sits on `BP_LundenPlayerController` through `player-extensions.json` (row `Seasons`), so `L_Lunden` and
-  the pilot map get it without opening a level. Tests call `ApplySeason` with a fixed date (the test hook).
+  the pilot map get it without opening a level. Tests call `ApplySeason` with a fixed date, or `ApplySeasonAt` with a
+  date and hour (the test hooks).
 - **Not ported (G20).** The web recalculates coverage when the player rearranges furniture. Unreal uses the poses at export. The kitchen calendar's
   date choice, sub-levels streamed in after BeginPlay (all are `always` today), the tree's animated light string and the rest of G20
   (New Year, Santa, fireworks) are not ported.
@@ -1453,7 +1469,8 @@ the export and the pictures section of `notices.mjs`.
   transform and the same in Unreal terms (location in cm; the actor's forward / right / up = the web's local x / z /
   y; scale). `textures`: each kept texture with the repository images it shows (a canvas: the files drawn into it, so
   the matted "Till mamma" is traced to `textures/teckning-till-mamma.jpg`), its keys, nodes and mesh nodes with their
-  world centres. Furniture placement corrections belong in the web data or the export, never in a generated level.
+  world centres. Furniture placement corrections belong in the web data or the export, never in a generated level. `patioBeers` (#2406): the slat table's two pints, each glass's base and the world centres of its
+  four meshes, with their date and hour window; `test_furnishing.py` checks the meshes within 1 cm and their season tags.
 - **Notices.** `notices.mjs` `PICTURES` names each picture file, what it shows and its source photo, and fails when a
   file in `textures/` has no entry; `THIRD_PARTY_NOTICES.md` states the owner's approval for the original Windows
   version only. Nothing of this goes to the public downstream copy.

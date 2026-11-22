@@ -12,7 +12,7 @@ import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 import * as C from '../../src/config.js';
 import { christmasCoverage } from '../../src/christmas.js';
 import { FurnitureGroups } from '../../src/furnituregroups.js';
-import { cushionsOut } from '../../src/patio.js';
+import { beersOut, cushionsOut } from '../../src/patio.js';
 import { buildWorld } from '../../src/world.js';
 import { buildStringLights, updateStringLights, updateParasols } from '../../src/patio.js';
 import { groundY, renderedTerrainY, treeFeet, aoTrees } from '../../src/surroundings.js';
@@ -731,6 +731,16 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     if (piece.item.type !== 'veronasofa') continue;
     piece.object.traverse((o) => { if (o.isMesh && o.userData.cushion) seasons.set(o, cushionWindow); });
   }
+  // #2406: the slat table's two pints stand in src/patio.js beersOut's months and clock hours. The web's scene hides the
+  // group until Patio.update shows it, so it is shown here, after the furniture IDs and boxes have been set (the table
+  // keeps its id). Every node of it carries the window, since a part's `parent` names the table, not the group.
+  const beerWindow = patioBeerWindow(), beerParts = new Map(), beerGlasses = [];
+  for (const piece of world.furniture.movable) piece.object.traverse((o) => {
+    if (!o.userData.patioBeers) return;
+    o.visible = true;
+    o.traverse((d) => { seasons.set(d, beerWindow); beerParts.set(d, null); });
+    beerGlasses.push(...o.children);
+  });
   if (tree) {
     const { from, to } = C.XMAS_TREE.season;
     seasons.set(tree.object, { what: 'christmas', from, to });
@@ -843,8 +853,11 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     const n = o.isMesh && !o.isInstancedMesh ? meshNode(o, furnish) : new THREE.Group();
     if (!n) return null;
     if (o.isMesh && !o.isInstancedMesh) (Array.isArray(n.material) ? n.material : [n.material]).forEach((m) => keys.add(m.name));
-    for (const c of o.children) {
+    // #2406: the pints come after the table's own parts, so those keep the part ids they had before the pints were exported
+    const kids = o.children.some((c) => beerParts.has(c)) ? [...o.children.filter((c) => !beerParts.has(c)), ...o.children.filter((c) => beerParts.has(c))] : o.children;
+    for (const c of kids) {
       if (!c.visible || webOnly(c) || loose.of.has(c)) continue; // (#2310: the ball is its own node, not part of its holder)
+      if (c.isInstancedMesh && beerParts.has(c)) continue; // #2406: a beer's rising bubbles animate on the web only
       if (c.isInstancedMesh) {
         for (let i = 0; i < c.count; i++) {
           const node = meshNode(c, furnish); if (!node) continue;
@@ -862,6 +875,7 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
       s.name = `${atomId}__${counter.n++}`; s.userData = { id: s.name, kind: 'part', parent: atomId };
       const season = seasons.get(c); // #2387: a seasonal part inside an all-year piece (the sofa's cushions)
       if (season) s.userData.seasonal = season;
+      if (beerParts.has(c)) beerParts.set(c, s.name);
       n.add(s);
     }
     return n;
@@ -1017,6 +1031,7 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
   if (vegetation) measurements.vegetation = vegetation;
   for (const { root } of Object.values(roots)) root.updateMatrixWorld(true); // (the mesh centres below)
   measurements.furnishing = furnishingData(byZone, textures, worldMatrix);
+  if (beerGlasses.length) measurements.furnishing.patioBeers = patioBeerRows(beerGlasses, beerParts, beerWindow);
   if (curtains.size) measurements.furnishing.curtains = curtainRows(curtains, furnishCache, measurements.furnishing, measurements.lights, lightsInfo.exportedFloorRooms);
   // #2300: the footstep surface, outdoor sprint, rest and wake data from the web's own modules (export-player.js). Loaded
   // here, after every GLB is written, so its modules cannot shift the seeded random sequence the zones were built with.
@@ -1597,13 +1612,55 @@ function interactionExtras({ world, atomOf, lightsInfo, lights, lifts, P }) {
     + 'src/water.js Tap + world.taps (taps; E turns the water on and off), src/doors.js, src/openables.js, src/liftpanel.js (lift buttons) (#2285)' };
 }
 
-/** #2387: src/patio.js cushionsOut's months as one inclusive date window for BPC_LundenSeasons (month, day pairs).
- *  The months must be one run, possibly across the new year; the last day comes from a leap year (all keys exist). */
-export function patioCushionWindow() {
-  const out = Array.from({ length: 12 }, (_, i) => cushionsOut(i + 1));
-  const starts = out.flatMap((on, i) => (on && !out[(i + 11) % 12] ? [i + 1] : []));
-  if (starts.length !== 1) throw Error(`patio cushion months are not one run: ${out}`);
+/** #2387: src/patio.js cushionsOut's months as one inclusive date window for BPC_LundenSeasons. */
+export const patioCushionWindow = () => monthWindow('patioCushions', (month) => cushionsOut(month));
+
+/** #2406: src/patio.js beersOut as a date window plus `hours`, a half-open run of clock hours [from, to) on its days.
+ *  The web compares decimal hours with whole-hour edges, so the PC clock's whole hour gives the same answer. */
+export function patioBeerWindow() {
+  const window = monthWindow('patioBeers', (month) => Array.from({ length: 24 }, (_, h) => beersOut(month, h)).some(Boolean));
+  const month = window.from[0], on = Array.from({ length: 24 }, (_, h) => beersOut(month, h));
+  const starts = on.flatMap((x, h) => (x && !on[(h + 23) % 24] ? [h] : []));
+  if (on.every(Boolean)) return window;
+  if (starts.length !== 1) throw Error(`patio beer hours are not one run: ${on}`);
+  let to = starts[0];
+  while (on[to % 24]) to++;
+  const hours = [starts[0], to % 24];
+  for (let m = 1; m <= 12; m++) { // whole-hour edges, and the same hours in every beer month
+    if (!Array.from({ length: 24 }, (_, h) => beersOut(m, h)).some(Boolean)) continue;
+    for (let tenth = 0; tenth < 240; tenth++) {
+      if (beersOut(m, tenth / 10) !== on[Math.floor(tenth / 10)]) throw Error(`patio beers at ${m}/${tenth / 10} h break the window ${hours}`);
+    }
+  }
+  return { ...window, hours };
+}
+
+/** The months `on(month)` holds as one inclusive date window (month, day pairs) for BPC_LundenSeasons. The months must be
+ *  one run, possibly across the new year; the last day comes from a leap year (all keys exist). */
+function monthWindow(what, on) {
+  const out = Array.from({ length: 12 }, (_, i) => on(i + 1));
+  const starts = out.flatMap((x, i) => (x && !out[(i + 11) % 12] ? [i + 1] : []));
+  if (starts.length !== 1) throw Error(`${what} months are not one run: ${out}`);
   let last = starts[0];
   while (out[last % 12]) last = (last % 12) + 1;
-  return { what: 'patioCushions', from: [starts[0], 1], to: [last, new Date(Date.UTC(2000, last, 0)).getUTCDate()] };
+  return { what, from: [starts[0], 1], to: [last, new Date(Date.UTC(2000, last, 0)).getUTCDate()] };
+}
+
+/** #2406: where the web stands each pint (its base on the table top) and the world centre of each of its exported meshes,
+ *  in web metres and Unreal centimetres, for tools/unreal-engine/tests/test_furnishing.py. */
+function patioBeerRows(glasses, names, window) {
+  const p = new THREE.Vector3(), box = new THREE.Box3(), c = new THREE.Vector3();
+  const rows = glasses.map((g) => {
+    g.getWorldPosition(p);
+    const meshes = g.children.filter((m) => m.isMesh && !m.isInstancedMesh && names.get(m)).map((m) => {
+      if (!m.geometry.boundingBox) m.geometry.computeBoundingBox();
+      box.copy(m.geometry.boundingBox).applyMatrix4(m.matrixWorld).getCenter(c);
+      return { id: names.get(m), centre: { web: [r4(c.x), r4(c.y), r4(c.z)], unreal: webToUnrealRounded([c.x, c.y, c.z]) } };
+    });
+    if (!names.get(g) || meshes.length !== 4) throw Error(`patio beer glass not exported whole: ${names.get(g)}, ${meshes.length} meshes`);
+    return { id: names.get(g), base: { web: [r4(p.x), r4(p.y), r4(p.z)], unreal: webToUnrealRounded([p.x, p.y, p.z]) }, meshes };
+  });
+  return { glasses: rows, seasonal: window, source: 'src/patio.js slattable (item.beers) and beersOut; tools/unreal-engine/export-scene.js patioBeerWindow',
+    note: 'The two pints on the slat table (#2406): each glass group node, its base on the table top and its glass, bottom, beer and foam meshes. '
+      + 'The rising bubbles are a web animation and are not exported.' };
 }

@@ -1,6 +1,7 @@
 // #2295: the dates in season-dates.json against the web's own season rule (src/christmas.js inChristmas, the window
 // XMAS_TREE.season in src/config.js), and the export's season window against src/config.js. test_seasons.py checks the
 // Unreal rule (/Game/Lunden/Seasons/BPC_LundenSeasons) against the same rows, so both sides answer alike.
+// #2406: also the patio beers' date and hour window (src/patio.js beersOut) on the beerTimes rows and in the export.
 // Run: THREE_DIR=/path/to/node_modules/three node tools/unreal-engine/tests/season-rule.test.mjs [--export unreal/Lunden/Import]
 import fs from 'node:fs';
 import path from 'node:path';
@@ -20,7 +21,7 @@ globalThis.window ??= globalThis; globalThis.localStorage ??= { getItem: () => n
 
 const { inChristmas, christmasCoverage } = await import(pathToFileURL(path.join(root, 'src/christmas.js')).href);
 const { XMAS_TREE } = await import(pathToFileURL(path.join(root, 'src/config.js')).href);
-const { cushionsOut } = await import(pathToFileURL(path.join(root, 'src/patio.js')).href); // #2387
+const { cushionsOut, beersOut } = await import(pathToFileURL(path.join(root, 'src/patio.js')).href); // #2387, #2406
 const table = JSON.parse(fs.readFileSync(path.join(here, 'season-dates.json'), 'utf8'));
 let failed = 0;
 const ok = (good, line) => { if (!good) failed++; console.log(`${good ? 'ok  ' : 'FAIL'} ${line}`); };
@@ -32,6 +33,10 @@ for (const row of table.dates) {
   ok(web === row.christmas, `${row.date} web inChristmas ${web}, table ${row.christmas} (${row.why})`);
   const out = cushionsOut(m);
   ok(out === row.cushions, `${row.date} web cushionsOut ${out}, table ${row.cushions} (${row.why})`);
+}
+for (const row of table.beerTimes) { // #2406
+  const [, m] = row.date.split('-').map(Number), out = beersOut(m, row.hour);
+  ok(out === row.beers, `${row.date} ${row.hour}:00 web beersOut ${out}, table ${row.beers} (${row.why})`);
 }
 ok(from > to, `the web window ${from}..${to} wraps the new year, so the table exercises the wrap`);
 // A wide table touches the crown on one edge. Its supported piece and a loose item on the far edge
@@ -78,9 +83,27 @@ if (i > 0) {
   // #2387: the patio sofa's decorative cushions (one part node) carry cushionsOut's months as a date window.
   const patio = fs.readFileSync(path.join(dir, 'l1007-uteplats.glb'));
   const patioJson = JSON.parse(patio.subarray(20, 20 + patio.readUInt32LE(12)).toString('utf8'));
-  const cushions = patioJson.nodes.filter((n) => n.extras?.seasonal);
-  ok(cushions.length >= 1 && cushions.every((n) => n.extras.seasonal.what === 'patioCushions' && n.extras.kind === 'part'
+  const patioSeasonal = patioJson.nodes.filter((n) => n.extras?.seasonal);
+  const cushions = patioSeasonal.filter((n) => n.extras.seasonal.what === 'patioCushions');
+  const beers = patioSeasonal.filter((n) => n.extras.seasonal.what === 'patioBeers');
+  ok(cushions.length + beers.length === patioSeasonal.length, `patio: seasonal nodes are the cushions and the beers, ${patioSeasonal.length} nodes`);
+  ok(cushions.length >= 1 && cushions.every((n) => n.extras.kind === 'part'
     && n.extras.parent?.startsWith('furn_veronasofa_')), `patio: seasonal nodes ${cushions.map((n) => n.name)} are the sofa's cushion parts`);
+  // #2406: the slat table's pints (group, two glasses, four meshes each) carry beersOut's months and clock hours.
+  ok(beers.length === 11 && beers.every((n) => n.extras.kind === 'part' && n.extras.parent?.startsWith('furn_slattable_')),
+    `patio: ${beers.length} patioBeers nodes (want 11: the group, 2 glasses, 8 meshes) are the slat table's parts`);
+  for (const n of beers) {
+    const s = n.extras.seasonal, start = key(s.from), end = key(s.to), [h0, h1] = s.hours ?? [0, 24], missing = [];
+    for (let date = new Date(Date.UTC(2028, 0, 1)); date.getUTCFullYear() === 2028; date.setUTCDate(date.getUTCDate() + 1)) {
+      const month = date.getUTCMonth() + 1, now = key([month, date.getUTCDate()]);
+      const day = start <= end ? start <= now && now <= end : start <= now || now <= end;
+      for (let tenth = 0; tenth < 240; tenth++) { // the web's decimal hour; Unreal reads the clock's whole hour
+        const hour = Math.floor(tenth / 10), inHours = h0 <= h1 ? h0 <= hour && hour < h1 : hour >= h0 || hour < h1;
+        if ((day && inHours) !== beersOut(month, tenth / 10)) missing.push(`${now}@${tenth / 10}`);
+      }
+    }
+    ok(!missing.length && s.hours, `${n.name}: patioBeers ${start}..${end} ${s.hours}, 366 web dates x 240 clock times, mismatches [${missing.slice(0, 5)}]`);
+  }
   for (const n of cushions) {
     const s = n.extras.seasonal, start = key(s.from), end = key(s.to), missing = [];
     for (let date = new Date(Date.UTC(2028, 0, 1)); date.getUTCFullYear() === 2028; date.setUTCDate(date.getUTCDate() + 1)) {

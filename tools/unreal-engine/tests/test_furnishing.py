@@ -14,6 +14,9 @@
    (the fruit bowl's copper wire) is on that mesh in every level, never the imported key's generic instance; the
    material's colour, roughness and metalness are the export key's (the web's), its two-sided override follows the
    key, and a material marked `raster` leaves the mesh off Nanite.
+5. Patio beers (#2406): the slat table's two pints (`furnishing.patioBeers`, src/patio.js) stand where the web stands
+   them: each glass, bottom, beer and foam mesh actor's bounds centre within 1 cm of the web's mesh centre, and every one
+   carries the export's date and clock-hour window as season tags (seasonFrom/To, seasonHourFrom/To) for BPC_LundenSeasons.
 
 Editor world only (no Play In Editor needed). Run like the other tests: copy this file to unreal/Lunden/Content/Python/
 (untracked, delete afterwards) and
@@ -136,6 +139,15 @@ items = {i["id"]: i for i in F["items"]}
 meshes = {m["id"]: (t, m) for t in F["textures"] for m in t["meshes"]}
 levels = list(ZONES.values()) + [l["package"] for l in WORLD["levels"] if l["package"] not in ZONES.values()] + [WORLD["map"]]
 placed, shown, errors = {}, {}, []
+BEERS = F.get("patioBeers")  # #2406
+beer_meshes = {m["id"]: m for g in (BEERS or {}).get("glasses", []) for m in g["meshes"]}
+beers_seen = {}
+if not beer_meshes:
+    errors.append("measurements.json has no furnishing.patioBeers: re-export (#2406)")
+else:
+    w = BEERS["seasonal"]
+    BEER_TAGS = {"seasonal", f"season:{w['what']}", f"seasonFrom:{w['from'][0] * 100 + w['from'][1]}",
+                 f"seasonTo:{w['to'][0] * 100 + w['to'][1]}", f"seasonHourFrom:{w['hours'][0]}", f"seasonHourTo:{w['hours'][1]}"}
 for level in levels:
     if not u.EditorAssetLibrary.does_asset_exist(level):
         if level in ZONES.values():
@@ -192,6 +204,20 @@ for level in levels:
             if sm:
                 mesh_actors.setdefault(sm.get_name(), []).append(comp)
     errors.extend(handmade_errors(mesh_actors, level))
+    # 5. the patio beers (#2406)
+    for mesh_id, m in beer_meshes.items():
+        a = by_name.get(mesh_id)
+        if a is None:
+            continue
+        origin, _ = a.get_actor_bounds(False)
+        off = math.dist(vec(origin), m["centre"]["unreal"])
+        tags = {str(t) for t in a.tags}
+        row = beers_seen.setdefault(mesh_id, {"levels": [], "maxCm": 0.0})
+        row["levels"].append(level.rsplit("/", 1)[-1])
+        row["maxCm"] = max(row["maxCm"], off)
+        if off > TOL_CM or not BEER_TAGS.issubset(tags):
+            errors.append(f"patio beer {mesh_id} in {level}: centre {off:.3f} cm off the web, season tags "
+                          f"{sorted(t for t in tags if t.startswith('season'))}, want {sorted(BEER_TAGS)}")
     result["levels"][level] = {"items": n_items, "textureMeshes": n_meshes}
     if level == WORLD["map"] and (n_items, n_meshes) != (len(items), len(meshes)):
         # the composed world (its sub-levels load with it) holds every furnishing item and textured mesh, patio included
@@ -208,6 +234,12 @@ for mesh, row in result["handmade"].items():
         errors.append(f"{mesh} ({row['material']}) has no actor in any level")
 if missing_items:
     errors.append(f"furnishing ids with no actor in any level: {missing_items}")
+missing_beers = sorted(set(beer_meshes) - set(beers_seen))
+if missing_beers:
+    errors.append(f"patio beer meshes with no actor in any level: {missing_beers}")
+result["patioBeers"] = {"export": len(beer_meshes), "placed": len(beers_seen),
+                        "maxCm": round(max([r["maxCm"] for r in beers_seen.values()] or [0]), 4), "detail": beers_seen}
+log(f"patio beers {json.dumps(result['patioBeers'])}")
 if missing_meshes:
     errors.append(f"textured mesh nodes with no actor in any level: {missing_meshes}")
 result["items"] = {"export": len(items), "placed": len(placed), "maxCm": round(max([r["maxCm"] for r in placed.values()] or [0]), 4),

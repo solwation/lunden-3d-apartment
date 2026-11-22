@@ -18,7 +18,8 @@ Import (default):
   3. post-processing: actor object names and labels = the node's stable id; tags = [id, kind:<kind>, zone:<zone>,
      level:<n>, webId:<id>, source:<pointer>, parent:<id>] from the node extras (read from the GLB itself); a node
      with `seasonal` extras and all its descendants also get [seasonal, season:<what>, seasonFrom:<MMDD>,
-     seasonTo:<MMDD>] (season_tags; read at run time by /Game/Lunden/Seasons/BPC_LundenSeasons, #2295);
+     seasonTo:<MMDD>] and, with an hour window, [seasonHourFrom:<H>, seasonHourTo:<H>] (season_tags; read at run time
+     by /Game/Lunden/Seasons/BPC_LundenSeasons, #2295, #2406);
      `collision` nodes become hidden-in-game BlockAll actors whose (shared unit cube) mesh has one simple box;
      material keys listed in tools/unreal-engine/material-map.json are replaced by hand-made materials;
      every mesh's complex collision is double-sided (Interchange leaves it single-sided, #2299);

@@ -47,11 +47,30 @@ class CaptureSeasons:
         self.editor_lamps = [(a, a.is_temporarily_hidden_in_editor()) for a in self.actors
                              if a.get_component_by_class(u.LightComponent)]
 
-    def apply(self, date):
-        self.component.call_method("ApplySeason", tuple(date))
+    def apply(self, date, hour=None):
+        """ApplySeason, or with `hour` ApplySeasonAt (#2406: actors with clock hours, the patio beers, follow it)."""
+        if hour is None:
+            self.component.call_method("ApplySeason", tuple(date))
+        else:
+            self.component.call_method("ApplySeasonAt", (*date, int(hour)))
         hidden = [a for a in self.actors if a.get_editor_property("hidden")]
         # SceneCapture2D's hidden-actors list handles meshes; lights contribute independently to the editor view.
         # Preserve preexisting editor visibility and the lamp preset's component state when switching dates.
         for actor, originally_hidden in self.editor_lamps:
             actor.set_is_temporarily_hidden_in_editor(originally_hidden or actor.get_editor_property("hidden"))
         return hidden
+
+    def hidden_at(self, hidden, date, hour):
+        """#2406: `hidden` (from one apply for every view) with the actors that keep clock hours (seasonHourFrom/To tags,
+        the patio beers) left out or kept for this view's `hour` by BPC_LundenSeasons' own InSeason and InHours."""
+        def tag(actor, prefix):
+            found = [str(t)[len(prefix):] for t in actor.tags if str(t).startswith(prefix)]
+            return int(found[0]) if found else None
+        timed = [a for a in self.actors if tag(a, "seasonHourFrom:") is not None and tag(a, "seasonHourTo:") is not None]
+        out = [a for a in hidden if a not in timed]
+        for a in timed:
+            shown = (self.component.call_method("InSeason", (*date, tag(a, "seasonFrom:"), tag(a, "seasonTo:")))
+                     and self.component.call_method("InHours", (int(hour), tag(a, "seasonHourFrom:"), tag(a, "seasonHourTo:"))))
+            if not shown:
+                out.append(a)
+        return out

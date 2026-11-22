@@ -11,6 +11,11 @@
    the covered furniture always has the opposite visibility and collision, and the patio cushions show with
    collision exactly on the rows' `cushions` dates (out 1 April - 30 September, in the cushion box otherwise).
    Other furniture retains its state.
+4. #2406: the slat table's pints (parts of the all-year table) carry src/patio.js beersOut's date window and clock hours.
+   BeginPlay left them as the rule says for the PC's date and hour and left the clock driving (ClockDriven); for every
+   `beerTimes` row of season-dates.json the test hook ApplySeasonAt(year, month, day, hour) shows them with collision
+   exactly when the web's answer is true, and ApplySeason stops the clock. ClockTick (the 60 s timer's function) puts
+   the PC's date and hour back once the clock drives again.
 
 Run like the other PIE tests: copy this file to unreal/Lunden/Content/Python/ (untracked) and
     run-tests.ps1 -Filter Editor.Python.Lunden.test_seasons
@@ -90,7 +95,25 @@ for actor in cushion_actors:
         raise RuntimeError(f"{tags(actor)[0]}: not a sofa cushion part with one window: {tags(actor)}")
     actor_ids.setdefault(CUSHIONS, set()).add(tags(actor)[0])
 u.log(f"LUNDEN_SEASONS_TEST patio cushions {sorted(actor_ids[CUSHIONS])}: window {windows[CUSHIONS][0]}..{windows[CUSHIONS][1]}")
+# #2406: the slat table's pints, seasonal parts with an hour window inside the all-year table.
+BEERS = "season:patioBeers"
+BEER_TIMES = json.loads((TESTS / "season-dates.json").read_text(encoding="utf-8"))["beerTimes"]
+beer_actors = [a for a in editor_actors if BEERS in tags(a)]
+if not beer_actors:
+    raise RuntimeError("No patio beers with a season window: re-export (#2406), re-import l1007-uteplats and compose L_Lunden")
+for actor in beer_actors:
+    window = (tag_value(actor, "seasonFrom:"), tag_value(actor, "seasonTo:"), tag_value(actor, "seasonHourFrom:"), tag_value(actor, "seasonHourTo:"))
+    if ("kind:part" not in tags(actor) or not any(t.startswith("parent:furn_slattable_") for t in tags(actor))
+            or None in window or windows.setdefault(BEERS, window) != window):
+        raise RuntimeError(f"{tags(actor)[0]}: not a slat-table beer part with one date and hour window: {tags(actor)}")
+    actor_ids.setdefault(BEERS, set()).add(tags(actor)[0])
+u.log(f"LUNDEN_SEASONS_TEST patio beers {len(actor_ids[BEERS])} actors: window {windows[BEERS]}")
 untouched_ids = [tags(a)[0] for a in editor_actors if "kind:furniture" in tags(a) and "seasonal" not in tags(a)][:5]
+
+
+def hour_rule(hour, start, end):
+    """For the BeginPlay check only: src/patio.js beersOut's hours, start <= hour < end (or across midnight)."""
+    return start <= hour < end if start <= end else hour >= start or hour < end
 
 
 def web_rule(year, month, day, start, end):
@@ -149,6 +172,21 @@ def seasons_test():
         corner_hidden, corner_solid = state(CORNER, not want)
         cushions_out = web_rule(today.year, today.month, today.day, *windows[CUSHIONS])
         cushions_hidden, _ = state(CUSHIONS, cushions_out)
+        # #2406: BeginPlay ran ApplyClock (the PC's date and hour) and left the clock driving. Read the hour again if the
+        # clock turned an hour during the check.
+        bw = windows[BEERS]
+        for _ in range(2):
+            now = datetime.datetime.now()
+            beers_out = web_rule(now.year, now.month, now.day, bw[0], bw[1]) and hour_rule(now.hour, bw[2], bw[3])
+            beer_states = {(a.get_editor_property("hidden"), a.get_actor_enable_collision()) for a in groups[BEERS]}
+            if beer_states == {(not beers_out, beers_out)} or datetime.datetime.now().hour == now.hour:
+                break
+        state(BEERS, beers_out)
+        if not seasons.get_editor_property("ClockDriven") or seasons.get_editor_property("Hour") not in (now.hour, (now.hour + 1) % 24):
+            raise RuntimeError(f"BeginPlay left ClockDriven {seasons.get_editor_property('ClockDriven')}, "
+                               f"Hour {seasons.get_editor_property('Hour')} (PC hour {now.hour})")
+        result["todayBeers"] = {"time": now.isoformat(timespec="minutes"), "beersOut": beers_out, "clockDriven": True}
+        u.log(f"LUNDEN_SEASONS_TEST BeginPlay beers {json.dumps(result['todayBeers'])}")
         result["today"] = {"date": str(today), "hidden": hidden, "collision": solid, "web": want,
                            "cornerHidden": corner_hidden, "cornerCollision": corner_solid,
                            "cushionsHidden": cushions_hidden, "cushionsOut": cushions_out}
@@ -172,6 +210,31 @@ def seasons_test():
             u.log(f"LUNDEN_SEASONS_TEST {json.dumps(entry)}")
             if rule != row["christmas"] or cushion_rule != row["cushions"] or after != initial or others != [False]:
                 raise RuntimeError(f"{row['date']}: {entry}, the web: christmas {row['christmas']}")
+        result["beerTimes"] = []
+        for row in BEER_TIMES:
+            y, m, d = (int(v) for v in row["date"].split("-"))
+            seasons.call_method("ApplySeasonAt", (y, m, d, row["hour"]))
+            yield
+            beers_hidden, beers_solid = state(BEERS, row["beers"])
+            in_hours = seasons.call_method("InHours", (row["hour"], bw[2], bw[3]))
+            driven = seasons.get_editor_property("ClockDriven")
+            entry = {**row, "hidden": beers_hidden, "collision": beers_solid, "inHours": in_hours, "clockDriven": driven}
+            result["beerTimes"].append(entry)
+            u.log(f"LUNDEN_SEASONS_TEST beers {json.dumps(entry)}")
+            if driven or in_hours != hour_rule(row["hour"], bw[2], bw[3]):
+                raise RuntimeError(f"{row['date']} {row['hour']}:00: {entry}")
+        # ClockTick (the timer's function) does nothing while a fixed date holds, and restores the PC clock once it drives
+        seasons.call_method("ClockTick")
+        yield
+        state(BEERS, BEER_TIMES[-1]["beers"])
+        seasons.set_editor_property("ClockDriven", True)
+        seasons.call_method("ClockTick")
+        yield
+        now = datetime.datetime.now()
+        state(BEERS, web_rule(now.year, now.month, now.day, bw[0], bw[1]) and hour_rule(now.hour, bw[2], bw[3]))
+        state(TREE, web_rule(now.year, now.month, now.day, FROM, TO))
+        result["clockTick"] = {"time": now.isoformat(timespec="minutes"), "clockDriven": seasons.get_editor_property("ClockDriven")}
+        u.log(f"LUNDEN_SEASONS_TEST ClockTick {json.dumps(result['clockTick'])}")
         (Path(u.Paths.project_saved_dir()) / "seasons-result.json").write_text(json.dumps(result, indent=2) + "\n")
         u.log(f"LUNDEN_SEASONS_TEST {len(seasonal)} seasonal actors, {len(DATES)} dates agree with the web")
         u.log("LUNDEN_SEASONS_TEST_OK")

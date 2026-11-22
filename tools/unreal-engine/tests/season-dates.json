@@ -1,5 +1,5 @@
 {
-  "about": "#2295: dates and the web's answers for the Christmas window (src/christmas.js inChristmas) and, since #2387, the patio's decorative cushions (src/patio.js cushionsOut, dry weather). season-rule.test.mjs checks each `christmas` and `cushions` against the web's own functions; test_seasons.py checks BPC_LundenSeasons against the same rows with the windows read from the imported actors' tags.",
+  "about": "#2295: dates and the web's answers for the Christmas window (src/christmas.js inChristmas) and, since #2387, the patio's decorative cushions (src/patio.js cushionsOut, dry weather), and since #2406 `beerTimes`: dates and clock hours with the web's answer for the patio beers (src/patio.js beersOut). season-rule.test.mjs checks each `christmas`, `cushions` and `beers` against the web's own functions; test_seasons.py checks BPC_LundenSeasons against the same rows with the windows read from the imported actors' tags.",
   "dates": [
     { "date": "2026-03-31", "christmas": false, "cushions": false, "why": "the day before the cushions come out" },
     { "date": "2026-04-01", "christmas": false, "cushions": true, "why": "first cushion day" },
@@ -15,5 +15,18 @@
     { "date": "2027-01-06", "christmas": true, "cushions": false, "why": "last day (Epiphany)" },
     { "date": "2027-01-07", "christmas": false, "cushions": false, "why": "the day after the window" },
     { "date": "2028-02-29", "christmas": false, "cushions": false, "why": "leap day" }
+  ],
+  "beerTimes": [
+    { "date": "2026-06-21", "hour": 14, "beers": true, "why": "the #2373 summer afternoon pair" },
+    { "date": "2026-06-21", "hour": 11, "beers": false, "why": "before noon" },
+    { "date": "2026-06-21", "hour": 12, "beers": true, "why": "first beer hour" },
+    { "date": "2026-06-21", "hour": 22, "beers": true, "why": "last beer hour" },
+    { "date": "2026-06-21", "hour": 23, "beers": false, "why": "cleared at 23" },
+    { "date": "2026-06-21", "hour": 0, "beers": false, "why": "midnight" },
+    { "date": "2026-05-31", "hour": 14, "beers": false, "why": "the day before the beer months" },
+    { "date": "2026-06-01", "hour": 14, "beers": true, "why": "first beer day" },
+    { "date": "2026-08-31", "hour": 14, "beers": true, "why": "last beer day" },
+    { "date": "2026-09-01", "hour": 14, "beers": false, "why": "the day after the beer months" },
+    { "date": "2026-12-24", "hour": 14, "beers": false, "why": "winter" }
   ]
 }

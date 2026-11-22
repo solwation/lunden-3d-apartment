@@ -30,8 +30,9 @@
     "patioStringBulb": { "type": "boolean", "description": "Fence bulb using the shared unlit material driven by the patio dusk light." },
     "seasonal": {
       "type": "object", "required": ["what", "from", "to"], "additionalProperties": false,
-      "properties": { "what": { "type": "string" }, "from": { "type": "array", "items": { "type": "integer" } }, "to": { "type": "array", "items": { "type": "integer" } } },
-      "description": "shown only in a season ([month, day], inclusive; src/christmas.js)"
+      "properties": { "what": { "type": "string" }, "from": { "type": "array", "items": { "type": "integer" } }, "to": { "type": "array", "items": { "type": "integer" } },
+        "hours": { "type": "array", "items": { "type": "integer", "minimum": 0, "maximum": 23 }, "minItems": 2, "maxItems": 2, "description": "#2406: also only from clock hour [0] until [1] (half-open, local time) on the window's days" } },
+      "description": "shown only in a season ([month, day], inclusive; src/christmas.js), optionally only in some clock hours"
     }
   }
 }

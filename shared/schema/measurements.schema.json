@@ -199,7 +199,9 @@
           "nodes": { "type": "array", "minItems": 1, "items": { "type": "string" } }, "lamps": { "type": "array", "minItems": 1, "items": { "type": "string" } },
           "daylight": { "$ref": "#/$defs/vec3" }, "lamp": { "$ref": "#/$defs/vec3" }
         } } },
-        "textures": { "type": "array", "items": { "type": "object", "required": ["id", "name", "kind", "images", "keys", "nodes", "meshes"] } }
+        "textures": { "type": "array", "items": { "type": "object", "required": ["id", "name", "kind", "images", "keys", "nodes", "meshes"] } },
+        "patioBeers": { "type": "object", "required": ["glasses", "seasonal"], "description": "#2406: the slat table's two pints: each glass group node, its base and its meshes' world centres (web m, Unreal cm), and their date and hour window.",
+          "properties": { "glasses": { "type": "array", "minItems": 1, "items": { "type": "object", "required": ["id", "base", "meshes"] } }, "seasonal": { "type": "object", "required": ["what", "from", "to", "hours"] } } }
       }
     },
     "fixture": {

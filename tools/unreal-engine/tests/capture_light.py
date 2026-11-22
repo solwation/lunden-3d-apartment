@@ -71,7 +71,7 @@ class MapLight:
         update_sky_for_capture(self.world, self.sky)
         for lamp in self.lamps:
             lamp.call_method("TurnOn" if preset["lampsOn"] else "TurnOff")
-        hidden = self.seasons.apply(date) if applied_season is None else applied_season
+        hidden = self.seasons.apply(date, hour) if applied_season is None else applied_season
         settle_furnishing_lights(self.world)
         self.skylight.recapture_sky()
         return hidden

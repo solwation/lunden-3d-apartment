@@ -71,7 +71,8 @@ def run(scene_path, out_dir, ids=None, iso_date=None):
             raise RuntimeError("The vegetation materials did not receive the capture month")
         obs = render_view(world, out_dir, cam["id"], u.Vector(*cam["xyz"]),
                           u.Rotator(roll=0, pitch=cam["pitch"], yaw=cam["yaw"]), scene["width"], scene["height"],
-                          scene["horizontalFov"], light.bias(preset), excluded + hidden_seasonal, lumen=True)
+                          scene["horizontalFov"], light.bias(preset),
+                          excluded + light.seasons.hidden_at(hidden_seasonal, capture_date, preset["hour"]), lumen=True)
         if math.dist(obs["xyz"], cam["xyz"]) > 0.01 or any(abs(obs[k] - cam[k]) > 0.001 for k in ("pitch", "yaw")):
             raise RuntimeError("Camera transform mismatch: " + cam["id"])
         observed.append({**obs, "id": cam["id"], "lighting": cam["lighting"], "hour": preset["hour"], "exposureBias": light.bias(preset), "date": {"year": date.year, "month": date.month, "day": date.day}})
