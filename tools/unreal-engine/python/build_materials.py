@@ -35,6 +35,7 @@ import unreal
 sys.path.insert(0, str(Path(__file__).parent))
 import backdrop_material  # noqa: E402
 import river_material  # noqa: E402
+import collection_ids  # noqa: E402
 
 eal = unreal.EditorAssetLibrary
 mel = unreal.MaterialEditingLibrary
@@ -190,6 +191,15 @@ def vector(value):
     return unreal.LinearColor(float(x), float(y), float(z), 0.0)
 
 
+def collection_reads(spec):
+    """#2408: {collection: parameter names} the entry's graph reads through CollectionParameter expressions."""
+    if spec.get("graph") == "grass":
+        return {CALENDAR: ("Month",)}
+    if spec.get("graph") == "river":
+        return river_material.reads(spec)
+    return {}
+
+
 def spec_hash(path, spec):
     parts = [path, spec, TILED_GRID + TILED_FINISH] + ([GRASS_HLSL] if spec.get("graph") == "grass" else [])  # other hashes unchanged
     if spec.get("graph") == "river":
@@ -200,6 +210,9 @@ def spec_hash(path, spec):
         parts.extend([backdrop_material.canvas_hash(spec), Path(backdrop_material.__file__).read_text(encoding="utf-8")])
     if spec.get("graph") == GLTF_VC:  # a copy of an engine material: a new engine version rebuilds it
         parts.append(unreal.SystemLibrary.get_engine_version())
+    reads = collection_reads(spec)
+    if reads:  # #2408: a collection rebuilt with new parameter GUIDs rebuilds its readers, and --check fails until then
+        parts.append({"collectionIds": collection_ids.ids(reads)})
     return hashlib.sha256(json.dumps(parts, sort_keys=True).encode("utf-8")).hexdigest()[:16]
 
 
@@ -419,7 +432,7 @@ def build_master(path, spec, existing):
         m = unreal.AssetToolsHelpers.get_asset_tools().create_asset(name, folder, unreal.Material, unreal.MaterialFactoryNew())
     else:
         m = existing
-        mel.delete_all_material_expressions(m)
+        collection_ids.clear_graph(m)  # #2408: no orphaned collection expression survives a rebuild
         m.set_editor_property("blend_mode", unreal.BlendMode.BLEND_OPAQUE)
     if spec.get("graph") == backdrop_material.GRAPH:
         backdrop_material.build(m, spec, vector_param, scalar_param)
@@ -493,6 +506,9 @@ def check(table):
             problems.append(f"{path}: incorrect backdrop texture, vertex-colour wiring, or face settings")
         if spec.get("graph") == "river":
             problems.extend(f"{path}: {error}" for error in river_material.check(asset, spec))
+        if isinstance(asset, unreal.Material):
+            problems.extend(f"{path}: {error} (its collection was rebuilt; run build_materials.py)"
+                            for error in collection_ids.unresolved(asset))
         if spec.get("graph") == GLTF_VC and not uses_vertex_color(asset, VC_OUTPUTS[spec["output"]]):
             problems.append(f"{path}: {spec['output']} is not multiplied by the vertex colour")
         if "parent" in spec:
@@ -527,7 +543,8 @@ def build_entries(materials, force=False):
         want = spec_hash(path, spec)
         if (existing is not None and not force and eal.get_metadata_tag(existing, "Lunden.SpecHash") == want
                 and (spec.get("graph") != "grass" or seasonal_grass(existing, spec))
-                and (spec.get("graph") != backdrop_material.GRAPH or backdrop_material.check(existing, spec, uses_vertex_color))):
+                and (spec.get("graph") != backdrop_material.GRAPH or backdrop_material.check(existing, spec, uses_vertex_color))
+                and not (isinstance(existing, unreal.Material) and collection_ids.unresolved(existing))):
             unreal.log(f"LUNDEN_MATERIAL {path}: kept (spec {want})")
             kept += 1
             continue

@@ -46,6 +46,7 @@ from season_tags import season_tags
 import player_parts as pp
 import stair_lamp
 import sky_clouds
+import collection_ids  # noqa: E402
 import neutral_tonemap  # #2396: the web's NeutralToneMapping in place of Unreal's tonemapper
 
 DIR = "/Game/Lunden/Lighting"
@@ -680,6 +681,8 @@ def precip_code(spec):
 
 def precip_matches(spec):
     mat = ASSETS.load_asset(PRECIP)
+    if collection_ids.unresolved(mat):  # #2408: a weather parameter whose GUID the collection no longer has
+        return False
     node = MEL.get_material_property_input_node(mat, u.MaterialProperty.MP_EMISSIVE_COLOR)
     if not isinstance(node, u.MaterialExpressionCustom) or node.get_editor_property("code") != precip_code(spec):
         return False
@@ -692,7 +695,7 @@ def precip_matches(spec):
 def build_precip_material(spec, mpc):
     if ASSETS.does_asset_exist(PRECIP):
         mat = ASSETS.load_asset(PRECIP)
-        MEL.delete_all_material_expressions(mat)
+        collection_ids.clear_graph(mat)  # #2408: no orphaned collection expression survives a rebuild
     else:
         mat = create(PRECIP, u.Material, u.MaterialFactoryNew())
     mat.set_editor_property("material_domain", u.MaterialDomain.MD_POST_PROCESS)
@@ -803,7 +806,7 @@ def build_clouds(mpc):
 def clouds_match(mat, mpc):
     """M_LundenClouds as build_clouds leaves it: no Cloud_GlobalCoverage scalar, and a CloudCoverage collection parameter
     of this MPC that feeds at least one input."""
-    if not isinstance(mat, u.Material):
+    if not isinstance(mat, u.Material) or collection_ids.unresolved(mat):  # #2408
         return False
     exprs = list(MEL.get_material_expressions(mat))
     if any(isinstance(e, u.MaterialExpressionScalarParameter) and str(e.get_editor_property("parameter_name")) == "Cloud_GlobalCoverage"
@@ -1403,7 +1406,9 @@ def main(argv):
     stair_assets = [stair_lamp.path_for(row) for row in spec["lamps"] if row["stairVisibility"]]
     have = ASSETS.does_asset_exist(SKY) and ASSETS.get_metadata_tag(ASSETS.load_asset(SKY), SPEC_TAG) == want
     cloud_material_ok = ASSETS.does_asset_exist(PRECIP) and precip_matches(spec)
-    complete = all(ASSETS.does_asset_exist(p) for p in assets) and cloud_material_ok
+    # #2408: M_LundenClouds reads CloudCoverage by GUID; one the collection no longer has rebuilds the copy
+    clouds_unresolved = collection_ids.unresolved(ASSETS.load_asset(CLOUDS)) if ASSETS.does_asset_exist(CLOUDS) else []
+    complete = all(ASSETS.does_asset_exist(p) for p in assets) and cloud_material_ok and not clouds_unresolved
     stamp = json.loads(STAMP.read_text(encoding="utf-8")) if STAMP.exists() else {}
     level_ok = (stamp.get("spec") == want and stamp.get("files") == file_hashes() and bool(stamp.get("files"))
                 and all(ASSETS.does_asset_exist(path) for path in stair_assets))
@@ -1417,6 +1422,7 @@ def main(argv):
                     problems.append(f"{path}: missing or stale stair visibility graph")
         if not cloud_material_ok:
             problems.append(f"{PRECIP} cloud shader or weather inputs missing or stale")
+        problems += [f"{CLOUDS}: {e}" for e in clouds_unresolved]
         if not have:
             problems.append(f"{SKY} spec hash differs (run build_lighting.py)")
         if not level_ok:

@@ -8,6 +8,7 @@ import unreal as u
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import build_lighting as lighting
 import facade_scene as facade
+import collection_ids
 
 ASSETS = u.EditorAssetLibrary
 MEL = u.MaterialEditingLibrary
@@ -19,6 +20,25 @@ PLANE = "/Engine/BasicShapes/Plane"
 PROJECT = Path(u.Paths.convert_relative_path_to_full(u.Paths.project_dir()))
 FOLDER = PROJECT / "Content/Lunden/Generated/FacadeLighting"
 STAMP = FOLDER / "facade-stamp.json"
+SOURCES = {"PositionWS": u.MaterialExpressionWorldPosition, "ViewDir": u.MaterialExpressionCameraVectorWS,
+           "Seconds": u.MaterialExpressionTime, "UV": u.MaterialExpressionTextureCoordinate}
+WALL_PARAMETERS = {"WallOn", "WallLevel"}  # MPC_LundenFacade, a file of this folder: the stamp's file hashes cover it
+
+
+def weather_reads():
+    """#2408: the MPC_LundenWeather parameters the facade materials read (their inputs, and Night for the radiance gain)."""
+    names = {n for kind in facade.INPUTS for n in facade.INPUTS[kind] if n not in SOURCES and n not in WALL_PARAMETERS}
+    return {lighting.MPC: tuple(sorted(names | {"Night"}))}
+
+
+def unresolved_reads():
+    """#2408: facade materials whose collection expressions no longer name a parameter."""
+    out = []
+    for kind in facade.FIELDS:
+        path = DIR + "/M_Facade_" + kind
+        if ASSETS.does_asset_exist(path):
+            out += [f"{path}: {e}" for e in collection_ids.unresolved(ASSETS.load_asset(path))]
+    return out
 
 
 def asset(path, cls, factory):
@@ -84,7 +104,7 @@ def custom_input(name):
 
 def material(kind, spec, weather, wall):
     mat = asset(DIR + "/M_Facade_" + kind, u.Material, u.MaterialFactoryNew())
-    MEL.delete_all_material_expressions(mat)
+    collection_ids.clear_graph(mat)  # #2408: no orphaned collection expression survives a rebuild
     mat.set_editor_property("shading_model", u.MaterialShadingModel.MSM_UNLIT)
     blend = {"room": u.BlendMode.BLEND_TRANSLUCENT, "lens": u.BlendMode.BLEND_OPAQUE}
     mat.set_editor_property("blend_mode", blend.get(kind, u.BlendMode.BLEND_ADDITIVE))
@@ -94,8 +114,7 @@ def material(kind, spec, weather, wall):
     code.set_editor_property("inputs", [custom_input(n) for n in names])
     code.set_editor_property("output_type", u.CustomMaterialOutputType.CMOT_FLOAT4)
     code.set_editor_property("code", facade.shader(kind, spec))
-    sources = {"PositionWS": u.MaterialExpressionWorldPosition, "ViewDir": u.MaterialExpressionCameraVectorWS,
-               "Seconds": u.MaterialExpressionTime, "UV": u.MaterialExpressionTextureCoordinate}
+    sources = SOURCES
     for i, name in enumerate(names):
         if name in facade.FIELDS[kind]:
             e = MEL.create_material_expression(mat, u.MaterialExpressionScalarParameter, -800,i*65)
@@ -106,7 +125,7 @@ def material(kind, spec, weather, wall):
             e = MEL.create_material_expression(mat, sources[name], -800,i*65)
         else:
             e = MEL.create_material_expression(mat, u.MaterialExpressionCollectionParameter, -800,i*65)
-            e.set_editor_property("collection", wall if name in {"WallOn","WallLevel"} else weather)
+            e.set_editor_property("collection", wall if name in WALL_PARAMETERS else weather)
             e.set_editor_property("parameter_name", name)
         if not MEL.connect_material_expressions(e, "", code, name):
             raise RuntimeError(f"{kind}: failed to connect {name}")
@@ -229,12 +248,16 @@ def main(argv):
     digest = hashlib.sha256(json.dumps(spec,sort_keys=True).encode())
     for p in (Path(__file__), Path(facade.__file__), *sorted(facade.SHADERS.glob("*.hlsl"))):
         digest.update(p.read_bytes())
+    # #2408: the weather collection's parameter GUIDs; a collection rebuilt with new ones rebuilds the facade materials
+    digest.update(json.dumps(collection_ids.ids(weather_reads()), sort_keys=True).encode())
     stamp = {"input": digest.hexdigest(), "files": hashes()}
-    if STAMP.exists() and stamp["files"] and stamp == json.loads(STAMP.read_text()) and "--force" not in argv:
+    unresolved = unresolved_reads()
+    if (STAMP.exists() and stamp["files"] and stamp == json.loads(STAMP.read_text()) and not unresolved
+            and "--force" not in argv):
         u.log("LUNDEN_FACADE_OK unchanged")
         return
     if "--check" in argv:
-        raise RuntimeError("Native facade missing or stale")
+        raise RuntimeError("Native facade missing or stale" + "".join("; " + e for e in unresolved))
     wall = wall_collection()
     manager = wall_controller(spec["wallLight"],weather,wall)
     materials = {kind: material(kind,spec,weather,wall) for kind in facade.FIELDS}

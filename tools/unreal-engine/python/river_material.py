@@ -1,6 +1,9 @@
 """Höje å: the near river frame and masked far-water planes exported from src/riversurface.js."""
 import math
 
+WEATHER = "/Game/Lunden/Lighting/MPC_LundenWeather"
+CALENDAR = "/Game/Lunden/Seasons/MPC_LundenVegetation"
+
 
 def number(n):
     value = float(n)
@@ -65,12 +68,20 @@ return sky * ((F0 + (1.0 - F0) * pow(1.0 - saturate(dot(N, V)), {number(fresnel[
     return normal.strip(), reflection.strip()
 
 
+def reads(spec):
+    """#2408: the collection parameters the material reads, {collection: names} (build_materials.py hashes their GUIDs)."""
+    out = {WEATHER: ("SunDir", "Rain", "Snow")}
+    if spec["mode"] != "flow":
+        out[CALENDAR] = ("Month",)
+    return out
+
+
 def build(material, spec):
     import unreal as u
     mel = u.MaterialEditingLibrary
     data, flowing = spec["river"], spec["mode"] == "flow"
     normal_code, reflection_code = shaders(data, flowing)
-    mpc = u.EditorAssetLibrary.load_asset("/Game/Lunden/Lighting/MPC_LundenWeather")
+    mpc = u.EditorAssetLibrary.load_asset(WEATHER)
     if not mpc:
         raise RuntimeError("Generate MPC_LundenWeather with build_lighting.py before building river materials")
 
@@ -107,7 +118,7 @@ def build(material, spec):
         normal_inputs.update(FlowDir=uv(1, 480), CrossShore=uv(2, 600),
                              RiverTime=expr(u.MaterialExpressionTime, -1000, 720, override_period=True, period=data["clockPeriod"]))
     else:
-        seasons = u.EditorAssetLibrary.load_asset("/Game/Lunden/Seasons/MPC_LundenVegetation")
+        seasons = u.EditorAssetLibrary.load_asset(CALENDAR)
         if not seasons:
             raise RuntimeError("Generate the vegetation collection with build_seasons.py before building river materials")
         month = expr(u.MaterialExpressionCollectionParameter, -1300, 630, collection=seasons, parameter_name="Month")

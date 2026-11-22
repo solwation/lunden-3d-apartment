@@ -71,6 +71,7 @@ tools/unreal-engine/python/import_world.py    Interchange scene import of the ex
                                    (level + actors with id names/tags), stamp-based idempotency; --check = headless checks
 tools/unreal-engine/python/build_materials.py        builds the hand-made materials that material-map.json lists (#2282);
                                    create_base_materials.py is the kept entry point that calls it
+tools/unreal-engine/python/collection_ids.py         collection parameter GUIDs for spec hashes and the unresolved-read check (#2408)
 tools/unreal-engine/tests/test_materials.py          key coverage of material-map.json against an export (plain Python)
 tools/unreal-engine/python/screenshot_level.py       headless GPU screenshots of an imported level (verification only)
 tools/unreal-engine/material-map.json         export material keys → hand-made Unreal materials, defaults with reasons (#2282)
@@ -2660,6 +2661,34 @@ says *guess* has no assumption. `build_materials.py` skips an asset whose `Lunde
 second run writes nothing; `--force` rebuilds in place and `--check` verifies existence, spec hash, metadata,
 parameters and the persisted Nanite usage without writing. Take `git lfs lock` on every `Materials/*.uasset` before a
 build that writes. Results are in [the #2282 verification](../verification/2282/README.md).
+
+**Collection GUIDs (#2408).** A `CollectionParameter` expression stores its parameter's GUID and looks the name up
+through it when it loads. A collection rebuilt with new parameter structs leaves its readers pointing at nothing. Before
+#2381 kept the structs, `MPC_LundenWeather` got new ones on every rebuild. The expression then loads as parameter
+`None`, and the material either fails to compile or reads 0:
+- the river rendered the default grey (#2408);
+- the foliage wind read 0 (#2383).
+
+The shared `python/collection_ids.py` gives each builder two rules:
+- `ids()`: the GUIDs of the parameters the material reads go into its spec hash or stamp, so a changed GUID rebuilds
+  it on the next normal run (no `--force`) and `--check` fails until then;
+- `unresolved()`: the material's collection expressions that already name nothing, which `--check` reports and which
+  force a rebuild whatever the hash says.
+
+Rebuilds clear the whole graph (`clear_graph`), because `delete_all_material_expressions` can leave an orphaned
+collection expression behind.
+
+Where it applies:
+- `build_materials.py`: GUIDs in the spec hash of `M_LundenGrass` (`Month`) and the river materials (`SunDir`,
+  `Rain`, `Snow`; the edge also reads `Month`), and `unresolved()` in `--check` and the skip test;
+- `build_facade.py`: the `MPC_LundenWeather` GUIDs in its stamp. `MPC_LundenFacade` lies in its own folder, so the
+  file hashes cover it;
+- `build_lighting.py`: `unresolved()` on `M_LundenPrecipitation` and `M_LundenClouds` (their GUIDs stay out of the
+  lighting spec hash, which CI recomputes without Unreal);
+- `build_vegetation.py`: GUIDs in the master's spec hash since #2383.
+
+Blueprints read collections by parameter name and are not affected. Verification:
+[#2408](../verification/2408/README.md).
 
 **Patterned surfaces: brick, roofs, asphalt and paving (#2318).** Until #2318 the façades of Hus L and A/B/C were
 white in Unreal: their keys (`std_ffffff_…_tex`: white times a canvas) fell to Interchange's instance, which keeps the
