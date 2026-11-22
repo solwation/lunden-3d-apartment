@@ -38,6 +38,6 @@ Both items stand where the web puts them. The fruit keeps its colours, since #23
 - The living-room daylight is paler in Unreal (whiter floor and sofa): no open issue. #2390 covers only the outdoor
   daylight.
 - The fruit bowl's copper wire is faint and see-through in Unreal; the web's is solid copper. It uses the generic
-  `std_c8845e_r22_m90_ds`, not a copper material of its own: no open issue.
+  `std_c8845e_r22_m90_ds`, not a copper material of its own: fixed in #2395 ([verification](../2395/README.md)).
 - The bedroom wall is a cool grey in Unreal; the web's is warm cream. There is a soft light halo round the basketball
   on the wall: no open issue.

@@ -37,11 +37,15 @@ def prepare_zone(zone, check_only=False):
         settings = mesh.get_editor_property("nanite_settings")
         # Blend overrides live on Interchange's instances. The common glTF parent remains opaque.
         unsupported = any(mat.get_blend_mode() not in SUPPORTED for mat in slots)
+        # #2395: a hand-made material stamped Lunden.Raster (material-map.json `raster`) asks for the raster path too:
+        # Nanite simplified the fruit bowl's 1.7 mm copper wires away at the coffee-table view.
+        unsupported = unsupported or any(mat.get_path_name().startswith(ROOT) and assets.get_metadata_tag(mat, "Lunden.Raster")
+                                         for mat in slots)
         if unsupported:
             fallback += 1
             if settings.enabled:
                 if check_only:
-                    raise RuntimeError("Unsupported blend on a Nanite mesh: " + path)
+                    raise RuntimeError("Unsupported blend or Lunden.Raster material on a Nanite mesh: " + path)
                 settings.enabled = False
                 # set_editor_property only flips the flag: the session kept the Nanite fallback render data (fewer
                 # vertices and triangles) until the next editor start, so the import's fingerprint differed (#2297).

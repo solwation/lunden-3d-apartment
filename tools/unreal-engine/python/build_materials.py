@@ -12,7 +12,10 @@ Every entry under `materials` becomes one asset in /Game/Lunden/Materials/:
   - "graph": "gltf-vertex-color"  (#2321) a copy of Interchange's glTF master `from` (M_Default, M_Unlit) whose `output`
                          (BaseColor, or EmissiveColor for the unlit master) is multiplied by the vertex colour: the
                          importer re-parents every vertex-coloured key's instance onto it (material-map.json `vertexColor`);
-  - "parent": <master>   a MaterialInstanceConstant with the entry's `params`.
+  - "parent": <master>   a MaterialInstanceConstant with the entry's `params`; `"twoSided": true` overrides the master's
+                         face setting (an open wire or strip seen from inside, #2395), and `"raster": "<reason>"` is
+                         stamped as Lunden.Raster, which sends every imported mesh wearing it to the raster path
+                         (prepare_nanite_materials.py: Nanite simplifies millimetre wires away, #2395).
 Colours are sRGB hex as the web writes them (converted to linear). Opaque materials get the Nanite usage flag and
 instances a persisted Nanite usage override, so prepare_nanite_materials.py finds nothing to change (#2276). Each asset
 carries the entry's `source` and `assumption` as metadata tags Lunden.Source / Lunden.Assumption (plan-material's
@@ -428,6 +431,10 @@ def stamp(asset, path, spec):
     eal.set_metadata_tag(asset, "Lunden.Assumption", spec.get("assumption") or "none")
     eal.set_metadata_tag(asset, "Lunden.SpecHash", spec_hash(path, spec))
     eal.set_metadata_tag(asset, "Lunden.Builder", "tools/unreal-engine/python/build_materials.py (#2282)")
+    if spec.get("raster"):
+        eal.set_metadata_tag(asset, "Lunden.Raster", spec["raster"])
+    elif eal.get_metadata_tag(asset, "Lunden.Raster"):
+        eal.remove_metadata_tag(asset, "Lunden.Raster")
 
 
 def build_master(path, spec, existing):
@@ -481,6 +488,10 @@ def build_instance(path, spec, existing):
             scalars.append(v)
     mi.set_editor_property("scalar_parameter_values", scalars)
     mi.set_editor_property("vector_parameter_values", vectors)
+    overrides = mi.get_editor_property("base_property_overrides")
+    overrides.set_editor_property("override_two_sided", bool(spec.get("twoSided")))
+    overrides.set_editor_property("two_sided", bool(spec.get("twoSided")))
+    mi.set_editor_property("base_property_overrides", overrides)
     if parent.get_blend_mode() in (unreal.BlendMode.BLEND_OPAQUE, unreal.BlendMode.BLEND_MASKED):
         mel.set_material_usage_override(mi, NANITE, True, True)
     mel.update_material_instance(mi)
@@ -533,6 +544,12 @@ def check(table):
                     off = abs(got - want)
                 if off > 1e-4:
                     problems.append(f"{path}: {key} is {got}, spec {want}")
+            faces = asset.get_editor_property("base_property_overrides")
+            two_sided = faces.get_editor_property("override_two_sided") and faces.get_editor_property("two_sided")
+            if bool(spec.get("twoSided")) != two_sided:
+                problems.append(f"{path}: two-sided override is {two_sided}, spec {bool(spec.get('twoSided'))}")
+        if eal.get_metadata_tag(asset, "Lunden.Raster") != (spec.get("raster") or ""):
+            problems.append(f"{path}: Lunden.Raster is {eal.get_metadata_tag(asset, 'Lunden.Raster')!r}, spec {spec.get('raster')!r}")
         unreal.log(f"LUNDEN_MATERIAL_CHECK {path}: assumption = {eal.get_metadata_tag(asset, 'Lunden.Assumption')}")
     for p in problems:
         unreal.log_error("LUNDEN_MATERIAL_CHECK " + p)

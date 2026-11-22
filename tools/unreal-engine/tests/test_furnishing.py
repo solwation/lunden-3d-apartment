@@ -10,6 +10,10 @@
    Texture2D of the exported image's size.
 3. Pictures: every picture file in textures/ is shown by at least one of those textures (so it hangs where the web
    hangs it), and unreal/Lunden/THIRD_PARTY_NOTICES.md names it.
+4. Hand-made furnishing materials (#2395): every material-map.json rule whose `mesh` selector picks a furnishing mesh
+   (the fruit bowl's copper wire) is on that mesh in every level, never the imported key's generic instance; the
+   material's colour, roughness and metalness are the export key's (the web's), its two-sided override follows the
+   key, and a material marked `raster` leaves the mesh off Nanite.
 
 Editor world only (no Play In Editor needed). Run like the other tests: copy this file to unreal/Lunden/Content/Python/
 (untracked, delete afterwards) and
@@ -20,6 +24,8 @@ LUNDEN_FURNISHING_TEST_OK.
 import json
 import math
 from pathlib import Path
+import re
+import struct
 
 import unreal as u
 
@@ -60,6 +66,72 @@ def texture_sizes(material):
     return out
 
 
+def glb_mesh_keys(path):
+    """{mesh name: [material keys of its primitives]} from a zone GLB's JSON chunk."""
+    data = path.read_bytes()
+    j = json.loads(data[20:20 + struct.unpack("<I", data[12:16])[0]])
+    names = [m["name"] for m in j.get("materials", [])]
+    return {m.get("name", ""): [names[p["material"]] for p in m.get("primitives", []) if "material" in p] for m in j.get("meshes", [])}
+
+
+def linear(hex_colour):
+    c = [int(hex_colour.lstrip("#")[i:i + 2], 16) / 255 for i in (0, 2, 4)]
+    return [x / 12.92 if x <= 0.04045 else ((x + 0.055) / 1.055) ** 2.4 for x in c]
+
+
+def handmade_targets():
+    """[(mesh name, key, material path, spec)] for the material-map rules that pick furnishing meshes (#2395)."""
+    table = json.loads((REPO / "tools/unreal-engine/material-map.json").read_text(encoding="utf-8"))
+    ids = [i["id"] for i in F["items"]]
+    out = []
+    for zone in ZONES:
+        for mesh, keys in glb_mesh_keys(PROJECT / "Import" / f"{zone}.glb").items():
+            if not any(mesh.startswith(i + "__") or mesh == i for i in ids):
+                continue
+            for key in keys:
+                rule = next((r for r in table["rules"] if re.search(r["match"], key) and (not r.get("mesh") or re.search(r["mesh"], mesh))), None)
+                if rule and rule.get("mesh"):
+                    path = rule["material"].split(".")[0]
+                    out.append((mesh, key, path, table["materials"][path]))
+    return out
+
+
+def handmade_errors(mesh_actors, level):
+    """Problems with the hand-made furnishing materials in one loaded level; fills result["handmade"]."""
+    errs = []
+    for mesh, key, path, spec in HANDMADE:
+        comps = mesh_actors.get(mesh, [])
+        row = result["handmade"].setdefault(mesh, {"key": key, "material": path, "levels": []})
+        if comps:
+            row["levels"].append(level.rsplit("/", 1)[-1])
+        for comp in comps:
+            names = [m.get_path_name().split(".")[0] if m else None for m in comp.get_materials()]
+            if path not in names:
+                errs.append(f"{mesh} in {level}: materials {names}, want {path} (not the generic {key})")
+                continue
+            mat = comp.get_materials()[names.index(path)]
+            web = M["materials"][key]
+            got = u.MaterialEditingLibrary.get_material_instance_vector_parameter_value(mat, "BaseColor")
+            off = max(abs(a - b) for a, b in zip([got.r, got.g, got.b], linear(web["color"])))
+            rough = u.MaterialEditingLibrary.get_material_instance_scalar_parameter_value(mat, "Roughness")
+            metal = u.MaterialEditingLibrary.get_material_instance_scalar_parameter_value(mat, "Metallic")
+            faces = mat.get_editor_property("base_property_overrides")
+            two_sided = faces.get_editor_property("override_two_sided") and faces.get_editor_property("two_sided")
+            nanite = comp.get_editor_property("static_mesh").get_editor_property("nanite_settings").enabled
+            row.update({"colourOff": round(off, 5), "roughness": round(rough, 4), "metallic": round(metal, 4),
+                        "twoSided": bool(two_sided), "nanite": bool(nanite)})
+            if off > 1e-3 or abs(rough - web["roughness"]) > 1e-3 or abs(metal - web["metalness"]) > 1e-3:
+                errs.append(f"{mesh} in {level}: {path} colour off {off:.4f}, roughness {rough}, metallic {metal}; the web's "
+                            f"{web['color']}, {web['roughness']}, {web['metalness']}")
+            if bool(two_sided) != bool(web["doubleSided"]):
+                errs.append(f"{mesh} in {level}: {path} two-sided {bool(two_sided)}, the web's doubleSided {web['doubleSided']}")
+            if spec.get("raster") and nanite:
+                errs.append(f"{mesh} in {level}: Nanite is on, but {path} asks for the raster path ({spec['raster']})")
+    return errs
+
+
+HANDMADE = handmade_targets()
+result["handmade"] = {}
 items = {i["id"]: i for i in F["items"]}
 meshes = {m["id"]: (t, m) for t in F["textures"] for m in t["meshes"]}
 levels = list(ZONES.values()) + [l["package"] for l in WORLD["levels"] if l["package"] not in ZONES.values()] + [WORLD["map"]]
@@ -112,6 +184,14 @@ for level in levels:
         if not ok:
             errors.append(f"{mesh_id} ({t['id']} {t['images'] or t['kind']}) in {level}: centre {off:.3f} cm off, materials "
                           f"{[x.get_name() for x in mats]}, textures {sizes}, want {t['keys']} with {want_size}")
+    # 4. hand-made furnishing materials (#2395)
+    mesh_actors = {}
+    for a in by_name.values():
+        for comp in a.get_components_by_class(u.StaticMeshComponent):
+            sm = comp.get_editor_property("static_mesh")
+            if sm:
+                mesh_actors.setdefault(sm.get_name(), []).append(comp)
+    errors.extend(handmade_errors(mesh_actors, level))
     result["levels"][level] = {"items": n_items, "textureMeshes": n_meshes}
     if level == WORLD["map"] and (n_items, n_meshes) != (len(items), len(meshes)):
         # the composed world (its sub-levels load with it) holds every furnishing item and textured mesh, patio included
@@ -120,6 +200,12 @@ for level in levels:
 
 missing_items = sorted(set(items) - set(placed))
 missing_meshes = sorted(set(meshes) - set(shown))
+if not HANDMADE:
+    errors.append("material-map.json has no rule for a furnishing mesh: the fruit bowl's copper wire (#2395) is gone")
+for mesh, row in result["handmade"].items():
+    log(f"handmade {mesh} {json.dumps(row)}")
+    if not row["levels"]:
+        errors.append(f"{mesh} ({row['material']}) has no actor in any level")
 if missing_items:
     errors.append(f"furnishing ids with no actor in any level: {missing_items}")
 if missing_meshes:

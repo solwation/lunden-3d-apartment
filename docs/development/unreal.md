@@ -1412,7 +1412,10 @@ The test loads the two imported L1007 zone levels, every built level of `world-l
 (which must hold every item and textured mesh) and checks each
 `furnishing` item where its id appears (1 cm, 1°, 0.1 % scale), each texture on each of its mesh actors (centre within
 1 cm, the key's instance with a Texture2D of the exported size) and that every picture file is on a mesh and in the
-notices. Results: [docs/verification/2289/](../verification/2289/README.md).
+notices. Since #2395 it also checks every `material-map.json` rule whose `mesh` selector picks a furnishing mesh (the
+fruit bowl's copper wire). In every level that mesh must wear the rule's material, not the key's generic instance. The
+material's colour, roughness, metalness and two-sided setting must equal the export key's, and a `raster` material's
+mesh must be off Nanite. Results: [docs/verification/2289/](../verification/2289/README.md).
 
 ## Avatars: skeleton and movement (#2290)
 
@@ -2611,7 +2614,8 @@ What 5.8.4 does, and what the importer does about it:
 
 **Nanite materials in cooked builds (#2276).** The importer reads each mesh slot's
 effective blend mode, including overrides on glTF instances. Any translucent or
-otherwise unsupported slot sends that mesh through the regular raster path.
+otherwise unsupported slot sends that mesh through the regular raster path, and so does a
+hand-made material stamped `Lunden.Raster` (#2395, see [Surface materials](#surface-materials-2282)).
 Opaque and masked Nanite meshes use a saved Nanite usage flag on project materials
 and an explicit override on imported material instances. Interchange's engine
 material stays shared. Importer version 2 regenerates older stamped zones.
@@ -2702,6 +2706,15 @@ canvas textures do not travel. `tools/unreal-engine/material-map.json` therefore
   tiles, the splashback, the patio paving and the screen walls, so its rules add a `mesh` selector (the StaticMesh
   name is the id of the first export node that uses it). The last rule for that key has no selector and catches any
   other surface with white wall tiles.
+- **Furnishing rules (#2395).** A rule may also give one furnishing mesh a hand-made material. The fruit bowl's copper
+  wire (`std_c8845e_r22_m90_ds`, mesh `^furn_fruitbowl_`) wears `MI_LundenCopperWire`: `M_LundenSurface` with the
+  web's colour, roughness and metalness. Two instance fields support it:
+  - `"twoSided": true` sets the instance's two-sided override, for the open wires and band seen from inside;
+  - `"raster": "<reason>"` is stamped as `Lunden.Raster`, and `prepare_nanite_materials.py` sends every mesh wearing
+    such a material to the raster path. At the coffee-table view the 1.7 mm wires are about one pixel wide, and Nanite
+    simplified some of them away.
+
+  `tests/test_furnishing.py` checks every such rule in every level (see [Furnishing](#furnishing-and-pictures-2289)).
 - `defaults`: keys left on Interchange's instance, each with a reason (plain opaque fittings, transparent and
   emissive fittings, textured fittings that belong to furnishing #2289, grass for #2281).
 
