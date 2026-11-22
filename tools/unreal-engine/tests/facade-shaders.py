@@ -116,7 +116,8 @@ with tempfile.TemporaryDirectory(prefix="facade-shader-") as tmp:
     samples = [[direct,n,p,latch] for direct in [0,1] for n in [0,.32,.36,1] for p in [0,1] for latch in [0,1]]
     compare("lens",run(folder,"lens",generate("lens"),samples),
             [scene.linear_colour(dusk["lampOn" if (n>dusk["on"] and p if d else latch) else "lampOff"])+[1] for d,n,p,latch in samples],1e-6)
-    wall = spec["wallLight"]
-    samples = [[peak,uv,.5,k] for peak in [wall["washPeak"],wall["poolPeak"]] for uv in [.5,.65,1] for k in [0,.3,1]]
-    expected = [[c*peak*k*round(255*(1-abs(uv*2-1))**1.5)/255 for c in scene.linear_colour(wall["colour"])]+[1] for peak,uv,_,k in samples]
+    surfaces = spec["surfaces"]
+    samples = [scene.wash_values(s)+[uv,.5,k] for s in surfaces for uv in [.5,.65,1] for k in [0,.3,1]]
+    expected = [[c*s["peak"]*k*round(255*(1-abs(uv*2-1))**1.5)/255 for c in scene.linear_colour(s["colour"])]+[1]
+                for s in surfaces for uv in [.5,.65,1] for k in [0,.3,1]]
     compare("wash",run(folder,"wash",generate("wash"),samples),expected,1e-6)

@@ -1,7 +1,7 @@
 // #2324. Read the built desktop meshes before the export strips the web shader's per-pane attributes.
 // All positions and room dimensions below are in Unreal centimetres. Horizontal normals are Unreal [X,Y].
 import * as THREE from 'three';
-import { HUS_L, ROOM_MAP, WINDOW_SCHEDULE } from '../../src/config.js';
+import { COURTYARD, HUS_L, ROOM_MAP, WINDOW_SCHEDULE } from '../../src/config.js';
 import { roomColours, roomLevels } from '../../src/interiormap.js';
 import { roundCm, webToUnrealRounded } from './coordinates.mjs';
 
@@ -69,7 +69,8 @@ function scheduledWindows({ object, habits }, routines) {
 }
 
 // Preserve the source wash cuts round doors and windows and the terrain-following pool triangles.
-function glowSurface(mesh) {
+// `colour` (sRGB hex) and `peak` are the web material's colour and full-fade opacity.
+function glowSurface(mesh, colour, peak, name = mesh.name) {
   const { position, uv } = mesh.geometry.attributes, index = mesh.geometry.index;
   const point = new THREE.Vector3(), vertices = [], indices = [], seen = new Map();
   for (let i = 0; i < (index?.count ?? position.count); i++) {
@@ -79,7 +80,7 @@ function glowSurface(mesh) {
     if (!seen.has(key)) { seen.set(key, vertices.length); vertices.push(vertex); }
     indices.push(seen.get(key));
   }
-  return { name: mesh.name, vertices, indices };
+  return { name, colour, peak, vertices, indices };
 }
 
 export function facadeLightingData(world, zones) {
@@ -97,12 +98,22 @@ export function facadeLightingData(world, zones) {
         width: cm(lamp.w - (gallery ? 0.02 : 0.03)), height: cm(lamp.h - (gallery ? 0 : 0.04)) });
     }
     for (const name of isHusL ? ['doorLampWash', 'doorLampPools'] : ['loggiaLampWash', 'loggiaLampPools']) {
-      surfaces.push(glowSurface(group.getObjectByName(name)));
+      const dl = HUS_L.doorLamp;
+      surfaces.push(glowSurface(group.getObjectByName(name), dl.color, name.endsWith('Wash') ? dl.wash.peak : dl.pool.peak));
     }
     if (!isHusL) windows.push(...scheduledWindows(group.userData.windows, routines));
+  }
+  // #2397: the courtyard bollards' ground pools (courtyard.js, hidden by day and therefore not in the gard GLB). The
+  // web fades them with the same night fraction as the wall lamps; bollardLight carries their own thresholds.
+  const PL = COURTYARD.bollards.pool;
+  if (zones.includes('gard')) {
+    const pools = world.object.getObjectByName('courtyard-bollard-pools');
+    if (!pools) throw new Error('courtyard-bollard-pools missing from the world');
+    surfaces.push(glowSurface(pools, PL.color, PL.peak, 'courtyardBollardPools'));
   }
   const dl = HUS_L.doorLamp;
   return { panes, fixtures, surfaces, windows, roomLevels: { day: roomLevels(0), night: roomLevels(1), strength: ROOM_MAP.strength },
     facadeGlow: HUS_L.facadeGlow, wallLight: { on: dl.on, off: dl.off, fade: dl.fade, colour: dl.color, washPeak: dl.wash.peak, poolPeak: dl.pool.peak },
+    bollardLight: { on: PL.on, off: PL.off, fade: PL.fade, colour: PL.color, peak: PL.peak },
     schedule: { routines, fade: WINDOW_SCHEDULE.fade, tv: WINDOW_SCHEDULE.tv, glow: ROOM_MAP.glow } };
 }

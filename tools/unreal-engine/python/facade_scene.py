@@ -9,7 +9,7 @@ COMMON = "Cx Cy Cz Nx Ny".split()
 FIELDS = {
     "room": COMMON + "HalfW HalfH Depth FloorZ Ceiling Left Right Kind Cover Seed DuskLit WallR WallG WallB FloorR FloorG FloorB FabricR FabricG FabricB".split(),
     "window": COMMON + "Width Height Hall Home OnHour OffHour Morning Wake Leave LampR LampG LampB Rate Phase PhaseMillis GlowSeed".split(),
-    "lens": ["Direct"], "wash": ["Peak"],
+    "lens": ["Direct"], "wash": ["Peak", "ColourR", "ColourG", "ColourB"],  # #2397: each surface's own linear colour
 }
 INPUTS = {"room": ["PositionWS", "ViewDir", "Night", "PowerAvailable"],
           "window": ["PositionWS", "Hour", "Night", "PowerAvailable", "Seconds"],
@@ -25,7 +25,7 @@ def linear_colour(packed):
 
 
 def shader(kind, spec):
-    levels, dusk, schedule, wall = (spec[k] for k in ("roomLevels", "facadeGlow", "schedule", "wallLight"))
+    levels, dusk, schedule = (spec[k] for k in ("roomLevels", "facadeGlow", "schedule"))
     tv, glow = schedule["tv"], schedule["glow"]
 
     def rgb(v):
@@ -36,9 +36,14 @@ def shader(kind, spec):
         roomNight=levels["night"][0], fabricNight=levels["night"][1], duskOn=dusk["on"],
         windowColour=rgb(linear_colour(dusk["window"])), windowIntensity=dusk["intensity"],
         lensOn=rgb(linear_colour(dusk["lampOn"])), lensOff=rgb(linear_colour(dusk["lampOff"])),
-        washColour=rgb(linear_colour(wall["colour"])), fade=schedule["fade"],
+        fade=schedule["fade"],
         tvColour=rgb(tv["rgb"]), tvFrom=tv["from"], tvUntil=tv["until"], tvDepth=tv["depth"], tvStep=tv["step"],
         glowBase=glow["base"], glowLamp=glow["lamp"], glowFloor=glow["floor"], glowCurtain=glow["curtain"])
+
+
+def wash_values(surface):
+    """#2397: a wash/pool mesh's custom primitive data (FIELDS["wash"])."""
+    return [surface["peak"], *linear_colour(surface["colour"])]
 
 
 def planes(spec):
@@ -79,10 +84,16 @@ def validate(spec):
     if not all(p.get("faces") for p in spec["panes"]):
         raise ValueError("Re-export facade surfaces and pane faces with the current desktop exporter")
     surfaces = spec.get("surfaces", [])
-    if {s["name"] for s in surfaces} != {"doorLampWash","doorLampPools","loggiaLampWash","loggiaLampPools"}:
-        raise ValueError("Missing measured facade wash/pool geometry")
+    if {s["name"] for s in surfaces} != {"doorLampWash","doorLampPools","loggiaLampWash","loggiaLampPools","courtyardBollardPools"}:
+        raise ValueError("Missing measured facade wash/pool geometry (export hus-l, kvarteret and gard)")
     for s in surfaces:
         v, i = s["vertices"], s["indices"]
         if not v or not i or len(i)%3 or min(i)<0 or max(i)>=len(v) or any(len(p)!=5 or not all(map(isfinite,p)) for p in v):
             raise ValueError("Invalid facade light geometry: " + s["name"])
+        if not isinstance(s.get("colour"), int) or not 0 < s.get("peak", 0) <= 1:
+            raise ValueError("Re-export the facade light colour and peak: " + s["name"])
+    # #2397: the bollard pools share BP_LundenFacade's wall-light latch (the web fades both from the same night fraction)
+    wall, bollard = spec["wallLight"], spec.get("bollardLight", {})
+    if any(bollard.get(k) != wall[k] for k in ("on", "off", "fade")):
+        raise ValueError("The courtyard bollard pools need their own latch: their on/off/fade differ from wallLight")
     return list(planes(spec))

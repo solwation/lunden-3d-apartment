@@ -2855,7 +2855,13 @@ material and Blueprint build.
 `build_facade.py` generates `/Game/Lunden/Generated/FacadeLighting/Level_facade_lighting` after
 `build_lighting.py`. Each pane uses its actual facing triangle(s) and per-face material inputs. The four
 wall/pool meshes keep the web triangles, opening cut-outs, terrain heights and UVs. One Blueprint drives
-their latch and fade. The material and Blueprint share `MPC_LundenWeather.Night`, `Hour` and
+their latch and fade. Each `surfaces` entry carries the web material's own `colour` and `peak`, packed with the
+falloff as custom primitive data. Since #2397, exporting `gard` adds `courtyardBollardPools`, the courtyard
+bollards' ground pools from `src/courtyard.js` (`COURTYARD.bollards.pool`). They are hidden by day and therefore
+absent from the gard GLB. They use the same additive material and the wall lamps' latch, because the web fades
+both from the same night fraction. `facade_scene.validate` refuses an export whose `bollardLight` on/off/fade
+differ from `wallLight`. The web fades the pools into its scene fog (`fadeGlowWithFog`). Unreal relies on its own
+translucency fogging, which has not been compared at a distance. The material and Blueprint share `MPC_LundenWeather.Night`, `Hour` and
 `PowerAvailable` (1 for normal power, 0 for an outage). The individual panes and lenses have no ticks or collision.
 To compare the material code in WSL run `python3 tools/unreal-engine/tests/facade-shaders.py <export>/measurements.json`
 with `glslangValidator`, `vkrunner` and a Vulkan device, including Mesa lavapipe. Add `--dxc <path>` to compile

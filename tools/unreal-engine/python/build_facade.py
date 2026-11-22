@@ -226,8 +226,7 @@ def level(rows, spec, materials, manager):
         place(f"Facade_{r['house']}_{r['kind']}_{i}", ["facade:"+r["kind"], "house:"+r["house"]],
               template, r["kind"], r["values"], u.Vector(*r["xyz"]), rot, u.Vector(w/100,h/100,1))
     for s in spec["surfaces"]:
-        peak = spec["wallLight"]["washPeak" if s["name"].endswith("Wash") else "poolPeak"]
-        place(s["name"], ["facade:wash"], glow_mesh(s,template), "wash", [peak], u.Vector(), u.Rotator(), u.Vector(1,1,1))
+        place(s["name"], ["facade:wash"], glow_mesh(s,template), "wash", facade.wash_values(s), u.Vector(), u.Rotator(), u.Vector(1,1,1))
     if not levels.save_map(world, LEVEL):
         raise RuntimeError("Could not save " + LEVEL)
 

@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { GLASS_PANES, SITE } from '../../../src/config.js';
+import { COURTYARD, GLASS_PANES, HUS_L, SITE } from '../../../src/config.js';
+import { poolGeometry } from '../../../src/groundglow.js';
 import { paneTints } from '../../../src/glasspanes.js';
 import { roomVertex } from '../../../src/interiormap.js';
 import { windowHabit } from '../../../src/windowschedule.js';
@@ -29,16 +30,27 @@ test('the shared site glass keeps its builder’s house and omits the garage', (
     siteNeighborOpenings: [], wallLampFixtures: [],
     windows: { object: lights, habits: [{ ...windowHabit('unit:C'), house: 'C', key: 'unit:C' }] }
   });
+  // #2397: the courtyard bollards' pools (hidden by day, as on the web) travel with the gard zone
+  const PL = COURTYARD.bollards.pool;
+  const pools = new THREE.Mesh(poolGeometry(-20, 17.85, 1, 0, PL.r, PL.r, () => 0, { rings: 2, segs: 4 }));
+  Object.assign(pools, { name: 'courtyard-bollard-pools', visible: false });
   const world = { object: new THREE.Group() };
-  world.object.add(group);
+  world.object.add(group, pools);
   world.object.updateMatrixWorld(true);
 
+  const bollard = facadeLightingData(world, ['kvarteret', 'gard']).surfaces.at(-1);
+  assert.equal(bollard.name, 'courtyardBollardPools');
+  assert.deepEqual([bollard.colour, bollard.peak], [PL.color, PL.peak]);
+  assert.equal(bollard.indices.length, 3 * (4 + 2 * 4));
   const data = facadeLightingData(world, ['kvarteret']);
+  assert.deepEqual(data.bollardLight, { on: PL.on, off: PL.off, fade: PL.fade, colour: PL.color, peak: PL.peak });
   assert.deepEqual(data.panes.map((p) => p.house), ['C']);
   assert.deepEqual(data.windows.map((w) => w.house), ['C']);
   assert.deepEqual(data.panes[0].faces, [{ normal: [0, 1], offset: 0 }]);
   assert.equal(data.surfaces.length, 2);
   for (const surface of data.surfaces) {
+    assert.equal(surface.colour, HUS_L.doorLamp.color);
+    assert.equal(surface.peak, surface.name.endsWith('Wash') ? HUS_L.doorLamp.wash.peak : HUS_L.doorLamp.pool.peak);
     assert.equal(surface.vertices.length, 4);
     assert.equal(surface.indices.length, 6);
     assert.equal(new Set(surface.indices).size, 4);

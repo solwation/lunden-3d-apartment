@@ -126,7 +126,10 @@
           "properties": {
             "panes": { "type": "array", "items": { "type": "object", "required": ["house", "position", "normal", "halfWidth", "halfHeight", "depth", "floor", "ceiling", "left", "right", "dressing", "cover", "seed", "colours", "duskLit"] } },
             "fixtures": { "type": "array", "items": { "type": "object", "required": ["house", "kind", "position", "normal"] } },
-            "windows": { "type": "array", "items": { "type": "object", "required": ["house", "position", "normal", "width", "height", "hall", "routine"] } }
+            "windows": { "type": "array", "items": { "type": "object", "required": ["house", "position", "normal", "width", "height", "hall", "routine"] } },
+            "surfaces": { "type": "array", "description": "the additive wall washes and ground pools (web triangles in Unreal cm, uv per vertex); colour is the web's sRGB hex, peak its full-fade opacity. #2397: courtyardBollardPools when gard is exported.",
+              "items": { "type": "object", "required": ["name", "colour", "peak", "vertices", "indices"] } },
+            "bollardLight": { "type": "object", "description": "#2397: the courtyard bollard pools' on/off night thresholds, fade seconds, colour and peak (src/config.js COURTYARD.bollards.pool)", "required": ["on", "off", "fade", "colour", "peak"] }
           }
         }
       }
