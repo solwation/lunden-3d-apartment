@@ -22,6 +22,7 @@ Import (default):
      `collision` nodes become hidden-in-game BlockAll actors whose (shared unit cube) mesh has one simple box;
      material keys listed in tools/unreal-engine/material-map.json are replaced by hand-made materials;
      every mesh's complex collision is double-sided (Interchange leaves it single-sided, #2299);
+     a node whose extras say `castShadow: false` (the web mesh casts no sun shadow) gets Cast Shadow off (#2426);
      prepare_nanite_materials.prepare_zone moves meshes with unsupported material slots to the raster path and
      rebuilds their render data at once (the fingerprint must equal what a fresh editor computes, #2297), and keeps
      every Nanite mesh's fallback (collision, traces, non-Nanite drawing) at all its triangles (#2298);
@@ -29,7 +30,7 @@ Import (default):
   5. checks (also run by --check without importing): fixture markers within 1 cm of measurements.json `fixture`,
      arrow tips (north -> Unreal -Y, east -> +X) within 1 cm, every door/window/light/furniture/interactive id present
      as an actor name, label and tag, every collision actor's single simple box, every mesh's double-sided complex
-     collision, and (--check) the stamp's package
+     collision, every component's Cast Shadow against its node's `castShadow`, and (--check) the stamp's package
      hashes and content fingerprint; logs LUNDEN_IMPORT_OK / LUNDEN_CHECK_OK.
 Any failure raises, so run-python.ps1 exits non-zero.
 """
@@ -49,7 +50,7 @@ from season_tags import season_tags
 from build_materials import prepare_landscape_materials
 
 SUPPORTED_FORMAT_VERSION = 1
-IMPORTER_VERSION = 6  # bump when the importer's output changes for the same export (forces a re-import)
+IMPORTER_VERSION = 7  # bump when the importer's output changes for the same export (forces a re-import)
 GENERATED_ROOT = "/Game/Lunden/Generated"
 TOLERANCE_CM = 1.0
 ID_KINDS = ("door", "window", "light", "furniture", "interactive")
@@ -161,10 +162,13 @@ def content_fingerprint(zone):
         mesh = comp.static_mesh.get_name() if comp and comp.static_mesh else None
         loc, rot, scale = a.get_actor_location(), a.get_actor_rotation(), a.get_actor_scale3d()
         parent = a.get_attach_parent_actor()
-        actors.append([a.get_name(), a.get_actor_label(), a.get_class().get_name(), parent.get_name() if parent else None,
-                       [r2(loc.x), r2(loc.y), r2(loc.z)], [r2(rot.pitch), r2(rot.yaw), r2(rot.roll)],
-                       [r2(scale.x), r2(scale.y), r2(scale.z)], sorted(str(t) for t in a.tags), mesh,
-                       str(comp.get_collision_profile_name()) if comp else None, bool(a.get_editor_property("hidden"))])
+        entry = [a.get_name(), a.get_actor_label(), a.get_class().get_name(), parent.get_name() if parent else None,
+                 [r2(loc.x), r2(loc.y), r2(loc.z)], [r2(rot.pitch), r2(rot.yaw), r2(rot.roll)],
+                 [r2(scale.x), r2(scale.y), r2(scale.z)], sorted(str(t) for t in a.tags), mesh,
+                 str(comp.get_collision_profile_name()) if comp else None, bool(a.get_editor_property("hidden"))]
+        if comp and not comp.get_editor_property("cast_shadow"):
+            entry.append("noShadow")  # #2426: only when off, so a zone without such actors keeps its fingerprint
+        actors.append(entry)
     actors.sort(key=lambda x: x[0])
     meshes = []
     for p in sorted(eal.list_assets(f"{GENERATED_ROOT}/{zone}", recursive=True, include_folder=False)):
@@ -245,6 +249,28 @@ def apply_collision(by_id, extras):
             done.add(mesh.get_path_name())
         comp.set_collision_profile_name("BlockAll")
         actor.set_actor_hidden_in_game(True)
+        count += 1
+    return count
+
+
+def casts_shadow(ex):
+    """The node's web mesh casts a sun shadow unless its extras say `castShadow: false` (absent = casts, #2426)."""
+    return ex.get("castShadow", True) is not False
+
+
+def apply_shadows(by_id, extras):
+    """The web's sun shadow comes only from meshes with three's castShadow on; Unreal casts from every component by
+    default, so the Å-husen, their loggia rails and the courtyard's pergola bulbs shadowed the courtyard walks and lawn
+    (#2392, #2426). Each actor whose node casts nothing on the web gets Cast Shadow off. Unreal has no per-component
+    receive-shadow switch for opaque surfaces, so the web's receiveShadow does not travel."""
+    count = 0
+    for node_id, actor in by_id.items():
+        if casts_shadow(extras[node_id]):
+            continue
+        comp = actor.get_component_by_class(unreal.StaticMeshComponent)
+        if comp is None:
+            raise RuntimeError(f"{node_id}: castShadow false but the actor has no StaticMeshComponent")
+        comp.set_editor_property("cast_shadow", False)
         count += 1
     return count
 
@@ -464,6 +490,7 @@ def import_zone(zone, glb_path, glb_entry, manifest, table, map_sha):
     materials = apply_materials(zone, table)
     apply_vertex_color(zone, table)  # after the rules: a key a rule maps keeps its hand-made material
     double = apply_double_sided(zone)
+    shadows = apply_shadows(by_id, extras)
     prepare_zone(zone)
     if not unreal.EditorLoadingAndSavingUtils.save_map(world, level_path(zone)):
         raise RuntimeError(f"could not save {level_path(zone)}")
@@ -481,7 +508,7 @@ def import_zone(zone, glb_path, glb_entry, manifest, table, map_sha):
         f.write("\n")
     unreal.log(f"LUNDEN_IMPORT zone {zone}: imported {glb_entry['path']} ({glb_entry['sha256'][:12]}) -> {folder}: "
                f"{n_actors} actors, {n_assets} assets, {len(files)} files, {stamp['bytes']} bytes, {collisions} collision boxes, "
-               f"{materials} material slots mapped, {double} meshes made double-sided, fingerprint {fingerprint[:16]}")
+               f"{materials} material slots mapped, {double} meshes made double-sided, {shadows} actors without cast shadow, fingerprint {fingerprint[:16]}")
     return stamp
 
 
@@ -565,6 +592,25 @@ def check_double_sided(zone):
     unreal.log(f"LUNDEN_IMPORT_DOUBLE_SIDED zone {zone}: {len(meshes)} meshes with double-sided complex collision")
 
 
+def check_shadows(zone, glb_path):
+    """Every mesh actor casts a shadow exactly when its web mesh does (`castShadow` extras, #2426)."""
+    extras = node_extras(glb_path)
+    bad, off, total = [], 0, 0
+    for a in level_actors():
+        ex = extras.get(a.get_name())
+        comp = a.get_component_by_class(unreal.StaticMeshComponent)
+        if ex is None or comp is None or comp.static_mesh is None:
+            continue
+        total += 1
+        want = casts_shadow(ex)
+        off += not want
+        if bool(comp.get_editor_property("cast_shadow")) != want:
+            bad.append(f"{a.get_name()} (want {want})")
+    if bad:
+        raise RuntimeError(f"{zone}: {len(bad)} of {total} mesh actors cast shadows unlike their web mesh, e.g. {bad[:5]}: run import_world.py")
+    unreal.log(f"LUNDEN_IMPORT_SHADOW zone {zone}: {total} mesh actors, {off} without cast shadow as on the web, {total - off} casting")
+
+
 def check_stamp(zone, glb_entry, map_sha):
     ok, why = stamp_current(zone, glb_entry, map_sha)
     if not ok:
@@ -632,6 +678,7 @@ def main(argv):
         check_ids(zone, glb_path)
         check_collision(zone, glb_path)
         check_double_sided(zone)
+        check_shadows(zone, glb_path)
         check_vertex_color(zone, table)
         if zone == "fixture":
             check_fixture(measurements)

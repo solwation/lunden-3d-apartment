@@ -26,6 +26,7 @@
       "description": "collision: the box in web metres"
     },
     "direction": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3, "description": "fixture arrow: unit direction in web axes" },
+    "castShadow": { "const": false, "description": "the web mesh casts no sun shadow (three.js castShadow false); absent = it casts. Unreal turns the component's Cast Shadow off (#2426)" },
     "patioStringBulb": { "type": "boolean", "description": "Fence bulb using the shared unlit material driven by the patio dusk light." },
     "seasonal": {
       "type": "object", "required": ["what", "from", "to"], "additionalProperties": false,

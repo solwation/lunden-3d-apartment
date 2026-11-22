@@ -831,9 +831,14 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     const cloth = furnish || !!mesh.userData?.door;
     const trunk = mesh.geometry.userData.bark; // trunkGeometry marks both detailed species and the plain far LOD
     const em = ms.map((m) => exportMaterial(m, cloth, trunk === 'bark' || trunk === 'birch' ? trunk : null));
-    return new THREE.Mesh(g, Array.isArray(mesh.material) ? em : em[0]);
+    const n = new THREE.Mesh(g, Array.isArray(mesh.material) ? em : em[0]);
+    if (!mesh.castShadow) noShadow.add(n); // #2426: written as extras.castShadow once the node's extras are final
+    return n;
   };
   const stats = {};
+  // #2426: the web mesh casts no sun shadow (three's castShadow false, its default). Unreal casts from every imported
+  // component unless told otherwise, so the node says so (absent = casts); import_world.py turns cast_shadow off.
+  const noShadow = new WeakSet();
   const subtree = (o, atomId, counter, keys, furnish) => { // o's visible exported content, local transforms kept
     const n = o.isMesh && !o.isInstancedMesh ? meshNode(o, furnish) : new THREE.Group();
     if (!n) return null;
@@ -891,6 +896,7 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
       root.add(node);
       stats[a.kind] = (stats[a.kind] ?? 0) + 1;
     }
+    root.traverse((o) => { if (noShadow.has(o)) o.userData.castShadow = false; });
     const zone = ZONES.find((z) => z.id === zoneId);
     lookAtom = null;
     tris += parkedCollision(root, parked, zoneId);
