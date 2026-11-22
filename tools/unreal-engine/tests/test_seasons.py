@@ -1,13 +1,16 @@
 """#2295: seasonal pieces in Play In Editor on L_Lunden follow the web's date rule (src/christmas.js inChristmas).
 
 1. Editor world: the tree and its parts have the Christmas window. The four furnishings covered by the tree in
-   the web's default layout and all their parts have the complementary window (#2303).
+   the web's default layout and all their parts have the complementary window (#2303). The patio sofa's decorative
+   cushions (a part of the all-year sofa) have the window of src/patio.js cushionsOut's months (#2387).
 2. PIE with the world's GameMode: BP_LundenPlayerController carries BPC_LundenSeasons (player-extensions.json), and its
    BeginPlay left the tree as the rule says for the PC's local date today.
 3. For every row of tools/unreal-engine/tests/season-dates.json (checked against the web's own function by
    season-rule.test.mjs) the test hook ApplySeason(year, month, day) shows the tree with collision on the Christmas
    dates and hides it without collision on the others (summer, the days around the window, the new-year wrap);
-   the covered furniture always has the opposite visibility and collision. Other furniture retains its state.
+   the covered furniture always has the opposite visibility and collision, and the patio cushions show with
+   collision exactly on the rows' `cushions` dates (out 1 April - 30 September, in the cushion box otherwise).
+   Other furniture retains its state.
 
 Run like the other PIE tests: copy this file to unreal/Lunden/Content/Python/ (untracked) and
     run-tests.ps1 -Filter Editor.Python.Lunden.test_seasons
@@ -75,6 +78,18 @@ for root in roots:
 if {group: sorted(names) for group, names in types.items()} != expected_types:
     raise RuntimeError(f"Seasonal furniture {types}; expected web default {expected_types}. Re-import l1007 and compose L_Lunden.")
 FROM, TO = windows[TREE]
+# #2387: the patio sofa's decorative cushions, a seasonal part inside the all-year sofa.
+CUSHIONS = "season:patioCushions"
+cushion_actors = [a for a in editor_actors if CUSHIONS in tags(a)]
+if not cushion_actors:
+    raise RuntimeError("No patio cushions with a season window: re-export (#2387), re-import l1007-uteplats and compose L_Lunden")
+for actor in cushion_actors:
+    window = (tag_value(actor, "seasonFrom:"), tag_value(actor, "seasonTo:"))
+    if ("kind:part" not in tags(actor) or not any(t.startswith("parent:furn_veronasofa_") for t in tags(actor))
+            or None in window or windows.setdefault(CUSHIONS, window) != window):
+        raise RuntimeError(f"{tags(actor)[0]}: not a sofa cushion part with one window: {tags(actor)}")
+    actor_ids.setdefault(CUSHIONS, set()).add(tags(actor)[0])
+u.log(f"LUNDEN_SEASONS_TEST patio cushions {sorted(actor_ids[CUSHIONS])}: window {windows[CUSHIONS][0]}..{windows[CUSHIONS][1]}")
 untouched_ids = [tags(a)[0] for a in editor_actors if "kind:furniture" in tags(a) and "seasonal" not in tags(a)][:5]
 
 
@@ -132,8 +147,11 @@ def seasons_test():
         want = web_rule(today.year, today.month, today.day, FROM, TO)
         hidden, solid = state(TREE, want)
         corner_hidden, corner_solid = state(CORNER, not want)
+        cushions_out = web_rule(today.year, today.month, today.day, *windows[CUSHIONS])
+        cushions_hidden, _ = state(CUSHIONS, cushions_out)
         result["today"] = {"date": str(today), "hidden": hidden, "collision": solid, "web": want,
-                           "cornerHidden": corner_hidden, "cornerCollision": corner_solid}
+                           "cornerHidden": corner_hidden, "cornerCollision": corner_solid,
+                           "cushionsHidden": cushions_hidden, "cushionsOut": cushions_out}
         u.log(f"LUNDEN_SEASONS_TEST BeginPlay {json.dumps(result['today'])}")
 
         for row in DATES:
@@ -142,14 +160,17 @@ def seasons_test():
             yield
             hidden, solid = state(TREE, row["christmas"])
             corner_hidden, corner_solid = state(CORNER, not row["christmas"])
+            cushions_hidden, cushions_solid = state(CUSHIONS, row["cushions"])
+            cushion_rule = seasons.call_method("InSeason", (y, m, d, *windows[CUSHIONS]))
             rule = seasons.call_method("InSeason", (y, m, d, FROM, TO))
             after = [(a.get_editor_property("hidden"), a.get_actor_enable_collision()) for a in untouched]
             others = sorted({hidden for hidden, _ in after})
             entry = {**row, "hidden": hidden, "collision": solid, "inSeason": rule, "untouchedHidden": others,
-                     "cornerHidden": corner_hidden, "cornerCollision": corner_solid}
+                     "cornerHidden": corner_hidden, "cornerCollision": corner_solid,
+                     "cushionsHidden": cushions_hidden, "cushionsCollision": cushions_solid, "cushionRule": cushion_rule}
             result["dates"].append(entry)
             u.log(f"LUNDEN_SEASONS_TEST {json.dumps(entry)}")
-            if rule != row["christmas"] or after != initial or others != [False]:
+            if rule != row["christmas"] or cushion_rule != row["cushions"] or after != initial or others != [False]:
                 raise RuntimeError(f"{row['date']}: {entry}, the web: christmas {row['christmas']}")
         (Path(u.Paths.project_saved_dir()) / "seasons-result.json").write_text(json.dumps(result, indent=2) + "\n")
         u.log(f"LUNDEN_SEASONS_TEST {len(seasonal)} seasonal actors, {len(DATES)} dates agree with the web")

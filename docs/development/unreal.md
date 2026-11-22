@@ -107,8 +107,8 @@ tools/unreal-engine/tests/test_player_world.py  PIE test on L_Lunden (#2300): su
 unreal/Lunden/Content/Lunden/Player/          BP_LundenPlayer, BP_LundenPlayerController, BP_LundenGameMode, BP_LundenCameraManager,
                                    BPC_LundenStepSurface, BPC_LundenRest, Input/ (LFS)
 tools/unreal-engine/python/build_seasons.py   the season rule /Game/Lunden/Seasons/BPC_LundenSeasons (#2295)
-tools/unreal-engine/tests/test_seasons.py     PIE test on L_Lunden: the Christmas tree shown/hidden per season-dates.json
-tools/unreal-engine/tests/season-rule.test.mjs  season-dates.json against the web's own inChristmas (Node)
+tools/unreal-engine/tests/test_seasons.py     PIE test on L_Lunden: the Christmas tree, its corner and the patio cushions per season-dates.json
+tools/unreal-engine/tests/season-rule.test.mjs  season-dates.json against the web's own inChristmas and cushionsOut (Node)
 tools/unreal-engine/tests/capture_seasons.py  GPU views of the tree corner on June 21 and December 24
 unreal/Lunden/Content/Lunden/Seasons/         BPC_LundenSeasons, MPC_LundenVegetation (LFS; made by build_seasons.py)
 tools/unreal-engine/python/build_save.py      the save file /Game/Lunden/Save/: SG_LundenSave, BFL_LundenSave, BPC_LundenSave (#2288)
@@ -695,6 +695,7 @@ The web shows the Christmas tree only from `XMAS_TREE.season.from` to `.to`, inc
 [porting plan](unreal-inventory.md)): what the web hides out of season is hidden in Unreal too. #2295 owns
 `/Game/Lunden/Seasons/`, `build_seasons.py`, `tests/test_seasons.py`, `tests/season-dates.json`,
 `tests/season-rule.test.mjs`, `tests/capture_seasons.py` and the `Seasons` row of `player-extensions.json`.
+#2387 added the patio cushions to the same data, rule and tests.
 
 - **Data.** The exporter marks the tree `extras.seasonal = {what, from, to}` from `src/config.js`. It uses the web's
   `christmasCoverage` at the exported poses, including supported furniture and loose items. At the default position
@@ -702,6 +703,13 @@ The web shows the Christmas tree only from `XMAS_TREE.season.from` to `.to`, inc
   `import_world.py` (`season_tags`) tags each root and its descendants with `seasonal`, the window name
   (`season:christmas` or `season:outsideChristmas`) and its inclusive start/end (month × 100 + day). The separate point-light actors for the floor lamp and
   the tree receive their furniture's tags when `build_lighting.py` generates `Level_lighting`.
+- **Patio cushions (#2387).** The web puts the patio sofa's decorative cushions out in `src/patio.js`
+  `cushionsOut`'s months (the parasol's, April to September) and lays them in the cushion box otherwise. The exporter
+  turns those months into one window (`patioCushionWindow`: 1 Apr – 30 Sep, `season:patioCushions`) on the cushion
+  part node only, so the all-year sofa stays. `season_tags` already reads a part's own extras. The cushions in the
+  closed box are never exported, because the web draws them only with the lid open. *Not ported:* the web also takes
+  the cushions in under rain clouds (`overcast` > 0.6), which a date window cannot carry; that is weather (#2331).
+  [Verification](../verification/2387/README.md).
 - **Rule, in one place.** `BPC_LundenSeasons` (ActorComponent, built by `build_seasons.py`) has `InSeason(Year, Month,
   Day, From, To)`: key = month × 100 + min(day, days in the month); inside when From ≤ key ≤ To, or for a window that
   wraps the new year (From > To) when key ≥ From or key ≤ To. `TagValue(Actor, Prefix)` reads a window tag.
