@@ -492,6 +492,20 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     for (const o of [garage.object, garage.door.object, garage.parkObject]) extra.group.set(o, 'garage');
     extra.group.set(core.own, 'core-l');
     for (const p of core.parts) { extra.group.set(p.object, 'core-abc'); if (p.exterior) extra.group.set(p.exterior, 'core-abc'); }
+    // #2435: an unlit label's colour with the power on, and the share of it a power cut leaves (`cut`), as the web changes
+    // them at run time. Hus A/B/C dim their flats' number signs and door leaves to POWER.emergency (corehouse.js setPower;
+    // Hus L's core.js and the floor numbers keep theirs). The garage's signs, floor markings and plans follow their area's
+    // tubes (garage.js setLevel): the motion sensors light them while the player is there and a power cut leaves them at
+    // the off level. The export writes those labels at the lit level (the area is built dark, setLevel(a, 0), #2404).
+    extra.labelPower = new Map();
+    for (const p of core.parts) for (const m of [p.mats.sign, p.mats.leaf]) if (m) extra.labelPower.set(m, C.POWER.emergency);
+    for (const a of Object.values(garage.areas)) {
+      const k = a.level, probe = a.mats.signs;
+      garage.setLevel(a, 1); const on = probe.color.r;
+      garage.setLevel(a, 0); const off = probe.color.r;
+      garage.setLevel(a, k);
+      for (const m of [a.mats.signs, ...a.mats.floors, a.mats.plans]) if (m?.map) { m.color.setScalar(on); extra.labelPower.set(m, off / on); }
+    }
 
   } catch (e) { extra.error = String(e?.stack ?? e); }
   // #2310: the fruit bowl on the coffee table (src/fruit.js) and Tilly's basketball in its wall holder (src/basket.js),
@@ -807,6 +821,10 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     // house paints its own atlas under the same plain key
     const label = !!(m.isMeshBasicMaterial && m.map);
     const tex = (furnish || label) && !hedge && !siteMap ? furnishingTexture(m.map, textures, textureOfMap) : null;
+    // #2435: ... and stays unlit (KHR_materials_unlit; import_world.py puts it on the display-gain master), with the share
+    // of its colour a power cut leaves (1 unless the web dims it: extra.labelPower)
+    const unlit = !!(tex && m.isMeshBasicMaterial);
+    const powerCut = unlit ? r4(extra.labelPower?.get(m) ?? 1) : null;
     const bulb = m === lightsInfo.patioBulb;
     const siteSuffix = siteMap ? m.map.name.replaceAll('-', '_') : null;
     // Keep the unlit bulbs, bark textures and three foliage types distinct from furnishing images.
@@ -816,7 +834,8 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     const key = suffix ? `${base}_${suffix}` : base;
     let em = materials.get(key);
     if (!em) {
-      em = bulb ? new THREE.MeshBasicMaterial({ name: key, color: m.color }) : new THREE.MeshStandardMaterial({ name: key, color: new THREE.Color(info.color), roughness: info.roughness, metalness: info.metalness,
+      em = bulb ? new THREE.MeshBasicMaterial({ name: key, color: m.color }) : unlit ? new THREE.MeshBasicMaterial({ name: key, color: new THREE.Color(info.color),
+        transparent: info.opacity < 1, opacity: info.opacity, side: info.doubleSided ? THREE.DoubleSide : THREE.FrontSide, vertexColors: info.vertexColors }) : new THREE.MeshStandardMaterial({ name: key, color: new THREE.Color(info.color), roughness: info.roughness, metalness: info.metalness,
         transparent: info.opacity < 1, opacity: info.opacity, side: info.doubleSided ? THREE.DoubleSide : THREE.FrontSide, vertexColors: info.vertexColors });
       if (info.emissive) em.emissive = new THREE.Color(info.emissive);
       if (hedge) em.map = hedgeTexture(m);
@@ -831,7 +850,9 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
         em.emissiveMap = em.map; // same sRGB texels, sampler, UV channel and transform
         em.emissive.fromArray(curtain.daylight); // daylight fallback for an imported mesh without a running controller
       }
-      materials.set(key, em); materialTable[key] = tex ? { ...info, texture: tex.id } : info;
+      materials.set(key, em); materialTable[key] = tex ? { ...info, texture: tex.id, ...(unlit ? { unlit: true, powerCut } : {}) } : info;
+    } else if (unlit && materialTable[key].powerCut !== powerCut) {
+      throw new Error(`${key}: unlit labels with power-cut shares ${materialTable[key].powerCut} and ${powerCut} share one key`);
     }
     if (tex) tex.keys.add(key);
     cache.set(m, em);

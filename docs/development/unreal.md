@@ -1455,12 +1455,32 @@ the export and the pictures section of `notices.mjs`.
   numbers. Before, all of them shared the plain key `bas_ffffff_r100_m0_tex` (or `bas_353535_r100_m0_vc_tex` in the
   garage) without a `baseColorTexture`, so the A1004 sign rendered white in Unreal. Each canvas now has its own
   `<key>_t<id>` and is listed in `furnishing.textures`, so `tests/test_furnishing.py` checks it on its mesh actors.
-  The export is still lit (`MeshStandardMaterial`, roughness 1), unlike the web's unlit material, so a sign's brightness
-  follows the scene's light (#2435). `node tools/unreal-engine/tests/sign-textures.mjs <export dir>` fails when an unlit
+  `node tools/unreal-engine/tests/sign-textures.mjs <export dir>` fails when an unlit
   textured key loses its image or the four houses' atlases collapse into one. `tests/sign-views.mjs` writes paired
   web/Unreal cameras in front of the A/B/C/L number signs and the garage plate for `capture-web-views.cjs`
   (`LUNDEN_CAPTURE_VIEWS`) and `tests/capture_flat_signs.py` (PIE, `-RenderOffScreen`); see
   [the sign pictures](../verification/2400/README.md).
+- **Unlit signs and labels (#2435).** The web draws those materials unlit: a plate shows whiter than the wall beside it
+  and reads as well in the dark. Exported lit (`MeshStandardMaterial`, roughness 1) they took the wall's light, so the
+  plate's edge hardly showed and a dark room darkened the sign. The export now writes every such key (a `bas` key with a
+  texture) as a `MeshBasicMaterial`, which GLTFExporter turns into `KHR_materials_unlit`, and marks it in
+  `measurements.json` `materials[]` with `unlit: true` and `powerCut`: the share of its colour a power cut leaves on the
+  web. Hus A/B/C's number signs and door leaves dim to `POWER.emergency` (`corehouse.js` `setPower`); Hus L, the floor
+  numbers, pictograms and screens keep theirs (1). The garage's signs, floor markings and plans follow their area's tubes
+  (`garage.js` `setLevel`, sensor-lit while the player is there): the export writes them at the lit level (white
+  factor, before #2435 the dark `0x353535` of the unlit area) and with the off level's share, 0.035, for a power cut.
+  Interchange gives each an instance of its unlit master `M_Unlit`; after the rules and the vertex colours,
+  `import_world.py` re-parents it onto `Generated/LabelMaterials/M_LundenGltfUnlitLabel` (graph `gltf-unlit-label`,
+  material-map.json `unlitLabel`): a copy of `M_Unlit` whose EmissiveColor (texture × factor × vertex colour) is
+  multiplied by 2^-`EXPOSURE_BIAS` (the web's picture at the game's locked exposure, as the stairwells' baked light) and
+  by `PowerCut` + (1 − `PowerCut`) × `MPC_LundenWeather.PowerAvailable`, with the instance's `PowerCut` set from the
+  export. `prepare_generated_materials` builds it with the stairwell masters before any zone import (Git-ignored, no LFS
+  lock). `import_world.py --check` fails when a label instance is not unlit on that master, lost its texture or has
+  another power share; `tests/test_materials.py` (point 10) and `tests/sign-textures.mjs` fail when such a key is exported
+  lit, lacks `KHR_materials_unlit` or its image, or a rule would replace it. *Not carried:* the garage's sensor fade
+  (the labels always show the lit level), and the web's `toneMapped: false` screens get the same gain as tone-mapped
+  labels. `tests/capture_flat_signs.py` takes optional lighting rounds (`Saved/sign-shots.json`: hour and power);
+  see [the #2435 pictures](../verification/2435/README.md).
 - **Keys.** A furnishing material's key gets the texture id: `<key>_t<10 hex>` (a hash of the image file path, or a
   canvas's pixels at collection time, plus its repeat, offset, rotation, wrap and flip). Building and ground surfaces
   keep their plain keys, so #2282's rules are untouched; the rugs and the cleaning cupboard no longer fall under the
@@ -2959,7 +2979,8 @@ the hedges, `std_78a64b_…`) were unaffected, which is why they were green.
   with `VertexColorWeight` above 0), have a base colour texture in the GLB, or match `vertexColor.match` with the glTF
   master Interchange gives it (by the material's extensions: unlit, transmission, clearcoat, sheen, else `M_Default`)
   listed in `vertexColor.masters`. The export of `816b695d` has 56 such keys in 7 zones (64 zone instances, 6 of them
-  textured), all on `M_Default` (the web's `MeshBasicMaterial` keys export without `KHR_materials_unlit` and import lit).
+  textured), all on `M_Default` (the web's untextured `MeshBasicMaterial` keys export without `KHR_materials_unlit` and
+  import lit; its textured signs and labels are unlit since #2435).
 - Hand-made materials of the rules ignore the vertex colour unless their master reads it; the lawns' grass master has
   `VertexColorWeight` 0 and no lawn key is vertex-coloured. The vegetation's leaf cards keep `MI_LundenLeaf` (#2281),
   which multiplies the vertex AO. Textured keys with vertex colours (`…_vc_tex_t…`: the sofas' upholstery, the garage

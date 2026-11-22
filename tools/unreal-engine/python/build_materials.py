@@ -23,6 +23,11 @@ Every entry under `materials` becomes one asset in /Game/Lunden/Materials/:
                          .display_gain, 2^-EXPOSURE_BIAS) x `color` x (emergency + (1 - emergency) x PowerAvailable);
                          with `opacity` it is translucent (a transparent pane: colour x opacity over the scene).
                          Built under /Game/Lunden/Generated/ by import_world.py itself (no versioned asset, no LFS lock);
+  - "graph": "gltf-unlit-label"  (#2435) a copy of Interchange's unlit glTF master `from` (M_Unlit) whose EmissiveColor is
+                         multiplied by the display gain and (PowerCut + (1 - PowerCut) x PowerAvailable), PowerCut a scalar
+                         parameter (default 1): the web's unlit signs and labels with their image (MeshBasicMaterial with a
+                         map). import_world.py re-parents their instances onto it and sets PowerCut from the export
+                         (material-map.json `unlitLabel`); generated like the baked-light masters;
   - "parent": <master>   a MaterialInstanceConstant with the entry's `params`; `"twoSided": true` overrides the master's
                          face setting (an open wire or strip seen from inside, #2395), and `"raster": "<reason>"` is
                          stamped as Lunden.Raster, which sends every imported mesh wearing it to the raster path
@@ -273,8 +278,10 @@ def spec_hash(path, spec):
         parts.extend([backdrop_material.canvas_hash(spec), Path(backdrop_material.__file__).read_text(encoding="utf-8")])
     if spec.get("graph") == BAKED:
         parts.append(river_material.display_gain())  # follows build_lighting.EXPOSURE_BIAS, as the river (#2410)
-    if spec.get("graph") == GLTF_VC:  # a copy of an engine material: a new engine version rebuilds it
+    if spec.get("graph") in (GLTF_VC, GLTF_LABEL):  # a copy of an engine material: a new engine version rebuilds it
         parts.append(unreal.SystemLibrary.get_engine_version())
+    if spec.get("graph") == GLTF_LABEL:
+        parts.append(river_material.display_gain())  # #2435: follows build_lighting.EXPOSURE_BIAS
     reads = collection_reads(spec)
     if reads:  # #2408: a collection rebuilt with new parameter GUIDs rebuilds its readers, and --check fails until then
         parts.append({"collectionIds": collection_ids.ids(reads)})
@@ -563,6 +570,8 @@ def glass_graph(m, spec):
 
 GLTF_VC = "gltf-vertex-color"
 BAKED = "baked-light"  # #2431: generated at import time (prepare_generated_materials), so it lives under Generated/
+GLTF_LABEL = "gltf-unlit-label"  # #2435: Interchange's unlit master x display gain x power, also generated at import time
+POWER_CUT = "PowerCut"  # #2435: the share of an unlit label's colour a power cut leaves (the instance's scalar parameter)
 VC_OUTPUTS = {"BaseColor": unreal.MaterialProperty.MP_BASE_COLOR, "EmissiveColor": unreal.MaterialProperty.MP_EMISSIVE_COLOR}
 
 
@@ -596,6 +605,64 @@ def build_gltf_vertex_color(path, spec, existing):
     mel.set_base_material_usage(m, NANITE, True)
     mel.recompile_material(m)
     return m
+
+
+def build_gltf_unlit_label(path, spec, existing):
+    """#2435: the web's unlit signs and labels (MeshBasicMaterial with a colour map) keep their image on Interchange's
+    unlit master (KHR_materials_unlit, the base colour texture times the factor and vertex colour as EmissiveColor). three
+    shows that colour C at its exposure and the game's locked exposure is that exposure x 2^EXPOSURE_BIAS, so a copy of the
+    master multiplies EmissiveColor by C's display gain (2^-EXPOSURE_BIAS, as the stairwells' baked light, #2431) and by
+    the power supply: PowerCut + (1 - PowerCut) x MPC_LundenWeather.PowerAvailable, PowerCut being what a power cut leaves
+    on the web (an instance parameter, default 1: unchanged). A copy keeps every parameter name, so an imported instance
+    keeps its texture and values when the importer re-parents it here."""
+    weather = eal.load_asset(river_material.WEATHER)
+    if weather is None:
+        raise RuntimeError("Run build_lighting.py before building the unlit label master (it reads MPC_LundenWeather)")
+    folder, name = path.rsplit("/", 1)
+    unreal.AssetRegistryHelpers.get_asset_registry().scan_paths_synchronous([spec["from"].rsplit("/", 1)[0]], True)
+    source = eal.load_asset(spec["from"])
+    if not isinstance(source, unreal.Material):
+        raise RuntimeError(f"{path}: source master {spec['from']} does not exist")
+    if existing is not None and not eal.delete_asset(path):
+        raise RuntimeError(f"could not delete {path} to rebuild it")
+    m = unreal.AssetToolsHelpers.get_asset_tools().duplicate_asset(name, folder, source)
+    if m is None:
+        raise RuntimeError(f"could not duplicate {spec['from']} to {path}")
+    prop = unreal.MaterialProperty.MP_EMISSIVE_COLOR
+    node = mel.get_material_property_input_node(m, prop)
+    out = mel.get_material_property_input_node_output_name(m, prop)
+    if node is None:
+        raise RuntimeError(f"{path}: {spec['from']} has nothing on EmissiveColor")
+    x, y = node.get_editor_property("material_expression_editor_x"), node.get_editor_property("material_expression_editor_y")
+    power = mel.create_material_expression(m, unreal.MaterialExpressionCollectionParameter, x - 500, y + 300)
+    power.set_editor_property("collection", weather)
+    power.set_editor_property("parameter_name", "PowerAvailable")
+    cut = scalar_param(m, POWER_CUT, 1.0, x - 500, y + 450)
+    supply = mel.create_material_expression(m, unreal.MaterialExpressionLinearInterpolate, x - 250, y + 350)
+    supply.set_editor_property("const_b", 1.0)
+    gain = mel.create_material_expression(m, unreal.MaterialExpressionMultiply, x, y + 350)
+    gain.set_editor_property("const_b", river_material.display_gain())
+    mul = mel.create_material_expression(m, unreal.MaterialExpressionMultiply, x + 300, y)
+    if not (mel.connect_material_expressions(cut, "", supply, "A") and mel.connect_material_expressions(power, "", supply, "Alpha")
+            and mel.connect_material_expressions(supply, "", gain, "A")
+            and mel.connect_material_expressions(node, out, mul, "A") and mel.connect_material_expressions(gain, "", mul, "B")
+            and mel.connect_material_property(mul, "", prop)):
+        raise RuntimeError(f"{path}: could not multiply EmissiveColor by the display gain and power")
+    mel.set_base_material_usage(m, NANITE, True)
+    mel.recompile_material(m)
+    return m
+
+
+def unlit_label_ok(m):
+    """--check (#2435): unlit, EmissiveColor a Multiply whose other input carries the display gain x power supply, and the
+    PowerCut parameter the importer sets."""
+    node = mel.get_material_property_input_node(m, unreal.MaterialProperty.MP_EMISSIVE_COLOR)
+    if (m.get_editor_property("shading_model") != unreal.MaterialShadingModel.MSM_UNLIT
+            or not isinstance(node, unreal.MaterialExpressionMultiply)
+            or POWER_CUT not in {str(n) for n in mel.get_scalar_parameter_names(m)}):
+        return False
+    gain = [i for i in mel.get_inputs_for_material_expression(m, node) if isinstance(i, unreal.MaterialExpressionMultiply)]
+    return any(abs(g.get_editor_property("const_b") - river_material.display_gain()) < 1e-6 for g in gain)
 
 
 def baked_light_graph(m, spec):
@@ -756,6 +823,8 @@ def check(table):
                             for error in collection_ids.unresolved(asset))
         if spec.get("graph") == BAKED and not baked_light_ok(asset, spec):
             problems.append(f"{path}: not unlit, wrong face setting, or emissive not multiplied by the vertex colour")
+        if spec.get("graph") == GLTF_LABEL and not unlit_label_ok(asset):
+            problems.append(f"{path}: not unlit, or EmissiveColor not multiplied by the display gain and {POWER_CUT} supply")
         if spec.get("graph") == GLTF_VC and not uses_vertex_color(asset, VC_OUTPUTS[spec["output"]]):
             problems.append(f"{path}: {spec['output']} is not multiplied by the vertex colour")
         if "parent" in spec:
@@ -798,11 +867,13 @@ def build_entries(materials, force=False):
                 and (spec.get("graph") not in GROUND_CODE or seasonal_ground(existing, spec))
                 and (spec.get("graph") != backdrop_material.GRAPH or backdrop_material.check(existing, spec, uses_vertex_color))
                 and (spec.get("graph") != BAKED or baked_light_ok(existing, spec))
+                and (spec.get("graph") != GLTF_LABEL or unlit_label_ok(existing))
                 and not (isinstance(existing, unreal.Material) and collection_ids.unresolved(existing))):
             unreal.log(f"LUNDEN_MATERIAL {path}: kept (spec {want})")
             kept += 1
             continue
-        build = build_instance if "parent" in spec else build_gltf_vertex_color if spec.get("graph") == GLTF_VC else build_master
+        build = (build_instance if "parent" in spec else build_gltf_vertex_color if spec.get("graph") == GLTF_VC
+                 else build_gltf_unlit_label if spec.get("graph") == GLTF_LABEL else build_master)
         asset = build(path, spec, existing)
         stamp(asset, path, spec)
         if not eal.save_loaded_asset(asset, only_if_is_dirty=False):
@@ -834,9 +905,10 @@ def prepare_landscape_materials(table, check_only, river_surface):
 
 def prepare_generated_materials(table, check_only):
     """#2431: build or check the generated masters every zone import may need before its rules run (the baked-light
-    stairwells of hus-l and kvarteret). They live under /Game/Lunden/Generated/ (Git-ignored), so the importer makes
-    them on each machine; an unchanged spec hash keeps the asset."""
-    subset = {path: spec for path, spec in table["materials"].items() if spec.get("graph") == BAKED}
+    stairwells of hus-l and kvarteret, #2435's unlit label master of every zone with a sign, label or screen). They live
+    under /Game/Lunden/Generated/ (Git-ignored), so the importer makes them on each machine; an unchanged spec hash keeps
+    the asset."""
+    subset = {path: spec for path, spec in table["materials"].items() if spec.get("graph") in (BAKED, GLTF_LABEL)}
     if not subset:
         return
     if check_only:

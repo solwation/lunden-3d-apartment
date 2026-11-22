@@ -31,6 +31,10 @@
      Interchange's instance (which keeps the glTF flag), unless the rule says why one side is enough (`singleSided`).
      The garage box's retaining walls face into the box; with a single-sided brick the park saw the terrain's grass step
      4 cm behind them (#2448).
+ 11. (#2435) every web unlit label the export keeps with its image (a `bas` key with a texture: MeshBasicMaterial with a
+     map) is marked `unlit` with a power-cut share 0-1, carries KHR_materials_unlit and its base colour texture in every GLB,
+     and is not replaced by a rule, and material-map.json `unlitLabel` names a generated gltf-unlit-label copy of
+     Interchange's unlit master, so the importer can put it on that master (import_world.py --check verifies the assets).
 --table prints one line per key: key, nodes, rule material or "default: <reason>".
 Exit 0 when all hold, 1 otherwise; prints MATERIAL_COVERAGE_OK.
 """
@@ -53,6 +57,7 @@ MASTER_PARAMS = {
 }
 GLTF_VC = "gltf-vertex-color"  # #2321: build_materials.py's copy of an Interchange glTF master times the vertex colour
 BAKED = "baked-light"  # #2431: build_materials.py's unlit master, emissive = vertex colour x display gain x power
+GLTF_LABEL = "gltf-unlit-label"  # #2435: Interchange's unlit master x display gain x power, for the web's unlit labels
 GLTF_MASTERS = (("KHR_materials_unlit", "/InterchangeAssets/gltf/M_Unlit.M_Unlit"),  # Interchange's choice by extension
                 ("KHR_materials_transmission", "/InterchangeAssets/gltf/M_Transmission.M_Transmission"),
                 ("KHR_materials_clearcoat", "/InterchangeAssets/gltf/M_ClearCoat.M_ClearCoat"),
@@ -256,6 +261,42 @@ def double_sided_check(export_dir, mats, rule_rx, errors):
     return checked, excused
 
 
+def unlit_label_check(export_dir, export_materials, table, rule_rx, errors):
+    """#2435: {key: power-cut share} of the web's unlit labels; appends an error for each one that would render lit."""
+    section, mats = table.get("unlitLabel") or {}, table["materials"]
+    master = mats.get((section.get("master") or "").split(".")[0])
+    if (not master or master.get("graph") != GLTF_LABEL or master.get("from") != section.get("from")
+            or section.get("from") != GLTF_MASTERS[0][1].split(".")[0] or not section["master"].startswith("/Game/Lunden/Generated/")):
+        errors.append(f"material-map.json unlitLabel must name a generated {GLTF_LABEL} material built from {GLTF_MASTERS[0][1].split('.')[0]}")
+    labels = {}
+    for key, info in sorted(export_materials.items()):
+        if info.get("type") != "bas" or not info.get("texture"):
+            continue
+        cut = info.get("powerCut")
+        if info.get("unlit") is not True or not isinstance(cut, (int, float)) or not 0 <= cut <= 1:
+            errors.append(f"web unlit label {key} is exported lit (unlit {info.get('unlit')}, powerCut {cut}): re-export (#2435)")
+            continue
+        labels[key] = cut
+        hit = next((r for rx, mx, r in rule_rx if rx.search(key)), None)
+        if hit:
+            errors.append(f"unlit label {key}: rule {hit['match']} replaces it with {hit['material']} (lit, without its image)")
+    if not labels:
+        errors.append("the export has no unlit labels (#2400/#2435: the flats' number signs at least)")
+    seen = set()
+    for name in sorted(os.listdir(export_dir)):
+        if not name.endswith(".glb"):
+            continue
+        for m in glb_json(os.path.join(export_dir, name)).get("materials", []):
+            if m.get("name") not in labels:
+                continue
+            seen.add(m["name"])
+            if "KHR_materials_unlit" not in m.get("extensions", {}) or "baseColorTexture" not in m.get("pbrMetallicRoughness", {}):
+                errors.append(f"{name}: unlit label {m['name']} lacks KHR_materials_unlit or its base colour texture (it would import lit)")
+    for key in sorted(set(labels) - seen):
+        errors.append(f"unlit label {key} is in no GLB")
+    return labels
+
+
 def main(argv):
     args = [a for a in argv if not a.startswith("--")]
     export_dir = args[0] if args else os.path.join(ROOT, "unreal", "Lunden", "Import")
@@ -288,7 +329,7 @@ def main(argv):
                 errors.append(f"{path}: the mortar footprint filter expects alternate half-brick rows")
             if unknown:
                 errors.append(f"{path}: {parent.get('graph')} master has no parameter(s) {sorted(unknown)}")
-        elif spec.get("graph", "constant") not in ("constant", "river", GLTF_VC, BAKED, *MASTER_PARAMS):
+        elif spec.get("graph", "constant") not in ("constant", "river", GLTF_VC, BAKED, GLTF_LABEL, *MASTER_PARAMS):
             errors.append(f"{path}: unknown graph {spec.get('graph')}")
         if spec.get("graph") == BAKED and (not path.startswith("/Game/Lunden/Generated/")
                                            or not 0 <= spec.get("emergency", -1) <= 1 or spec.get("twoSided") is not True
@@ -409,6 +450,11 @@ def main(argv):
             if hit:
                 errors.append(f"soldier-course key {key}: rule {hit['match']} replaces its canvas with {hit['material']}")
         print(f"soldier courses (#2425): {', '.join(soldier) or 'none'}, each with its canvas in the GLB")
+
+        # 11. #2435: the web's unlit labels stay unlit (a lit plate takes the wall's light and goes dark in a dark room)
+        labels = unlit_label_check(export_dir, export_materials, table, rule_rx, errors)
+        print(f"unlit labels (#2435): {len(labels)} keys, {sum(1 for v in labels.values() if v < 1)} dimmed by a power cut, "
+              "each unlit with its image in every GLB")
 
     # 10. #2448: double-sided web surfaces stay double-sided under a rule's material
     before = len(errors)

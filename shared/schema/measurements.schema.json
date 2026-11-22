@@ -169,7 +169,7 @@
     },
     "materials": {
       "type": "object",
-      "description": "material key → the web material's look (no web material has a name; the key is built from type, colour, roughness, metalness, opacity, emissive, vertex colours, textures, sides). Unreal maps keys to hand-made materials. Since #2308 `map` names the colour map (e.g. 'shared-grass-detail' on the lawns, src/grass.js) or is null.",
+      "description": "material key → the web material's look (no web material has a name; the key is built from type, colour, roughness, metalness, opacity, emissive, vertex colours, textures, sides). Unreal maps keys to hand-made materials. Since #2308 `map` names the colour map (e.g. 'shared-grass-detail' on the lawns, src/grass.js) or is null. Since #2435 a web unlit label kept with its image (a `bas` key with `texture`) has `unlit: true` and `powerCut`, the share of its colour a power cut leaves on the web (1: unchanged).",
       "additionalProperties": { "type": "object", "required": ["type", "color", "roughness", "metalness", "opacity", "emissive", "vertexColors", "textured", "doubleSided", "hint"] }
     },
     "ground": {

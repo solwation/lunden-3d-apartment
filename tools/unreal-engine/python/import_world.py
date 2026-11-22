@@ -22,6 +22,8 @@ Import (default):
      by /Game/Lunden/Seasons/BPC_LundenSeasons, #2295, #2406);
      `collision` nodes become hidden-in-game BlockAll actors whose (shared unit cube) mesh has one simple box;
      material keys listed in tools/unreal-engine/material-map.json are replaced by hand-made materials;
+     the web's unlit signs and labels (measurements.json materials[].unlit) go onto the unlit label master with their
+     power-cut share (material-map.json `unlitLabel`, #2435);
      every mesh's complex collision is double-sided (Interchange leaves it single-sided, #2299);
      a node whose extras say `castShadow: false` (the web mesh casts no sun shadow) gets Cast Shadow off (#2426);
      prepare_nanite_materials.prepare_zone moves meshes with unsupported material slots to the raster path and
@@ -51,7 +53,7 @@ from season_tags import season_tags
 from build_materials import prepare_generated_materials, prepare_landscape_materials
 
 SUPPORTED_FORMAT_VERSION = 1
-IMPORTER_VERSION = 7  # bump when the importer's output changes for the same export (forces a re-import)
+IMPORTER_VERSION = 8  # bump when the importer's output changes for the same export (forces a re-import)
 GENERATED_ROOT = "/Game/Lunden/Generated"
 TOLERANCE_CM = 1.0
 ID_KINDS = ("door", "window", "light", "furniture", "interactive")
@@ -448,6 +450,99 @@ def check_vertex_color(zone, table):
     unreal.log(f"LUNDEN_IMPORT_VERTEX_COLOR zone {zone}: {len(seen)} vertex-coloured keys, each drawing its vertex colour")
 
 
+def unlit_labels(measurements):
+    """#2435: {material key: power-cut share} of every web unlit label the export keeps with its image."""
+    return {k: float(v.get("powerCut", 1)) for k, v in measurements.get("materials", {}).items() if v.get("unlit")}
+
+
+def label_master(table):
+    entry = table.get("unlitLabel") or {}
+    if not entry.get("master") or not entry.get("from"):
+        raise RuntimeError("material-map.json has no unlitLabel master/from (#2435)")
+    return entry["from"], entry["master"]
+
+
+def instance_scalar(mi, name):
+    for v in mi.get_editor_property("scalar_parameter_values"):
+        if str(v.get_editor_property("parameter_info").get_editor_property("name")) == name:
+            return v.get_editor_property("parameter_value")
+    return None
+
+
+def apply_unlit_labels(zone, table, labels):
+    """#2435: the web draws its signs, number plates, floor numbers, pictograms and screens unlit (MeshBasicMaterial with
+    a map): the plate shows whiter than the wall beside it and reads as well in the dark. The export writes them with
+    KHR_materials_unlit, so Interchange gives each an instance of its unlit master (M_Unlit, the base colour texture as
+    EmissiveColor). Each is re-parented onto the project's copy that multiplies the display gain and the power supply in
+    (material-map.json `unlitLabel`), and gets the export's power-cut share as its PowerCut parameter. Like the
+    vertex-colour step the instance keeps its parameters, texture switch and the parent chain's overrides."""
+    if not labels:
+        return 0
+    source, target_path = label_master(table)
+    target, done = None, set()
+    for _, mesh in zone_meshes(zone):
+        for slot in mesh.static_materials:
+            mi = slot.material_interface
+            if not isinstance(mi, unreal.MaterialInstanceConstant) or mi.get_name() not in labels or mi.get_path_name() in done:
+                continue
+            if not mi.get_path_name().startswith(f"{GENERATED_ROOT}/{zone}/"):
+                raise RuntimeError(f"{mi.get_name()}: a material-map.json rule replaces an unlit label (its image would be lost)")
+            done.add(mi.get_path_name())
+            base = mi.get_base_material().get_path_name()
+            if base != target_path:
+                if base.split(".")[0] != source:
+                    raise RuntimeError(f"{mi.get_path_name()} (an unlit web label) has master {base}, not {source}: "
+                                       "the export lost KHR_materials_unlit")
+                if not textured(mi):
+                    raise RuntimeError(f"{mi.get_path_name()} (an unlit web label) has no base colour texture")
+                if target is None:
+                    target = eal.load_asset(target_path)
+                    if target is None:
+                        raise RuntimeError(f"material-map.json names {target_path}, which does not exist (prepare_generated_materials)")
+                blend, overrides = mi.get_blend_mode(), effective_overrides(mi)
+                unreal.MaterialEditingLibrary.set_material_instance_parent(mi, target)
+                mi.set_editor_property("base_property_overrides", overrides)
+                if mi.get_blend_mode() != blend or not textured(mi):
+                    raise RuntimeError(f"{mi.get_path_name()}: blend mode or base colour texture changed on the unlit label master")
+            # written as a struct: a master built in this commandlet does not yet expose its names to the setters
+            info = unreal.MaterialParameterInfo()
+            info.set_editor_property("name", "PowerCut")
+            value = unreal.ScalarParameterValue()
+            value.set_editor_property("parameter_info", info)
+            value.set_editor_property("parameter_value", labels[mi.get_name()])
+            scalars = [v for v in mi.get_editor_property("scalar_parameter_values")
+                       if str(v.get_editor_property("parameter_info").get_editor_property("name")) != "PowerCut"]
+            mi.set_editor_property("scalar_parameter_values", scalars + [value])
+            unreal.MaterialEditingLibrary.update_material_instance(mi)
+    dimmed = sum(1 for p in done if labels[p.rsplit(".", 1)[-1]] < 1)
+    unreal.log(f"LUNDEN_IMPORT_UNLIT_LABELS zone {zone}: {len(done)} unlit label instances on {target_path.rsplit('.', 1)[-1]}, "
+               f"{dimmed} dimmed by a power cut")
+    return len(done)
+
+
+def check_unlit_labels(zone, table, labels):
+    """--check (#2435): every instance of a web unlit label in the zone is unlit on the label master, keeps its texture and
+    carries the export's power-cut share."""
+    if not labels:
+        return
+    _, target_path = label_master(table)
+    bad, seen = [], set()
+    for _, mesh in zone_meshes(zone):
+        for slot in mesh.static_materials:
+            mi = slot.material_interface
+            if mi is None or mi.get_name() not in labels or mi.get_path_name() in seen:
+                continue
+            seen.add(mi.get_path_name())
+            base = mi.get_base_material()
+            cut = instance_scalar(mi, "PowerCut") if isinstance(mi, unreal.MaterialInstanceConstant) else None
+            if (base.get_path_name() != target_path or base.get_editor_property("shading_model") != unreal.MaterialShadingModel.MSM_UNLIT
+                    or not textured(mi) or cut is None or abs(cut - labels[mi.get_name()]) > 1e-4):
+                bad.append(f"{mi.get_name()} ({base.get_path_name()}, PowerCut {cut}, want {labels[mi.get_name()]})")
+    if bad:
+        raise RuntimeError(f"{zone}: {len(bad)} web unlit labels are lit or lost their image or power share, e.g. {bad[:3]}: run import_world.py")
+    unreal.log(f"LUNDEN_IMPORT_UNLIT_LABELS zone {zone}: {len(seen)} unlit label keys, each unlit with its image and power share")
+
+
 def clear_zone(zone):
     """Remove everything an earlier import wrote for the zone. EditorAssetLibrary.delete_directory is unusable at this
     size on 5.8.4: it left the .umap behind, logged "Error opening file" for every package and took > 7 minutes for
@@ -470,7 +565,7 @@ def clear_zone(zone):
         raise RuntimeError(f"{folder} still lists {len(left)} assets after clearing, e.g. {left[0]}")
 
 
-def import_zone(zone, glb_path, glb_entry, manifest, table, map_sha):
+def import_zone(zone, glb_path, glb_entry, manifest, table, map_sha, labels):
     folder, stamp_file = f"{GENERATED_ROOT}/{zone}", os.path.join(zone_disk_dir(zone), STAMP)
     clear_zone(zone)
     # the actors go into a fresh blank (not World Partition) map, saved as Level_<zone> only after the import worked:
@@ -490,6 +585,7 @@ def import_zone(zone, glb_path, glb_entry, manifest, table, map_sha):
     collisions = apply_collision(by_id, extras)
     materials = apply_materials(zone, table)
     apply_vertex_color(zone, table)  # after the rules: a key a rule maps keeps its hand-made material
+    apply_unlit_labels(zone, table, labels)  # #2435 (textured, so the vertex-colour step left them on Interchange's master)
     double = apply_double_sided(zone)
     shadows = apply_shadows(by_id, extras)
     prepare_zone(zone)
@@ -664,8 +760,9 @@ def main(argv):
     entries = [e for e in manifest["files"] if e["kind"] == "glb" and (not zones or e["zone"] in zones)]
     if any(e["zone"] in ("fond", "omgivning") for e in entries):
         prepare_landscape_materials(table, check_only, measurements["site"].get("riverSurface"))
-    if any(e["zone"] in ("hus-l", "kvarteret") for e in entries):
-        prepare_generated_materials(table, check_only)  # #2431: the stairwells' baked-light master, before their rules run
+    labels = unlit_labels(measurements)
+    if entries:  # #2431: the stairwells' baked-light masters and #2435's unlit label master, before the rules run
+        prepare_generated_materials(table, check_only)
     for entry in entries:
         zone, glb_path = entry["zone"], os.path.join(export_dir, entry["path"])
         if check_only:
@@ -676,13 +773,14 @@ def main(argv):
                 unreal.log(f"LUNDEN_IMPORT zone {zone}: skipped, {why} ({len(read_stamp(zone)['files'])} package files byte-identical)")
             else:
                 unreal.log(f"LUNDEN_IMPORT zone {zone}: importing ({'forced' if force else why})")
-                import_zone(zone, glb_path, entry, manifest, table, map_sha)
+                import_zone(zone, glb_path, entry, manifest, table, map_sha, labels)
         load_level(zone)
         check_ids(zone, glb_path)
         check_collision(zone, glb_path)
         check_double_sided(zone)
         check_shadows(zone, glb_path)
         check_vertex_color(zone, table)
+        check_unlit_labels(zone, table, labels)
         if zone == "fixture":
             check_fixture(measurements)
         log_measures(zone, measure)
