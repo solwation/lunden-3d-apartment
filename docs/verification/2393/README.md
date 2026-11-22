@@ -89,6 +89,9 @@ The remaining distant difference is [#2428](https://github.com/solwation/lunden-
 | ![Web: Hus A's entrance](web-entrance-a.jpg) | ![Unreal: Hus A's entrance](unreal-entrance-a.jpg) |
 | ![Web: courtyard from the ramp landing](web-courtyard.jpg) | ![Unreal: courtyard from the ramp landing](unreal-courtyard.jpg) |
 
+The full "before" captures (main at `af0aa505`, measured in the table above) were removed when the issue closed; they
+remain at [`690250f7`](https://github.com/solwation/lunden-3d-apartment/tree/690250f7/docs/verification/2393/before).
+
 Other differences in these pairs, each with an open issue:
 
 - the paths are grey, the web's cream: #2392;
