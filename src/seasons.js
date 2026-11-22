@@ -21,6 +21,10 @@ export function registeredTrees() {
   return out;
 }
 
+/** The seeds (r1…r4 per instance, in instance order) a registered crown/vine mesh carries, or null (#2432: the Unreal export
+ *  hands them to the game, so each tree keeps its own colour and leaf size there too). */
+export function crownSeeds(mesh) { return registry.crowns.find((c) => c.crown === mesh)?.seeds ?? null; }
+
 /** Anything else that follows the month (fallen leaves, #128): fn(month) on every month change. */
 export function registerSeasonal(fn) { registry.hooks.push(fn); }
 

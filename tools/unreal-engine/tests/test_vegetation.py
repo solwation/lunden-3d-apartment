@@ -41,6 +41,7 @@ import save_isolation  # noqa: E402  #2311: start without the player's save file
 TOLERANCE = 10.0  # cm, the issue's acceptance for position
 PACKAGE = "/Game/Lunden/Generated/VegetationWorld/Level_vegetation_foliage"
 LEAF = "/Game/Lunden/Vegetation/MI_LundenLeaf"
+VINE = "/Game/Lunden/Vegetation/MI_LundenVine"  # #2432
 PROJECT = Path(u.Paths.convert_relative_path_to_full(u.Paths.project_dir()))
 WORLD = json.loads((PROJECT.parents[1] / "tools/unreal-engine/world-levels.json").read_text(encoding="utf-8"))
 M = json.loads((PROJECT / "Import/measurements.json").read_text(encoding="utf-8"))
@@ -282,10 +283,19 @@ def vegetation_test():
                         bounds = world_box(local, instance_transform(comp, 0))
                         result["perennialMotion"] = yield from perennial_motion.measure(world, comp, bounds)
                     perennial_instances += n
+                mats = [m.get_path_name().split(".")[0] for m in comp.get_materials() if m]
                 if role == "crown":
-                    mats = [m.get_path_name().split(".")[0] for m in comp.get_materials() if m]
                     result["crownMaterials"] = mats
                     leaf_ok = leaf_ok and LEAF in mats
+                # #2432: the season shrinks crown and vine lobes in the vertex shader, so their foliage evaluates the offset
+                if (role == "crown" or VINE in mats) and not comp.get_editor_property("evaluate_world_position_offset"):
+                    raise RuntimeError(f"{mesh.get_name()} disabled world position offset: its lobes cannot follow the season")
+                if VINE in mats:
+                    result["vineInstances"] = result.get("vineInstances", 0) + n
+                # #2432: crowns and vines carry their tree's web seeds as custom data, so a tree keeps one colour in play
+                if VEG.get("seeds") and (role == "crown" or VINE in mats) and comp.get_editor_property("num_custom_data_floats") != 4:
+                    raise RuntimeError(f"{mesh.get_name()} lost its season seeds (custom data floats "
+                                       f"{comp.get_editor_property('num_custom_data_floats')}, expected 4)")
                 for i in range(n):
                     t = instance_transform(comp, i)
                     inst[role].append((t.translation, world_box(local, t)))
@@ -294,6 +304,8 @@ def vegetation_test():
         if render_motion and "perennialMotion" not in result:
             raise RuntimeError("No courtyard perennial was available for the offscreen motion measurement")
         result["perennialWindInstances"] = perennial_instances
+        if "stillLeafKeys" in VEG["look"] and not result.get("vineInstances"):
+            raise RuntimeError("The still vines lost MI_LundenVine (seasonal lobe size without sway, #2432)")
         if not leaf_ok:
             raise RuntimeError(f"The crown lobes do not use {LEAF}: {result.get('crownMaterials')}")
         failures = []

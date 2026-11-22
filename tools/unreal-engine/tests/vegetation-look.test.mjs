@@ -11,6 +11,14 @@ const { look } = vegetation;
 assert.deepEqual(look.months, SEASON.trees);
 assert.deepEqual(look.blossomMonths, SEASON.blossomMonths);
 assert.deepEqual(look.wind.power, WIND.power);
+// #2432: the leaf atlas's mean tint (src/foliage.js leafAtlas), grey-green and darker on the opaque core
+const { cards, core } = look.atlasTint ?? {};
+assert.ok(cards?.length === 3 && core?.length === 3, 'look.atlasTint has cards and core');
+for (const t of [cards, core]) assert.ok(t.every((v) => v > 0.2 && v < 1) && t[2] < t[0] && t[0] < t[1], `atlas tint ${t}`);
+assert.ok(core[1] < cards[1], 'the core is darker than the cards');
+// #2432: every crown lobe and pergola vine carries its tree's season seeds (src/seasons.js r1…r4)
+const seeds = Object.values(vegetation.seeds ?? {});
+assert.ok(seeds.length > 3000 && seeds.every((sd) => sd.length === 4 && sd.every((v) => v >= 0 && v <= 1)), `${seeds.length} seeds`);
 assert.equal(look.wind.flutterCap, SITE_WIND.crown.flutterCap);
 const grass = read(new URL('../material-map.json', import.meta.url)).materials['/Game/Lunden/Materials/M_LundenGrass'];
 assert.equal(grass.autumn, '#' + GRASS.autumn.toString(16));
@@ -52,4 +60,4 @@ for (const [kind, group] of [['bark', 'tree-trunks'], ['birch', 'tree-birches']]
   }
 }
 assert.equal(barkImages.size, 4);
-console.log(`VEGETATION_LOOK_OK: ${perennials.length} evergreen perennials, deciduous crowns, still vines, four bark images and twelve months`);
+console.log(`VEGETATION_LOOK_OK: ${perennials.length} evergreen perennials, deciduous crowns, still vines, four bark images, twelve months, atlas tint ${cards} / ${core}, ${seeds.length} lobe seeds`);

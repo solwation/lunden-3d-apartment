@@ -12,12 +12,15 @@ shared meshes); that level belongs to the importer and is never edited here. Thi
    colours and leaf cover follow BPC_LundenSeasons' month and the export's web palette (times vertex AO), whose opacity mask draws the leaf atlas's cut-out in the cards' UVs (the canvas
    atlas does not travel), and whose world position offset sways it in the wind (a Custom HLSL node after
    src/sitewind.js: sway in the wind's direction with a gust envelope, a small flutter, clamped to the web's maximum
-   displacement); the weather's WindX/Y drive the wind with the web's speed-to-power curve. MI_LundenLeaf serves trees
-   and vines. MI_LundenPerennial stays green year-round. Both use measurements.json `vegetation.look`. Built only
-   when its spec hash changes (metadata Lunden.SpecHash, as build_materials.py).
+   displacement); the weather's WindX/Y drive the wind with the web's speed-to-power curve. #2432: the colour is
+   multiplied by the leaf atlas's mean tint (`look.atlasTint`, cards and core), and a month with fewer leaves shrinks
+   each lobe about its instance origin like src/seasons.js (also a world position offset) instead of thinning its cards.
+   MI_LundenLeaf serves the trees, MI_LundenVine the pergola's still vines (seasonal, no sway), MI_LundenPerennial
+   stays green year-round. All use measurements.json `vegetation.look`. Built only when its spec hash changes
+   (metadata Lunden.SpecHash, as build_materials.py).
 2. Derived assets (not versioned, /Game/Lunden/Generated/VegetationWorld/): a copy of every imported vegetation mesh
-   with Nanite off (the full mesh, not the fallback, #2298), no collision, and MI_LundenLeaf on the leaf-card slots
-   (`look.leafKeys`); one FoliageType_InstancedStaticMesh per copy; and the sub-level `Level_vegetation_foliage`: an
+   with Nanite off (the full mesh, not the fallback, #2298), no collision, and MI_LundenLeaf / MI_LundenVine /
+   MI_LundenPerennial on the leaf-card slots (`look.leafKeys`); one FoliageType_InstancedStaticMesh per copy; and the sub-level `Level_vegetation_foliage`: an
    InstancedFoliageActor with one instance per imported actor on that actor's transform. Hedges the export lists in a zone
    that world-levels.json does not stream (L1007's own patio hedge in `l1007-uteplats`) are copied in as a plain
    StaticMeshActor tagged with the hedge's id; hedges of streamed zones (Hus L's patio hedges in `hus-l`) stay there.
@@ -49,6 +52,7 @@ MATERIALS = "/Game/Lunden/Vegetation"
 MASTER = MATERIALS + "/M_LundenFoliage"
 LEAF = MATERIALS + "/MI_LundenLeaf"
 PERENNIAL = MATERIALS + "/MI_LundenPerennial"
+VINE = MATERIALS + "/MI_LundenVine"
 CALENDAR = "/Game/Lunden/Seasons/MPC_LundenVegetation"
 FOLDER = "/Game/Lunden/Generated/VegetationWorld"
 TARGET = FOLDER + "/Level_vegetation_foliage"
@@ -89,7 +93,9 @@ return o;
 MASK_HLSL = r"""
 // #2281 after src/foliage.js leafAtlas(): the atlas does not travel (a canvas texture), so its cut-out is drawn here in the
 // cards' own UVs. 2 x 2 cells: cell (1, 0) is the opaque core; the others are round leaf clusters (radius 0.46 of the
-// cell, 0.92 as high as wide) of small pointed leaves on a transparent ground, thinning towards the edge.
+// cell, 0.92 as high as wide) of small pointed leaves on a transparent ground, thinning towards the edge. #2432: the
+// density no longer follows the month: the web keeps every card and shrinks the whole lobe instead (src/seasons.js,
+// the world position offset below); Cover only masks a leafless month.
 if (Cover <= 0.0) return 0.0;
 float2 cell = floor(UV * 2.0);
 if (cell.x >= 1.0 && cell.y < 1.0) return 1.0;
@@ -105,7 +111,7 @@ for (int i = -1; i <= 1; i++) {
     float h1 = frac(sin(dot(c, float2(127.1, 311.7))) * 43758.5453);
     float h2 = frac(sin(dot(c, float2(269.5, 183.3))) * 43758.5453);
     float h3 = frac(sin(dot(c, float2(419.2, 371.9))) * 43758.5453);
-    if (h3 > (1.25 - r * r) * Cover) continue;  // fewer leaves towards the cluster's edge
+    if (h3 > 1.25 - r * r) continue;  // fewer leaves towards the cluster's edge
     float a = h1 * 6.2831853;
     float2 d = g - (c + float2(h1, h2));
     float2 q = float2(cos(a) * d.x + sin(a) * d.y, -sin(a) * d.x + cos(a) * d.y);
@@ -134,6 +140,19 @@ def linear(hex_text):
     return u.LinearColor(lin(v[0:2]), lin(v[2:4]), lin(v[4:6]), 1.0)
 
 
+ATLAS_TINT_HLSL = r"""
+// #2432 after src/foliage.js leafAtlas(): the web multiplies a leaf's instance colour by the atlas, a linear grey-green
+// mask (cards light, the opaque core darker). The canvas does not travel; the export gives each part's mean tint.
+return UV.x >= 0.5 && UV.y < 0.5 ? CoreTint.rgb : CardTint.rgb;
+"""
+
+SHRINK_HLSL = r"""
+// #2432 after src/seasons.js applySeason: a month with fewer leaves shrinks each lobe about its own centre (the instance
+// origin) instead of thinning its cards. Scale is the month's lobe size relative to the exported one (1 in the export month).
+return Local * (Scale - 1.0);
+"""
+
+
 def read_vegetation(export_dir):
     m = json.loads((Path(export_dir) / "measurements.json").read_text(encoding="utf-8"))
     veg = m.get("vegetation")
@@ -156,21 +175,27 @@ def level(zone):
 def crown_shader(look):
     if "months" not in look:
         return "return float4(Evergreen.rgb, 1.0);"  # #2281 export with a single palette
-    # rgba = this month's HSL in three.js's linear working space, plus its share of leaves.
+    # rgb = this month's HSL in three.js's linear working space; a = the lobe's size relative to the export's. The web scales
+    # a lobe by leaves x (0.85 + 0.3 r2), at most 1 (src/seasons.js), and the export holds its month's size (#2432).
     rows = ["float4(" + ", ".join(map(str, look["months"][str(m)])) + ")" for m in range(1, 13)]
+    exported = float(look.get("leaves", 1))
     blossom = " || ".join("m == " + str(m) for m in look["blossomMonths"]) or "false"
     return """
 if (Seasonal < 0.5) return float4(Evergreen.rgb, 1.0);
 const float4 months[12] = { ROWS };
 int m = clamp((int)round(Month), 1, 12);
 float4 row = months[m - 1];
+// #2432: the web's own seeds of the lobe's tree (per-instance custom data 0-3, measurements.json vegetation.seeds), so a
+// tree keeps one colour and leaf size as on the web; an instance without them falls back to its instance random
 float3 seed = frac(Rand * float3(37.17, 23.43, 71.31));
-float hue = frac(row.x + (Rand - 0.5) * (m >= 9 && m <= 11 ? 0.12 : 0.04));
-float sat = saturate(row.y + (seed.x - 0.5) * 0.15), light = saturate(row.z + (seed.y - 0.5) * 0.10);
-if ((BLOSSOM) && seed.z < 0.18) { hue = Rand < 0.5 ? 0.95 : 0; sat = Rand < 0.5 ? 0.5 : 0; light = 0.88; }
+float4 r = Seed.x >= 0 ? Seed : float4(Rand, seed);
+float hue = frac(row.x + (r.x - 0.5) * (m >= 9 && m <= 11 ? 0.12 : 0.04));
+float sat = saturate(row.y + (r.y - 0.5) * 0.15), light = saturate(row.z + (r.z - 0.5) * 0.10);
+if ((BLOSSOM) && r.w < 0.18) { hue = r.x < 0.5 ? 0.95 : 0; sat = r.x < 0.5 ? 0.5 : 0; light = 0.88; }
 float3 rgb = saturate(abs(frac(hue + float3(0, 2.0/3.0, 1.0/3.0)) * 6 - 3) - 1);
-return float4(light + (rgb - 0.5) * (1 - abs(2 * light - 1)) * sat, saturate(row.w * (0.85 + seed.x * 0.3)));
-""".replace("ROWS", ", ".join(rows)).replace("BLOSSOM", blossom)
+float f = 0.85 + r.y * 0.3, now = saturate(row.w * f), was = saturate(EXPORTED * f);
+return float4(light + (rgb - 0.5) * (1 - abs(2 * light - 1)) * sat, was > 0 ? now / was : (now > 0 ? 1 : 0));
+""".replace("ROWS", ", ".join(rows)).replace("BLOSSOM", blossom).replace("EXPORTED", repr(exported))
 
 
 def collection_ids():
@@ -200,11 +225,13 @@ def collection_ids():
 
 def material_specs(look):
     w = look["wind"]
-    master = {"what": "two-sided leaf master with monthly colour and cover per vertex, leaf cut-out and weather-driven sway", "hlsl": WIND_HLSL,
-              "mask": MASK_HLSL, "weather": WEATHER, "calendar": CALENDAR, "crown": crown_shader(look),
-              "collectionIds": collection_ids()}
+    master = {"what": "two-sided leaf master with monthly colour and lobe size per vertex, atlas tint, leaf cut-out and weather-driven sway",
+              "hlsl": WIND_HLSL, "mask": MASK_HLSL, "tint": ATLAS_TINT_HLSL, "shrink": SHRINK_HLSL, "weather": WEATHER,
+              "calendar": CALENDAR, "crown": crown_shader(look), "collectionIds": collection_ids()}
+    tint = look.get("atlasTint") or {"cards": [1, 1, 1], "core": [1, 1, 1]}  # an export before #2432: untinted
     curve = w.get("power", LEGACY_WIND_CURVE)
-    leaf = {"parent": MASTER, "vectors": {"LeafDark": look["leafDark"], "LeafLight": look["leafLight"]},
+    leaf = {"parent": MASTER, "vectors": {"LeafDark": look["leafDark"], "LeafLight": look["leafLight"],
+                                          "CardTint": tint["cards"], "CoreTint": tint["core"]},
             "scalars": {"Roughness": 0.92, "Amp": w["amp"], "Freq": w["freq"], "Flutter": w["flutter"],
                         "FlutterFreq": w["flutterFreq"], "GustFreq": w["gustFreq"], "GustDepth": w["gustDepth"],
                         "MaxDisp": w["maxDisplacement"], "FlutterCap": w.get("flutterCap", 0.6),
@@ -212,7 +239,9 @@ def material_specs(look):
             "source": look["source"] + f" (month {look['month']})",
             "assumption": "Leaf-card density, per-instance colour variation and sway amplitude are visual calibration (guess)."}
     perennial = {**leaf, "scalars": {**leaf["scalars"], "Seasonal": 0.0}}
-    return {MASTER: master, LEAF: leaf, PERENNIAL: perennial}
+    # #2432: the pergola's vines follow the season like the crowns (colour and lobe size), but stand still in the wind
+    vine = {**leaf, "scalars": {**leaf["scalars"], "Amp": 0.0, "Flutter": 0.0}}
+    return {MASTER: master, LEAF: leaf, PERENNIAL: perennial, VINE: vine}
 
 
 def spec_hash(path, spec):
@@ -285,7 +314,22 @@ def build_master(spec, existing):
     month.set_editor_property("parameter_name", "Month")
     seasonal = param(m, u.MaterialExpressionScalarParameter, "Seasonal", 1.0, -900, -430)
     crown = expr(m, u.MaterialExpressionCustom, -350, -350)
-    crown_inputs = {"Month": month, "Seasonal": seasonal, "Evergreen": lerp, "Rand": rand}
+    seed = expr(m, u.MaterialExpressionAppendVector, -650, -300)
+    seed_xy = expr(m, u.MaterialExpressionAppendVector, -750, -330)
+    seed_xyz = expr(m, u.MaterialExpressionAppendVector, -700, -315)
+    data = []
+    for k in range(4):  # #2432: r1..r4 of the web's seeds; -1 marks an instance without them
+        d = expr(m, u.MaterialExpressionPerInstanceCustomData, -950, -360 + 25 * k)
+        d.set_editor_property("data_index", k)
+        d.set_editor_property("const_default_value", -1.0)
+        data.append(d)
+    mel.connect_material_expressions(data[0], "", seed_xy, "A")
+    mel.connect_material_expressions(data[1], "", seed_xy, "B")
+    mel.connect_material_expressions(seed_xy, "", seed_xyz, "A")
+    mel.connect_material_expressions(data[2], "", seed_xyz, "B")
+    mel.connect_material_expressions(seed_xyz, "", seed, "A")
+    mel.connect_material_expressions(data[3], "", seed, "B")
+    crown_inputs = {"Month": month, "Seasonal": seasonal, "Evergreen": lerp, "Rand": rand, "Seed": seed}
     custom_inputs(crown, crown_inputs)
     crown.set_editor_property("output_type", u.CustomMaterialOutputType.CMOT_FLOAT4)
     crown.set_editor_property("description", "LundenMonthlyCrown")
@@ -311,7 +355,22 @@ def build_master(spec, existing):
     mul = expr(m, u.MaterialExpressionMultiply, -350, -50)
     mel.connect_material_expressions(color, "", mul, "A")
     mel.connect_material_expressions(vc, "", mul, "B")
-    mel.connect_material_property(mul, "", u.MaterialProperty.MP_BASE_COLOR)
+    # #2432: times the leaf atlas's mean tint (cards or core by the cell the UV lies in)
+    tint = expr(m, u.MaterialExpressionCustom, -350, 100)
+    custom_inputs(tint, ("UV", "CardTint", "CoreTint"))
+    tint.set_editor_property("output_type", u.CustomMaterialOutputType.CMOT_FLOAT3)
+    tint.set_editor_property("description", "LundenAtlasTint")
+    tint.set_editor_property("code", spec["tint"].strip())
+    tint_sources = {"UV": expr(m, u.MaterialExpressionTextureCoordinate, -600, 120),
+                    "CardTint": param(m, u.MaterialExpressionVectorParameter, "CardTint", u.LinearColor(1, 1, 1, 1), -600, 160),
+                    "CoreTint": param(m, u.MaterialExpressionVectorParameter, "CoreTint", u.LinearColor(1, 1, 1, 1), -600, 230)}
+    for key, node in tint_sources.items():
+        if not mel.connect_material_expressions(node, "", tint, key):
+            raise RuntimeError("Could not connect atlas tint input " + key)
+    tinted = expr(m, u.MaterialExpressionMultiply, -200, -50)
+    mel.connect_material_expressions(mul, "", tinted, "A")
+    mel.connect_material_expressions(tint, "", tinted, "B")
+    mel.connect_material_property(tinted, "", u.MaterialProperty.MP_BASE_COLOR)
     mel.connect_material_property(param(m, u.MaterialExpressionScalarParameter, "Roughness", 0.92, -600, 200), "",
                                   u.MaterialProperty.MP_ROUGHNESS)
     # wind
@@ -340,7 +399,30 @@ def build_master(spec, existing):
     for n in names:
         if not mel.connect_material_expressions(sources[n], "", custom, n):
             raise RuntimeError("could not connect " + n)
-    if not mel.connect_material_property(custom, "", u.MaterialProperty.MP_WORLD_POSITION_OFFSET):
+    # #2432: plus the season's shrink of the lobe about its instance origin (in the vertex shader, from the crown node)
+    scale = expr(m, u.MaterialExpressionComponentMask, -100, 560)
+    for channel in "rgba":
+        scale.set_editor_property(channel, channel == "a")
+    mel.connect_material_expressions(crown, "", scale, "")
+    # the vertex relative to its own instance (the lobe's centre), turned and scaled into world space by that instance
+    vertex_local = expr(m, u.MaterialExpressionLocalPosition, -600, 640)
+    vertex_local.set_editor_property("local_origin", u.LocalPositionOrigin.INSTANCE)
+    vertex_local.set_editor_property("included_offsets", u.PositionIncludedOffsets.EXCLUDE_OFFSETS)
+    local = expr(m, u.MaterialExpressionTransform, -350, 640)
+    local.set_editor_property("transform_source_type", u.MaterialVectorCoordTransformSource.TRANSFORMSOURCE_INSTANCE)
+    local.set_editor_property("transform_type", u.MaterialVectorCoordTransform.TRANSFORM_WORLD)
+    mel.connect_material_expressions(vertex_local, "", local, "")
+    shrink = expr(m, u.MaterialExpressionCustom, -100, 640)
+    custom_inputs(shrink, ("Local", "Scale"))
+    shrink.set_editor_property("output_type", u.CustomMaterialOutputType.CMOT_FLOAT3)
+    shrink.set_editor_property("description", "LundenSeasonShrink")
+    shrink.set_editor_property("code", spec["shrink"].strip())
+    if not (mel.connect_material_expressions(local, "", shrink, "Local") and mel.connect_material_expressions(scale, "", shrink, "Scale")):
+        raise RuntimeError("Could not connect the seasonal lobe shrink")
+    offset = expr(m, u.MaterialExpressionAdd, 0, 480)
+    mel.connect_material_expressions(custom, "", offset, "A")
+    mel.connect_material_expressions(shrink, "", offset, "B")
+    if not mel.connect_material_property(offset, "", u.MaterialProperty.MP_WORLD_POSITION_OFFSET):
         raise RuntimeError("Could not connect the weather-driven foliage displacement")
     mel.set_base_material_usage(m, u.MaterialUsage.MATUSAGE_INSTANCED_STATIC_MESHES, True)
     mel.recompile_material(m)
@@ -434,6 +516,7 @@ def unchanged(wanted):
 def collect(veg, copies):
     """Every imported vegetation mesh actor as plain values: (root node id, transform, mesh path), and the hedges to copy."""
     hedge_ids = {h["id"] for h in veg["hedges"] if h["zone"] == ZONE}
+    seeds = veg.get("seeds", {})
     if not u.EditorLoadingAndSavingUtils.load_map(level(ZONE)):
         raise RuntimeError(f"Missing {level(ZONE)}: run import_world.py --zones {ZONE} first")
     found = []
@@ -444,7 +527,8 @@ def collect(veg, copies):
         parent = next((t[7:] for t in tags if t.startswith("parent:")), None)
         node = parent or a.get_name()
         role = "hedge" if node in hedge_ids else role_of(node)
-        found.append((node, role, a.get_actor_transform(), a.static_mesh_component.static_mesh.get_path_name()))
+        seed = seeds.get(a.get_name()) or seeds.get(node)  # #2432: a lobe's own id, a vine part's id
+        found.append((node, role, a.get_actor_transform(), a.static_mesh_component.static_mesh.get_path_name(), seed))
     found.sort(key=lambda f: f[0])
     copied = []
     for zone in sorted({h["zone"] for h in copies}):
@@ -465,8 +549,9 @@ def build(veg, found, copied):
     still_keys = set(veg["look"].get("stillLeafKeys", []))
     leaf = eal.load_asset(LEAF)
     perennial = eal.load_asset(PERENNIAL)
+    vine = eal.load_asset(VINE)
     roles = {}
-    for node, role, _, mesh_path in found:
+    for node, role, _, mesh_path, _ in found:
         roles.setdefault(mesh_path, {}).setdefault(role, 0)
         roles[mesh_path][role] += 1
     types, index = {}, {"meshes": {}, "builder": BUILDER}
@@ -485,12 +570,11 @@ def build(veg, found, copied):
         if body:
             body.set_editor_property("collision_trace_flag", u.CollisionTraceFlag.CTF_USE_SIMPLE_AS_COMPLEX)
         leafed = 0
-        wind = False
         for k, slot in enumerate(mesh.get_editor_property("static_materials")):
             mat = slot.get_editor_property("material_interface")
             if mat and mat.get_name() in leaf_keys:
-                wind = wind or mat.get_name() not in still_keys
-                mesh.set_material(k, perennial if mat.get_name().endswith("_perennial") else leaf)
+                key = mat.get_name()
+                mesh.set_material(k, perennial if key.endswith("_perennial") else vine if key in still_keys else leaf)
                 leafed += 1
         if not eal.save_loaded_asset(mesh, only_if_is_dirty=False):
             raise RuntimeError("Cannot save " + mesh.get_path_name())
@@ -498,8 +582,8 @@ def build(veg, found, copied):
                                 u.FoliageType_InstancedStaticMeshFactory())
         ft.set_editor_property("mesh", mesh)
         ft.set_editor_property("cast_shadow", True)
-        if leafed:
-            ft.set_editor_property("evaluate_world_position_offset", wind)
+        if leafed:  # wind on crowns and perennials; the season's lobe shrink on crowns and the still vines (#2432)
+            ft.set_editor_property("evaluate_world_position_offset", True)
         if not eal.save_loaded_asset(ft, only_if_is_dirty=False):
             raise RuntimeError("Cannot save " + ft.get_path_name())
         types[mesh_path] = ft
@@ -508,9 +592,13 @@ def build(veg, found, copied):
     world = u.EditorLoadingAndSavingUtils.new_blank_map(False)
     if not world:
         raise RuntimeError("Cannot create a blank map")
+    seeded = {}
     for mesh_path, ft in types.items():
-        transforms = [t for _, _, t, p in found if p == mesh_path]
-        u.InstancedFoliageActor.add_instances(world, ft, transforms)
+        rows = [(t, sd) for _, _, t, p, sd in found if p == mesh_path]
+        u.InstancedFoliageActor.add_instances(world, ft, [t for t, _ in rows])
+        if any(sd for _, sd in rows):
+            seeded[ft.get_editor_property("mesh").get_path_name()] = {location_key(t.translation): sd for t, sd in rows if sd}
+    index["seeded"] = seed_instances(world, seeded)
     spawner = u.get_editor_subsystem(u.EditorActorSubsystem)
     for h, transform, mesh_path in copied:
         actor = spawner.spawn_actor_from_class(u.StaticMeshActor, u.Vector(0, 0, 0))
@@ -525,6 +613,42 @@ def build(veg, found, copied):
         raise RuntimeError("Cannot save " + TARGET)
     u.EditorLoadingAndSavingUtils.new_blank_map(False)
     return index
+
+
+def location_key(v):
+    return (round(v.x), round(v.y), round(v.z))  # cm; no two lobes share a centre
+
+
+def instance_transform(comp, i):
+    r = comp.get_instance_transform(i, True)
+    if isinstance(r, tuple):
+        r = r[-1] if isinstance(r[-1], u.Transform) else r[0]
+    return r
+
+
+def seed_instances(world, seeded):
+    """#2432: writes each crown lobe's and vine's web seeds (r1..r4) as its per-instance custom data 0-3, found by location.
+    Returns the count per mesh; every seeded instance must find its foliage instance."""
+    counts = {}
+    for ifa in u.GameplayStatics.get_all_actors_of_class(world, u.InstancedFoliageActor):
+        for comp in ifa.get_components_by_class(u.InstancedStaticMeshComponent):
+            want = seeded.get(comp.static_mesh.get_path_name()) if comp.static_mesh else None
+            if not want:
+                continue
+            comp.set_num_custom_data_floats(4)
+            hit = 0
+            for i in range(comp.get_instance_count()):
+                sd = want.get(location_key(instance_transform(comp, i).translation))
+                if sd:
+                    comp.set_custom_data_value(i, 0, sd[0], False)
+                    comp.set_custom_data_value(i, 1, sd[1], False)
+                    comp.set_custom_data_value(i, 2, sd[2], False)
+                    comp.set_custom_data_value(i, 3, sd[3], True)
+                    hit += 1
+            if hit != len(want):
+                raise RuntimeError(f"{comp.static_mesh.get_name()}: seeds for {hit} of {len(want)} instances")
+            counts[comp.static_mesh.get_name()] = hit
+    return counts
 
 
 def trunk_collision(veg, spawner):

@@ -17,8 +17,9 @@ import { buildWorld } from '../../src/world.js';
 import { buildStringLights, updateStringLights, updateParasols } from '../../src/patio.js';
 import { groundY, renderedTerrainY, treeFeet, aoTrees } from '../../src/surroundings.js';
 import { gridGround } from '../../src/elevation.js';
-import { leafMaterial, windLeafMaterial } from '../../src/foliage.js';
+import { leafAtlas, leafMaterial, windLeafMaterial } from '../../src/foliage.js';
 import { skyGradientPalette } from '../../src/daycycle.js';
+import { crownSeeds } from '../../src/seasons.js';
 import { livingWallLight } from './export-living-wall.js';
 import { stairLampProfiles } from './export-stair-light.js';
 import { stairRise, stairRiser, N_TREADS } from '../../src/stairs.js';
@@ -856,6 +857,9 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
   // #2426: the web mesh casts no sun shadow (three's castShadow false, its default). Unreal casts from every imported
   // component unless told otherwise, so the node says so (absent = casts); import_world.py turns cast_shadow off.
   const noShadow = new WeakSet();
+  // #2432: a crown lobe's or vine's season seeds (src/seasons.js r1…r4) by node id, for measurements.json vegetation.seeds
+  const lobeSeeds = new Map();
+  const noteSeed = (id, mesh, i) => { const sd = crownSeeds(mesh)?.[i]; if (sd) lobeSeeds.set(id, [sd.r1, sd.r2, sd.r3, sd.r4].map((v) => r4(v ?? 0))); };
   const subtree = (o, atomId, counter, keys, furnish) => { // o's visible exported content, local transforms kept
     const n = o.isMesh && !o.isInstancedMesh ? meshNode(o, furnish) : new THREE.Group();
     if (!n) return null;
@@ -870,6 +874,7 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
           const node = meshNode(c, furnish); if (!node) continue;
           c.getMatrixAt(i, im); node.matrix.copy(c.matrix).multiply(im); node.matrix.decompose(node.position, node.quaternion, node.scale);
           node.name = `${atomId}__${counter.n++}`; node.userData = { id: node.name, kind: 'part', parent: atomId };
+          noteSeed(node.name, c, i);
           if (c.material === lightsInfo.patioBulb) node.userData.patioStringBulb = true;
           (Array.isArray(node.material) ? node.material : [node.material]).forEach((m) => keys.add(m.name));
           n.add(node);
@@ -906,6 +911,7 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
         webId: a.webId ?? null, materialKeys: [...keys].sort() };
       const season = seasons.get(a.object);
       if (season) node.userData.seasonal = season;
+      if (a.instance !== undefined) noteSeed(a.id, a.object, a.instance);
       node.traverse((m) => { // #2289: which nodes and meshes show each furnishing texture
         if (!m.isMesh) return;
         for (const mat of Array.isArray(m.material) ? m.material : [m.material]) {
@@ -1007,7 +1013,7 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
       if (m === leafMaterial()) stillLeafKeys.add(key);
     }
   }
-  const vegetation = roots.vegetation ? vegetationData(roots, hedgeIds, [...leafKeys].sort(), [...stillLeafKeys].sort()) : null;
+  const vegetation = roots.vegetation ? vegetationData(roots, hedgeIds, [...leafKeys].sort(), [...stillLeafKeys].sort(), lobeSeeds) : null;
 
   // ---- GLB per zone ----
   // #2289: the furnishing textures' images must have loaded (and canvases painted from them) before they are written
@@ -1137,7 +1143,7 @@ function isHedge(o) {
   for (let q = o; q; q = q.parent) if (HEDGE_NAME.test(q.name ?? '')) return true;
   return [o.material ?? []].flat().some((m) => HEDGE_NAME.test(m?.name ?? ''));
 }
-function vegetationData(roots, hedgeIds, leafKeys, stillLeafKeys) {
+function vegetationData(roots, hedgeIds, leafKeys, stillLeafKeys, lobeSeeds = new Map()) {
   const P = (v) => ({ web: [r4(v.x), r4(v.y), r4(v.z)], unreal: webToUnrealRounded([v.x, v.y, v.z]) });
   const boxOf = (n) => new THREE.Box3().setFromObject(n);
   const nodes = roots.vegetation.root.children.filter((n) => n.userData.kind !== 'collision-group');
@@ -1171,6 +1177,7 @@ function vegetationData(roots, hedgeIds, leafKeys, stillLeafKeys) {
   return {
     source: 'tools/unreal-engine/export-scene.js vegetationData; src/surroundings.js treeFeet, aoTrees (trees), hedge/boxwood nodes',
     lobeReach: LOBE_REACH, treeClassM: TREE_CLASS_M, hedgeClassM: HEDGE_CLASS_M, byWebName: byWeb, look: vegetationLook(leafKeys, stillLeafKeys),
+    seeds: vegetationSeeds(roots.vegetation.root, lobeSeeds),
     notExported: { trees: missing.length, why: 'their foot lies beyond the drawn terrain (SITE.backgroundGround): no zone takes them' },
     looseLobes: loose,
     trunkCollision: trunkCollision(),
@@ -1205,9 +1212,35 @@ function vegetationLook(leafKeys, stillLeafKeys) {
   const hsl = (dh, ds, dl) => '#' + new THREE.Color().setHSL(h + dh, sat + ds, l + dl).getHexString();
   const W = C.SITE_WIND;
   return { month, leafKeys, stillLeafKeys, months: C.SEASON.trees, blossomMonths: C.SEASON.blossomMonths, leaves, leafDark: hsl(-0.02, -0.075, -0.05), leafLight: hsl(0.02, 0.075, 0.05),
+    atlasTint: leafAtlasTint(),
     source: 'src/config.js SEASON.trees, SITE_WIND, WIND.power; src/seasons.js applySeason; src/sitewind.js and windsim.js',
     wind: { power: C.WIND.power, dir: W.dir, amp: W.crown.amp, freq: W.crown.freq, flutter: W.crown.flutter, flutterFreq: W.crown.flutterFreq, flutterCap: W.crown.flutterCap,
       gustFreq: W.gust.freq, gustDepth: W.gust.depth, phase: W.phase, maxDisplacement: W.maxDisplacement } };
+}
+
+/** #2432: src/seasons.js colours and sizes every crown lobe and vine from its tree's own seeds (r1 hue, r2 saturation and leaf
+ *  size, r3 lightness, r4 blossom; one tree, one colour). The vegetation zone's lobe and vine nodes by id, sorted. */
+function vegetationSeeds(root, lobeSeeds) {
+  const ids = [];
+  root.traverse((n) => { if (lobeSeeds.has(n.userData?.id)) ids.push(n.userData.id); });
+  return Object.fromEntries(ids.sort().map((id) => [id, lobeSeeds.get(id)]));
+}
+
+/** #2432: the mean tint of the leaf atlas (src/foliage.js leafAtlas: a linear grey-green mask, NoColorSpace, that multiplies
+ *  the instance colour) over the texels that survive the cut-out (alpha >= FOLIAGE.alphaTest), separately for the leaf-cluster
+ *  cards (cells 0-2) and the opaque core (cell 3: u > 0.5, v < 0.5; the texture's first row is v = 0). The atlas is a canvas
+ *  and does not travel; Unreal multiplies its crown colour by these two means. */
+function leafAtlasTint() {
+  const { data, width: S } = leafAtlas().image, cut = C.FOLIAGE.alphaTest * 255;
+  const sums = { cards: [0, 0, 0, 0], core: [0, 0, 0, 0] };
+  for (let y = 0; y < S; y++) for (let x = 0; x < S; x++) {
+    const i = (y * S + x) * 4;
+    if (data[i + 3] < cut) continue;
+    const s = x >= S / 2 && y < S / 2 ? sums.core : sums.cards;
+    s[0] += data[i]; s[1] += data[i + 1]; s[2] += data[i + 2]; s[3]++;
+  }
+  const mean = (s) => s.slice(0, 3).map((v) => r4(v / s[3] / 255));
+  return { cards: mean(sums.cards), core: mean(sums.core), size: S, source: 'src/foliage.js leafAtlas (mean of the texels kept by FOLIAGE.alphaTest)' };
 }
 
 /** Simple collision boxes (kind `collision`): the full-height wall rectangles the web collides with and sees through
