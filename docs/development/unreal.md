@@ -2502,6 +2502,12 @@ phones, iPads and Macs do not offer them while a Surface in touch mode does. REA
 install and update on Windows (it opens the game window), notes rendered with `release-notes.mjs`, and the build PC
 preparation; they remain in #2377.
 
+**Lunden 0.2.0 (#2419, #2420, 2026-11-22).** Release `v0.2.0` is latest: the first game build that starts in
+`L_Lunden` (`GameDefaultMap`, commit `12e1cf9c`, app 0.2.0, content 2, built with `release.ps1 -SyncImport -ExportFrom`
+from a clean worktree in `lunden-ue-wt`) and launcher 0.2.0 with the setup/progress dialogs (`41bf1c17`, run 45006442954).
+Both channels' manifests use `--min-launcher 0.2.0 --published 2026-11-22T15:00:00Z`; the 23 blobs (612 MB) live on
+`v0.2.0` itself. Promotion run 45007074940.
+
 **Launcher 0.1.3 (#2415, 2026-11-22).** Release `v0.1.3` replaced it as latest: the signed launcher from `release.yml`
 (run 45002710146, commit `a381761c`) as `Lunden.exe` and `Kv-Lunden-Unreal-L1007-Setup-0.1.3-win-x64.exe`, both channels'
 manifests (`--min-launcher 0.1.3 --published 2026-11-22T13:00:00Z`, app files still on v0.1.1) signed by
