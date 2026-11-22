@@ -1,0 +1,420 @@
+{
+ "suns": [
+  {
+   "name": "",
+   "castShadow": false,
+   "intensity": 0.35,
+   "toSun": [
+    0.7155417527999327,
+    0.5366563145999496,
+    -0.4472135954999579
+   ],
+   "target": [
+    0,
+    0,
+    0
+   ],
+   "pos": [
+    8,
+    6,
+    -5
+   ],
+   "cam": {
+    "l": -5,
+    "r": 5,
+    "t": 5,
+    "b": -5,
+    "far": 500
+   }
+  },
+  {
+   "name": "",
+   "castShadow": true,
+   "intensity": 3,
+   "toSun": [
+    0.3290249069149738,
+    0.832794289174853,
+    0.44519241070277027
+   ],
+   "target": [
+    2,
+    0,
+    30
+   ],
+   "pos": [
+    11.870747207449215,
+    24.98382867524559,
+    43.35577232108311
+   ],
+   "cam": {
+    "l": -14,
+    "r": 14,
+    "t": 14,
+    "b": -14,
+    "far": 60
+   }
+  }
+ ],
+ "out": [
+  {
+   "p": [
+    5.56,
+    -298.2,
+    28.54
+   ],
+   "ground": "",
+   "hits": [
+    {
+     "name": "south-land",
+     "parent": "south-backdrop",
+     "dist": 358.6,
+     "visible": true,
+     "castShadow": false,
+     "mat": ""
+    },
+    {
+     "name": "streetLampPools",
+     "parent": "street-details",
+     "dist": 358.65,
+     "visible": false,
+     "castShadow": false,
+     "mat": ""
+    },
+    {
+     "name": "",
+     "parent": "",
+     "dist": 497.84,
+     "visible": true,
+     "castShadow": false,
+     "mat": ""
+    }
+   ]
+  },
+  {
+   "p": [
+    5.14,
+    -298.23,
+    27.63
+   ],
+   "ground": "",
+   "hits": [
+    {
+     "name": "south-land",
+     "parent": "south-backdrop",
+     "dist": 358.63,
+     "visible": true,
+     "castShadow": false,
+     "mat": ""
+    },
+    {
+     "name": "streetLampPools",
+     "parent": "street-details",
+     "dist": 358.66,
+     "visible": false,
+     "castShadow": false,
+     "mat": ""
+    },
+    {
+     "name": "",
+     "parent": "",
+     "dist": 498.83,
+     "visible": true,
+     "castShadow": false,
+     "mat": ""
+    }
+   ]
+  },
+  {
+   "p": [
+    4.72,
+    0.01,
+    26.73
+   ],
+   "ground": "",
+   "hits": [
+    {
+     "name": "loggiaRails",
+     "parent": "",
+     "dist": 4.78,
+     "visible": true,
+     "castShadow": false,
+     "mat": ""
+    },
+    {
+     "name": "",
+     "parent": "",
+     "dist": 6.91,
+     "visible": true,
+     "castShadow": false,
+     "mat": ""
+    },
+    {
+     "name": "",
+     "parent": "",
+     "dist": 7.17,
+     "visible": true,
+     "castShadow": false,
+     "mat": ""
+    },
+    {
+     "name": "loggiaLampPools",
+     "parent": "",
+     "dist": 7.23,
+     "visible": false,
+     "castShadow": false,
+     "mat": ""
+    },
+    {
+     "name": "siteNeighborGlass",
+     "parent": "",
+     "dist": 9,
+     "visible": true,
+     "castShadow": false,
+     "mat": ""
+    },
+    {
+     "name": "",
+     "parent": "",
+     "dist": 9.03,
+     "visible": true,
+     "castShadow": false,
+     "mat": ""
+    }
+   ]
+  },
+  {
+   "p": [
+    4.2,
+    12.4,
+    29.17
+   ],
+   "ground": "",
+   "hits": [
+    {
+     "name": "",
+     "parent": "",
+     "dist": 289.98,
+     "visible": true,
+     "castShadow": false,
+     "mat": ""
+    }
+   ]
+  },
+  {
+   "p": [
+    3.78,
+    0.46,
+    28.27
+   ],
+   "ground": "",
+   "hits": [
+    {
+     "name": "",
+     "parent": "",
+     "dist": 0.1,
+     "visible": true,
+     "castShadow": true,
+     "mat": ""
+    },
+    {
+     "name": "siteNeighborGlass",
+     "parent": "",
+     "dist": 1.12,
+     "visible": true,
+     "castShadow": false,
+     "mat": ""
+    },
+    {
+     "name": "",
+     "parent": "",
+     "dist": 1.19,
+     "visible": true,
+     "castShadow": false,
+     "mat": ""
+    },
+    {
+     "name": "",
+     "parent": "",
+     "dist": 13.7,
+     "visible": true,
+     "castShadow": false,
+     "mat": ""
+    },
+    {
+     "name": "",
+     "parent": "",
+     "dist": 14.42,
+     "visible": true,
+     "castShadow": false,
+     "mat": ""
+    },
+    {
+     "name": "",
+     "parent": "",
+     "dist": 301.01,
+     "visible": true,
+     "castShadow": false,
+     "mat": ""
+    }
+   ]
+  },
+  {
+   "p": [
+    3.36,
+    -298.07,
+    27.36
+   ],
+   "ground": "",
+   "hits": [
+    {
+     "name": "streetLampPools",
+     "parent": "street-details",
+     "dist": 358.49,
+     "visible": false,
+     "castShadow": false,
+     "mat": ""
+    },
+    {
+     "name": "",
+     "parent": "",
+     "dist": 500.08,
+     "visible": true,
+     "castShadow": false,
+     "mat": ""
+    }
+   ]
+  },
+  {
+   "p": [
+    2.39,
+    12.53,
+    30.02
+   ],
+   "ground": "",
+   "hits": [
+    {
+     "name": "",
+     "parent": "",
+     "dist": 290.1,
+     "visible": true,
+     "castShadow": false,
+     "mat": ""
+    }
+   ]
+  },
+  {
+   "p": [
+    1.97,
+    12.4,
+    29.11
+   ],
+   "ground": "",
+   "hits": [
+    {
+     "name": "",
+     "parent": "",
+     "dist": 290.69,
+     "visible": true,
+     "castShadow": false,
+     "mat": ""
+    }
+   ]
+  },
+  {
+   "p": [
+    1.55,
+    2.99,
+    28.21
+   ],
+   "ground": "",
+   "hits": [
+    {
+     "name": "",
+     "parent": "",
+     "dist": 1.33,
+     "visible": true,
+     "castShadow": false,
+     "mat": ""
+    },
+    {
+     "name": "",
+     "parent": "",
+     "dist": 10.66,
+     "visible": true,
+     "castShadow": false,
+     "mat": ""
+    },
+    {
+     "name": "",
+     "parent": "",
+     "dist": 11.94,
+     "visible": true,
+     "castShadow": false,
+     "mat": ""
+    },
+    {
+     "name": "",
+     "parent": "",
+     "dist": 299.47,
+     "visible": true,
+     "castShadow": false,
+     "mat": ""
+    }
+   ]
+  },
+  {
+   "p": [
+    -0.33,
+    12.73,
+    31.29
+   ],
+   "ground": "",
+   "hits": [
+    {
+     "name": "",
+     "parent": "",
+     "dist": 290.24,
+     "visible": true,
+     "castShadow": false,
+     "mat": ""
+    }
+   ]
+  },
+  {
+   "p": [
+    -0.75,
+    12.59,
+    30.38
+   ],
+   "ground": "",
+   "hits": [
+    {
+     "name": "",
+     "parent": "",
+     "dist": 290.84,
+     "visible": true,
+     "castShadow": false,
+     "mat": ""
+    }
+   ]
+  },
+  {
+   "p": [
+    -1.17,
+    12.45,
+    29.47
+   ],
+   "ground": "",
+   "hits": [
+    {
+     "name": "",
+     "parent": "",
+     "dist": 291.44,
+     "visible": true,
+     "castShadow": false,
+     "mat": ""
+    }
+   ]
+  }
+ ]
+}

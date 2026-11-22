@@ -1,0 +1,4 @@
+entrance-a             walk-near    web lum 0.7710 R/B 1.11 sRGB 235.5,226.1,212.3 unreal lum 0.3967 R/B 0.96 sRGB 165.1,168.9,172   ratio 0.51
+entrance-a             walk-left    web lum 0.7573 R/B 1.11 sRGB 233.6,224.5,209.6 unreal lum 0.4073 R/B 0.96 sRGB 167.3,171.2,174.3 ratio 0.54
+patio-lawn             walk-near    web lum 0.7205 R/B 1.13 sRGB 223.5,217.8,198.7 unreal lum 0.7648 R/B 1.08 sRGB 228.7,224.3,211.1 ratio 1.06
+patio-lawn             walk-far     web lum 0.7914 R/B 1.11 sRGB 236.4,229.7,212.4 unreal lum 0.4301 R/B 0.95 sRGB 171.6,175.8,179.6 ratio 0.54

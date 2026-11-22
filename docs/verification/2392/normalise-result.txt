@@ -1,0 +1,9 @@
+entrance-a  walk-left  reference web [167.0, 164.0, 159.0] unreal [112.7, 118.1, 125.9] daylight factor [0.479, 0.539, 0.642]
+                       walk web [233.6, 224.5, 209.6] unreal [167.3, 171.2, 174.3] normalised [234.6, 227.0, 212.8] deviation % [0.4, 1.1, 1.5]
+entrance-a  walk-near  reference web [167.0, 164.0, 157.6] unreal [111.1, 116.4, 124.0] daylight factor [0.467, 0.525, 0.636]
+                       walk web [235.5, 226.1, 212.3] unreal [165.1, 168.9, 172.0] normalised [234.5, 226.9, 211.2] deviation % [-0.4, 0.4, -0.5]
+patio-lawn  walk-far   reference web [169.7, 168.2, 159.4] unreal [117.0, 122.7, 130.4] daylight factor [0.495, 0.548, 0.681]
+                       walk web [236.4, 229.7, 212.4] unreal [171.6, 175.8, 179.6] normalised [235.6, 229.9, 212.1] deviation % [-0.3, 0.1, -0.1]
+patio-lawn  walk-near  reference web [161.4, 161.0, 150.5] unreal [171.5, 170.8, 165.4] daylight factor [1.129, 1.126, 1.205]
+                       walk web [223.5, 217.8, 198.7] unreal [228.7, 224.3, 211.1] normalised [216.3, 212.4, 193.4] deviation % [-3.2, -2.5, -2.7]
+worst channel deviation 3.2 % (within ±10 %)

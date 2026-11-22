@@ -1,0 +1,6 @@
+base entrance-a             walk-near    web lum 0.7710 R/B 1.11 sRGB 235.5,226.1,212.3 unreal lum 0.3965 R/B 0.96 sRGB 165.1,168.8,171.9 ratio 0.51
+base entrance-a             walk-left    web lum 0.7573 R/B 1.11 sRGB 233.6,224.5,209.6 unreal lum 0.4074 R/B 0.96 sRGB 167.3,171.2,174.4 ratio 0.54
+nocoll entrance-a             walk-near    web lum 0.7710 R/B 1.11 sRGB 235.5,226.1,212.3 unreal lum 0.3969 R/B 0.96 sRGB 165.1,168.9,172   ratio 0.51
+nocoll entrance-a             walk-left    web lum 0.7573 R/B 1.11 sRGB 233.6,224.5,209.6 unreal lum 0.4073 R/B 0.96 sRGB 167.3,171.1,174.3 ratio 0.54
+nosun entrance-a             walk-near    web lum 0.7710 R/B 1.11 sRGB 235.5,226.1,212.3 unreal lum 0.8043 R/B 1.08 sRGB 236.8,230.5,218.7 ratio 1.04
+nosun entrance-a             walk-left    web lum 0.7573 R/B 1.11 sRGB 233.6,224.5,209.6 unreal lum 0.8110 R/B 1.08 sRGB 238.4,231.4,219.9 ratio 1.07

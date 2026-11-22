@@ -1,0 +1,313 @@
+{
+ "suns": [
+  {
+   "actor": "Lunden Sky",
+   "visible": true,
+   "castShadows": true,
+   "intensity": 20.0,
+   "forward": [
+    -0.32902490691497244,
+    -0.4451924107027697,
+    -0.8327942891748524
+   ],
+   "rot": "<Struct 'Rotator' (0x0000021E694A1B40) {pitch: -56.386858, yaw: -126.466708, roll: -0.000001}>"
+  },
+  {
+   "actor": "Lunden Sky",
+   "visible": true,
+   "castShadows": true,
+   "intensity": 0.0,
+   "forward": [
+    -0.7190308315424725,
+    0.6728973873506526,
+    -0.17379231682673577
+   ],
+   "rot": "<Struct 'Rotator' (0x0000021D01515BE0) {pitch: -10.008386, yaw: 136.898291, roll: 0.000000}>"
+  }
+ ],
+ "traces": [
+  {
+   "point": [
+    556,
+    2854,
+    -1.0
+   ],
+   "ground": "mesh_site-terrain-remainder_l0_xm2850_z3255_ym151",
+   "hits": [
+    {
+     "actor": "mesh_l0_xm3059_z3497_y600",
+     "tags": [
+      "mesh_l0_xm3059_z3497_y600",
+      "kind:structure",
+      "zone:kvarteret",
+      "level:0",
+      "source:src/surroundings.js"
+     ],
+     "comp": "StaticMeshComponent0",
+     "dist": 58.3,
+     "hiddenInGame": false,
+     "castShadow": true
+    }
+   ]
+  },
+  {
+   "point": [
+    514,
+    2763,
+    -1.0
+   ],
+   "ground": "mesh_site-terrain-remainder_l0_xm2850_z3255_ym151",
+   "hits": [
+    {
+     "actor": "Exterior collision mesh_l0_xm3059_z3497_y600",
+     "tags": [
+      "kind:collision",
+      "derived:exterior-collision",
+      "zone:kvarteret",
+      "source:mesh_l0_xm3059_z3497_y600"
+     ],
+     "comp": "StaticMeshComponent0",
+     "dist": 261.9,
+     "hiddenInGame": false,
+     "castShadow": true
+    }
+   ]
+  },
+  {
+   "point": [
+    472,
+    2673,
+    0.6
+   ],
+   "ground": "mesh_l0_xm2640_z3230_ym42",
+   "hits": [
+    {
+     "actor": "mesh_loggiarails_l0_xm3059_z3498_y653",
+     "tags": [
+      "mesh_loggiarails_l0_xm3059_z3498_y653",
+      "kind:structure",
+      "zone:kvarteret",
+      "level:0",
+      "source:src/surroundings.js"
+     ],
+     "comp": "StaticMeshComponent0",
+     "dist": 479.0,
+     "hiddenInGame": false,
+     "castShadow": true
+    }
+   ]
+  },
+  {
+   "point": [
+    420,
+    2917,
+    0.0
+   ],
+   "ground": null,
+   "hits": [
+    {
+     "actor": "mesh_l0_xm3059_z3497_y668",
+     "tags": [
+      "mesh_l0_xm3059_z3497_y668",
+      "kind:structure",
+      "zone:kvarteret",
+      "level:0",
+      "source:src/surroundings.js"
+     ],
+     "comp": "StaticMeshComponent0",
+     "dist": 1425.3,
+     "hiddenInGame": false,
+     "castShadow": true
+    }
+   ]
+  },
+  {
+   "point": [
+    378,
+    2827,
+    46.0
+   ],
+   "ground": "mesh_l0_xm3200_z3455_y108",
+   "hits": [
+    {
+     "actor": "mesh_l0_xm3200_z3455_y108",
+     "tags": [
+      "mesh_l0_xm3200_z3455_y108",
+      "kind:structure",
+      "zone:gard",
+      "level:0"
+     ],
+     "comp": "StaticMeshComponent0",
+     "dist": 9.7,
+     "hiddenInGame": false,
+     "castShadow": true
+    }
+   ]
+  },
+  {
+   "point": [
+    336,
+    2736,
+    -1.0
+   ],
+   "ground": "mesh_site-terrain-remainder_l0_xm2850_z3255_ym151",
+   "hits": [
+    {
+     "actor": "mesh_l0_xm3059_z3497_y600",
+     "tags": [
+      "mesh_l0_xm3059_z3497_y600",
+      "kind:structure",
+      "zone:kvarteret",
+      "level:0",
+      "source:src/surroundings.js"
+     ],
+     "comp": "StaticMeshComponent0",
+     "dist": 323.1,
+     "hiddenInGame": false,
+     "castShadow": true
+    }
+   ]
+  },
+  {
+   "point": [
+    239,
+    3002,
+    -35.0
+   ],
+   "ground": "mesh_l0_xm42_z2914_ym168",
+   "hits": [
+    {
+     "actor": "Exterior collision mesh_l0_xm3059_z3497_y668",
+     "tags": [
+      "kind:collision",
+      "derived:exterior-collision",
+      "zone:kvarteret",
+      "source:mesh_l0_xm3059_z3497_y668"
+     ],
+     "comp": "StaticMeshComponent0",
+     "dist": 1467.3,
+     "hiddenInGame": false,
+     "castShadow": true
+    }
+   ]
+  },
+  {
+   "point": [
+    197,
+    2911,
+    300.0
+   ],
+   "ground": "mesh_l0_xm3059_z3497_y600_2",
+   "hits": [
+    {
+     "actor": "mesh_l0_xm3059_z3497_y668",
+     "tags": [
+      "mesh_l0_xm3059_z3497_y668",
+      "kind:structure",
+      "zone:kvarteret",
+      "level:0",
+      "source:src/surroundings.js"
+     ],
+     "comp": "StaticMeshComponent0",
+     "dist": 1065.1,
+     "hiddenInGame": false,
+     "castShadow": true
+    }
+   ]
+  },
+  {
+   "point": [
+    155,
+    2821,
+    299.0
+   ],
+   "ground": "mesh_l0_xm3059_z3497_y668",
+   "hits": [
+    {
+     "actor": "Exterior collision mesh_l0_xm3059_z3497_y600",
+     "tags": [
+      "kind:collision",
+      "derived:exterior-collision",
+      "zone:kvarteret",
+      "source:mesh_l0_xm3059_z3497_y600"
+     ],
+     "comp": "StaticMeshComponent0",
+     "dist": 133.2,
+     "hiddenInGame": false,
+     "castShadow": true
+    }
+   ]
+  },
+  {
+   "point": [
+    -33,
+    3129,
+    -35.0
+   ],
+   "ground": "mesh_l0_xm42_z2914_ym168",
+   "hits": [
+    {
+     "actor": "mesh_l0_x8_z3817_y425",
+     "tags": [
+      "mesh_l0_x8_z3817_y425",
+      "kind:structure",
+      "zone:kvarteret",
+      "level:0",
+      "source:src/corehouse.js"
+     ],
+     "comp": "StaticMeshComponent0",
+     "dist": 166.5,
+     "hiddenInGame": false,
+     "castShadow": true
+    }
+   ]
+  },
+  {
+   "point": [
+    -75,
+    3038,
+    -35.0
+   ],
+   "ground": "mesh_l0_xm42_z2914_ym168",
+   "hits": [
+    {
+     "actor": "mesh_l0_x8_z3817_y425",
+     "tags": [
+      "mesh_l0_x8_z3817_y425",
+      "kind:structure",
+      "zone:kvarteret",
+      "level:0",
+      "source:src/corehouse.js"
+     ],
+     "comp": "StaticMeshComponent0",
+     "dist": 295.0,
+     "hiddenInGame": false,
+     "castShadow": true
+    }
+   ]
+  },
+  {
+   "point": [
+    -117,
+    2947,
+    -35.0
+   ],
+   "ground": "mesh_l0_xm42_z2914_ym168",
+   "hits": [
+    {
+     "actor": "Exterior collision mesh_l0_xm3059_z3497_y668",
+     "tags": [
+      "kind:collision",
+      "derived:exterior-collision",
+      "zone:kvarteret",
+      "source:mesh_l0_xm3059_z3497_y668"
+     ],
+     "comp": "StaticMeshComponent0",
+     "dist": 1467.3,
+     "hiddenInGame": false,
+     "castShadow": true
+    }
+   ]
+  }
+ ]
+}
