@@ -2324,7 +2324,8 @@ What is exported:
   position in cm), `kind` (`wall | structure | door | window | furniture | interactive | light | collision | fixture |
   part`), `zone`, `level`, `source` (a pointer such as `data/plan.json#/floors/0/doors/0` or
   `src/config.js#FURNITURE[12]`), the web's display `name`, `webId` (furniture's saved-layout id) and `materialKeys`.
-  Walls are recognised as the plan's wall polygons; other static building geometry is `structure`.
+  A mesh node whose web mesh casts no sun shadow (three's `castShadow` off, its default) carries `castShadow: false`
+  (#2426; absent = it casts). Walls are recognised as the plan's wall polygons; other static building geometry is `structure`.
 - **Mesh names:** `export-world.mjs` names every glTF mesh after the first node that uses it and the glTF scene
   `<zone>__scene` (GLTFExporter leaves them unnamed; Interchange would then name assets `<zone>_mesh_<index>`, so one
   added node renamed every later asset). Only the GLB's JSON chunk changes; still deterministic.
@@ -2632,6 +2633,19 @@ What 5.8.4 does, and what the importer does about it:
   unchanged and derived builds that record it keep skipping. Measured on all nine zones (export of 66b1b6fb): 3,490
   meshes, package bytes +0.05 % (hus-l 119.77 → 119.83 MB), import not slower (l1007 59 s, hus-l 23 s with a warm DDC)
   ([#2299 verification](../verification/2299/README.md)).
+- **Shadows (#2426, importer version 7).** The web's sun is its only shadow-casting light, and only meshes with
+  `castShadow` on cast into it; Unreal casts from every component by default. The Å-husen (Hus A, B and C share one body
+  mesh), their loggia rails and most of Kv. Lunden cast nothing on the web (it darkens their wall feet with the baked
+  bands of `src/groundao.js` instead, which do not travel), so in Unreal the 14:00 sun put the courtyard walks and the
+  lawn at entrance A in Hus A's shadow (#2392). The importer turns Cast Shadow off on every actor whose node says
+  `castShadow: false`; the import and `--check` fail when any mesh actor differs from its node
+  (`LUNDEN_IMPORT_SHADOW`), and the content fingerprint counts the switch only where it is off, so a zone without such
+  actors (`fixture`) keeps its fingerprint. Hus L, the flat's walls, the patio's screen walls, the vegetation and the
+  furniture keep casting as on the web. Export of 2e71144b, mesh nodes without a sun shadow: kvarteret 434 of 442,
+  gard 20 of 24, l1007-uteplats 84 of 124 (the string lights), hus-l 143 of 1,195, l1007 444 of 2,117 (lamps, rugs,
+  vents, small fittings), fond and omgivning their ground and backdrop. Unreal has no per-component receive-shadow
+  switch for opaque surfaces, so `receiveShadow` does not travel. Test: `node tools/unreal-engine/tests/shadow-flags.test.mjs
+  <export dir>` ([verification](../verification/2426/README.md)).
 - **Materials.** `tools/unreal-engine/material-map.json` rules (a regex on the key, first match wins, optionally
   narrowed by a `mesh` regex on the StaticMesh name) replace the imported instances on the mesh slots by hand-made
   materials ([Surface materials](#surface-materials-2282)). Other keys keep Interchange's glTF material instance
