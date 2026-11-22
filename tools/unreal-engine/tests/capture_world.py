@@ -62,7 +62,8 @@ class CaptureSeasons:
 
     def hidden_at(self, hidden, date, hour):
         """#2406: `hidden` (from one apply for every view) with the actors that keep clock hours (seasonHourFrom/To tags,
-        the patio beers) left out or kept for this view's `hour` by BPC_LundenSeasons' own InSeason and InHours."""
+        the patio beers) left out or kept for this view's `hour` by BPC_LundenSeasons' own InSeason and InHours. Their
+        hidden flag follows too (a hidden actor stays out of the capture), but not their collision, which apply set once."""
         def tag(actor, prefix):
             found = [str(t)[len(prefix):] for t in actor.tags if str(t).startswith(prefix)]
             return int(found[0]) if found else None
@@ -71,6 +72,7 @@ class CaptureSeasons:
         for a in timed:
             shown = (self.component.call_method("InSeason", (*date, tag(a, "seasonFrom:"), tag(a, "seasonTo:")))
                      and self.component.call_method("InHours", (int(hour), tag(a, "seasonHourFrom:"), tag(a, "seasonHourTo:"))))
+            a.set_actor_hidden_in_game(not shown)
             if not shown:
                 out.append(a)
         return out
