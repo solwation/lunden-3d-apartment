@@ -41,14 +41,23 @@ internal static class Ui
     }
 
     /// <summary>Shows a launch failure in a dialog (when windowed) and returns the exit code.</summary>
-    internal static int Fail(string instruction, string message)
+    internal static int Fail(string instruction, string message, Exception? cause = null)
     {
         Console.Error.WriteLine($"{instruction} {message}");
         if (Windowed) {
-            try { TaskDialog.Ask(instruction, message, [], error: true, expanded: LogPath == null ? null : "Logg: " + LogPath); }
+            try { TaskDialog.Ask(instruction, message, [], error: true, expanded: Details(cause), cancel: "Stäng"); }
             catch (Exception ex) when (ex is DllNotFoundException or EntryPointNotFoundException or COMException) { }
         }
         return 1;
+    }
+
+    /// <summary>Technical details for a dialog's "Visa detaljer": the (often English) .NET message and the log file.</summary>
+    internal static string? Details(Exception? cause)
+    {
+        var lines = new List<string>();
+        for (var e = cause; e != null; e = e.InnerException) lines.Add($"{e.GetType().Name}: {e.Message}");
+        if (LogPath != null) lines.Add("Logg: " + LogPath);
+        return lines.Count == 0 ? null : string.Join("\n", lines);
     }
 
     internal static string Size(long bytes) => bytes >= 1L << 30

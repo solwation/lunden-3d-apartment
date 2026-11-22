@@ -74,7 +74,7 @@ internal sealed record SetupCommand(bool Uninstall, bool Quiet, bool DryRun, str
                 using var game = Process.Start(info);
             }
             else if (!Quiet && Ui.Windowed)
-                TaskDialog.Ask($"{layout.DisplayName} är installerat", "Du hittar spelet i Start-menyn.", []);
+                TaskDialog.Ask($"{layout.DisplayName} är installerat", "Du hittar spelet i Start-menyn.", [], cancel: "OK");
         }
         else if (image.Equals(layout.Target, StringComparison.OrdinalIgnoreCase)) {
             UninstallHelper.Start(layout, setup, signer, removeData);

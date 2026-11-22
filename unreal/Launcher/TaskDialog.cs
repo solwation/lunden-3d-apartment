@@ -7,9 +7,8 @@ namespace Lunden.Launcher;
 internal static class TaskDialog
 {
     internal const int IdOk = 1, IdCancel = 2;
-    const int FlagHiconMain = 0x2, FlagAllowCancel = 0x8, FlagCommandLinks = 0x10, FlagVerificationChecked = 0x100,
+    const int FlagHiconMain = 0x2, FlagAllowCancel = 0x8, FlagVerificationChecked = 0x100,
         FlagProgressBar = 0x200, FlagCallbackTimer = 0x800, FlagSizeToContent = 0x1000000;
-    const int ButtonCancel = 0x8, ButtonClose = 0x20;
     const uint NotifyCreated = 0, NotifyButtonClicked = 2, NotifyTimer = 4, NotifyDestroyed = 5;
     const uint WmUser = 0x400, ClickButton = WmUser + 102, SetMarquee = WmUser + 103, SetRange = WmUser + 105,
         SetPosition = WmUser + 106, SetMarqueeRunning = WmUser + 107, SetElementText = WmUser + 108;
@@ -56,24 +55,28 @@ internal static class TaskDialog
 
     internal sealed record Choice(int Button, bool Checked);
 
-    /// <summary>A modal question. Buttons are (id, "Text\nexplanation") command links; Cancel is always offered.</summary>
+    /// <summary>
+    /// A modal question with Swedish push buttons (Windows' own Cancel follows the system language). The last button,
+    /// <paramref name="cancel"/>, returns <see cref="IdCancel"/>, as does closing the dialog.
+    /// </summary>
     internal static Choice Ask(string instruction, string content, (int Id, string Text)[] buttons, string? verification = null,
-        bool verificationChecked = false, bool error = false, string? expanded = null)
+        bool verificationChecked = false, bool error = false, string? expanded = null, string cancel = "Avbryt")
     {
         var strings = new List<IntPtr>();
         IntPtr Text(string? s) { if (s == null) return IntPtr.Zero; var p = Marshal.StringToHGlobalUni(s); strings.Add(p); return p; }
-        var native = buttons.Select(b => new Button { Id = b.Id, Text = Text(b.Text) }).ToArray();
+        var native = buttons.Append((Id: IdCancel, Text: cancel)).Select(b => new Button { Id = b.Id, Text = Text(b.Text) }).ToArray();
         var handle = GCHandle.Alloc(native, GCHandleType.Pinned);
         try {
             var config = Base(Text(instruction), Text(content), error);
             strings.Add(config.Title);
-            config.Flags |= FlagAllowCancel | (native.Length > 0 ? FlagCommandLinks : 0) | (verificationChecked ? FlagVerificationChecked : 0);
-            config.CommonButtons = native.Length > 0 ? ButtonCancel : ButtonClose;
+            config.Flags |= FlagAllowCancel | (verificationChecked ? FlagVerificationChecked : 0);
             config.ButtonCount = (uint)native.Length;
-            config.Buttons = native.Length > 0 ? handle.AddrOfPinnedObject() : IntPtr.Zero;
-            config.DefaultButton = native.Length > 0 ? native[0].Id : 0;
+            config.Buttons = handle.AddrOfPinnedObject();
+            config.DefaultButton = native[0].Id;
             config.Verification = Text(verification);
             config.Expanded = Text(expanded);
+            config.ExpandedControl = expanded == null ? IntPtr.Zero : Text("Dölj detaljer");
+            config.CollapsedControl = expanded == null ? IntPtr.Zero : Text("Visa detaljer");
             int hr = TaskDialogIndirect(ref config, out int pressed, out _, out int verified);
             if (hr < 0) Marshal.ThrowExceptionForHR(hr);
             return new(pressed, verified != 0);
@@ -132,12 +135,16 @@ internal static class TaskDialog
 
         void Run()
         {
-            IntPtr title = IntPtr.Zero, main = Marshal.StringToHGlobalUni(instruction), body = Marshal.StringToHGlobalUni(" ");
+            IntPtr title = IntPtr.Zero, main = Marshal.StringToHGlobalUni(instruction), body = Marshal.StringToHGlobalUni(" "),
+                cancelText = Marshal.StringToHGlobalUni("Avbryt");
+            var buttons = new[] { new Button { Id = IdCancel, Text = cancelText } };
+            var pinned = GCHandle.Alloc(buttons, GCHandleType.Pinned);
             try {
                 var config = Base(main, body, false);
                 title = config.Title;
                 config.Flags |= FlagProgressBar | FlagCallbackTimer | FlagAllowCancel;
-                config.CommonButtons = ButtonCancel;
+                config.ButtonCount = 1;
+                config.Buttons = pinned.AddrOfPinnedObject();
                 config.Width = 280; // dialog units: room for "123 av 464 MB · 11,2 MB/s · cirka 1 min kvar"
                 callback = OnNotify;
                 config.Callback = Marshal.GetFunctionPointerForDelegate(callback);
@@ -148,7 +155,8 @@ internal static class TaskDialog
             }
             finally {
                 try { created.Set(); } catch (ObjectDisposedException) { }
-                Marshal.FreeHGlobal(main); Marshal.FreeHGlobal(body); Marshal.FreeHGlobal(title);
+                pinned.Free();
+                Marshal.FreeHGlobal(main); Marshal.FreeHGlobal(body); Marshal.FreeHGlobal(title); Marshal.FreeHGlobal(cancelText);
             }
         }
 

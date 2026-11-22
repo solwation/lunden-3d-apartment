@@ -96,9 +96,13 @@ internal static class Program
                         bool unavailable = ex is HttpRequestException or OperationCanceledException or EndOfStreamException;
                         if ((!unavailable || state.Active == null) && Ui.Windowed) {
                             (int, string)[] buttons = state.Active == null ? [(201, "Försök igen")]
-                                : [(202, "Spela installerad version\nStartar den version som redan finns på datorn"), (201, "Försök igen")];
-                            string reason = unavailable ? "Kontrollera internetanslutningen. " + ex.Message : ex.Message;
-                            var choice = TaskDialog.Ask("Uppdateringen kunde inte genomföras", reason, buttons, error: true);
+                                : [(202, "Spela installerad version"), (201, "Försök igen")];
+                            string reason = unavailable
+                                ? "Det gick inte att nå uppdateringsservern. Kontrollera internetanslutningen och försök igen."
+                                : "Uppdateringen kunde inte kontrolleras eller installeras.";
+                            if (state.Active != null) reason += "\n\nDu kan också spela den version som redan är installerad.";
+                            var choice = TaskDialog.Ask("Uppdateringen kunde inte genomföras", reason, buttons, error: true,
+                                expanded: Ui.Details(ex), cancel: "Avsluta");
                             if (choice.Button == 201) continue;
                             if (choice.Button != 202) return state.Active == null ? 1 : 0;
                         }
@@ -152,7 +156,7 @@ internal static class Program
             window?.Dispose();
             window = null;
             if (!Ui.Windowed) { Console.Error.WriteLine($"Lunden kunde inte startas. {ex.Message}"); return 1; }
-            return Ui.Fail(SetupLayout.ProductName + " kunde inte startas", ex.Message);
+            return Ui.Fail(SetupLayout.ProductName + " kunde inte startas", ex.Message, ex);
         }
         finally { window?.Dispose(); }
     }
