@@ -1,0 +1,1 @@
+shadow-flags OK: mesh nodes without a sun shadow kvarteret 434/442, hus-l 143/1195, l1007 444/2117, l1007-uteplats 84/124, gard 20/24

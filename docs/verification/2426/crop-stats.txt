@@ -1,0 +1,5 @@
+entrance-a             walk-near    web lum 0.7710 R/B 1.11 sRGB 235.5,226.1,212.3 unreal lum 0.8042 R/B 1.08 sRGB 236.8,230.5,218.7 ratio 1.04
+entrance-a             walk-left    web lum 0.7573 R/B 1.11 sRGB 233.6,224.5,209.6 unreal lum 0.8109 R/B 1.08 sRGB 238.4,231.4,219.9 ratio 1.07
+entrance-a             lawn         web lum 0.3393 R/B 1.74 sRGB 112.4,173.3,64.6  unreal lum 0.3906 R/B 1.48 sRGB 120.7,184.2,81.5  ratio 1.15
+patio-lawn             terrace-hus-l web lum 0.7205 R/B 1.13 sRGB 223.5,217.8,198.7 unreal lum 0.7651 R/B 1.08 sRGB 228.8,224.3,211.1 ratio 1.06
+patio-lawn             courtyard-walk web lum 0.7914 R/B 1.11 sRGB 236.4,229.7,212.4 unreal lum 0.8383 R/B 1.08 sRGB 241.6,235.3,224.3 ratio 1.06

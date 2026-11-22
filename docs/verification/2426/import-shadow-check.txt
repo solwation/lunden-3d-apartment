@@ -1,0 +1,10 @@
+LUNDEN_IMPORT_SHADOW zone fixture: 11 mesh actors, 0 without cast shadow as on the web, 11 casting
+LUNDEN_IMPORT_SHADOW zone fond: 41 mesh actors, 24 without cast shadow as on the web, 17 casting
+LUNDEN_IMPORT_SHADOW zone gard: 25 mesh actors, 20 without cast shadow as on the web, 5 casting
+LUNDEN_IMPORT_SHADOW zone hus-l: 1195 mesh actors, 143 without cast shadow as on the web, 1052 casting
+LUNDEN_IMPORT_SHADOW zone kvarteret: 476 mesh actors, 434 without cast shadow as on the web, 42 casting
+LUNDEN_IMPORT_SHADOW zone l1007-entre: 4 mesh actors, 4 without cast shadow as on the web, 0 casting
+LUNDEN_IMPORT_SHADOW zone l1007-uteplats: 124 mesh actors, 84 without cast shadow as on the web, 40 casting
+LUNDEN_IMPORT_SHADOW zone l1007: 2171 mesh actors, 444 without cast shadow as on the web, 1727 casting
+LUNDEN_IMPORT_SHADOW zone omgivning: 657 mesh actors, 245 without cast shadow as on the web, 412 casting
+LUNDEN_IMPORT_SHADOW zone vegetation: 4163 mesh actors, 1 without cast shadow as on the web, 4162 casting
