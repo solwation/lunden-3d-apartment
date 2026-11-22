@@ -60,7 +60,7 @@ The sky's level matches; other differences remain, each mapped to an open issue:
 
 - The night view at START: the sky is a more saturated blue (R/B 0.39 against 0.62), the light upper storey of Hus L
   stands out pale where the web's is dark, the court is grey where the web's is blue, the entrance lamps' pools are
-  yellow where the web's are a dim brown-pink, and the neighbour's lit window on the left is dark. Follow-up: FOLLOWUP.
+  yellow where the web's are a dim brown-pink, and the neighbour's lit window on the left is dark. Follow-up: #2421.
 - The thin cloud streaks of the web's clear night sky: #2371.
 - The evening living room: the pendant's light pool on the ceiling and the bright, cold right-hand wall (#2372), the
   open parasol at night (#2403), the curtains' and floor's textures (#2322) and the cold cast (#2394).
