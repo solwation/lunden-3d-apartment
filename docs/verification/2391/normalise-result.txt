@@ -1,0 +1,19 @@
+bottom-rail reference web [38.0, 37.0, 33.0] unreal [38.0, 35.0, 32.0] daylight factor [0.991, 0.958, 0.975]
+   imported    web [23.0, 62.0, 44.0] unreal [60.3, 88.3, 72.4] normalised [60.8, 90.9, 73.9] deviation % [164.5, 46.5, 67.9]
+   specular-0  web [23.0, 62.0, 44.0] unreal [37.8, 75.5, 57.3] normalised [38.2, 77.8, 58.6] deviation % [66.1, 25.5, 33.2]
+   no-reflection web [23.0, 62.0, 44.0] unreal [20.8, 59.2, 42.0] normalised [21.1, 61.2, 43.1] deviation % [-8.4, -1.3, -2.0]
+bottom-rail-top reference web [66.6, 63.6, 58.8] unreal [59.4, 56.2, 53.6] daylight factor [0.882, 0.88, 0.914]
+   imported    web [48.3, 86.1, 65.6] unreal [83.1, 115.5, 99.5] normalised [90.6, 124.2, 105.2] deviation % [87.5, 44.2, 60.3]
+   specular-0  web [48.3, 86.1, 65.6] unreal [57.1, 99.9, 80.3] normalised [64.4, 108.0, 85.6] deviation % [33.3, 25.5, 30.5]
+   no-reflection web [48.3, 86.1, 65.6] unreal [36.8, 78.7, 59.0] normalised [42.4, 85.1, 62.7] deviation % [-12.2, -1.1, -4.5]
+post        reference web [38.0, 36.8, 33.2] unreal [39.7, 35.9, 32.9] daylight factor [1.026, 0.983, 0.992]
+   imported    web [22.9, 61.8, 44.2] unreal [61.6, 91.0, 74.3] normalised [60.1, 92.1, 74.7] deviation % [162.4, 49.0, 69.1]
+   specular-0  web [22.9, 61.8, 44.2] unreal [32.9, 74.4, 55.4] normalised [31.9, 75.6, 56.2] deviation % [39.3, 22.4, 27.1]
+   no-reflection web [22.9, 61.8, 44.2] unreal [21.4, 60.6, 42.7] normalised [20.6, 61.8, 43.6] deviation % [-9.9, 0.0, -1.4]
+top-rail    reference web [40.8, 38.6, 35.0] unreal [40.0, 36.0, 33.0] daylight factor [0.97, 0.942, 0.951]
+   imported    web [25.0, 63.5, 45.0] unreal [61.7, 91.6, 75.6] normalised [63.4, 95.3, 78.5] deviation % [153.8, 50.0, 74.5]
+   specular-0  web [25.0, 63.5, 45.0] unreal [33.9, 76.0, 57.0] normalised [35.1, 79.1, 59.3] deviation % [40.5, 24.5, 31.9]
+   no-reflection web [25.0, 63.5, 45.0] unreal [22.0, 61.0, 43.0] normalised [22.9, 63.6, 45.0] deviation % [-8.3, 0.2, -0.0]
+imported: worst channel deviation on the shaded faces 164.5 % (outside ±10 %)
+specular-0: worst channel deviation on the shaded faces 66.1 % (outside ±10 %)
+no-reflection: worst channel deviation on the shaded faces 9.9 % (within ±10 %)
