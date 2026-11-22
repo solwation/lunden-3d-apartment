@@ -1,0 +1,6 @@
+january                hus-l-fence  web lum 0.3268 R/B 1.72 sRGB 178,149.9,103.3   unreal lum 0.3284 R/B 1.64 sRGB 173.9,152.3,106.3 ratio 1.00
+january                l1007-wall   web lum 0.3211 R/B 1.67 sRGB 174.3,149.4,104.1 unreal lum 0.3277 R/B 1.58 sRGB 171.6,152.9,108.4 ratio 1.02
+january-before         hus-l-fence  web lum 0.3268 R/B 1.72 sRGB 178,149.9,103.3   unreal lum 0.6821 R/B 0.98 sRGB 211.8,215.3,215.8 ratio 2.09
+january-before         l1007-wall   web lum 0.3211 R/B 1.67 sRGB 174.3,149.4,104.1 unreal lum 0.3278 R/B 1.59 sRGB 171.8,152.9,108.2 ratio 1.02
+entrance-a             hus-l-fence  web lum 0.3164 R/B 1.44 sRGB 162.5,152.5,112.5 unreal lum 0.3476 R/B 1.40 sRGB 168.8,159.2,120.5 ratio 1.10
+entrance-a-before      hus-l-fence  web lum 0.3164 R/B 1.44 sRGB 162.5,152.5,112.5 unreal lum 0.8805 R/B 1.04 sRGB 243.9,240.9,234   ratio 2.78
