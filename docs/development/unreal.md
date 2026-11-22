@@ -3220,6 +3220,15 @@ side face as its reference. This is a *guess* for the static approximation of th
 tint, vertex shading, hedge shape and collision still come from the source mesh. The web adds
 view-dependent fading, fine bump relief and stem shading near the base at render time.
 
+**A/B/C window soldier courses (#2425).** The web draws the upright-brick courses over and under every listed A/B/C
+opening as decals 15 mm proud of the brick (`src/surroundings.js` `openingDecals`, canvas `openingTexture`, named
+`site-opening-soldiers`); the narrow white frame and sashes are geometry. Their key `std_ffffff_r60_m0_tex` lost the
+canvas in Unreal, so each course rendered as a white band and the windows read as a wide white surround. The export now
+keeps the canvas like the rails (`std_ffffff_r60_m0_tex_site_opening_soldiers`, one merged node for A, B and C, clamped
+and mipmapped), and the key stays on Interchange's textured instance. Hus L has no soldier courses on the web.
+`tests/test_materials.py` fails when no key draws that canvas, a key lacks it in its GLB or a rule replaces it, and
+`check_site_details.py` checks the imported instance. Results: [#2425 verification](../verification/2425/README.md).
+
 `tests/check_site_details.py` (commandlet, `run-python.ps1`) reads these keys and the river keys from `Import/*.glb` and
 fails when any of them falls back to another material in the world levels: the rails, letters and hedges must keep
 Interchange's textured instance with the GLB's image size (rails masked and two-sided), the river keys their
