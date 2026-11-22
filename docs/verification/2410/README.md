@@ -85,4 +85,4 @@ is left unchanged here; #2424 has these crops to measure again.
 - The bridge railing lighter: #2391 / #2424. The hedges and shrubs: #2411.
 - No sun glint on the water: #2362. The white dots on the web's water and the river plants: #2345.
 - The opposite bank of the river has a darker olive band on the web where Unreal's slope is plain lawn green: new
-  issue (filed with this change).
+  issue #2441.

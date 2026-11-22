@@ -3084,6 +3084,15 @@ and takes on the bank tint. The far continuation uses stationary world-space rip
 web's calendar snow fallback through the vegetation collection's Month. The web’s measured snow-depth driver has no
 equivalent input in these collections.
 
+**Display units and one reflection (#2410).** The sky term is in the web's radiance units, so the graph multiplies it by
+`river_material.display_gain()` = 2^−`EXPOSURE_BIAS` (read from `build_lighting.py`, part of the spec hash): the game's
+locked exposure is the web's exposure × 2^`EXPOSURE_BIAS`, and Unreal shows emissive as three.js does at exposure 1.
+Without it the reflected sky reached the screen at 0.17 of the web. The web has no environment map, so the water takes
+no reflection of Unreal's own: Metallic 0 and Specular 0, with the web's metalness folded into the diffuse colour
+(`COLORS.water` × (1 − 0.2)); on the edge mesh only the masked water (`WATER_SPECULAR`), while land and lying snow keep
+the engine default until #2424. The sun's glint on the ripples is not carried (#2362). Measured within ±4 % per channel of
+the web in the valley and bridge views ([#2410](../verification/2410/README.md)).
+
 Run the two WSL checks after a world export. The first compares both GLBs with the source geometry and material
 keys. The second needs Linux DXC and VkRunner. It compiles the generated material bodies to Direct3D SM6 and
 SPIR-V, renders normals and reflected sky into a floating-point Vulkan attachment, and compares pixels with the
