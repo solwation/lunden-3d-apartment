@@ -34,5 +34,5 @@ Same camera on both sides: [the #2310 view](../2310/views.json), 21 June 2026 at
 - Floor, sofa and walls are paler and cooler in Unreal: #2394.
 - The rug, coffee-table and sofa fabric textures differ in tone: #2322.
 - The patio, seen through the door, looks pale: #2388.
-- The remote's black plastic is nearly black in Unreal; on the web it has a grey sheen: ISSUE_REMOTE.
-- The web's warm yellow light on the back of the sofa is missing in Unreal: ISSUE_SOFA.
+- The remote's black plastic is nearly black in Unreal; on the web it has a grey sheen: #2446.
+- The web's warm yellow light on the back of the sofa is missing in Unreal: #2447.
