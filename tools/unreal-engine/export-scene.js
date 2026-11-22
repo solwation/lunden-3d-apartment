@@ -516,6 +516,12 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
       lightsInfo.patioStrings = strings.lamps;
       lightsInfo.patioBulb = strings.mat;
     }
+    // #2429: the TV remote on the coffee table (src/remote.js, #101), a Holdable main.js builds next to the world: the
+    // same class at its home pose. Only the object; pointing it at a TV belongs to the TV group (#2354). No TV finder.
+    const { Remote } = await import('../../src/remote.js');
+    const remote = new Remote(loose.root, camera, () => null);
+    loose.carryables.push(remote);
+    loose.of.set(remote.model, { type: 'remote', name: remote.name, webId: null, source: 'src/config.js#REMOTE' });
   } catch (e) { loose.error = String(e?.stack ?? e); }
   // main.js adds Hoop outside buildWorld. Keep the static court paint at the same world transform,
   // including its clearance above the car park. The scoring volumes and the hoop stay in the game.
@@ -697,7 +703,7 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
       a.name = a.door.owner.name ?? null;
       a.id = unique(`int_${slug(a.name) || 'openable'}_${lv}_${pos(c)}`);
       a.source = null;
-    } else if (a.kind === 'furniture' && a.loose) { // #2310: the fruit bowl, the basketball holder and the ball
+    } else if (a.kind === 'furniture' && a.loose) { // #2310: the fruit bowl, the basketball holder and the ball (#2429: the TV remote)
       Object.assign(a, { name: a.loose.name, webId: a.loose.webId, source: a.loose.source });
       a.id = unique(`furn_${slug(a.loose.type)}_${lv}_${pos(c)}`);
     } else if (a.kind === 'furniture') {

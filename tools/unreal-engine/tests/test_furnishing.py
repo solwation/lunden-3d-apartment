@@ -17,6 +17,9 @@
 5. Patio beers (#2406): the slat table's two pints (`furnishing.patioBeers`, src/patio.js) stand where the web stands
    them: each glass, bottom, beer and foam mesh actor's bounds centre within 1 cm of the web's mesh centre, and every one
    carries the export's date and clock-hour window as season tags (seasonFrom/To, seasonHourFrom/To) for BPC_LundenSeasons.
+6. Furnishings main.js builds next to the world (#2310, #2429): the export holds the fruit bowl, the basketball and the
+   TV remote (by their `source`), so they cannot silently drop out of the export (point 1 only checks what is exported);
+   the remote's body carries its export material key (the web's black plastic) in every level that holds it.
 
 Editor world only (no Play In Editor needed). Run like the other tests: copy this file to unreal/Lunden/Content/Python/
 (untracked, delete afterwards) and
@@ -133,6 +136,22 @@ def handmade_errors(mesh_actors, level):
     return errs
 
 
+# 6. (#2310, #2429) source → a material key that must be on the node's meshes (None: placement only)
+LOOSE = {"src/config.js#FRUIT": None, "src/config.js#BASKET.ball": None, "src/config.js#REMOTE": "std_17181b_r55_m10"}
+loose_seen = {}
+
+
+def actor_materials(a):
+    """Material names on an actor's static meshes and on the actors attached to it (the node's parts)."""
+    names, todo = set(), [a]
+    while todo:
+        x = todo.pop()
+        for comp in x.get_components_by_class(u.StaticMeshComponent):
+            names.update(m.get_name() for m in comp.get_materials() if m)
+        todo.extend(x.get_attached_actors())
+    return names
+
+
 HANDMADE = handmade_targets()
 result["handmade"] = {}
 items = {i["id"]: i for i in F["items"]}
@@ -196,6 +215,16 @@ for level in levels:
         if not ok:
             errors.append(f"{mesh_id} ({t['id']} {t['images'] or t['kind']}) in {level}: centre {off:.3f} cm off, materials "
                           f"{[x.get_name() for x in mats]}, textures {sizes}, want {t['keys']} with {want_size}")
+    # 6. the loose furnishings' materials (#2429)
+    for item_id, it in items.items():
+        key = LOOSE.get(it.get("source"))
+        a = by_name.get(item_id)
+        if key is None or a is None:
+            continue
+        mats = actor_materials(a)
+        loose_seen.setdefault(item_id, {"key": key, "levels": []})["levels"].append(level.rsplit("/", 1)[-1])
+        if key not in mats:
+            errors.append(f"{item_id} in {level}: materials {sorted(mats)}, want {key}")
     # 4. hand-made furnishing materials (#2395)
     mesh_actors = {}
     for a in by_name.values():
@@ -225,6 +254,13 @@ for level in levels:
     log(f"{level}: {n_items} furnishing actors, {n_meshes} textured mesh actors checked")
 
 missing_items = sorted(set(items) - set(placed))
+for source in LOOSE:
+    ids = sorted(i for i, it in items.items() if it.get("source") == source)
+    result.setdefault("loose", {})[source] = ids
+    log(f"loose {source}: {ids}")
+    if not ids:
+        errors.append(f"measurements.json has no furnishing item from {source}: the export lost it (#2310, #2429)")
+result["looseMaterials"] = loose_seen
 missing_meshes = sorted(set(meshes) - set(shown))
 if not HANDMADE:
     errors.append("material-map.json has no rule for a furnishing mesh: the fruit bowl's copper wire (#2395) is gone")

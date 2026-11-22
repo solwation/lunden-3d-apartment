@@ -2365,6 +2365,12 @@ What is exported:
   (the ball is its own node, although the web hangs it in the holder; `src/config.js#BASKET.ball`). The default state:
   every piece in the bowl, the ball at home. The two modules bring `src/stats.js`, `src/keep.js` and their score
   modules into the [source list](#staleness-check), so a change there also makes the export stale.
+- **TV remote (#2429).** The same way, `export-scene.js` builds `new Remote(scene, camera, () => null)` from
+  `src/remote.js` (#101) after the bowl, the ball and the patio string lights: one `furniture` node
+  `furn_remote_l0_x398_z1072` (`source` `src/config.js#REMOTE`, name `fjärrkontrollen`, its buttons and LED as parts)
+  at its home pose on the coffee table, turned 18°. Only the object: pointing it at a TV belongs to the TV group
+  (#2354). Its LED is exported unlit (the web lights it only on a press). `test_furnishing` point 6 fails when the
+  export loses the bowl, the ball or the remote, and checks the remote's black body material.
 - **Nodes** carry `extras` (`shared/schema/node-extras.schema.json`): stable `id` (= node name; kind + level +
   position in cm), `kind` (`wall | structure | door | window | furniture | interactive | light | collision | fixture |
   part`), `zone`, `level`, `source` (a pointer such as `data/plan.json#/floors/0/doors/0` or

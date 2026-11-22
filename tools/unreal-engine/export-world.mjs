@@ -156,7 +156,7 @@ async function main() {
   console.log(`  export-manifest.json   sha256 ${sha256(fs.readFileSync(manifestPath))}`);
   console.log(`  kinds ${JSON.stringify(result.report.kinds)}; skipped ${JSON.stringify(result.report.skipped)}; world static merges skipped: ${result.report.skippedMerges}`);
   if (result.report.lightsError) console.log(`  note: room lights not built (${result.report.lightsError})`);
-  if (result.report.looseError) throw new Error(`fruit bowl/basketball not built (#2310): ${result.report.looseError}`);
+  if (result.report.looseError) throw new Error(`fruit bowl/basketball/TV remote not built (#2310, #2429): ${result.report.looseError}`);
   if (result.report.extraError) throw new Error(`garage/stairwells not built: ${result.report.extraError}`);
   if (result.report.player?.error) throw new Error(`player data (#2300, export-player.js) not built: ${result.report.player.error}`);
   if (result.report.player) console.log(`  player (#2300): ${JSON.stringify(result.report.player)}`);

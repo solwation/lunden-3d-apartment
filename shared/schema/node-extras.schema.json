@@ -10,7 +10,7 @@
     "id": { "type": "string", "pattern": "^[A-Za-z0-9_-]+$", "maxLength": 160, "description": "letters, digits, _ and - only (Unreal object names cannot hold dots); a part is <parent id>__<n>" },
     "kind": {
       "enum": ["zone", "wall", "structure", "door", "window", "furniture", "interactive", "light", "collision", "collision-group", "fixture", "part"],
-      "description": "zone = the GLB's root; wall = a plan wall polygon extruded floor → ceiling; structure = other static building geometry (floors, ceilings, frames, stair, fittings); door / window = an opening leaf or sash (moves); furniture = a FURNITURE piece, or a furnishing main.js builds (the fruit bowl, the basketball holder and the ball, #2310); interactive = another openable (cabinet door, drawer, appliance lid); light = a lamp or ceiling fixture; collision = a simple box (never rendered); fixture = an axis/position test marker; part = a child of one of these"
+      "description": "zone = the GLB's root; wall = a plan wall polygon extruded floor → ceiling; structure = other static building geometry (floors, ceilings, frames, stair, fittings); door / window = an opening leaf or sash (moves); furniture = a FURNITURE piece, or a furnishing main.js builds (the fruit bowl, the basketball holder and the ball, #2310; the TV remote, #2429); interactive = another openable (cabinet door, drawer, appliance lid); light = a lamp or ceiling fixture; collision = a simple box (never rendered); fixture = an axis/position test marker; part = a child of one of these"
     },
     "zone": { "type": "string" },
     "level": { "type": "integer", "minimum": 0, "maximum": 1, "description": "0 = Entréplan, 1 = Övre plan (by the node's lowest point)" },
