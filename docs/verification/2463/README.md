@@ -15,3 +15,5 @@ Checks (WSL, Node 22, three 0.170.0 via a local `node_modules/three` link):
 
 Images (from that browser run): `customizer-jacket.png` the customizer with the jacket previewed;
 `outdoors-snow.png` the own body outdoors in snow with the layer put on automatically.
+
+Published with pinned images in the [completion comment](https://github.com/solwation/lunden-3d-apartment/issues/2463#issuecomment-7188940817).
