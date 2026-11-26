@@ -30,7 +30,7 @@ project-owned game binary to sign and no `sign-files.txt`.
 File          : Lunden-Setup-0.1.1-win-x64.exe
 Status        : Valid
 SignatureType : Authenticode
-Subject       : CN=Svep Design Center AB, O=Svep Design Center AB, L=Lund, S=Sk†ne, C=SE
+Subject       : CN=Svep Design Center AB, O=Svep Design Center AB, L=Lund, S=SkÃ¥ne, C=SE
 LeafSha256    : E7CDD7209BF94142DFB0767509FCA1C7284D1A3293226628298354156CB06991
 LeafNotBefore : 2026-11-20 04:30:26Z
 LeafNotAfter  : 2026-11-23 04:30:26Z
@@ -40,7 +40,7 @@ FileSha256    : E6477A6A73E6AD67A0DD3D27821580B9510017E4CC971669C23E2A689E95DAC2
 File          : Lunden.exe
 Status        : Valid
 SignatureType : Authenticode
-Subject       : CN=Svep Design Center AB, O=Svep Design Center AB, L=Lund, S=Sk†ne, C=SE
+Subject       : CN=Svep Design Center AB, O=Svep Design Center AB, L=Lund, S=SkÃ¥ne, C=SE
 LeafSha256    : E7CDD7209BF94142DFB0767509FCA1C7284D1A3293226628298354156CB06991
 LeafNotBefore : 2026-11-20 04:30:26Z
 LeafNotAfter  : 2026-11-23 04:30:26Z
