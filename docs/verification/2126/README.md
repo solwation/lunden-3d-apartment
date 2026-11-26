@@ -6,7 +6,7 @@ production code. Both phases run `tools/duckmotion2126browser.cjs` against the r
 (`?life&month=6&day=2&time=12&freeze&weather=clear&test=lazy`), reseed the flock with `DuckFlock(seed 1839)`, and step
 `Ducks.update` until female duck 0 swims forward within 1.2 m of the river centreline. The observer follows the bird
 2.1 m to its water side. Images are native 1280×800 captures (JPEG q85). Raw data: [browser.json](browser.json),
-[before/browser.json](before/browser.json).
+[before/browser.json](https://github.com/solwation/lunden-3d-apartment/blob/361ad4fe8fc2b27ee8d318c9f401063b9a9cf8a2/docs/verification/2126/before/browser.json).
 
 ## Frame sequence
 

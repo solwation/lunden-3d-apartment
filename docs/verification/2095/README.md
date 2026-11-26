@@ -2,7 +2,7 @@
 
 Bas `80b8ba4` (origin/main). "Före" serverar basens versioner av de ändrade modulerna (`config.js`, `exterior.js`,
 `surroundings.js`); "efter" kör arbetskopian. Riktiga appen (`?test`, juli, klart väder, fryst klocka kl 13), samma
-kamera före/efter. Native 1280×800 (`kit.shot`), JPEG utan beskärning. Före-bilder i [before/](before/). Skript:
+kamera före/efter. Native 1280×800 (`kit.shot`), JPEG utan beskärning. Före-bilder i [before/](https://github.com/solwation/lunden-3d-apartment/tree/8fed7eca0c5f451040d8057d3aa921967daa948a/docs/verification/2095/before). Skript:
 `tools/rendersurface2095browser.cjs`, rådata: [browser.json](browser.json).
 
 ## Resultat

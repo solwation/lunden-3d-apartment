@@ -5,7 +5,7 @@ Bas `3e33c99` (origin/main). "Före" serverar basens versioner av de ändrade mo
 arbetskopian. Riktiga appen (`?test`, klart väder, fryst klocka kl 13), samma kamera före/efter, juli
 (sommar) och januari (vinter, `day.month`). Gångvy från gatan norr om Hus L mot skolan/campus, upphöjda
 vyer från Hus L:s tak mot Hus A/B (söderut) och mot Hus C/B och de gamla husen. Native 1280×800 (`kit.shot`),
-JPEG utan beskärning. Före-bilder i [before/](before/). Skript: `tools/roofsurface2088browser.cjs`, rådata:
+JPEG utan beskärning. Före-bilder i [before/](https://github.com/solwation/lunden-3d-apartment/tree/0c5f4a510866073739ca2e6ea1ce0fcd0127a563/docs/verification/2088/before). Skript: `tools/roofsurface2088browser.cjs`, rådata:
 [browser.json](browser.json).
 
 ## Resultat

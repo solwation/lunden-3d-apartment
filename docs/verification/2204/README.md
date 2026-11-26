@@ -14,7 +14,7 @@ All geometry positions, cap/hood dimensions, seeded placements and collision rem
 
 ## Views and review
 
-[Vent hoods](vents.png), [campus chimneys](campus.png), with matching [effect-off vents](before/vents.png) and [effect-off campus](before/campus.png). These are native canvas captures, without rescaling or compositing. Inspected: faint white plumes leave actual hood/cap tops, rise, broaden and bend east/north with the pinned test wind (5,−1 m/s); solid geometry is identical.
+[Vent hoods](vents.png), [campus chimneys](campus.png), with matching [effect-off vents](https://github.com/solwation/lunden-3d-apartment/blob/0638c8b1f6da01c372af58aac4178a2b5b6d0231/docs/verification/2204/before/vents.png) and [effect-off campus](https://github.com/solwation/lunden-3d-apartment/blob/0638c8b1f6da01c372af58aac4178a2b5b6d0231/docs/verification/2204/before/campus.png). These are native canvas captures, without rescaling or compositing. Inspected: faint white plumes leave actual hood/cap tops, rise, broaden and bend east/north with the pinned test wind (5,−1 m/s); solid geometry is identical.
 
 The first attempt measured cold initial camera/shadow uploads, so its count comparison was invalid (+164). The corrected harness warms the view three times and freezes shadow updates before comparing the same stable scene. A server-lifecycle retry produced connection refusal, with no accepted result. The first corrected green January captures were visually low-contrast against snow; only the same views were retaken closer and in cold November. No product code changed during these checks.
 

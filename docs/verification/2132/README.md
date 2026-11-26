@@ -12,9 +12,9 @@ in the crown: beside the limb. Before = base `ab7b1953`, its config / squirrels 
 
 | | before | after |
 |---|---|---|
-| up the trunk, then a perch | ![](before/climb.png) | ![](climb.png) |
-| crown: before a 9 m leap through the air between the crowns; after a run in along the limb and a jump of at most 2.6 m | ![](before/leap.png) | ![](crown.png) |
-| down | ![](before/down.png) | ![](down.png) |
+| up the trunk, then a perch | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/8a89f610be761e5baf9ae7eb7a98c4ce1c881b5b/docs/verification/2132/before/climb.png) | ![](climb.png) |
+| crown: before a 9 m leap through the air between the crowns; after a run in along the limb and a jump of at most 2.6 m | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/8a89f610be761e5baf9ae7eb7a98c4ce1c881b5b/docs/verification/2132/before/leap.png) | ![](crown.png) |
+| down | ![](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/8a89f610be761e5baf9ae7eb7a98c4ce1c881b5b/docs/verification/2132/before/down.png) | ![](down.png) |
 
 After: the squirrel climbs pressed to the bark with its belly to the stem and nose up, spirals round it to a main limb, runs out along
 the limb and sits on it; to change crowns it runs back in and round to the limb nearest the neighbour and jumps to that one's branch;

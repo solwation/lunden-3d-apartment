@@ -2,7 +2,7 @@
 
 Bas `7dced376` (origin/main). "Före" serverar basens versioner av de ändrade modulerna (`config.js`, `exterior.js`,
 `surroundings.js`); "efter" kör arbetskopian. Riktiga appen (`?test`, juli, klart väder, fryst klocka kl 13), samma kamera
-före/efter, native 1280×800 (`kit.shot`), JPEG utan beskärning. Före-bilder i [before/](before/). Skript:
+före/efter, native 1280×800 (`kit.shot`), JPEG utan beskärning. Före-bilder i [before/](https://github.com/solwation/lunden-3d-apartment/tree/c609309103089f6a955ae1d34c0724c686d63f8c/docs/verification/2122/before). Skript:
 `tools/shademoss2122browser.cjs`, rådata: [browser.json](browser.json), telefon (`&lowmem`): [browser-phone.json](browser-phone.json).
 
 ## Resultat
