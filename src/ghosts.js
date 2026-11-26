@@ -628,9 +628,9 @@ export class Ghost { // (exported for tools/ghostprops.html)
     const sl = this.avatar.sleep ??= newSleep(); // #2163: asleep after a while in pose 2 (eyes shut, slower breath, now and then on the side)
     stepSleep(sl, dt, this.pose === 2 && !this.gx && !this.bikeMesh);
     this.avatar.sleepEyes = sl.eyes;
-    this.avatar.collectPose = true;
     const outdoors = wetEnv.outdoorAt(this);
-    this.updateOuter(dt, outdoors); // #2147
+    this.updateOuter(dt, outdoors); // #2147 (may rebuild this.avatar, so it runs before the pose collection: #2463)
+    this.avatar.collectPose = true;
     this.avatar.updateWeather(outdoors); // #2018
     this.avatar.update(dt, { ground: this.ground, floorY: this.root.position.y, motionFrame, groundSpeed: groundEnabled && groundSpeed <= 8 ? groundSpeed : 0, groundEnabled, gaitDir, speed: this.speed * (1 - amount), turn: turn * (1 - amount), pitch: (this.look?.[1] ?? 0) * (1 - amount) - HUG.head * hugged + mouthHead, hands, crouch: wet ? 0 : Math.max(this.crouch ?? 0, reachCrouch, knockCrouch), dance: !amount && !react ? this.dance || 0 : 0, react, kiss: kissed, kissReach: kiss?.reach ?? 1, kissLift: kiss?.lift ?? 0, air, airV, swim: !!wet && !amount, dive, jump: ji, fwd: groundEnabled && sp <= 8 ? vx * Math.sin(by) + vz * Math.cos(by) : 0 }); // #2159: the playback curve's forward speed (its change leans the body)
     updateFace(this.avatar, dt, { wave: this.waveT > 0, hug: hugged, kiss: kissed, react: react ? REACT.kinds[react.kind]?.id : null, gym: this.gx ? 0.6 + 0.4 * Math.sin(Math.PI * this.gx[1]) : 0, run: this.avatar.gt?.run ?? 0 }); // #2031: the face follows what the figure does
