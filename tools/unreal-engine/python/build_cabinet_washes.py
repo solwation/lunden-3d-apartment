@@ -19,10 +19,14 @@ PLANE = "/Engine/BasicShapes/Plane.Plane"
 # Native profile guesses; source walnut colour, textures and UVs are not altered.
 # Initial revision from the locked #2322 lighting2788460c batch. The former blue
 # factor .32 left the real day crop at 1/255 versus the source's 19.6/255.
-VENEER_FACTOR = (1.27, 1.28, 1.52)
+VENEER_FACTOR = (1.265, 1.259, 1.267)
+# Guess: separate day/night native reflectance endpoints. The single static
+# factor could not match both the day veneer and its warm spotlit evening view.
+# Interpolate with the real weather collection; retain original texture/UV/alpha.
+VENEER_NIGHT_FACTOR = (.755, .560, .155)
 WASH_RADIANCE = (4.9, 3.3, 2.35)
 WASH_PROFILE = .55
-POINT_GAIN = 1.25
+POINT_GAIN = 3.65
 
 
 def asset(name, cls, factory):
@@ -173,15 +177,18 @@ def controller(lamp_tag):
             return bp.generated_class()
         events = u.BlueprintGraphEditor.get_graph_editor_by_name(bp, "EventGraph")
         events.remove_nodes(list(events.list_all_nodes()))
-        for method in ("UpdateWashes", "ApplyPoint", "FindLamp"):
+        for method in ("UpdateWashes", "ApplyPoint", "ApplyVeneer", "FindLamp"):
             if bp_lib.find_graph(bp, method):
                 bp_lib.remove_function_graph(bp, method)
     else:
         factory = u.BlueprintFactory()
         factory.set_editor_property("parent_class", u.StaticMeshActor)
         bp = TOOLS.create_asset(name, DIR, u.Blueprint, factory)
-    pp.variables(bp, {"SourceLamp": bp_lib.get_object_reference_type(lamp), "AppliedFade": pp.REAL, "PointCandela": pp.REAL})
-    bp_lib.set_blueprint_variable_instance_editable(bp, "PointCandela", True)
+    pp.variables(bp, {"SourceLamp": bp_lib.get_object_reference_type(lamp), "AppliedFade": pp.REAL, "PointCandela": pp.REAL,
+                      "VeneerPanels": pp.array(bp_lib.get_object_reference_type(u.StaticMeshActor.static_class())),
+                      "DayVeneer": pp.VEC, "NightVeneer": pp.VEC, "AppliedVeneer": pp.VEC, "VeneerApplied": pp.BOOL})
+    for field in ("PointCandela", "VeneerPanels", "DayVeneer", "NightVeneer"):
+        bp_lib.set_blueprint_variable_instance_editable(bp, field, True)
     g, _ = pp.function(bp, "FindLamp")
     g.branch(g.op("Not_PreBool", A=g.pure("KismetSystemLibrary:IsValid", Object=g.get("SourceLamp"))))
     found = g.run("GameplayStatics:GetAllActorsWithTag", Tag=lamp_tag)
@@ -198,7 +205,22 @@ def controller(lamp_tag):
     g.set("Supply", pins["Grid"], lamp.get_path_name(), source)
     light = g.pure("Actor:GetComponentByClass", target=source, ComponentClass="/Script/Engine.PointLightComponent")
     g.run("LightComponent:SetIntensity", target=light, NewIntensity=g.op("Multiply_DoubleDouble", A=candela, B=pins["Fade"]))
+    g, _ = pp.function(bp, "ApplyVeneer")
+    day = g.pure("KismetMaterialLibrary:GetScalarParameterValue", Collection=mpc.get_path_name(), ParameterName="Daylight")
+    colour = g.op("VLerp", A=g.get("NightVeneer"), B=g.get("DayVeneer"),
+                  Alpha=g.op("FClamp", Value=day, Min="0", Max="1"))
+    same = g.op("EqualExactly_VectorVector", A=colour, B=g.get("AppliedVeneer"))
+    g.branch(g.op("Not_PreBool", A=g.op("BooleanAND", A=same, B=g.get("VeneerApplied"))))
+    g.set("AppliedVeneer", colour)
+    g.set("VeneerApplied", True)
+    panel, _, _ = g.loop(g.get("VeneerPanels"))
+    mesh = g.get("StaticMeshComponent", "/Script/Engine.StaticMeshActor", panel)
+    g.run("MeshComponent:SetVectorParameterValueOnMaterials", target=mesh,
+          ParameterName="BaseColorFactor", ParameterValue=g.get("AppliedVeneer"))
     g, _ = pp.function(bp, "UpdateWashes")
+    # Daylight may change while the lamp's fade is unchanged. Refresh the local
+    # veneer profile independently, before the existing fade-change fast path.
+    g.run(pp.class_path(path) + ":ApplyVeneer")
     g.run(pp.class_path(path) + ":FindLamp")
     source = g.get("SourceLamp")
     missing = g.branch(g.pure("KismetSystemLibrary:IsValid", Object=source))
@@ -252,6 +274,7 @@ def veneer_material(key):
         if (max(abs(a - b) for a, b in zip((result.r, result.g, result.b), tint)) > .00001
                 or abs(MEL.get_material_instance_scalar_parameter_value(mi, "SpecularFactor")) > .00001):
             raise RuntimeError("The imported veneer does not expose glTF base colour and specular factors")
+        EAL.set_metadata_tag(mi, "Lunden.Assumption", "guess: day/night native veneer profile with original imported texture, UVs and alpha; runtime Daylight interpolation on four cabinet leaves; Windows full profile unverified")
         save(mi, stamp)
     return original, mi
 
@@ -278,6 +301,7 @@ def main():
     actors = u.get_editor_subsystem(u.EditorActorSubsystem)
     existing = {str(a.tags[1]): a for a in u.GameplayStatics.get_all_actors_with_tag(world, TAG)}
     changed = False
+    panels, day_veneer, night_veneer = [], u.Vector(0, 0, 0), u.Vector(0, 0, 0)
     if veneer:
         original, finish = veneer
         doors = []
@@ -293,6 +317,10 @@ def main():
             if comp.get_material(0) != finish:
                 comp.set_material(0, finish)
                 changed = True
+        panels = [comp.get_owner() for comp in doors]
+        base = MEL.get_material_instance_vector_parameter_value(original, "BaseColorFactor")
+        day_veneer = u.Vector(*[c*k for c, k in zip((base.r, base.g, base.b), VENEER_FACTOR)])
+        night_veneer = u.Vector(*[c*k for c, k in zip((base.r, base.g, base.b), VENEER_NIGHT_FACTOR)])
     for i, surface in enumerate(surfaces):
         name = row["id"] + ":wash:" + str(i)
         centre, rotation, scale, material = surface
@@ -301,6 +329,9 @@ def main():
         if actor:
             comp = actor.static_mesh_component
             if (abs(actor.get_editor_property("PointCandela") - point) < .00001
+                    and list(actor.get_editor_property("VeneerPanels")) == (panels if i == 0 else [])
+                    and actor.get_editor_property("DayVeneer") == day_veneer
+                    and actor.get_editor_property("NightVeneer") == night_veneer
                     and comp.static_mesh == template and comp.get_material(0) == material
                     and comp.get_collision_enabled() == u.CollisionEnabled.NO_COLLISION
                     and not comp.get_editor_property("cast_shadow")
@@ -313,6 +344,9 @@ def main():
             actor.set_actor_label("Vitrinskåpets ljusfält " + str(i + 1))
             actor.tags = [u.Name(TAG), u.Name(name)]
         actor.set_editor_property("PointCandela", point)
+        actor.set_editor_property("VeneerPanels", panels if i == 0 else [])
+        actor.set_editor_property("DayVeneer", day_veneer)
+        actor.set_editor_property("NightVeneer", night_veneer)
         place(actor, surface, template)
         changed = True
     for old in existing.values():

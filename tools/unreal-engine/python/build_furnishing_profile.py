@@ -18,10 +18,10 @@ STAMP = 'Lunden.FurnishingProfile'
 # Blue-grey native environment highlights are absent on the web's unprobed wood.
 # Setting SpecularFactor=0 also drops direct glints: an explicit approximation.
 PROFILES = {
-    'wood': {'rgb': [1.22, 1.06, .81], 'specular': 0.0,
+    'wood': {'rgb': [1.34, 1.27, 1.15], 'specular': 0.0,
              'keys': [r'^std_c69c6d_r50_m0_tex_', r'^std_b06a32_r50_m0_tex_',
                       r'^std_c07a3e_r60_m0$', r'^std_cfb48d_r60_m0_tex_', r'^std_c0a47c_r70_m0_tex_']},
-    'upholstery': {'rgb': [1.08, 1.06, .98], 'specular': None,
+    'upholstery': {'rgb': [1.0, 1.0, .84], 'specular': None,
                    'keys': [r'^std_ffffff_r96_m0_vc_tex_']},
 }
 ASSUMPTION = ('guess: per-material profile calibration against fixed #2322 day/evening views; '

@@ -18,9 +18,9 @@ VISIBILITY = "/Game/Lunden/Generated/Interaction/BFL_LundenCurtainLighting"
 # using the neutral curve's inverse to estimate channel response. The source print,
 # sRGB flag and UVs stay intact. The shared conversion on four other fabrics is
 # unmeasured; source-transcribed window irradiance on translucent cloth is absent.
-DAY_GAIN = (15.6, 13.7, 10.6)
-LAMP_GAIN = (13.4, 16.7, 22.2)
-VIOLET_LAMP_GAIN = (66.5, 45.0, 104.0)
+DAY_GAIN = (19.32, 17.41, 15.04)
+LAMP_GAIN = (13.37, 16.89, 24.68)
+VIOLET_LAMP_GAIN = (72.75, 67.27, 140.80)
 
 
 def native_colours(row):
