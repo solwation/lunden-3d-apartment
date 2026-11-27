@@ -29,6 +29,28 @@ power = u.MaterialLibrary.get_scalar_parameter_value(world, mpc, "PowerAvailable
 receivers = []
 parameter_checks = 0
 
+
+def base_overrides(instance):
+    """Compare explicit UE 5.8 fields; StructBase equality need not compare values."""
+    data = instance.get_editor_property("base_property_overrides")
+    fields = """blend_mode cast_dynamic_shadow_as_masked compatible_with_lumen_card_sharing
+        dithered_lod_transition enable_displacement_fade enable_tessellation has_pixel_animation
+        is_thin_surface max_world_position_offset_displacement opacity_mask_clip_value
+        output_translucent_velocity override_b_enable_displacement_fade override_b_enable_tessellation
+        override_b_has_pixel_animation override_b_is_thin_surface override_blend_mode
+        override_cast_dynamic_shadow_as_masked override_compatible_with_lumen_card_sharing
+        override_displacement_fade_range override_displacement_scaling override_dithered_lod_transition
+        override_max_world_position_offset_displacement override_opacity_mask_clip_value
+        override_output_translucent_velocity override_shading_model override_two_sided override_usage_flags
+        shading_model two_sided usage_flags""".split()
+    values = {name: data.get_editor_property(name) for name in fields}
+    for name, keys in (("displacement_scaling", ("center", "magnitude")),
+                       ("displacement_fade_range", ("start_size_pixels", "end_size_pixels"))):
+        nested = data.get_editor_property(name)
+        values[name] = tuple(nested.get_editor_property(key) for key in keys)
+    return values
+
+
 try:
     for row in spec["receivers"]:
         source = by_tag[row["mesh"]]
@@ -50,7 +72,7 @@ try:
                 parameter_checks += 1
         a, b = copied, original
         while isinstance(b, u.MaterialInstanceConstant):
-            assert a.get_editor_property("base_property_overrides") == b.get_editor_property("base_property_overrides")
+            assert base_overrides(a) == base_overrides(b)
             a, b = a.get_editor_property("parent"), b.get_editor_property("parent")
         driver = by_tag[row["mesh"] + ":rug-pool"]
         assert driver in controls and driver.get_editor_property("Receiver") == source
