@@ -99,6 +99,7 @@ def main(argv=None):
     parser.add_argument("--data-dir", type=Path)
     parser.add_argument("--render", action="store_true", help="Vulkan SM5 offscreen, 640x360, low profile")
     parser.add_argument("--vulkan-icd", type=Path, help="Override the private driver for this rendered run only")
+    parser.add_argument("--allow-cpu-device", action="store_true", help="Explicitly permit a Vulkan software device (requires --render)")
     parser.add_argument("--timeout", type=int, default=300)
     parser.add_argument("--owner", default="local-linux #2467")
     commands = parser.add_subparsers(dest="mode", required=True)
@@ -109,6 +110,8 @@ def main(argv=None):
     tests = commands.add_parser("tests")
     tests.add_argument("filter", nargs="?", default="Editor.Python.Lunden.test_fixture_material")
     args = parser.parse_args(argv)
+    if args.allow_cpu_device and not args.render:
+        parser.error("--allow-cpu-device requires --render")
     settings = json.loads(SETTINGS.read_text()) if SETTINGS.exists() else {}
     engine = args.engine_root or Path(os.environ.get("LUNDEN_UNREAL_LINUX_ROOT", settings.get("engineRoot", "/nonexistent")))
     data = args.data_dir or Path(settings.get("dataDir", str(PROJECT / "Saved/LinuxDev")))
@@ -140,6 +143,8 @@ def main(argv=None):
                "-NoCrashDialog", f"-abslog={log}"]
     command += (["-vulkan", "-sm5", "-AllowCommandletRendering", "-RenderOffscreen", "-ResX=640", "-ResY=360", "-windowed"]
                 if args.render else ["-nullrhi"])
+    if args.allow_cpu_device:
+        command.append("-AllowCPUDevices")
     if args.mode == "python":
         script = args.script.resolve()
         if not script.is_file():
