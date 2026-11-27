@@ -21,6 +21,7 @@ import time
 ROOT = Path(__file__).resolve().parents[2]
 PROJECT = ROOT / "unreal/Lunden"
 SETTINGS = Path.home() / ".config/lunden-unreal/linux.json"
+STOP_GRACE_SECONDS = 10
 
 
 def engine_version(engine):
@@ -81,16 +82,26 @@ def run_process(command, env, timeout):
         return process.wait(timeout=timeout)
     finally:
         # Shader compilers belong to this invocation too. Only signal our own process group.
+        group_exists = True
         try:
             os.killpg(process.pid, signal.SIGTERM)
         except ProcessLookupError:
-            pass
-        if process.poll() is None:
+            group_exists = False
+        deadline = time.monotonic() + STOP_GRACE_SECONDS
+        while group_exists and time.monotonic() < deadline:
+            process.poll()  # Reap the editor even when its worker group still exists.
             try:
-                process.wait(timeout=10)
-            except subprocess.TimeoutExpired:
-                os.killpg(process.pid, signal.SIGKILL)
-                process.wait()
+                os.killpg(process.pid, 0)
+            except ProcessLookupError:
+                break
+            time.sleep(0.1)
+        # An exited editor does not imply its shader workers exited. Kill the group
+        # regardless of the direct child's state before releasing the editor slot.
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        process.wait()
 
 
 def main(argv=None):

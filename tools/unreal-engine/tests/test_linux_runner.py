@@ -1,7 +1,10 @@
 """#2467: Linux editor failures must never be reported as a successful Unreal check."""
 import importlib.util
 import json
+import os
 from pathlib import Path
+import signal
+import sys
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -69,6 +72,33 @@ class LinuxRunnerTests(unittest.TestCase):
         self.assertEqual(result["exitCode"], 124)
         self.assertTrue(result["timedOut"])
         self.assertFalse(result["passed"])
+
+    def test_exited_editor_does_not_leave_resistant_worker(self):
+        pid_file = self.root / "worker.pid"
+        child = ("import os,signal,time;from pathlib import Path;"
+                 "signal.signal(signal.SIGTERM,signal.SIG_IGN);"
+                 f"Path({str(pid_file)!r}).write_text(str(os.getpid()));time.sleep(30)")
+        parent = ("import subprocess,sys,time;from pathlib import Path;"
+                  f"subprocess.Popen([sys.executable,'-c',{child!r}]);"
+                  f"p=Path({str(pid_file)!r});\nwhile not p.exists():time.sleep(.01)")
+        try:
+            with patch.object(runner, "STOP_GRACE_SECONDS", 0.1):
+                self.assertEqual(runner.run_process([sys.executable, "-c", parent], os.environ.copy(), 5), 0)
+            pid = int(pid_file.read_text())
+            # An orphan can remain briefly as a zombie until PID1 reaps it, but must not run.
+            state = Path(f"/proc/{pid}/stat")
+            for _ in range(100):
+                if not state.exists() or state.read_text().split(")", 1)[1].split()[0] == "Z":
+                    break
+                runner.time.sleep(0.01)
+            else:
+                self.fail("Worker survived editor exit and process-group cleanup")
+        finally:
+            if pid_file.exists():
+                try:
+                    os.kill(int(pid_file.read_text()), signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
 
     def test_missing_log_and_failed_process_fail(self):
         self.assertEqual(self.invoke(["python", str(self.script)], log=None), 1)

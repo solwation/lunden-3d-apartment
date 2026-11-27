@@ -16,6 +16,8 @@ from screenshot_level import render_view, spawn
 def main(output):
     directory = Path(output).resolve()
     directory.mkdir(parents=True, exist_ok=True)
+    image = directory / "linux-fixture.png"
+    image.unlink(missing_ok=True)  # A failed void-returning export must not reuse old evidence.
     world = u.EditorLoadingAndSavingUtils.new_blank_map(False)
     cube = u.load_asset("/Engine/BasicShapes/Cube.Cube")
     material = u.load_asset("/Game/Lunden/Fixtures/M_LundenFixture")
@@ -29,7 +31,6 @@ def main(output):
     position = u.Vector(260, 260, 210)
     rotation = u.MathLibrary.find_look_at_rotation(position, u.Vector(0, 0, 50))
     render_view(world, str(directory), "linux-fixture", position, rotation, 640, 360, 60, 0, [])
-    image = directory / "linux-fixture.png"
     if not image.is_file() or image.stat().st_size < 100:
         raise RuntimeError("Capture produced no PNG")
     u.EditorLoadingAndSavingUtils.new_blank_map(False)
