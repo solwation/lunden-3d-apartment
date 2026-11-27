@@ -1,0 +1,48 @@
+{
+  "atUtc": "2026-11-27T23:17:59.367469+00:00",
+  "scope": "Bounded read-only source/derivative/filter audit; no new pixelmeasure, UE, browser, source or asset changes",
+  "actualCurrentFailedCriteria": [
+    "HusAnear mortarShare0.891463",
+    "HusAmid brickL1.109652",
+    "HusLfar brickL1.104782"
+  ],
+  "actualCrossIssueRegression": "Existing livingdayrugY before0.821398 after0.718148 under2424shadertrial; productioncandidate not accepted",
+  "sourcePins": {
+    "/home/devcontainers/wt/codex-2428/src/exterior.js": "7fcd176541e246c8dcc0e9e3601fe7e78107de2e3b21fe5d1ecf6180dad26a27",
+    "/home/devcontainers/wt/codex-2428/src/surroundings.js": "13b9413806a902510b2d26ce3e879fac79ca5858686a3aaa085850b930a644cf",
+    "/home/devcontainers/kvarteret-lunden/node_modules/three/src/renderers/shaders/ShaderChunk/map_fragment.glsl.js": "0965b7aea34da013a1286f0a90a801c280b0fa0c516661b8e3f4f4f539431cb3",
+    "/home/devcontainers/kvarteret-lunden/node_modules/three/src/textures/Texture.js": "9a22675cfdd0c58c8fb9a925fe7aa798fede2d8328d7991603fecfe7c0078f80",
+    "/home/devcontainers/kvarteret-lunden/node_modules/three/src/textures/CanvasTexture.js": "e39ad4b190c92f853b86fde86cf8a003e7a55af26ce8799ac369a89561f31a1d",
+    "/home/devcontainers/kvarteret-lunden/node_modules/three/src/renderers/webgl/WebGLTextures.js": "deddd7ec98cb9762967ba2e790a4f059cce4197d499bb9c2eff3eaaf519b3a60"
+  },
+  "webSource": {
+    "HusL": "exterior.js35\u201358:512canvas,4x8bricks,8pxjoints,source requestedanisotropy8",
+    "AHus": "surroundings.js741\u2013760+canvasTex590:256canvas,0.26m/0.075mgrid,2pxhead/1.5pxbed,source requestedanisotropy4",
+    "mapShader": "three map_fragment.glsl.js: texture2D(map,vMapUv), no applicationbrickfwidth/proceduralCDF",
+    "defaults": "Texture.js22/60: LinearFilter magnification,LinearMipmapLinearFilter minification,generateMipmaps true",
+    "samplerBinding": "WebGLTextures binds chosen min/mag, anisotropy capped by device; generateMipmap delegates GL",
+    "exactGPUFilterLimit": "Full derivative matrix and driver mip/anisotropy behavior are not an application GLSL kernel; requested anisotropy is not an observed effective-cap query in this audit."
+  },
+  "newTentMathematics": {
+    "old": "P=fwidth(UV),B=TexelBlur,oldmaxbox variance=max(P,B)^2/12",
+    "candidateResolved": "Tent fullsupport sqrt(P\u00b2+B\u00b2), equivalent convolution of2halfwidth boxes; variance=(P\u00b2+B\u00b2)/24",
+    "nearPmuchLessThanB": "CandidateRMS\u2192oldRMS/sqrt(2), sharper resolved near edges. This is a real change from published2393near branch, not a source-equivalent proof.",
+    "equalPAndB": "CandidateRMS=oldRMS although total support is sqrt(2)wider; oldsupport-only warning is incomplete.",
+    "unresolved": "Wholebox with newquadrature footprint broadens oldmax by up tosqrt(2); periodicmean preserved, localCDF shape changed.",
+    "colourAndPhase": "Normalizedmean does not prove canvas-raster/phase equivalence or CIEOtsu share equivalence."
+  },
+  "derivativeLimit": {
+    "fwidth": "Per-component abs(ddx)+abs(ddy) axisaligned bounding span, not full 2x2anisotropic footprint.",
+    "RMSAlternative": "sqrt(ddx\u00b2+ddy\u00b2) matches only the secondmoment of a uniform projected pixel box; this is not a proven replacement for the web anisotropic sampler. Can shrink up to1/sqrt(2)relativefwidth and thus risks the known0.7moire failure; not proposed blindly."
+  },
+  "canvasRasterLimit": [
+    "AHus source draws fractionalrects before texture upload; head gap2px, bed1.5px with source top inset1/bottom inset0.5 (not centered0.75/0.75). Analytic centered continuous rectangles do not reproduce source texel raster/phase. UVflip/sign must be established before any phase correction; no phasepatch proposed.",
+    "Canvas colours/edge texels then sRGB texture sampling/mips are an actual raster path; procedural linear face/mortar coverage plus independent jitter seed/fade is an approximation. Do not assert residual brightness is caused only by reconstruction width or2424."
+  ],
+  "boundedNextStep": {
+    "lowestRiskFilterCorrection": "Preserve EXACT oldmax/box coverage in sourceblur-dominated near magnification and in unresolved wholepixelbox regime; restrict any newtent reconstruction to genuine minification. This removes an unnecessary near change and keeps oldmoir\u00e9 path, but any activation/blend rule remains a documented reconstruction assumption unless actual textureLOD is modeled. No numericthreshold search or implementation performed.",
+    "sourceFaithfulRoute": "Sample the exact source canvas through texture mip/aniso pipeline rather than inventing another analytic kernel. Requires validating actual exported/imported texture/UV/material bindings; not a ready one-line patch or authorized Native change.",
+    "safeExactOneLineSourceFixProven": false,
+    "candidatePromotion": false
+  }
+}

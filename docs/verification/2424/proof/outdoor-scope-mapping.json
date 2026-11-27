@@ -1,0 +1,38 @@
+{
+  "sourceReviewOnly": true,
+  "newPixelMeasures": false,
+  "actualOriginalsViewed": [
+    "trial-second/product/target/unreal-patio-palm.png",
+    "../2423/web-reused/web-patio-summer.jpg",
+    "trial-second/product/target/unreal-river-bridge.png",
+    "web/web-river-bridge.jpg",
+    "trial-second/product/target/unreal-entrance-a.png",
+    "../2428/web/web-entrance-a.jpg"
+  ],
+  "riverSparkles": {
+    "issue": 2362,
+    "state": "OPEN",
+    "classification": "explicitly deferred afterR1",
+    "exactComment": "https://github.com/solwation/lunden-3d-apartment/issues/2362#issuecomment-7067897012",
+    "source": "river_material.py162 + unreal.md3499 + inventory row252"
+  },
+  "benchGrain": {
+    "existingOpenFit": 2362,
+    "classification": "remaining wood-surface implementation; add concrete evidence comment to existing explicitly wood-scoped afterR1 issue",
+    "notCoverage": 2098,
+    "source": "benchwood.js59–80 procedural fragmentgrain; courtyard.js471; closed2098 c96d77e is webimplementation",
+    "limit": "Do not claim current wood omissions are a2424regression or an FXAA-only effect"
+  },
+  "palmStem": {
+    "existingOpenFit": 2362,
+    "state": "OPEN",
+    "decision": "Document this specific remaining palmstem/bark finish under existing afterR1 surface family; no new issue",
+    "scopeProof": "2362body: remaining surface/light effects after pictureissues; wood/materialfamilies by exportedzone. InventoryG04R1 andG11staticfurnitureR1 contain no explicit palm-bump acceptance;2362 is the remaining finish followup.",
+    "colourCause": "UNKNOWN/unisolated; the bump omission is not an explanation of the brown-versus-olive appearance. No measured base-colour error or2424regression asserted.",
+    "source": "patio.js489–499 fiber bump/base6b4e32/vertexcolour/roughness.95; export-scene.js873–885 no palm bumpMap assignment",
+    "supersededDraft": "palm-stem-followup-draft.md",
+    "newIssueRecommended": false
+  },
+  "rootOwnsPublicationAndIssueRegistration": true,
+  "readyCommentFor2362": "Aktuella privata #2424-råbilder ger tre konkreta kvarvarande ytfinishreferenser här: solglitter på Höje å (redan7067897012 och unreal.md3499), ådring/åldrad gråton på entréA-bänkens träribbor (benchwood.js59–80,courtyard.js471; webb2098), samt uteplatspalmens bark/bump och synliga brunare stamton (patio.js489–499). Exportmaterialkonstruktorn överför inte just denna palms fiber-bump; stamtonens färgorsak är däremot okänd och inte förklarad av bumpförlust. Detta är avgränsade kvarvarande ytfinishreferenser efterR1, inte nya2424regressioner och inte godkännande av identisk färg. Root publicerar/länkar de aktuella råbilderna vid leverans; inget nytt ärende föreslås."
+}

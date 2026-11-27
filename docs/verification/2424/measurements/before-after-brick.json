@@ -1,0 +1,198 @@
+{
+  "contractSHA256": "442011b8c9914443ac515e3cf8c3b04d2e06166c22d616845b2eac79bda718b4",
+  "beforePixelsRemeasured": false,
+  "beforeMetricSHA256": "dce84a28dc6f9477dc53b9d5524ecee1d9a4b8b794f86ccbca6aee2c4c20ee0c",
+  "sameUnacceptedFilterBeforeAfter": true,
+  "rows": [
+    {
+      "shot": "entrance-a",
+      "crop": "wall-near",
+      "rect": [
+        0.1,
+        0.15,
+        0.32,
+        0.7
+      ],
+      "metrics": {
+        "mortarShare": {
+          "beforeRatioReused": 0.9639494215765403,
+          "afterRatio": 0.9367769706752759,
+          "deltaRatio": -0.02717245090126441,
+          "afterPassed": true
+        },
+        "mortarL": {
+          "beforeRatioReused": 1.1083922109253832,
+          "afterRatio": 1.0996036532827849,
+          "deltaRatio": -0.008788557642598338,
+          "afterPassed": true
+        },
+        "brickL": {
+          "beforeRatioReused": 1.0222608695652173,
+          "afterRatio": 0.9902608695652173,
+          "deltaRatio": -0.03200000000000003,
+          "afterPassed": true
+        }
+      }
+    },
+    {
+      "shot": "entrance-a",
+      "crop": "wall-far",
+      "rect": [
+        0.5,
+        0.03,
+        0.525,
+        0.28
+      ],
+      "metrics": {
+        "mortarShare": {
+          "beforeRatioReused": 1.1239768897448243,
+          "afterRatio": 1.0808858931150698,
+          "deltaRatio": -0.043090996629754574,
+          "afterPassed": true
+        },
+        "mortarL": {
+          "beforeRatioReused": 1.0188133140376265,
+          "afterRatio": 0.9833574529667148,
+          "deltaRatio": -0.0354558610709117,
+          "afterPassed": true
+        },
+        "brickL": {
+          "beforeRatioReused": 1.1711362032462949,
+          "afterRatio": 1.07939308398024,
+          "deltaRatio": -0.09174311926605494,
+          "afterPassed": true
+        }
+      }
+    },
+    {
+      "shot": "courtyard",
+      "crop": "husA-near",
+      "rect": [
+        0.0,
+        0.32,
+        0.03,
+        0.62
+      ],
+      "metrics": {
+        "mortarShare": {
+          "beforeRatioReused": 0.8992697053638881,
+          "afterRatio": 0.8914631075295895,
+          "deltaRatio": -0.007806597834298601,
+          "afterPassed": false
+        },
+        "mortarL": {
+          "beforeRatioReused": 1.0750969743987588,
+          "afterRatio": 1.0614429790535298,
+          "deltaRatio": -0.013653995345229042,
+          "afterPassed": true
+        },
+        "brickL": {
+          "beforeRatioReused": 1.0190332326283986,
+          "afterRatio": 0.9773413897280967,
+          "deltaRatio": -0.04169184290030192,
+          "afterPassed": true
+        }
+      }
+    },
+    {
+      "shot": "courtyard",
+      "crop": "husA-mid",
+      "rect": [
+        0.25,
+        0.32,
+        0.27,
+        0.46
+      ],
+      "metrics": {
+        "mortarShare": {
+          "beforeRatioReused": 1.0799792261750194,
+          "afterRatio": 1.0475201246429497,
+          "deltaRatio": -0.032459101532069656,
+          "afterPassed": true
+        },
+        "mortarL": {
+          "beforeRatioReused": 1.0388673935983117,
+          "afterRatio": 1.0075624340485403,
+          "deltaRatio": -0.031304959549771416,
+          "afterPassed": true
+        },
+        "brickL": {
+          "beforeRatioReused": 1.191625266146203,
+          "afterRatio": 1.109652235628105,
+          "deltaRatio": -0.0819730305180979,
+          "afterPassed": false
+        }
+      }
+    },
+    {
+      "shot": "courtyard",
+      "crop": "husL-far",
+      "rect": [
+        0.885,
+        0.245,
+        0.99,
+        0.275
+      ],
+      "metrics": {
+        "mortarShare": {
+          "beforeRatioReused": 1.024195624195624,
+          "afterRatio": 1.0056628056628056,
+          "deltaRatio": -0.018532818532818407,
+          "afterPassed": true
+        },
+        "mortarL": {
+          "beforeRatioReused": 0.9923806561965479,
+          "afterRatio": 0.9782304462758512,
+          "deltaRatio": -0.01415020992069671,
+          "afterPassed": true
+        },
+        "brickL": {
+          "beforeRatioReused": 1.138228377319049,
+          "afterRatio": 1.1047818134308858,
+          "deltaRatio": -0.03344656388816314,
+          "afterPassed": false
+        }
+      }
+    },
+    {
+      "shot": "courtyard",
+      "crop": "husL-mid2",
+      "rect": [
+        0.81,
+        0.13,
+        0.83,
+        0.24
+      ],
+      "metrics": {
+        "mortarShare": {
+          "beforeRatioReused": 0.9679769894534996,
+          "afterRatio": 0.9346116970278044,
+          "deltaRatio": -0.03336529242569519,
+          "afterPassed": true
+        },
+        "mortarL": {
+          "beforeRatioReused": 1.0326919802485952,
+          "afterRatio": 1.016005448663375,
+          "deltaRatio": -0.016686531585220266,
+          "afterPassed": true
+        },
+        "brickL": {
+          "beforeRatioReused": 1.119017790027562,
+          "afterRatio": 1.086193936356803,
+          "deltaRatio": -0.03282385367075902,
+          "afterPassed": true
+        }
+      }
+    }
+  ],
+  "nativeExitTruth": 0,
+  "wholeAcceptance": false,
+  "causalCaveats": [
+    "Before did not independently live-query all new substrate/forward/raytracing/staticlighting CVars. Same exact project/lowprofile production files and source defaults support the profile assumption; after must report actual registered values.",
+    "PhysicalSun per-component colour/intensity was not separately dumped for these two before targets. ActualMPC SunStrength/SunDir, ambientfill/cube, shared saved assets, unchanged productionfunctions and exact gameExposure are the measurable bounds; do not invent full physicalSun equality.",
+    "Private harnesses differ: before executed material/canonical/PBR then finalworldload; after capture-only PBR owns finalworldload. Shotorder and recapture/timing differ; cloud/temporal/shadow sampling may vary. No allvariation-caused-by-sky assertion.",
+    "Candidatefilter is IDENTICAL before/after. This compares engine lighting proposal under one unaccepted filter, not oldfilter/newfilter, and does not prove the filter fixed2428.",
+    "Baseline numeric failures remain published. No historicalWindows/current718 improvementtrend claim; each new3metric result must still meet unchanged10percent gates.",
+    "No new pixel inspection or measurement occurred during this freeze."
+  ]
+}

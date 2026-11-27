@@ -1,0 +1,180 @@
+{
+  "classification": "FAILED PRIVATE LinuxSM5 diagnostic; no delivered renderer/filter/assets and no issue closure",
+  "nativeSource": "077f9c9ce4a85dbeaadc826cbc2ca137719d6f34",
+  "privateSourceCommitIdentifiersAreNotPublishedGitHubLinks": true,
+  "privateCompiled2428AssetCheckpoint": "6a5960547b43bcff051389a397ff555e16f49ab4",
+  "publishedProductBase": "53994aba1b8fb926fc98b4568b82b2e14633e15c",
+  "sourceCandidatePatch": {
+    "path": "candidate.patch",
+    "sha256": "10a7f4587fa0c7844c6ab43342b473c6537f6f2d1b7f521cccc57f816a9247f8",
+    "base": "a3f6456e6b766ee5115897fff354a85cecdeebea",
+    "reconstructsExactPrototypeFiles": {
+      "tools/unreal-engine/sky-specular-patch.py": "930f8165edaa2eb0c0667a8bffb6231f9b5f5fbc49c23e8b76775ff6537e83bd",
+      "tools/unreal-engine/sky-specular-patch.json": "d85cc7ce6d6abdf74bd3e1c87cfc50c306eb06b5ea1c9a4947f6cfc5f411a922",
+      "tools/unreal-engine/tests/sky-specular-patch.py": "49c87f1a2df4c8fae5ad47084bfa9909a58972d80ddc1fe9b1d9aefe00028ee3"
+    },
+    "notProductionHook": true
+  },
+  "runtime": {
+    "engine": "5.8.4",
+    "vulkanIcd": "/usr/share/vulkan/icd.d/lvp_icd.json",
+    "seconds": 295.99,
+    "actualExitCodes": {
+      "native": 0,
+      "runner": 0,
+      "outer": 0
+    },
+    "sameRunEngineIniSHA256": "e26c244f9d51fddd3e6577d5696a073521b417a73167c5dd6dc69c79a2db180e",
+    "sameRun6RegisteredCVars": {
+      "r.DynamicGlobalIlluminationMethod": 0,
+      "r.ReflectionMethod": 0,
+      "r.Substrate": 0,
+      "r.ForwardShading": 0,
+      "r.RayTracing": 0,
+      "r.AllowStaticLighting": 0
+    },
+    "noShaderErrors": true
+  },
+  "frozenConfig": {
+    "sha256": "c9af37decd17c3353ef3b2b9529206c69fdb20789eb5f97735ca6b27fffc8ba8",
+    "authoredCount": 247,
+    "generatedCount": 5187,
+    "exportCount": 12,
+    "dependencyCount": 195,
+    "authoredExactReadonly": true,
+    "sourceGeneratedExportExact": true,
+    "manifestHashes": {
+      "authored": "58c58b766a741a850ac8a270a00a356f2e4cf80d6b2914f87af6438fed93faee",
+      "generated": "af7536286f5cfd28cf3d8318c363ad1cbcc2cee184a0e7648e2f25b7dbfef390",
+      "exportFiles": "e9dff8422204ffc2d88ad2fd3d606cd4c7a6a6cccb9c5ea7de6b4cdc01ee2ce1",
+      "dependenciesSHA256": "7742f173efe8b7af2d1d997d482763395e3aff4a244aa50e82c4bd932cbf1f49"
+    },
+    "fullPrivateManifestRetained": true
+  },
+  "profileEvidenceSHA256": "d5029b19da4ce7cbc6621e2527d78879aae8540535bd03eb1e45490dde6c0c42",
+  "captureHarnessSHA256": "cec61063f87f5626448a3cf203607bf75945d3530cb2ead829e38eae59171d80",
+  "launcherSHA256": "14a992215d4693882718853058fe5cbb823f4fdb6ada5dc732304c7a385be3c7",
+  "originalEngineBytesModesMtimeRestored": true,
+  "noOwnedOrForeignProcessesAtRollback": true,
+  "aggregate": {
+    "configSHA256": "442011b8c9914443ac515e3cf8c3b04d2e06166c22d616845b2eac79bda718b4",
+    "targetExtensionSHA256": "cd6f7343050fcb99678e0904fe277fcf59cb5fadde994173e6d77fd5145fcfad",
+    "pythonMeterSHA256": "39d42aeb0385431e034476c5605478e8384d7eafd637cf40191c1f223a5269fe",
+    "nodeAdapterSHA256": "9a91600f614685e0548b27bd66fe7d1b85a6d5730cf0705b307ba22eba53410e",
+    "oneBrowserLaunch": true,
+    "beforePixelsRemeasured": false,
+    "criteriaROIsUnchanged": true,
+    "palmDecoderLimit": "BrowserCanvasRGB8; existing2389 mask/arithmetic. No trend comparison with historical Pillow values."
+  },
+  "rawOriginals": {
+    "stairs-evening": {
+      "web": {
+        "path": "raw/web-stairs-evening.jpg",
+        "sha256": "48dcb9b61e67c0d499f06d1d253d02251b4930a9bb567f138c6723ddf71574c5",
+        "bytes": 26312
+      },
+      "native": {
+        "path": "raw/unreal-stairs-evening.png",
+        "sha256": "1fa25300ec356ab79669ef19fd49801904730fa6a0474d4d45acff7cdcd66a75",
+        "bytes": 112860
+      }
+    },
+    "upper-floor-evening": {
+      "web": {
+        "path": "raw/web-upper-floor-evening.jpg",
+        "sha256": "16ed055836f8a6f6487ed1c6d99bfa45be5ceb9ecb2e53b5240c1692ebd7dbb8",
+        "bytes": 31254
+      },
+      "native": {
+        "path": "raw/unreal-upper-floor-evening.png",
+        "sha256": "4cf0cc9cc8b6785250db558d3baef6b037664d480411bca9b5e5354bb3bb096f",
+        "bytes": 225665
+      }
+    },
+    "living-room-evening": {
+      "web": {
+        "path": "raw/web-living-room-evening.jpg",
+        "sha256": "1a6d7cd06c97fbb1729662cece73490a808745d2511124f8dc0a987f0e810c0b",
+        "bytes": 58390
+      },
+      "native": {
+        "path": "raw/unreal-living-room-evening.png",
+        "sha256": "3b63dcec7d64d0ae38e0295995f00f86494c4aa306801bfb7fb6507da3ecff0f",
+        "bytes": 315909
+      }
+    },
+    "living-room-day": {
+      "web": {
+        "path": "raw/web-living-room-day.jpg",
+        "sha256": "be8023e5a4d1ba5cfb2d4f930273f6792c788658efd47dba6a6c153016af33ac",
+        "bytes": 67118
+      },
+      "native": {
+        "path": "raw/unreal-living-room-day.png",
+        "sha256": "d458b6d263c8df581f39e13da091875f0dd8c980828d31bd70952af14baa471d",
+        "bytes": 315909
+      }
+    },
+    "courtyard": {
+      "web": {
+        "path": "raw/web-courtyard.jpg",
+        "sha256": "e5f9cc4237917ff75dcd83edb686ea5e34baf6390e86f345effba1eabfd9e169",
+        "bytes": 464143
+      },
+      "native": {
+        "path": "raw/unreal-courtyard.png",
+        "sha256": "b15680a00ebcd072cf4fab5024c0c5e2356f6e336d3f58d5f727cec907e3090f",
+        "bytes": 2244875
+      }
+    },
+    "entrance-a": {
+      "web": {
+        "path": "raw/web-entrance-a.jpg",
+        "sha256": "c61c6e2e7784c75ba29afafe8e9bf2e5724f00bc0686aba94d6fa8b7034e7ef0",
+        "bytes": 359301
+      },
+      "native": {
+        "path": "raw/unreal-entrance-a.png",
+        "sha256": "5b4b68adda277a1010e6c3cd686976310368a5ef1a9fe1b668533ae3becbea6b",
+        "bytes": 1624447
+      }
+    },
+    "patio-palm": {
+      "web": {
+        "path": "raw/web-patio-palm.jpg",
+        "sha256": "2809213185dca1b6aa17076983bc019514dbe27bd403b3b82fc0cba59f5f9851",
+        "bytes": 103531
+      },
+      "native": {
+        "path": "raw/unreal-patio-palm.png",
+        "sha256": "67740376dbf3215994981fde7d9775037e179e8f3050ec9e48ba0e76ea896334",
+        "bytes": 439995
+      }
+    },
+    "river-bridge": {
+      "web": {
+        "path": "raw/web-river-bridge.jpg",
+        "sha256": "05ceefa85fe59a27d4ae3771a2c49ad672047c839939fd1c2f3d5324b679f7da",
+        "bytes": 374740
+      },
+      "native": {
+        "path": "raw/unreal-river-bridge.png",
+        "sha256": "d99b6798e57a3641fd0534f6ca9e4eaf6476169bf57fd37490ccb26a9e165b99",
+        "bytes": 2244875
+      }
+    },
+    "patio-lawn": {
+      "web": {
+        "path": "raw/web-patio-lawn.jpg",
+        "sha256": "d24406b78df7ab2a78f0bb43714439c4f887fa5225ad39b1a1b6df10f7b94038",
+        "bytes": 493917
+      },
+      "native": {
+        "path": "raw/unreal-patio-lawn.png",
+        "sha256": "22ca0069baf491097cf49bfd3d9b9558113cc11c283851ba0723caef3a3c45ab",
+        "bytes": 2244875
+      }
+    }
+  },
+  "notPortedToPublic": "Unreal-only diagnostics; no public web change."
+}

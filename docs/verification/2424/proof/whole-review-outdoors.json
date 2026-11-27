@@ -1,0 +1,81 @@
+{
+  "reviewer": "Root",
+  "allFiveNativeAndWebOriginalsViewed": true,
+  "sourceHead": "077f9c9ce4a85dbeaadc826cbc2ca137719d6f34",
+  "images": {
+    "courtyard": {
+      "web": {
+        "path": "raw/web-courtyard.jpg",
+        "sha256": "e5f9cc4237917ff75dcd83edb686ea5e34baf6390e86f345effba1eabfd9e169",
+        "bytes": 464143
+      },
+      "native": {
+        "path": "raw/unreal-courtyard.png",
+        "sha256": "b15680a00ebcd072cf4fab5024c0c5e2356f6e336d3f58d5f727cec907e3090f",
+        "bytes": 2244875
+      }
+    },
+    "entrance-a": {
+      "web": {
+        "path": "raw/web-entrance-a.jpg",
+        "sha256": "c61c6e2e7784c75ba29afafe8e9bf2e5724f00bc0686aba94d6fa8b7034e7ef0",
+        "bytes": 359301
+      },
+      "native": {
+        "path": "raw/unreal-entrance-a.png",
+        "sha256": "5b4b68adda277a1010e6c3cd686976310368a5ef1a9fe1b668533ae3becbea6b",
+        "bytes": 1624447
+      }
+    },
+    "patio-palm": {
+      "web": {
+        "path": "raw/web-patio-palm.jpg",
+        "sha256": "2809213185dca1b6aa17076983bc019514dbe27bd403b3b82fc0cba59f5f9851",
+        "bytes": 103531
+      },
+      "native": {
+        "path": "raw/unreal-patio-palm.png",
+        "sha256": "67740376dbf3215994981fde7d9775037e179e8f3050ec9e48ba0e76ea896334",
+        "bytes": 439995
+      }
+    },
+    "river-bridge": {
+      "web": {
+        "path": "raw/web-river-bridge.jpg",
+        "sha256": "05ceefa85fe59a27d4ae3771a2c49ad672047c839939fd1c2f3d5324b679f7da",
+        "bytes": 374740
+      },
+      "native": {
+        "path": "raw/unreal-river-bridge.png",
+        "sha256": "d99b6798e57a3641fd0534f6ca9e4eaf6476169bf57fd37490ccb26a9e165b99",
+        "bytes": 2244875
+      }
+    },
+    "patio-lawn": {
+      "web": {
+        "path": "raw/web-patio-lawn.jpg",
+        "sha256": "d24406b78df7ab2a78f0bb43714439c4f887fa5225ad39b1a1b6df10f7b94038",
+        "bytes": 493917
+      },
+      "native": {
+        "path": "raw/unreal-patio-lawn.png",
+        "sha256": "22ca0069baf491097cf49bfd3d9b9558113cc11c283851ba0723caef3a3c45ab",
+        "bytes": 2244875
+      }
+    }
+  },
+  "observations": {
+    "patio-palm": "Leaf colour visually closer and numericRGBPASS. Brick joint/brightness differences2428; patio screen dots/frame2443; glazing/interior differences2388/2459. Stem surface/unknown tone recorded specifically under2362, not claimed caused by this patch.",
+    "river-bridge": "Green shaded rail faces visually near web; only raw rail statistics, no current neutral-grey normalization/2391 closure. Grass/crown contrast2437; leaf shadow difference measured only as profile mismatch1024vs4096, causal allocation remains unproven. Water sun glitter explicitlyLater2362.",
+    "patio-lawn": "Hedge colour numericPASS; visible clumping/ring/texture concerns remain2411/2461, grass/tree contrast2437. Target board is explicitly later gameplay2356; not missing R1 content acceptance.",
+    "entrance-a": "SignnumericPASS. Near joints more crisp/bright than source and current filter remainsUNACCEPTED2428. Paving dots2497, distant window bright waves2498, dark blue glass2459, screen2443; bench grain is remaining wood finish2362.",
+    "courtyard": "No broad curved brick moire observed in these complete1440 originals; this is not all-distance/temporal or complete filter acceptance. Numeric3brickFAIL preserved. Pavingdots2497/windowwaves2498/screen2443/crowncontrast2437 remain."
+  },
+  "wholeAccepted": false,
+  "limits": [
+    "LegacyLinuxSM5 diagnostic only, not Windows/Lumen/cook/package proof",
+    "Shadowprofile explicitly1024 vs webUltra4096; no newly invented aliasing exception for2497/2498",
+    "No old/new brickfilter causal claim; before/after uses same privateUNACCEPTED2428master",
+    "All source-bound residual scope mappings remain open; no product code/assets promoted"
+  ]
+}

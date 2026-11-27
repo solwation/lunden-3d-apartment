@@ -1,0 +1,10 @@
+test_actual_unreal_original_and_trailing_metadata_preserved (__main__.NativePNG.test_actual_unreal_original_and_trailing_metadata_preserved) ... ok
+test_corrupted_idat_crc_rejected (__main__.NativePNG.test_corrupted_idat_crc_rejected) ... ok
+test_missing_iend_rejected (__main__.NativePNG.test_missing_iend_rejected) ... ok
+test_wrong_dimensions_rejected (__main__.NativePNG.test_wrong_dimensions_rejected) ... ok
+
+----------------------------------------------------------------------
+Ran 4 tests in 0.011s
+
+OK
+{"actualPNG": "/home/devcontainers/.local/state/lunden-codex-20261127/2424/trial-first/product/target/unreal-patio-palm.png", "sha256": "90599cd17268df602b60279ffa544a57a46a2d7a9bf1fc4f36c39590324d4537", "bytes": 439995, "completeIEndEndOffset": 410199, "unchangedTrailingBytes": 29796, "testedFunctionSourceSHA256": "cec61063f87f5626448a3cf203607bf75945d3530cb2ead829e38eae59171d80"}

@@ -1,0 +1,526 @@
+diff --git a/tools/unreal-engine/sky-specular-patch.json b/tools/unreal-engine/sky-specular-patch.json
+new file mode 100644
+index 00000000..a6e5bb06
+--- /dev/null
++++ b/tools/unreal-engine/sky-specular-patch.json
+@@ -0,0 +1,41 @@
++{
++  "formatVersion": 1,
++  "issue": 2424,
++  "status": "review-only opt-in; no runner hook or engine mutation authorised by this file",
++  "engineVersion": "5.8.4",
++  "supported": "Linux SM5 legacy diagnostic editor only; Windows cook/Lumen/Substrate pending",
++  "files": {
++    "Engine/Shaders/Private/ReflectionEnvironmentComposite.ush": {
++      "originalSha256": "cb07271acf5f83593c2481346393f78cb18ab2b9079fb10ace366a0ec04920a1",
++      "patchedSha256": "241b6ab739a41477b921ed660168ca54977c62a559f8b85eb280507ecd4e132a"
++    },
++    "Engine/Shaders/Private/AmbientCubemapComposite.usf": {
++      "originalSha256": "a7f05c62e01d694886372e8880760ef858fd9508459cc5acbef246f0675315df",
++      "patchedSha256": "bc771b70f499040058075979de23b7c20734a0df7823074af89d8d08ee2089a0"
++    }
++  },
++  "projectFiles": {
++    "unreal/Lunden/Lunden.uproject": "3d28a6c854bbdc7a34f6caea19a8aceb391508d90d0dfb1e97dbfe999f236c7a",
++    "unreal/Lunden/Config/DefaultEngine.ini": "6d531ac43d37ce5dcfa2f8dd5eb76ddb8abd1acd7bda9c53ef95eba8825d6f80",
++    "tools/unreal-engine/linux-low.ini": "4e36a182a2ab58e92c116747d5a99915f5136db1a9391db19a8d3d65fa0c1cf5"
++  },
++  "effectiveConfigOrder": [
++    "unreal/Lunden/Config/DefaultEngine.ini",
++    "tools/unreal-engine/linux-low.ini"
++  ],
++  "requiredCVars": {
++    "r.DynamicGlobalIlluminationMethod": 0,
++    "r.ReflectionMethod": 0,
++    "r.Substrate": 0,
++    "r.ForwardShading": 0,
++    "r.RayTracing": 0,
++    "r.AllowStaticLighting": 0
++  },
++  "unchanged": "Epic signed binaries; direct BRDF; local captures/SSR; diffuse/AO; Ambient-only hair/subsurface terms. Central helper also affects non-Lumen HairStrands/SingleLayerWater sky fallback.",
++  "registrationSources": {
++    "Engine/Source/Runtime/RenderCore/Private/RenderUtils.cpp": "a6c9ac81ffd37d7414df7716141b5b8acb89edd7fb97905d2ebb691ca67f2ccd",
++    "Engine/Source/Runtime/Renderer/Private/IndirectLightRendering.cpp": "829903204b28cc286885364240081837d98c1550703839c65c97458a26c96938",
++    "Engine/Source/Runtime/Renderer/Private/DeferredShadingRenderer.cpp": "a4455ba8fee56fb3ea0f4d3d6b4017e986695f60bde277c8519fdf58c2509258",
++    "Engine/Source/Runtime/Core/Private/HAL/ConsoleManager.cpp": "3f545c2883f604a5845901596fb42ec17c5e8eb7480e655e3b3a120ea2d5e4d1"
++  }
++}
+diff --git a/tools/unreal-engine/sky-specular-patch.py b/tools/unreal-engine/sky-specular-patch.py
+new file mode 100644
+index 00000000..91321681
+--- /dev/null
++++ b/tools/unreal-engine/sky-specular-patch.py
+@@ -0,0 +1,286 @@
++"""#2424 review candidate: opt-in, leased UE5.8.4 legacy shader-source transaction.
++
++No runner imports this module. CLI only prints a plan; it never changes an engine.
++Root must review a launch/child-lifetime adapter before using leased_patch().
++"""
++from contextlib import contextmanager
++import hashlib
++import json
++import os
++from pathlib import Path
++import re
++import signal
++import stat
++import subprocess
++import tempfile
++
++HERE = Path(__file__).resolve().parent
++MANIFEST = HERE / "sky-specular-patch.json"
++
++
++def digest(data):
++    return hashlib.sha256(data).hexdigest()
++
++
++def transform(name, data):
++    """Accept exact Epic input, or fail before any engine write. Preserve all other bytes."""
++    entry = json.loads(MANIFEST.read_text())["files"][name]
++    if digest(data) != entry["originalSha256"]:
++        raise ValueError(f"Unrecognised or already patched UE5.8.4 shader: {name}")
++    if name.endswith("ReflectionEnvironmentComposite.ush"):
++        anchor = b"\tfloat Mip = ComputeReflectionCaptureMipFromRoughness(Roughness, View.ReflectionCubemapMaxMip);"
++        addition = (b"\t// Lunden #2424: retain captures/SSR and diffuse; remove only sky environment specular.\n"
++                    b"\tbCompositeSkylight = false;\n\tExtraIndirectSpecular = 0;\n")
++    else:
++        anchor = b"\tBRANCH if( GBuffer.ShadingModelID == SHADINGMODELID_HAIR )\n\t{"
++        addition = (b"\t// Lunden #2424: remove environment BRDF only, before hair/subsurface transmission.\n"
++                    b"\tSpecularContribution = 0;\n\n")
++    # Include the line boundary so the deeper IMPORTANCE_SAMPLE hair branch cannot match.
++    anchor = b"\n" + anchor
++    if data.count(anchor) != 1:
++        raise ValueError(f"Expected one exact insertion point: {name}")
++    patched = data.replace(anchor, b"\n" + addition + anchor[1:], 1)
++    if digest(patched) != entry["patchedSha256"]:
++        raise ValueError(f"Unexpected patch output: {name}")
++    return patched
++
++
++def profile_guard(project_root, evidence):
++    """Require explicit, bound legacy evidence. Missing/unknown CVars never count as zero."""
++    manifest = json.loads(MANIFEST.read_text())
++    root = Path(project_root).resolve()
++    for relative, expected in manifest["projectFiles"].items():
++        if digest((root / relative).read_bytes()) != expected:
++            raise ValueError(f"Unreviewed project/config: {relative}")
++    if evidence.get("project") != str(root / "unreal/Lunden/Lunden.uproject"):
++        raise ValueError("Profile proof belongs to another project")
++    if evidence.get("engineVersion") != "5.8.4" or evidence.get("featureLevel") != "SM5" or evidence.get("platform") != "Linux":
++        raise ValueError("Only reviewed UE5.8.4 SM5 diagnostic profile is supported")
++    if evidence.get("purpose") != "diagnostic-editor":
++        raise ValueError("Cook/packaging and Windows/Lumen are not yet supported")
++    for name, expected in manifest["requiredCVars"].items():
++        value = evidence.get("cvars", {}).get(name, {})
++        proof = value.get("proof", {})
++        if value.get("value") != expected or not isinstance(proof, dict) or not proof.get("path"):
++            raise ValueError(f"Missing registered/source-default evidence for {name}")
++        raw = Path(proof["path"]).read_bytes()
++        if digest(raw) != proof.get("sha256"):
++            raise ValueError(f"Changed profile proof for {name}")
++        source = raw.decode("utf-8-sig")
++        if value.get("proofKind") == "exact-engine-source-default":
++            if digest(raw) not in manifest["registrationSources"].values():
++                raise ValueError(f"Unpinned engine registration source for {name}")
++            pattern = r'TEXT\(\s*"' + re.escape(name) + r'"\s*\)\s*,\s*([A-Za-z_][A-Za-z_0-9]*|-?\d+)\s*,'
++            match = re.search(pattern, source)
++            if not match:
++                raise ValueError(f"No registered engine default for {name}")
++            literal = match[1]
++            if not re.fullmatch(r'-?\d+', literal):
++                variable = re.search(r'\b(?:int32|bool)\s+' + re.escape(literal) + r'\s*=\s*(-?\d+)\s*;', source)
++                if not variable:
++                    raise ValueError(f"Unresolved engine default variable for {name}")
++                literal = variable[1]
++            # Resolve the actual pinned Linux override order, not just the engine default.
++            config = "\n".join((root / p).read_text() for p in manifest["effectiveConfigOrder"])
++            configured = re.findall(r'^\s*' + re.escape(name) + r'\s*=\s*([^;\r\n]+)', config, re.M)
++            effective = configured[-1].strip().lower() if configured else literal
++            if effective not in (str(expected), "false" if expected == 0 else "true"):
++                raise ValueError(f"Engine default overridden by project/profile: {name}")
++        else:
++            raise ValueError(f"Unsupported/unregistered profile proof for {name}")
++        if not re.search(pattern, source):
++            raise ValueError(f"Profile evidence does not prove registered {name}={expected}")
++
++
++def actual_profile_guard(actual):
++    """Child must call this on SAME-RUN CVar queries, after source registration is proved."""
++    required = json.loads(MANIFEST.read_text())["requiredCVars"]
++    if set(actual) != set(required) or any(type(actual[name]) is not int or actual[name] != value for name, value in required.items()):
++        raise ValueError("Actual same-run registered CVar values differ from reviewed legacy profile")
++
++
++def plan(engine_root):
++    root = Path(engine_root).resolve()
++    version = json.loads((root / "Engine/Build/Build.version").read_text())
++    if tuple(version[k] for k in ("MajorVersion", "MinorVersion", "PatchVersion")) != (5, 8, 4):
++        raise ValueError("Expected exact Unreal 5.8.4")
++    # UE5.8.4 tries cooked global archives before source/DDC, even in an editor.
++    # This candidate does not rename/delete archives or pretend their shaders were rebuilt.
++    if list((root / "Engine").glob("GlobalShaderCache*.bin")):
++        raise ValueError("Precompiled global shader archive requires a separately reviewed bootstrap")
++    result = {}
++    for name in json.loads(MANIFEST.read_text())["files"]:
++        path = root / name
++        if path.is_symlink() or not path.is_file() or not path.resolve().is_relative_to(root):
++            raise ValueError(f"Unsafe shader path: {path}")
++        data = path.read_bytes()
++        result[name] = {"original": data, "patched": transform(name, data), "stat": path.stat()}
++    return result
++
++
++def linux_engine_processes(proc_root=Path("/proc")):
++    """Inspect exe AND comm/cmdline; include dotnet-hosted AutomationTool and uncertainty."""
++    names = ("unrealeditor", "shadercompileworker", "automationtool", "unrealpak")
++    found = []
++    def tool(label):
++        label = Path(label).name.lower()
++        return any(label.startswith(name) or (len(label) >= 10 and name.startswith(label)) for name in names)
++    for process in proc_root.glob("[0-9]*"):
++        labels, errors = [], []
++        for field in ("exe", "comm", "cmdline"):
++            try:
++                if field == "exe":
++                    labels.append(str((process / field).readlink()))
++                else:
++                    labels.extend((process / field).read_bytes().decode(errors="replace").strip().split("\0"))
++            except OSError as error:
++                errors.append(f"{field}: {error}")
++        if not process.exists():
++            continue  # Process exited during the non-atomic snapshot.
++        known = [label for label in labels if label]
++        hosted = any(Path(label).name.lower() in ("dotnet", "dotnet.exe", "mono", "mono.exe") for label in known)
++        # Inspect arguments locally, but never persist Epic authentication or other
++        # command-line values in the transaction journal.
++        safe_labels = sorted({Path(label).name for label in known if tool(label) or
++                              Path(label).name.lower() in ("dotnet", "dotnet.exe", "mono", "mono.exe")})
++        if any(tool(label) for label in known):
++            found.append({"pid": int(process.name), "labels": safe_labels, "probeErrors": errors})
++        elif not known or (hosted and errors):
++            found.append({"pid": int(process.name), "uninspectablePossibleEngineProcess": True, "labels": safe_labels, "probeErrors": errors})
++    return found
++
++
++def engine_processes():
++    """Conservative snapshot, not OS-enforced isolation; exclusive orchestration remains required."""
++    found = linux_engine_processes() if os.name != "nt" else []
++    powershell = ("powershell.exe" if os.name == "nt" else
++                  "/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe")
++    if os.name == "nt" or Path(powershell).exists():
++        # A failed host query fails closed, including WSL/Windows interop problems.
++        script = "Get-CimInstance Win32_Process | Where-Object { $_.Name -match 'UnrealEditor|ShaderCompileWorker|AutomationTool|UnrealPak' -or ($_.Name -match '^(dotnet|mono)\\.exe$' -and (-not $_.CommandLine -or $_.CommandLine -match 'AutomationTool\\.dll|UnrealEditor')) } | Select-Object ProcessId,Name | ConvertTo-Json -Compress"
++        output = subprocess.check_output([powershell, "-NoProfile", "-NonInteractive", "-Command", script], text=True, timeout=30).strip()
++        if output:
++            rows = json.loads(output)
++            found.extend({"pid": row.get("ProcessId"), "executable": row.get("Name"), "platform": "Windows"}
++                         for row in (rows if isinstance(rows, list) else [rows]))
++    return found
++
++
++def _replace(path, data, original_stat):
++    fd, temporary = tempfile.mkstemp(prefix=".lunden-shader-", dir=path.parent)
++    try:
++        with os.fdopen(fd, "wb") as handle:
++            handle.write(data)
++            handle.flush()
++            os.fsync(handle.fileno())
++        os.chmod(temporary, stat.S_IMODE(original_stat.st_mode))
++        os.replace(temporary, path)
++        os.utime(path, ns=(original_stat.st_atime_ns, original_stat.st_mtime_ns))
++    finally:
++        Path(temporary).unlink(missing_ok=True)
++
++
++@contextmanager
++def leased_patch(engine_root, project_root, evidence, journal, *, allow_write=False, processes=engine_processes):
++    """Review-only API. Caller MUST reap its complete editor/compiler tree before returning.
++
++    Advisory machine-wide lease prevents cooperating wrappers only. No claim of isolation
++    from manual third-party launches. SIGKILL/power loss needs explicit journal recovery.
++    """
++    if not allow_write:
++        raise ValueError("Engine writes are opt-in and currently have no runner hook")
++    profile_guard(project_root, evidence)
++    engine = Path(engine_root).resolve()
++    lease_root = Path(tempfile.gettempdir()) / "lunden-engine-shader-leases"
++    lease_root.mkdir(exist_ok=True)
++    lease = lease_root / (digest(os.path.normcase(str(engine)).encode()) + ".lock")
++    with lease.open("a+b") as lock:
++        if os.name == "nt":
++            import msvcrt
++            if lease.stat().st_size == 0:
++                lock.write(b"0"); lock.flush()
++            lock.seek(0)
++            msvcrt.locking(lock.fileno(), msvcrt.LK_NBLCK, 1)
++        else:
++            import fcntl
++            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
++        if processes():
++            raise RuntimeError("Foreign or unreaped engine process; no shader writes allowed")
++        inputs = plan(engine)  # Validate BOTH files before creating the transaction.
++        journal = Path(journal)
++        journal.mkdir(mode=0o700, parents=False, exist_ok=False)
++        record = {"engine": str(engine), "project": str(Path(project_root).resolve()), "pid": os.getpid(),
++                  "manifestSha256": digest(MANIFEST.read_bytes()), "files": {}, "restored": False}
++        for index, (name, entry) in enumerate(inputs.items()):
++            backup = journal / f"original-{index}.bin"
++            backup.write_bytes(entry["original"])
++            with backup.open("rb") as handle:
++                os.fsync(handle.fileno())
++            record["files"][name] = {"backup": backup.name, "original": digest(entry["original"]),
++                                     "patched": digest(entry["patched"]), "mode": stat.S_IMODE(entry["stat"].st_mode)}
++        def persist():
++            path = journal / "transaction.json"
++            temporary = journal / "transaction.json.tmp"
++            temporary.write_text(json.dumps(record, indent=2) + "\n")
++            with temporary.open("rb") as handle:
++                os.fsync(handle.fileno())
++            temporary.replace(path)
++            if os.name != "nt":
++                fd = os.open(journal, os.O_RDONLY | os.O_DIRECTORY)
++                try:
++                    os.fsync(fd)
++                finally:
++                    os.close(fd)
++        persist()  # Original bytes are durable before the first mutation.
++        previous = {}
++        def cancelled(signum, frame):
++            raise InterruptedError(f"Shader lease interrupted by signal {signum}")
++        try:
++            for sig in (signal.SIGINT, signal.SIGTERM):
++                previous[sig] = signal.signal(sig, cancelled)
++            for name, entry in inputs.items():
++                _replace(engine / name, entry["patched"], entry["stat"])
++            yield record
++        finally:
++            # Allow the caller's inner finally to reap OWN children before leaving this scope.
++            for sig in previous:
++                signal.signal(sig, signal.SIG_IGN)
++            try:
++                try:
++                    record["unreapedOrForeignProcessesAtRollback"] = processes()
++                except Exception as error:
++                    # An unavailable host query must not skip restoration after mutation.
++                    record["processQueryError"] = str(error)
++                    record["unreapedOrForeignProcessesAtRollback"] = []
++                errors = []
++                for name, entry in inputs.items():
++                    try:
++                        target = engine / name
++                        current = target.read_bytes()
++                        if current not in (entry["original"], entry["patched"]):
++                            errors.append(f"Foreign shader edit, original retained in journal: {name}")
++                            continue
++                        if current != entry["original"]:
++                            _replace(target, entry["original"], entry["stat"])
++                        if target.read_bytes() != entry["original"] or stat.S_IMODE(target.stat().st_mode) != stat.S_IMODE(entry["stat"].st_mode):
++                            errors.append(f"Rollback verification failed: {name}")
++                    except OSError as error:
++                        errors.append(f"Rollback I/O failure for {name}: {error}")
++                record["restored"] = not errors
++                record["rollbackErrors"] = errors
++                persist()
++                if errors or record["unreapedOrForeignProcessesAtRollback"] or record.get("processQueryError"):
++                    raise RuntimeError("Unsafe shader transaction exit; inspect durable journal")
++            finally:
++                for sig, handler in previous.items():
++                    signal.signal(sig, handler)
++
++
++if __name__ == "__main__":
++    import argparse
++    parser = argparse.ArgumentParser(description=__doc__)
++    parser.add_argument("engine_root", type=Path)
++    args = parser.parse_args()
++    output = plan(args.engine_root)
++    print(json.dumps({"mode": "read-only-plan", "files": {name: {"original": digest(row["original"]),
++          "patched": digest(row["patched"])} for name, row in output.items()}}, indent=2))
+diff --git a/tools/unreal-engine/tests/sky-specular-patch.py b/tools/unreal-engine/tests/sky-specular-patch.py
+new file mode 100644
+index 00000000..44b48084
+--- /dev/null
++++ b/tools/unreal-engine/tests/sky-specular-patch.py
+@@ -0,0 +1,181 @@
++"""Fixture-only transaction tests, using separately supplied exact Epic shader sources.
++
++python3 tools/unreal-engine/tests/sky-specular-patch.py /private/extracted/source/root
++No Unreal process is launched; every write targets a TemporaryDirectory.
++"""
++import importlib.util
++import json
++import os
++from pathlib import Path
++import signal
++import stat
++import sys
++import tempfile
++import unittest
++from unittest.mock import patch
++
++SOURCE = Path(sys.argv.pop(1)).resolve()
++ROOT = Path(__file__).resolve().parents[3]
++spec = importlib.util.spec_from_file_location("sky_specular_patch", ROOT / "tools/unreal-engine/sky-specular-patch.py")
++module = importlib.util.module_from_spec(spec)
++spec.loader.exec_module(module)
++MANIFEST = json.loads(module.MANIFEST.read_text())
++REGISTRATION = {
++    "r.Substrate": "Engine/Source/Runtime/RenderCore/Private/RenderUtils.cpp",
++    "r.ForwardShading": "Engine/Source/Runtime/RenderCore/Private/RenderUtils.cpp",
++    "r.DynamicGlobalIlluminationMethod": "Engine/Source/Runtime/Renderer/Private/IndirectLightRendering.cpp",
++    "r.ReflectionMethod": "Engine/Source/Runtime/Renderer/Private/IndirectLightRendering.cpp",
++    "r.RayTracing": "Engine/Source/Runtime/Renderer/Private/DeferredShadingRenderer.cpp",
++    "r.AllowStaticLighting": "Engine/Source/Runtime/Core/Private/HAL/ConsoleManager.cpp",
++}
++
++
++class Transaction(unittest.TestCase):
++    def setUp(self):
++        self.temp = tempfile.TemporaryDirectory()
++        self.addCleanup(self.temp.cleanup)
++        self.root = Path(self.temp.name)
++        self.engine = self.root / "fixture-engine"
++        for name in MANIFEST["files"]:
++            target = self.engine / name
++            target.parent.mkdir(parents=True, exist_ok=True)
++            target.write_bytes((SOURCE / name).read_bytes())
++            target.chmod(0o640)
++        version = self.engine / "Engine/Build/Build.version"
++        version.parent.mkdir(parents=True)
++        version.write_text('{"MajorVersion":5,"MinorVersion":8,"PatchVersion":4}')
++        proof = self.root / "fixture-console.log"
++        proof.write_text('r.Substrate = "0" LastSetBy: Constructor\nr.Substrate = "1" LastSetBy: Console\n')
++        self.evidence = {"project": str(ROOT / "unreal/Lunden/Lunden.uproject"), "engineVersion": "5.8.4",
++                         "featureLevel": "SM5", "platform": "Linux", "purpose": "diagnostic-editor", "fixtureOnly": True,
++                         "cvars": {key: {"value": value, "proofKind": "exact-engine-source-default",
++                                           "proof": {"path": str(SOURCE / REGISTRATION[key]), "sha256": module.digest((SOURCE / REGISTRATION[key]).read_bytes())}}
++                                   for key, value in MANIFEST["requiredCVars"].items()}}
++        self.before = {p: (p.read_bytes(), stat.S_IMODE(p.stat().st_mode), p.stat().st_mtime_ns)
++                       for p in self.engine.rglob("*") if p.is_file()}
++
++    def context(self, **kwargs):
++        return module.leased_patch(self.engine, ROOT, self.evidence, self.root / "journal",
++                                   allow_write=True, processes=lambda: [], **kwargs)
++
++    def assert_restored(self):
++        self.assertEqual(set(self.before), {p for p in self.engine.rglob("*") if p.is_file()})
++        for path, expected in self.before.items():
++            self.assertEqual((path.read_bytes(), stat.S_IMODE(path.stat().st_mode), path.stat().st_mtime_ns), expected)
++
++    def test_real_sources_transform_and_exact_rollback(self):
++        with self.context():
++            for name, row in MANIFEST["files"].items():
++                self.assertEqual(module.digest((self.engine / name).read_bytes()), row["patchedSha256"])
++            ambient = (self.engine / "Engine/Shaders/Private/AmbientCubemapComposite.usf").read_text()
++            self.assertLess(ambient.index("// Lunden #2424"), ambient.index("// Subsurface\n"))
++            # Every downstream hair/subsurface/transmission byte is exactly preserved.
++            original = (SOURCE / "Engine/Shaders/Private/AmbientCubemapComposite.usf").read_text()
++            start = "\tBRANCH if( GBuffer.ShadingModelID == SHADINGMODELID_HAIR )\n\t{"
++            self.assertEqual(ambient[ambient.index(start):], original[original.index(start):])
++            sky = (self.engine / "Engine/Shaders/Private/ReflectionEnvironmentComposite.ush").read_text()
++            self.assertIn("bCompositeSkylight = false;\n\tExtraIndirectSpecular = 0;", sky)
++        self.assert_restored()
++        self.assertTrue(json.loads((self.root / "journal/transaction.json").read_text())["restored"])
++
++    def test_partial_write_failure_restores_first_shader(self):
++        original = module._replace
++        calls = 0
++        def fail_second(*args):
++            nonlocal calls
++            calls += 1
++            if calls == 2:
++                raise OSError("fixture injected second write failure")
++            return original(*args)
++        with patch.object(module, "_replace", fail_second), self.assertRaises(OSError):
++            with self.context():
++                self.fail("second write should fail before callback")
++        self.assert_restored()
++
++    def test_sigterm_and_child_failure_restore(self):
++        with self.assertRaises(InterruptedError):
++            with self.context():
++                os.kill(os.getpid(), signal.SIGTERM)
++        self.assert_restored()
++
++    def test_host_query_failure_still_restores(self):
++        calls = 0
++        def query():
++            nonlocal calls
++            calls += 1
++            if calls > 1:
++                raise OSError("fixture Windows host query unavailable")
++            return []
++        with self.assertRaises(RuntimeError):
++            with module.leased_patch(self.engine, ROOT, self.evidence, self.root / "journal",
++                                     allow_write=True, processes=query):
++                pass
++        self.assert_restored()
++
++    def test_actual_engine_registration_defaults_and_linux_config(self):
++        for name, path in REGISTRATION.items():
++            source = SOURCE / path
++            self.evidence["cvars"][name] = {"value": 0, "proofKind": "exact-engine-source-default",
++                "proof": {"path": str(source), "sha256": module.digest(source.read_bytes())}}
++        module.profile_guard(ROOT, self.evidence)
++        module.actual_profile_guard(dict(MANIFEST['requiredCVars']))
++        with self.assertRaises(ValueError):
++            module.actual_profile_guard({k:0 for k in MANIFEST['requiredCVars'] if k != 'r.AllowStaticLighting'})
++        with self.assertRaises(ValueError):
++            module.actual_profile_guard({**MANIFEST['requiredCVars'], 'r.Substrate':1})
++
++    def test_historical_console_and_dotnet_host_cannot_look_safe(self):
++        proof = self.root / "fixture-console.log"
++        self.evidence['cvars']['r.Substrate'] = {'value':0,'proofKind':'registered-console-log',
++            'proof':{'path':str(proof),'sha256':module.digest(proof.read_bytes())}}
++        with self.assertRaises(ValueError):
++            module.profile_guard(ROOT,self.evidence)
++        proc = self.root / 'proc';proc.mkdir()
++        for pid, exe, comm, command in [('1','/bin/python3','python3','python3\0plain.py\0'),
++                ('2','/bin/dotnet','dotnet','dotnet\0/private/AutomationTool.dll\0BuildCookRun\0'),
++                ('3',None,'UnrealEditor',None),('4','/bin/dotnet','dotnet',None)]:
++            row=proc/pid;row.mkdir()
++            if exe:(row/'exe').symlink_to(exe)
++            (row/'comm').write_text(comm)
++            if command is not None:(row/'cmdline').write_bytes(command.encode())
++        found=module.linux_engine_processes(proc)
++        self.assertEqual({r['pid']for r in found},{2,3,4})
++        self.assertTrue(next(r for r in found if r['pid']==4)['uninspectablePossibleEngineProcess'])
++
++    def test_unknown_profile_foreign_process_and_drift_fail_closed(self):
++        self.evidence["cvars"]["r.Substrate"]["proofKind"] = "unknown-query-returned-zero"
++        with self.assertRaises(ValueError):
++            with self.context():
++                self.fail("unknown lookup must never be accepted")
++        self.assert_restored()
++        self.evidence["cvars"]["r.Substrate"]["proofKind"] = "exact-engine-source-default"
++        with self.assertRaises(RuntimeError):
++            with module.leased_patch(self.engine, ROOT, self.evidence, self.root / "journal",
++                                     allow_write=True, processes=lambda: [{"pid": 123, "fixture": True}]):
++                self.fail("foreign process must reject before write")
++        self.assert_restored()
++        name = next(iter(MANIFEST["files"]))
++        (self.engine / name).write_bytes(b"foreign source")
++        with self.assertRaises(ValueError):
++            module.plan(self.engine)
++        self.assertFalse((self.root / "journal").exists())
++        self.assertEqual((self.engine / name).read_bytes(), b"foreign source")
++        self.evidence["purpose"] = "windows-cook"
++        with self.assertRaises(ValueError):
++            module.profile_guard(ROOT, self.evidence)
++
++    def test_process_probe_does_not_serialize_command_arguments(self):
++        proc = self.root / 'private-proc'; proc.mkdir()
++        row = proc / '123'; row.mkdir()
++        (row / 'exe').symlink_to('/bin/UnrealEditor-Cmd')
++        (row / 'comm').write_text('UnrealEditor-Cm')
++        (row / 'cmdline').write_bytes(b'UnrealEditor-Cmd\0-AUTH_PASSWORD=fixture-secret\0/private/personal.uproject\0')
++        found = module.linux_engine_processes(proc)
++        self.assertEqual([r['pid'] for r in found], [123])
++        encoded = json.dumps(found)
++        self.assertNotIn('fixture-secret', encoded)
++        self.assertNotIn('AUTH_PASSWORD', encoded)
++        self.assertNotIn('personal.uproject', encoded)
++
++
++unittest.main()

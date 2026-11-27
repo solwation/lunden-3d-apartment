@@ -1,0 +1,18 @@
+{
+  "classification": "First trial remains FAILED imageguard; restoration checks are actual finally evidence, not native pass",
+  "firstTrialVerification": "/home/devcontainers/.local/state/lunden-codex-20261127/2424/trial-first/product/verification.json",
+  "firstTrialVerificationSHA256": "955e25a724e28d1f7337bc144755dd0e9af586314b5458431605b0b71e8bfb42",
+  "actualRestored": true,
+  "actualProfileBeforeAfterEqual": true,
+  "actual247ROExact": true,
+  "actualGeneratedExportExact": true,
+  "sourceOnlyChange": "Only image() function; reverse substitution restores every original byte",
+  "fourOfflineTests": "PASS after correcting missing Path in extraction-only test globals; initial fixture failure preserved separately",
+  "filesSHA256": {
+    "capture-only.py": "f37bb0a80b139ad3e9d8bbac2d2cf85eef9451f416d91defc65447ab7d70fa7b",
+    "capture-only-v2.py": "cec61063f87f5626448a3cf203607bf75945d3530cb2ead829e38eae59171d80",
+    "capture-only-v2.diff": "22854589ff082bc3c7f62576d6545212564fb7d26a4989dec3be4831addfa1cb",
+    "test-png-v2.py": "d5aaeb7ae585284c72cfcc024d098d063a20a3ab2cbc4565c675f4fbf57ad66e",
+    "png-v2-fixtures.log": "31cdb4dcc870ee9a62642b25189d195d4d261b4dc3e1160f3bf5f61714038baa"
+  }
+}

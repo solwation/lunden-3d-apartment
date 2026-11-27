@@ -1,0 +1,261 @@
+{
+  "numericPassed": true,
+  "palm": {
+    "contract": {
+      "shot": "patio-palm",
+      "rect": [
+        0.06,
+        0.36,
+        0.28,
+        0.58
+      ],
+      "rule": "G>R+8 && G>B+8 independently per original",
+      "meanSRGBPerChannelRatioInclusive": [
+        0.9,
+        1.1
+      ],
+      "rounding": "Math.round of x0*w,y0*h,(x1-x0)*w,(y1-y0)*h, original2389 halfup",
+      "decoder": "BrowserCanvas RGB8 within the same soleChromium, original2389 arithmetic/mask unchanged; historical2389 used Pillow. No pixelresult comparison to that old decoder is inferred."
+    },
+    "decoder": "BrowserCanvas RGB8; original2389mask/arithmetic",
+    "measurements": {
+      "web": {
+        "size": [
+          640,
+          360
+        ],
+        "rectXYWH": [
+          38,
+          130,
+          141,
+          79
+        ],
+        "selectedPixels": 6089,
+        "meanSRGB": [
+          91.08162259812777,
+          126.64460502545575,
+          70.96337658071933
+        ],
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/paired-skytrial-v2/web-patio-palm.jpg",
+        "sha256": "2809213185dca1b6aa17076983bc019514dbe27bd403b3b82fc0cba59f5f9851"
+      },
+      "unreal": {
+        "size": [
+          640,
+          360
+        ],
+        "rectXYWH": [
+          38,
+          130,
+          141,
+          79
+        ],
+        "selectedPixels": 6416,
+        "meanSRGB": [
+          95.46649002493766,
+          131.5224438902743,
+          72.64697630922693
+        ],
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/paired-skytrial-v2/unreal-patio-palm.png",
+        "sha256": "67740376dbf3215994981fde7d9775037e179e8f3050ec9e48ba0e76ea896334"
+      }
+    },
+    "nativeOverWebRGB": [
+      1.048142175136217,
+      1.0385159625539366,
+      1.0237249100822103
+    ],
+    "passEachChannel": [
+      true,
+      true,
+      true
+    ],
+    "allRGBPass": true
+  },
+  "hedgeSignRows": [
+    {
+      "shot": "patio-lawn",
+      "field": "hedge",
+      "passed": true,
+      "values": {
+        "relativeRB": 0.9535460992907803,
+        "relativeSaturation": 0.9819264610569757
+      },
+      "web": {
+        "srgb": [
+          63.7,
+          93.5,
+          22.6
+        ],
+        "luminance": 0.1137,
+        "warmth": 2.82
+      },
+      "native": {
+        "srgb": [
+          60.2,
+          87.7,
+          22.4
+        ],
+        "luminance": 0.1,
+        "warmth": 2.689
+      }
+    },
+    {
+      "shot": "entrance-a",
+      "field": "letter-plate",
+      "passed": true,
+      "values": {
+        "linearYRatio": 1.0
+      },
+      "web": {
+        "srgb": [
+          156.6,
+          156.5,
+          156.2
+        ],
+        "luminance": 0.4506,
+        "warmth": 1.003
+      },
+      "native": {
+        "srgb": [
+          155.7,
+          156.4,
+          155.9
+        ],
+        "luminance": 0.4506,
+        "warmth": 0.999
+      }
+    }
+  ],
+  "railReportOnly": [
+    {
+      "shot": "river-bridge",
+      "field": "top-rail",
+      "rect": [
+        0.07,
+        0.435,
+        0.35,
+        0.468
+      ],
+      "web": {
+        "srgb": [
+          25,
+          63.5,
+          45
+        ],
+        "luminance": 0.04,
+        "warmth": 0.555
+      },
+      "native": {
+        "srgb": [
+          27.5,
+          63.9,
+          44.4
+        ],
+        "luminance": 0.0408,
+        "warmth": 0.62
+      },
+      "linearYRatioReportOnly": 1.02,
+      "relativeRBReportOnly": 1.117117117117117,
+      "passed": null
+    },
+    {
+      "shot": "river-bridge",
+      "field": "bottom-rail",
+      "rect": [
+        0.07,
+        0.909,
+        0.33,
+        0.928
+      ],
+      "web": {
+        "srgb": [
+          23,
+          62,
+          44
+        ],
+        "luminance": 0.0381,
+        "warmth": 0.523
+      },
+      "native": {
+        "srgb": [
+          22.6,
+          59.1,
+          39.8
+        ],
+        "luminance": 0.0346,
+        "warmth": 0.566
+      },
+      "linearYRatioReportOnly": 0.9081364829396325,
+      "relativeRBReportOnly": 1.0822179732313575,
+      "passed": null
+    },
+    {
+      "shot": "river-bridge",
+      "field": "post",
+      "rect": [
+        0.44,
+        0.52,
+        0.454,
+        0.86
+      ],
+      "web": {
+        "srgb": [
+          22.9,
+          61.8,
+          44.2
+        ],
+        "luminance": 0.0379,
+        "warmth": 0.517
+      },
+      "native": {
+        "srgb": [
+          24.8,
+          62.2,
+          42.9
+        ],
+        "luminance": 0.0385,
+        "warmth": 0.577
+      },
+      "linearYRatioReportOnly": 1.0158311345646438,
+      "relativeRBReportOnly": 1.11605415860735,
+      "passed": null
+    },
+    {
+      "shot": "river-bridge",
+      "field": "bottom-rail-top",
+      "rect": [
+        0.07,
+        0.881,
+        0.33,
+        0.902
+      ],
+      "web": {
+        "srgb": [
+          48.3,
+          86.1,
+          65.6
+        ],
+        "luminance": 0.0776,
+        "warmth": 0.736
+      },
+      "native": {
+        "srgb": [
+          58.8,
+          93.5,
+          70.8
+        ],
+        "luminance": 0.0938,
+        "warmth": 0.831
+      },
+      "linearYRatioReportOnly": 1.208762886597938,
+      "relativeRBReportOnly": 1.1290760869565217,
+      "passed": null
+    }
+  ],
+  "railNormalizationApplied": false,
+  "railAcceptanceClaim": false,
+  "railLimit": "Four rawRGB/linearY/RB ROIs only. No currentmatched neutralgrey pair, no historical daylight normalization or numerical rail acceptance.",
+  "extensionContractSHA256": "cd6f7343050fcb99678e0904fe277fcf59cb5fadde994173e6d77fd5145fcfad",
+  "wholeOriginalReviewRequired": true
+}

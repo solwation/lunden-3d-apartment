@@ -1,0 +1,39 @@
+{
+  "passed": true,
+  "matchedViews": [
+    "stairs-evening",
+    "living-room-day",
+    "living-room-evening",
+    "upper-floor-evening",
+    "courtyard",
+    "entrance-a",
+    "patio-palm",
+    "patio-lawn",
+    "river-bridge"
+  ],
+  "comparisonContractSHA256": "442011b8c9914443ac515e3cf8c3b04d2e06166c22d616845b2eac79bda718b4",
+  "restorationProof": "/home/devcontainers/.local/state/lunden-codex-20261127/2424/trial-second/outcome.json",
+  "restorationProofSHA256": "929f8b7718aa7cf335616006dc9971447a81e27f6dc837b60147548b65442f79",
+  "nativeExit": 0,
+  "runnerExit": 0,
+  "outerExit": "Root outerexecution status recorded separately; not inferred",
+  "engineRestored": true,
+  "actualProfileValues": {
+    "r.Substrate": 0,
+    "r.ForwardShading": 0,
+    "r.DynamicGlobalIlluminationMethod": 0,
+    "r.ReflectionMethod": 0,
+    "r.RayTracing": 0,
+    "r.AllowStaticLighting": 0
+  },
+  "sameRunRuntimeCameraValidated": true,
+  "physicalSunLimit": "PhysicalSun per-component colour/intensity was not separately dumped for these two before targets. ActualMPC SunStrength/SunDir, ambientfill/cube, shared saved assets, unchanged productionfunctions and exact gameExposure are the measurable bounds; do not invent full physicalSun equality.",
+  "causalCaveats": [
+    "Before did not independently live-query all new substrate/forward/raytracing/staticlighting CVars. Same exact project/lowprofile production files and source defaults support the profile assumption; after must report actual registered values.",
+    "PhysicalSun per-component colour/intensity was not separately dumped for these two before targets. ActualMPC SunStrength/SunDir, ambientfill/cube, shared saved assets, unchanged productionfunctions and exact gameExposure are the measurable bounds; do not invent full physicalSun equality.",
+    "Private harnesses differ: before executed material/canonical/PBR then finalworldload; after capture-only PBR owns finalworldload. Shotorder and recapture/timing differ; cloud/temporal/shadow sampling may vary. No allvariation-caused-by-sky assertion.",
+    "Candidatefilter is IDENTICAL before/after. This compares engine lighting proposal under one unaccepted filter, not oldfilter/newfilter, and does not prove the filter fixed2428.",
+    "Baseline numeric failures remain published. No historicalWindows/current718 improvementtrend claim; each new3metric result must still meet unchanged10percent gates.",
+    "No new pixel inspection or measurement occurred during this freeze."
+  ]
+}

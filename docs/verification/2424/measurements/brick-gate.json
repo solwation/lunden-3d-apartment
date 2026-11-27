@@ -1,0 +1,546 @@
+{
+  "farNumericalPassed": false,
+  "allSixNumericalPassed": false,
+  "farMortarSharePassed": true,
+  "farMortarLPassed": true,
+  "farBrickLPassed": false,
+  "rows": [
+    {
+      "shot": "entrance-a",
+      "crop": "wall-near",
+      "role": "near",
+      "rect": [
+        0.1,
+        0.15,
+        0.32,
+        0.7
+      ],
+      "ratios": {
+        "mortarShare": 0.9367769706752759,
+        "mortarL": 1.0996036532827849,
+        "brickL": 0.9902608695652173
+      },
+      "checks": {
+        "mortarShare": true,
+        "mortarL": true,
+        "brickL": true
+      },
+      "passed": true,
+      "web": {
+        "pixels": 141065,
+        "threshold": 43.5,
+        "share": 0.3717,
+        "mortarL": 58.03,
+        "brickL": 28.75,
+        "contrast": 29.27,
+        "bricks": 86,
+        "spreadL": 6.4,
+        "spreadC": 8.99,
+        "spreadHue": 2.34
+      },
+      "native": {
+        "pixels": 141065,
+        "threshold": 46.5,
+        "share": 0.3482,
+        "mortarL": 63.81,
+        "brickL": 28.47,
+        "contrast": 35.34,
+        "bricks": 87,
+        "spreadL": 7.2,
+        "spreadC": 8.87,
+        "spreadHue": 1.72
+      },
+      "canonicalRoundedReport": {
+        "shareRatio": 0.937,
+        "contrastRatio": 1.207,
+        "mortarRatio": 1.1,
+        "brickRatio": 0.99,
+        "brickChecked": true,
+        "ok": true,
+        "spreadLRatio": 1.125,
+        "spreadCRatio": 0.987,
+        "spreadHueRatio": 0.735,
+        "colourChecked": false,
+        "colourOk": false
+      }
+    },
+    {
+      "shot": "entrance-a",
+      "crop": "wall-far",
+      "role": "far",
+      "rect": [
+        0.5,
+        0.03,
+        0.525,
+        0.28
+      ],
+      "ratios": {
+        "mortarShare": 1.0808858931150698,
+        "mortarL": 0.9833574529667148,
+        "brickL": 1.07939308398024
+      },
+      "checks": {
+        "mortarShare": true,
+        "mortarL": true,
+        "brickL": true
+      },
+      "passed": true,
+      "web": {
+        "pixels": 7308,
+        "threshold": 41.5,
+        "share": 0.4154,
+        "mortarL": 55.28,
+        "brickL": 28.34,
+        "contrast": 26.95,
+        "bricks": 15,
+        "spreadL": 6.54,
+        "spreadC": 8.84,
+        "spreadHue": 3.18
+      },
+      "native": {
+        "pixels": 7308,
+        "threshold": 42.5,
+        "share": 0.449,
+        "mortarL": 54.36,
+        "brickL": 30.59,
+        "contrast": 23.77,
+        "bricks": 12,
+        "spreadL": 4.55,
+        "spreadC": 5.24,
+        "spreadHue": 1.31
+      },
+      "canonicalRoundedReport": {
+        "shareRatio": 1.081,
+        "contrastRatio": 0.882,
+        "mortarRatio": 0.983,
+        "brickRatio": 1.079,
+        "brickChecked": true,
+        "ok": true,
+        "spreadLRatio": 0.696,
+        "spreadCRatio": 0.593,
+        "spreadHueRatio": 0.412,
+        "colourChecked": false,
+        "colourOk": false
+      }
+    },
+    {
+      "shot": "courtyard",
+      "crop": "husA-near",
+      "role": "near",
+      "rect": [
+        0.0,
+        0.32,
+        0.03,
+        0.62
+      ],
+      "ratios": {
+        "mortarShare": 0.8914631075295895,
+        "mortarL": 1.0614429790535298,
+        "brickL": 0.9773413897280967
+      },
+      "checks": {
+        "mortarShare": false,
+        "mortarL": true,
+        "brickL": true
+      },
+      "passed": false,
+      "web": {
+        "pixels": 10449,
+        "threshold": 48.5,
+        "share": 0.3971,
+        "mortarL": 64.45,
+        "brickL": 33.1,
+        "contrast": 31.35,
+        "bricks": 27,
+        "spreadL": 11.82,
+        "spreadC": 14.67,
+        "spreadHue": 2.62
+      },
+      "native": {
+        "pixels": 10449,
+        "threshold": 50.5,
+        "share": 0.354,
+        "mortarL": 68.41,
+        "brickL": 32.35,
+        "contrast": 36.06,
+        "bricks": 25,
+        "spreadL": 14.65,
+        "spreadC": 11.56,
+        "spreadHue": 1.39
+      },
+      "canonicalRoundedReport": {
+        "shareRatio": 0.891,
+        "contrastRatio": 1.15,
+        "mortarRatio": 1.061,
+        "brickRatio": 0.977,
+        "brickChecked": true,
+        "ok": false,
+        "spreadLRatio": 1.239,
+        "spreadCRatio": 0.788,
+        "spreadHueRatio": 0.531,
+        "colourChecked": false,
+        "colourOk": false
+      }
+    },
+    {
+      "shot": "courtyard",
+      "crop": "husA-mid",
+      "role": "far",
+      "rect": [
+        0.25,
+        0.32,
+        0.27,
+        0.46
+      ],
+      "ratios": {
+        "mortarShare": 1.0475201246429497,
+        "mortarL": 1.0075624340485403,
+        "brickL": 1.109652235628105
+      },
+      "checks": {
+        "mortarShare": true,
+        "mortarL": true,
+        "brickL": false
+      },
+      "passed": false,
+      "web": {
+        "pixels": 3277,
+        "threshold": 42.5,
+        "share": 0.3851,
+        "mortarL": 56.86,
+        "brickL": 28.18,
+        "contrast": 28.67,
+        "bricks": 49,
+        "spreadL": 6.82,
+        "spreadC": 7.43,
+        "spreadHue": 4.09
+      },
+      "native": {
+        "pixels": 3277,
+        "threshold": 44.5,
+        "share": 0.4034,
+        "mortarL": 57.29,
+        "brickL": 31.27,
+        "contrast": 26.02,
+        "bricks": 49,
+        "spreadL": 6.5,
+        "spreadC": 7.41,
+        "spreadHue": 1.79
+      },
+      "canonicalRoundedReport": {
+        "shareRatio": 1.048,
+        "contrastRatio": 0.908,
+        "mortarRatio": 1.008,
+        "brickRatio": 1.11,
+        "brickChecked": true,
+        "ok": false,
+        "spreadLRatio": 0.953,
+        "spreadCRatio": 0.997,
+        "spreadHueRatio": 0.438,
+        "colourChecked": false,
+        "colourOk": false
+      }
+    },
+    {
+      "shot": "courtyard",
+      "crop": "husL-far",
+      "role": "far",
+      "rect": [
+        0.885,
+        0.245,
+        0.99,
+        0.275
+      ],
+      "ratios": {
+        "mortarShare": 1.0056628056628056,
+        "mortarL": 0.9782304462758512,
+        "brickL": 1.1047818134308858
+      },
+      "checks": {
+        "mortarShare": true,
+        "mortarL": true,
+        "brickL": false
+      },
+      "passed": false,
+      "web": {
+        "pixels": 3624,
+        "threshold": 51.5,
+        "share": 0.3885,
+        "mortarL": 64.31,
+        "brickL": 38.27,
+        "contrast": 26.04,
+        "bricks": 31,
+        "spreadL": 7.6,
+        "spreadC": 9.85,
+        "spreadHue": 10.22
+      },
+      "native": {
+        "pixels": 3624,
+        "threshold": 52.5,
+        "share": 0.3907,
+        "mortarL": 62.91,
+        "brickL": 42.28,
+        "contrast": 20.62,
+        "bricks": 27,
+        "spreadL": 6.52,
+        "spreadC": 9.13,
+        "spreadHue": 9.47
+      },
+      "canonicalRoundedReport": {
+        "shareRatio": 1.006,
+        "contrastRatio": 0.792,
+        "mortarRatio": 0.978,
+        "brickRatio": 1.105,
+        "brickChecked": true,
+        "ok": false,
+        "spreadLRatio": 0.858,
+        "spreadCRatio": 0.927,
+        "spreadHueRatio": 0.927,
+        "colourChecked": false,
+        "colourOk": true
+      }
+    },
+    {
+      "shot": "courtyard",
+      "crop": "husL-mid2",
+      "role": "far",
+      "rect": [
+        0.81,
+        0.13,
+        0.83,
+        0.24
+      ],
+      "ratios": {
+        "mortarShare": 0.9346116970278044,
+        "mortarL": 1.016005448663375,
+        "brickL": 1.086193936356803
+      },
+      "checks": {
+        "mortarShare": true,
+        "mortarL": true,
+        "brickL": true
+      },
+      "passed": true,
+      "web": {
+        "pixels": 2581,
+        "threshold": 49.5,
+        "share": 0.5215,
+        "mortarL": 58.73,
+        "brickL": 39.91,
+        "contrast": 18.82,
+        "bricks": 0,
+        "spreadL": 0,
+        "spreadC": 0,
+        "spreadHue": 0
+      },
+      "native": {
+        "pixels": 2581,
+        "threshold": 51.5,
+        "share": 0.4874,
+        "mortarL": 59.67,
+        "brickL": 43.35,
+        "contrast": 16.32,
+        "bricks": 0,
+        "spreadL": 0,
+        "spreadC": 0,
+        "spreadHue": 0
+      },
+      "canonicalRoundedReport": {
+        "shareRatio": 0.935,
+        "contrastRatio": 0.867,
+        "mortarRatio": 1.016,
+        "brickRatio": 1.086,
+        "brickChecked": true,
+        "ok": true,
+        "spreadLRatio": null,
+        "spreadCRatio": null,
+        "spreadHueRatio": null,
+        "colourChecked": false,
+        "colourOk": false
+      }
+    }
+  ],
+  "failedRows": [
+    {
+      "shot": "courtyard",
+      "crop": "husA-near",
+      "role": "near",
+      "rect": [
+        0.0,
+        0.32,
+        0.03,
+        0.62
+      ],
+      "ratios": {
+        "mortarShare": 0.8914631075295895,
+        "mortarL": 1.0614429790535298,
+        "brickL": 0.9773413897280967
+      },
+      "checks": {
+        "mortarShare": false,
+        "mortarL": true,
+        "brickL": true
+      },
+      "passed": false,
+      "web": {
+        "pixels": 10449,
+        "threshold": 48.5,
+        "share": 0.3971,
+        "mortarL": 64.45,
+        "brickL": 33.1,
+        "contrast": 31.35,
+        "bricks": 27,
+        "spreadL": 11.82,
+        "spreadC": 14.67,
+        "spreadHue": 2.62
+      },
+      "native": {
+        "pixels": 10449,
+        "threshold": 50.5,
+        "share": 0.354,
+        "mortarL": 68.41,
+        "brickL": 32.35,
+        "contrast": 36.06,
+        "bricks": 25,
+        "spreadL": 14.65,
+        "spreadC": 11.56,
+        "spreadHue": 1.39
+      },
+      "canonicalRoundedReport": {
+        "shareRatio": 0.891,
+        "contrastRatio": 1.15,
+        "mortarRatio": 1.061,
+        "brickRatio": 0.977,
+        "brickChecked": true,
+        "ok": false,
+        "spreadLRatio": 1.239,
+        "spreadCRatio": 0.788,
+        "spreadHueRatio": 0.531,
+        "colourChecked": false,
+        "colourOk": false
+      }
+    },
+    {
+      "shot": "courtyard",
+      "crop": "husA-mid",
+      "role": "far",
+      "rect": [
+        0.25,
+        0.32,
+        0.27,
+        0.46
+      ],
+      "ratios": {
+        "mortarShare": 1.0475201246429497,
+        "mortarL": 1.0075624340485403,
+        "brickL": 1.109652235628105
+      },
+      "checks": {
+        "mortarShare": true,
+        "mortarL": true,
+        "brickL": false
+      },
+      "passed": false,
+      "web": {
+        "pixels": 3277,
+        "threshold": 42.5,
+        "share": 0.3851,
+        "mortarL": 56.86,
+        "brickL": 28.18,
+        "contrast": 28.67,
+        "bricks": 49,
+        "spreadL": 6.82,
+        "spreadC": 7.43,
+        "spreadHue": 4.09
+      },
+      "native": {
+        "pixels": 3277,
+        "threshold": 44.5,
+        "share": 0.4034,
+        "mortarL": 57.29,
+        "brickL": 31.27,
+        "contrast": 26.02,
+        "bricks": 49,
+        "spreadL": 6.5,
+        "spreadC": 7.41,
+        "spreadHue": 1.79
+      },
+      "canonicalRoundedReport": {
+        "shareRatio": 1.048,
+        "contrastRatio": 0.908,
+        "mortarRatio": 1.008,
+        "brickRatio": 1.11,
+        "brickChecked": true,
+        "ok": false,
+        "spreadLRatio": 0.953,
+        "spreadCRatio": 0.997,
+        "spreadHueRatio": 0.438,
+        "colourChecked": false,
+        "colourOk": false
+      }
+    },
+    {
+      "shot": "courtyard",
+      "crop": "husL-far",
+      "role": "far",
+      "rect": [
+        0.885,
+        0.245,
+        0.99,
+        0.275
+      ],
+      "ratios": {
+        "mortarShare": 1.0056628056628056,
+        "mortarL": 0.9782304462758512,
+        "brickL": 1.1047818134308858
+      },
+      "checks": {
+        "mortarShare": true,
+        "mortarL": true,
+        "brickL": false
+      },
+      "passed": false,
+      "web": {
+        "pixels": 3624,
+        "threshold": 51.5,
+        "share": 0.3885,
+        "mortarL": 64.31,
+        "brickL": 38.27,
+        "contrast": 26.04,
+        "bricks": 31,
+        "spreadL": 7.6,
+        "spreadC": 9.85,
+        "spreadHue": 10.22
+      },
+      "native": {
+        "pixels": 3624,
+        "threshold": 52.5,
+        "share": 0.3907,
+        "mortarL": 62.91,
+        "brickL": 42.28,
+        "contrast": 20.62,
+        "bricks": 27,
+        "spreadL": 6.52,
+        "spreadC": 9.13,
+        "spreadHue": 9.47
+      },
+      "canonicalRoundedReport": {
+        "shareRatio": 1.006,
+        "contrastRatio": 0.792,
+        "mortarRatio": 0.978,
+        "brickRatio": 1.105,
+        "brickChecked": true,
+        "ok": false,
+        "spreadLRatio": 0.858,
+        "spreadCRatio": 0.927,
+        "spreadHueRatio": 0.927,
+        "colourChecked": false,
+        "colourOk": true
+      }
+    }
+  ],
+  "wholeImageMoireReview": "REQUIRED: full1440 originals courtyard HusL and HusA; no numerical claim of absence",
+  "brightnessCause": "Not inferred from crop ratios. Known separate2424 reflection issue must not excuse an unmeasured or failed2428 criterion.",
+  "contractSHA256": "060ded446fac756fcd1d25839fdb77d6a723bb3e76c4b4c1183785adb620c5cf",
+  "nativeConfigSHA256": "c9af37decd17c3353ef3b2b9529206c69fdb20789eb5f97735ca6b27fffc8ba8"
+}

@@ -1,0 +1,344 @@
+{
+  "issue": 2424,
+  "completed": true,
+  "reviewedUTC": "2026-11-27T23:14:38.901870+00:00",
+  "sourceHead": "077f9c9ce4a85dbeaadc826cbc2ca137719d6f34",
+  "reviewScope": "ONE visual review of four native and four respective locked web whole originals, no image edits/resizing or pixel measurements",
+  "originalImageManifest": [
+    {
+      "view": "stairs-evening",
+      "native": "/home/devcontainers/.local/state/lunden-codex-20261127/2424/trial-second/product/regressions/unreal-stairs-evening.png",
+      "nativeSHA256": "1fa25300ec356ab79669ef19fd49801904730fa6a0474d4d45acff7cdcd66a75",
+      "lockedWeb": "/home/devcontainers/.local/state/lunden-codex-20261127/2369/web/web-stairs-evening.jpg",
+      "webSHA256": "48dcb9b61e67c0d499f06d1d253d02251b4930a9bb567f138c6723ddf71574c5",
+      "bothOriginalsViewedOnce": true,
+      "actualCamera": {
+        "xyz": [
+          215.0,
+          738.0,
+          162.0
+        ],
+        "yaw": -6.999999999999999,
+        "pitch": 7.999999999999998,
+        "roll": -0.0,
+        "horizontalFov": 104.50486755371094,
+        "width": 640,
+        "height": 360,
+        "separateTranslucencyShowFlag": true,
+        "privateBlendableAttached": false
+      },
+      "conditions": {
+        "date": [
+          2026,
+          6,
+          21
+        ],
+        "hour": 22,
+        "weather": "clear",
+        "lamps": "all",
+        "daylightActual": 0.12452149391174316
+      }
+    },
+    {
+      "view": "living-room-day",
+      "native": "/home/devcontainers/.local/state/lunden-codex-20261127/2424/trial-second/product/regressions/unreal-living-room-day.png",
+      "nativeSHA256": "d458b6d263c8df581f39e13da091875f0dd8c980828d31bd70952af14baa471d",
+      "lockedWeb": "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/web/web-living-room-day.jpg",
+      "webSHA256": "be8023e5a4d1ba5cfb2d4f930273f6792c788658efd47dba6a6c153016af33ac",
+      "bothOriginalsViewedOnce": true,
+      "actualCamera": {
+        "xyz": [
+          250.0,
+          819.9999999999999,
+          162.0
+        ],
+        "yaw": 96.99999999999999,
+        "pitch": -4.0,
+        "roll": 3.9854015897965574e-16,
+        "horizontalFov": 104.50486755371094,
+        "width": 640,
+        "height": 360,
+        "separateTranslucencyShowFlag": true,
+        "privateBlendableAttached": false
+      },
+      "conditions": {
+        "date": [
+          2026,
+          6,
+          21
+        ],
+        "hour": 14,
+        "weather": "clear",
+        "lamps": "none",
+        "daylightActual": 1.0
+      }
+    },
+    {
+      "view": "living-room-evening",
+      "native": "/home/devcontainers/.local/state/lunden-codex-20261127/2424/trial-second/product/regressions/unreal-living-room-evening.png",
+      "nativeSHA256": "3b63dcec7d64d0ae38e0295995f00f86494c4aa306801bfb7fb6507da3ecff0f",
+      "lockedWeb": "/home/devcontainers/.local/state/lunden-codex-20261127/2369/web/web-living-room-evening.jpg",
+      "webSHA256": "1a6d7cd06c97fbb1729662cece73490a808745d2511124f8dc0a987f0e810c0b",
+      "bothOriginalsViewedOnce": true,
+      "actualCamera": {
+        "xyz": [
+          250.0,
+          819.9999999999999,
+          162.0
+        ],
+        "yaw": 96.99999999999999,
+        "pitch": -4.0,
+        "roll": 3.9854015897965574e-16,
+        "horizontalFov": 104.50486755371094,
+        "width": 640,
+        "height": 360,
+        "separateTranslucencyShowFlag": true,
+        "privateBlendableAttached": false
+      },
+      "conditions": {
+        "date": [
+          2026,
+          6,
+          21
+        ],
+        "hour": 22,
+        "weather": "clear",
+        "lamps": "all",
+        "daylightActual": 0.12452149391174316
+      }
+    },
+    {
+      "view": "upper-floor-evening",
+      "native": "/home/devcontainers/.local/state/lunden-codex-20261127/2424/trial-second/product/regressions/unreal-upper-floor-evening.png",
+      "nativeSHA256": "4cf0cc9cc8b6785250db558d3baef6b037664d480411bca9b5e5354bb3bb096f",
+      "lockedWeb": "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/web/web-upper-floor-evening.jpg",
+      "webSHA256": "16ed055836f8a6f6487ed1c6d99bfa45be5ceb9ecb2e53b5240c1692ebd7dbb8",
+      "bothOriginalsViewedOnce": true,
+      "actualCamera": {
+        "xyz": [
+          175.0,
+          795.0,
+          487.0
+        ],
+        "yaw": 99.99999999999997,
+        "pitch": -3.0000000000000004,
+        "roll": -0.0,
+        "horizontalFov": 104.50486755371094,
+        "width": 640,
+        "height": 360,
+        "separateTranslucencyShowFlag": true,
+        "privateBlendableAttached": false
+      },
+      "conditions": {
+        "date": [
+          2026,
+          6,
+          21
+        ],
+        "hour": 22,
+        "weather": "clear",
+        "lamps": "all",
+        "daylightActual": 0.12452149391174316
+      }
+    }
+  ],
+  "actualAllEightRawOriginalsViewed": true,
+  "conditions": {
+    "engine": "5.8.4",
+    "platform": "Linux CPU Vulkan SM5 legacy deferred temporary shader trial",
+    "actualCVars": {
+      "r.AntiAliasingMethod": 1,
+      "r.LightFunctionQuality": 2,
+      "r.ShadowQuality": 3,
+      "r.SeparateTranslucency": 1,
+      "r.Shadow.MaxResolution": 1024,
+      "r.Shadow.MaxCSMResolution": 1024,
+      "r.Shadow.CSM.MaxCascades": 3
+    },
+    "sixSameRunRequiredCVars": {
+      "r.DynamicGlobalIlluminationMethod": 0,
+      "r.ReflectionMethod": 0,
+      "r.Substrate": 0,
+      "r.ForwardShading": 0,
+      "r.RayTracing": 0,
+      "r.AllowStaticLighting": 0
+    },
+    "shadows": "conventional3/1024/3cascades",
+    "separateTranslucencyShowFlag": true,
+    "noWindowsDelivery": true,
+    "windowsLumenSubstrateCookNotVerified": true,
+    "engineOriginalsRestoredByRoot": true
+  },
+  "visualAssessment": {
+    "result": "No new unmapped own visual regression identified in these four original pairs; this is not a numerical or whole2424 acceptance decision.",
+    "materialFamilies": "Matta, tryckta gardiner, soffbord, teakskåp och soffa förblir läsbara i motsvarande kompositioner; exakt22raders-/huebeslut tillhör den andra arbetarens enda mätbatch.",
+    "fernPreservation": "Ormbunken vid högra glasdörren i dagsvardagsrummet är synligt grön och belyst; ingen mörk kollaps likt den förbjudna generella per-material spec0-workarounden syns. Bladkonturer/ljus skiljer sig fortfarande mot webben; ingen fernRGB-gate eller orsaksbestämning görs här.",
+    "causalityLimit": "Befintliga öppna gap mappas till deras motiv. Denna web/native-granskning bevisar inte att varje gap är pixeloförändrat mot en opatchad nativebild och tillskriver inte shaderpatchen någon ny differensorsak."
+  },
+  "preexistingOpenMappings": [
+    {
+      "issue": 2480,
+      "state": "OPEN",
+      "url": "https://github.com/solwation/lunden-3d-apartment/issues/2480",
+      "views": [
+        "stairs-evening"
+      ],
+      "visibleDifference": "Plansteg och trappschakt har svagare mörkerkontrast än webben.",
+      "causalClaim": false
+    },
+    {
+      "issue": 2490,
+      "state": "OPEN",
+      "url": "https://github.com/solwation/lunden-3d-apartment/issues/2490",
+      "views": [
+        "stairs-evening"
+      ],
+      "visibleDifference": "Den runda SKOGSGRÄNSEN-spegeln behåller en vit blank kupolreflex mot webbens jämnare kopparyta.",
+      "causalClaim": false
+    },
+    {
+      "issue": 2482,
+      "state": "OPEN",
+      "url": "https://github.com/solwation/lunden-3d-apartment/issues/2482",
+      "views": [
+        "living-room-day",
+        "living-room-evening"
+      ],
+      "visibleDifference": "Silvia-skärmen är mörkbrun/kopparmörk mot webbens ljusa koppar.",
+      "causalClaim": false
+    },
+    {
+      "issue": 2460,
+      "state": "OPEN",
+      "url": "https://github.com/solwation/lunden-3d-apartment/issues/2460",
+      "views": [
+        "upper-floor-evening"
+      ],
+      "visibleDifference": "Taklampans synliga kupol har annan självbelysning jämfört med webben.",
+      "causalClaim": false
+    },
+    {
+      "issue": 2481,
+      "state": "OPEN",
+      "url": "https://github.com/solwation/lunden-3d-apartment/issues/2481",
+      "views": [
+        "upper-floor-evening"
+      ],
+      "visibleDifference": "Webbens breda kameravända lamphalo saknas kring den synliga takkupolen.",
+      "causalClaim": false
+    },
+    {
+      "issue": 2484,
+      "state": "OPEN",
+      "url": "https://github.com/solwation/lunden-3d-apartment/issues/2484",
+      "views": [
+        "living-room-evening"
+      ],
+      "visibleDifference": "Bara väggen ovanför vitrinskåpet har ljusare kvällsfält än webben.",
+      "causalClaim": false
+    },
+    {
+      "issue": 2486,
+      "state": "OPEN",
+      "url": "https://github.com/solwation/lunden-3d-apartment/issues/2486",
+      "views": [
+        "upper-floor-evening"
+      ],
+      "visibleDifference": "Tillys stora träyta till vänster har annan olivgul/brun ton och ljusfördelning.",
+      "causalClaim": false
+    },
+    {
+      "issue": 2459,
+      "state": "OPEN",
+      "url": "https://github.com/solwation/lunden-3d-apartment/issues/2459",
+      "views": [
+        "living-room-day",
+        "living-room-evening",
+        "upper-floor-evening"
+      ],
+      "visibleDifference": "Glaset och det som syns genom glaset har annan ljus-/tonfördelning, särskilt de blekt blågrå webbreferenserna kontra mörkare nativekväll.",
+      "causalClaim": false
+    },
+    {
+      "issue": 2447,
+      "state": "OPEN",
+      "url": "https://github.com/solwation/lunden-3d-apartment/issues/2447",
+      "views": [
+        "living-room-day"
+      ],
+      "visibleDifference": "Den varmgula källfördelningen på soffans rygg är fortfarande en synlig avvikelse.",
+      "causalClaim": false
+    },
+    {
+      "issue": 2489,
+      "state": "OPEN",
+      "url": "https://github.com/solwation/lunden-3d-apartment/issues/2489",
+      "views": [
+        "living-room-day",
+        "living-room-evening",
+        "upper-floor-evening"
+      ],
+      "visibleDifference": "Övriga kanter mellan tak/vägg/golv har annan fast AO-/kontaktmörkning; inget påstående att den avgränsade vänsterväggs-AO:n är fel.",
+      "causalClaim": false
+    },
+    {
+      "issue": 2487,
+      "state": "OPEN",
+      "url": "https://github.com/solwation/lunden-3d-apartment/issues/2487",
+      "views": [
+        "living-room-day",
+        "living-room-evening",
+        "upper-floor-evening"
+      ],
+      "visibleDifference": "Upprepat mörkt prickraster syns tydligt på trägolven.",
+      "causalClaim": false
+    },
+    {
+      "issue": 2488,
+      "state": "OPEN",
+      "url": "https://github.com/solwation/lunden-3d-apartment/issues/2488",
+      "views": [
+        "living-room-evening"
+      ],
+      "visibleDifference": "Utsidan bakom vardagsrumsglaset blir mörkare gröngul/brun mot webbens blågrå kväll.",
+      "causalClaim": false
+    },
+    {
+      "issue": 2428,
+      "state": "OPEN",
+      "url": "https://github.com/solwation/lunden-3d-apartment/issues/2428",
+      "views": [
+        "living-room-day",
+        "upper-floor-evening"
+      ],
+      "visibleDifference": "Synliga avlägsna tegelfasaders ton/fogdetalj skiljer sig; pågående2428-master är inte accepterad.",
+      "causalClaim": false
+    }
+  ],
+  "newUnmappedDifferences": [],
+  "numericMeasurementsExecutedHere": 0,
+  "numericGateOwner": "wsl_vulkan ONE aggregate batch; Root integration/publication only",
+  "processEvidence": {
+    "source": "/home/devcontainers/.local/state/lunden-codex-20261127/2424/trial-second/outcome.json",
+    "sha256": "929f8b7718aa7cf335616006dc9971447a81e27f6dc837b60147548b65442f79",
+    "reportedNativeExit": 0,
+    "runnerExit": 0,
+    "passed": true,
+    "classification": "Independent process/guard evidence; image review does not substitute for formal gates"
+  },
+  "evidencePins": {
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2424/trial-second/product/regressions/capture.json": "26b0229a5e8c8581313d95d061e89165257c272d7f4adb3e2355d37d1c0fd237",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2384/acceptance-contract.json": "b398989d239412dbdd7c2ce45925d8259e51b2a19bc98965a49a06b9ddc2ebeb",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/corrected-reference-contract.json": "1f559812415bdc9a6bbfcd5030957bae510b208833318c45021d3a89545d47b6",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2369/locked-capture-contract.json": "d3c89d4b9a50404ed629c5c54ce863ad1eca9b804249748a1b39abef1514abe8",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2424/whole-review-open-mappings.json": "5163629c5dcb08abb102658406102e95920b9cc93473ebdf74aef60d4ece9384"
+  },
+  "subsequentIndependentNumericDecision": {
+    "reportedBy": "Root after the sole aggregate9meter",
+    "dayRugY": 0.7181478,
+    "lowerBound": 0.8,
+    "decision": "FAIL; whole visual review does not accept or excuse this own regression",
+    "otherAPT21Passed": true,
+    "sourceDiagnosis": "/home/devcontainers/.local/state/lunden-codex-20261127/2424/rug-source-chain2424.json"
+  }
+}

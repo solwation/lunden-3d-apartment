@@ -1,0 +1,147 @@
+{
+  "issue": 2424,
+  "createdUTC": "2026-11-27T23:18:51.917988+00:00",
+  "scope": "READONLY source/SDK rug-regression diagnosis; no browser/UE/export or pixel measurement",
+  "sourceHead": "077f9c9ce4a85dbeaadc826cbc2ca137719d6f34",
+  "rootReportedFormalGate": {
+    "dayRugBefore": 0.8214,
+    "dayRugAfter": 0.7181478,
+    "lowerBound": 0.8,
+    "status": "FAIL/introduced regression; wholeimage readability does not override formal gate",
+    "otherAPT": 21,
+    "otherAPTPass": true,
+    "source": "Root aggregate9 report, not recomputed here"
+  },
+  "sourceRug": {
+    "path": "src/furniture.js3388-3396",
+    "material": "MeshStandardMaterial, ordinary rugTexture map, roughness1",
+    "noExplicitEnvironmentMap": true,
+    "noEmissiveClearcoatSheenOrAOMap": true,
+    "sharedEnvironmentRule": "No scene.environment; source physical indirect-environment radiance/iblIrradiance initialize0 and USE_ENVMAP controls additions",
+    "sourceIndirectDiffuse": "Three lights_physical_pars_fragment506-508: irradiance*BRDF_Lambert(diffuseColor); ambient+normal-oriented hemisphere from lights_fragment_begin174-187; windowlight.js98 transforms irradiance before RE_IndirectDiffuse.",
+    "sourceMultiscatter": "Only radiance and iblIrradiance feed environment multiple-scattering in Three512-548. Both remain0 for this envMap-free rug. No legitimate rug environment contribution is missing."
+  },
+  "actualExport": {
+    "path": "/home/devcontainers/lunden-linux/unreal/Lunden/Import/l1007.glb",
+    "sha256": "9b08d5770fdc54efcb6392be62711a8d3db56c9cf5f5ddc83c6db588251b6899",
+    "materialIndex": 331,
+    "material": {
+      "pbrMetallicRoughness": {
+        "metallicFactor": 0,
+        "roughnessFactor": 1,
+        "baseColorTexture": {
+          "index": 43,
+          "texCoord": 0
+        }
+      },
+      "name": "std_ffffff_r100_m0_tex_tf6735630e8",
+      "extras": {
+        "texture": "tf6735630e8"
+      }
+    },
+    "meshNode": "furn_rug_l0_x390_z1060__1",
+    "receiverKey": "std_ffffff_r100_m0_tex_tf6735630e8"
+  },
+  "nativeChain": {
+    "currentActualPBRTest": {
+      "source": "/home/devcontainers/lunden-linux/tools/unreal-engine/tests/test_rug_floor_pool.py",
+      "sha256": "909bae44d60d0e0caf6951391ba9533c13303e6dfb4ad99ed921d29adecd319f",
+      "actualMainPassed": true,
+      "scope": "existing source/PBR/controller contract; rendered fourteen-crop acceptance is separate"
+    },
+    "assertion": "test_rug_floor_pool.py168-172 requires actual rug component material==original importedMIC, no overlay actor and actualDisplayPoolsgraph",
+    "originalParent": "/InterchangeAssets/gltf/MaterialInstances/MI_Default_Opaque -> /InterchangeAssets/gltf/M_Default",
+    "priorSavedReadback": "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/native-after-v5/captures/living-room-day-materials.json",
+    "priorReadbackRugParameters": {
+      "roughnessFactor": 1,
+      "metallicFactor": 0,
+      "baseColorFactor": [
+        1,
+        1,
+        1,
+        1
+      ],
+      "specularFactor": 1,
+      "IOR": 1.5,
+      "baseColorTextureSRGB": true,
+      "occlusionMapEnabled": false,
+      "normalMapEnabled": false,
+      "emissive": [
+        0,
+        0,
+        0
+      ]
+    },
+    "priorReadbackLimit": "These detailed parameter values are preserved prior native readbacks; current trial freshly proves originalMIC binding/PBR test plus RootGenerated exactguard, not a new independent full parameter dump.",
+    "noCurrentRugCalibration": "build_furnishing_profile.PROFILES matches wood and solid sofa only; rug is not targeted. Legacy copied-emission receiver is retired on current displayPools path.",
+    "dayDisplayPoolMPC": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "dayDisplayPoolsAllOff": true
+  },
+  "shaderContributionProof": {
+    "diffuseColor": "DeferredShadingCommon846-847 computes BaseColor*(1-Metallic), independently of Specular/F0.",
+    "ambient": "AmbientCubemapComposite520 NonSpecularContribution=DiffuseColor*DiffuseLookup unchanged; patch zeros only SpecularContribution before hair/subsurface; final631 retains NonSpecularContribution.",
+    "central": "CompositeReflectionCapturesAndSkylightTWS returns ImageBasedReflections specularradiance. Disabling its Sky branch/ExtraIndirectSpecular does not alter opaque rug GBuffer diffuse, local capture diffuse or direct DefaultLitBxDF.",
+    "directBRDF": "DefaultLitBxDF212-287 including direct Lambert/GGX and energy preservation remains unchanged. No newly removed F0/diffuse attenuation or direct multiscatter correction was found.",
+    "interpretation": "Loss of unwanted environmentBRDF can remove energy even from roughness1. Previous rug daytime already near its lower bound; a contribution formerly masking low diffuse brightness is plausible. Exact remaining irradiance error is not proven by source alone."
+  },
+  "boundedSharedDiffuseCandidate": {
+    "provenNativeProxy": "build_lighting.py HEMI_SHARE.72/CLEAR_FILL.75 are explicitly historical global guesses; generated prefiltered hemisphere cube is used as native ambient source. Actualday WindowAmbientFill1.0585000515 and effective nativecube1.0585000627.",
+    "actualDayRuntime": {
+      "WindowSkyStrength": 1.5,
+      "WindowSunStrength": 3.0,
+      "WindowAmbientFill": 1.058500051498413,
+      "Daylight": 1.0,
+      "SunDirNative": [
+        0.32902491092681885,
+        0.4451923966407776,
+        0.8327943086624146
+      ],
+      "SunDirWeb": [
+        0.32902491092681885,
+        0.8327943086624146,
+        0.4451923966407776
+      ],
+      "actualAmbient": {
+        "cube": "/Game/Lunden/Lighting/T_LundenHemisphere.T_LundenHemisphere",
+        "intensity": 2.1010000705718994,
+        "blendWeight": 0.5038077235221863,
+        "effectiveFill": 1.0585000626747814,
+        "tint": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "expectedNativeFill": 1.0585
+    },
+    "webRule": "AmbientRGB plus mix(groundRGB,skyRGB,.5+.5*dot(N,up))*actualHemiIntensity enters windowLight base/tint/fill subtraction and Lambert; no prefiltered-cubemap approximation or HEMI_SHARE.72/CLEAR_FILL.75 in this web rule.",
+    "windowPPDifference": "build_window_light.code72-80 retains H*base_factor*tint from the native cube/fill proxy and adds source window irradiance/pi. It does not analytically reconstruct the full web base ambient/hemi irradiance.",
+    "sourceFaithfulRemedyCandidate": "Review shared ambient-diffuse source-unit correspondence at the existing WindowDaylight base term: source analytic ambient+hemisphere(normal), exact source exposure and base/tint/fill semantics, with removal of corresponding old native diffuse term. Preserve source window terms, directBRDF, material and display pools. This is a candidate for bounded analytic proof, not an implemented or verified correction.",
+    "technicalLimit": "Replacing onlyH or increasing a scalar without accounting for residual nativeSkyLight diffuse, fill/direct placement and pre-exposure would risk doublecounting. Source does not justify a safe one-line correction or per-rugRGB/F0/emission fit.",
+    "noExtraRHIRequestedHere": true
+  },
+  "acceptanceConclusion": "Global patch is NOT accepted while locked dayrugY fails; none of palm/hedge21otherAPT passes overrides this. No new architecture or material workaround implemented.",
+  "sourceSHA256": {
+    "/home/devcontainers/lunden-linux/src/furniture.js": "8b0ca16f72e183870cb3b8298ae79067356640e4e76ac1448011174ab91bab3c",
+    "/home/devcontainers/lunden-linux/src/windowlight.js": "4b44591fa5c6cb1c68d5c25cf4e9e99c4adfce30ee3eb4efc6c952e5efc5600c",
+    "/home/devcontainers/lunden-linux/tools/unreal-engine/python/build_furnishing_profile.py": "d4cbaacfd64d9f0a2ea38ff74ef175e5faee64724267a5225757707c354d9b7b",
+    "/home/devcontainers/lunden-linux/tools/unreal-engine/python/build_rug_pool.py": "aa171753e9728ba12fd425b9038fc4332a2c5cb32490f7042027c3c688a58392",
+    "/home/devcontainers/lunden-linux/tools/unreal-engine/python/build_display_pools.py": "f1a0b0562c107a1a30331faff8dc6012864105ede0daddba21c332cf263f8812",
+    "/home/devcontainers/lunden-linux/tools/unreal-engine/python/build_window_light.py": "e04623ec09692af4cdb64599715d9c87080fcaf7e374ca9c7dc4db23c5526cc6",
+    "/home/devcontainers/lunden-linux/tools/unreal-engine/python/build_lighting.py": "9285fd89a5b7c3bd532eb0ff17600b342a75010b622c4da5500fab0e3550f67b",
+    "/home/devcontainers/lunden-linux/tools/unreal-engine/tests/test_rug_floor_pool.py": "909bae44d60d0e0caf6951391ba9533c13303e6dfb4ad99ed921d29adecd319f",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2424/cpp/Engine/Shaders/Private/AmbientCubemapComposite.usf": "a7f05c62e01d694886372e8880760ef858fd9508459cc5acbef246f0675315df",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2424/cpp/Engine/Shaders/Private/ReflectionEnvironmentComposite.ush": "cb07271acf5f83593c2481346393f78cb18ab2b9079fb10ace366a0ec04920a1",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2424/cpp/Engine/Shaders/Private/DeferredShadingCommon.ush": "589432a8fa90a6f365d3bba3b13c4387d80dd6018224abe68cd01d8aeda1c62f",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2424/cpp/Engine/Shaders/Private/ShadingModels.ush": "27d661854c627ad0aa52673f553946a9c61add15674b32715b4a6297d02ed98f",
+    "/home/devcontainers/kvarteret-lunden/node_modules/three/src/renderers/shaders/ShaderChunk/lights_fragment_begin.glsl.js": "8275f4d42336bc715ec466c87b9dda2873c91a36858c2f585f3308533f04368d",
+    "/home/devcontainers/kvarteret-lunden/node_modules/three/src/renderers/shaders/ShaderChunk/lights_fragment_maps.glsl.js": "be1a1d8d9e1c59d1ad2785f8598519779aa6b44ec8cad0fa9e462f19c6e6e5ad",
+    "/home/devcontainers/kvarteret-lunden/node_modules/three/src/renderers/shaders/ShaderChunk/lights_fragment_end.glsl.js": "c45aa2234c3f7bed6d985bce636c65813d7af888474a31a1adcc0727d86d17ca",
+    "/home/devcontainers/kvarteret-lunden/node_modules/three/src/renderers/shaders/ShaderChunk/lights_physical_pars_fragment.glsl.js": "8228e12d6904efecff76ef21f217836bcf57100ab8c53326b74a8a6f273b04a8",
+    "/home/devcontainers/kvarteret-lunden/node_modules/three/src/renderers/shaders/ShaderChunk/lights_pars_begin.glsl.js": "cebde39ab2b24d5a2c059ad869743464ab2470624a492f57d2a07b1ea88cfa78"
+  }
+}

@@ -1,0 +1,150 @@
+{
+  "classification": "FirsttrialFAILED at private imagecontainercheck; no nativeexit0/outcome inference",
+  "sourceHeadExact": true,
+  "all247ExactReadonly": true,
+  "generatedExact": true,
+  "exportExact": true,
+  "all191PinnedDependenciesExact": true,
+  "worldRestoredActual": true,
+  "actualSixCVars": {
+    "r.DynamicGlobalIlluminationMethod": 0,
+    "r.ReflectionMethod": 0,
+    "r.Substrate": 0,
+    "r.ForwardShading": 0,
+    "r.RayTracing": 0,
+    "r.AllowStaticLighting": 0
+  },
+  "manualRecovery": {
+    "classification": "Explicit recovery after launcher vanished143; native exit status unavailable, never infer zero",
+    "at": "2026-11-27T23:02:03.848927+00:00",
+    "launcherPid": 3846197,
+    "editorPid": 3847689,
+    "ownedInitial": {
+      "pid": 3847689,
+      "state": "S",
+      "ppid": 4134,
+      "start": "12549296"
+    },
+    "originalDeadlineUtc": "2026-11-27T23:16:39Z",
+    "restored": true,
+    "timedOut": false,
+    "ownedRemaining": [],
+    "processesBeforeRollback": [],
+    "completedAt": "2026-11-27T23:04:24.852412+00:00",
+    "ownedObserved": [
+      {
+        "pid": 3847689,
+        "state": "S",
+        "ppid": 4134,
+        "start": "12549296"
+      },
+      {
+        "pid": 3872961,
+        "state": "S",
+        "ppid": 3847689,
+        "start": "12555775"
+      },
+      {
+        "pid": 3877980,
+        "state": "S",
+        "ppid": 3847689,
+        "start": "12557327"
+      },
+      {
+        "pid": 3877991,
+        "state": "S",
+        "ppid": 3847689,
+        "start": "12557328"
+      },
+      {
+        "pid": 3877999,
+        "state": "S",
+        "ppid": 3847689,
+        "start": "12557329"
+      },
+      {
+        "pid": 3878018,
+        "state": "S",
+        "ppid": 3847689,
+        "start": "12557330"
+      },
+      {
+        "pid": 3878027,
+        "state": "S",
+        "ppid": 3847689,
+        "start": "12557331"
+      },
+      {
+        "pid": 3878039,
+        "state": "S",
+        "ppid": 3847689,
+        "start": "12557331"
+      },
+      {
+        "pid": 3878055,
+        "state": "S",
+        "ppid": 3847689,
+        "start": "12557332"
+      },
+      {
+        "pid": 3878062,
+        "state": "S",
+        "ppid": 3847689,
+        "start": "12557333"
+      },
+      {
+        "pid": 3878073,
+        "state": "S",
+        "ppid": 3847689,
+        "start": "12557333"
+      },
+      {
+        "pid": 3878078,
+        "state": "S",
+        "ppid": 3847689,
+        "start": "12557334"
+      },
+      {
+        "pid": 3878088,
+        "state": "S",
+        "ppid": 3847689,
+        "start": "12557334"
+      },
+      {
+        "pid": 3878294,
+        "state": "S",
+        "ppid": 3847689,
+        "start": "12557349"
+      },
+      {
+        "pid": 3878296,
+        "state": "S",
+        "ppid": 3847689,
+        "start": "12557349"
+      }
+    ],
+    "originalFiles": {
+      "Engine/Shaders/Private/ReflectionEnvironmentComposite.ush": {
+        "sha256": "cb07271acf5f83593c2481346393f78cb18ab2b9079fb10ace366a0ec04920a1",
+        "mode": 365,
+        "mtimeNs": 1790735426000000000
+      },
+      "Engine/Shaders/Private/AmbientCubemapComposite.usf": {
+        "sha256": "a7f05c62e01d694886372e8880760ef858fd9508459cc5acbef246f0675315df",
+        "mode": 365,
+        "mtimeNs": 1790735426000000000
+      }
+    }
+  },
+  "pngContainerDiagnosis": {
+    "pillowVerifyAndLoadPassed": true,
+    "imageDimensions": [
+      640,
+      360
+    ],
+    "iEndEndsAtByte": 410199,
+    "unchangedAppendedBytes": 29796,
+    "totalBytes": 439995,
+    "rawSHA256": "90599cd17268df602b60279ffa544a57a46a2d7a9bf1fc4f36c39590324d4537"
+  }
+}
