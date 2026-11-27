@@ -103,8 +103,8 @@ struct WebClouds {{
         // existing Neutral black offset, then EAI cancels exposure. Night RGB stays
         // below Neutral's 0.76 compression knee, so this inverse is exact there.
         float x = min(target.r,min(target.g,target.b));
-        float offset = x < 0.04 ? sqrt(max(x,0)/6.25)-x : 0.04;
-        return lerp(nativeSky,(target+offset)*inverseExposure,weight);
+        float blackOffset = x < 0.04 ? sqrt(max(x,0)/6.25)-x : 0.04;
+        return lerp(nativeSky,(target+blackOffset)*inverseExposure,weight);
     }}
 }};
 """
