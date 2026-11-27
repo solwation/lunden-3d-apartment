@@ -25,7 +25,7 @@ All four web originals use canonical scene/camera/lighting setup; fresh stairs a
 source pools. The new web batch actually exited0. Raw640×360 images were never resized/retouched.
 
 The full-frame criterion does not assert local contrast or colour equality: the diagnostic shaft crop is2.28×web,
-tread1.76×web, and stairs R/B1.07 vsweb1.31. Local brightness/contrast is tracked separately before closure;
+tread1.76×web, and stairs R/B1.07 vsweb1.31. Local brightness/contrast remains open in #2480;
 existing #2384 covers cool stair light. Furnishing/textiles/floor-/ceiling fields remain #2322; wall field #2372;
 glass #2459 and emissive lamps/screens #2460. All whole frames were reviewed against their web counterparts.
 
@@ -34,3 +34,5 @@ Actual AA method is1 (FXAA). Earlier AA0/off labels were inaccurate; requested s
 AA disabled, and its actual quality value was not recorded. This note corrects the description, not the images.
 No fullWindows/PIE/physics/collision/packaging acceptance is claimed. Static visibility uses native seasonal predicates.
 Original Unreal-only: no public transfer or web changelog. Result images follow30-day retention; metadata remains.
+
+[Published image comparison](https://github.com/solwation/lunden-3d-apartment/issues/2369#issuecomment-7220201320).
