@@ -110,11 +110,14 @@
     "Night appearance is close to the immutable web original; all five declared Y/RGB tests pass. Day Native is brighter across walls/floor/bikes, and all five declared Y/RGB tests fail; this remains a formal failure, separately attributable only as far as the existing exact-source exposure proof supports."
   ],
   "garageRemainingDifference": {
-    "observation": "Day uniform exposure/brightness mismatch; visible in the whole original and unresolved by this source material correction. Root will create a separate issue with published pinned images; no issue ID exists yet.",
+    "observation": "Day uniform exposure/brightness mismatch remains visible in the whole original; independent camera-under exposure omission is tracked in open #2495.",
     "formalDayGate": "FAIL preserved; not relabeled PASS by issue mapping",
     "sourceProof": "/home/devcontainers/.local/state/lunden-codex-20261127/2404/source-under-exposure-proof.json",
     "newUnmappedOwnMaterialRegressionObserved": false,
-    "issue": "exposure_issue_PENDING"
+    "issue": 2495,
+    "issueUrl": "https://github.com/solwation/lunden-3d-apartment/issues/2495",
+    "issueState": "open",
+    "verifiedAt": "2026-11-27T21:34:06Z"
   },
   "apartmentViewFindings": [
     {

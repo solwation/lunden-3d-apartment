@@ -115,7 +115,12 @@
     "assetCount": 35
   },
   "webSource718FilesExact": true,
-  "remainingDayExposureIssue": "PENDING_PUBLICATION_BEFORE_CLOSURE",
+  "remainingDayExposureIssue": {
+    "number": 2495,
+    "url": "https://github.com/solwation/lunden-3d-apartment/issues/2495",
+    "state": "open",
+    "verifiedAt": "2026-11-27T21:34:06Z"
+  },
   "newExposureFit": false,
   "newPointLights": 0,
   "authoredPackageWrites": 0,
@@ -134,5 +139,11 @@
     "unreal-living-room-evening.png": "704a95710dcd9cbd0f922f2894e12435ec2bebb0347bdd036814ccc8c1d0ef80",
     "web-parked-garage-night.jpg": "bc4bc01aa3466cbd6090bbc93f0c5ba2c7ce551e33b3cbded6540a8ebcaa5451",
     "unreal-parked-garage-day.png": "1895992b54c026c415724490066fc18aac10cf8205380268addbf31c6b80dbdd"
-  }
+  },
+  "ci": {
+    "run": 46070495442,
+    "conclusion": "success",
+    "url": "https://github.com/solwation/lunden-3d-apartment/actions/runs/46070495442"
+  },
+  "resultImagesEmbeddedBeforeClosure": "https://github.com/solwation/lunden-3d-apartment/issues/2404#issuecomment-7228560771"
 }
