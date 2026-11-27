@@ -43,6 +43,13 @@ def exercise(measurements, sky):
         copy.write_text(json.dumps(data))
         check(copy, sky, stale=True)
         sky_day[0] = old_red
+        # #2403: the actual saved controller must match the exported folding rule.
+        parasol_rule = data["furnishing"]["parasols"][0]["rule"]
+        sun_threshold = parasol_rule["sunThreshold"]
+        parasol_rule["sunThreshold"] = sun_threshold + 0.001
+        copy.write_text(json.dumps(data))
+        check(copy, sky, stale=True)
+        parasol_rule["sunThreshold"] = sun_threshold
         data["lights"][0]["position"]["unreal"][0] += 10
         copy.write_text(json.dumps(data))
         check(copy, sky, stale=True)
@@ -61,7 +68,7 @@ def exercise(measurements, sky):
             assert "Lunden.SpecHash" in str(error), str(error)
         else:
             raise AssertionError(f"accepted old signature after changing {old!r}")
-    print("Lighting regressions OK: unrelated changes, cloud, window colours, lamp position, tag and Blueprint owner")
+    print("Lighting regressions OK: unrelated changes, cloud, window colours, parasol rule, lamp position, tag and Blueprint owner")
 
 
 if __name__ == "__main__":
