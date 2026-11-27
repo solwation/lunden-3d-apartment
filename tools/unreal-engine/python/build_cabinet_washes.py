@@ -214,7 +214,10 @@ def controller(lamp_tag):
     g.set("AppliedVeneer", colour)
     g.set("VeneerApplied", True)
     panel, _, _ = g.loop(g.get("VeneerPanels"))
-    mesh = g.get("StaticMeshComponent", "/Script/Engine.StaticMeshActor", panel)
+    # This Blueprint itself derives from StaticMeshActor: its member getter
+    # binds to self and has no target pin. Resolve each source panel explicitly.
+    mesh = g.pure("Actor:GetComponentByClass", target=panel,
+                  ComponentClass="/Script/Engine.StaticMeshComponent")
     g.run("MeshComponent:SetVectorParameterValueOnMaterials", target=mesh,
           ParameterName="BaseColorFactor", ParameterValue=g.get("AppliedVeneer"))
     g, _ = pp.function(bp, "UpdateWashes")
