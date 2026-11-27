@@ -20,7 +20,7 @@ STAMP = 'Lunden.FurnishingProfile'
 PROFILES = {
     'wood': {'rgb': [1.34, 1.27, 1.15], 'specular': 0.0,
              'keys': [r'^std_c69c6d_r50_m0_tex_', r'^std_b06a32_r50_m0_tex_',
-                      r'^std_c07a3e_r60_m0$', r'^std_cfb48d_r60_m0_tex_', r'^std_c0a47c_r70_m0_tex_']},
+                      r'^std_c07a3e_r60_m0$', r'^std_c0a47c_r70_m0_tex_']},
     'upholstery': {'rgb': [1.0, 1.0, .84], 'specular': None,
                    'keys': [r'^std_ffffff_r96_m0_vc_tex_']},
 }
@@ -90,6 +90,14 @@ def main():
                 continue
             entry = next(((name, profile) for name, pattern, profile in patterns if pattern.search(original.get_name())), None)
             if entry is None:
+                # A retired calibration must restore only this builder's own
+                # child, never remove another builder's material override.
+                actual = comp.get_material(index)
+                if (actual and actual != original and actual.get_path_name().startswith(DIR+'/')
+                        and u.EditorAssetLibrary.get_metadata_tag(actual, STAMP)
+                        and u.EditorAssetLibrary.get_metadata_tag(actual, 'Lunden.Source') == original.get_path_name()):
+                    comp.set_material(index, original)
+                    changed = True
                 continue
             name, profile = entry
             key = original.get_path_name()
