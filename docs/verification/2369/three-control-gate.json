@@ -1,0 +1,16 @@
+{
+  "tool": "tools/unreal-engine/tests/crop-stats.cjs",
+  "toolExit": 0,
+  "manualAllThreeFrameGateInclusive": [
+    0.8,
+    1.25
+  ],
+  "allPass": true,
+  "ratios": {
+    "living-room-day": 0.9454187192118227,
+    "living-room-evening": 0.8794241151769647,
+    "upper-floor-evening": 0.9812865497076023
+  },
+  "statsSha256": "18b1f29b7c76d0ce58ef3fcfb5e604f6d942ceae12603a6cc6bf8e55511b3255",
+  "status": "three controls only; full --check-stairs still pending actual new stairs image. If initialLightFunctionQuality0 recapture controls in planned same native process and use those."
+}

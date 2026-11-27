@@ -1,0 +1,8 @@
+stairs-evening         frame        web lum 0.1845 R/B 1.31 sRGB 119.3,106.8,90.8  unreal lum 0.1827 R/B 1.07 sRGB 112.8,110.2,104.9 ratio 0.99
+stairs-evening         shaft-wall   web lum 0.0271 R/B 0.94 sRGB 44.8,45.9,47.8    unreal lum 0.0619 R/B 0.99 sRGB 69,70.8,70        ratio 2.28
+stairs-evening         riser        web lum 0.0769 R/B 1.24 sRGB 84.5,77.4,68.1    unreal lum 0.0928 R/B 1.01 sRGB 85.6,86.1,84.5    ratio 1.21
+stairs-evening         tread        web lum 0.0283 R/B 2.05 sRGB 60.2,43.5,29.4    unreal lum 0.0497 R/B 1.26 sRGB 69.6,61.6,55.2    ratio 1.76
+stairs-evening         hall-door    web lum 0.7085 R/B 1.32 sRGB 239.2,215.7,181.4 unreal lum 0.7497 R/B 1.02 sRGB 223.1,223.1,218.9 ratio 1.06
+living-room-day        frame        web lum 0.5075 R/B 1.17 sRGB 185.7,176.6,159.4 unreal lum 0.4798 R/B 1.17 sRGB 180.7,172.7,154.4 ratio 0.95
+living-room-evening    frame        web lum 0.1667 R/B 1.50 sRGB 115.2,99.6,76.5   unreal lum 0.1466 R/B 1.34 sRGB 105.1,95.6,78.4   ratio 0.88
+upper-floor-evening    frame        web lum 0.1710 R/B 1.33 sRGB 110,97.7,82.6     unreal lum 0.1678 R/B 1.11 sRGB 106.5,101.4,95.6  ratio 0.98

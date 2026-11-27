@@ -1,0 +1,230 @@
+{
+ "crops": {
+  "stairs-evening": {
+   "frame": [
+    0,
+    0,
+    1,
+    1
+   ],
+   "shaft-wall": [
+    0.37,
+    0.22,
+    0.43,
+    0.46
+   ],
+   "riser": [
+    0.455,
+    0.875,
+    0.54,
+    0.92
+   ],
+   "tread": [
+    0.46,
+    0.84,
+    0.53,
+    0.853
+   ],
+   "hall-door": [
+    0.12,
+    0.07,
+    0.29,
+    0.24
+   ]
+  },
+  "living-room-day": {
+   "frame": [
+    0,
+    0,
+    1,
+    1
+   ]
+  },
+  "living-room-evening": {
+   "frame": [
+    0,
+    0,
+    1,
+    1
+   ]
+  },
+  "upper-floor-evening": {
+   "frame": [
+    0,
+    0,
+    1,
+    1
+   ]
+  }
+ },
+ "stats": {
+  "stairs-evening": {
+   "web": {
+    "frame": {
+     "srgb": [
+      119.3,
+      106.8,
+      90.8
+     ],
+     "luminance": 0.1845,
+     "warmth": 1.314
+    },
+    "shaft-wall": {
+     "srgb": [
+      44.8,
+      45.9,
+      47.8
+     ],
+     "luminance": 0.0271,
+     "warmth": 0.936
+    },
+    "riser": {
+     "srgb": [
+      84.5,
+      77.4,
+      68.1
+     ],
+     "luminance": 0.0769,
+     "warmth": 1.24
+    },
+    "tread": {
+     "srgb": [
+      60.2,
+      43.5,
+      29.4
+     ],
+     "luminance": 0.0283,
+     "warmth": 2.049
+    },
+    "hall-door": {
+     "srgb": [
+      239.2,
+      215.7,
+      181.4
+     ],
+     "luminance": 0.7085,
+     "warmth": 1.318
+    }
+   },
+   "unreal": {
+    "frame": {
+     "srgb": [
+      112.8,
+      110.2,
+      104.9
+     ],
+     "luminance": 0.1827,
+     "warmth": 1.075
+    },
+    "shaft-wall": {
+     "srgb": [
+      69,
+      70.8,
+      70
+     ],
+     "luminance": 0.0619,
+     "warmth": 0.986
+    },
+    "riser": {
+     "srgb": [
+      85.6,
+      86.1,
+      84.5
+     ],
+     "luminance": 0.0928,
+     "warmth": 1.013
+    },
+    "tread": {
+     "srgb": [
+      69.6,
+      61.6,
+      55.2
+     ],
+     "luminance": 0.0497,
+     "warmth": 1.261
+    },
+    "hall-door": {
+     "srgb": [
+      223.1,
+      223.1,
+      218.9
+     ],
+     "luminance": 0.7497,
+     "warmth": 1.019
+    }
+   }
+  },
+  "living-room-day": {
+   "web": {
+    "frame": {
+     "srgb": [
+      185.7,
+      176.6,
+      159.4
+     ],
+     "luminance": 0.5075,
+     "warmth": 1.165
+    }
+   },
+   "unreal": {
+    "frame": {
+     "srgb": [
+      180.7,
+      172.7,
+      154.4
+     ],
+     "luminance": 0.4798,
+     "warmth": 1.17
+    }
+   }
+  },
+  "living-room-evening": {
+   "web": {
+    "frame": {
+     "srgb": [
+      115.2,
+      99.6,
+      76.5
+     ],
+     "luminance": 0.1667,
+     "warmth": 1.505
+    }
+   },
+   "unreal": {
+    "frame": {
+     "srgb": [
+      105.1,
+      95.6,
+      78.4
+     ],
+     "luminance": 0.1466,
+     "warmth": 1.342
+    }
+   }
+  },
+  "upper-floor-evening": {
+   "web": {
+    "frame": {
+     "srgb": [
+      110,
+      97.7,
+      82.6
+     ],
+     "luminance": 0.171,
+     "warmth": 1.332
+    }
+   },
+   "unreal": {
+    "frame": {
+     "srgb": [
+      106.5,
+      101.4,
+      95.6
+     ],
+     "luminance": 0.1678,
+     "warmth": 1.115
+    }
+   }
+  }
+ }
+}

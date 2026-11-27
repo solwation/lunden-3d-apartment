@@ -1,0 +1,87 @@
+[
+  {
+    "path": "docs/verification/2369/README.md",
+    "bytes": 5226,
+    "sha256": "f709b74b0ddf3bedb13dbcddc32ed1fbf6fb0b5516ad2176b7a838d41853f54c"
+  },
+  {
+    "path": "docs/verification/2369/all-four-gate.log",
+    "bytes": 1152,
+    "sha256": "78cdad05397062d038b759d32812765bba790086d56b3bda13e3822620472f21"
+  },
+  {
+    "path": "docs/verification/2369/crop-stats.json",
+    "bytes": 2910,
+    "sha256": "1ca52901d0094a6c6fe756b64e0900df605f121098603c5e9f92d21bbc65d752"
+  },
+  {
+    "path": "docs/verification/2369/crops.json",
+    "bytes": 634,
+    "sha256": "ff89ffe382dd6d3162e5ae80060a4fe0f40b6aca56e21811c23eed1a1a1246b5"
+  },
+  {
+    "path": "docs/verification/2369/locked-capture-contract.json",
+    "bytes": 3592,
+    "sha256": "d3c89d4b9a50404ed629c5c54ce863ad1eca9b804249748a1b39abef1514abe8"
+  },
+  {
+    "path": "docs/verification/2369/native-outcome.json",
+    "bytes": 561,
+    "sha256": "b7c80f6c1bb6d3df44e48fe174d072e6e3ce0a8f06e3f42fab1e01794b2d1bf6"
+  },
+  {
+    "path": "docs/verification/2369/reference-proofs.json",
+    "bytes": 13927,
+    "sha256": "fa9b74d9cbc3755f2351a432917513f689c29d4d6af32080947f9abed193b66d"
+  },
+  {
+    "path": "docs/verification/2369/stairs-capture.json",
+    "bytes": 111312,
+    "sha256": "974b3a7b99d967a269b60459bfbb679e51a16a6402d564fbb9cecd6617484778"
+  },
+  {
+    "path": "docs/verification/2369/three-control-gate.json",
+    "bytes": 588,
+    "sha256": "771b02317e6f45caecf50e1c34442fbc5373c80f7ac6e6bee11be34c5b744885"
+  },
+  {
+    "path": "docs/verification/2369/unreal-living-room-day.png",
+    "bytes": 315909,
+    "sha256": "8da19a7a928d86ed291a6a173f1b04b1670c50cbaaa63993bcd0eb82822b0962"
+  },
+  {
+    "path": "docs/verification/2369/unreal-living-room-evening.png",
+    "bytes": 315909,
+    "sha256": "2e28b9b2f0151ede8e390ff6089b4d3ccc523093e3f479cdc263e634a69d6ceb"
+  },
+  {
+    "path": "docs/verification/2369/unreal-stairs-evening.png",
+    "bytes": 157982,
+    "sha256": "b068d333f4f426d7c0784225dc9db1fb0e7080ae01b60549082d98074b3432fe"
+  },
+  {
+    "path": "docs/verification/2369/unreal-upper-floor-evening.png",
+    "bytes": 225665,
+    "sha256": "d00cb8bb9751bb60c7293696c1cf942bd9e7c72198f778985aa727d58d0bcd2b"
+  },
+  {
+    "path": "docs/verification/2369/web-living-room-day.jpg",
+    "bytes": 67118,
+    "sha256": "be8023e5a4d1ba5cfb2d4f930273f6792c788658efd47dba6a6c153016af33ac"
+  },
+  {
+    "path": "docs/verification/2369/web-living-room-evening.jpg",
+    "bytes": 58390,
+    "sha256": "1a6d7cd06c97fbb1729662cece73490a808745d2511124f8dc0a987f0e810c0b"
+  },
+  {
+    "path": "docs/verification/2369/web-stairs-evening.jpg",
+    "bytes": 26312,
+    "sha256": "48dcb9b61e67c0d499f06d1d253d02251b4930a9bb567f138c6723ddf71574c5"
+  },
+  {
+    "path": "docs/verification/2369/web-upper-floor-evening.jpg",
+    "bytes": 31254,
+    "sha256": "16ed055836f8a6f6487ed1c6d99bfa45be5ceb9ecb2e53b5240c1692ebd7dbb8"
+  }
+]

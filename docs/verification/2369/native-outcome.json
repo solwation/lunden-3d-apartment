@@ -1,0 +1,18 @@
+{
+  "native": {
+    "engine": "5.8.4",
+    "profile": "linux-low",
+    "revision": "2788460c9347cc9c3daed39fb9ed3d2e4f8994f6",
+    "completed": true,
+    "passed": true,
+    "exitCode": 0,
+    "seconds": 325.74
+  },
+  "outerExitObserved": 143,
+  "invocationRecordInterrupted": true,
+  "all247ByteExactAndReadOnly": true,
+  "actualInitialLightFunctionQuality": 2,
+  "actualCaptureLightFunctionQuality": 1,
+  "actualAntiAliasingMethod": 1,
+  "profileCorrection": "FXAA method1, not historical AA0/off label; actual quality not recorded. No scene/image change."
+}

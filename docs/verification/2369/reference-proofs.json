@@ -1,0 +1,513 @@
+{
+  "atUtc": "2026-11-27T13:41:57.598898+00:00",
+  "webSourceCommit": "367c39694b2642dfc632d8dedb4129b0454cadec",
+  "workerScriptBase": "9ac6f6bbad81bb86a5229c15e3a2f8833df7b1b8",
+  "canonicalWebScriptSha256": "6ea061f4a9197a0d73aed717969c8862cd892fe172df48b98069c7bc4b911294",
+  "privateWebObserverSha256": "7b603c658d4f1f6fa2eee0d7b3169aadbbbf8c9d58249615e23b900ab3aabe9e",
+  "webActualState": {
+    "viewport": {
+      "width": 640,
+      "height": 360
+    },
+    "shots": [
+      {
+        "name": "stairs-evening",
+        "observedProfile": {
+          "width": 640,
+          "height": 360,
+          "verticalFov": 72,
+          "aspect": 1.7777777777777777,
+          "quality": 4,
+          "contextLost": false,
+          "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+        },
+        "eye": [
+          2.15,
+          1.62,
+          7.38
+        ],
+        "yaw": -83.00000000000001,
+        "pitch": 8,
+        "day": [
+          2026,
+          6,
+          21,
+          22,
+          true
+        ],
+        "daylight": 0.12452149711509822,
+        "overcast": 0,
+        "weather": "clear",
+        "sky": {
+          "procedural": [
+            1,
+            0.92,
+            0.16
+          ],
+          "deck": [
+            5199.563923320481,
+            0.345591365970904,
+            1200,
+            0
+          ],
+          "zenith": [
+            0.01151957608569467,
+            0.03002533982553678,
+            0.0900899772050625
+          ],
+          "horizon": [
+            0.3829792771225299,
+            0.2048589251484339,
+            0.1402020564988515
+          ]
+        },
+        "pool": [
+          {
+            "position": [
+              1.621,
+              1.15,
+              1.115
+            ],
+            "level": 0,
+            "share": 1
+          },
+          {
+            "position": [
+              2.8765815959741174,
+              2.75,
+              6.343044572250175
+            ],
+            "level": 0,
+            "share": 1
+          },
+          {
+            "position": [
+              1.1664383561643845,
+              2.75,
+              1.7513698630136967
+            ],
+            "level": 0,
+            "share": 1
+          }
+        ],
+        "dark": true,
+        "smallLampsOn": [
+          "golvlampan",
+          "spotsen",
+          "julgranen",
+          "l\u00e5nglampan",
+          "rottinglampan",
+          "Hue Go-lampan",
+          "lampan",
+          "nattlampan",
+          "nattlampan",
+          "garderobsspegeln",
+          "l\u00e4slampan",
+          "l\u00e4slampan",
+          "l\u00e4slampan",
+          "l\u00e4slampan",
+          "enh\u00f6rningslampan",
+          "d\u00f6dsstj\u00e4rnan",
+          "sminkspegeln",
+          "lampan i k\u00f6ksfl\u00e4kten",
+          "b\u00e4nkbelysningen",
+          "spegeln i toaletten",
+          "spegelns nattlampa"
+        ],
+        "forced": true,
+        "moon": {
+          "illum": 0.49308163661963944,
+          "elong": 1.5569591584776947,
+          "dir": [
+            0.14592293931718525,
+            0.3737070102152488,
+            0.9159964881466593
+          ]
+        },
+        "sun": [
+          -0.9835368767087977,
+          -0.022644218576034717,
+          0.17928316016565618
+        ]
+      },
+      {
+        "name": "living-room-evening",
+        "observedProfile": {
+          "width": 640,
+          "height": 360,
+          "verticalFov": 72,
+          "aspect": 1.7777777777777777,
+          "quality": 4,
+          "contextLost": false,
+          "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+        },
+        "eye": [
+          2.5,
+          1.62,
+          8.2
+        ],
+        "yaw": 173,
+        "pitch": -4,
+        "day": [
+          2026,
+          6,
+          21,
+          22,
+          true
+        ],
+        "daylight": 0.12452149711509822,
+        "overcast": 0,
+        "weather": "clear",
+        "sky": {
+          "procedural": [
+            1,
+            0.92,
+            0.16
+          ],
+          "deck": [
+            5199.501626647299,
+            0.39496159291957156,
+            1200,
+            0
+          ],
+          "zenith": [
+            0.01151957608569467,
+            0.03002533982553678,
+            0.0900899772050625
+          ],
+          "horizon": [
+            0.3829792771225299,
+            0.2048589251484339,
+            0.1402020564988515
+          ]
+        },
+        "pool": [
+          {
+            "position": [
+              0.9920000000000001,
+              1.92,
+              10.55
+            ],
+            "level": 0,
+            "share": 1
+          },
+          {
+            "position": [
+              5.191,
+              1,
+              8.164
+            ],
+            "level": 0,
+            "share": 1
+          },
+          {
+            "position": [
+              4.55,
+              0.94,
+              12.3
+            ],
+            "level": 0,
+            "share": 1
+          },
+          {
+            "position": [
+              0.5904766127539817,
+              1.3,
+              8.596598156852593
+            ],
+            "level": 0,
+            "share": 1
+          }
+        ],
+        "dark": true,
+        "smallLampsOn": [
+          "golvlampan",
+          "spotsen",
+          "julgranen",
+          "l\u00e5nglampan",
+          "rottinglampan",
+          "Hue Go-lampan",
+          "lampan",
+          "nattlampan",
+          "nattlampan",
+          "garderobsspegeln",
+          "l\u00e4slampan",
+          "l\u00e4slampan",
+          "l\u00e4slampan",
+          "l\u00e4slampan",
+          "enh\u00f6rningslampan",
+          "d\u00f6dsstj\u00e4rnan",
+          "sminkspegeln",
+          "lampan i k\u00f6ksfl\u00e4kten",
+          "b\u00e4nkbelysningen",
+          "spegeln i toaletten",
+          "spegelns nattlampa"
+        ],
+        "forced": true,
+        "moon": {
+          "illum": 0.49308163661963944,
+          "elong": 1.5569591584776947,
+          "dir": [
+            0.14592293931718525,
+            0.3737070102152488,
+            0.9159964881466593
+          ]
+        },
+        "sun": [
+          -0.9835368767087977,
+          -0.022644218576034717,
+          0.17928316016565618
+        ],
+        "curtains": [
+          {
+            "id": "f-curtain-bedroom1",
+            "lit": true,
+            "emission": [
+              0.09750405725090197,
+              0.06287236707488679,
+              0.03132798065958318
+            ]
+          },
+          {
+            "id": "f-curtain-bedroom2",
+            "lit": true,
+            "emission": [
+              0.08440335618552608,
+              0.04612055478867386,
+              0.018583401838208807
+            ]
+          },
+          {
+            "id": "f-curtain-bedroom3",
+            "lit": true,
+            "emission": [
+              0.14498288464318418,
+              0.08988387780928045,
+              0.05541690826716884
+            ]
+          },
+          {
+            "id": "f-curtain-bedroom4",
+            "lit": true,
+            "emission": [
+              0.08517668829860096,
+              0.04592542634940541,
+              0.018170276062873813
+            ]
+          },
+          {
+            "id": "f-curtain-kitchen",
+            "lit": true,
+            "emission": [
+              0.13071530601171016,
+              0.08524701079792064,
+              0.04970451881127742
+            ]
+          },
+          {
+            "id": "f-curtain-living-room",
+            "lit": true,
+            "emission": [
+              0.12755936910155471,
+              0.0833494000458787,
+              0.04881660818045229
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "webArtifactProof": {
+    "web-living-room-evening.jpg": {
+      "sha256": "1a6d7cd06c97fbb1729662cece73490a808745d2511124f8dc0a987f0e810c0b",
+      "bytes": 58390,
+      "dimensions": [
+        640,
+        360
+      ],
+      "unmodifiedOriginal": true
+    },
+    "web-upper-floor-evening.jpg": {
+      "sha256": "16ed055836f8a6f6487ed1c6d99bfa45be5ceb9ecb2e53b5240c1692ebd7dbb8",
+      "bytes": 31254,
+      "dimensions": [
+        640,
+        360
+      ],
+      "unmodifiedOriginal": true
+    },
+    "web-stairs-evening.jpg": {
+      "sha256": "48dcb9b61e67c0d499f06d1d253d02251b4930a9bb567f138c6723ddf71574c5",
+      "bytes": 26312,
+      "dimensions": [
+        640,
+        360
+      ],
+      "unmodifiedOriginal": true
+    },
+    "web-living-room-day.jpg": {
+      "sha256": "be8023e5a4d1ba5cfb2d4f930273f6792c788658efd47dba6a6c153016af33ac",
+      "bytes": 67118,
+      "dimensions": [
+        640,
+        360
+      ],
+      "unmodifiedOriginal": true
+    }
+  },
+  "nativeThreeReuse": {
+    "living-room-day": {
+      "original": "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/native-before/unreal-living-room-day.png",
+      "sha256": "8da19a7a928d86ed291a6a173f1b04b1670c50cbaaa63993bcd0eb82822b0962",
+      "actualCamera": {
+        "xyz": [
+          250.0,
+          819.9999999999999,
+          162.0
+        ],
+        "yaw": 96.99999999999999,
+        "pitch": -4.0,
+        "roll": 3.9854015897965574e-16,
+        "horizontalFov": 104.50486755371094,
+        "width": 640,
+        "height": 360,
+        "separateTranslucencyShowFlag": true,
+        "privateBlendableAttached": false
+      },
+      "actualRuntime": {
+        "WindowSkyStrength": 1.5,
+        "WindowSunStrength": 3.0,
+        "WindowAmbientFill": 1.058500051498413,
+        "Daylight": 1.0,
+        "SunDirNative": [
+          0.32902491092681885,
+          0.4451923966407776,
+          0.8327943086624146
+        ],
+        "SunDirWeb": [
+          0.32902491092681885,
+          0.8327943086624146,
+          0.4451923966407776
+        ],
+        "actualAmbient": {
+          "cube": "/Game/Lunden/Lighting/T_LundenHemisphere.T_LundenHemisphere",
+          "intensity": 2.1010000705718994,
+          "blendWeight": 0.5038077235221863,
+          "effectiveFill": 1.0585000626747814,
+          "tint": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "expectedNativeFill": 1.0585
+      },
+      "exposureBias": -1.96503746509552
+    },
+    "living-room-evening": {
+      "original": "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/native-before/unreal-living-room-evening.png",
+      "sha256": "2e28b9b2f0151ede8e390ff6089b4d3ccc523093e3f479cdc263e634a69d6ceb",
+      "actualCamera": {
+        "xyz": [
+          250.0,
+          819.9999999999999,
+          162.0
+        ],
+        "yaw": 96.99999999999999,
+        "pitch": -4.0,
+        "roll": 3.9854015897965574e-16,
+        "horizontalFov": 104.50486755371094,
+        "width": 640,
+        "height": 360,
+        "separateTranslucencyShowFlag": true,
+        "privateBlendableAttached": false
+      },
+      "actualRuntime": {
+        "WindowSkyStrength": 0.24129019677639008,
+        "WindowSunStrength": 0.1486421674489975,
+        "WindowAmbientFill": 0.15501858294010162,
+        "Daylight": 0.12452149391174316,
+        "SunDirNative": [
+          -0.9835368990898132,
+          0.17928315699100494,
+          -0.022644218057394028
+        ],
+        "SunDirWeb": [
+          -0.9835368990898132,
+          -0.022644218057394028,
+          0.17928315699100494
+        ],
+        "actualAmbient": {
+          "cube": "/Game/Lunden/Lighting/T_LundenHemisphere.T_LundenHemisphere",
+          "intensity": 2.1010000705718994,
+          "blendWeight": 0.07378324121236801,
+          "effectiveFill": 0.15501859499420867,
+          "tint": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "expectedNativeFill": 0.15501858673922944
+      },
+      "exposureBias": -2.462862008455037
+    },
+    "upper-floor-evening": {
+      "original": "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/native-before/unreal-upper-floor-evening.png",
+      "sha256": "d00cb8bb9751bb60c7293696c1cf942bd9e7c72198f778985aa727d58d0bcd2b",
+      "actualCamera": {
+        "xyz": [
+          175.0,
+          795.0,
+          487.0
+        ],
+        "yaw": 99.99999999999997,
+        "pitch": -3.0000000000000004,
+        "roll": -0.0,
+        "horizontalFov": 104.50486755371094,
+        "width": 640,
+        "height": 360,
+        "separateTranslucencyShowFlag": true,
+        "privateBlendableAttached": false
+      },
+      "actualRuntime": {
+        "WindowSkyStrength": 0.24129019677639008,
+        "WindowSunStrength": 0.1486421674489975,
+        "WindowAmbientFill": 0.15501858294010162,
+        "Daylight": 0.12452149391174316,
+        "SunDirNative": [
+          -0.9835368990898132,
+          0.17928315699100494,
+          -0.022644218057394028
+        ],
+        "SunDirWeb": [
+          -0.9835368990898132,
+          -0.022644218057394028,
+          0.17928315699100494
+        ],
+        "actualAmbient": {
+          "cube": "/Game/Lunden/Lighting/T_LundenHemisphere.T_LundenHemisphere",
+          "intensity": 2.1010000705718994,
+          "blendWeight": 0.07378324121236801,
+          "effectiveFill": 0.15501859499420867,
+          "tint": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "expectedNativeFill": 0.15501858673922944
+      },
+      "exposureBias": -2.462862008455037
+    }
+  },
+  "reuseNativeCaptureSha256": "9a97d01f956a7a9446d9cee937c0936c3625487b2a64102c7aad9c87a8cebdaf",
+  "browserExecution": {
+    "outerExit": 0,
+    "actualNodeExit": "canonical command returned0 through existing browsertest wrapper; no interrupted parent this run",
+    "normalOutputs": true,
+    "ownedNodePidGone": 3571718,
+    "pageErrorMessagesObserved": []
+  },
+  "sourceBehaviorParity": "root server367 to worker9ac differs src/patio metadata/equal-valued constants only; independent source-parity proof inherited from S/2322-final/upper/source-parity-to-9ac.diff"
+}

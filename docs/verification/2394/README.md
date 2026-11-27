@@ -43,7 +43,7 @@ All 247 authored packages stayed exact/read-only throughout. See `incremental-sy
 ## Limits and remaining differences
 
 Linux llvmpipe/Vulkan, SM5, ordinary 1024-pixel shadows/three cascades, no Lumen/Nanite/ray tracing/reflections,
-AA off. Grain, aliasing and the diagnostic shadow profile are intentional deviations; this does not prove the full
+FXAA method1 (actual AA quality was not recorded). Grain, aliasing and the diagnostic shadow profile are intentional deviations; this does not prove the full
 Windows rendering profile. The actual SceneCapture SeparateTranslucency flag is enabled (#2476).
 Static exported door/blind/curtain poses only; live changes remain #2332. Seasonal visibility uses native predicates,
 without invoking physics/collision APIs (#2475); no gameplay, PIE, collision or packaging pass is claimed.
@@ -57,3 +57,5 @@ Original Unreal-only implementation; no public downstream transfer. The web colo
 without changing web rendering. Result images follow the repository's 30-day retention policy; text metadata remains.
 
 [Published result comparison and pinned before/web/after images](https://github.com/solwation/lunden-3d-apartment/issues/2394#issuecomment-7219006551).
+
+Profile correction from #2369: the shared Linux ini requests `r.AntiAliasingMethod=1`; its actual current value is1. Earlier AA0/off labels are inaccurate. Raw historical evidence is unchanged.

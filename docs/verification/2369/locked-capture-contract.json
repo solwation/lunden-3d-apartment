@@ -1,0 +1,156 @@
+{
+  "lockedAtUtc": "2026-11-27T13:34:38.672000+00:00",
+  "acceptance": "All four current full-frame native/web mean linear Rec709 luminance ratios inclusive0.8\u20131.25; smaller stair crops diagnostic, never replace fullframe gate. No posthoc crop/pose/state adjustments.",
+  "viewport": [
+    640,
+    360
+  ],
+  "verticalFovDeg": 72,
+  "horizontalFovDeg": 104.504864443922,
+  "shots": [
+    {
+      "name": "stairs-evening",
+      "camera": "stairs",
+      "date": [
+        2026,
+        6,
+        21
+      ],
+      "hour": 22,
+      "lamps": "all",
+      "weather": "clear"
+    },
+    {
+      "name": "living-room-day",
+      "camera": "living-room",
+      "date": [
+        2026,
+        6,
+        21
+      ],
+      "hour": 14,
+      "lamps": "none",
+      "weather": "clear"
+    },
+    {
+      "name": "living-room-evening",
+      "camera": "living-room",
+      "date": [
+        2026,
+        6,
+        21
+      ],
+      "hour": 22,
+      "lamps": "all",
+      "weather": "clear"
+    },
+    {
+      "name": "upper-floor-evening",
+      "camera": "upper-floor",
+      "date": [
+        2026,
+        6,
+        21
+      ],
+      "hour": 22,
+      "lamps": "all",
+      "weather": "clear"
+    }
+  ],
+  "cameras": {
+    "living-room": {
+      "id": "living-room",
+      "subject": "Living room towards the patio",
+      "x": 2.5,
+      "z": 8.2,
+      "feetY": 0,
+      "yawDeg": 173,
+      "pitchDeg": -4,
+      "lighting": "day"
+    },
+    "stairs": {
+      "id": "stairs",
+      "subject": "Staircase from the entrance floor",
+      "x": 2.15,
+      "z": 7.38,
+      "feetY": 0,
+      "yawDeg": -83,
+      "pitchDeg": 8,
+      "lighting": "evening"
+    },
+    "upper-floor": {
+      "id": "upper-floor",
+      "subject": "Upper floor facing the south window, bed and desk",
+      "x": 1.75,
+      "z": 7.95,
+      "feetY": 3.25,
+      "yawDeg": 170,
+      "pitchDeg": -3,
+      "lighting": "evening"
+    }
+  },
+  "crops": {
+    "stairs-evening": {
+      "frame": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "shaft-wall": [
+        0.37,
+        0.22,
+        0.43,
+        0.46
+      ],
+      "riser": [
+        0.455,
+        0.875,
+        0.54,
+        0.92
+      ],
+      "tread": [
+        0.46,
+        0.84,
+        0.53,
+        0.853
+      ],
+      "hall-door": [
+        0.12,
+        0.07,
+        0.29,
+        0.24
+      ]
+    },
+    "living-room-day": {
+      "frame": [
+        0,
+        0,
+        1,
+        1
+      ]
+    },
+    "living-room-evening": {
+      "frame": [
+        0,
+        0,
+        1,
+        1
+      ]
+    },
+    "upper-floor-evening": {
+      "frame": [
+        0,
+        0,
+        1,
+        1
+      ]
+    }
+  },
+  "profile": "Same delivered2394 Linux CPU Vulkan, ShadowQuality3/1024/3cascades, SeparateTranslucency1, AA0, Lumen/Naniteoff. Explicit authorized diagnostic profile; no full Windows profile or physicalW11 claim.",
+  "nativeReuse": "Three native-before2322 originals, native278/asset367/importc6, native+outer0/383.03s; current matched poses checked. Only stairs requires new render.",
+  "nativeReuseCaptureSha256": "9a97d01f956a7a9446d9cee937c0936c3625487b2a64102c7aad9c87a8cebdaf",
+  "sourceBase": "9ac6f6bbad81bb86a5229c15e3a2f8833df7b1b8",
+  "sourceBehaviorParity": "Servercodex2394clean367;367->9ac only parasolmetadata/equal-valued constants, no stairs/camera/lighting/furnishing behavior change.",
+  "nativeFullImageReview": "All four raw full images must be reviewed and every visible difference mapped to OPEN issue or explicitly documented intended profile deviation; no closed issue as coverage."
+}
