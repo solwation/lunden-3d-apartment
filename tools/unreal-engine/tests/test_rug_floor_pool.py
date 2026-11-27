@@ -66,9 +66,11 @@ try:
         # Every effective existing parameter survives the complete copied inheritance chain.
         for kind, names in (("scalar", "get_scalar_parameter_names"), ("vector", "get_vector_parameter_names"),
                             ("texture", "get_texture_parameter_names"), ("static_switch", "get_static_switch_parameter_names")):
-            getter = getattr(u.MaterialEditingLibrary, "get_material_instance_" + kind + "_parameter_value")
             for name in getattr(u.MaterialEditingLibrary, names)(original):
-                assert getter(copied, name) == getter(original, name), (kind, name)
+                # Never retain a bound Unreal method in this module's cyclic test
+                # globals: UE 5.8.4's closure weakref slot crashes Python GC (#2401).
+                assert (getattr(u.MaterialEditingLibrary, "get_material_instance_" + kind + "_parameter_value")(copied, name)
+                        == getattr(u.MaterialEditingLibrary, "get_material_instance_" + kind + "_parameter_value")(original, name)), (kind, name)
                 parameter_checks += 1
         a, b = copied, original
         while isinstance(b, u.MaterialInstanceConstant):
