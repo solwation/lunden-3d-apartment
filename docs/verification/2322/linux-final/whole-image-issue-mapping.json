@@ -1,0 +1,37 @@
+{
+  "verifiedOpenAtUtc": "2026-11-27T15:43:20Z",
+  "imageComment": "https://github.com/solwation/lunden-3d-apartment/issues/2322#issuecomment-7222408587",
+  "openIssues": {
+    "2372": "LEFTwallform",
+    "2447": "sofalocalyellowsplash",
+    "2459": "glass/translucency",
+    "2460": "emissiveshades/domelamp",
+    "2481": "camera-facinghalos/upperceilingfield",
+    "2482": "reflectedcopper",
+    "2484": "highbarewallaboveBESTA",
+    "2486": "Tillyoriginalwoodcolour",
+    "2487": "woodfloorprickraster",
+    "2488": "livingwindowexteriorat22"
+  },
+  "removedSupersededBeforeOrFailedStrategyImages": [
+    "docs/verification/2322/before/rug-depth/reference-pool-off.png",
+    "docs/verification/2322/before/rug-depth/near-pool-on.png",
+    "docs/verification/2322/before/rug-depth/far-pool-on.png",
+    "docs/verification/2322/before/rug-depth/far-pool-off.png",
+    "docs/verification/2322/before/rug-depth/reference-pool-on.png",
+    "docs/verification/2322/before/rug-depth/near-pool-off.png",
+    "docs/verification/2322/rug-depth-linux/reference-pool-off.png",
+    "docs/verification/2322/rug-depth-linux/near-pool-on.png",
+    "docs/verification/2322/rug-depth-linux/far-pool-on.png",
+    "docs/verification/2322/rug-depth-linux/far-pool-off.png",
+    "docs/verification/2322/rug-depth-linux/reference-pool-on.png",
+    "docs/verification/2322/rug-depth-linux/near-pool-off.png",
+    "docs/verification/2322/linux-material-profile/web-living-room-evening.jpg",
+    "docs/verification/2322/linux-material-profile/unreal-living-room-day.png",
+    "docs/verification/2322/linux-material-profile/web-upper-floor-evening.jpg",
+    "docs/verification/2322/linux-material-profile/web-living-room-day.jpg",
+    "docs/verification/2322/linux-material-profile/unreal-upper-floor-evening.png",
+    "docs/verification/2322/linux-material-profile/unreal-living-room-evening.png"
+  ],
+  "retained": "Alltext/rawhashes/JSON/history and old successful Windows result images; new final result images stay under30daypolicy; nohistoryrewrite"
+}

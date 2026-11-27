@@ -1,3 +1,9 @@
+## Slutverifiering i Linuxprofil, 2026-11-27
+
+[Godkänt slutresultat med sex råbilder, alla14 fält och källutredning](linux-final/README.md). Bildkommentar: [pinnade slutbilder före stängning](https://github.com/solwation/lunden-3d-apartment/issues/2322#issuecomment-7222408587). Källa `c1de028d`, native0/324.88s, alla247 authored-paket SHA-/mode-exakta och skrivskyddade. Windows/fullprofil är inte omtestad. Koppar, glas, övriga ljusfält och helbildens separata skillnader har öppna uppföljningar angivna i slutresultatet.
+
+Äldre Windows-/Linuxprov nedan är historiska delresultat, inte bevis för den senare källans fulla färgacceptans. Ersatta fel-/förebilder finns kvar via sina commitpinnade historiska länkar.
+
 # Gardinernas genomlysning i L1007
 
 Webbens ordinarie kameror visar det gröna bladtrycket i vardagsrummet vid kl. 14 och 22 och det mörklila, flerfärgade trycket på övre plan kl. 22. Bilderna är beskärningar av 1440 × 810 pixlar från samma klara junidag. Kvällsprovet tänder rumslamporna. Det sparade kameraunderlaget innehåller även rummets ljusläge och den linjära emissionsfärgen för vart och ett av de sex tygerna. [Kameror och materialprov](web-capture.json)
@@ -136,9 +142,9 @@ synlighet och ocklusion, men accepterar inte Windows-/webbkulör.
 
 | Avstånd | Fält på | Fält av | Bildskillnad |
 |---|---|---|---|
-| Nära | [På](before/rug-depth/near-pool-on.png) | [Av](before/rug-depth/near-pool-off.png) | 75 401 pixlar med kanalskillnad över 2; största skillnad 30/255. |
-| Referens | [På](before/rug-depth/reference-pool-on.png) | [Av](before/rug-depth/reference-pool-off.png) | Samtliga avkodade pixlar identiska. |
-| Fjärran | [På](before/rug-depth/far-pool-on.png) | [Av](before/rug-depth/far-pool-off.png) | 15 600 pixlar med kanalskillnad över 2; största skillnad 29/255. |
+| Nära | [På](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/80ca701ab688e87eee316839ff9f288773840f86/docs/verification/2322/before/rug-depth/near-pool-on.png) | [Av](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/80ca701ab688e87eee316839ff9f288773840f86/docs/verification/2322/before/rug-depth/near-pool-off.png) | 75 401 pixlar med kanalskillnad över 2; största skillnad 30/255. |
+| Referens | [På](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/80ca701ab688e87eee316839ff9f288773840f86/docs/verification/2322/before/rug-depth/reference-pool-on.png) | [Av](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/80ca701ab688e87eee316839ff9f288773840f86/docs/verification/2322/before/rug-depth/reference-pool-off.png) | Samtliga avkodade pixlar identiska. |
+| Fjärran | [På](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/80ca701ab688e87eee316839ff9f288773840f86/docs/verification/2322/before/rug-depth/far-pool-on.png) | [Av](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/80ca701ab688e87eee316839ff9f288773840f86/docs/verification/2322/before/rug-depth/far-pool-off.png) | 15 600 pixlar med kanalskillnad över 2; största skillnad 29/255. |
 
 Soffans och bordets inre bildytor dolde bidraget i nära/fjärran vy. Däremot försvann hela bidraget i referensvyn.
 En efterföljande strålmätning mot den verkliga exporterade GLB-geometrin fann 215 oblockerade provpunkter med
@@ -170,9 +176,9 @@ Fältets materialfade växlades mellan exakt 1 och 0; mattan, källampans övrig
 
 | Avstånd | Fält på | Fält av | Bildskillnad |
 |---|---|---|---|
-| Nära | [På](rug-depth-linux/near-pool-on.png) | [Av](rug-depth-linux/near-pool-off.png) | 84 274 pixlar över 2/255; största kanalskillnad 29/255. |
-| Referens | [På](rug-depth-linux/reference-pool-on.png) | [Av](rug-depth-linux/reference-pool-off.png) | 30 140 pixlar över 2/255; största kanalskillnad 27/255. |
-| Fjärran | [På](rug-depth-linux/far-pool-on.png) | [Av](rug-depth-linux/far-pool-off.png) | 21 449 pixlar över 2/255; största kanalskillnad 29/255. |
+| Nära | [På](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/34ecd5d4c1b4b818d0e58b5bf5c9a946dec91238/docs/verification/2322/rug-depth-linux/near-pool-on.png) | [Av](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/34ecd5d4c1b4b818d0e58b5bf5c9a946dec91238/docs/verification/2322/rug-depth-linux/near-pool-off.png) | 84 274 pixlar över 2/255; största kanalskillnad 29/255. |
+| Referens | [På](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/34ecd5d4c1b4b818d0e58b5bf5c9a946dec91238/docs/verification/2322/rug-depth-linux/reference-pool-on.png) | [Av](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/34ecd5d4c1b4b818d0e58b5bf5c9a946dec91238/docs/verification/2322/rug-depth-linux/reference-pool-off.png) | 30 140 pixlar över 2/255; största kanalskillnad 27/255. |
+| Fjärran | [På](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/34ecd5d4c1b4b818d0e58b5bf5c9a946dec91238/docs/verification/2322/rug-depth-linux/far-pool-on.png) | [Av](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/34ecd5d4c1b4b818d0e58b5bf5c9a946dec91238/docs/verification/2322/rug-depth-linux/far-pool-off.png) | 21 449 pixlar över 2/255; största kanalskillnad 29/255. |
 
 Referensvyn visar nu bidraget även vid den tidigare oblockerade provpunkten runt pixel (251, 160), där skillnaden
 är 5/255. Alla sex bilder granskades visuellt: fältet följer originalmattan utan en separat höjd eller kontur.
