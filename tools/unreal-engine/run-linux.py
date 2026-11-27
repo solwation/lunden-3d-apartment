@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """#2467: opt-in Linux development runner; Windows delivery keeps its own scripts/profile.
 
-Local settings: ~/.config/lunden-unreal/linux.json (engineRoot, dataDir, optional vulkanIcd/libraryPath).
+Local settings: ~/.config/lunden-unreal/linux.json (engineRoot, dataDir, optional vulkanIcd/libraryPath/allowCpuDevice).
 Use `check`, `python SCRIPT [ARGS...]`, or `tests [FILTER]`. Rendering requires --render.
 """
 import argparse
@@ -154,7 +154,7 @@ def main(argv=None):
                "-NoCrashDialog", f"-abslog={log}"]
     command += (["-vulkan", "-sm5", "-AllowCommandletRendering", "-RenderOffscreen", "-ResX=640", "-ResY=360", "-windowed"]
                 if args.render else ["-nullrhi"])
-    if args.allow_cpu_device:
+    if args.render and (args.allow_cpu_device or settings.get("allowCpuDevice", False)):
         command.append("-AllowCPUDevices")
     if args.mode == "python":
         script = args.script.resolve()
