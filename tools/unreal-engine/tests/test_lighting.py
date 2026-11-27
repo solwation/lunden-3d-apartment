@@ -226,7 +226,7 @@ def sun_roles(sun, atmosphere):
     expected = {"atmosphere_sun_light": True, "atmosphere_sun_light_index": 0, "affects_world": True,
                 "diffuse_scale": 0.0, "specular_scale": 0.0, "affect_translucent_lighting": False,
                 "affect_global_illumination": False, "affect_reflection": False, "indirect_lighting_intensity": 0.0,
-                "volumetric_scattering_intensity": 1.0, "cast_shadows": False, "cast_volumetric_shadow": False,
+                "volumetric_scattering_intensity": 0.0, "cast_shadows": False, "cast_volumetric_shadow": False,
                 "cast_shadows_on_clouds": False, "cast_shadows_on_atmosphere": False, "cast_cloud_shadows": False}
     actual = {key: atmosphere.get_editor_property(key) for key in expected}
     if actual != expected:
@@ -235,8 +235,10 @@ def sun_roles(sun, atmosphere):
     actual["lightingChannels"] = [channels.channel0, channels.channel1, channels.channel2]
     if any(actual["lightingChannels"]):
         raise RuntimeError("Atmosphere-only Sun has surface lighting channels")
-    if sun.get_editor_property("atmosphere_sun_light") or sun.get_editor_property("volumetric_scattering_intensity") != 0:
-        raise RuntimeError("Source surface Sun acquired extra atmosphere transmission or duplicate fog scattering")
+    if sun.get_editor_property("atmosphere_sun_light") or sun.get_editor_property("volumetric_scattering_intensity") != 1:
+        raise RuntimeError("Source surface Sun acquired extra atmosphere transmission or lost its original fog scattering")
+    if not sun.get_editor_property("cast_volumetric_shadow") or not sun.get_editor_property("cast_shadows"):
+        raise RuntimeError("Source Sun lost its original volumetric/physical shadow role")
     colour = atmosphere.get_light_color()
     direct_colour = sun.get_light_color()
     actual["linearRGB"] = [colour.r, colour.g, colour.b]

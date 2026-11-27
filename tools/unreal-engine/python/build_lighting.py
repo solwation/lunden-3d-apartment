@@ -1068,13 +1068,15 @@ def build_sky(spec, mpc, precip, clouds, tonemap, window_material):
         c.set_editor_property("cast_shadows", name != "SunAtmosphere")
     # #2398: the web already supplies the surface Sun tint. Its direct light
     # bypasses atmosphere transmission; the original atmosphere/fog illumination
-    # remains on a separate component with no surface, GI, reflection or shadow contribution.
-    comps["Sun"].set_editor_property("volumetric_scattering_intensity", 0.0)
+    # remains on a separate visual component with no surface/GI/reflection/shadow contribution.
+    # Volumetric fog uses the selected physical forward light, so retain the original
+    # Sun scattering/shadow role; the visual proxy only supplies sky and ordinary height fog.
+    comps["Sun"].set_editor_property("volumetric_scattering_intensity", 1.0)
     atmosphere_sun = comps["SunAtmosphere"]
     for prop, value in (("affects_world", True), ("diffuse_scale", 0.0), ("specular_scale", 0.0),
                         ("affect_translucent_lighting", False), ("affect_global_illumination", False),
                         ("affect_reflection", False), ("indirect_lighting_intensity", 0.0),
-                        ("volumetric_scattering_intensity", 1.0), ("cast_volumetric_shadow", False),
+                        ("volumetric_scattering_intensity", 0.0), ("cast_volumetric_shadow", False),
                         ("cast_shadows_on_clouds", False), ("cast_shadows_on_atmosphere", False),
                         ("cast_cloud_shadows", False)):
         atmosphere_sun.set_editor_property(prop, value)
