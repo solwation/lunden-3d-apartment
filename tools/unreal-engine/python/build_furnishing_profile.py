@@ -17,12 +17,14 @@ STAMP = 'Lunden.FurnishingProfile'
 # Initial bounded guesses from the locked #2322 before batch at lighting2788460c.
 # Blue-grey native environment highlights are absent on the web's unprobed wood.
 # Setting SpecularFactor=0 also drops direct glints: an explicit approximation.
+# The locked sofa crop hits the solid a7b39a frame, not the textured cushions.
+# Retired textured-cushion guesses are restored by the owned-child guard below.
 PROFILES = {
     'wood': {'rgb': [1.34, 1.27, 1.15], 'specular': 0.0,
              'keys': [r'^std_c69c6d_r50_m0_tex_', r'^std_b06a32_r50_m0_tex_',
                       r'^std_c07a3e_r60_m0$', r'^std_c0a47c_r70_m0_tex_']},
-    'upholstery': {'rgb': [1.0, 1.0, .84], 'specular': None,
-                   'keys': [r'^std_ffffff_r96_m0_vc_tex_']},
+    'sofa-frame': {'rgb': [1.30, 1.22, 1.04], 'specular': None,
+                   'keys': [r'^std_a7b39a_r95_m0$']},
 }
 ASSUMPTION = ('guess: per-material profile calibration against fixed #2322 day/evening views; '
               'not an sRGB/UV/vertex-color correction. Wood specular suppression approximates '
@@ -107,8 +109,8 @@ def main():
                 comp.set_material(index, materials[key])
                 changed = True
             counts[name] = counts.get(name, 0)+1
-    if not counts.get('wood') or not counts.get('upholstery'):
-        raise RuntimeError('Actual L1007 wood/upholstery profile receivers are missing')
+    if not counts.get('wood') or not counts.get('sofa-frame'):
+        raise RuntimeError('Actual L1007 wood/solid-sofa-frame profile receivers are missing')
     if changed and not u.EditorLoadingAndSavingUtils.save_map(world, LEVEL):
         raise RuntimeError('Could not save Generated furnishing profile assignments')
     u.log(f'LUNDEN_FURNISHING_PROFILE_OK guesses={counts}, changed={changed}')

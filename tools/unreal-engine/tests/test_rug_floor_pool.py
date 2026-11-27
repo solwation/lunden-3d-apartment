@@ -185,6 +185,10 @@ def current_display_pools():
                 continue
             profile = next((p for p in furnishing.PROFILES.values() if any(re.search(pattern, original.get_name()) for pattern in p['keys'])), None)
             if profile is None:
+                actual = comp.get_material(index)
+                assert not (actual and actual.get_path_name().startswith(furnishing.DIR+'/')
+                            and u.EditorAssetLibrary.get_metadata_tag(actual, furnishing.STAMP)
+                            and u.EditorAssetLibrary.get_metadata_tag(actual, 'Lunden.Source') == original.get_path_name()), 'retired own furnishing profile must be restored'
                 continue
             calibrated = comp.get_material(index)
             assert isinstance(calibrated, u.MaterialInstanceConstant)
@@ -200,7 +204,7 @@ def current_display_pools():
                     assert (getattr(u.MaterialEditingLibrary, 'get_material_instance_'+kind+'_parameter_value')(calibrated, name)
                             == getattr(u.MaterialEditingLibrary, 'get_material_instance_'+kind+'_parameter_value')(original, name)), (calibrated.get_path_name(),kind,name)
             assert calibrated.get_blend_mode() == original.get_blend_mode()
-    assert len(checked) >= 2, 'missing actual wood and upholstery profile instances'
+    assert len(checked) >= 2, 'missing actual wood and solid-sofa-frame profile instances'
     mpc = u.load_asset(display.MPC)
     weather = u.load_asset('/Game/Lunden/Lighting/MPC_LundenWeather')
     saved_power = u.MaterialLibrary.get_scalar_parameter_value(world, weather, 'PowerAvailable')

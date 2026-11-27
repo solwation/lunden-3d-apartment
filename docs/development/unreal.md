@@ -1592,21 +1592,24 @@ the export and the pictures section of `notices.mjs`.
   imported materials. The candidate wood factor is (1.34, 1.27, 1.15), with `SpecularFactor=0`; removing native
   environment highlights also removes legitimate direct glints. It covers the oak table and named teak/trim keys.
   Tilly's desktop has been retired from that shared guess; rebuilding restores only this builder's tagged child
-  to its original StaticMesh material, leaving other builders' overrides intact. The upholstery candidate is
-  (1, 1, 0.84), with original specular inherited. Every other effective scalar/vector/texture/static-switch value
+  to its original StaticMesh material, leaving other builders' overrides intact. The solid sofa-frame candidate is
+  (1.30, 1.22, 1.04), with original specular inherited. Actual source raycasts show that the locked sofa crop
+  hits `std_a7b39a_r95_m0`; the earlier textured-cushion calibration could not affect that field and is retired
+  with the same guarded restoration. Every other effective scalar/vector/texture/static-switch value
   remains inherited; metadata records the source and assumption. A successful parameter readback is not itself
   a rendered response or colour acceptance.
 
   `build_curtains.py` changes only each room's real panel MIDs through its existing controller. It reads actual
   `Daylight` and `DuskLight`, gates lamp emission at `PowerAvailable > 0.5`, and checks visible room lamps' `IsOn`.
   Candidate native-unit gains are `DAY_GAIN=(19.32,17.41,15.04)`, `LAMP_GAIN=(13.37,16.89,24.68)` and the separate
-  violet evening gain `(72.75,67.27,140.80)`. The living-room print supplies the common reference; four other
-  fabrics use an unmeasured shared conversion. These values remain candidates while the upper violet crop is
-  unresolved. Warm Blueprint rebuilds retire the old caller before replacing its visibility-library function,
+  violet evening gain `(80,130,180)`. The living-room print supplies the common reference; four other
+  fabrics use an unmeasured shared conversion. The violet gain was selected from five actual fixed-pose trials;
+  final full-batch colour acceptance remains separate from that diagnostic selection. Warm Blueprint rebuilds
+  retire the old caller before replacing its visibility-library function,
   avoiding a transient missing-function compiler error. Capture scripts refresh the real room controllers.
 
   The cabinet retains five actual non-colliding wash planes, original mask/UVs and source owner. Its radiance
-  `(4.9,3.3,2.35)`, edge exponent 0.55 and point multiplier 3.65 are separate guesses, not source-derived units.
+  `(7.35,4.95,3.525)`, edge exponent 0.55 and point multiplier 3.65 are separate guesses, not source-derived units.
   The four walnut leaves use a local Generated child with zero specular. The existing first wash controller
   interpolates original-base-colour factors between day `(1.265,1.259,1.267)` and night `(0.755,0.560,0.155)` using
   actual MPC `Daylight`, updating only those four MIDs independently of the lamp-fade cache. This day/night
