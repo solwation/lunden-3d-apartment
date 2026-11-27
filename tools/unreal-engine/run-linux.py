@@ -6,6 +6,7 @@ Use `check`, `python SCRIPT [ARGS...]`, or `tests [FILTER]`. Rendering requires 
 """
 import argparse
 import contextlib
+import ctypes
 import datetime
 import hashlib
 import json
@@ -76,32 +77,60 @@ def editor_slot(owner):
             held.rmdir()
 
 
-def run_process(command, env, timeout):
-    process = subprocess.Popen(command, cwd=ROOT, env=env, start_new_session=True)
-    try:
-        return process.wait(timeout=timeout)
-    finally:
-        # Shader compilers belong to this invocation too. Only signal our own process group.
-        group_exists = True
+def child_pids():
+    return [int(pid) for pid in Path(f"/proc/self/task/{os.getpid()}/children").read_text().split()]
+
+
+def stop_children(process):
+    # Unreal starts shader workers in separate sessions. Adopted descendants must
+    # therefore be cleaned by parentage as well as by the editor's process group.
+    for sig in (signal.SIGTERM, signal.SIGKILL):
         try:
-            os.killpg(process.pid, signal.SIGTERM)
-        except ProcessLookupError:
-            group_exists = False
-        deadline = time.monotonic() + STOP_GRACE_SECONDS
-        while group_exists and time.monotonic() < deadline:
-            process.poll()  # Reap the editor even when its worker group still exists.
-            try:
-                os.killpg(process.pid, 0)
-            except ProcessLookupError:
-                break
-            time.sleep(0.1)
-        # An exited editor does not imply its shader workers exited. Kill the group
-        # regardless of the direct child's state before releasing the editor slot.
-        try:
-            os.killpg(process.pid, signal.SIGKILL)
+            os.killpg(process.pid, sig)
         except ProcessLookupError:
             pass
-        process.wait()
+        deadline = time.monotonic() + STOP_GRACE_SECONDS
+        sent = set()
+        while True:
+            process.poll()  # Only Popen reaps the editor, preserving its exit code.
+            children = child_pids()
+            if not children:
+                return
+            for pid in children:
+                if pid not in sent:
+                    try:
+                        os.kill(pid, sig)
+                    except ProcessLookupError:
+                        pass
+                    sent.add(pid)
+                if pid != process.pid:
+                    try:
+                        os.waitpid(pid, os.WNOHANG)
+                    except ChildProcessError:
+                        pass
+            if time.monotonic() >= deadline:
+                break
+            time.sleep(0.02)
+    raise RuntimeError("Invocation children did not exit after SIGKILL")
+
+
+def run_process(command, env, timeout):
+    # This single-invocation CLI owns no unrelated subprocesses. Become a Linux
+    # child subreaper before launch, so detached workers return to us on editor exit.
+    libc = ctypes.CDLL(None, use_errno=True)
+    previous = ctypes.c_int()
+    if libc.prctl(37, ctypes.byref(previous), 0, 0, 0) or libc.prctl(36, 1, 0, 0, 0):
+        raise OSError(ctypes.get_errno(), "Cannot supervise engine descendants")
+    try:
+        process = subprocess.Popen(command, cwd=ROOT, env=env, start_new_session=True)
+        try:
+            return process.wait(timeout=timeout)
+        finally:
+            stop_children(process)
+            process.wait()
+    finally:
+        if libc.prctl(36, previous.value, 0, 0, 0):
+            raise OSError(ctypes.get_errno(), "Cannot restore child supervision")
 
 
 def main(argv=None):

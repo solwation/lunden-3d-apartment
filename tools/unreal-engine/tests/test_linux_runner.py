@@ -79,7 +79,7 @@ class LinuxRunnerTests(unittest.TestCase):
                  "signal.signal(signal.SIGTERM,signal.SIG_IGN);"
                  f"Path({str(pid_file)!r}).write_text(str(os.getpid()));time.sleep(30)")
         parent = ("import subprocess,sys,time;from pathlib import Path;"
-                  f"subprocess.Popen([sys.executable,'-c',{child!r}]);"
+                  f"subprocess.Popen([sys.executable,'-c',{child!r}],start_new_session=True);"
                   f"p=Path({str(pid_file)!r});\nwhile not p.exists():time.sleep(.01)")
         try:
             with patch.object(runner, "STOP_GRACE_SECONDS", 0.1):
