@@ -1,0 +1,102 @@
+{
+ "crops": {
+  "start-day": {
+   "sky": [
+    0.02,
+    0.02,
+    0.2,
+    0.3
+   ]
+  },
+  "start-overcast": {
+   "sky": [
+    0.02,
+    0.02,
+    0.2,
+    0.3
+   ]
+  },
+  "start-night": {
+   "sky": [
+    0.02,
+    0.02,
+    0.2,
+    0.3
+   ]
+  }
+ },
+ "stats": {
+  "start-day": {
+   "web": {
+    "sky": {
+     "srgb": [
+      149,
+      171.5,
+      203.8
+     ],
+     "luminance": 0.422,
+     "warmth": 0.731
+    }
+   },
+   "unreal": {
+    "sky": {
+     "srgb": [
+      151.9,
+      181.7,
+      219
+     ],
+     "luminance": 0.4715,
+     "warmth": 0.694
+    }
+   }
+  },
+  "start-overcast": {
+   "web": {
+    "sky": {
+     "srgb": [
+      156.2,
+      155.2,
+      159.9
+     ],
+     "luminance": 0.3496,
+     "warmth": 0.976
+    }
+   },
+   "unreal": {
+    "sky": {
+     "srgb": [
+      151.9,
+      153.9,
+      159.6
+     ],
+     "luminance": 0.3405,
+     "warmth": 0.952
+    }
+   }
+  },
+  "start-night": {
+   "web": {
+    "sky": {
+     "srgb": [
+      23.2,
+      26.8,
+      37.4
+     ],
+     "luminance": 0.0237,
+     "warmth": 0.621
+    }
+   },
+   "unreal": {
+    "sky": {
+     "srgb": [
+      23.2,
+      35.8,
+      59.9
+     ],
+     "luminance": 0.0278,
+     "warmth": 0.388
+    }
+   }
+  }
+ }
+}

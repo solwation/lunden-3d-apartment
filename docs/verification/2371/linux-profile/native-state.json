@@ -1,0 +1,613 @@
+{
+  "completed": true,
+  "revision": "2e7e18fb65ce5de612046a9ad40ecd6342790dcc",
+  "measurementSHA256": "dd2faf173e2c4ffcb1cc81eb188e49b224b55ebd32f4c0b21c989a9bc7f4edcd",
+  "sourceSha256": {
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2371/capture-clouds.py": "0e948abd2f0dc65741c72c30498db36f98303868912ccce7cbdc922662197fd0",
+    "/home/devcontainers/lunden-linux/tools/unreal-engine/python/build_lighting.py": "c8a43a1e826cc943b3a4599cbef0b655d12ba4cbf66e22b09d33db24788b102b",
+    "/home/devcontainers/lunden-linux/tools/unreal-engine/python/screenshot_level.py": "1c25fc83235b83a64b3c9c89bfbef2665d1376975f272e3462ce135f1972f70f",
+    "/home/devcontainers/lunden-linux/tools/unreal-engine/tests/capture_light.py": "cccd11fe7dc9a4a4d999a512cfb6694e53a8f31b918018b771ecf0e9899b41b2",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2394/verify-production.py": "1d4a19a4c360e7f79f3970e23e5e55a691711a47b07d7c62e6953879eb24c6f2",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2394/season-visibility-only.py": "fa844d50bc9ac15225058ac1a1b0c95afdbaa87d8f44cdf1e78603fbbc486a88"
+  },
+  "profile": "Actual delivered Linux development CVars recorded; no full Windows claim",
+  "weatherComponent": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.BP_LundenSky_C_0.Weather",
+  "blendables": [
+    {
+      "path": "/Game/Lunden/Lighting/M_LundenWindowDaylight.M_LundenWindowDaylight",
+      "weight": 1.0
+    },
+    {
+      "path": "/Game/Lunden/Lighting/M_LundenPrecipitation.M_LundenPrecipitation",
+      "weight": 1.0
+    },
+    {
+      "path": "/Game/Lunden/Lighting/M_LundenNeutralTonemap.M_LundenNeutralTonemap",
+      "weight": 1.0
+    }
+  ],
+  "functionalMode": "Actual compiled BP_LundenSky.ReceiveTick explicit dt dispatch, not PIE wall-clock timing",
+  "sun": [
+    {
+      "year": 2026,
+      "month": 6,
+      "day": 21,
+      "hour": 14.0,
+      "sun": [
+        0.32902491092681885,
+        0.4451923966407776,
+        0.8327943086624146
+      ],
+      "moon": [
+        0.7190308570861816,
+        -0.6728973984718323,
+        0.17379231750965118
+      ],
+      "night": 0.0,
+      "moonPh": [
+        0.9965457916259766,
+        -0.0830453485250473,
+        0.45847731828689575
+      ],
+      "cloudCover": 0.0,
+      "cloudCoverage": -1.0,
+      "skyThreshold": 0.9200000166893005,
+      "overcast": 0.0,
+      "duskLight": 1.0,
+      "offset": [
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "year": 2026,
+      "month": 11,
+      "day": 16,
+      "hour": 18.25,
+      "sun": [
+        -0.40300384163856506,
+        0.8553942441940308,
+        -0.3254052400588989
+      ],
+      "moon": [
+        0.7192068696022034,
+        0.6298828721046448,
+        0.2932388484477997
+      ],
+      "night": 1.0,
+      "moonPh": [
+        0.9889004826545715,
+        -0.1485794186592102,
+        0.4257102906703949
+      ],
+      "cloudCover": 0.0,
+      "cloudCoverage": -1.0,
+      "skyThreshold": 0.9200000166893005,
+      "overcast": 0.0,
+      "duskLight": 0.0,
+      "offset": [
+        0.0,
+        0.0
+      ]
+    }
+  ],
+  "weather": [
+    {
+      "year": 2026,
+      "month": 6,
+      "day": 21,
+      "hour": 14.0,
+      "sun": [
+        0.32902491092681885,
+        0.4451923966407776,
+        0.8327943086624146
+      ],
+      "moon": [
+        0.7190308570861816,
+        -0.6728973984718323,
+        0.17379231750965118
+      ],
+      "night": 0.0,
+      "moonPh": [
+        0.9965457916259766,
+        -0.0830453485250473,
+        0.45847731828689575
+      ],
+      "cloudCover": 1.0,
+      "cloudCoverage": 1.0,
+      "skyThreshold": 0.36000001430511475,
+      "overcast": 1.0,
+      "duskLight": 0.4000000059604645,
+      "offset": [
+        0.0,
+        0.0
+      ],
+      "event": "rain",
+      "rain": 1,
+      "snow": 0
+    }
+  ],
+  "cloudDrift": [
+    {
+      "speed": 12,
+      "heading": 90,
+      "dt": 0.2,
+      "before": [
+        5199.89990234375,
+        0.10000000149011612
+      ],
+      "after": [
+        1.9348900318145752,
+        5196.84326171875
+      ],
+      "direction": [
+        -0.5299192642332049,
+        0.848048096156426
+      ],
+      "expected": {
+        "speed": 12,
+        "heading": 90,
+        "dt": 0.2,
+        "before": [
+          5199.9,
+          0.1000000000003638
+        ],
+        "after": [
+          1.9348899746555617,
+          5196.843495310759
+        ],
+        "direction": [
+          -0.529919264233205,
+          0.8480480961564262
+        ]
+      },
+      "sourceComparisonPassed": true
+    },
+    {
+      "speed": 0,
+      "heading": 315,
+      "dt": 0.3,
+      "before": [
+        1.9348900318145752,
+        5196.84326171875
+      ],
+      "after": [
+        2.0938658714294434,
+        5196.5888671875
+      ],
+      "direction": [
+        -0.5299192642332049,
+        0.848048096156426
+      ],
+      "expected": {
+        "speed": 0,
+        "heading": 315,
+        "dt": 0.3,
+        "before": [
+          1.9348899746555617,
+          5196.843495310759
+        ],
+        "after": [
+          2.093865753926366,
+          5196.589080881912
+        ],
+        "direction": [
+          -0.5299192642332049,
+          0.848048096156426
+        ]
+      },
+      "sourceComparisonPassed": true
+    },
+    {
+      "speed": 30,
+      "heading": 315,
+      "dt": 0.2,
+      "before": [
+        2.0938658714294434,
+        5196.5888671875
+      ],
+      "after": [
+        5197.22216796875,
+        5197.7138671875
+      ],
+      "direction": [
+        0.9743700647852351,
+        -0.22495105434386525
+      ],
+      "expected": {
+        "speed": 30,
+        "heading": 315,
+        "dt": 0.2,
+        "before": [
+          2.093865753926366,
+          5196.589080881912
+        ],
+        "after": [
+          5197.22201543,
+          5197.713836153632
+        ],
+        "direction": [
+          0.9743700647852351,
+          -0.22495105434386523
+        ]
+      },
+      "sourceComparisonPassed": true
+    }
+  ],
+  "actualCVars": {
+    "r.AntiAliasingMethod": 1,
+    "r.PostProcessAAQuality": 0,
+    "r.ShadowQuality": 3,
+    "r.VolumetricCloud": 0,
+    "r.SeparateTranslucency": 1,
+    "r.LightFunctionQuality": 2
+  },
+  "naniteOffInMemory": 3508,
+  "driftExpectationSHA256": "71aee253a92bf6a96f38399726aae3885135239ed45fd790ae89ee1bdfc089a2",
+  "restoredCaptureWind": {
+    "WindSpeed": 0.0,
+    "WindFromDeg": 245.0,
+    "CloudDirectionX": -0.9284766908852594,
+    "CloudDirectionY": -0.3713906763541038
+  },
+  "shots": [
+    {
+      "id": "start-day",
+      "camera": {
+        "xyz": [
+          287.5,
+          -1200.0,
+          162.0
+        ],
+        "yaw": 89.99999999999999,
+        "pitch": 8.000000000000002,
+        "roll": -0.0,
+        "horizontalFov": 104.50486755371094,
+        "width": 640,
+        "height": 360,
+        "separateTranslucencyShowFlag": true,
+        "privateBlendableAttached": false
+      },
+      "exposureBias": -1.96503746509552,
+      "state": {
+        "year": 2026,
+        "month": 6,
+        "day": 21,
+        "hour": 14.0,
+        "sun": [
+          0.32902491092681885,
+          0.4451923966407776,
+          0.8327943086624146
+        ],
+        "moon": [
+          0.7190308570861816,
+          -0.6728973984718323,
+          0.17379231750965118
+        ],
+        "night": 0.0,
+        "moonPh": [
+          0.9965457916259766,
+          -0.0830453485250473,
+          0.45847731828689575
+        ],
+        "cloudCover": 0.0,
+        "cloudCoverage": -1.0,
+        "skyThreshold": 0.9200000166893005,
+        "overcast": 0.0,
+        "duskLight": 1.0,
+        "offset": [
+          0.0,
+          0.0
+        ]
+      },
+      "imageSHA256": "ea4bfe8d446c03dbc27c5fc3636a04069f1e7038eb68b8b1ac9f47d4228d56e7",
+      "actualWeather": {
+        "component": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.BP_LundenSky_C_0.Weather",
+        "enabled": true,
+        "unbound": true,
+        "visible": true,
+        "ownerEditorHidden": false,
+        "blendWeight": 1.0,
+        "materials": [
+          {
+            "path": "/Game/Lunden/Lighting/M_LundenWindowDaylight.M_LundenWindowDaylight",
+            "weight": 1.0
+          },
+          {
+            "path": "/Game/Lunden/Lighting/M_LundenPrecipitation.M_LundenPrecipitation",
+            "weight": 1.0
+          },
+          {
+            "path": "/Game/Lunden/Lighting/M_LundenNeutralTonemap.M_LundenNeutralTonemap",
+            "weight": 1.0
+          }
+        ]
+      },
+      "seasonVisibility": {
+        "mode": "render-only-season-visibility",
+        "rule": "Actual BPC_LundenSeasons.TagValue/InSeason/InHours; no Python calendar/window formula",
+        "date": [
+          2026,
+          6,
+          21
+        ],
+        "hour": 14,
+        "nativeIntegerHour": 14,
+        "componentClass": "/Game/Lunden/Seasons/BPC_LundenSeasons.BPC_LundenSeasons_C",
+        "componentSpecHash": "33ab2c0759b6a54cd465f6a3ec7e72cdede9e366e96a59b0dfd80b812c3d3e9c",
+        "loadedLevels": [
+          "/Game/Lunden/Generated/Interaction/Level_l1007_interaction",
+          "/Game/Lunden/Generated/L1007World/Level_l1007_collision",
+          "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats",
+          "/Game/Lunden/Generated/l1007-entre/Level_l1007-entre",
+          "/Game/Lunden/Generated/Interaction/Level_hus-l_interaction",
+          "/Game/Lunden/Generated/Interaction/Level_kvarteret_interaction",
+          "/Game/Lunden/Generated/ExteriorWorld/Level_exterior_collision",
+          "/Game/Lunden/Generated/gard/Level_gard",
+          "/Game/Lunden/Generated/omgivning/Level_omgivning",
+          "/Game/Lunden/Generated/SiteWorld/Level_site_collision",
+          "/Game/Lunden/Generated/Lighting/Level_lighting",
+          "/Game/Lunden/Generated/FacadeLighting/Level_facade_lighting",
+          "/Game/Lunden/Generated/VegetationWorld/Level_vegetation_foliage",
+          "/Game/Lunden/Generated/Interaction/Level_lift_buttons",
+          "/Game/Lunden/Avatar/Looks/Level_LundenMirror",
+          "/Game/Lunden/Generated/fond/Level_fond"
+        ],
+        "calendar": "/Game/Lunden/Seasons/MPC_LundenVegetation",
+        "observedMonth": 6.0,
+        "clockDriven": false,
+        "seasonalActors": 219,
+        "hiddenActors": 184,
+        "editorLampPolicy": "original editor-hidden OR current native-rule game-hidden",
+        "editorLamps": 2,
+        "collisionApplied": false,
+        "physicsOrCollisionApiInvoked": false,
+        "limitation": "Visibility/MPC only in static editor captures. Existing collision is not synchronized; no gameplay, PIE, interaction or Chaos acceptance. ApplySeason/ApplySeasonAt/ApplyClock are not called. Do not save these transient world changes.",
+        "sourceFileSha256": {
+          "/home/devcontainers/.local/state/lunden-codex-20261127/2394/season-visibility-only.py": "fa844d50bc9ac15225058ac1a1b0c95afdbaa87d8f44cdf1e78603fbbc486a88",
+          "/home/devcontainers/lunden-linux/tools/unreal-engine/tests/capture_world.py": "380545105f0ff30e6cca3095ff44c7bbf138491f731ecd6dd6a7564606f9d553",
+          "/home/devcontainers/lunden-linux/tools/unreal-engine/python/build_seasons.py": "33ab2c0759b6a54cd465f6a3ec7e72cdede9e366e96a59b0dfd80b812c3d3e9c"
+        }
+      }
+    },
+    {
+      "id": "start-overcast",
+      "camera": {
+        "xyz": [
+          287.5,
+          -1200.0,
+          162.0
+        ],
+        "yaw": 89.99999999999999,
+        "pitch": 8.000000000000002,
+        "roll": -0.0,
+        "horizontalFov": 104.50486755371094,
+        "width": 640,
+        "height": 360,
+        "separateTranslucencyShowFlag": true,
+        "privateBlendableAttached": false
+      },
+      "exposureBias": -2.549999952316284,
+      "state": {
+        "year": 2026,
+        "month": 6,
+        "day": 21,
+        "hour": 14.0,
+        "sun": [
+          0.32902491092681885,
+          0.4451923966407776,
+          0.8327943086624146
+        ],
+        "moon": [
+          0.7190308570861816,
+          -0.6728973984718323,
+          0.17379231750965118
+        ],
+        "night": 0.0,
+        "moonPh": [
+          0.9965457916259766,
+          -0.0830453485250473,
+          0.45847731828689575
+        ],
+        "cloudCover": 1.0,
+        "cloudCoverage": 1.0,
+        "skyThreshold": 0.36000001430511475,
+        "overcast": 1.0,
+        "duskLight": 0.4000000059604645,
+        "offset": [
+          0.0,
+          0.0
+        ]
+      },
+      "imageSHA256": "ef243af4cfe98569244649a8e4b1e44d1a390a28d27323c12994d2d8fe446dad",
+      "actualWeather": {
+        "component": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.BP_LundenSky_C_0.Weather",
+        "enabled": true,
+        "unbound": true,
+        "visible": true,
+        "ownerEditorHidden": false,
+        "blendWeight": 1.0,
+        "materials": [
+          {
+            "path": "/Game/Lunden/Lighting/M_LundenWindowDaylight.M_LundenWindowDaylight",
+            "weight": 1.0
+          },
+          {
+            "path": "/Game/Lunden/Lighting/M_LundenPrecipitation.M_LundenPrecipitation",
+            "weight": 1.0
+          },
+          {
+            "path": "/Game/Lunden/Lighting/M_LundenNeutralTonemap.M_LundenNeutralTonemap",
+            "weight": 1.0
+          }
+        ]
+      },
+      "seasonVisibility": {
+        "mode": "render-only-season-visibility",
+        "rule": "Actual BPC_LundenSeasons.TagValue/InSeason/InHours; no Python calendar/window formula",
+        "date": [
+          2026,
+          6,
+          21
+        ],
+        "hour": 14,
+        "nativeIntegerHour": 14,
+        "componentClass": "/Game/Lunden/Seasons/BPC_LundenSeasons.BPC_LundenSeasons_C",
+        "componentSpecHash": "33ab2c0759b6a54cd465f6a3ec7e72cdede9e366e96a59b0dfd80b812c3d3e9c",
+        "loadedLevels": [
+          "/Game/Lunden/Generated/Interaction/Level_l1007_interaction",
+          "/Game/Lunden/Generated/L1007World/Level_l1007_collision",
+          "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats",
+          "/Game/Lunden/Generated/l1007-entre/Level_l1007-entre",
+          "/Game/Lunden/Generated/Interaction/Level_hus-l_interaction",
+          "/Game/Lunden/Generated/Interaction/Level_kvarteret_interaction",
+          "/Game/Lunden/Generated/ExteriorWorld/Level_exterior_collision",
+          "/Game/Lunden/Generated/gard/Level_gard",
+          "/Game/Lunden/Generated/omgivning/Level_omgivning",
+          "/Game/Lunden/Generated/SiteWorld/Level_site_collision",
+          "/Game/Lunden/Generated/Lighting/Level_lighting",
+          "/Game/Lunden/Generated/FacadeLighting/Level_facade_lighting",
+          "/Game/Lunden/Generated/VegetationWorld/Level_vegetation_foliage",
+          "/Game/Lunden/Generated/Interaction/Level_lift_buttons",
+          "/Game/Lunden/Avatar/Looks/Level_LundenMirror",
+          "/Game/Lunden/Generated/fond/Level_fond"
+        ],
+        "calendar": "/Game/Lunden/Seasons/MPC_LundenVegetation",
+        "observedMonth": 6.0,
+        "clockDriven": false,
+        "seasonalActors": 219,
+        "hiddenActors": 184,
+        "editorLampPolicy": "original editor-hidden OR current native-rule game-hidden",
+        "editorLamps": 2,
+        "collisionApplied": false,
+        "physicsOrCollisionApiInvoked": false,
+        "limitation": "Visibility/MPC only in static editor captures. Existing collision is not synchronized; no gameplay, PIE, interaction or Chaos acceptance. ApplySeason/ApplySeasonAt/ApplyClock are not called. Do not save these transient world changes.",
+        "sourceFileSha256": {
+          "/home/devcontainers/.local/state/lunden-codex-20261127/2394/season-visibility-only.py": "fa844d50bc9ac15225058ac1a1b0c95afdbaa87d8f44cdf1e78603fbbc486a88",
+          "/home/devcontainers/lunden-linux/tools/unreal-engine/tests/capture_world.py": "380545105f0ff30e6cca3095ff44c7bbf138491f731ecd6dd6a7564606f9d553",
+          "/home/devcontainers/lunden-linux/tools/unreal-engine/python/build_seasons.py": "33ab2c0759b6a54cd465f6a3ec7e72cdede9e366e96a59b0dfd80b812c3d3e9c"
+        }
+      }
+    },
+    {
+      "id": "start-night",
+      "camera": {
+        "xyz": [
+          287.5,
+          -1200.0,
+          162.0
+        ],
+        "yaw": 89.99999999999999,
+        "pitch": 8.000000000000002,
+        "roll": -0.0,
+        "horizontalFov": 104.50486755371094,
+        "width": 640,
+        "height": 360,
+        "separateTranslucencyShowFlag": true,
+        "privateBlendableAttached": false
+      },
+      "exposureBias": -2.549999952316284,
+      "state": {
+        "year": 2026,
+        "month": 11,
+        "day": 16,
+        "hour": 18.25,
+        "sun": [
+          -0.40300384163856506,
+          0.8553942441940308,
+          -0.3254052400588989
+        ],
+        "moon": [
+          0.7192068696022034,
+          0.6298828721046448,
+          0.2932388484477997
+        ],
+        "night": 1.0,
+        "moonPh": [
+          0.9889004826545715,
+          -0.1485794186592102,
+          0.4257102906703949
+        ],
+        "cloudCover": 0.0,
+        "cloudCoverage": -1.0,
+        "skyThreshold": 0.9200000166893005,
+        "overcast": 0.0,
+        "duskLight": 0.0,
+        "offset": [
+          0.0,
+          0.0
+        ]
+      },
+      "imageSHA256": "1e59d4137eee8ef428b44c44ebb7b6687072bde8261202a4e7c7837ad062152f",
+      "actualWeather": {
+        "component": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.BP_LundenSky_C_0.Weather",
+        "enabled": true,
+        "unbound": true,
+        "visible": true,
+        "ownerEditorHidden": false,
+        "blendWeight": 1.0,
+        "materials": [
+          {
+            "path": "/Game/Lunden/Lighting/M_LundenWindowDaylight.M_LundenWindowDaylight",
+            "weight": 1.0
+          },
+          {
+            "path": "/Game/Lunden/Lighting/M_LundenPrecipitation.M_LundenPrecipitation",
+            "weight": 1.0
+          },
+          {
+            "path": "/Game/Lunden/Lighting/M_LundenNeutralTonemap.M_LundenNeutralTonemap",
+            "weight": 1.0
+          }
+        ]
+      },
+      "seasonVisibility": {
+        "mode": "render-only-season-visibility",
+        "rule": "Actual BPC_LundenSeasons.TagValue/InSeason/InHours; no Python calendar/window formula",
+        "date": [
+          2026,
+          11,
+          16
+        ],
+        "hour": 18.25,
+        "nativeIntegerHour": 18,
+        "componentClass": "/Game/Lunden/Seasons/BPC_LundenSeasons.BPC_LundenSeasons_C",
+        "componentSpecHash": "33ab2c0759b6a54cd465f6a3ec7e72cdede9e366e96a59b0dfd80b812c3d3e9c",
+        "loadedLevels": [
+          "/Game/Lunden/Generated/Interaction/Level_l1007_interaction",
+          "/Game/Lunden/Generated/L1007World/Level_l1007_collision",
+          "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats",
+          "/Game/Lunden/Generated/l1007-entre/Level_l1007-entre",
+          "/Game/Lunden/Generated/Interaction/Level_hus-l_interaction",
+          "/Game/Lunden/Generated/Interaction/Level_kvarteret_interaction",
+          "/Game/Lunden/Generated/ExteriorWorld/Level_exterior_collision",
+          "/Game/Lunden/Generated/gard/Level_gard",
+          "/Game/Lunden/Generated/omgivning/Level_omgivning",
+          "/Game/Lunden/Generated/SiteWorld/Level_site_collision",
+          "/Game/Lunden/Generated/Lighting/Level_lighting",
+          "/Game/Lunden/Generated/FacadeLighting/Level_facade_lighting",
+          "/Game/Lunden/Generated/VegetationWorld/Level_vegetation_foliage",
+          "/Game/Lunden/Generated/Interaction/Level_lift_buttons",
+          "/Game/Lunden/Avatar/Looks/Level_LundenMirror",
+          "/Game/Lunden/Generated/fond/Level_fond"
+        ],
+        "calendar": "/Game/Lunden/Seasons/MPC_LundenVegetation",
+        "observedMonth": 11.0,
+        "clockDriven": false,
+        "seasonalActors": 219,
+        "hiddenActors": 196,
+        "editorLampPolicy": "original editor-hidden OR current native-rule game-hidden",
+        "editorLamps": 2,
+        "collisionApplied": false,
+        "physicsOrCollisionApiInvoked": false,
+        "limitation": "Visibility/MPC only in static editor captures. Existing collision is not synchronized; no gameplay, PIE, interaction or Chaos acceptance. ApplySeason/ApplySeasonAt/ApplyClock are not called. Do not save these transient world changes.",
+        "sourceFileSha256": {
+          "/home/devcontainers/.local/state/lunden-codex-20261127/2394/season-visibility-only.py": "fa844d50bc9ac15225058ac1a1b0c95afdbaa87d8f44cdf1e78603fbbc486a88",
+          "/home/devcontainers/lunden-linux/tools/unreal-engine/tests/capture_world.py": "380545105f0ff30e6cca3095ff44c7bbf138491f731ecd6dd6a7564606f9d553",
+          "/home/devcontainers/lunden-linux/tools/unreal-engine/python/build_seasons.py": "33ab2c0759b6a54cd465f6a3ec7e72cdede9e366e96a59b0dfd80b812c3d3e9c"
+        }
+      }
+    }
+  ],
+  "originalCaptureJSONSHA256": "dc3b86230db8866f4862f69d3c03aebb69eda4dd30859b51faa82259110e3bac"
+}

@@ -1,0 +1,41 @@
+[
+  {
+    "shot": "start-day",
+    "sha256": "ea4bfe8d446c03dbc27c5fc3636a04069f1e7038eb68b8b1ac9f47d4228d56e7",
+    "bytes": 439995,
+    "width": 640,
+    "height": 360,
+    "CRC": "all chunks pass",
+    "IEND": true,
+    "chunks": 44,
+    "trailingBytesPreserved": 101842,
+    "cameraMatchesLocked": true,
+    "actualExposureBias": -1.96503746509552
+  },
+  {
+    "shot": "start-overcast",
+    "sha256": "ef243af4cfe98569244649a8e4b1e44d1a390a28d27323c12994d2d8fe446dad",
+    "bytes": 439995,
+    "width": 640,
+    "height": 360,
+    "CRC": "all chunks pass",
+    "IEND": true,
+    "chunks": 47,
+    "trailingBytesPreserved": 73594,
+    "cameraMatchesLocked": true,
+    "actualExposureBias": -2.549999952316284
+  },
+  {
+    "shot": "start-night",
+    "sha256": "1e59d4137eee8ef428b44c44ebb7b6687072bde8261202a4e7c7837ad062152f",
+    "bytes": 225665,
+    "width": 640,
+    "height": 360,
+    "CRC": "all chunks pass",
+    "IEND": true,
+    "chunks": 23,
+    "trailingBytesPreserved": 54441,
+    "cameraMatchesLocked": true,
+    "actualExposureBias": -2.549999952316284
+  }
+]

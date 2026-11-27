@@ -1,0 +1,149 @@
+{
+  "status": "LOCKED BEFORE NEW NATIVE IMAGE INSPECTION; first actual native gate pending",
+  "lockedAtUtc": "2026-11-27T14:45:33.252416+00:00",
+  "sourceAudit": "/home/devcontainers/.local/state/lunden-codex-20261127/2371/source-audit.json",
+  "sourceBase": "3ff4c640d6976fe22527b76def8828bd9dc844e6",
+  "camera": {
+    "webEye": [
+      2.875,
+      1.62,
+      -12
+    ],
+    "nativeXYZ": [
+      287.5,
+      -1200,
+      162
+    ],
+    "yawWeb": 180,
+    "yawNative": 90,
+    "pitch": 8,
+    "verticalFovDeg": 72,
+    "nativeViewport": [
+      640,
+      360
+    ],
+    "webOriginalViewport": [
+      1440,
+      810
+    ],
+    "sameAspect": "16:9; no resizing or retouching"
+  },
+  "shots": [
+    {
+      "name": "start-day",
+      "camera": "start",
+      "date": [
+        2026,
+        6,
+        21
+      ],
+      "hour": 14,
+      "lamps": "none",
+      "weather": "clear"
+    },
+    {
+      "name": "start-overcast",
+      "camera": "start",
+      "date": [
+        2026,
+        6,
+        21
+      ],
+      "hour": 14,
+      "lamps": "none",
+      "weather": "rain"
+    },
+    {
+      "name": "start-night",
+      "camera": "start",
+      "date": [
+        2026,
+        11,
+        16
+      ],
+      "hour": 18.25,
+      "lamps": "dusk",
+      "weather": "clear"
+    }
+  ],
+  "crop": {
+    "start-day": {
+      "sky": [
+        0.02,
+        0.02,
+        0.2,
+        0.3
+      ]
+    },
+    "start-overcast": {
+      "sky": [
+        0.02,
+        0.02,
+        0.2,
+        0.3
+      ]
+    },
+    "start-night": {
+      "sky": [
+        0.02,
+        0.02,
+        0.2,
+        0.3
+      ]
+    }
+  },
+  "criterion": {
+    "luminanceInclusive": [
+      0.8,
+      1.25
+    ],
+    "wholeImage": "Actual clear wisps and rain deck structure versus source original; same phase zero, date/hour/weather, actual production material and game_bias exposure. Observe skyline, cloud layer boundaries and unintended change in night sky. Do not substitute pre-tonemap standalone shader ratios.",
+    "profile": "Actual Linux development profile, not full Windows; r.VolumetricCloud is currently disabled in linux-low.ini, while source daylight PP field remains active. Report this explicitly, do not call absent volumetric clouds a full Windows pass.",
+    "wind": "Three actual ReceiveTick steps compared to JS-source expected offsets, periodic wrap, maintained calm heading and unchanged frozen clock. Not PIE wallclock.",
+    "nativeProcess": "Native and runner both report real outcome; shader/Blueprint errors fail the run. Images from a failed run are diagnostic only.",
+    "guards": "Root external all247 authored SHA/modes exact before/after; no save, locks, forced builder or new material; real Weather PP identity, weights and visibility read back per shot."
+  },
+  "references": {
+    "start-day": {
+      "path": "/home/devcontainers/wt/codex-2371/docs/verification/2371/web-start-day.jpg",
+      "sha256": "49be42ad518ab30167e81a60dea3ac8bfcf86a1f97a19003c69506839f4c5895",
+      "bytes": 341417,
+      "role": "original2371"
+    },
+    "start-overcast": {
+      "path": "/home/devcontainers/wt/codex-2371/docs/verification/2371/web-start-overcast.jpg",
+      "sha256": "7a0a408c533cbb8b24bea60ca6527be255c0e2ec64087d0d04fcd7136cb5ab10",
+      "bytes": 335425,
+      "role": "original2371"
+    },
+    "start-night": {
+      "path": "/home/devcontainers/wt/codex-2371/docs/verification/2366/web-start-night.jpg",
+      "sha256": "efed475e5035373eb25efd58aa3721e12b2beee417c5cd9e9958f0f92dcc1e74",
+      "bytes": 59550,
+      "role": "existing canonical night regression reference; byteidentical2313 original",
+      "cameraDateProof": {
+        "path": "/home/devcontainers/wt/codex-2371/docs/verification/2313/web-capture.json",
+        "sha256": "e170dee8a4f0d642a3077c52128b59ba47a34e8858495d905320d57e45763f78",
+        "eye": [
+          2.875,
+          1.62,
+          -12
+        ],
+        "yaw": 180,
+        "pitch": 8,
+        "date": [
+          2026,
+          11,
+          16
+        ],
+        "hour": 18.25,
+        "weather": "clear",
+        "moonLitFraction": 0.42571029351799206
+      }
+    }
+  },
+  "nativeScript": "/home/devcontainers/.local/state/lunden-codex-20261127/2371/capture-clouds.py",
+  "nativeScriptSHA256": "0e948abd2f0dc65741c72c30498db36f98303868912ccce7cbdc922662197fd0",
+  "driftExpectedSHA256": "71aee253a92bf6a96f38399726aae3885135239ed45fd790ae89ee1bdfc089a2",
+  "publication": "Root only; preserve raw images, source checks and diagnostics; pinned issue images before closure. Unreal-only, no public downstream change. Wholeissue remains open pending actual verification."
+}

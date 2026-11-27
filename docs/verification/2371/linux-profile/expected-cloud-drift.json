@@ -1,0 +1,63 @@
+{
+  "generator": "Actual source src/cloudshadow.js stepCloudDrift; not Blueprint formula reproduction",
+  "source": "3ff4c640d6976fe22527b76def8828bd9dc844e6",
+  "sources": {
+    "src/cloudshadow.js": "803910ae6674fe6a5318a3f338b470df0fc3123094fb31662b9cba79ace9f838",
+    "src/config.js": "a36e730774ee48527ae9b1ac7e2f444ca0fe6e8cbf02e15d1da56cfcdc3f94e0"
+  },
+  "planNorth": 58,
+  "period": 5200,
+  "rows": [
+    {
+      "speed": 12,
+      "heading": 90,
+      "dt": 0.2,
+      "before": [
+        5199.9,
+        0.1000000000003638
+      ],
+      "after": [
+        1.9348899746555617,
+        5196.843495310759
+      ],
+      "direction": [
+        -0.529919264233205,
+        0.8480480961564262
+      ]
+    },
+    {
+      "speed": 0,
+      "heading": 315,
+      "dt": 0.3,
+      "before": [
+        1.9348899746555617,
+        5196.843495310759
+      ],
+      "after": [
+        2.093865753926366,
+        5196.589080881912
+      ],
+      "direction": [
+        -0.5299192642332049,
+        0.848048096156426
+      ]
+    },
+    {
+      "speed": 30,
+      "heading": 315,
+      "dt": 0.2,
+      "before": [
+        2.093865753926366,
+        5196.589080881912
+      ],
+      "after": [
+        5197.22201543,
+        5197.713836153632
+      ],
+      "direction": [
+        0.9743700647852351,
+        -0.22495105434386523
+      ]
+    }
+  ]
+}

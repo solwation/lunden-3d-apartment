@@ -1,5 +1,7 @@
 # Daylight clouds from START
 
+**2026-11-27 native verification:** the [Linux image/result packet](linux-profile/README.md) passes the original clear/rain sky luminance band and verifies the actual compiled wind graph. Native 0, outer 143 and profile/PIE limitations are recorded separately; the historical source/shader measurements below remain unchanged.
+
 Both web views use desktop Ultra at 1440 × 810, 21 June 2026 at 14:00. The eye is at (2.875, 1.62, −12) metres, yaw 180°, pitch 8° and vertical field of view 72°. The two captures use the same initial cloud offset, (0, 0) metres. This makes the cloud phase independent of asset loading time.
 
 | Clear | Rain |
@@ -32,6 +34,6 @@ On 768 actual START rays inside the [#2313 sky crop](../2313/crops.json), the me
 
 ## Native verification
 
-Earlier measurements with only the volumetric thresholds still import with the original sky and zero cloud drift. For the new daylight field, re-export the scene and run the ordinary headless lighting build and world composition. The lighting builder’s `--check` verifies the saved sky shader and its four weather connections. Run `test_lighting.py` in PIE and pass its `lighting-result.json` to `check-sun.mjs` for the overcast threshold and integrated cloud offsets, including a wind change and calm interval. Capture `start-day`, `start-overcast` and `start-night` using `capture_lighting.py --exposure=game`. Compare the new clear and rainy images to the two references above and measure the sky with `crop-stats.cjs` and the #2313 rectangles. A new native render and the final 0.8–1.25 exposure ratios are pending.
+Earlier measurements with only the volumetric thresholds still import with the original sky and zero cloud drift. For the new daylight field, re-export the scene and run the ordinary headless lighting build and world composition. The lighting builder’s `--check` verifies the saved sky shader and its four weather connections. Run `test_lighting.py` in PIE and pass its `lighting-result.json` to `check-sun.mjs` for the overcast threshold and integrated cloud offsets, including a wind change and calm interval. Capture `start-day`, `start-overcast` and `start-night` using `capture_lighting.py --exposure=game`. Compare the new clear and rainy images to the two references above and measure the sky with `crop-stats.cjs` and the #2313 rectangles. The later [Linux native packet](linux-profile/README.md) supplies actual renders and all three 0.8–1.25 sky ratios. Direct compiled event checks cover wind/phase; a PIE wall-clock/full Windows profile run is not claimed by that packet.
 
 To repeat the standalone shader comparison, run `python3 tools/unreal-engine/tests/sky-cloud-shaders.py unreal/Lunden/Import/measurements.json` with `dxc`, `glslangValidator` and `vkrunner` available. The script also accepts explicit paths to each tool.

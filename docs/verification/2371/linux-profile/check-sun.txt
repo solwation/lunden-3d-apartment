@@ -1,0 +1,6 @@
+20/20 sky, cloud and dusk-lamp values as the web's
+ok   2026-06-21    14 h sun  elevation web   56.387 unreal   56.387  azimuth web   53.533 unreal   53.533  angle 0.0000°
+ok   2026-06-21    14 h moon elevation web   10.008 unreal   10.008  azimuth web  -43.102 unreal  -43.102  angle 0.0000°
+ok   2026-11-16 18.25 h sun  elevation web  -18.990 unreal  -18.990  azimuth web  115.227 unreal  115.227  angle 0.0000°
+ok   2026-11-16 18.25 h moon elevation web   17.052 unreal   17.052  azimuth web   41.212 unreal   41.212  angle 0.0000°
+PASS: 4 directions, worst difference 0.0000° (tolerance 1°)

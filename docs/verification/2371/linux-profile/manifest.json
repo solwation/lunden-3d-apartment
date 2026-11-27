@@ -1,0 +1,106 @@
+{
+  "scope": "Original Unreal-only verification. No product/source/assets change; Root integrates and publishes.",
+  "nativeRevision": "2e7e18fb65ce5de612046a9ad40ecd6342790dcc",
+  "files": [
+    {
+      "path": "README.md",
+      "sha256": "d074a64e50284cd07f769f19b044e477449b5ad9cbc3abfc79b65f0e61e67c60",
+      "bytes": 7073
+    },
+    {
+      "path": "capture-clouds.py",
+      "sha256": "0e948abd2f0dc65741c72c30498db36f98303868912ccce7cbdc922662197fd0",
+      "bytes": 12635
+    },
+    {
+      "path": "check-sun.txt",
+      "sha256": "534237e8bb853a968ed128111bbbebc831d02c346af13ec20eb595225e1c33db",
+      "bytes": 601
+    },
+    {
+      "path": "crop-stats.json",
+      "sha256": "73ab858d899fdf0b7d99ba7b3fb2262724e95300bf9ba733ac2a647025d74127",
+      "bytes": 1206
+    },
+    {
+      "path": "crop-stats.txt",
+      "sha256": "637d3f607be6fddb666c84dc2cccec7781b1bd350edcd4704db6b2f12d7e5997",
+      "bytes": 506
+    },
+    {
+      "path": "crops.json",
+      "sha256": "7e3e8e40e61702e3aafb335b7751341a3e6d07efcf09a8126a5db2427b23947f",
+      "bytes": 268
+    },
+    {
+      "path": "expected-cloud-drift.json",
+      "sha256": "71aee253a92bf6a96f38399726aae3885135239ed45fd790ae89ee1bdfc089a2",
+      "bytes": 1346
+    },
+    {
+      "path": "locked-contract.json",
+      "sha256": "ae76b1d9786bf3caed714c0469834bdb5974cd1ddd04b8157f2adc420ee18492",
+      "bytes": 4636
+    },
+    {
+      "path": "native-state.json",
+      "sha256": "671e09c973acb6c7c77c38b0c548b8124941f323f1b9252aab7153eb5311c2b1",
+      "bytes": 20932
+    },
+    {
+      "path": "outcome.json",
+      "sha256": "6b4a349797d8cf656efecd088520bc68e1bf101fd215b80d836faab04b07deab",
+      "bytes": 1770
+    },
+    {
+      "path": "png-camera-integrity.json",
+      "sha256": "c6f1b8b992e85bd741f067cd5d50bea474ae257e055ef94c9cf690d4b09fc637",
+      "bytes": 1075
+    },
+    {
+      "path": "sky-gate.json",
+      "sha256": "b05e0d62ea49bbfbc743db32a50e632ee7e522562b268531549c325a379d56ec",
+      "bytes": 3500
+    },
+    {
+      "path": "source-audit.json",
+      "sha256": "8aeaad93143367ff6af8809fd6b309fb9849adac71a7d1d25bf6c908ee1e891a",
+      "bytes": 1931
+    },
+    {
+      "path": "unreal-start-day.png",
+      "sha256": "ea4bfe8d446c03dbc27c5fc3636a04069f1e7038eb68b8b1ac9f47d4228d56e7",
+      "bytes": 439995
+    },
+    {
+      "path": "unreal-start-night.png",
+      "sha256": "1e59d4137eee8ef428b44c44ebb7b6687072bde8261202a4e7c7837ad062152f",
+      "bytes": 225665
+    },
+    {
+      "path": "unreal-start-overcast.png",
+      "sha256": "ef243af4cfe98569244649a8e4b1e44d1a390a28d27323c12994d2d8fe446dad",
+      "bytes": 439995
+    },
+    {
+      "path": "web-start-day.jpg",
+      "sha256": "49be42ad518ab30167e81a60dea3ac8bfcf86a1f97a19003c69506839f4c5895",
+      "bytes": 341417
+    },
+    {
+      "path": "web-start-night.jpg",
+      "sha256": "efed475e5035373eb25efd58aa3721e12b2beee417c5cd9e9958f0f92dcc1e74",
+      "bytes": 59550
+    },
+    {
+      "path": "web-start-overcast.jpg",
+      "sha256": "7a0a408c533cbb8b24bea60ca6527be255c0e2ec64087d0d04fcd7136cb5ab10",
+      "bytes": 335425
+    }
+  ],
+  "retention": {
+    "newRawImages": "Result images; retain while open/integration-ready and30days after closure per policy. Raw original trailing bytes preserved.",
+    "beforeBugScreenshotsIn2371": "None. Original2371 web images are still valid source references, not failing native screenshots. Do not prune unrelated2313/2386 issue records as part of2371.",
+    "supersededReferenceDuplicates": "Original parent2371 web-start-day.jpg/web-start-overcast.jpg are byteidentical valid references, now also included in this result packet; Root may remove duplicates only after updating parent README links and permanent image comment."
+  }
+}

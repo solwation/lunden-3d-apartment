@@ -1,0 +1,4 @@
+start-day              sky          web lum 0.4220 R/B 0.73 sRGB 149,171.5,203.8   unreal lum 0.4715 R/B 0.69 sRGB 151.9,181.7,219   ratio 1.12
+start-overcast         sky          web lum 0.3496 R/B 0.98 sRGB 156.2,155.2,159.9 unreal lum 0.3405 R/B 0.95 sRGB 151.9,153.9,159.6 ratio 0.97
+start-night            sky          web lum 0.0237 R/B 0.62 sRGB 23.2,26.8,37.4    unreal lum 0.0278 R/B 0.39 sRGB 23.2,35.8,59.9    ratio 1.17
+browsertest: no systemd user scope here, running without a memory ceiling

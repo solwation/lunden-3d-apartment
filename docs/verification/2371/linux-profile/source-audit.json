@@ -1,0 +1,42 @@
+{
+  "desktopSkyTemplate": {
+    "path": "src/daycycle.js",
+    "oldSHA256": "b4d89b6ec5175c26ffc4c92b8c76e0390f96f2095bd98b7d2f7da551ab61affb",
+    "currentSHA256": "b4d89b6ec5175c26ffc4c92b8c76e0390f96f2095bd98b7d2f7da551ab61affb",
+    "identical": true
+  },
+  "skyPalette": {
+    "path": "src/daycycle.js",
+    "oldSHA256": "84a1f1aa66061fc025ac6dbc56cd411bd810ddedf34ef9f7adae8bb64e457170",
+    "currentSHA256": "84a1f1aa66061fc025ac6dbc56cd411bd810ddedf34ef9f7adae8bb64e457170",
+    "identical": true
+  },
+  "cloudConfiguration": {
+    "path": "src/config.js",
+    "oldSHA256": "a3df156c619688808615b4328eec91db47e2a27c81fcbf259e910116eb7789dd",
+    "currentSHA256": "a3df156c619688808615b4328eec91db47e2a27c81fcbf259e910116eb7789dd",
+    "identical": true
+  },
+  "cloudRuntime": {
+    "path": "src/cloudshadow.js",
+    "oldSHA256": "803910ae6674fe6a5318a3f338b470df0fc3123094fb31662b9cba79ace9f838",
+    "currentSHA256": "803910ae6674fe6a5318a3f338b470df0fc3123094fb31662b9cba79ace9f838",
+    "identical": true
+  },
+  "nativeSkyShader": {
+    "path": "tools/unreal-engine/python/sky_clouds.py",
+    "oldSHA256": "0fd0fcc059a0cc1131b84706d0db657b3437956c066d32c5ba0c245d1105a2ae",
+    "currentSHA256": "0fd0fcc059a0cc1131b84706d0db657b3437956c066d32c5ba0c245d1105a2ae",
+    "identical": true
+  },
+  "oldWebReferences": {
+    "web-start-overcast.jpg": "7a0a408c533cbb8b24bea60ca6527be255c0e2ec64087d0d04fcd7136cb5ab10",
+    "web-start-day.jpg": "49be42ad518ab30167e81a60dea3ac8bfcf86a1f97a19003c69506839f4c5895"
+  },
+  "nativeLightingInputCheck": {
+    "actualSkyPackage": "/home/devcontainers/lunden-linux/unreal/Lunden/Content/Lunden/Lighting/BP_LundenSky.uasset",
+    "signature": "3315df7afc5a3f4c9f61254f43e9d89da0e784a9293eebbb136b52652c73dc4b",
+    "check-lighting.py": "PASS",
+    "lighting-freshness.py": "PASS: unrelated scene change accepted; cloud/window/lamp changes rejected; tag/owner corruptions rejected"
+  }
+}
