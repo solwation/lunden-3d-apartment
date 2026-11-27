@@ -1,0 +1,266 @@
+{
+  "actualCleanSource": "863307a7b4df4b3e903a9e73823196c82141f996",
+  "sourceHash": "3909ca34155babcd6795e3112d917a3d2c5de5c6f5f17f732424a1354f832eeb",
+  "manifestSha256": "ea75bd95a7e37b3bd334c86230a26b557059eced36f152eaf0b305a2c9d5693b",
+  "all10GeometryByteExact": true,
+  "geometry": [
+    {
+      "path": "fixture.glb",
+      "sha256": "4636b1948a94ae9ead1697597026fb784135703be441a97ddd400a0c1446e649",
+      "sameAsPriorCanonicalGeometry": true
+    },
+    {
+      "path": "fond.glb",
+      "sha256": "3296dac9ba0e5dd15a7838b56cdf1310ec6c4ed7d93f086684c091abfcaabde3",
+      "sameAsPriorCanonicalGeometry": true
+    },
+    {
+      "path": "gard.glb",
+      "sha256": "559a4bd2a880d6624a5dd5cb451e2ec256b2ae1ed415983c6a759cd3540e995b",
+      "sameAsPriorCanonicalGeometry": true
+    },
+    {
+      "path": "hus-l.glb",
+      "sha256": "df489d6ca499c5eccba334d113402f5ef6e5dfa53670f3f727b190192089ac22",
+      "sameAsPriorCanonicalGeometry": true
+    },
+    {
+      "path": "kvarteret.glb",
+      "sha256": "58e5b478496ab3931f0e44e22f5569a4ab13284c144c771169f5c4253c053a80",
+      "sameAsPriorCanonicalGeometry": true
+    },
+    {
+      "path": "l1007-entre.glb",
+      "sha256": "4738e1b53b2c981cdb5e68f27da6eec734c5db294de770929e3dc15cc4b320c3",
+      "sameAsPriorCanonicalGeometry": true
+    },
+    {
+      "path": "l1007-uteplats.glb",
+      "sha256": "163ce0bc28191a075ec67161e77f2ccac3699d5f01666e7624899762d0fc3941",
+      "sameAsPriorCanonicalGeometry": true
+    },
+    {
+      "path": "l1007.glb",
+      "sha256": "9b08d5770fdc54efcb6392be62711a8d3db56c9cf5f5ddc83c6db588251b6899",
+      "sameAsPriorCanonicalGeometry": true
+    },
+    {
+      "path": "omgivning.glb",
+      "sha256": "92e00d3d4948282a469f186937e7bb6032969518bec387286b72fd954e7c615c",
+      "sameAsPriorCanonicalGeometry": true
+    },
+    {
+      "path": "vegetation.glb",
+      "sha256": "e01b8c3c721b54531468165e986a0223b5cb875080fb16e6003579c8a2c48433",
+      "sameAsPriorCanonicalGeometry": true
+    }
+  ],
+  "onlyMeasurementDeltas": [
+    "site.livingWallCeilingAO",
+    "sourceCommit(actualproducer)"
+  ],
+  "allOtherMeasurementsExact": true,
+  "sourceWallAO": {
+    "version": 1,
+    "target": "L1007 living-room painted east-wall ceiling band",
+    "coordinates": {
+      "units": "metres",
+      "axes": "x east, y up, z south"
+    },
+    "wall": [
+      5.5512,
+      7.800000000000001,
+      0,
+      12.2337,
+      3
+    ],
+    "bandBottom": 2,
+    "coefficients": {
+      "floor": [
+        0.3,
+        0.12
+      ],
+      "ceil": [
+        0.25,
+        0.2
+      ],
+      "corner": [
+        0.3,
+        0.16
+      ]
+    },
+    "depth": {
+      "depthTest": true,
+      "depthWrite": false,
+      "frontSide": true,
+      "polygonOffset": true,
+      "polygonOffsetFactor": -2,
+      "polygonOffsetUnits": -2,
+      "renderOrder": 1,
+      "toneMapped": false,
+      "blend": "DstColor * source + Zero * destination"
+    },
+    "triangles": [
+      {
+        "positions": [
+          [
+            5.55019998550415,
+            2,
+            7.8051981925964355
+          ],
+          [
+            5.55019998550415,
+            2,
+            11.638999938964844
+          ],
+          [
+            5.55019998550415,
+            3,
+            11.638999938964844
+          ]
+        ],
+        "aDist": [
+          [
+            2,
+            1,
+            0.0010000000474974513,
+            100
+          ],
+          [
+            2,
+            1,
+            3.83480167388916,
+            100
+          ],
+          [
+            3,
+            0,
+            3.83480167388916,
+            100
+          ]
+        ]
+      },
+      {
+        "positions": [
+          [
+            5.55019998550415,
+            2,
+            7.8051981925964355
+          ],
+          [
+            5.55019998550415,
+            3,
+            11.638999938964844
+          ],
+          [
+            5.55019998550415,
+            3,
+            7.8051981925964355
+          ]
+        ],
+        "aDist": [
+          [
+            2,
+            1,
+            0.0010000000474974513,
+            100
+          ],
+          [
+            3,
+            0,
+            3.83480167388916,
+            100
+          ],
+          [
+            3,
+            0,
+            0.0010000000474974513,
+            100
+          ]
+        ]
+      },
+      {
+        "positions": [
+          [
+            5.55019998550415,
+            2,
+            11.638999938964844
+          ],
+          [
+            5.55019998550415,
+            2,
+            12.23270034790039
+          ],
+          [
+            5.55019998550415,
+            3,
+            12.23270034790039
+          ]
+        ],
+        "aDist": [
+          [
+            2,
+            1,
+            100,
+            0.5946999788284302
+          ],
+          [
+            2,
+            1,
+            100,
+            0.0010000000474974513
+          ],
+          [
+            3,
+            0,
+            100,
+            0.0010000000474974513
+          ]
+        ]
+      },
+      {
+        "positions": [
+          [
+            5.55019998550415,
+            2,
+            11.638999938964844
+          ],
+          [
+            5.55019998550415,
+            3,
+            12.23270034790039
+          ],
+          [
+            5.55019998550415,
+            3,
+            11.638999938964844
+          ]
+        ],
+        "aDist": [
+          [
+            2,
+            1,
+            100,
+            0.5946999788284302
+          ],
+          [
+            3,
+            0,
+            100,
+            0.0010000000474974513
+          ],
+          [
+            3,
+            0,
+            100,
+            0.5946999788284302
+          ]
+        ]
+      }
+    ],
+    "source": "src/ao.js#buildWallAO/wallMaterial; actual built position/aDist/uniforms",
+    "coverage": "Only this painted wall ceiling band, including its actual source corner terms; other walls/floors/ceilings are not ported here",
+    "blendSpace": "display-srgb-multiply",
+    "runtimeCoverage": "static-built-geometry"
+  }
+}

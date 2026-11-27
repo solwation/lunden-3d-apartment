@@ -1,0 +1,170 @@
+{
+  "command": [
+    "tools/browsertest.sh",
+    "node",
+    "tools/unreal-engine/tests/crop-stats.cjs",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2372/native-after-depth-paired",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2372/native-after-depth-paired/crops.json",
+    "--check-pendant"
+  ],
+  "cropToolExitCode": 0,
+  "canonicalPendantGatePassed": true,
+  "nativeProcessPassed": "Root outcome/247 guards are separate and must be reviewed",
+  "referenceManifest": [
+    {
+      "shot": "living-room-evening",
+      "native": "/home/devcontainers/.local/state/lunden-codex-20261127/2372/native-after-depth/captures/unreal-living-room-evening.png",
+      "nativeSha256": "3b6fe68d11f9508f12bad450c3e927675c5e51967718c92ad12a403ddc6f03e9",
+      "web": "/home/devcontainers/wt/codex-2372/docs/verification/2372/web-living-room-evening.jpg",
+      "webSha256": "d1d069f7d0802130339423b83725daa43221a8616129251cf979de2ccaa264b2",
+      "referenceRole": "published original2372 canonical matched state"
+    },
+    {
+      "shot": "living-room-without-pendant",
+      "native": "/home/devcontainers/.local/state/lunden-codex-20261127/2372/native-after-depth/captures/unreal-living-room-without-pendant.png",
+      "nativeSha256": "f587900ba96f2d98cb13076c88465d0b8f45fcfe0796d1461fb7724408f3dcc1",
+      "web": "/home/devcontainers/wt/codex-2372/docs/verification/2372/web-living-room-without-pendant.jpg",
+      "webSha256": "9790e05dc42e277eaaef6d4720fe3563b0c02c901878b873284ccf8eb2feb1d1",
+      "referenceRole": "published original2372 canonical matched state"
+    },
+    {
+      "shot": "living-room-ao-off",
+      "native": "/home/devcontainers/.local/state/lunden-codex-20261127/2372/native-after-depth/captures/unreal-living-room-ao-off.png",
+      "nativeSha256": "8ba64778b90649158a3db5691a46d110b9738057c09b072d0e548dbc0c42cf91",
+      "web": "/home/devcontainers/wt/codex-2372/docs/verification/2372/web-living-room-evening.jpg",
+      "webSha256": "d1d069f7d0802130339423b83725daa43221a8616129251cf979de2ccaa264b2",
+      "referenceRole": "diagnostic on-state control ONLY; not matched web AO-off"
+    }
+  ],
+  "lockedCropSource": "/home/devcontainers/wt/codex-2372/tools/unreal-engine/tests/pendant-lighting-crops.json",
+  "lockedCropSha256": "e37c3bbd61fae331a783d03eb356e0eaa4fc6dafe8d9e392cb2fdfe67108de8a",
+  "normalMeanYRatios": {
+    "left-wall": 0.8864398658361284,
+    "upper-left": 0.9309623430962343,
+    "upper-right": 0.9766467065868263,
+    "lower-left": 0.8248657579512597,
+    "lower-right": 0.8468121523320497
+  },
+  "pendantOnMinusOffY": {
+    "web": {
+      "left-wall": 0.069,
+      "above-pendant": 0.8106,
+      "right-wall": 0.012500000000000011
+    },
+    "unreal": {
+      "left-wall": 0.031899999999999984,
+      "above-pendant": 0.7474000000000001,
+      "right-wall": 0.007400000000000018
+    }
+  },
+  "sourceAOOnMinusOffY": {
+    "left-wall": -0.018199999999999994,
+    "upper-left": -0.020199999999999996,
+    "upper-right": -0.0383,
+    "lower-left": -0.00520000000000001,
+    "lower-right": -0.010599999999999998,
+    "above-pendant": 0.0,
+    "adjacent-ceiling": 0.0,
+    "right-wall": 0.0,
+    "frame": -0.0007000000000000062
+  },
+  "limitation": "Pixel deltas after tonemapping are diagnostics, not additive linear irradiance. AOoff disables only the actual new wall-AO material; its displayed comparison web image is the on-state control, not an AOoff reference.",
+  "foregroundDepth": {
+    "sourceMask": "/home/devcontainers/.local/state/lunden-codex-20261127/2372/source-cloth-foreground-mask.json",
+    "sourceMaskSha256": "1366a8f3f589f16d0ffdb7febd9466a0d29e024791ef4a2f9e834ab01acdd3c8",
+    "sourceGeometrySha256": "9b08d5770fdc54efcb6392be62711a8d3db56c9cf5f5ddc83c6db588251b6899",
+    "sourceVisibleCurtainPixels": 6516,
+    "actualFiveRays": [
+      {
+        "pixel": [
+          68,
+          80
+        ],
+        "AOon": [
+          68,
+          59,
+          28
+        ],
+        "AOoff": [
+          68,
+          59,
+          28
+        ],
+        "unchanged": true
+      },
+      {
+        "pixel": [
+          70,
+          80
+        ],
+        "AOon": [
+          52,
+          47,
+          15
+        ],
+        "AOoff": [
+          52,
+          47,
+          15
+        ],
+        "unchanged": true
+      },
+      {
+        "pixel": [
+          73,
+          80
+        ],
+        "AOon": [
+          69,
+          62,
+          31
+        ],
+        "AOoff": [
+          69,
+          62,
+          31
+        ],
+        "unchanged": true
+      },
+      {
+        "pixel": [
+          75,
+          120
+        ],
+        "AOon": [
+          87,
+          76,
+          44
+        ],
+        "AOoff": [
+          87,
+          76,
+          44
+        ],
+        "unchanged": true
+      },
+      {
+        "pixel": [
+          70,
+          135
+        ],
+        "AOon": [
+          124,
+          105,
+          76
+        ],
+        "AOoff": [
+          124,
+          105,
+          76
+        ],
+        "unchanged": true
+      }
+    ],
+    "fiveRaysPass": true,
+    "changedSourceVisibleCurtainPixels": 0,
+    "wholeSourceVisibleCurtainMaskPass": true,
+    "changedExamples": [],
+    "limitation": "Source-geometry pixel-centre mask; FXAA boundary mixing must be reviewed explicitly if any edge pixels differ, never silently accepted."
+  }
+}

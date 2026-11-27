@@ -1,0 +1,24 @@
+{
+  "verifiedOpenAtUtc": "2026-11-27T16:25:24Z",
+  "originalWholeImagesReviewed": {
+    "native": 3,
+    "originalWeb": 2
+  },
+  "source": "719160126ef56b84b11d84ab534728da1b808692",
+  "introducedForegroundRegression": "fixed inline; five rays and all6516 source-visible curtain pixels unchanged; no edge exception",
+  "remainingOpenIssues": [
+    2447,
+    2459,
+    2460,
+    2481,
+    2482,
+    2484,
+    2486,
+    2487,
+    2488,
+    2489
+  ],
+  "intentionalProfileDifferences": "LinuxCPU640x360, FXAA1, conventional shadows3/1024/3cascades, transientNaniteoff, no full Windows/Lumen/performance claim",
+  "newUnmappedVisibleRegression": false,
+  "publicDownstream": "not applicable: original-only Unreal"
+}

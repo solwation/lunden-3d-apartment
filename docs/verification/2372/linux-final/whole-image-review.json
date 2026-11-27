@@ -1,0 +1,47 @@
+{
+  "verticalContrasts": {
+    "left": {
+      "web": 1.266213389121339,
+      "native": 1.1219101123595505,
+      "ratio": 0.8860355782038251,
+      "pass": true
+    },
+    "right": {
+      "web": 1.3994011976047902,
+      "native": 1.2133660331085223,
+      "ratio": 0.8670608794570956,
+      "pass": true
+    }
+  },
+  "actualAOOnVsOff": {
+    "pixels": 5575,
+    "bboxInclusive": [
+      0,
+      33,
+      69,
+      134
+    ],
+    "brightenedPixels": 0
+  },
+  "newVsPriorAOOff": {
+    "pixels": 0,
+    "bboxInclusive": null,
+    "brightenedPixels": 0
+  },
+  "wholeImageReview": {
+    "originalsViewed": [
+      "all3correctedNative",
+      "bothCanonicalWeb"
+    ],
+    "foreground": "PASS:0/6516source-visibleClothPixelsChanged;all5actualRayPixelsIdentical",
+    "otherForeground": "No visible change to picture, furniture, rug, cabinets, plants or other curtains in AOon/off pair",
+    "existingOpenDifferences": [
+      2484,
+      2482,
+      2481,
+      2489
+    ],
+    "profile": "Linuxdiagnostic FXAA1/PostProcessAAQuality0/Shadow3/LFC2, notfullWindows",
+    "process": "Root reviews nativeexit and247postflight separately"
+  }
+}

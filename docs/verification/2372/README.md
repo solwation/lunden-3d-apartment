@@ -80,8 +80,9 @@ Root körde tre faktiska 640 × 360-bilder från den komponerade världen vid `e
 enbart verkliga Silvia släckt genom lampans metod och enbart den riktiga WindowPP-komponentens materialvikt noll.
 Alla tre tillstånden och återställningen slutfördes. Den gemensamma motorprocessen slutade senare med kod 255
 i det efterföljande #2322-provet; detta är **inte** en godkänd helkörning. Root granskar processutfall och skyddet
-för de 247 författade paketen separat. Profilens faktiska värden är FXAA 1, AA-quality 0, ShadowQuality 3,
-LightFunctionQuality 2 och SeparateTranslucency 1; det är en Linux-diagnos, inte Windows fullprofil.
+för de 247 författade paketen separat. Profilens faktiska värden är FXAA 1, ShadowQuality 3, LightFunctionQuality 2 och SeparateTranslucency 1;
+det är en Linux-diagnos, inte Windows fullprofil. Den äldre metadatafrågan `r.PostProcessAAQuality`
+avser ingen registrerad CVar i exakt 5.8.4: dess returvärde 0 är en fallback och bevisar ingen AA-kvalitetsnivå.
 
 | Ursprungligt vänsterfält | Unreal/webb, normalt läge |
 |---|---:|
@@ -106,8 +107,8 @@ med källans egen geometri och framförliggande objekt som djupkontroll. Väggen
 ändras inte. Ändringen avser enbart denna målade väggs takband; övrig käll-AO följs i
 [det separata #2489](https://github.com/solwation/lunden-3d-apartment/issues/2489).
 
-Källfixture, strikt schema, 25 strålar och rena djup-/kant-/falloffprov passerar. Ingen efterbild med den nya
-AO-posten finns ännu. Native-kompilering, faktisk bindning och bildgränserna återstår; ärendet är fortsatt öppet.
+Källfixture, strikt schema, 25 strålar och rena djup-/kant-/falloffprov passerar. Vid detta första källcheckpoint saknades efterbilder; den senare faktiska körningen och dess
+upptäckta förgrundsfel beskrivs nedan. Det var inte en färdig leverans.
 
 ### Source correction for transparent foreground depth
 
@@ -140,3 +141,18 @@ foreground rays have pure regression coverage. Final native acceptance must also
 check these five pixels and the source-geometry curtain mask against actual
 AO-on/off images, plus the unchanged luminance/gradient contract. That corrected
 native result is still pending at this source checkpoint.
+
+## Godkänt Linux-resultat den 27 november
+
+Den korrigerade körningen vid `71916012` avslutades med kod 0 i både motor och launcher på 311,83 sekunder.
+Alla 247 författade paket är byteidentiska och skrivskyddade. De fem ursprungliga luminanskvoterna är
+0,8864 / 0,9310 / 0,9766 / 0,8249 / 0,8468 och de två vertikala kontrastkvoterna 0,8860 / 0,8671: samtliga godkända.
+Alla fem dokumenterade gardinstrålar och hela den låsta ytan med 6 516 gardinpixlar är oförändrade när AO växlas.
+Tolv återlästa djupkomponenter använder gardinernas verkliga mesh; inga främmande djupkomponenter finns.
+Den tidigare avvisade körningens AO-av-bild har samma RGB-pixlar i hela bilden.
+
+De tre faktiska efterbilderna och källbundna process-, paket-, export- och mätproven finns i [linux-final](linux-final/README.md).
+Både hela bilderna och utsnitten har granskats. Den inledande förgrundsregressionen är rättad i samma ärende.
+Kvarvarande skillnader följs i separata ärenden, bland annat #2481, #2482, #2484 och #2489.
+Profilen är avgränsad till Linuxdiagnos; det är inget nytt fullkvalitetsprov för Windows eller paketerat spel.
+Ändringen avser bara originalets Unreal-version och ska inte föras till det publika webbprojektet.
