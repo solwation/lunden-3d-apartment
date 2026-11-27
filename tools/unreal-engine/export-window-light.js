@@ -1,6 +1,7 @@
 // #2394: the real homeRegion geometry and transmission at the web export's current pose.
 import { WINDOW_LIGHT, BLINDS, LEVELS } from '../../src/config.js';
 import { homeRegion, castWindow, windowPass } from '../../src/windowlight.js';
+import { dayCycleLightColors } from '../../src/daycycle.js';
 
 const snapshot = (value) => {
   // JSON.stringify would silently turn NaN/Infinity into null and lose undefined fields.
@@ -74,7 +75,7 @@ export function windowDaylight(world) {
   return snapshot({
     version: 1, region: region.id, runtimeCoverage: 'export-snapshot',
     coordinates: { units: 'metres', axes: 'x east, y up, z south' },
-    config: WINDOW_LIGHT, blindDimming: BLINDS.dim,
+    config: WINDOW_LIGHT, blindDimming: BLINDS.dim, runtimeColors: dayCycleLightColors(),
     box: region.box, bands, sources, segments, snapshot: { doors, blinds, curtains },
     limitations: [
       'Visibility rays and blind/curtain transmission use the current export pose; live changes require recomputation.',
@@ -85,7 +86,7 @@ export function windowDaylight(world) {
       sources: ['src/config.js#WINDOW_LIGHT', 'src/config.js#BLINDS.dim', 'src/config.js#LEVELS',
         'src/windowlight.js#homeRegion', 'src/windowlight.js#castWindow', 'src/windowlight.js#windowPass',
         'src/windowlight.js#WindowLight.update', 'src/blinds.js#Blind.cover', 'src/curtains.js#Curtain.cover',
-        'src/sunbounce.js'],
+        'src/sunbounce.js', 'src/daycycle.js#dayCycleLightColors'],
       visibility: 'homeRegion.segs(level), including current non-wardrobe door segments and the plan outline',
       wellTransmission: 'config.well times the mean pass of the lower-storey windows',
     },

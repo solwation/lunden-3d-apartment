@@ -36,6 +36,9 @@ test('snapshot is detached JSON data with real bands, full rays, stable ids and 
   assert.deepEqual(a, windowDaylight(w));
   assert.equal(a.runtimeCoverage, 'export-snapshot');
   assert.equal(a.region, 'L1007');
+  assert.equal(a.runtimeColors.space, 'linear-srgb');
+  for (const key of ['skyDay', 'skyNight', 'sunLow', 'sunHigh', 'moon'])
+    assert(a.runtimeColors[key].length === 3 && a.runtimeColors[key].every(v => Number.isFinite(v) && v >= 0 && v <= 1));
   assert.equal(new Set(a.sources.map(s => s.id)).size, a.sources.length);
   assert.equal(a.sources.filter(s => s.kind === 'well').length, 2);
   for (const s of a.sources) {
@@ -51,8 +54,10 @@ test('snapshot is detached JSON data with real bands, full rays, stable ids and 
   assert.deepEqual(lower[0].curtainIds, ['curtain0']);
   a.config.tint[0] = -100;
   a.snapshot.curtains[0].glass[0] = -100;
+  a.runtimeColors.sunHigh[0] = -100;
   assert.notEqual(WINDOW_LIGHT.tint[0], -100);
   assert.equal(w.blinds.curtains[0].spec.glass[0], 2);
+  assert.notEqual(windowDaylight(w).runtimeColors.sunHigh[0], -100);
 });
 
 test('current door pose changes exported visibility without changing glass identity', () => {

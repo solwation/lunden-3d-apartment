@@ -213,6 +213,16 @@ export function skyGradientPalette() {
     nightHorizon: NIGHT_HORIZON.toArray(), duskHorizon: DUSK_HORIZON.toArray(), overcast: OVERCAST.toArray() };
 }
 const SUN_LOW = new THREE.Color(0xffb070), SUN_HIGH = new THREE.Color(0xfff1dc), MOON = new THREE.Color(0x9fb4ff);
+const HEMI_DAY = 0xeaf3ff, HEMI_NIGHT = 0x6b7da8;
+
+/** Detached source colours for the original-only Unreal daylight export (#2394). */
+export function dayCycleLightColors() {
+  if (THREE.ColorManagement.workingColorSpace !== THREE.LinearSRGBColorSpace)
+    throw new Error('Day-cycle export requires the actual linear sRGB working space');
+  return { space: 'linear-srgb', skyDay: new THREE.Color(HEMI_DAY).toArray(),
+    skyNight: new THREE.Color(HEMI_NIGHT).toArray(), sunLow: SUN_LOW.toArray(),
+    sunHigh: SUN_HIGH.toArray(), moon: MOON.toArray() };
+}
 
 /** Dawn / dusk colour depth (#2124, SKY_DUSK; pure, for tests too): sky-shader colours (linear) for the sun height `sunY`, overcast
  * `oc` 0…1 and `off` 0…1 (inside the cloud deck / lightning). All zero when the sun is high (day) or deep below the horizon (night).
@@ -400,7 +410,7 @@ export class DayCycle {
     // the visitor's room's blinds (#273) take away a share of the daylight that reaches it (not the night's)
     const inDay = day * (1 - this.dim) * (1 - this.under); // under: the garage under the courtyard (#357)
     hemi.intensity = (this.base.hemi * inDay + DAY.nightAmbient) * (1 - 0.3 * oc) + WEATHER.flash.light * flash;
-    hemi.color.setHex(0xeaf3ff).lerp(new THREE.Color(0x6b7da8), night);
+    hemi.color.setHex(HEMI_DAY).lerp(new THREE.Color(HEMI_NIGHT), night);
     ambient.intensity = (this.base.ambient * inDay + DAY.nightAmbient * 0.5) * (1 - 0.25 * oc) + WEATHER.flash.light * 0.4 * flash + this.lit * GARAGE.lights.carLight; // lit: the garage's tubes while the visitor is down there (#440)
     fill.intensity = this.base.fill * inDay;
   }

@@ -588,9 +588,8 @@ its own binaries, so the editor and the packaged game load only Epic-signed code
   WSL instead of wanting to resave committed assets. An existing clone checked out before the rule needs its files
   re-checked out once (`git rm -r --cached -q tools/unreal-engine && git reset -q --hard`, on a clean tree). Builders
   whose stamp is local (`build_exterior/l1007/site/vegetation.py`) and the importer's `material-map.json` hash also
-  normalise CRLF to LF before hashing. `build_lighting.py` still hashes its raw bytes, because its spec hash is
-  stored in the committed `BP_LundenSky`: changing it would force a locked rebuild of `/Game/Lunden/Lighting`.
-  Normalise it (`.replace(b"\r\n", b"\n")`) the next time that script changes anyway and its assets are rebuilt.
+  normalise CRLF to LF before hashing. `build_lighting.py` also normalises its own and its shader/helper sources to LF before hashing (#2394);
+  its spec hash remains stored in the committed `BP_LundenSky`. Binary package hashes remain byte-exact.
 - **Python never ships.** The packaged game runs Blueprints and assets only. Editor Python covers import, builders
   and tests (`tools/unreal-engine/tests/test_<area>.py`, run through `PythonAutomationTest` in Play In Editor).
 - **Shared values come from data.** Read measurements, IDs and rules from the #2245 export (`measurements.json`,

@@ -114,6 +114,7 @@
             "version": { "const": 1 }, "region": { "const": "L1007" }, "runtimeCoverage": { "const": "export-snapshot" },
             "coordinates": { "type": "object", "required": ["units", "axes"], "properties": { "units": { "const": "metres" } } },
             "config": { "type": "object", "required": ["max", "rays", "base", "gain", "spread", "wrap", "glassWrap", "bounce", "bounceWrap", "warm", "tint", "skyWarm", "well", "sunGain", "sunClip", "sunMinHeight", "sunMaxArea", "sunWrap", "sunBeyond", "floor"], "properties": { "max": { "type": "integer", "minimum": 1 }, "rays": { "const": 32 } } },
+            "runtimeColors": { "type": "object", "required": ["space", "skyDay", "skyNight", "sunLow", "sunHigh", "moon"], "properties": { "space": { "const": "linear-srgb" }, "skyDay": { "$ref": "#/$defs/vec3" }, "skyNight": { "$ref": "#/$defs/vec3" }, "sunLow": { "$ref": "#/$defs/vec3" }, "sunHigh": { "$ref": "#/$defs/vec3" }, "moon": { "$ref": "#/$defs/vec3" } } },
             "box": { "type": "object", "required": ["x0", "x1", "z0", "z1", "y0", "y1"] },
             "bands": { "type": "array", "minItems": 2, "items": { "type": "object", "required": ["level", "y0", "y1"] } },
             "sources": { "type": "array", "minItems": 1, "items": {

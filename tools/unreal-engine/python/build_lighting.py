@@ -48,6 +48,8 @@ import stair_lamp
 import sky_clouds
 import collection_ids  # noqa: E402
 import neutral_tonemap  # #2396: the web's NeutralToneMapping in place of Unreal's tonemapper
+import window_light
+import build_window_light
 
 DIR = "/Game/Lunden/Lighting"
 SKY = DIR + "/BP_LundenSky"
@@ -197,15 +199,22 @@ def lamp_rows(m):
 
 def spec_of(m):
     sky = m["site"]["sky"]
+    daylight = m["site"].get("windowDaylight")
+    if not daylight or not daylight.get("runtimeColors"):
+        raise RuntimeError("Re-export L1007 window daylight and source runtime colours before building shared lighting (#2394)")
+    window_light.validate(daylight)
     boxes, soffit = indoor_boxes(m)
     return {"sky": sky, "boxes": boxes, "soffit": soffit, "lamps": lamp_rows(m), "sunLux": SUN_LUX,
+            "windowDaylight": daylight,
+            "windowShader": hashlib.sha256(Path(window_light.__file__).read_bytes().replace(b"\r\n", b"\n")).hexdigest(),
+            "windowBuilder": hashlib.sha256(Path(build_window_light.__file__).read_bytes().replace(b"\r\n", b"\n")).hexdigest(),
             "exposureBias": EXPOSURE_BIAS, "hemiShare": HEMI_SHARE, "hemiNightSky": HEMI_NIGHT_SKY, "skyLuminance": SKY_LUMINANCE, "skyOvercast": SKY_OVERCAST, "wet": WET_RATE, "skyScale": SKY_SCALE, "fogGrey": FOG_GREY, "ambientRef": AMBIENT_REF, "fog": FOG,
             "snowOvercast": SNOW_OVERCAST, "cloudRange": CLOUD_RANGE,
             "stairBounds": m["stair"].get("lightBounds"),
-            "skyShader": hashlib.sha256(Path(sky_clouds.__file__).read_bytes()).hexdigest(),
-            "stairShader": hashlib.sha256(Path(stair_lamp.__file__).read_bytes()).hexdigest(),
-            "tonemap": hashlib.sha256(Path(neutral_tonemap.__file__).read_bytes()).hexdigest(),
-            "script": hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
+            "skyShader": hashlib.sha256(Path(sky_clouds.__file__).read_bytes().replace(b"\r\n", b"\n")).hexdigest(),
+            "stairShader": hashlib.sha256(Path(stair_lamp.__file__).read_bytes().replace(b"\r\n", b"\n")).hexdigest(),
+            "tonemap": hashlib.sha256(Path(neutral_tonemap.__file__).read_bytes().replace(b"\r\n", b"\n")).hexdigest(),
+            "script": hashlib.sha256(Path(__file__).read_bytes().replace(b"\r\n", b"\n")).hexdigest()}
 
 
 def spec_hash(spec):
@@ -504,6 +513,8 @@ skyLum = SkyLuminance + (SkyOvercast - SkyLuminance) * oc
 hemi = ((HemiOvercast + (HemiClear - HemiOvercast) * clear) * day + NightAmbient) * (1 - 0.3 * oc)
 expo = (1 + (ExpRatio - 1) * clear) / ExpRatio
 fill = (ambient + HemiShare * hemi * (1 + (HemiNight - 1) * (1 - day))) * expo
+windowSky = (RawHemiOvercast + (RawHemiClear - RawHemiOvercast) * clear) * day * (1 - 0.3 * oc)
+windowSun = (sunOut + moonOut) * SunClear / max(SunLux, 0.0001)
 expoW = loge(expo * ExpRatio) / loge(ExpRatio)
 grey = FogGrey * oc * (0.15 + 0.85 * day)
 streak = 0.06 + 0.54 * day
@@ -540,6 +551,7 @@ def build_mpc(spec):
                "DriftPerMs": s["driftPerMs"], "DriftMax": s["driftMax"] * 100,
                # #2307: DuskLight (what the small lamps follow) -1 = the sky has not run yet (the lamps wait); the clouds; the moon disc
                "DuskLight": -1.0, "Daylight": -1.0, "Hour": 14.0, "PowerAvailable": 1.0,
+               "WindowSkyStrength": 0.0, "WindowSunStrength": 0.0, "WindowAmbientFill": 0.0,
                "CloudOffsetX": 0.0, "CloudOffsetY": 0.0, "SkyThreshold": spec["sky"]["clouds"]["clearThr"], "Overcast": 0.0,
                "Night": 0.0, "CloudCover": 0.0, "CloudCoverage": 0.0,
                "MoonRadius": spec["sky"]["light"]["moonRadius"], "Earthshine": spec["sky"]["light"]["moonEarthshine"]}
@@ -1031,7 +1043,7 @@ moving = (kNew - K) * (kNew - K) > 0.0000000001
     return bp
 
 
-def build_sky(spec, mpc, precip, clouds, tonemap):
+def build_sky(spec, mpc, precip, clouds, tonemap, window_material):
     bp = load_or_create_blueprint(SKY, u.Actor)
     comps = components(bp, {"Sun": u.DirectionalLightComponent, "Moon": u.DirectionalLightComponent,
                             "Atmosphere": u.SkyAtmosphereComponent, "SkyLight": u.SkyLightComponent,
@@ -1057,7 +1069,8 @@ def build_sky(spec, mpc, precip, clouds, tonemap):
     weather.set_editor_property("unbound", True)
     pp = weather.get_editor_property("settings")
     # #2396: the rain/snow/sky pass (before the tonemapper) and the web's tone mapping (in place of Unreal's)
-    pp.set_editor_property("weighted_blendables", u.WeightedBlendables(array=[u.WeightedBlendable(weight=1.0, object=precip),
+    pp.set_editor_property("weighted_blendables", u.WeightedBlendables(array=[u.WeightedBlendable(weight=1.0, object=window_material),
+                                                                              u.WeightedBlendable(weight=1.0, object=precip),
                                                                               u.WeightedBlendable(weight=1.0, object=tonemap)]))
     for key, value in (("auto_exposure_method", u.AutoExposureMethod.AEM_MANUAL), ("auto_exposure_apply_physical_camera_exposure", False),
                        ("auto_exposure_bias", EXPOSURE_BIAS)):
@@ -1131,7 +1144,8 @@ def build_sky(spec, mpc, precip, clouds, tonemap):
     E = Expr(G, {**getters, "doy": (doy, "ReturnValue"), "days": (days, "ReturnValue"), "SnowOvercast": SNOW_OVERCAST,
                  "ClearThr": float(clouds["clearThr"]), "ThrA": float(clouds["thr"][0]), "ThrB": float(clouds["thr"][1]),
                  "Ramp": float(clouds["ramp"]), "CloudLo": float(CLOUD_RANGE[0]), "CloudHi": float(CLOUD_RANGE[1]),
-                 "ExpRatio": float(light["exposureClear"] / light["exposureOvercast"])})
+                 "ExpRatio": float(light["exposureClear"] / light["exposureOvercast"]),
+                 "RawHemiClear": float(light["hemiClear"]), "RawHemiOvercast": float(light["hemiOvercast"])})
     E.run(SUN)
     E.run(SKYDIR.format(p="sun", dec="dec", ha="ha"))
     E.run(MOON)
@@ -1203,7 +1217,8 @@ def build_sky(spec, mpc, precip, clouds, tonemap):
                         ("CloudOffsetY", (G.get("CloudOffsetY"), "CloudOffsetY")),
                         ("SkyThreshold", env["skyThr"]), ("Overcast", env["ocl"]), ("Rain", env["Rain"]), ("Snow", env["Snow"]), ("Wet", env["Wet"]), ("WindX", env["windX"]),
                         ("WindY", env["windY"]), ("Streak", env["streak"]), ("DuskLight", env["duskLight"]),
-                        ("Daylight", env["day"]), ("Hour", env["Hour"]), ("Night", env["night"]), ("CloudCover", env["cover"]), ("CloudCoverage", env["coverage"])):
+                        ("Daylight", env["day"]), ("Hour", env["Hour"]), ("Night", env["night"]), ("CloudCover", env["cover"]), ("CloudCoverage", env["coverage"]),
+                        ("WindowSkyStrength", env["windowSky"]), ("WindowSunStrength", env["windowSun"]), ("WindowAmbientFill", env["fill"])):
         setp = G.call("KismetMaterialLibrary:SetScalarParameterValue", ParameterName=name)
         constant(setp, "Collection", mpc.get_path_name())
         E.feed(setp, "ParameterValue", value)
@@ -1396,19 +1411,39 @@ def file_hashes():
     return {p.name: hashlib.sha256(p.read_bytes()).hexdigest() for p in level_files()}
 
 
+def window_bound(bp, material):
+    """Read-only check of the actual Weather SCS template, never add a missing component."""
+    if not bp or not material:
+        return False
+    subsystem = u.get_engine_subsystem(u.SubobjectDataSubsystem)
+    lib = u.SubobjectDataBlueprintFunctionLibrary
+    for handle in subsystem.k2_gather_subobject_data_for_blueprint(bp):
+        data = subsystem.k2_find_subobject_data_from_handle(handle)
+        if data is not None and str(lib.get_variable_name(data)) == "Weather":
+            comp = lib.get_object(data)
+            blends = comp.get_editor_property("settings").get_editor_property("weighted_blendables").array
+            matches = [b for b in blends if b.object == material]
+            return len(matches) == 1 and abs(matches[0].weight - 1) < 1e-6
+    return False
+
+
 def main(argv):
     force, check = "--force" in argv, "--check" in argv
     rest = [a for a in argv if not a.startswith("--")]
     m = load_measurements(rest[0] if rest else PROJECT / "Import/measurements.json")
     spec = spec_of(m)
     want = spec_hash(spec)
-    assets = (SKY, LAMP, MPC, PRECIP, CLOUDS, AMBIENT_CUBE, neutral_tonemap.MATERIAL)
+    assets = (SKY, LAMP, MPC, PRECIP, CLOUDS, AMBIENT_CUBE, neutral_tonemap.MATERIAL, build_window_light.PATH)
     stair_assets = [stair_lamp.path_for(row) for row in spec["lamps"] if row["stairVisibility"]]
     have = ASSETS.does_asset_exist(SKY) and ASSETS.get_metadata_tag(ASSETS.load_asset(SKY), SPEC_TAG) == want
     cloud_material_ok = ASSETS.does_asset_exist(PRECIP) and precip_matches(spec)
     # #2408: M_LundenClouds reads CloudCoverage by GUID; one the collection no longer has rebuilds the copy
     clouds_unresolved = collection_ids.unresolved(ASSETS.load_asset(CLOUDS)) if ASSETS.does_asset_exist(CLOUDS) else []
-    complete = all(ASSETS.does_asset_exist(p) for p in assets) and cloud_material_ok and not clouds_unresolved
+    window_material = ASSETS.load_asset(build_window_light.PATH) if ASSETS.does_asset_exist(build_window_light.PATH) else None
+    window_ok = bool(window_material and ASSETS.does_asset_exist(MPC)
+                     and build_window_light.graph_matches(window_material, spec["windowDaylight"], ASSETS.load_asset(MPC))
+                     and ASSETS.does_asset_exist(SKY) and window_bound(ASSETS.load_asset(SKY), window_material))
+    complete = all(ASSETS.does_asset_exist(p) for p in assets) and cloud_material_ok and not clouds_unresolved and window_ok
     stamp = json.loads(STAMP.read_text(encoding="utf-8")) if STAMP.exists() else {}
     level_ok = (stamp.get("spec") == want and stamp.get("files") == file_hashes() and bool(stamp.get("files"))
                 and all(ASSETS.does_asset_exist(path) for path in stair_assets))
@@ -1422,6 +1457,8 @@ def main(argv):
                     problems.append(f"{path}: missing or stale stair visibility graph")
         if not cloud_material_ok:
             problems.append(f"{PRECIP} cloud shader or weather inputs missing or stale")
+        if not window_ok:
+            problems.append(f"{build_window_light.PATH} window shader, weather inputs or sky binding missing or stale")
         problems += [f"{CLOUDS}: {e}" for e in clouds_unresolved]
         if not have:
             problems.append(f"{SKY} spec hash differs (run build_lighting.py)")
@@ -1440,9 +1477,12 @@ def main(argv):
         lamp_bp = build_lamp(spec, mpc)
         clouds, clouds_built = build_clouds(mpc)
         tonemap = neutral_tonemap.build()
-        sky_bp = build_sky(spec, mpc, precip, clouds, tonemap)
+        window_material = build_window_light.build(spec["windowDaylight"], mpc)
+        sky_bp = build_sky(spec, mpc, precip, clouds, tonemap, window_material)
+        if not window_bound(sky_bp, window_material):
+            raise RuntimeError("The built sky does not contain its source window daylight blendable")
         ASSETS.set_metadata_tag(sky_bp, SPEC_TAG, want)
-        saved = [mpc, precip, tonemap, lamp_bp, sky_bp, u.load_asset(AMBIENT_CUBE)] + ([clouds] if clouds_built else [])
+        saved = [mpc, precip, tonemap, window_material, lamp_bp, sky_bp, u.load_asset(AMBIENT_CUBE)] + ([clouds] if clouds_built else [])
         for asset in saved:
             save(asset)
         u.log("LUNDEN_LIGHTING assets saved: " + ", ".join(a.get_path_name().split(".")[0] for a in saved))
