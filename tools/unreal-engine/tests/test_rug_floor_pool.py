@@ -170,6 +170,37 @@ def current_display_pools():
         comp = receiver.get_component_by_class(u.StaticMeshComponent)
         original = u.load_asset('/Game/Lunden/Generated/l1007/Materials/'+row['key'])
         assert comp.get_material(0) == original, "the original PBR surface must remain exact"
+    # The calibrated child may override only its declared color/specular guesses.
+    # All real texture, UV, roughness, alpha and static-switch values must survive.
+    import build_furnishing_profile as furnishing
+    import re
+    checked = set()
+    for actor in actors:
+        comp = actor.get_component_by_class(u.StaticMeshComponent)
+        if not comp or not comp.static_mesh:
+            continue
+        for index, slot in enumerate(comp.static_mesh.static_materials):
+            original = slot.material_interface
+            if not isinstance(original, u.MaterialInstanceConstant) or not original.get_path_name().startswith('/Game/Lunden/Generated/l1007/Materials/'):
+                continue
+            profile = next((p for p in furnishing.PROFILES.values() if any(re.search(pattern, original.get_name()) for pattern in p['keys'])), None)
+            if profile is None:
+                continue
+            calibrated = comp.get_material(index)
+            assert isinstance(calibrated, u.MaterialInstanceConstant)
+            assert calibrated.get_editor_property('parent') == original
+            assert 'guess:' in u.EditorAssetLibrary.get_metadata_tag(calibrated, 'Lunden.Assumption')
+            if calibrated.get_path_name() in checked:
+                continue
+            checked.add(calibrated.get_path_name())
+            for kind in ('scalar','vector','texture','static_switch'):
+                for name in getattr(u.MaterialEditingLibrary, 'get_'+kind+'_parameter_names')(original):
+                    if str(name) == 'BaseColorFactor' or (str(name) == 'SpecularFactor' and profile['specular'] is not None):
+                        continue
+                    assert (getattr(u.MaterialEditingLibrary, 'get_material_instance_'+kind+'_parameter_value')(calibrated, name)
+                            == getattr(u.MaterialEditingLibrary, 'get_material_instance_'+kind+'_parameter_value')(original, name)), (calibrated.get_path_name(),kind,name)
+            assert calibrated.get_blend_mode() == original.get_blend_mode()
+    assert len(checked) >= 2, 'missing actual wood and upholstery profile instances'
     mpc = u.load_asset(display.MPC)
     weather = u.load_asset('/Game/Lunden/Lighting/MPC_LundenWeather')
     saved_power = u.MaterialLibrary.get_scalar_parameter_value(world, weather, 'PowerAvailable')
