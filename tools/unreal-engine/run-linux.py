@@ -37,6 +37,13 @@ def low_ini():
             + "\n" + Path(__file__).with_name("linux-low.ini").read_text())
 
 
+def automation_passed(report):
+    # Unreal exports JSON with a UTF-8 BOM on Linux as well as Windows.
+    result = json.loads(report.read_text(encoding="utf-8-sig")) if report.is_file() else {}
+    return (result.get("succeeded", 0) + result.get("succeededWithWarnings", 0) > 0
+            and result.get("failed") == 0 and result.get("notRun") == 0)
+
+
 @contextlib.contextmanager
 def editor_slot(owner):
     """Share the PC-wide slots with the Windows editors; never remove somebody else's lock."""
@@ -214,10 +221,7 @@ def main(argv=None):
     content = log.read_text(errors="replace") if log.is_file() else ""
     ok = code == 0 and bool(content) and not re.search(r"LogPython: Error:|Traceback \(most recent call last\)", content)
     if args.mode == "tests":
-        report = run / "automation/index.json"
-        result = json.loads(report.read_text()) if report.is_file() else {}
-        ok = ok and result.get("succeeded", 0) + result.get("succeededWithWarnings", 0) > 0
-        ok = ok and result.get("failed") == 0 and result.get("notRun") == 0
+        ok = ok and automation_passed(run / "automation/index.json")
     result = {"engine": actual, "profile": "linux-low" if args.render else "nullrhi",
               "exitCode": code, "timedOut": timed_out, "passed": bool(ok), "seconds": round(time.monotonic() - start, 2),
               "log": str(log), "command": command,

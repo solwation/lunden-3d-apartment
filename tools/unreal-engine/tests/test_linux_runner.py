@@ -49,7 +49,7 @@ class LinuxRunnerTests(unittest.TestCase):
             if report is not None:
                 directory = path.parent / "automation"
                 directory.mkdir()
-                (directory / "index.json").write_text(json.dumps(report))
+                (directory / "index.json").write_text("\ufeff" + json.dumps(report))
             return exit_code
         with patch.object(runner, "editor_slot", return_value=runner.contextlib.nullcontext()), \
                 patch.object(runner, "run_process", side_effect=engine_process):
