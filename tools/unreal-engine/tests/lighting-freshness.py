@@ -36,6 +36,13 @@ def exercise(measurements, sky):
         copy.write_text(json.dumps(data))
         check(copy, sky, stale=True)
         clouds["height"] = height
+        # #2394: source window colours participate in the real saved sky signature.
+        sky_day = data["site"]["windowDaylight"]["runtimeColors"]["skyDay"]
+        old_red = sky_day[0]
+        sky_day[0] = old_red + 0.01
+        copy.write_text(json.dumps(data))
+        check(copy, sky, stale=True)
+        sky_day[0] = old_red
         data["lights"][0]["position"]["unreal"][0] += 10
         copy.write_text(json.dumps(data))
         check(copy, sky, stale=True)
@@ -54,7 +61,7 @@ def exercise(measurements, sky):
             assert "Lunden.SpecHash" in str(error), str(error)
         else:
             raise AssertionError(f"accepted old signature after changing {old!r}")
-    print("Lighting regressions OK: unrelated changes, cloud, lamp position, tag and Blueprint owner")
+    print("Lighting regressions OK: unrelated changes, cloud, window colours, lamp position, tag and Blueprint owner")
 
 
 if __name__ == "__main__":

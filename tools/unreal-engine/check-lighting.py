@@ -15,6 +15,7 @@ sys.path.insert(0, str(TOOLS / "python"))
 from season_tags import season_tags
 import sky_clouds
 import stair_lamp
+import window_light
 
 PACKAGE = "/Game/Lunden/Lighting/BP_LundenSky"
 ASSET = TOOLS.parents[1] / "unreal/Lunden/Content/Lunden/Lighting/BP_LundenSky.uasset"
@@ -41,8 +42,10 @@ def lighting_signature(measurements):
     tree.body = [node for node in tree.body if node in wanted]
     # neutral_tonemap.py (#2396) builds an editor material and imports `unreal`; the specification only hashes its file.
     neutral_tonemap = types.SimpleNamespace(__file__=str(TOOLS / "python/neutral_tonemap.py"))
+    build_window_light = types.SimpleNamespace(__file__=str(TOOLS / "python/build_window_light.py"))
     ns = dict(__file__=str(builder), Path=Path, hashlib=hashlib, json=json, season_tags=season_tags,
-              sky_clouds=sky_clouds, stair_lamp=stair_lamp, neutral_tonemap=neutral_tonemap)
+              sky_clouds=sky_clouds, stair_lamp=stair_lamp, neutral_tonemap=neutral_tonemap,
+              window_light=window_light, build_window_light=build_window_light)
     exec(compile(tree, str(builder), "exec"), ns)
     return ns["spec_hash"](ns["spec_of"](ns["load_measurements"](measurements)))
 
