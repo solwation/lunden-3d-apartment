@@ -7,6 +7,7 @@ Use `check`, `python SCRIPT [ARGS...]`, or `tests [FILTER]`. Rendering requires 
 import argparse
 import contextlib
 import datetime
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -97,6 +98,7 @@ def main(argv=None):
     parser.add_argument("--engine-root", type=Path)
     parser.add_argument("--data-dir", type=Path)
     parser.add_argument("--render", action="store_true", help="Vulkan SM5 offscreen, 640x360, low profile")
+    parser.add_argument("--vulkan-icd", type=Path, help="Override the private driver for this rendered run only")
     parser.add_argument("--timeout", type=int, default=300)
     parser.add_argument("--owner", default="local-linux #2467")
     commands = parser.add_subparsers(dest="mode", required=True)
@@ -149,8 +151,8 @@ def main(argv=None):
     env = os.environ.copy()
     env["UE-LocalDataCachePath"] = str(data / "DerivedDataCache")
     env["UE-ZenDataPath"] = str(data / "Zen")
-    if args.render and settings.get("vulkanIcd"):
-        env["VK_DRIVER_FILES"] = settings["vulkanIcd"]
+    if args.render and (args.vulkan_icd or settings.get("vulkanIcd")):
+        env["VK_DRIVER_FILES"] = str(args.vulkan_icd.resolve()) if args.vulkan_icd else settings["vulkanIcd"]
     if args.render and settings.get("libraryPath"):
         env["LD_LIBRARY_PATH"] = settings["libraryPath"] + ":" + env.get("LD_LIBRARY_PATH", "")
     print(shlex.join(command), flush=True)
@@ -166,7 +168,10 @@ def main(argv=None):
         ok = ok and result.get("failed") == 0 and result.get("notRun") == 0
     result = {"engine": actual, "profile": "linux-low" if args.render else "nullrhi",
               "exitCode": code, "passed": bool(ok), "seconds": round(time.monotonic() - start, 2),
-              "log": str(log), "command": command}
+              "log": str(log), "command": command,
+              "engineIniSha256": hashlib.sha256(ini.read_bytes()).hexdigest(),
+              "vulkanIcd": env.get("VK_DRIVER_FILES") if args.render else None,
+              "revision": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()}
     (run / "result.json").write_text(json.dumps(result, indent=2) + "\n")
     print(json.dumps(result, indent=2))
     return 0 if ok else 1
