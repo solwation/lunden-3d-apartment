@@ -138,7 +138,7 @@ def main(argv=None):
     command = [str(editor), str(PROJECT / "Lunden.uproject"), f"-DefEngineIni={ini}",
                "-unattended", "-nosplash", "-nosound", "-nop4", "-stdout", "-FullStdOutLogOutput",
                "-NoCrashDialog", f"-abslog={log}"]
-    command += (["-vulkan", "-sm5", "-RenderOffscreen", "-ResX=640", "-ResY=360", "-windowed"]
+    command += (["-vulkan", "-sm5", "-AllowCommandletRendering", "-RenderOffscreen", "-ResX=640", "-ResY=360", "-windowed"]
                 if args.render else ["-nullrhi"])
     if args.mode == "python":
         script = args.script.resolve()
