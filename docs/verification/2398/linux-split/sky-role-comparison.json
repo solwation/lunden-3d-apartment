@@ -1,0 +1,47 @@
+{
+  "completed": true,
+  "actualPairMetadataSHA256": "5bf50ce34cb34dbaf7fc18ce945c4af14aee09a26dc7d75c12409e545f3fbddc",
+  "existingROINormalizedXYXY": [
+    0.02,
+    0.02,
+    0.2,
+    0.3
+  ],
+  "actualBox": [
+    13,
+    7,
+    128,
+    108
+  ],
+  "splitMeanRGB": [
+    145.70512268618165,
+    175.11278519156264,
+    212.29212225570384
+  ],
+  "originalRolesMeanRGB": [
+    145.70512268618165,
+    175.11278519156264,
+    212.29212225570384
+  ],
+  "cropPixelsByteExact": true,
+  "cropDifferenceMaxRGB": [
+    0,
+    0,
+    0
+  ],
+  "cropMeanAbsRGB": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "wholeFrameDifferenceBBox": [
+    0,
+    25,
+    640,
+    360
+  ],
+  "wholeOriginalsViewed": true,
+  "restored": true,
+  "noNewTolerance": true,
+  "limits": "Same-source native sky-only role control, not a web acceptance gate. Native physical-surface differences outside reused sky ROI expected for causal original-role contrast."
+}

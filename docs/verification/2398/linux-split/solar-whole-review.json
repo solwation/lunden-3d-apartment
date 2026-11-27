@@ -1,0 +1,218 @@
+{
+  "issue": 2398,
+  "actualWholeOriginalsViewed": true,
+  "reviewScope": "two fresh saved split-role Solar originals + two locked raw web originals; Root separately owns four interior regressions, twoSkycontrols and whole native outcome",
+  "sourceHead": "fc87de55aa639845dc7a2d2fef317e2b32152dac",
+  "captureCompleted": true,
+  "wholeRHIProcessStatus": "pending at review; no native/runner pass inferred from captures",
+  "allFourRequired": true,
+  "formalAllFourPass": false,
+  "rows": [
+    {
+      "shot": "patio-christmas",
+      "crop": "sunlit-brick",
+      "nativeOverWebWarmth": 0.883489627735152,
+      "pass": false,
+      "web": {
+        "srgb": [
+          196.3,
+          93.5,
+          55.8
+        ],
+        "luminance": 0.2211,
+        "warmth": 3.519
+      },
+      "native": {
+        "srgb": [
+          204.7,
+          101,
+          65.8
+        ],
+        "luminance": 0.2428,
+        "warmth": 3.109
+      }
+    },
+    {
+      "shot": "patio-christmas",
+      "crop": "sunlit-frame",
+      "nativeOverWebWarmth": 1.0811030008110298,
+      "pass": true,
+      "web": {
+        "srgb": [
+          233.4,
+          203.9,
+          189.3
+        ],
+        "luminance": 0.6454,
+        "warmth": 1.233
+      },
+      "native": {
+        "srgb": [
+          248.6,
+          209.9,
+          186.5
+        ],
+        "luminance": 0.697,
+        "warmth": 1.333
+      }
+    },
+    {
+      "shot": "patio-summer",
+      "crop": "sunlit-brick",
+      "nativeOverWebWarmth": 0.9324266893327666,
+      "pass": true,
+      "web": {
+        "srgb": [
+          172.7,
+          98.4,
+          73.4
+        ],
+        "luminance": 0.2045,
+        "warmth": 2.353
+      },
+      "native": {
+        "srgb": [
+          180.9,
+          106.6,
+          82.5
+        ],
+        "luminance": 0.2272,
+        "warmth": 2.194
+      }
+    },
+    {
+      "shot": "patio-summer",
+      "crop": "sunlit-frame",
+      "nativeOverWebWarmth": 1.0169651272384543,
+      "pass": true,
+      "web": {
+        "srgb": [
+          231.9,
+          224.4,
+          218.7
+        ],
+        "luminance": 0.7616,
+        "warmth": 1.061
+      },
+      "native": {
+        "srgb": [
+          246.6,
+          239.3,
+          228.5
+        ],
+        "luminance": 0.8727,
+        "warmth": 1.079
+      }
+    }
+  ],
+  "originals": {
+    "patio-christmas": {
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2398/native-split-fresh/product/solar/unreal-patio-christmas.png",
+      "sha256": "e7e1cd8bd875db705a9322b6aa7470e9d3ad2efef50323140730cc85bcdd2127"
+    },
+    "patio-summer": {
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2398/native-split-fresh/product/solar/unreal-patio-summer.png",
+      "sha256": "bebcce317b1ddf3702510ebdd3de8120e42f4923bb0046752c56a01c429a6006"
+    },
+    "web-patio-christmas": {
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2398/web/web-patio-christmas.jpg",
+      "sha256": "f7308309602136009e1ed9b9665699064ff2fd4eef56ac5eec9fcb661d125f8e",
+      "actualOriginalViewed": true
+    },
+    "web-patio-summer": {
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2388/web/web-patio-day.jpg",
+      "sha256": "2809213185dca1b6aa17076983bc019514dbe27bd403b3b82fc0cba59f5f9851",
+      "actualOriginalViewed": true
+    }
+  },
+  "own2398Findings": [
+    {
+      "observation": "Both seasons show actual warm solar light on the frame. The neutral upper-right frame is visibly less orange than the earlier atmosphere-transmitted surface Sun; both frame warmth gates pass. Native frame still looks brighter than web; R/B gate alone is not an absolute-luminance claim.",
+      "scope": 2398
+    },
+    {
+      "observation": "Winter native brick is visibly lighter and less warm than the source web. Locked R/B ratio .8834896 fails lower .9 bound; summer brick .9324267 passes. Proper split did not materially improve the false-flag diagnostic brick result, so full issue acceptance stays failed.",
+      "scope": 2398
+    }
+  ],
+  "existingOpenMappings": [
+    {
+      "issue": 2388,
+      "observation": "Through-window interior remains flatter/brighter and less layered versus web, especially upper-floor windows; Root separately owns glass."
+    },
+    {
+      "issues": [
+        2389,
+        2424
+      ],
+      "observation": "Palm foliage remains pale/yellow-green versus web."
+    },
+    {
+      "issue": 2443,
+      "observation": "Patio screen-wall dot/raster patterns remain visible."
+    },
+    {
+      "issue": 2403,
+      "observation": "Winter native parasol is open while actual winter web original is folded."
+    },
+    {
+      "issue": 2428,
+      "observation": "Brick/mortar raster alias and local brightness differ; the specific failed winter warmth row remains2398 and is not dismissed into2428."
+    },
+    {
+      "issue": 2444,
+      "observation": "Winter branch-shadow pattern differs on the patio screen wall."
+    }
+  ],
+  "sourceRoles": [
+    {
+      "id": "patio-christmas",
+      "actualRoles": {
+        "sourceAtmosphereFlag": false,
+        "sourceVolumetricIntensity": 1.0,
+        "proxyAtmosphereFlag": true,
+        "proxyVolumetricIntensity": 0.0,
+        "proxyIntensity": 19.449003219604492,
+        "proxyCastShadows": false
+      },
+      "actualSolarLinearRGB": [
+        1.0,
+        0.4910208582878113,
+        0.2307400405406952
+      ],
+      "sourceSolarLinearRGB": [
+        1.0,
+        0.49091249221887545,
+        0.232573811371398
+      ]
+    },
+    {
+      "id": "patio-summer",
+      "actualRoles": {
+        "sourceAtmosphereFlag": false,
+        "sourceVolumetricIntensity": 1.0,
+        "proxyAtmosphereFlag": true,
+        "proxyVolumetricIntensity": 0.0,
+        "proxyIntensity": 20.0,
+        "proxyCastShadows": false
+      },
+      "actualSolarLinearRGB": [
+        1.0,
+        0.8796223998069763,
+        0.715693473815918
+      ],
+      "sourceSolarLinearRGB": [
+        1,
+        0.8796223968851662,
+        0.7156935005005721
+      ]
+    }
+  ],
+  "limits": [
+    "No resizing/retouching/recapture/new reference",
+    "Exactly one canonical four-row browser measurement",
+    "No crop/tolerance adjustment",
+    "No claim of whole native process success or full Windows rendering acceptance",
+    "No new bug created by helper"
+  ]
+}

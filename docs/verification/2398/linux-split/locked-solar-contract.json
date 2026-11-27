@@ -1,0 +1,146 @@
+{
+  "issue": 2398,
+  "lockedUTC": "2026-11-27T17:51:44.977234+00:00",
+  "selectedUsingWebOriginalsOnly": true,
+  "lockedBeforeAny2398AfterNativeImageInspected": true,
+  "honestPriorExposure": "The previous #2388 June native whole image was already inspected under #2389; this is not a claim of blindness to all historic June images. No #2398 winter/native-after image has been inspected. Rectangles selected using only current raw web originals.",
+  "referenceHead": "57139f392a7d0d658189b2fd4e107d902eb5ffdf",
+  "webSourceFilesByteExactBeforeAndAfter": 718,
+  "sourceProof": "/home/devcontainers/.local/state/lunden-codex-20261127/2398/source-reuse-proof.json",
+  "webs": {
+    "patio-christmas": {
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2398/web/web-patio-christmas.jpg",
+      "sha256": "f7308309602136009e1ed9b9665699064ff2fd4eef56ac5eec9fcb661d125f8e",
+      "actualOriginalViewed": true
+    },
+    "patio-summer": {
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2388/web/web-patio-day.jpg",
+      "sha256": "2809213185dca1b6aa17076983bc019514dbe27bd403b3b82fc0cba59f5f9851",
+      "actualOriginalViewed": true
+    }
+  },
+  "camera": {
+    "webEye": [
+      2.3,
+      1.62,
+      16.1
+    ],
+    "webYaw": -8,
+    "pitch": 12,
+    "nativeXYZcm": [
+      230,
+      1610,
+      162
+    ],
+    "nativeYaw": -82,
+    "width": 640,
+    "height": 360,
+    "verticalFov": 72,
+    "horizontalFov": 104.50486755371094,
+    "original2386CanonicalPose": true
+  },
+  "states": {
+    "patio-christmas": {
+      "date": [
+        2026,
+        12,
+        24
+      ],
+      "hour": 14,
+      "weather": "clear",
+      "lamps": "none",
+      "actualWebSolar": {
+        "height": 0.12818656768664047,
+        "actualLightLinear": [
+          1,
+          0.4909124922188755,
+          0.23257381137139804
+        ],
+        "actualIntensity": 2.9173503501908744,
+        "exportedColours": {
+          "space": "linear-srgb",
+          "skyDay": [
+            0.8227857543924378,
+            0.8962693533719567,
+            1
+          ],
+          "skyNight": [
+            0.14702726648767014,
+            0.20507873637973145,
+            0.3915724777393922
+          ],
+          "sunLow": [
+            1,
+            0.43415363616478553,
+            0.16202937562896222
+          ],
+          "sunHigh": [
+            1,
+            0.8796223968851662,
+            0.7156935005005721
+          ],
+          "moon": [
+            0.34670405634441115,
+            0.45641102317066595,
+            1
+          ]
+        }
+      }
+    },
+    "patio-summer": {
+      "date": [
+        2026,
+        6,
+        21
+      ],
+      "hour": 14,
+      "weather": "clear",
+      "lamps": "none",
+      "reusedExistingWeb": true
+    }
+  },
+  "rects": {
+    "sunlit-brick": [
+      0.459375,
+      0.06111111111111111,
+      0.5,
+      0.2
+    ],
+    "sunlit-frame": [
+      0.65,
+      0.09444444444444444,
+      0.6546875,
+      0.12222222222222222
+    ]
+  },
+  "pixelRectXYWH": {
+    "sunlit-brick": [
+      294,
+      22,
+      26,
+      50
+    ],
+    "sunlit-frame": [
+      416,
+      34,
+      3,
+      10
+    ]
+  },
+  "regions": "Sunlit brick pier between upper windows; warm interior of upper-right window right jamb. Same rects in both seasons. Small jamb is 30 actual pixels; no edge/mask exceptions or post-native relocation.",
+  "metric": "Canonical crop-stats.cjs mean sRGB R/B (warmth); ratio (nativeR/nativeB)/(webR/webB)",
+  "criteria": {
+    "allFourWarmthRatiosInclusive": [
+      0.9,
+      1.1
+    ],
+    "checkSunWorstDegreesDisplay": 0.0,
+    "actualSunComponentColorsLinearMaxError": 0.005
+  },
+  "limits": [
+    "Linux CPU Vulkan/FXAA1 profile; actual quality/CVars must be recorded by Root",
+    "Source and synthetic math/checker checks are not native image acceptance",
+    "First web attempt all black because private async metadata after render; preserved excluded under web-first-invalid-black; corrective wrapper and Node both exit0",
+    "Native and 14-profile regression evidence pending; no closure/integration-ready"
+  ]
+}

@@ -1223,6 +1223,19 @@ sky's brightness and the locked exposure.
   Sun by day, moon below −0.02 sun height, both dimmed by `1 − sunCut × overcast` as on the web.
   *Assumption:* the web's clear sun 3.0 is 20 lux in Unreal (`SUN_LUX`, #2386; the pilot's 8 lux left sun shadows
   invisible next to the fill); the moon and the sky's scattering scale with it.
+  The Sun colour also follows the exported linear `windowDaylight.runtimeColors.sunLow`/`sunHigh`, mixed with
+  `smooth(0.05, 0.4, sunHeight)`, on every `UpdateSky` (#2398). The separate Moon colour is unchanged. Native
+  `SetLightColor` stores sRGB8; the lighting test reads the actual Sun component back in linear RGB and allows
+  0.005 for that quantization, including the 24 December 14:00 image case. `check-sun.mjs` compares all newly
+  observed solar colours with the web getter; legacy results without colour fields do not prove this new gate.
+  Surface `Sun` bypasses native atmosphere transmission, which otherwise tints the already source-coloured light
+  a second time. A separate `SunAtmosphere` receives the identical colour, intensity and direction for the sky
+  and ordinary height fog. It has no surface lighting channels, diffuse/specular contribution or shadows;
+  the original Sun and Moon remain the two directional shadow casters. Physical Sun keeps volumetric
+  scattering 1 and its original volumetric-shadow flag; the visual component has volumetric scattering 0.
+  With volumetric fog enabled, the corrected physical Sun colour also reaches that scattering: this does
+  not claim preservation of the former extra atmospheric attenuation. The current authored fog and CPU
+  verification profile disable volumetric fog. Native image and functional acceptance are tracked in #2398.
   Outputs: `SunDirection`, `MoonDirection` (unit vectors towards the body, Unreal axes), `SunElevation`, `Daylight`,
   `MoonIllumination`.
 - **Sky and fill.** `SkyAtmosphere` lit by both directional lights, a real-time captured `SkyLight`,

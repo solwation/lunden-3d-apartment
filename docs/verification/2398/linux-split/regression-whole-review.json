@@ -1,0 +1,156 @@
+{
+  "completed": true,
+  "sourceHead": "fc87de55aa639845dc7a2d2fef317e2b32152dac",
+  "actualNewFourNativeAndFourLockedWebOriginalsViewed": true,
+  "originalImageManifest": [
+    {
+      "view": "stairs-evening",
+      "native": "/home/devcontainers/.local/state/lunden-codex-20261127/2398/native-split-fresh/product/regressions/unreal-stairs-evening.png",
+      "nativeSHA256": "98d191366501bd6fb1f68dccfe92edac9eac0880a000201846918d3ca01d1250",
+      "lockedWeb": "/home/devcontainers/.local/state/lunden-codex-20261127/2369/web/web-stairs-evening.jpg",
+      "webSHA256": "48dcb9b61e67c0d499f06d1d253d02251b4930a9bb567f138c6723ddf71574c5",
+      "reviewedBothOriginals": true
+    },
+    {
+      "view": "living-room-day",
+      "native": "/home/devcontainers/.local/state/lunden-codex-20261127/2398/native-split-fresh/product/regressions/unreal-living-room-day.png",
+      "nativeSHA256": "a53c2868f85a032b04becf253800178644ce9806b7859401943c5c5c019596de",
+      "lockedWeb": "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/web/web-living-room-day.jpg",
+      "webSHA256": "be8023e5a4d1ba5cfb2d4f930273f6792c788658efd47dba6a6c153016af33ac",
+      "reviewedBothOriginals": true
+    },
+    {
+      "view": "living-room-evening",
+      "native": "/home/devcontainers/.local/state/lunden-codex-20261127/2398/native-split-fresh/product/regressions/unreal-living-room-evening.png",
+      "nativeSHA256": "8705c654e71cc56c798ad0cd5e5e81a2f206ffef0e77d4912070fb7813db2fd0",
+      "lockedWeb": "/home/devcontainers/.local/state/lunden-codex-20261127/2369/web/web-living-room-evening.jpg",
+      "webSHA256": "1a6d7cd06c97fbb1729662cece73490a808745d2511124f8dc0a987f0e810c0b",
+      "reviewedBothOriginals": true
+    },
+    {
+      "view": "upper-floor-evening",
+      "native": "/home/devcontainers/.local/state/lunden-codex-20261127/2398/native-split-fresh/product/regressions/unreal-upper-floor-evening.png",
+      "nativeSHA256": "49bae010e4bbc0b62f397fc0bc4cd146acb6fcd8069b9d49392bbf7d9e4bec40",
+      "lockedWeb": "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/web/web-upper-floor-evening.jpg",
+      "webSHA256": "16ed055836f8a6f6487ed1c6d99bfa45be5ceb9ecb2e53b5240c1692ebd7dbb8",
+      "reviewedBothOriginals": true
+    }
+  ],
+  "classification": "Actual Root whole-original review after proper saved split-Sun; no new captures or crop changes",
+  "numericGate": {
+    "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2384/paired-after-split-sun-2398/acceptance-gate.json",
+    "sha256": "d3f32d725cc77a4d665662314f7bb08714e44f27e0347c71566c7ab26b8505fa",
+    "passed": true,
+    "unchanged22Rows": true
+  },
+  "visualFinding": "All four room compositions and source material profiles preserved. No new unmapped own regression seen; canonical solar own winterbrick failure remains separately failed.",
+  "preexistingOpenMappings": [
+    {
+      "views": [
+        "stairs-evening"
+      ],
+      "difference": "shaft/tread darkness contrast too weak",
+      "issue": 2480
+    },
+    {
+      "views": [
+        "living-room-day",
+        "living-room-evening"
+      ],
+      "difference": "Silvia reflected copper outside dark",
+      "issue": 2482
+    },
+    {
+      "views": [
+        "living-room-evening",
+        "upper-floor-evening"
+      ],
+      "difference": "emissive lamp interior/dome brightness",
+      "issue": 2460
+    },
+    {
+      "views": [
+        "upper-floor-evening"
+      ],
+      "difference": "camera-facing lamp halo missing; ceiling field not isolated wholly to halo",
+      "issue": 2481
+    },
+    {
+      "views": [
+        "living-room-evening"
+      ],
+      "difference": "high wall above cabinet field",
+      "issue": 2484
+    },
+    {
+      "views": [
+        "upper-floor-evening"
+      ],
+      "difference": "Tilly wood brighter/different olive tone",
+      "issue": 2486
+    },
+    {
+      "views": [
+        "living-room-day",
+        "living-room-evening",
+        "upper-floor-evening"
+      ],
+      "difference": "distant glass/tint/behind-glass mismatch",
+      "issue": 2459
+    },
+    {
+      "views": [
+        "living-room-day"
+      ],
+      "difference": "yellow sofa-back source field",
+      "issue": 2447
+    },
+    {
+      "views": [
+        "living-room-day",
+        "living-room-evening",
+        "upper-floor-evening"
+      ],
+      "difference": "remaining non-target wall/floor/ceiling AO source omissions",
+      "issue": 2489
+    },
+    {
+      "views": [
+        "living-room-day",
+        "living-room-evening",
+        "upper-floor-evening"
+      ],
+      "difference": "repeated dark dot raster on timber floor",
+      "issue": 2487
+    },
+    {
+      "views": [
+        "living-room-evening"
+      ],
+      "difference": "outside through glass dark green/brown",
+      "issue": 2488
+    },
+    {
+      "views": [
+        "living-room-day",
+        "upper-floor-evening"
+      ],
+      "difference": "distant brick facade brightness/mortar detail",
+      "issue": 2428
+    },
+    {
+      "views": [
+        "stairs-evening"
+      ],
+      "difference": "SKOGSGRANSEN decorative mirror retains hard white highlight/dome-like appearance versus flatter copper web mirror",
+      "issue": 2490,
+      "stateVerifiedViaFreshIssueRead": "open",
+      "cause": "not established; preexisting in published2369 originals"
+    }
+  ],
+  "newUnmappedDifferences": [],
+  "profileLimits": "UE5.8.4 CPU Vulkan SM5, conventional1024shadows3cascades, FXAA1/PostProcessAAQuality0, SeparateTranslucency, Lumen/Naniteoff; visible alias/grain and intentional low-profile rendering are not full Windows acceptance",
+  "solarWholeReview": "/home/devcontainers/.local/state/lunden-codex-20261127/2398/whole-image-review-split-first.json",
+  "skyRoleControl": "/home/devcontainers/.local/state/lunden-codex-20261127/2398/native-split-fresh/product/sky-control/role-control-comparison.json",
+  "noFunctionalAutomationPassClaim": true
+}

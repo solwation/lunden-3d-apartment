@@ -1,0 +1,42 @@
+{
+  "unreal-patio-christmas.png": {
+    "source": "/home/devcontainers/.local/state/lunden-codex-20261127/2398/native-split-fresh/product/solar/unreal-patio-christmas.png",
+    "sha256": "e7e1cd8bd875db705a9322b6aa7470e9d3ad2efef50323140730cc85bcdd2127"
+  },
+  "unreal-patio-summer.png": {
+    "source": "/home/devcontainers/.local/state/lunden-codex-20261127/2398/native-split-fresh/product/solar/unreal-patio-summer.png",
+    "sha256": "bebcce317b1ddf3702510ebdd3de8120e42f4923bb0046752c56a01c429a6006"
+  },
+  "unreal-living-room-day.png": {
+    "source": "/home/devcontainers/.local/state/lunden-codex-20261127/2398/native-split-fresh/product/regressions/unreal-living-room-day.png",
+    "sha256": "a53c2868f85a032b04becf253800178644ce9806b7859401943c5c5c019596de"
+  },
+  "unreal-stairs-evening.png": {
+    "source": "/home/devcontainers/.local/state/lunden-codex-20261127/2398/native-split-fresh/product/regressions/unreal-stairs-evening.png",
+    "sha256": "98d191366501bd6fb1f68dccfe92edac9eac0880a000201846918d3ca01d1250"
+  },
+  "unreal-upper-floor-evening.png": {
+    "source": "/home/devcontainers/.local/state/lunden-codex-20261127/2398/native-split-fresh/product/regressions/unreal-upper-floor-evening.png",
+    "sha256": "49bae010e4bbc0b62f397fc0bc4cd146acb6fcd8069b9d49392bbf7d9e4bec40"
+  },
+  "unreal-living-room-evening.png": {
+    "source": "/home/devcontainers/.local/state/lunden-codex-20261127/2398/native-split-fresh/product/regressions/unreal-living-room-evening.png",
+    "sha256": "8705c654e71cc56c798ad0cd5e5e81a2f206ffef0e77d4912070fb7813db2fd0"
+  },
+  "unreal-start-original-roles.png": {
+    "source": "/home/devcontainers/.local/state/lunden-codex-20261127/2398/native-split-fresh/product/sky-control/unreal-start-original-roles.png",
+    "sha256": "bbfbe4c5fcaecac4b59823c0dee670cdb563946a0bd0c7272db7cf7133893f9a"
+  },
+  "unreal-start-split.png": {
+    "source": "/home/devcontainers/.local/state/lunden-codex-20261127/2398/native-split-fresh/product/sky-control/unreal-start-split.png",
+    "sha256": "063d200d1f45e8a9a06070646393ab1917444ec0ac06ce3a2b4f3792db9ed640"
+  },
+  "web-patio-christmas.jpg": {
+    "source": "/home/devcontainers/.local/state/lunden-codex-20261127/2398/web/web-patio-christmas.jpg",
+    "sha256": "f7308309602136009e1ed9b9665699064ff2fd4eef56ac5eec9fcb661d125f8e"
+  },
+  "web-patio-summer.jpg": {
+    "source": "/home/devcontainers/.local/state/lunden-codex-20261127/2388/web/web-patio-day.jpg",
+    "sha256": "2809213185dca1b6aa17076983bc019514dbe27bd403b3b82fc0cba59f5f9851"
+  }
+}
