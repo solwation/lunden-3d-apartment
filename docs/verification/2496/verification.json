@@ -1,0 +1,33 @@
+{
+  "issue": 2496,
+  "actualFailureProof": "/home/devcontainers/.local/state/lunden-codex-20261127/2421/first-shader-failure.json",
+  "actualFailureProofSHA256": "b1456485626c497d8a1e0b6a69c0cacc0781287c10767f36506c252e1183d856",
+  "before": {
+    "command": "python3 -m unittest discover -s tools/unreal-engine/tests -p test_linux_runner.py -k real_zero_exit_shader_failure",
+    "exitCode": 1,
+    "realProcessSubcases": 3,
+    "failedAssertions": 3,
+    "observed": "All three reproduced old runner0/passedtrue on actual child0 with shader diagnostics; renderPython/NullPython/NullAutomation passingreport"
+  },
+  "after": {
+    "command": "python3 -m unittest discover -s tools/unreal-engine/tests -p test_linux_runner.py",
+    "exitCode": 0,
+    "tests": 16,
+    "durationSeconds": 2.279,
+    "actualPreservedDiagnosticLinesRejected": 21,
+    "realChildNativeExitPreserved": 0,
+    "realSupervisorReturned": 1,
+    "passed": false,
+    "harmlessCacheWarningsPass": true,
+    "existingDetachedWorkerCancellationServiceCleanupTestsPass": true
+  },
+  "scope": [
+    "run-linux.py log classification/result diagnostics",
+    "test_linux_runner.py actual child fixtures",
+    "docs/development/unreal.md result meaning"
+  ],
+  "noActualUnrealBrowserExportAssetRun": true,
+  "nonvisualVerification": "Supervisor classification and actual child-process/result proof, no meaningful rendered-image change",
+  "publicDownstream": "Original Unreal development tool only, not applicable",
+  "publisher": "Root"
+}
