@@ -1,0 +1,53 @@
+{
+  "native": {
+    "engine": "5.8.4",
+    "profile": "linux-low",
+    "exitCode": 0,
+    "timedOut": false,
+    "passed": true,
+    "completed": true,
+    "log": "/mnt/d/LundenLinux/runs/20261127T143627028203-1096651/editor.log",
+    "command": [
+      "/mnt/d/UnrealEngine/5.8.4/Engine/Binaries/Linux/UnrealEditor-Cmd",
+      "/home/devcontainers/lunden-linux/unreal/Lunden/Lunden.uproject",
+      "-DefEngineIni=/mnt/d/LundenLinux/runs/20261127T143627028203-1096651/LowEngine.ini",
+      "-LocalDataCachePath=/mnt/d/LundenLinux/DerivedDataCache",
+      "-ZenDataPath=/mnt/d/LundenLinux/Zen",
+      "-unattended",
+      "-nosplash",
+      "-nosound",
+      "-nop4",
+      "-stdout",
+      "-FullStdOutLogOutput",
+      "-NoCrashDialog",
+      "-abslog=/mnt/d/LundenLinux/runs/20261127T143627028203-1096651/editor.log",
+      "-vulkan",
+      "-sm5",
+      "-AllowCommandletRendering",
+      "-RenderOffscreen",
+      "-ResX=640",
+      "-ResY=360",
+      "-windowed",
+      "-AllowCPUDevices",
+      "-run=pythonscript",
+      "-script=/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/resume-capture-production-v3.py --expected-source 2e7e18fb65ce5de612046a9ad40ecd6342790dcc --expected-export-source 461a0b2202901365b599cccaab6f49d0d1181425 --expected-export-hash a2f25406e223b2e73540384644a4cff47bd38a59e9309c14b95eec07b423eeeb --expected-manifest-sha 493c43651cc59178069fd39f0cc4c9c4cc876c88e4a86582f8c2f03f67f32d64 --out /home/devcontainers/.local/state/lunden-codex-20261127/2322-final/native-after-batch3"
+    ],
+    "engineIniSha256": "e26c244f9d51fddd3e6577d5696a073521b417a73167c5dd6dc69c79a2db180e",
+    "vulkanIcd": "/usr/share/vulkan/icd.d/lvp_icd.json",
+    "revision": "2e7e18fb65ce5de612046a9ad40ecd6342790dcc",
+    "signal": null,
+    "error": null,
+    "seconds": 416.98
+  },
+  "outerExecExit": 143,
+  "outerLauncherRecordIncomplete": true,
+  "processExitNotOuterWrapperExit": true,
+  "postflight": {
+    "all247ByteExact": true,
+    "all247ReadOnly": true
+  },
+  "actualStepCount": 10,
+  "reusedActualStepCount": 12,
+  "guardCount": 23,
+  "acceptance": "FAILED:10/11luminance; uppercurtainY+hue; cabinetspot1Y"
+}

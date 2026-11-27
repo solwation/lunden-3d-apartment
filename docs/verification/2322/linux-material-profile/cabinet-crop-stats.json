@@ -1,0 +1,142 @@
+{
+ "crops": {
+  "living-room-day": {
+   "cabinet-front": [
+    0.765,
+    0.3,
+    0.809,
+    0.409
+   ]
+  },
+  "living-room-evening": {
+   "cabinet-front": [
+    0.765,
+    0.3,
+    0.809,
+    0.409
+   ],
+   "spot-1": [
+    0.6996185,
+    0.3153762,
+    0.7037851,
+    0.3277218
+   ],
+   "spot-2": [
+    0.7388803,
+    0.294855,
+    0.743047,
+    0.3072007
+   ],
+   "spot-3": [
+    0.7928169,
+    0.2666638,
+    0.7969836,
+    0.2790094
+   ]
+  }
+ },
+ "stats": {
+  "living-room-day": {
+   "web": {
+    "cabinet-front": {
+     "srgb": [
+      106.6,
+      61.6,
+      19.6
+     ],
+     "luminance": 0.0655,
+     "warmth": 5.445
+    }
+   },
+   "unreal": {
+    "cabinet-front": {
+     "srgb": [
+      107,
+      61.5,
+      19
+     ],
+     "luminance": 0.0657,
+     "warmth": 5.633
+    }
+   }
+  },
+  "living-room-evening": {
+   "web": {
+    "cabinet-front": {
+     "srgb": [
+      129.3,
+      76.4,
+      21.9
+     ],
+     "luminance": 0.1025,
+     "warmth": 5.905
+    },
+    "spot-1": {
+     "srgb": [
+      175.5,
+      123.5,
+      68.9
+     ],
+     "luminance": 0.239,
+     "warmth": 2.547
+    },
+    "spot-2": {
+     "srgb": [
+      181.2,
+      121.5,
+      60.8
+     ],
+     "luminance": 0.2437,
+     "warmth": 2.982
+    },
+    "spot-3": {
+     "srgb": [
+      162.9,
+      112.9,
+      60.6
+     ],
+     "luminance": 0.199,
+     "warmth": 2.689
+    }
+   },
+   "unreal": {
+    "cabinet-front": {
+     "srgb": [
+      135,
+      82.3,
+      23.1
+     ],
+     "luminance": 0.1141,
+     "warmth": 5.846
+    },
+    "spot-1": {
+     "srgb": [
+      153.2,
+      103,
+      52.3
+     ],
+     "luminance": 0.1674,
+     "warmth": 2.931
+    },
+    "spot-2": {
+     "srgb": [
+      167.7,
+      112.1,
+      57.4
+     ],
+     "luminance": 0.2038,
+     "warmth": 2.92
+    },
+    "spot-3": {
+     "srgb": [
+      155.7,
+      105,
+      54.6
+     ],
+     "luminance": 0.1741,
+     "warmth": 2.852
+    }
+   }
+  }
+ }
+}

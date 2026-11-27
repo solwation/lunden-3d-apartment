@@ -1,0 +1,294 @@
+{
+ "crops": {
+  "living-room-day": {
+   "rug": [
+    0.385,
+    0.9,
+    0.45,
+    0.985
+   ],
+   "curtain": [
+    0.445,
+    0.24,
+    0.473,
+    0.666
+   ],
+   "coffee-table": [
+    0.177,
+    0.808,
+    0.211,
+    0.832
+   ],
+   "cabinet-front": [
+    0.765,
+    0.3,
+    0.809,
+    0.409
+   ],
+   "sofa": [
+    0.221,
+    0.72,
+    0.348,
+    0.744
+   ]
+  },
+  "living-room-evening": {
+   "rug": [
+    0.385,
+    0.9,
+    0.45,
+    0.985
+   ],
+   "curtain": [
+    0.445,
+    0.24,
+    0.473,
+    0.666
+   ],
+   "coffee-table": [
+    0.177,
+    0.808,
+    0.211,
+    0.832
+   ],
+   "cabinet-front": [
+    0.765,
+    0.3,
+    0.809,
+    0.409
+   ],
+   "sofa": [
+    0.221,
+    0.72,
+    0.348,
+    0.744
+   ]
+  },
+  "upper-floor-evening": {
+   "curtain": [
+    0.352,
+    0.283,
+    0.374,
+    0.583
+   ]
+  }
+ },
+ "stats": {
+  "living-room-day": {
+   "web": {
+    "rug": {
+     "srgb": [
+      146.4,
+      146.8,
+      128.7
+     ],
+     "luminance": 0.3477,
+     "warmth": 1.138
+    },
+    "curtain": {
+     "srgb": [
+      184.1,
+      181.3,
+      160.6
+     ],
+     "luminance": 0.5053,
+     "warmth": 1.146
+    },
+    "coffee-table": {
+     "srgb": [
+      147.7,
+      108.7,
+      61.1
+     ],
+     "luminance": 0.1749,
+     "warmth": 2.418
+    },
+    "cabinet-front": {
+     "srgb": [
+      106.6,
+      61.6,
+      19.6
+     ],
+     "luminance": 0.0655,
+     "warmth": 5.445
+    },
+    "sofa": {
+     "srgb": [
+      177.8,
+      186.1,
+      154.6
+     ],
+     "luminance": 0.474,
+     "warmth": 1.15
+    }
+   },
+   "unreal": {
+    "rug": {
+     "srgb": [
+      132.5,
+      135.8,
+      121.9
+     ],
+     "luminance": 0.2857,
+     "warmth": 1.088
+    },
+    "curtain": {
+     "srgb": [
+      179,
+      175.4,
+      151.3
+     ],
+     "luminance": 0.44,
+     "warmth": 1.183
+    },
+    "coffee-table": {
+     "srgb": [
+      152.8,
+      111.4,
+      59.8
+     ],
+     "luminance": 0.1853,
+     "warmth": 2.556
+    },
+    "cabinet-front": {
+     "srgb": [
+      107,
+      61.5,
+      19
+     ],
+     "luminance": 0.0657,
+     "warmth": 5.633
+    },
+    "sofa": {
+     "srgb": [
+      162.5,
+      172.5,
+      147.2
+     ],
+     "luminance": 0.3991,
+     "warmth": 1.104
+    }
+   }
+  },
+  "living-room-evening": {
+   "web": {
+    "rug": {
+     "srgb": [
+      109.4,
+      92.7,
+      59.4
+     ],
+     "luminance": 0.1329,
+     "warmth": 1.842
+    },
+    "curtain": {
+     "srgb": [
+      89.7,
+      78.3,
+      53.6
+     ],
+     "luminance": 0.0958,
+     "warmth": 1.673
+    },
+    "coffee-table": {
+     "srgb": [
+      103.5,
+      63.6,
+      11.2
+     ],
+     "luminance": 0.0657,
+     "warmth": 9.209
+    },
+    "cabinet-front": {
+     "srgb": [
+      129.3,
+      76.4,
+      21.9
+     ],
+     "luminance": 0.1025,
+     "warmth": 5.905
+    },
+    "sofa": {
+     "srgb": [
+      105.1,
+      97.1,
+      60
+     ],
+     "luminance": 0.1199,
+     "warmth": 1.751
+    }
+   },
+   "unreal": {
+    "rug": {
+     "srgb": [
+      100.6,
+      91.3,
+      64.9
+     ],
+     "luminance": 0.1255,
+     "warmth": 1.549
+    },
+    "curtain": {
+     "srgb": [
+      90.3,
+      78.6,
+      51
+     ],
+     "luminance": 0.0833,
+     "warmth": 1.769
+    },
+    "coffee-table": {
+     "srgb": [
+      99.1,
+      61.8,
+      12.3
+     ],
+     "luminance": 0.061,
+     "warmth": 8.03
+    },
+    "cabinet-front": {
+     "srgb": [
+      135,
+      82.3,
+      23.1
+     ],
+     "luminance": 0.1141,
+     "warmth": 5.846
+    },
+    "sofa": {
+     "srgb": [
+      89.7,
+      88.7,
+      61.8
+     ],
+     "luminance": 0.0975,
+     "warmth": 1.45
+    }
+   }
+  },
+  "upper-floor-evening": {
+   "web": {
+    "curtain": {
+     "srgb": [
+      40.5,
+      22.9,
+      27.5
+     ],
+     "luminance": 0.0151,
+     "warmth": 1.471
+    }
+   },
+   "unreal": {
+    "curtain": {
+     "srgb": [
+      44.2,
+      15.2,
+      25.9
+     ],
+     "luminance": 0.0103,
+     "warmth": 1.708
+    }
+   }
+  }
+ }
+}

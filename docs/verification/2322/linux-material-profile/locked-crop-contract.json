@@ -1,0 +1,330 @@
+{
+  "status": "LOCKED WEB-ONLY BEFORE NEW NATIVE REVIEW; no acceptance result",
+  "lockedAtUtc": "2026-11-27T13:14:17.137082+00:00",
+  "issue": 2322,
+  "basis": {
+    "previousContract": "/home/devcontainers/.local/state/lunden-codex-20261127/2322/furnishing-measurement-contract.json",
+    "previousContractSha256": "a88635137485a7511b4ca129dc4b2fc9c92f3194de656670cfcf970da5b01ee6",
+    "canonicalCrops": "tools/unreal-engine/tests/furnishing-crops.json",
+    "canonicalCropSha256": "05db00d95d268725c453162a4ac6f542f4f82e4f4ed5a83aea6f9e1e5cabf2f3",
+    "metricsTool": "tools/unreal-engine/tests/crop-stats.cjs",
+    "metricsToolSha256": "0a76bf7e7c43ad2e212f2d884806957030ec6dc08ce4c4d9901641f5f80bd1c6"
+  },
+  "camera": {
+    "eyeWeb": [
+      2.5,
+      1.62,
+      8.2
+    ],
+    "feetWeb": [
+      2.5,
+      0,
+      8.2
+    ],
+    "yawWebDeg": 173,
+    "pitchWebDeg": -4,
+    "verticalFovDeg": 72,
+    "horizontalFovDeg": 104.504864443922,
+    "aspect": 1.7777777777777777,
+    "webViewport": [
+      640,
+      360
+    ],
+    "nativeViewport": [
+      640,
+      360
+    ],
+    "originalFullViewport": [
+      1440,
+      810
+    ],
+    "nativeEyeCm": [
+      250,
+      820,
+      162
+    ],
+    "nativeYawDeg": 97,
+    "nativePitchDeg": -4
+  },
+  "lighting": {
+    "date": [
+      2026,
+      6,
+      21
+    ],
+    "weather": "clear",
+    "day": {
+      "hour": 14,
+      "lamps": "none"
+    },
+    "evening": {
+      "hour": 22,
+      "lamps": "all"
+    },
+    "power": "normal"
+  },
+  "primaryCrops": {
+    "living-room-day": {
+      "rug": {
+        "normalizedXYXY": [
+          0.385,
+          0.9,
+          0.45,
+          0.985
+        ],
+        "pixels640x360": {
+          "x": 246,
+          "y": 324,
+          "width": 42,
+          "height": 31
+        },
+        "pixels1440x810": {
+          "x": 554,
+          "y": 729,
+          "width": 94,
+          "height": 69
+        }
+      },
+      "curtain": {
+        "normalizedXYXY": [
+          0.445,
+          0.24,
+          0.473,
+          0.666
+        ],
+        "pixels640x360": {
+          "x": 285,
+          "y": 86,
+          "width": 18,
+          "height": 153
+        },
+        "pixels1440x810": {
+          "x": 641,
+          "y": 194,
+          "width": 40,
+          "height": 345
+        }
+      },
+      "coffee-table": {
+        "normalizedXYXY": [
+          0.177,
+          0.808,
+          0.211,
+          0.832
+        ],
+        "pixels640x360": {
+          "x": 113,
+          "y": 291,
+          "width": 22,
+          "height": 9
+        },
+        "pixels1440x810": {
+          "x": 255,
+          "y": 654,
+          "width": 49,
+          "height": 19
+        }
+      },
+      "cabinet-front": {
+        "normalizedXYXY": [
+          0.765,
+          0.3,
+          0.809,
+          0.409
+        ],
+        "pixels640x360": {
+          "x": 490,
+          "y": 108,
+          "width": 28,
+          "height": 39
+        },
+        "pixels1440x810": {
+          "x": 1102,
+          "y": 243,
+          "width": 63,
+          "height": 88
+        }
+      },
+      "sofa": {
+        "normalizedXYXY": [
+          0.221,
+          0.72,
+          0.348,
+          0.744
+        ],
+        "pixels640x360": {
+          "x": 141,
+          "y": 259,
+          "width": 81,
+          "height": 9
+        },
+        "pixels1440x810": {
+          "x": 318,
+          "y": 583,
+          "width": 183,
+          "height": 19
+        }
+      }
+    },
+    "living-room-evening": {
+      "rug": {
+        "normalizedXYXY": [
+          0.385,
+          0.9,
+          0.45,
+          0.985
+        ],
+        "pixels640x360": {
+          "x": 246,
+          "y": 324,
+          "width": 42,
+          "height": 31
+        },
+        "pixels1440x810": {
+          "x": 554,
+          "y": 729,
+          "width": 94,
+          "height": 69
+        }
+      },
+      "curtain": {
+        "normalizedXYXY": [
+          0.445,
+          0.24,
+          0.473,
+          0.666
+        ],
+        "pixels640x360": {
+          "x": 285,
+          "y": 86,
+          "width": 18,
+          "height": 153
+        },
+        "pixels1440x810": {
+          "x": 641,
+          "y": 194,
+          "width": 40,
+          "height": 345
+        }
+      },
+      "coffee-table": {
+        "normalizedXYXY": [
+          0.177,
+          0.808,
+          0.211,
+          0.832
+        ],
+        "pixels640x360": {
+          "x": 113,
+          "y": 291,
+          "width": 22,
+          "height": 9
+        },
+        "pixels1440x810": {
+          "x": 255,
+          "y": 654,
+          "width": 49,
+          "height": 19
+        }
+      },
+      "cabinet-front": {
+        "normalizedXYXY": [
+          0.765,
+          0.3,
+          0.809,
+          0.409
+        ],
+        "pixels640x360": {
+          "x": 490,
+          "y": 108,
+          "width": 28,
+          "height": 39
+        },
+        "pixels1440x810": {
+          "x": 1102,
+          "y": 243,
+          "width": 63,
+          "height": 88
+        }
+      },
+      "sofa": {
+        "normalizedXYXY": [
+          0.221,
+          0.72,
+          0.348,
+          0.744
+        ],
+        "pixels640x360": {
+          "x": 141,
+          "y": 259,
+          "width": 81,
+          "height": 9
+        },
+        "pixels1440x810": {
+          "x": 318,
+          "y": 583,
+          "width": 183,
+          "height": 19
+        }
+      }
+    }
+  },
+  "eleventhExistingCrop": {
+    "shot": "upper-floor-evening",
+    "crop": "curtain",
+    "normalizedXYXY": [
+      0.352,
+      0.283,
+      0.374,
+      0.583
+    ],
+    "status": "preserved independent upper-floor coverage; not measured by this five-family day/evening batch; no current upper-floor recapture authorized"
+  },
+  "metrics": {
+    "rectRounding": "crop-stats Math.round(x0*w),Math.round(y0*h),Math.round((x1-x0)*w),Math.round((y1-y0)*h); full original pixels, no scaling/resampling",
+    "linearLuminance": "mean(0.2126*srgbToLinear(R)+0.7152*srgbToLinear(G)+0.0722*srgbToLinear(B))",
+    "luminanceRatio": "native mean linear luminance / web mean linear luminance",
+    "allFiveFamilyLuminanceGateInclusive": [
+      0.8,
+      1.25
+    ],
+    "hueReport": [
+      "mean sRGB R/G",
+      "mean sRGB B/G",
+      "ratio of native R/G to web R/G",
+      "ratio of native B/G to web B/G"
+    ],
+    "existingNumericHueGuess": {
+      "families": [
+        "curtain",
+        "cabinet-front"
+      ],
+      "rangeInclusive": [
+        0.9,
+        1.1
+      ],
+      "provenance": "crop-stats.cjs --check-curtains/--check-cabinet; explicitly guess in source; remains guess, not generalized"
+    },
+    "allFiveFamilyHueAcceptance": "same hue by actual full-image and matched-crop visual review; report every R/G and B/G ratio. No new numeric all-family tolerance invented, and luminance pass alone does not establish hue pass."
+  },
+  "visualCropSubjects": {
+    "rug": "foreground original rug pattern, both cream and sage arches; no floor or table",
+    "curtain": "middle curtain strip, actual olive/cream print; retain original mixed pattern",
+    "coffee-table": "small clean tabletop near left front, without blue book or fruit bowl",
+    "cabinet-front": "upper walnut/teak-colored cabinet door interior, no handle/glass/wall",
+    "sofa": "front upholstered sofa strip, no cushions/pillows or wood"
+  },
+  "provenance": {
+    "currentCleanWebSource": "367c39694b2642dfc632d8dedb4129b0454cadec",
+    "eveningSource": "5b4234645c157e7b52815c7e160562c05610626c",
+    "eveningFile": "/home/devcontainers/.local/state/lunden-codex-20261127/2394/web/living-room-evening.jpg",
+    "eveningSha256": "caf943bc12f03f8f6b42e2701fa5f1dd7ad41f66bae7cca077afa1eac3183f89",
+    "sourceBehaviorParity": "git diff5b423464..367c3969 --src contains only equal-valued hemisphere color constant extraction and read-only dayCycleLightColors getter; no furnishing geometry/texture/runtime rule changes",
+    "newDayFile": "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/web/web-living-room-day.jpg",
+    "dayCaptureProvenance": "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/day-capture-provenance.json",
+    "priorGLBMaterialContract": "/home/devcontainers/.local/state/lunden-codex-20261127/2322/furnishing-measurement-contract.json",
+    "priorGLBMaterialContractLimitation": "historical source cb303a48/1957835d, useful material/texel provenance only; do not claim historical GLB is current native export"
+  },
+  "renderLimits": "Current #2394 Linux diagnostic profile ShadowQuality3, 1024 shadow resolution, 3 cascades, AA0, Lumen/Nanite off and CPU Vulkan. Matched dimensions/exposure/postprocess/light state and exact source/export/profile provenance must be reported. Passes under this profile are bounded measured evidence, not silently promoted to full Windows profile acceptance.",
+  "forbidden": "Do not move crops or alter hue criteria after new native inspection; any invalid subject coverage must be reported as invalid before comparing, with separate contract revision and rationale."
+}

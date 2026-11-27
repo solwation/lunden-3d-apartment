@@ -1,0 +1,78 @@
+{
+  "web-living-room-evening.jpg": {
+    "sha256": "caf943bc12f03f8f6b42e2701fa5f1dd7ad41f66bae7cca077afa1eac3183f89",
+    "bytes": 57818
+  },
+  "actual-full-export-proof.json": {
+    "sha256": "778cf8ab92ffbb573479f15873a4dbc300ac8e1db49e978bbfb6b0103130be9e",
+    "bytes": 7760
+  },
+  "crops.json": {
+    "sha256": "8826f9200009e66bc81e799706d938b3272e1b7a4b1511e7bc216ea45370aa26",
+    "bytes": 911
+  },
+  "README.md": {
+    "sha256": "c7cbea2f6bc19656bf7facc4f2039963d7dc2fb9e7ca9a89976aea6652034fc1",
+    "bytes": 3790
+  },
+  "sync-steps.json": {
+    "sha256": "6711f20a366568e73f59589898451881a90964c279827939acf9ceff4d6b853a",
+    "bytes": 67309
+  },
+  "unreal-living-room-day.png": {
+    "sha256": "737715fefec9dcfd15a2fcf5909879a8b441ce6cb7cbd9864da3e606682f0004",
+    "bytes": 315909
+  },
+  "capture.json": {
+    "sha256": "4ba00f4ee3ad6da9591e040aedb122cc7e9dfe29b2a344e4c6097685ac65239b",
+    "bytes": 311055
+  },
+  "web-upper-floor-evening.jpg": {
+    "sha256": "16ed055836f8a6f6487ed1c6d99bfa45be5ceb9ecb2e53b5240c1692ebd7dbb8",
+    "bytes": 31254
+  },
+  "cabinet-crop-stats.json": {
+    "sha256": "5870584af67a0fed7184f12752f4dcd7092fed44c1a65e62ebe872cab19279ca",
+    "bytes": 1910
+  },
+  "web-living-room-day.jpg": {
+    "sha256": "be8023e5a4d1ba5cfb2d4f930273f6792c788658efd47dba6a6c153016af33ac",
+    "bytes": 67118
+  },
+  "locked-crop-contract.json": {
+    "sha256": "9c01dc0a21099bf1c89fd24096d258c6f8f9d5d97a326e86bccdfc4c2b9fd0b9",
+    "bytes": 9045
+  },
+  "native-outcome.json": {
+    "sha256": "0f38699f1a270d983da59ce7baa199ffc61fb6aaeefdf44dc67654dd04b1641d",
+    "bytes": 2150
+  },
+  "eleven-crop-gate.json": {
+    "sha256": "0070410d1555e4aa9d071732065ba727180da90861a53b7ad53040ce102e8f75",
+    "bytes": 6999
+  },
+  "fade-controls.json": {
+    "sha256": "d393e6aecb06ec0f1462c6334fbdb9e9a2fd59853aa2698f8484470c631fbda9",
+    "bytes": 6068
+  },
+  "locked-upper-contract.json": {
+    "sha256": "140542ddae0de8d388b7f971b66ae4c170fc3cd5a5d8f4f77ff4adc08572e8da",
+    "bytes": 2919
+  },
+  "sync-guards.json": {
+    "sha256": "93e8ea4edaa046a5ef1857b80168636bd608c6ae81b4b4345b4bfa34c0ce3401",
+    "bytes": 71952
+  },
+  "unreal-upper-floor-evening.png": {
+    "sha256": "f4c7d17b698f4cd733f016daddaf334d83860e466ab84e99d44a9d30608be516",
+    "bytes": 225665
+  },
+  "unreal-living-room-evening.png": {
+    "sha256": "ea93452cc56ae0e3a3a71ce529722602d36d27aeb8faa38f6eccd2969a69a15f",
+    "bytes": 315909
+  },
+  "crop-stats.json": {
+    "sha256": "8d3ccd83ab1de6b09346d3a67bffa19b758426934d4e8816496844d6de27223d",
+    "bytes": 3896
+  }
+}
