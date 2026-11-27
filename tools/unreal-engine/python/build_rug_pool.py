@@ -176,6 +176,17 @@ def controller(lamp_tag):
     return bp.generated_class()
 
 
+def receiver_matches(actor, plane, mat, centre, rotation, scale, order):
+    comp = actor.static_mesh_component
+    return (comp.static_mesh == plane and comp.get_material(0) == mat
+            and comp.get_collision_enabled() == u.CollisionEnabled.NO_COLLISION
+            and not comp.get_editor_property("cast_shadow")
+            and comp.get_editor_property("translucency_sort_priority") == order
+            and (actor.get_actor_location() - centre).length() < .00001
+            and (actor.get_actor_scale3d() - scale).length() < .00001
+            and actor.get_actor_rotation() == rotation)
+
+
 def main():
     project = Path(u.Paths.convert_relative_path_to_full(u.Paths.project_dir()))
     spec = json.loads((project / "Import/measurements.json").read_text(encoding="utf-8"))["furnishing"].get("rugFloorPool")
@@ -207,11 +218,7 @@ def main():
         name = receiver["mesh"] + ":rug-pool"
         actor = existing.pop(name, None)
         if actor:
-            comp = actor.static_mesh_component
-            if (comp.static_mesh == plane and comp.get_material(0) == mat
-                    and (actor.get_actor_location() - centre).length() < .00001
-                    and (actor.get_actor_scale3d() - scale).length() < .00001
-                    and actor.get_actor_rotation() == rotation):
+            if receiver_matches(actor, plane, mat, centre, rotation, scale, spec["depth"]["renderOrder"]):
                 continue
         else:
             actor = actors.spawn_actor_from_class(cls, centre, rotation)

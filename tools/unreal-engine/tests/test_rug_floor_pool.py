@@ -10,7 +10,7 @@ import sys
 import unreal as u
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "python"))
-from build_rug_pool import DIR, FADE, TAG, pool_uv
+from build_rug_pool import DIR, FADE, TAG, pool_uv, receiver_matches
 
 project = Path(u.Paths.convert_relative_path_to_full(u.Paths.project_dir()))
 spec = json.loads((project / "Import/measurements.json").read_text(encoding="utf-8"))["furnishing"]["rugFloorPool"]
@@ -42,6 +42,25 @@ try:
         assert not comp.get_editor_property("cast_shadow")
         assert comp.get_collision_enabled() == u.CollisionEnabled.NO_COLLISION
         assert comp.get_editor_property("translucency_sort_priority") == spec["depth"]["renderOrder"]
+        # Standalone rebuild must not skip solely because its material UObject and pose match.
+        args = (overlay, comp.static_mesh, comp.get_material(0), overlay.get_actor_location(),
+                overlay.get_actor_rotation(), overlay.get_actor_scale3d(), spec["depth"]["renderOrder"])
+        assert receiver_matches(*args)
+        original_order = comp.get_editor_property("translucency_sort_priority")
+        try:
+            comp.set_editor_property("translucency_sort_priority", original_order + 1)
+            assert not receiver_matches(*args), "sort-priority drift was incorrectly skipped"
+            comp.set_editor_property("translucency_sort_priority", original_order)
+            comp.set_editor_property("cast_shadow", True)
+            assert not receiver_matches(*args), "shadow drift was incorrectly skipped"
+            comp.set_editor_property("cast_shadow", False)
+            comp.set_collision_enabled(u.CollisionEnabled.QUERY_ONLY)
+            assert not receiver_matches(*args), "collision drift was incorrectly skipped"
+        finally:
+            comp.set_editor_property("translucency_sort_priority", original_order)
+            comp.set_editor_property("cast_shadow", False)
+            comp.set_collision_enabled(u.CollisionEnabled.NO_COLLISION)
+        assert receiver_matches(*args)
         origin, extent = source.get_actor_bounds(False)
         # Both source and overlay are exactly flat rectangular geometry. No arbitrary native lift.
         top = overlay.get_actor_location().z
