@@ -29,5 +29,13 @@
   "noActualUnrealBrowserExportAssetRun": true,
   "nonvisualVerification": "Supervisor classification and actual child-process/result proof, no meaningful rendered-image change",
   "publicDownstream": "Original Unreal development tool only, not applicable",
-  "publisher": "Root"
+  "publisher": "Root",
+  "publishedCode": "b7ce78e4",
+  "publishedProofCommit": "36571d776a78d08e34eafaf952a9a1dfba69773b",
+  "completionComment": "https://github.com/solwation/lunden-3d-apartment/issues/2496#issuecomment-7229088510",
+  "ci": {
+    "run": 46074812257,
+    "conclusion": "success"
+  },
+  "nonvisualException": "CLAUDE.md result-images rule explicitly permits concrete verification when no meaningful visual result"
 }
