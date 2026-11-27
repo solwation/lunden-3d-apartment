@@ -1341,6 +1341,29 @@ sky's brightness and the locked exposure.
   rooms about 3 × as bright and whiter ([docs/verification/2307/](../verification/2307/README.md)). No lamp casts
   shadows (one shadow-casting light, as the web).
 
+**Window daylight (#2394).** `site.windowDaylight` exports L1007's actual `homeRegion`, floor bands, window/well
+transmission and 32 visibility rays per source, together with detached linear colours from
+`daycycle.js`'s `dayCycleLightColors()`. `python/window_light.py` translates the web's `WindowLight` and `sunbounce`
+formulae into HLSL; `python/build_window_light.py` builds `/Game/Lunden/Lighting/M_LundenWindowDaylight`.
+The existing sky's Weather post process supplies that material before depth of field, at priority −10.
+`UpdateSky` writes `WindowSkyStrength`, `WindowSunStrength` and `WindowAmbientFill` to the existing weather
+collection, preserving existing parameter GUIDs. Sky and sun strength use the web's units; ambient fill uses the
+native hemisphere cube's effective intensity. The pass replaces only that cube's diffuse contribution and adds
+window irradiance with the initial Lambert conversion `1/pi`. It subtracts the cube with its existing
+screen-space occlusion, then adds the web result without a second screen-space occlusion factor; exported
+window visibility already controls that light. Material occlusion remains applied. Direct light, specular
+light and emissive colour keep their existing paths. Its graph/stamp checks include the actual collection GUIDs and source colours.
+
+This covers legacy Default Lit opaque receivers inside L1007, near the camera and during daylight. It is a
+snapshot of the exported door, blind and curtain poses; live changes remain in #2332, and other visitable flats
+are outside this home-region contract. The post-process delta does not evaluate additional fog transmittance.
+It adds no light at night or to outdoor receivers. A fresh export with
+`runtimeColors` is required before rebuilding shared lighting. Take the new material's LFS lock as well as the
+existing Lighting output locks. Static capture comparisons must enable the actual SceneCapture
+`SeparateTranslucency` show flag through `show_flag_settings` with `ALWAYS` property notification: its default is
+off, which moves translucent curtains across this post-process stage (#2476). Linux diagnostic shadows and
+captures do not establish the full Windows rendering profile.
+
 The L1007 stair and its entrance-floor passage use the web lamp wash's 192 angular visibility samples and floor split
 on the existing point lights (#2369). The lights that reach these two regions have generated light functions under
 `/Game/Lunden/Generated/Lighting/StairLightFunctions`. The rest of each light's volume keeps full transmission.

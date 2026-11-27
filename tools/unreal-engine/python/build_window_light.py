@@ -74,7 +74,10 @@ float3 H = TextureCubeSampleLevel(Cube,CubeSampler,normal,diffuseMip).rgb*Ambien
 float3 added = win.irradiance(p,nWeb,camera,DayShare,SkyStrength,skyRgb,sunDirWeb,SunIntensity,sunRgb);
 // Initial Lambert irradiance-to-radiance conversion; no fitted RGB or exposure factor.
 float3 desired = H*win.base_factor(DayShare)*win.tint(DayShare)+added*''' + _float(1 / math.pi) + r''';
-return Scene.rgb + Diffuse.rgb*MaterialAO.r*ScreenAO.r*(desired-H)*View.OneOverPreExposure;
+// Remove the native cube with its screen occlusion, then add web window light.
+// The web irradiance already includes window visibility; multiplying its result
+// by native screen-space AO adds a second, screen-dependent halo absent on web.
+return Scene.rgb + Diffuse.rgb*MaterialAO.r*(desired-H*ScreenAO.r)*View.OneOverPreExposure;
 '''
 
 
