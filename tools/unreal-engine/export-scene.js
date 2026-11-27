@@ -33,6 +33,7 @@ import { fallDamage } from '../../src/falldamage.js';
 import { parkedVehicles, recordParkedPart, parkedCollision, parkedMaterial } from './export-parked-vehicles.js';
 import { riverBedGeometry, riverGeometry, riverMaterialData } from './export-river.js';
 import { facadeLightingData } from './export-facade-lighting.js';
+import { windowDaylight } from './export-window-light.js';
 import { webToUnrealRounded, webYawToUnrealYaw, webPitchToUnrealPitch, webRotationYToUnrealYaw, roundCm } from './coordinates.mjs';
 
 export const FORMAT_VERSION = 1;
@@ -1071,6 +1072,7 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     coreDoors: extra.coreDoors ?? [], garage: extra.garage ?? null });
   if (lightsInfo.stairLight) measurements.stair.lightBounds = lightsInfo.stairLight.bounds;
   if (wanted.includes('l1007')) measurements.site.livingWallLight = livingWallLight(world);
+  if (wanted.includes('l1007')) measurements.site.windowDaylight = windowDaylight(world);
   measurements.site.parkedVehicles = {
     vehicles: [...parked.vehicles.values()].filter(v => wanted.includes(v.zone)),
     blockers: parked.footprints.filter(v => wanted.includes(v.zone)),
