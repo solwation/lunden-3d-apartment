@@ -1,0 +1,733 @@
+{
+  "completed": true,
+  "scriptSha256": "e126861fb52cea6716c660ba446991d92ccf96d4dcadbede0a08c9ceda01c5ef",
+  "naniteOffOnce": 3508,
+  "reuseCurrentWorld": false,
+  "world": "/Game/Lunden/Maps/L_Lunden.L_Lunden",
+  "dayVeneerUnchanged": [
+    0.19724697947502134,
+    0.0885833587348461,
+    0.04194373872503638
+  ],
+  "sourceOriginalBase": [
+    0.15592646598815918,
+    0.07036009430885315,
+    0.03310476616024971
+  ],
+  "assumption": "four fixed actual existing-wash-MID radiance guesses only; source/veneer/endpoints/light/exposure/texture/UV preserved",
+  "trials": [
+    {
+      "id": "blue390",
+      "WASH_RADIANCE": [
+        7.35,
+        4.95,
+        3.9
+      ],
+      "VENEER_NIGHT_FACTOR": [
+        0.755,
+        0.56,
+        0.155
+      ],
+      "actualNightVeneerUnchanged": true,
+      "runtime": {
+        "WindowSkyStrength": 0.24129019677639008,
+        "WindowSunStrength": 0.1486421674489975,
+        "WindowAmbientFill": 0.15501858294010162,
+        "Daylight": 0.12452149391174316,
+        "SunDirNative": [
+          -0.9835368990898132,
+          0.17928315699100494,
+          -0.022644218057394028
+        ],
+        "SunDirWeb": [
+          -0.9835368990898132,
+          -0.022644218057394028,
+          0.17928315699100494
+        ],
+        "actualAmbient": {
+          "cube": "/Game/Lunden/Lighting/T_LundenHemisphere.T_LundenHemisphere",
+          "intensity": 2.1010000705718994,
+          "blendWeight": 0.07378324121236801,
+          "effectiveFill": 0.15501859499420867,
+          "tint": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "expectedNativeFill": 0.15501858673922944
+      },
+      "actualWash": [
+        {
+          "component": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_0.StaticMeshComponent0",
+          "material": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_0.StaticMeshComponent0.MID_MI_CabinetWash0_0",
+          "Radiance": [
+            3.674999952316284,
+            2.0167453289031982,
+            1.126281920899736
+          ]
+        },
+        {
+          "component": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_1.StaticMeshComponent0",
+          "material": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_1.StaticMeshComponent0.MID_MI_CabinetWash0_0",
+          "Radiance": [
+            3.674999952316284,
+            2.0167453289031982,
+            1.126281920899736
+          ]
+        },
+        {
+          "component": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_2.StaticMeshComponent0",
+          "material": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_2.StaticMeshComponent0.MID_MI_CabinetWash1_0",
+          "Radiance": [
+            2.572499990463257,
+            1.4117217063903809,
+            0.7883972918733638
+          ]
+        },
+        {
+          "component": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_3.StaticMeshComponent0",
+          "material": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_3.StaticMeshComponent0.MID_MI_CabinetWash1_0",
+          "Radiance": [
+            2.572499990463257,
+            1.4117217063903809,
+            0.7883972918733638
+          ]
+        },
+        {
+          "component": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_4.StaticMeshComponent0",
+          "material": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_4.StaticMeshComponent0.MID_MI_CabinetWash1_0",
+          "Radiance": [
+            2.572499990463257,
+            1.4117217063903809,
+            0.7883972918733638
+          ]
+        }
+      ],
+      "actualVeneer": [
+        {
+          "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__59",
+          "BaseColorFactor": [
+            0.12762674689292908,
+            0.04552583396434784,
+            0.009715186432003975,
+            1.0
+          ]
+        },
+        {
+          "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__62",
+          "BaseColorFactor": [
+            0.12762674689292908,
+            0.04552583396434784,
+            0.009715186432003975,
+            1.0
+          ]
+        },
+        {
+          "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__79",
+          "BaseColorFactor": [
+            0.12762674689292908,
+            0.04552583396434784,
+            0.009715186432003975,
+            1.0
+          ]
+        },
+        {
+          "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__82",
+          "BaseColorFactor": [
+            0.12762674689292908,
+            0.04552583396434784,
+            0.009715186432003975,
+            1.0
+          ]
+        }
+      ],
+      "camera": {
+        "xyz": [
+          250.0,
+          820.0,
+          162.0
+        ],
+        "yaw": 96.99999999999999,
+        "pitch": -4.0,
+        "roll": 3.9854015897965574e-16,
+        "horizontalFov": 104.50486755371094,
+        "width": 640,
+        "height": 360,
+        "separateTranslucencyShowFlag": true,
+        "privateBlendableAttached": false
+      },
+      "imageSHA256": "32e7a4f62370c74aa319b4d9c4e00fb193f74f235b2923789285467d81fee297"
+    },
+    {
+      "id": "blue420",
+      "WASH_RADIANCE": [
+        7.35,
+        4.95,
+        4.2
+      ],
+      "VENEER_NIGHT_FACTOR": [
+        0.755,
+        0.56,
+        0.155
+      ],
+      "actualNightVeneerUnchanged": true,
+      "runtime": {
+        "WindowSkyStrength": 0.24129019677639008,
+        "WindowSunStrength": 0.1486421674489975,
+        "WindowAmbientFill": 0.15501858294010162,
+        "Daylight": 0.12452149391174316,
+        "SunDirNative": [
+          -0.9835368990898132,
+          0.17928315699100494,
+          -0.022644218057394028
+        ],
+        "SunDirWeb": [
+          -0.9835368990898132,
+          -0.022644218057394028,
+          0.17928315699100494
+        ],
+        "actualAmbient": {
+          "cube": "/Game/Lunden/Lighting/T_LundenHemisphere.T_LundenHemisphere",
+          "intensity": 2.1010000705718994,
+          "blendWeight": 0.07378324121236801,
+          "effectiveFill": 0.15501859499420867,
+          "tint": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "expectedNativeFill": 0.15501858673922944
+      },
+      "actualWash": [
+        {
+          "component": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_0.StaticMeshComponent0",
+          "material": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_0.StaticMeshComponent0.MID_MI_CabinetWash0_0",
+          "Radiance": [
+            3.674999952316284,
+            2.0167453289031982,
+            1.2129189917381773
+          ]
+        },
+        {
+          "component": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_1.StaticMeshComponent0",
+          "material": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_1.StaticMeshComponent0.MID_MI_CabinetWash0_0",
+          "Radiance": [
+            3.674999952316284,
+            2.0167453289031982,
+            1.2129189917381773
+          ]
+        },
+        {
+          "component": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_2.StaticMeshComponent0",
+          "material": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_2.StaticMeshComponent0.MID_MI_CabinetWash1_0",
+          "Radiance": [
+            2.572499990463257,
+            1.4117217063903809,
+            0.8490432374020841
+          ]
+        },
+        {
+          "component": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_3.StaticMeshComponent0",
+          "material": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_3.StaticMeshComponent0.MID_MI_CabinetWash1_0",
+          "Radiance": [
+            2.572499990463257,
+            1.4117217063903809,
+            0.8490432374020841
+          ]
+        },
+        {
+          "component": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_4.StaticMeshComponent0",
+          "material": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_4.StaticMeshComponent0.MID_MI_CabinetWash1_0",
+          "Radiance": [
+            2.572499990463257,
+            1.4117217063903809,
+            0.8490432374020841
+          ]
+        }
+      ],
+      "actualVeneer": [
+        {
+          "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__59",
+          "BaseColorFactor": [
+            0.12762674689292908,
+            0.04552583396434784,
+            0.009715186432003975,
+            1.0
+          ]
+        },
+        {
+          "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__62",
+          "BaseColorFactor": [
+            0.12762674689292908,
+            0.04552583396434784,
+            0.009715186432003975,
+            1.0
+          ]
+        },
+        {
+          "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__79",
+          "BaseColorFactor": [
+            0.12762674689292908,
+            0.04552583396434784,
+            0.009715186432003975,
+            1.0
+          ]
+        },
+        {
+          "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__82",
+          "BaseColorFactor": [
+            0.12762674689292908,
+            0.04552583396434784,
+            0.009715186432003975,
+            1.0
+          ]
+        }
+      ],
+      "camera": {
+        "xyz": [
+          250.0,
+          820.0,
+          162.0
+        ],
+        "yaw": 96.99999999999999,
+        "pitch": -4.0,
+        "roll": 3.9854015897965574e-16,
+        "horizontalFov": 104.50486755371094,
+        "width": 640,
+        "height": 360,
+        "separateTranslucencyShowFlag": true,
+        "privateBlendableAttached": false
+      },
+      "imageSHA256": "8c39d70433f61e78532fcc3cebde532974fae5515784ad886a32e6b1bf770795"
+    },
+    {
+      "id": "green520-blue420",
+      "WASH_RADIANCE": [
+        7.35,
+        5.2,
+        4.2
+      ],
+      "VENEER_NIGHT_FACTOR": [
+        0.755,
+        0.56,
+        0.155
+      ],
+      "actualNightVeneerUnchanged": true,
+      "runtime": {
+        "WindowSkyStrength": 0.24129019677639008,
+        "WindowSunStrength": 0.1486421674489975,
+        "WindowAmbientFill": 0.15501858294010162,
+        "Daylight": 0.12452149391174316,
+        "SunDirNative": [
+          -0.9835368990898132,
+          0.17928315699100494,
+          -0.022644218057394028
+        ],
+        "SunDirWeb": [
+          -0.9835368990898132,
+          -0.022644218057394028,
+          0.17928315699100494
+        ],
+        "actualAmbient": {
+          "cube": "/Game/Lunden/Lighting/T_LundenHemisphere.T_LundenHemisphere",
+          "intensity": 2.1010000705718994,
+          "blendWeight": 0.07378324121236801,
+          "effectiveFill": 0.15501859499420867,
+          "tint": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "expectedNativeFill": 0.15501858673922944
+      },
+      "actualWash": [
+        {
+          "component": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_0.StaticMeshComponent0",
+          "material": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_0.StaticMeshComponent0.MID_MI_CabinetWash0_0",
+          "Radiance": [
+            3.674999952316284,
+            2.118601153595279,
+            1.2129189917381773
+          ]
+        },
+        {
+          "component": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_1.StaticMeshComponent0",
+          "material": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_1.StaticMeshComponent0.MID_MI_CabinetWash0_0",
+          "Radiance": [
+            3.674999952316284,
+            2.118601153595279,
+            1.2129189917381773
+          ]
+        },
+        {
+          "component": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_2.StaticMeshComponent0",
+          "material": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_2.StaticMeshComponent0.MID_MI_CabinetWash1_0",
+          "Radiance": [
+            2.572499990463257,
+            1.4830207824707031,
+            0.8490432374020841
+          ]
+        },
+        {
+          "component": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_3.StaticMeshComponent0",
+          "material": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_3.StaticMeshComponent0.MID_MI_CabinetWash1_0",
+          "Radiance": [
+            2.572499990463257,
+            1.4830207824707031,
+            0.8490432374020841
+          ]
+        },
+        {
+          "component": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_4.StaticMeshComponent0",
+          "material": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_4.StaticMeshComponent0.MID_MI_CabinetWash1_0",
+          "Radiance": [
+            2.572499990463257,
+            1.4830207824707031,
+            0.8490432374020841
+          ]
+        }
+      ],
+      "actualVeneer": [
+        {
+          "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__59",
+          "BaseColorFactor": [
+            0.12762674689292908,
+            0.04552583396434784,
+            0.009715186432003975,
+            1.0
+          ]
+        },
+        {
+          "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__62",
+          "BaseColorFactor": [
+            0.12762674689292908,
+            0.04552583396434784,
+            0.009715186432003975,
+            1.0
+          ]
+        },
+        {
+          "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__79",
+          "BaseColorFactor": [
+            0.12762674689292908,
+            0.04552583396434784,
+            0.009715186432003975,
+            1.0
+          ]
+        },
+        {
+          "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__82",
+          "BaseColorFactor": [
+            0.12762674689292908,
+            0.04552583396434784,
+            0.009715186432003975,
+            1.0
+          ]
+        }
+      ],
+      "camera": {
+        "xyz": [
+          250.0,
+          820.0,
+          162.0
+        ],
+        "yaw": 96.99999999999999,
+        "pitch": -4.0,
+        "roll": 3.9854015897965574e-16,
+        "horizontalFov": 104.50486755371094,
+        "width": 640,
+        "height": 360,
+        "separateTranslucencyShowFlag": true,
+        "privateBlendableAttached": false
+      },
+      "imageSHA256": "ab926efd16ea5c9314823af66300a97c6b85d97882c20fefd4a987f58d2b2ed1"
+    },
+    {
+      "id": "red780-green520-blue420",
+      "WASH_RADIANCE": [
+        7.8,
+        5.2,
+        4.2
+      ],
+      "VENEER_NIGHT_FACTOR": [
+        0.755,
+        0.56,
+        0.155
+      ],
+      "actualNightVeneerUnchanged": true,
+      "runtime": {
+        "WindowSkyStrength": 0.24129019677639008,
+        "WindowSunStrength": 0.1486421674489975,
+        "WindowAmbientFill": 0.15501858294010162,
+        "Daylight": 0.12452149391174316,
+        "SunDirNative": [
+          -0.9835368990898132,
+          0.17928315699100494,
+          -0.022644218057394028
+        ],
+        "SunDirWeb": [
+          -0.9835368990898132,
+          -0.022644218057394028,
+          0.17928315699100494
+        ],
+        "actualAmbient": {
+          "cube": "/Game/Lunden/Lighting/T_LundenHemisphere.T_LundenHemisphere",
+          "intensity": 2.1010000705718994,
+          "blendWeight": 0.07378324121236801,
+          "effectiveFill": 0.15501859499420867,
+          "tint": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "expectedNativeFill": 0.15501858673922944
+      },
+      "actualWash": [
+        {
+          "component": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_0.StaticMeshComponent0",
+          "material": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_0.StaticMeshComponent0.MID_MI_CabinetWash0_0",
+          "Radiance": [
+            3.899999949396873,
+            2.118601153595279,
+            1.2129189917381773
+          ]
+        },
+        {
+          "component": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_1.StaticMeshComponent0",
+          "material": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_1.StaticMeshComponent0.MID_MI_CabinetWash0_0",
+          "Radiance": [
+            3.899999949396873,
+            2.118601153595279,
+            1.2129189917381773
+          ]
+        },
+        {
+          "component": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_2.StaticMeshComponent0",
+          "material": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_2.StaticMeshComponent0.MID_MI_CabinetWash1_0",
+          "Radiance": [
+            2.7299999898793748,
+            1.4830207824707031,
+            0.8490432374020841
+          ]
+        },
+        {
+          "component": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_3.StaticMeshComponent0",
+          "material": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_3.StaticMeshComponent0.MID_MI_CabinetWash1_0",
+          "Radiance": [
+            2.7299999898793748,
+            1.4830207824707031,
+            0.8490432374020841
+          ]
+        },
+        {
+          "component": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_4.StaticMeshComponent0",
+          "material": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_4.StaticMeshComponent0.MID_MI_CabinetWash1_0",
+          "Radiance": [
+            2.7299999898793748,
+            1.4830207824707031,
+            0.8490432374020841
+          ]
+        }
+      ],
+      "actualVeneer": [
+        {
+          "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__59",
+          "BaseColorFactor": [
+            0.12762674689292908,
+            0.04552583396434784,
+            0.009715186432003975,
+            1.0
+          ]
+        },
+        {
+          "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__62",
+          "BaseColorFactor": [
+            0.12762674689292908,
+            0.04552583396434784,
+            0.009715186432003975,
+            1.0
+          ]
+        },
+        {
+          "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__79",
+          "BaseColorFactor": [
+            0.12762674689292908,
+            0.04552583396434784,
+            0.009715186432003975,
+            1.0
+          ]
+        },
+        {
+          "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__82",
+          "BaseColorFactor": [
+            0.12762674689292908,
+            0.04552583396434784,
+            0.009715186432003975,
+            1.0
+          ]
+        }
+      ],
+      "camera": {
+        "xyz": [
+          250.0,
+          820.0,
+          162.0
+        ],
+        "yaw": 96.99999999999999,
+        "pitch": -4.0,
+        "roll": 3.9854015897965574e-16,
+        "horizontalFov": 104.50486755371094,
+        "width": 640,
+        "height": 360,
+        "separateTranslucencyShowFlag": true,
+        "privateBlendableAttached": false
+      },
+      "imageSHA256": "b6bcf97d59fb086371aa2b8618d159229fb1dfb997b2932754c487845cf8be0f"
+    }
+  ],
+  "originalActualWashMID": [
+    {
+      "component": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_0.StaticMeshComponent0",
+      "Radiance": [
+        3.674999952316284,
+        2.0167453289031982,
+        1.0179855823516846
+      ]
+    },
+    {
+      "component": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_1.StaticMeshComponent0",
+      "Radiance": [
+        3.674999952316284,
+        2.0167453289031982,
+        1.0179855823516846
+      ]
+    },
+    {
+      "component": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_2.StaticMeshComponent0",
+      "Radiance": [
+        2.572499990463257,
+        1.4117217063903809,
+        0.7125898599624634
+      ]
+    },
+    {
+      "component": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_3.StaticMeshComponent0",
+      "Radiance": [
+        2.572499990463257,
+        1.4117217063903809,
+        0.7125898599624634
+      ]
+    },
+    {
+      "component": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_4.StaticMeshComponent0",
+      "Radiance": [
+        2.572499990463257,
+        1.4117217063903809,
+        0.7125898599624634
+      ]
+    }
+  ],
+  "unchangedNightVeneer": [
+    0.11772448182106018,
+    0.039401652812957766,
+    0.005131238754838705
+  ],
+  "actualDayVeneerUnchanged": true,
+  "dayControl": {
+    "camera": {
+      "xyz": [
+        250.0,
+        820.0,
+        162.0
+      ],
+      "yaw": 96.99999999999999,
+      "pitch": -4.0,
+      "roll": 3.9854015897965574e-16,
+      "horizontalFov": 104.50486755371094,
+      "width": 640,
+      "height": 360,
+      "separateTranslucencyShowFlag": true,
+      "privateBlendableAttached": false
+    },
+    "imageSHA256": "304e30bb0e12b5def591bff7f6142c0e79ef3e299ec0c5837e02b58b63429d9e",
+    "runtime": {
+      "WindowSkyStrength": 1.5,
+      "WindowSunStrength": 3.0,
+      "WindowAmbientFill": 1.058500051498413,
+      "Daylight": 1.0,
+      "SunDirNative": [
+        0.32902491092681885,
+        0.4451923966407776,
+        0.8327943086624146
+      ],
+      "SunDirWeb": [
+        0.32902491092681885,
+        0.8327943086624146,
+        0.4451923966407776
+      ],
+      "actualAmbient": {
+        "cube": "/Game/Lunden/Lighting/T_LundenHemisphere.T_LundenHemisphere",
+        "intensity": 2.1010000705718994,
+        "blendWeight": 0.5038077235221863,
+        "effectiveFill": 1.0585000626747814,
+        "tint": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "expectedNativeFill": 1.0585
+    }
+  },
+  "restoredOriginalNightVeneer": [
+    0.11772448182106018,
+    0.039401652812957766,
+    0.005131238754838705
+  ],
+  "restoredOriginalWashRadiance": [
+    {
+      "component": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_0.StaticMeshComponent0",
+      "Radiance": [
+        3.674999952316284,
+        2.0167453289031982,
+        1.0179855823516846
+      ]
+    },
+    {
+      "component": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_1.StaticMeshComponent0",
+      "Radiance": [
+        3.674999952316284,
+        2.0167453289031982,
+        1.0179855823516846
+      ]
+    },
+    {
+      "component": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_2.StaticMeshComponent0",
+      "Radiance": [
+        2.572499990463257,
+        1.4117217063903809,
+        0.7125898599624634
+      ]
+    },
+    {
+      "component": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_3.StaticMeshComponent0",
+      "Radiance": [
+        2.572499990463257,
+        1.4117217063903809,
+        0.7125898599624634
+      ]
+    },
+    {
+      "component": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.BP_LundenCabinetWashes_C_4.StaticMeshComponent0",
+      "Radiance": [
+        2.572499990463257,
+        1.4117217063903809,
+        0.7125898599624634
+      ]
+    }
+  ]
+}

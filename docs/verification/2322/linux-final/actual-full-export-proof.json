@@ -1,0 +1,272 @@
+{
+  "actualCleanSource": "461a0b2202901365b599cccaab6f49d0d1181425",
+  "sourceHash": "a2f25406e223b2e73540384644a4cff47bd38a59e9309c14b95eec07b423eeeb",
+  "manifestSha256": "493c43651cc59178069fd39f0cc4c9c4cc876c88e4a86582f8c2f03f67f32d64",
+  "outerExportExit": 143,
+  "outerExitIsNotProofOfNativeFailure": true,
+  "completionEvidence": "all expected actual files; export log final manifest; actual source check-export exited0; export fixture100cases exited0",
+  "allTenGeometryFilesUnchanged": true,
+  "geometry": {
+    "fixture.glb": {
+      "sha256": "4636b1948a94ae9ead1697597026fb784135703be441a97ddd400a0c1446e649",
+      "sameAsPriorLocalExport": true
+    },
+    "fond.glb": {
+      "sha256": "3296dac9ba0e5dd15a7838b56cdf1310ec6c4ed7d93f086684c091abfcaabde3",
+      "sameAsPriorLocalExport": true
+    },
+    "gard.glb": {
+      "sha256": "559a4bd2a880d6624a5dd5cb451e2ec256b2ae1ed415983c6a759cd3540e995b",
+      "sameAsPriorLocalExport": true
+    },
+    "hus-l.glb": {
+      "sha256": "df489d6ca499c5eccba334d113402f5ef6e5dfa53670f3f727b190192089ac22",
+      "sameAsPriorLocalExport": true
+    },
+    "kvarteret.glb": {
+      "sha256": "58e5b478496ab3931f0e44e22f5569a4ab13284c144c771169f5c4253c053a80",
+      "sameAsPriorLocalExport": true
+    },
+    "l1007-entre.glb": {
+      "sha256": "4738e1b53b2c981cdb5e68f27da6eec734c5db294de770929e3dc15cc4b320c3",
+      "sameAsPriorLocalExport": true
+    },
+    "l1007-uteplats.glb": {
+      "sha256": "163ce0bc28191a075ec67161e77f2ccac3699d5f01666e7624899762d0fc3941",
+      "sameAsPriorLocalExport": true
+    },
+    "l1007.glb": {
+      "sha256": "9b08d5770fdc54efcb6392be62711a8d3db56c9cf5f5ddc83c6db588251b6899",
+      "sameAsPriorLocalExport": true
+    },
+    "omgivning.glb": {
+      "sha256": "92e00d3d4948282a469f186937e7bb6032969518bec387286b72fd954e7c615c",
+      "sameAsPriorLocalExport": true
+    },
+    "vegetation.glb": {
+      "sha256": "e01b8c3c721b54531468165e986a0223b5cb875080fb16e6003579c8a2c48433",
+      "sameAsPriorLocalExport": true
+    }
+  },
+  "fields": [
+    {
+      "lamp": "room_kok-matplats_l0_x350_z141",
+      "kind": "floor",
+      "corners": {
+        "0,0": [
+          270.0000047683716,
+          61.000001430511475,
+          1.2000000104308128
+        ],
+        "1,0": [
+          430.0000190734863,
+          61.000001430511475,
+          1.2000000104308128
+        ],
+        "1,1": [
+          430.0000190734863,
+          221.00000381469727,
+          1.2000000104308128
+        ],
+        "0,1": [
+          270.0000047683716,
+          221.00000381469727,
+          1.2000000104308128
+        ]
+      },
+      "colour": [
+        0.10000000149011612,
+        0.06938717514276505,
+        0.03915724903345108
+      ],
+      "opacity": 1,
+      "depth": {
+        "write": false,
+        "test": true,
+        "polygonOffset": true,
+        "factor": -1,
+        "units": -4,
+        "renderOrder": 2
+      },
+      "source": "src/shadepools.js ShadePools.commit; src/groundglow.js glowMaterial; LIGHTING.shades source radii/peaks"
+    },
+    {
+      "lamp": "room_vardagsrum_l0_x364_z1056",
+      "kind": "floor",
+      "corners": {
+        "0,0": [
+          244.0000057220459,
+          935.9999656677246,
+          1.2000000104308128
+        ],
+        "1,0": [
+          484.00001525878906,
+          935.9999656677246,
+          1.2000000104308128
+        ],
+        "1,1": [
+          484.00001525878906,
+          1176.0000228881836,
+          1.2000000104308128
+        ],
+        "0,1": [
+          244.0000057220459,
+          1176.0000228881836,
+          1.2000000104308128
+        ]
+      },
+      "colour": [
+        0.20000000298023224,
+        0.1387743502855301,
+        0.07831449806690216
+      ],
+      "opacity": 1,
+      "depth": {
+        "write": false,
+        "test": true,
+        "polygonOffset": true,
+        "factor": -1,
+        "units": -4,
+        "renderOrder": 2
+      },
+      "source": "src/shadepools.js ShadePools.commit; src/groundglow.js glowMaterial; LIGHTING.shades source radii/peaks"
+    },
+    {
+      "lamp": "room_vardagsrum_l0_x364_z1056",
+      "kind": "ceiling",
+      "corners": {
+        "0,0": [
+          264.0000104904175,
+          956.0000419616699,
+          298.799991607666
+        ],
+        "1,0": [
+          463.99998664855957,
+          956.0000419616699,
+          298.799991607666
+        ],
+        "1,1": [
+          463.99998664855957,
+          1156.00004196167,
+          298.799991607666
+        ],
+        "0,1": [
+          264.0000104904175,
+          1156.00004196167,
+          298.799991607666
+        ]
+      },
+      "colour": [
+        0.30000001192092896,
+        0.20816153287887573,
+        0.11747173964977264
+      ],
+      "opacity": 1,
+      "depth": {
+        "write": false,
+        "test": true,
+        "polygonOffset": true,
+        "factor": -1,
+        "units": -4,
+        "renderOrder": 2
+      },
+      "source": "src/shadepools.js ShadePools.commit; src/groundglow.js glowMaterial; LIGHTING.shades source radii/peaks"
+    },
+    {
+      "lamp": "room_sovrum-2_l1_x370_z960",
+      "kind": "floor",
+      "corners": {
+        "0,0": [
+          270.0000047683716,
+          860.0000381469727,
+          326.200008392334
+        ],
+        "1,0": [
+          469.9999809265137,
+          860.0000381469727,
+          326.200008392334
+        ],
+        "1,1": [
+          469.9999809265137,
+          1060.0000381469727,
+          326.200008392334
+        ],
+        "0,1": [
+          270.0000047683716,
+          1060.0000381469727,
+          326.200008392334
+        ]
+      },
+      "colour": [
+        0.18000000715255737,
+        0.12489691376686096,
+        0.07048304378986359
+      ],
+      "opacity": 1,
+      "depth": {
+        "write": false,
+        "test": true,
+        "polygonOffset": true,
+        "factor": -1,
+        "units": -4,
+        "renderOrder": 2
+      },
+      "source": "src/shadepools.js ShadePools.commit; src/groundglow.js glowMaterial; LIGHTING.shades source radii/peaks"
+    },
+    {
+      "lamp": "room_sovrum-2_l1_x370_z960",
+      "kind": "ceiling",
+      "corners": {
+        "0,0": [
+          290.00000953674316,
+          880.0000190734863,
+          603.8000106811523
+        ],
+        "1,0": [
+          450,
+          880.0000190734863,
+          603.8000106811523
+        ],
+        "1,1": [
+          450,
+          1039.9999618530273,
+          603.8000106811523
+        ],
+        "0,1": [
+          290.00000953674316,
+          1039.9999618530273,
+          603.8000106811523
+        ]
+      },
+      "colour": [
+        0.2800000011920929,
+        0.1942840963602066,
+        0.10964029282331467
+      ],
+      "opacity": 1,
+      "depth": {
+        "write": false,
+        "test": true,
+        "polygonOffset": true,
+        "factor": -1,
+        "units": -4,
+        "renderOrder": 2
+      },
+      "source": "src/shadepools.js ShadePools.commit; src/groundglow.js glowMaterial; LIGHTING.shades source radii/peaks"
+    }
+  ],
+  "sourceDerived": [
+    "actual ShadePools quads, mask and full-on colour/opacity",
+    "source K multiplied before sRGB OETF; source opacity after OETF",
+    "source quad depth gate and real2mm rug plane discrepancy",
+    "actual imported PBR parent/UV/texture/sRGB/vertex colours retained"
+  ],
+  "explicitGuesses": [
+    "wood per-material RGB gain/specular suppression",
+    "upholstery per-material RGB gain",
+    "curtain daylight/lamp/violet vector calibration",
+    "cabinet wash veneer/point calibration"
+  ],
+  "nativeAcceptance": "pending actual full sync, PBR/controller tests and locked11crop comparison",
+  "downstream": "Unreal original-only; export-only read getters do not change web behavior; personal furnishing material profile excluded from public project"
+}

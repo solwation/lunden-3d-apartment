@@ -1,0 +1,98 @@
+{
+  "status": "LOCKED SUPPLEMENT BEFORE ANY NEW NATIVE UPPER IMAGE REVIEW; no acceptance result",
+  "lockedAtUtc": "2026-11-27T13:25:04.925189+00:00",
+  "originalTenCropContractSha256": "9c01dc0a21099bf1c89fd24096d258c6f8f9d5d97a326e86bccdfc4c2b9fd0b9",
+  "primaryContractUnmodified": true,
+  "shot": "upper-floor-evening",
+  "crop": "curtain",
+  "normalizedXYXY": [
+    0.352,
+    0.283,
+    0.374,
+    0.583
+  ],
+  "pixels640x360": {
+    "x": 225,
+    "y": 102,
+    "width": 14,
+    "height": 108
+  },
+  "pixels1440x810": {
+    "x": 507,
+    "y": 229,
+    "width": 32,
+    "height": 243
+  },
+  "rounding": "unchanged crop-stats Math.round(x0*w),Math.round(y0*h),Math.round((x1-x0)*w),Math.round((y1-y0)*h)",
+  "camera": {
+    "eyeWeb": [
+      1.75,
+      4.87,
+      7.95
+    ],
+    "feetWeb": [
+      1.75,
+      3.25,
+      7.95
+    ],
+    "yawWebDeg": 170,
+    "pitchWebDeg": -3,
+    "verticalFovDeg": 72,
+    "horizontalFovDeg": 104.504864443922,
+    "viewport": [
+      640,
+      360
+    ],
+    "nativeEyeCm": [
+      175,
+      795,
+      487
+    ],
+    "nativeYawDeg": 100,
+    "nativePitchDeg": -3
+  },
+  "date": [
+    2026,
+    6,
+    21
+  ],
+  "hour": 22,
+  "weather": "clear",
+  "lamps": "all",
+  "power": "normal",
+  "sourceCommit": "367c39694b2642dfc632d8dedb4129b0454cadec",
+  "sourceStatus": "",
+  "cloth": "original upper-floor bedroom4 curtain; confirm coverage and source material after web image, before native image; do not move crop",
+  "sourceCurtain": {
+    "id": "f-curtain-bedroom4",
+    "level": 1,
+    "room": "Sovrum 4",
+    "daylight": [
+      0.009449679981869404,
+      0.004891920569818318,
+      0.014635049761563004
+    ],
+    "lamp": [
+      0.084,
+      0.04531627707628349,
+      0.016347897756210025
+    ],
+    "key": "std_ffffff_r96_m0_a94_tex_ds_t568b8e3ea6",
+    "nodes": [
+      "mesh_l1_x203_z1212_y464",
+      "mesh_l1_x84_z1212_y464"
+    ],
+    "lamps": [
+      "furn_mirror_l1_x258_z1145",
+      "room_sovrum-4_l1_x143_z1001"
+    ]
+  },
+  "luminanceRatioGateInclusive": [
+    0.8,
+    1.25
+  ],
+  "hue": "same hue via actual original/crop review; report mean sRGB R/G and B/G and native/web ratios. Existing curtain \u00b110% ratios are a source-labeled guess, not promoted to new universal threshold.",
+  "capture": "canonical tools/unreal-engine/tests/capture-web-lighting.cjs; step(0) twice, settle original light pool twice by LIGHTING.poolFade, frame(1/60), renderer.render, unchanged JPEG0.92; private viewport+read-only profile observation only",
+  "noNewNativeViewed": true,
+  "renderProfileLimits": "Current #2394 Linux diagnostic profile ShadowQuality3, 1024 shadow resolution, 3 cascades, AA0, Lumen/Nanite off and CPU Vulkan. Matched dimensions/exposure/postprocess/light state and exact source/export/profile provenance must be reported. Passes under this profile are bounded measured evidence, not silently promoted to full Windows profile acceptance."
+}

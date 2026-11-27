@@ -1,0 +1,150 @@
+{
+  "source": "c1de028da70d1947c59cd017826e4409baff511a",
+  "scope": "Immutable raw images and actual proof files; README intentionally excluded",
+  "files": {
+    "web-living-room-evening.jpg": {
+      "sha256": "1a6d7cd06c97fbb1729662cece73490a808745d2511124f8dc0a987f0e810c0b",
+      "bytes": 58390
+    },
+    "actual-full-export-proof.json": {
+      "sha256": "778cf8ab92ffbb573479f15873a4dbc300ac8e1db49e978bbfb6b0103130be9e",
+      "bytes": 7760
+    },
+    "crops.json": {
+      "sha256": "bd75abedb6fb66f69af8d6ff6d01014f2ea61a640d33098718348e3f81de67ad",
+      "bytes": 1179
+    },
+    "living-room-evening-materials.json": {
+      "sha256": "856e70b3411b9bc3e3156929c6335119c36aec9e043672576594d707a02d8563",
+      "bytes": 551153
+    },
+    "unreal-living-room-day.png": {
+      "sha256": "ce8161dae7257d7da6e184db1a3ef0ea1ff7e3825655aeb2b56ce03061c198e5",
+      "bytes": 315909
+    },
+    "capture.json": {
+      "sha256": "f72a4e2a9ca87e29b0b668c1939f71c8b747c386ed08cc6ef22549da4ec71428",
+      "bytes": 311055
+    },
+    "web-upper-floor-evening.jpg": {
+      "sha256": "16ed055836f8a6f6487ed1c6d99bfa45be5ceb9ecb2e53b5240c1692ebd7dbb8",
+      "bytes": 31254
+    },
+    "web-living-room-day.jpg": {
+      "sha256": "be8023e5a4d1ba5cfb2d4f930273f6792c788658efd47dba6a6c153016af33ac",
+      "bytes": 67118
+    },
+    "sofa-factor-source-audit.json": {
+      "sha256": "f0ea61ccc5e87642f332c29d2358eb261002d5a7706edbd7a3e4c950f9ef4b90",
+      "bytes": 1379
+    },
+    "cabinet-trial-v2-selection.json": {
+      "sha256": "7b10325a54f32b2f2b55351b65ff3e67bab2782440e0cf3f0ecf3568d8bf5f7e",
+      "bytes": 31481
+    },
+    "sync-capture-guards.json": {
+      "sha256": "79b3f157f24cf9800973c8e064507ac8db6ac0fe30e8691610874d12d15001e8",
+      "bytes": 72520
+    },
+    "root-v5-review.json": {
+      "sha256": "a92d42d0f876d13313cbefdc8b74050b4458839160ecc528515442cd893f634e",
+      "bytes": 2593
+    },
+    "corrected-reference-contract.json": {
+      "sha256": "1f559812415bdc9a6bbfcd5030957bae510b208833318c45021d3a89545d47b6",
+      "bytes": 9582
+    },
+    "locked-crop-contract.json": {
+      "sha256": "9c01dc0a21099bf1c89fd24096d258c6f8f9d5d97a326e86bccdfc4c2b9fd0b9",
+      "bytes": 9045
+    },
+    "fourteen-crop-gate.json": {
+      "sha256": "ce0b1a520c2b1b6f84489ca2f3489ff9ed134655945f00cc992e258e73896172",
+      "bytes": 10853
+    },
+    "fade-controls.json": {
+      "sha256": "d393e6aecb06ec0f1462c6334fbdb9e9a2fd59853aa2698f8484470c631fbda9",
+      "bytes": 6068
+    },
+    "outcome.json": {
+      "sha256": "d3f868d6ec848d014e289d504745709fe4cc0255e02e30dbd5ba015a895247a4",
+      "bytes": 4815
+    },
+    "locked-upper-contract.json": {
+      "sha256": "140542ddae0de8d388b7f971b66ae4c170fc3cd5a5d8f4f77ff4adc08572e8da",
+      "bytes": 2919
+    },
+    "resume-final-closure.json": {
+      "sha256": "6ac39e1af9a27f27a4a4000fe3ff0feaee2f310cbd4f47ee795977711c28646a",
+      "bytes": 1121937
+    },
+    "living-room-day-materials.json": {
+      "sha256": "4ef5f3c3360a6ea97208057db14c0426bfe7cd3aaa6e39442f21e455b4d06f43",
+      "bytes": 551139
+    },
+    "canonical-console.txt": {
+      "sha256": "2b11a0c4f83585e96c242eff176334fb72111cb5fa250221381ffe196cc7ee4e",
+      "bytes": 2197
+    },
+    "unreal-upper-floor-evening.png": {
+      "sha256": "6c61e7c30c3a3d24232079b3fc272fd400a5a5b726f9d38628811f1e9fc7e2fb",
+      "bytes": 225665
+    },
+    "sync-capture-steps.json": {
+      "sha256": "e4c8827b3208aefced51b86b1deebfc47c74593b4412a212c3693dc11f8cfba6",
+      "bytes": 67913
+    },
+    "unreal-living-room-evening.png": {
+      "sha256": "ddf7769d196c7b728d9a5e04661097c3bef8bb58f0d5a6644c80faa8fdadbe51",
+      "bytes": 315909
+    },
+    "upper-floor-evening-materials.json": {
+      "sha256": "856e70b3411b9bc3e3156929c6335119c36aec9e043672576594d707a02d8563",
+      "bytes": 551153
+    },
+    "crop-stats.json": {
+      "sha256": "a1ebe1543ec40837e590f9f03b8b0190592c3559b92a9613a04cb90fdc7931f7",
+      "bytes": 4906
+    },
+    "cabinet-trial-v2-pairs/crop-stats.json": {
+      "sha256": "9242694938efbfae0d9bd52c2568ae286c319b78126c3610ce0e205bba4f9f9b",
+      "bytes": 12141
+    },
+    "harness/trial-cabinet-v2.py": {
+      "sha256": "e126861fb52cea6716c660ba446991d92ccf96d4dcadbede0a08c9ceda01c5ef",
+      "bytes": 9709
+    },
+    "harness/resume-capture-production-v5.py": {
+      "sha256": "813197a315bf1753c78ea2d7009c004c6d12ce94991cea7584f15b1504e456a5",
+      "bytes": 23338
+    },
+    "harness/measure-final-v5.py": {
+      "sha256": "ef26f15bd529bab8c2b193e61a2b1f5f34fb571c79f1a7a1894143010bca4e97",
+      "bytes": 3157
+    },
+    "harness/probe-after-production-v2.py": {
+      "sha256": "40bb40cd992556d91ee03dc7f1c455bdda73452325c526a0f326fd8343a78f3b",
+      "bytes": 18014
+    },
+    "history-v4/eleven-crop-gate.json": {
+      "sha256": "c1560e2e150be2c3a2bf943fe28791ffc906bb8951269ea4eab24349eb9ea2ab",
+      "bytes": 7001
+    },
+    "history-v4/crop-stats.json": {
+      "sha256": "f493b86809bc1e75cf232d3ad0edb83798af3395dec0aee467d5cfb43bb0e91a",
+      "bytes": 3897
+    },
+    "native-cabinet-trials-v2/outcome.json": {
+      "sha256": "95410c51eb9a8759cdae103235cf9d2a2d2871d65ba148711a3f25d22af75a6e",
+      "bytes": 1894
+    },
+    "native-cabinet-trials-v2/trials.json": {
+      "sha256": "d35ef2aaeae236ce40ba691d6b9a63743a544754ebd838bcbf04bb634dc734f5",
+      "bytes": 27193
+    },
+    "worker-v5-review.json": {
+      "sha256": "e080bce314a6f7e9df46ce8f1a6b858e26aaaf33db308974b0e9c702eab7c3a8",
+      "bytes": 6405
+    }
+  }
+}

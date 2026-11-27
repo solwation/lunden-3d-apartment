@@ -1,0 +1,56 @@
+{
+  "sourceOnly": true,
+  "engine": "official Epic Linux Unreal5.8.4 ZIP",
+  "graphEvidence": [
+    "gltf-default-graph.json",
+    "gltf-default-body-graph.json",
+    "gltf-basecolor-graph.json"
+  ],
+  "factorTrace": [
+    "M_Default.BaseColorFactor export58",
+    "MF_Default_Body.BaseColorFactor_RGB input44 GUID9ced4258fcfaa946b084f6af9fb6196b",
+    "NamedReroute139",
+    "MF_BaseColor RGB multiply texture*factor*vertex",
+    "body switch175 selects this RGB when bHasBaseColorTexture=true"
+  ],
+  "rgbClampFound": false,
+  "saturateOnlyAffectsOpacity": true,
+  "sofaCropRayScript": "identify-sofa.mjs",
+  "sourceExport": "/mnt/d/LundenLinux/exports/issue2322-final",
+  "camera": {
+    "eye": [
+      2.5,
+      1.62,
+      8.2
+    ],
+    "yaw": 173,
+    "pitch": -4,
+    "verticalFov": 72,
+    "width": 640,
+    "height": 360
+  },
+  "samplePixels": [
+    [
+      150,
+      262
+    ],
+    [
+      180,
+      262
+    ],
+    [
+      210,
+      262
+    ],
+    [
+      180,
+      265
+    ]
+  ],
+  "allSampleHits": {
+    "node": "furn_sofa_l0_x410_z1126__5",
+    "material": "std_a7b39a_r95_m0"
+  },
+  "profileSelector": "^std_ffffff_r96_m0_vc_tex_",
+  "conclusion": "Actual locked sofa crop samples an unprofiled plain material; changes to the four textured sofa meshes cannot change those pixels. No clamp/factor-ignore explanation is supported by official material graph."
+}

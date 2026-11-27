@@ -1538,7 +1538,7 @@ the export and the pictures section of `notices.mjs`.
   `build_furnishing.py` therefore stay empty until something hand-made is needed. Not ported: normal, bump,
   roughness and alpha maps, emissive maps other than printed curtain cloth, the web's `onBeforeCompile` tweaks, video and animated canvases (the TV
   and the smart display show their first frame). The lighting and material comparisons below cover the upholstery and other furnishing surfaces.
-- **Furnishing colours and source display pools (#2322, final colour acceptance pending).**
+- **Furnishing colours and source display pools (#2322, verified Linux diagnostic profile).**
   The rug, sofa and oak table import their actual sRGB image textures. The table retains the exported
   linear base tint (0.565, 0.332, 0.153) and UV scale (2, 6); the sofa retains its texture and vertex colours.
   These facts do not establish a gamma, double-vertex-multiplication or clamped-factor defect. In particular,
@@ -1601,10 +1601,10 @@ the export and the pictures section of `notices.mjs`.
 
   `build_curtains.py` changes only each room's real panel MIDs through its existing controller. It reads actual
   `Daylight` and `DuskLight`, gates lamp emission at `PowerAvailable > 0.5`, and checks visible room lamps' `IsOn`.
-  Candidate native-unit gains are `DAY_GAIN=(19.32,17.41,15.04)`, `LAMP_GAIN=(13.37,16.89,24.68)` and the separate
+  Verified Linux diagnostic gains are `DAY_GAIN=(19.32,17.41,15.04)`, `LAMP_GAIN=(13.37,16.89,24.68)` and the separate
   violet evening gain `(80,130,180)`. The living-room print supplies the common reference; four other
   fabrics use an unmeasured shared conversion. The violet gain was selected from five actual fixed-pose trials;
-  final full-batch colour acceptance remains separate from that diagnostic selection. Warm Blueprint rebuilds
+  the selected value was subsequently confirmed in the actual saved-source three-view Linux run. Warm Blueprint rebuilds
   retire the old caller before replacing its visibility-library function,
   avoiding a transient missing-function compiler error. Capture scripts refresh the real room controllers.
 
@@ -1622,7 +1622,7 @@ the export and the pictures section of `notices.mjs`.
   camera, crops and thresholds; day and upper references remain byte-identical. This is a reference-harness
   correction, not a relaxation of material acceptance.
 
-  Final verification belongs in [the furnishing verification](../verification/2322/README.md): use the fixed
+  The actual final verification is in [the Linux furnishing result](../verification/2322/linux-final/README.md): use the fixed
   matched day/evening cameras and the additional upper violet curtain crop. All eleven original luminance fields
   must remain within 0.8–1.25, with actual same-hue review of the five families, the existing curtain/cabinet hue
   guards, the cabinet's three spotlight fields and whole-image floor/ceiling inspection. Keep all raw originals,
@@ -1631,8 +1631,10 @@ the export and the pictures section of `notices.mjs`.
   #2473 is reported separately from the durable native result; never infer wrapper success. Current Linux work uses CPU
   Vulkan, 640 × 360, conventional shadows 3/1024/three cascades, Lumen off and actual FXAA method 1.
   `r.PostProcessAAQuality` is unavailable to the queried getter: its returned zero is a fallback, not a measured
-  quality setting. Windows and the full rendering profile remain unverified; no final #2322 colour pass is implied
-  by this source description.
+  quality setting. The final source `c1de028d` passed all eleven primary crops and three existing cabinet spots,
+  existing curtain/cabinet hue guards, real PBR/controller checks and full-image review, native exit 0 in 324.88 s.
+  All 247 authored packages remained byte/mode exact and read-only; the external wrapper exit 143 is separate.
+  Windows and the full rendering profile remain unverified.
 - **Signs and labels (#2400).** The same route carries every unlit web material (`MeshBasicMaterial`) that has a colour
   map, whatever node it is on: the flats' number signs and name plates (Hus A, B and C paint one `flat-door-atlas` each,
   Hus L a fourth), the garage's sign plates, exit pictograms, floor markings and wall plans, and the stairwells' floor

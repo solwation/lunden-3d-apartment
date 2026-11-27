@@ -1,0 +1,156 @@
+{
+  "native": {
+    "engine": "5.8.4",
+    "profile": "linux-low",
+    "exitCode": 0,
+    "timedOut": false,
+    "passed": true,
+    "completed": true,
+    "log": "/mnt/d/LundenLinux/runs/20261127T153328715827-2373640/editor.log",
+    "command": [
+      "/mnt/d/UnrealEngine/5.8.4/Engine/Binaries/Linux/UnrealEditor-Cmd",
+      "/home/devcontainers/lunden-linux/unreal/Lunden/Lunden.uproject",
+      "-DefEngineIni=/mnt/d/LundenLinux/runs/20261127T153328715827-2373640/LowEngine.ini",
+      "-LocalDataCachePath=/mnt/d/LundenLinux/DerivedDataCache",
+      "-ZenDataPath=/mnt/d/LundenLinux/Zen",
+      "-unattended",
+      "-nosplash",
+      "-nosound",
+      "-nop4",
+      "-stdout",
+      "-FullStdOutLogOutput",
+      "-NoCrashDialog",
+      "-abslog=/mnt/d/LundenLinux/runs/20261127T153328715827-2373640/editor.log",
+      "-vulkan",
+      "-sm5",
+      "-AllowCommandletRendering",
+      "-RenderOffscreen",
+      "-ResX=640",
+      "-ResY=360",
+      "-windowed",
+      "-AllowCPUDevices",
+      "-run=pythonscript",
+      "-script=/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/resume-capture-production-v5.py --expected-source c1de028da70d1947c59cd017826e4409baff511a --expected-export-source 461a0b2202901365b599cccaab6f49d0d1181425 --expected-export-hash a2f25406e223b2e73540384644a4cff47bd38a59e9309c14b95eec07b423eeeb --expected-manifest-sha 493c43651cc59178069fd39f0cc4c9c4cc876c88e4a86582f8c2f03f67f32d64 --out /home/devcontainers/.local/state/lunden-codex-20261127/2322-final/native-after-v5"
+    ],
+    "engineIniSha256": "e26c244f9d51fddd3e6577d5696a073521b417a73167c5dd6dc69c79a2db180e",
+    "vulkanIcd": "/usr/share/vulkan/icd.d/lvp_icd.json",
+    "revision": "c1de028da70d1947c59cd017826e4409baff511a",
+    "signal": null,
+    "error": null,
+    "seconds": 324.88
+  },
+  "outerExecExit": 143,
+  "outerRecordIncomplete": true,
+  "postflight": {
+    "all247ByteAndModeExact": true,
+    "all247ReadOnly": true
+  },
+  "actualSteps": [
+    "preflight-reuse-stopped-prefix",
+    "build_cabinet_washes",
+    "build_rug_pool",
+    "compose-check",
+    "import-check",
+    "nanite-usage-check",
+    "sync-stamp",
+    "release-gate",
+    "native-source-PBR-pool-contract",
+    "three-views-and-fade-controls"
+  ],
+  "allActualStepsPassed": true,
+  "reusedSteps": [
+    {
+      "step": "export",
+      "passed": true,
+      "result": {
+        "command": [
+          "/home/devcontainers/.nvm/versions/node/v22.20.0/bin/node",
+          "/home/devcontainers/lunden-linux/tools/unreal-engine/check-export.mjs",
+          "--dir",
+          "/home/devcontainers/lunden-linux/unreal/Lunden/Import"
+        ],
+        "exitCode": 0,
+        "stdout": "Unreal export is current: 11 files, 9402 nodes (9402 ids, each in one zone), 319 sources (exported from 461a0b22, HEAD cc687e3e)\n",
+        "stderr": ""
+      },
+      "seconds": 6.101
+    },
+    {
+      "step": "preflight-existing",
+      "passed": true,
+      "result": {
+        "seasons": "canonical --check passed",
+        "vegetation": "canonical materials(check=True) passed",
+        "interaction": {
+          "/Game/Lunden/Interaction/BP_LundenInteractionListener": true,
+          "/Game/Lunden/Blueprints/PilotDoors/BP_LundenSwingDoor": true
+        },
+        "lighting": "canonical --check required before actual skip invocation"
+      },
+      "seconds": 38.038
+    },
+    {
+      "step": "seasons",
+      "passed": true,
+      "result": null,
+      "seconds": 13.889
+    },
+    {
+      "step": "import",
+      "passed": true,
+      "result": null,
+      "seconds": 37.164
+    },
+    {
+      "step": "build_l1007",
+      "passed": true,
+      "result": null,
+      "seconds": 10.906
+    },
+    {
+      "step": "build_exterior",
+      "passed": true,
+      "result": null,
+      "seconds": 12.448
+    },
+    {
+      "step": "build_site",
+      "passed": true,
+      "result": null,
+      "seconds": 9.681
+    },
+    {
+      "step": "build_lighting",
+      "passed": true,
+      "result": null,
+      "seconds": 13.014
+    },
+    {
+      "step": "build_facade",
+      "passed": true,
+      "result": null,
+      "seconds": 9.967
+    },
+    {
+      "step": "build_vegetation",
+      "passed": true,
+      "result": null,
+      "seconds": 3.987
+    },
+    {
+      "step": "build_interaction",
+      "passed": true,
+      "result": null,
+      "seconds": 20.877
+    },
+    {
+      "step": "build_curtains",
+      "passed": true,
+      "result": null,
+      "seconds": 9.31
+    }
+  ],
+  "scope": "ActualLinuxCPU/VulkanSM5diagnosticprofile only; Windowsfullprofile/PIE/packaging not inferred",
+  "numericAcceptance": "ALL11originalprimary+3existingcabinetspotsY andexistingcurtain/cabinetRG_BGguardsPASS againstcorrectedsteady-statewholeimagecontract; oldfailuresretained",
+  "wholeVisualAcceptance": "separateoriginalreviews"
+}

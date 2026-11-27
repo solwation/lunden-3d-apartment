@@ -1,0 +1,36 @@
+{
+  "reviewer": "root",
+  "source": "c1de028da70d1947c59cd017826e4409baff511a",
+  "allSixOriginalsViewed": true,
+  "primaryFiveFamiliesSameGeneralHue": true,
+  "actualFloorCeilingFieldGeometryAndNoNewLeak": true,
+  "acceptanceScope": "Allfiveprimaryfamilies+uppercurtain andactual3lamps5ShadePools in declaredLinuxdiagnosticprofile; empiricalcolourprofilesareguesses",
+  "files": {
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/native-after-v5/captures/unreal-living-room-day.png": "ce8161dae7257d7da6e184db1a3ef0ea1ff7e3825655aeb2b56ce03061c198e5",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/native-after-v5/captures/unreal-upper-floor-evening.png": "6c61e7c30c3a3d24232079b3fc272fd400a5a5b726f9d38628811f1e9fc7e2fb",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/native-after-v5/captures/unreal-living-room-evening.png": "ddf7769d196c7b728d9a5e04661097c3bef8bb58f0d5a6644c80faa8fdadbe51",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/web/web-living-room-day.jpg": "be8023e5a4d1ba5cfb2d4f930273f6792c788658efd47dba6a6c153016af33ac",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2369/web/web-living-room-evening.jpg": "1a6d7cd06c97fbb1729662cece73490a808745d2511124f8dc0a987f0e810c0b",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/web/web-upper-floor-evening.jpg": "16ed055836f8a6f6487ed1c6d99bfa45be5ceb9ecb2e53b5240c1692ebd7dbb8"
+  },
+  "existingOpenDifferences": {
+    "2372": "LEFTwallpendantform",
+    "2447": "Sofalocalyellowbackpatch",
+    "2459": "glass/translucencyandwineglasses",
+    "2460": "emissiveinnerlamps/opaldome",
+    "2481": "uppercamera-facinghalo/ceilinglightfield",
+    "2482": "copperoutershade",
+    "2484": "barehighwallaboveBest\u00e0"
+  },
+  "newIssuesAfterImagePublication": [
+    "UpperTillydesk colour preexisting, restoredoriginalstilllighterolivebrownthanweb",
+    "Nativeindoorwoodfloorrepeatingdarkprick/rasterpattern, beforeandafter",
+    "Livingwindow/dooroutsideeveningviewdarkgreenbrowncomparedtosteadyweb; glass/exteriorcolour/lightingcauseunisolated"
+  ],
+  "intendedDocumentedDeviations": [
+    "LinuxCPU/SM5/Lumenoff/FXAA1/640x360/conventionalshadowsandtransientNaniteoff; noWindowsfullquality/performanceclaim",
+    "Selected390washhaswarmerthreeconeswithstrongerblueversusweb; sourcefanpatternpreserved,existing3YguardsPASS; noindependenthuecriteriononcentreswasintroducedorrelaxed",
+    "SpecularFactor0onwoodremoveslegitdirectglints; explicitguess documented"
+  ],
+  "newLeaksOrRegressions": false
+}

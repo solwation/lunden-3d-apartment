@@ -1,0 +1,335 @@
+{
+  "version": 2,
+  "issue": 2322,
+  "lockedAtUtc": "2026-11-27T15:24:25.525040+00:00",
+  "purpose": "Correct independently proven web capture harness temporal-state defect before further calibration; no criterion relaxation",
+  "status": "corrected reference for future measurements; original failed comparisons retained",
+  "priorNativeImagesAlreadyViewed": true,
+  "reason": "Original2394night capture teleports then step(0),step(0),frame(1/60) without lightpool settle. Source selected pointpool slots crossfade; recording camera/hour/lampsOn alone did not record final source lighting state. Independently captured2369 reference records actual cabinetpointpool share1.",
+  "originalContract": {
+    "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/locked-crop-contract.json",
+    "sha256": "9c01dc0a21099bf1c89fd24096d258c6f8f9d5d97a326e86bccdfc4c2b9fd0b9",
+    "mutated": false
+  },
+  "originalUpperSupplement": {
+    "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/upper/locked-upper-contract.json",
+    "sha256": "140542ddae0de8d388b7f971b66ae4c170fc3cd5a5d8f4f77ff4adc08572e8da",
+    "mutated": false
+  },
+  "originalNightReference": {
+    "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/web/web-living-room-evening.jpg",
+    "sha256": "caf943bc12f03f8f6b42e2701fa5f1dd7ad41f66bae7cca077afa1eac3183f89",
+    "retained": "immutable historical diagnostic reference, not full steady-state authority"
+  },
+  "references": {
+    "living-room-day": {
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/web/web-living-room-day.jpg",
+      "sha256": "be8023e5a4d1ba5cfb2d4f930273f6792c788658efd47dba6a6c153016af33ac",
+      "unchanged": true
+    },
+    "living-room-evening": {
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2369/web/web-living-room-evening.jpg",
+      "sha256": "1a6d7cd06c97fbb1729662cece73490a808745d2511124f8dc0a987f0e810c0b",
+      "sourceCommit": "367c39694b2642dfc632d8dedb4129b0454cadec",
+      "provenance": "/home/devcontainers/.local/state/lunden-codex-20261127/2369/reference-proofs.json",
+      "provenanceSha256": "fa9b74d9cbc3755f2351a432917513f689c29d4d6af32080947f9abed193b66d",
+      "actualState": {
+        "name": "living-room-evening",
+        "observedProfile": {
+          "width": 640,
+          "height": 360,
+          "verticalFov": 72,
+          "aspect": 1.7777777777777777,
+          "quality": 4,
+          "contextLost": false,
+          "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)"
+        },
+        "eye": [
+          2.5,
+          1.62,
+          8.2
+        ],
+        "yaw": 173,
+        "pitch": -4,
+        "day": [
+          2026,
+          6,
+          21,
+          22,
+          true
+        ],
+        "daylight": 0.12452149711509822,
+        "overcast": 0,
+        "weather": "clear",
+        "sky": {
+          "procedural": [
+            1,
+            0.92,
+            0.16
+          ],
+          "deck": [
+            5199.501626647299,
+            0.39496159291957156,
+            1200,
+            0
+          ],
+          "zenith": [
+            0.01151957608569467,
+            0.03002533982553678,
+            0.0900899772050625
+          ],
+          "horizon": [
+            0.3829792771225299,
+            0.2048589251484339,
+            0.1402020564988515
+          ]
+        },
+        "pool": [
+          {
+            "position": [
+              0.9920000000000001,
+              1.92,
+              10.55
+            ],
+            "level": 0,
+            "share": 1
+          },
+          {
+            "position": [
+              5.191,
+              1,
+              8.164
+            ],
+            "level": 0,
+            "share": 1
+          },
+          {
+            "position": [
+              4.55,
+              0.94,
+              12.3
+            ],
+            "level": 0,
+            "share": 1
+          },
+          {
+            "position": [
+              0.5904766127539817,
+              1.3,
+              8.596598156852593
+            ],
+            "level": 0,
+            "share": 1
+          }
+        ],
+        "dark": true,
+        "smallLampsOn": [
+          "golvlampan",
+          "spotsen",
+          "julgranen",
+          "l\u00e5nglampan",
+          "rottinglampan",
+          "Hue Go-lampan",
+          "lampan",
+          "nattlampan",
+          "nattlampan",
+          "garderobsspegeln",
+          "l\u00e4slampan",
+          "l\u00e4slampan",
+          "l\u00e4slampan",
+          "l\u00e4slampan",
+          "enh\u00f6rningslampan",
+          "d\u00f6dsstj\u00e4rnan",
+          "sminkspegeln",
+          "lampan i k\u00f6ksfl\u00e4kten",
+          "b\u00e4nkbelysningen",
+          "spegeln i toaletten",
+          "spegelns nattlampa"
+        ],
+        "forced": true,
+        "moon": {
+          "illum": 0.49308163661963944,
+          "elong": 1.5569591584776947,
+          "dir": [
+            0.14592293931718525,
+            0.3737070102152488,
+            0.9159964881466593
+          ]
+        },
+        "sun": [
+          -0.9835368767087977,
+          -0.022644218576034717,
+          0.17928316016565618
+        ],
+        "curtains": [
+          {
+            "id": "f-curtain-bedroom1",
+            "lit": true,
+            "emission": [
+              0.09750405725090197,
+              0.06287236707488679,
+              0.03132798065958318
+            ]
+          },
+          {
+            "id": "f-curtain-bedroom2",
+            "lit": true,
+            "emission": [
+              0.08440335618552608,
+              0.04612055478867386,
+              0.018583401838208807
+            ]
+          },
+          {
+            "id": "f-curtain-bedroom3",
+            "lit": true,
+            "emission": [
+              0.14498288464318418,
+              0.08988387780928045,
+              0.05541690826716884
+            ]
+          },
+          {
+            "id": "f-curtain-bedroom4",
+            "lit": true,
+            "emission": [
+              0.08517668829860096,
+              0.04592542634940541,
+              0.018170276062873813
+            ]
+          },
+          {
+            "id": "f-curtain-kitchen",
+            "lit": true,
+            "emission": [
+              0.13071530601171016,
+              0.08524701079792064,
+              0.04970451881127742
+            ]
+          },
+          {
+            "id": "f-curtain-living-room",
+            "lit": true,
+            "emission": [
+              0.12755936910155471,
+              0.0833494000458787,
+              0.04881660818045229
+            ]
+          }
+        ]
+      },
+      "wholeImageCorrection": true
+    },
+    "upper-floor-evening": {
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/web/web-upper-floor-evening.jpg",
+      "sha256": "16ed055836f8a6f6487ed1c6d99bfa45be5ceb9ecb2e53b5240c1692ebd7dbb8",
+      "unchanged": true,
+      "alreadySettledActualPoolShares": [
+        1,
+        1
+      ]
+    }
+  },
+  "crops": {
+    "living-room-day": {
+      "rug": [
+        0.385,
+        0.9,
+        0.45,
+        0.985
+      ],
+      "curtain": [
+        0.445,
+        0.24,
+        0.473,
+        0.666
+      ],
+      "coffee-table": [
+        0.177,
+        0.808,
+        0.211,
+        0.832
+      ],
+      "cabinet-front": [
+        0.765,
+        0.3,
+        0.809,
+        0.409
+      ],
+      "sofa": [
+        0.221,
+        0.72,
+        0.348,
+        0.744
+      ]
+    },
+    "living-room-evening": {
+      "rug": [
+        0.385,
+        0.9,
+        0.45,
+        0.985
+      ],
+      "curtain": [
+        0.445,
+        0.24,
+        0.473,
+        0.666
+      ],
+      "coffee-table": [
+        0.177,
+        0.808,
+        0.211,
+        0.832
+      ],
+      "cabinet-front": [
+        0.765,
+        0.3,
+        0.809,
+        0.409
+      ],
+      "sofa": [
+        0.221,
+        0.72,
+        0.348,
+        0.744
+      ]
+    },
+    "upper-floor-evening": {
+      "curtain": [
+        0.352,
+        0.283,
+        0.374,
+        0.583
+      ]
+    }
+  },
+  "criteria": {
+    "all11LinearLuminanceRatio": [
+      0.8,
+      1.25
+    ],
+    "all5FamiliesActualSameHueReview": true,
+    "existingCurtainAndCabinetRG_BG": [
+      0.9,
+      1.1
+    ],
+    "hueThresholdClassification": "existing explicit guess, unchanged",
+    "cabinetSpots": "same existing cabinet-crops.json 3centres, Y.8\u20131.25, unchanged"
+  },
+  "sourceAuthority": {
+    "captureOld": "tools/unreal-engine/capture-web-views.cjs44\u201349",
+    "captureSettled": "tools/unreal-engine/tests/capture-web-lighting.cjs45\u201352",
+    "pointpoolFade": "src/lights.js765\u2013786",
+    "immediateCabinetWashOpacity": "src/lights.js254\u2013274",
+    "cabinetPointAnchorWeb": [
+      0.992,
+      1.92,
+      10.55
+    ],
+    "actualSettledShare": 1,
+    "importantDistinction": "Source floorlamp k and cabinetwash opacity are set immediately. Pointpool slot f, not cabinetwash opacity, explains unrecorded temporal state."
+  },
+  "sourceBehaviorParity": "root server367 to worker9ac differs src/patio metadata/equal-valued constants only; independent source-parity proof inherited from S/2322-final/upper/source-parity-to-9ac.diff",
+  "calibrationRule": "No new source gain until actual trials are measured against this corrected whole night reference AND old diagnostics are reported separately. Existingday/upper authority and thresholds remain fixed. A passing old reference cannot override failing corrected full source state."
+}

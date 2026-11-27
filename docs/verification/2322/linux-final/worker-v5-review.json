@@ -1,0 +1,125 @@
+{
+  "reviewer": "wsl_vulkan primary2322worker",
+  "reviewedAtUtc": "2026-11-27T15:40:11.597936+00:00",
+  "source": "c1de028da70d1947c59cd017826e4409baff511a",
+  "scope": "#2322 five primary furnishing families day/evening, uppervioletcurtain,3cabinetspotcentres,actualfiveShadePoolsfloor/ceilingfields; LinuxCPUprofile only",
+  "allSixOriginalsViewed": [
+    {
+      "shot": "living-room-day",
+      "rawOriginalsViewedBothSides": true,
+      "web": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/web/web-living-room-day.jpg",
+        "sha256": "be8023e5a4d1ba5cfb2d4f930273f6792c788658efd47dba6a6c153016af33ac"
+      },
+      "native": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/native-after-v5/captures/unreal-living-room-day.png",
+        "sha256": "ce8161dae7257d7da6e184db1a3ef0ea1ff7e3825655aeb2b56ce03061c198e5"
+      }
+    },
+    {
+      "shot": "living-room-evening",
+      "rawOriginalsViewedBothSides": true,
+      "web": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2369/web/web-living-room-evening.jpg",
+        "sha256": "1a6d7cd06c97fbb1729662cece73490a808745d2511124f8dc0a987f0e810c0b"
+      },
+      "native": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/native-after-v5/captures/unreal-living-room-evening.png",
+        "sha256": "ddf7769d196c7b728d9a5e04661097c3bef8bb58f0d5a6644c80faa8fdadbe51"
+      }
+    },
+    {
+      "shot": "upper-floor-evening",
+      "rawOriginalsViewedBothSides": true,
+      "web": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/web/web-upper-floor-evening.jpg",
+        "sha256": "16ed055836f8a6f6487ed1c6d99bfa45be5ceb9ecb2e53b5240c1692ebd7dbb8"
+      },
+      "native": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/native-after-v5/captures/unreal-upper-floor-evening.png",
+        "sha256": "6c61e7c30c3a3d24232079b3fc272fd400a5a5b726f9d38628811f1e9fc7e2fb"
+      }
+    }
+  ],
+  "correctedReferenceContract": {
+    "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/corrected-reference-contract.json",
+    "sha256": "1f559812415bdc9a6bbfcd5030957bae510b208833318c45021d3a89545d47b6",
+    "captureBugIssue": 2485,
+    "allOriginalContractsRawAndFailedResultsRetained": true,
+    "newNightWholeImageCorrectionNotSingleCropSwap": true,
+    "dayAndUpperUnchanged": true
+  },
+  "actualCanonicalGate": {
+    "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/after-paired-v5/fourteen-crop-gate.json",
+    "sha256": "ce0b1a520c2b1b6f84489ca2f3489ff9ed134655945f00cc992e258e73896172",
+    "all11PrimaryYPass": true,
+    "all3ExistingSpotYPass": true,
+    "allExistingCurtainCabinetHuePass": true,
+    "canonicalExitCode": 0
+  },
+  "visualFamilies": {
+    "rug": "Same black/cream patterned original surface and warm additive lamp field; source geometry/depth retained. Day native remains modestly darker within original band.",
+    "curtains": "Living-room olive leaf print and warm evening cloth are coherent with source. Upper actual selected darkplum remains slightly warmer/redder than source but in same dark plum family and passes unchanged existing numeric hue; relativeBG .900632 near original lowerbound is disclosed. No further interpolation.",
+    "coffeeTable": "Brown/golden wood keeps source hue day/evening. Correctednight Y .8016 is near lowerbound, disclosed; no crop/threshold change.",
+    "teakCabinet": "Brown/teak front and three separate warm cone fields agree in bounded profile; selected minimalblue390 avoids higherbluepalettescoolerwholecab. Front and3spots meet all original applicable numeric guards.",
+    "sofa": "Actual solid frame is source warmgreen family day/evening, corrected through true visiblea7b39akey; textured cushions retain original imported materials. No gamma/clamp claim."
+  },
+  "sourcePoolWholeImageReview": "Actualgroundfloorwarmfloor/ceilingcontributions are present without newcoplanar edge/depth seam or greyhalo in these three views. Fiveexportedquads belongtoactualsource3lamps; Sovrum4warmdomefield is not misattributedtoSovrum2paperquad. Does not claim everycamera/fullroomlightdistribution parity.",
+  "remainingMappedOrDisclosed": [
+    {
+      "finding": "Upper neutral ceiling/weak dome and missing camera-facing halos",
+      "issues": [
+        2481,
+        2460
+      ]
+    },
+    {
+      "finding": "Silvia dark reflected copper",
+      "issues": [
+        2482
+      ]
+    },
+    {
+      "finding": "Cabinet/window glass and reflected/transmitted differences",
+      "issues": [
+        2459
+      ]
+    },
+    {
+      "finding": "Separate high/left wall light-field distributions",
+      "issues": [
+        2372,
+        2484
+      ]
+    },
+    {
+      "finding": "Distinct yellow sofa back/seat patch",
+      "issues": [
+        2447
+      ]
+    },
+    {
+      "finding": "Tilly upper-left original material remains lighter/warmerbrown vswebdarkolive; own calibration restored original and no worsening claimed",
+      "sourceNode": "furn_tillydesk_l1_x239_z943__7",
+      "status": "explicit preexisting difference; Root owns followup mapping, no claim fixed"
+    },
+    {
+      "finding": "Fine regular native floor pricks/lines and darker green-brown living-room evening exterior",
+      "status": "Root records separate findings from published rawimages; no unsupported oldissue mapping asserted"
+    }
+  ],
+  "nativeProcess": {
+    "resultPath": "/mnt/d/LundenLinux/runs/20261127T153328715827-2373640/result.json",
+    "resultSha256": "7747042940e0ea4533530025d923b9b603f6e585fb7c05ee7f1da4346ff20834",
+    "exitCode": 0,
+    "passed": true,
+    "completed": true,
+    "seconds": 324.88,
+    "outerShell": "separate Root outcome; native0 does not imply outer0"
+  },
+  "guardsAndSourceParity": "Root owns full247byteexact/readonly postflight and canonicalold/newunion/source/exportcheck. This visual review does not invent missing externalguard results.",
+  "assessment": "ACCEPT bounded #2322 primaryfamilies+sourcepoolimplementation in statedLinuxCPUprofile; readyforRootsource/imagepublication. Keep stated mapped/disclosed independent differences and original failed runs visible.",
+  "newMaterialOrPoolBlockerFound": false,
+  "windowsAndFullProfileVerified": false,
+  "fullScenePixelParityClaimed": false
+}

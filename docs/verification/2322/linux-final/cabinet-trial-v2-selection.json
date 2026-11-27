@@ -1,0 +1,1222 @@
+{
+  "canonicalStatsSha256": "9242694938efbfae0d9bd52c2568ae286c319b78126c3610ce0e205bba4f9f9b",
+  "correctedReferenceAuthority": "corrected-reference-contract.json SHA1f559812415bdc9a6bbfcd5030957bae510b208833318c45021d3a89545d47b6; independentsourceharnessbug2485; unchangedrectangles/thresholds",
+  "historicalReferenceRetained": "Original comparisons diagnostic only; cannot select productgain over failedcorrectedreference",
+  "trials": [
+    {
+      "id": "blue390",
+      "WASH_RADIANCE": [
+        7.35,
+        4.95,
+        3.9
+      ],
+      "VENEER_NIGHT_FACTOR": [
+        0.755,
+        0.56,
+        0.155
+      ],
+      "actualDayVeneerUnchanged": true,
+      "corrected": {
+        "passed": true,
+        "rows": [
+          {
+            "crop": "cabinet-front",
+            "luminanceRatio": 0.86481364497789,
+            "relativeRG": 1.054954127011324,
+            "relativeBG": 0.9104240766073872,
+            "luminancePass": true,
+            "existingFrontHuePass": true,
+            "passed": true,
+            "web": {
+              "srgb": [
+                149.3,
+                98.7,
+                42.5
+              ],
+              "luminance": 0.1583,
+              "warmth": 3.512
+            },
+            "unreal": {
+              "srgb": [
+                144.1,
+                90.3,
+                35.4
+              ],
+              "luminance": 0.1369,
+              "warmth": 4.074
+            }
+          },
+          {
+            "crop": "spot-1",
+            "luminanceRatio": 0.9979440789473685,
+            "relativeRG": 1.0095492632385636,
+            "relativeBG": 1.1547403386994424,
+            "luminancePass": true,
+            "existingFrontHuePass": null,
+            "passed": true,
+            "web": {
+              "srgb": [
+                176.3,
+                124.8,
+                68.3
+              ],
+              "luminance": 0.2432,
+              "warmth": 2.58
+            },
+            "unreal": {
+              "srgb": [
+                176.7,
+                123.9,
+                78.3
+              ],
+              "luminance": 0.2427,
+              "warmth": 2.255
+            }
+          },
+          {
+            "crop": "spot-2",
+            "luminanceRatio": 1.0831046648373186,
+            "relativeRG": 0.9826339691189826,
+            "relativeBG": 1.199931938063638,
+            "luminancePass": true,
+            "existingFrontHuePass": null,
+            "passed": true,
+            "web": {
+              "srgb": [
+                183.5,
+                124.7,
+                65.3
+              ],
+              "luminance": 0.2551,
+              "warmth": 2.809
+            },
+            "unreal": {
+              "srgb": [
+                188.7,
+                130.5,
+                82
+              ],
+              "luminance": 0.2763,
+              "warmth": 2.301
+            }
+          },
+          {
+            "crop": "spot-3",
+            "luminanceRatio": 1.156971375807941,
+            "relativeRG": 1.0041468590328737,
+            "relativeBG": 1.1625247058388901,
+            "luminancePass": true,
+            "existingFrontHuePass": null,
+            "passed": true,
+            "web": {
+              "srgb": [
+                167.5,
+                118.3,
+                64.5
+              ],
+              "luminance": 0.2166,
+              "warmth": 2.597
+            },
+            "unreal": {
+              "srgb": [
+                179,
+                125.9,
+                79.8
+              ],
+              "luminance": 0.2506,
+              "warmth": 2.242
+            }
+          }
+        ]
+      },
+      "historical": {
+        "passed": false,
+        "rows": [
+          {
+            "crop": "cabinet-front",
+            "luminanceRatio": 1.335609756097561,
+            "relativeRG": 0.9429117858406154,
+            "relativeBG": 1.3676178340084044,
+            "luminancePass": false,
+            "existingFrontHuePass": false,
+            "passed": false,
+            "web": {
+              "srgb": [
+                129.3,
+                76.4,
+                21.9
+              ],
+              "luminance": 0.1025,
+              "warmth": 5.905
+            },
+            "unreal": {
+              "srgb": [
+                144.1,
+                90.3,
+                35.4
+              ],
+              "luminance": 0.1369,
+              "warmth": 4.074
+            }
+          },
+          {
+            "crop": "spot-1",
+            "luminanceRatio": 1.0154811715481171,
+            "relativeRG": 1.0035871222311898,
+            "relativeBG": 1.1327607474073733,
+            "luminancePass": true,
+            "existingFrontHuePass": null,
+            "passed": true,
+            "web": {
+              "srgb": [
+                175.5,
+                123.5,
+                68.9
+              ],
+              "luminance": 0.239,
+              "warmth": 2.547
+            },
+            "unreal": {
+              "srgb": [
+                176.7,
+                123.9,
+                78.3
+              ],
+              "luminance": 0.2427,
+              "warmth": 2.255
+            }
+          },
+          {
+            "crop": "spot-2",
+            "luminanceRatio": 1.1337710299548625,
+            "relativeRG": 0.9695706782370404,
+            "relativeBG": 1.255671506352087,
+            "luminancePass": true,
+            "existingFrontHuePass": null,
+            "passed": true,
+            "web": {
+              "srgb": [
+                181.2,
+                121.5,
+                60.8
+              ],
+              "luminance": 0.2437,
+              "warmth": 2.982
+            },
+            "unreal": {
+              "srgb": [
+                188.7,
+                130.5,
+                82
+              ],
+              "luminance": 0.2763,
+              "warmth": 2.301
+            }
+          },
+          {
+            "crop": "spot-3",
+            "luminanceRatio": 1.2592964824120603,
+            "relativeRG": 0.9853718664534931,
+            "relativeBG": 1.1808601829205954,
+            "luminancePass": false,
+            "existingFrontHuePass": null,
+            "passed": false,
+            "web": {
+              "srgb": [
+                162.9,
+                112.9,
+                60.6
+              ],
+              "luminance": 0.199,
+              "warmth": 2.689
+            },
+            "unreal": {
+              "srgb": [
+                179,
+                125.9,
+                79.8
+              ],
+              "luminance": 0.2506,
+              "warmth": 2.242
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "blue420",
+      "WASH_RADIANCE": [
+        7.35,
+        4.95,
+        4.2
+      ],
+      "VENEER_NIGHT_FACTOR": [
+        0.755,
+        0.56,
+        0.155
+      ],
+      "actualDayVeneerUnchanged": true,
+      "corrected": {
+        "passed": true,
+        "rows": [
+          {
+            "crop": "cabinet-front",
+            "luminanceRatio": 0.8629185091598232,
+            "relativeRG": 1.0565621438708053,
+            "relativeBG": 0.9691506169615461,
+            "luminancePass": true,
+            "existingFrontHuePass": true,
+            "passed": true,
+            "web": {
+              "srgb": [
+                149.3,
+                98.7,
+                42.5
+              ],
+              "luminance": 0.1583,
+              "warmth": 3.512
+            },
+            "unreal": {
+              "srgb": [
+                144,
+                90.1,
+                37.6
+              ],
+              "luminance": 0.1366,
+              "warmth": 3.831
+            }
+          },
+          {
+            "crop": "spot-1",
+            "luminanceRatio": 1.0004111842105263,
+            "relativeRG": 1.0095492632385636,
+            "relativeBG": 1.2137309051719554,
+            "luminancePass": true,
+            "existingFrontHuePass": null,
+            "passed": true,
+            "web": {
+              "srgb": [
+                176.3,
+                124.8,
+                68.3
+              ],
+              "luminance": 0.2432,
+              "warmth": 2.58
+            },
+            "unreal": {
+              "srgb": [
+                176.7,
+                123.9,
+                82.3
+              ],
+              "luminance": 0.2433,
+              "warmth": 2.146
+            }
+          },
+          {
+            "crop": "spot-2",
+            "luminanceRatio": 1.0850646805174442,
+            "relativeRG": 0.9826339691189826,
+            "relativeBG": 1.2467585502807557,
+            "luminancePass": true,
+            "existingFrontHuePass": null,
+            "passed": true,
+            "web": {
+              "srgb": [
+                183.5,
+                124.7,
+                65.3
+              ],
+              "luminance": 0.2551,
+              "warmth": 2.809
+            },
+            "unreal": {
+              "srgb": [
+                188.7,
+                130.5,
+                85.2
+              ],
+              "luminance": 0.2768,
+              "warmth": 2.215
+            }
+          },
+          {
+            "crop": "spot-3",
+            "luminanceRatio": 1.1606648199445984,
+            "relativeRG": 1.0041468590328737,
+            "relativeBG": 1.2353645996884446,
+            "luminancePass": true,
+            "existingFrontHuePass": null,
+            "passed": true,
+            "web": {
+              "srgb": [
+                167.5,
+                118.3,
+                64.5
+              ],
+              "luminance": 0.2166,
+              "warmth": 2.597
+            },
+            "unreal": {
+              "srgb": [
+                179,
+                125.9,
+                84.8
+              ],
+              "luminance": 0.2514,
+              "warmth": 2.11
+            }
+          }
+        ]
+      },
+      "historical": {
+        "passed": false,
+        "rows": [
+          {
+            "crop": "cabinet-front",
+            "luminanceRatio": 1.3326829268292684,
+            "relativeRG": 0.9443490218396161,
+            "relativeBG": 1.4558354745361575,
+            "luminancePass": false,
+            "existingFrontHuePass": false,
+            "passed": false,
+            "web": {
+              "srgb": [
+                129.3,
+                76.4,
+                21.9
+              ],
+              "luminance": 0.1025,
+              "warmth": 5.905
+            },
+            "unreal": {
+              "srgb": [
+                144,
+                90.1,
+                37.6
+              ],
+              "luminance": 0.1366,
+              "warmth": 3.831
+            }
+          },
+          {
+            "crop": "spot-1",
+            "luminanceRatio": 1.017991631799163,
+            "relativeRG": 1.0035871222311898,
+            "relativeBG": 1.190628473967137,
+            "luminancePass": true,
+            "existingFrontHuePass": null,
+            "passed": true,
+            "web": {
+              "srgb": [
+                175.5,
+                123.5,
+                68.9
+              ],
+              "luminance": 0.239,
+              "warmth": 2.547
+            },
+            "unreal": {
+              "srgb": [
+                176.7,
+                123.9,
+                82.3
+              ],
+              "luminance": 0.2433,
+              "warmth": 2.146
+            }
+          },
+          {
+            "crop": "spot-2",
+            "luminanceRatio": 1.1358227328682806,
+            "relativeRG": 0.9695706782370404,
+            "relativeBG": 1.3046733212341197,
+            "luminancePass": true,
+            "existingFrontHuePass": null,
+            "passed": true,
+            "web": {
+              "srgb": [
+                181.2,
+                121.5,
+                60.8
+              ],
+              "luminance": 0.2437,
+              "warmth": 2.982
+            },
+            "unreal": {
+              "srgb": [
+                188.7,
+                130.5,
+                85.2
+              ],
+              "luminance": 0.2768,
+              "warmth": 2.215
+            }
+          },
+          {
+            "crop": "spot-3",
+            "luminanceRatio": 1.263316582914573,
+            "relativeRG": 0.9853718664534931,
+            "relativeBG": 1.2548489161862968,
+            "luminancePass": false,
+            "existingFrontHuePass": null,
+            "passed": false,
+            "web": {
+              "srgb": [
+                162.9,
+                112.9,
+                60.6
+              ],
+              "luminance": 0.199,
+              "warmth": 2.689
+            },
+            "unreal": {
+              "srgb": [
+                179,
+                125.9,
+                84.8
+              ],
+              "luminance": 0.2514,
+              "warmth": 2.11
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "green520-blue420",
+      "WASH_RADIANCE": [
+        7.35,
+        5.2,
+        4.2
+      ],
+      "VENEER_NIGHT_FACTOR": [
+        0.755,
+        0.56,
+        0.155
+      ],
+      "actualDayVeneerUnchanged": true,
+      "corrected": {
+        "passed": true,
+        "rows": [
+          {
+            "crop": "cabinet-front",
+            "luminanceRatio": 0.87934301958307,
+            "relativeRG": 1.040396165713219,
+            "relativeBG": 0.9543220829315333,
+            "luminancePass": true,
+            "existingFrontHuePass": true,
+            "passed": true,
+            "web": {
+              "srgb": [
+                149.3,
+                98.7,
+                42.5
+              ],
+              "luminance": 0.1583,
+              "warmth": 3.512
+            },
+            "unreal": {
+              "srgb": [
+                144,
+                91.5,
+                37.6
+              ],
+              "luminance": 0.1392,
+              "warmth": 3.831
+            }
+          },
+          {
+            "crop": "spot-1",
+            "luminanceRatio": 1.0238486842105263,
+            "relativeRG": 0.9911501879180512,
+            "relativeBG": 1.1916106113376013,
+            "luminancePass": true,
+            "existingFrontHuePass": null,
+            "passed": true,
+            "web": {
+              "srgb": [
+                176.3,
+                124.8,
+                68.3
+              ],
+              "luminance": 0.2432,
+              "warmth": 2.58
+            },
+            "unreal": {
+              "srgb": [
+                176.7,
+                126.2,
+                82.3
+              ],
+              "luminance": 0.249,
+              "warmth": 2.146
+            }
+          },
+          {
+            "crop": "spot-2",
+            "luminanceRatio": 1.111328890631125,
+            "relativeRG": 0.9654002210180361,
+            "relativeBG": 1.2213699116308707,
+            "luminancePass": true,
+            "existingFrontHuePass": null,
+            "passed": true,
+            "web": {
+              "srgb": [
+                183.5,
+                124.7,
+                65.3
+              ],
+              "luminance": 0.2551,
+              "warmth": 2.809
+            },
+            "unreal": {
+              "srgb": [
+                188.8,
+                132.9,
+                85
+              ],
+              "luminance": 0.2835,
+              "warmth": 2.222
+            }
+          },
+          {
+            "crop": "spot-3",
+            "luminanceRatio": 1.1865189289012004,
+            "relativeRG": 0.9869015577848462,
+            "relativeBG": 1.2141483458296267,
+            "luminancePass": true,
+            "existingFrontHuePass": null,
+            "passed": true,
+            "web": {
+              "srgb": [
+                167.5,
+                118.3,
+                64.5
+              ],
+              "luminance": 0.2166,
+              "warmth": 2.597
+            },
+            "unreal": {
+              "srgb": [
+                179,
+                128.1,
+                84.8
+              ],
+              "luminance": 0.257,
+              "warmth": 2.11
+            }
+          }
+        ]
+      },
+      "historical": {
+        "passed": false,
+        "rows": [
+          {
+            "crop": "cabinet-front",
+            "luminanceRatio": 1.358048780487805,
+            "relativeRG": 0.9298999657677531,
+            "relativeBG": 1.4335603962372434,
+            "luminancePass": false,
+            "existingFrontHuePass": false,
+            "passed": false,
+            "web": {
+              "srgb": [
+                129.3,
+                76.4,
+                21.9
+              ],
+              "luminance": 0.1025,
+              "warmth": 5.905
+            },
+            "unreal": {
+              "srgb": [
+                144,
+                91.5,
+                37.6
+              ],
+              "luminance": 0.1392,
+              "warmth": 3.831
+            }
+          },
+          {
+            "crop": "spot-1",
+            "luminanceRatio": 1.0418410041841004,
+            "relativeRG": 0.9852967071667547,
+            "relativeBG": 1.168929222856801,
+            "luminancePass": true,
+            "existingFrontHuePass": null,
+            "passed": true,
+            "web": {
+              "srgb": [
+                175.5,
+                123.5,
+                68.9
+              ],
+              "luminance": 0.239,
+              "warmth": 2.547
+            },
+            "unreal": {
+              "srgb": [
+                176.7,
+                126.2,
+                82.3
+              ],
+              "luminance": 0.249,
+              "warmth": 2.146
+            }
+          },
+          {
+            "crop": "spot-2",
+            "luminanceRatio": 1.1633155519080836,
+            "relativeRG": 0.9525660382999716,
+            "relativeBG": 1.2781053225614825,
+            "luminancePass": true,
+            "existingFrontHuePass": null,
+            "passed": true,
+            "web": {
+              "srgb": [
+                181.2,
+                121.5,
+                60.8
+              ],
+              "luminance": 0.2437,
+              "warmth": 2.982
+            },
+            "unreal": {
+              "srgb": [
+                188.8,
+                132.9,
+                85
+              ],
+              "luminance": 0.2835,
+              "warmth": 2.222
+            }
+          },
+          {
+            "crop": "spot-3",
+            "luminanceRatio": 1.2914572864321607,
+            "relativeRG": 0.9684490084816142,
+            "relativeBG": 1.2332980370636595,
+            "luminancePass": false,
+            "existingFrontHuePass": null,
+            "passed": false,
+            "web": {
+              "srgb": [
+                162.9,
+                112.9,
+                60.6
+              ],
+              "luminance": 0.199,
+              "warmth": 2.689
+            },
+            "unreal": {
+              "srgb": [
+                179,
+                128.1,
+                84.8
+              ],
+              "luminance": 0.257,
+              "warmth": 2.11
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": "red780-green520-blue420",
+      "WASH_RADIANCE": [
+        7.8,
+        5.2,
+        4.2
+      ],
+      "VENEER_NIGHT_FACTOR": [
+        0.755,
+        0.56,
+        0.155
+      ],
+      "actualDayVeneerUnchanged": true,
+      "corrected": {
+        "passed": true,
+        "rows": [
+          {
+            "crop": "cabinet-front",
+            "luminanceRatio": 0.8894504106127606,
+            "relativeRG": 1.0526786204473333,
+            "relativeBG": 0.9543220829315333,
+            "luminancePass": true,
+            "existingFrontHuePass": true,
+            "passed": true,
+            "web": {
+              "srgb": [
+                149.3,
+                98.7,
+                42.5
+              ],
+              "luminance": 0.1583,
+              "warmth": 3.512
+            },
+            "unreal": {
+              "srgb": [
+                145.7,
+                91.5,
+                37.6
+              ],
+              "luminance": 0.1408,
+              "warmth": 3.878
+            }
+          },
+          {
+            "crop": "spot-1",
+            "luminanceRatio": 1.043996710526316,
+            "relativeRG": 1.0141480134441634,
+            "relativeBG": 1.1916106113376013,
+            "luminancePass": true,
+            "existingFrontHuePass": null,
+            "passed": true,
+            "web": {
+              "srgb": [
+                176.3,
+                124.8,
+                68.3
+              ],
+              "luminance": 0.2432,
+              "warmth": 2.58
+            },
+            "unreal": {
+              "srgb": [
+                180.8,
+                126.2,
+                82.3
+              ],
+              "luminance": 0.2539,
+              "warmth": 2.196
+            }
+          },
+          {
+            "crop": "spot-2",
+            "luminanceRatio": 1.1297530380243044,
+            "relativeRG": 0.9865959751813795,
+            "relativeBG": 1.222289617889629,
+            "luminancePass": true,
+            "existingFrontHuePass": null,
+            "passed": true,
+            "web": {
+              "srgb": [
+                183.5,
+                124.7,
+                65.3
+              ],
+              "luminance": 0.2551,
+              "warmth": 2.809
+            },
+            "unreal": {
+              "srgb": [
+                192.8,
+                132.8,
+                85
+              ],
+              "luminance": 0.2882,
+              "warmth": 2.269
+            }
+          },
+          {
+            "crop": "spot-3",
+            "luminanceRatio": 1.2105263157894737,
+            "relativeRG": 1.0106092488377785,
+            "relativeBG": 1.2141483458296267,
+            "luminancePass": true,
+            "existingFrontHuePass": null,
+            "passed": true,
+            "web": {
+              "srgb": [
+                167.5,
+                118.3,
+                64.5
+              ],
+              "luminance": 0.2166,
+              "warmth": 2.597
+            },
+            "unreal": {
+              "srgb": [
+                183.3,
+                128.1,
+                84.8
+              ],
+              "luminance": 0.2622,
+              "warmth": 2.161
+            }
+          }
+        ]
+      },
+      "historical": {
+        "passed": false,
+        "rows": [
+          {
+            "crop": "cabinet-front",
+            "luminanceRatio": 1.373658536585366,
+            "relativeRG": 0.9408779514747335,
+            "relativeBG": 1.4335603962372434,
+            "luminancePass": false,
+            "existingFrontHuePass": false,
+            "passed": false,
+            "web": {
+              "srgb": [
+                129.3,
+                76.4,
+                21.9
+              ],
+              "luminance": 0.1025,
+              "warmth": 5.905
+            },
+            "unreal": {
+              "srgb": [
+                145.7,
+                91.5,
+                37.6
+              ],
+              "luminance": 0.1408,
+              "warmth": 3.878
+            }
+          },
+          {
+            "crop": "spot-1",
+            "luminanceRatio": 1.0623430962343097,
+            "relativeRG": 1.0081587133885075,
+            "relativeBG": 1.168929222856801,
+            "luminancePass": true,
+            "existingFrontHuePass": null,
+            "passed": true,
+            "web": {
+              "srgb": [
+                175.5,
+                123.5,
+                68.9
+              ],
+              "luminance": 0.239,
+              "warmth": 2.547
+            },
+            "unreal": {
+              "srgb": [
+                180.8,
+                126.2,
+                82.3
+              ],
+              "luminance": 0.2539,
+              "warmth": 2.196
+            }
+          },
+          {
+            "crop": "spot-2",
+            "luminanceRatio": 1.1826015592942143,
+            "relativeRG": 0.973480012766297,
+            "relativeBG": 1.2790677512682307,
+            "luminancePass": true,
+            "existingFrontHuePass": null,
+            "passed": true,
+            "web": {
+              "srgb": [
+                181.2,
+                121.5,
+                60.8
+              ],
+              "luminance": 0.2437,
+              "warmth": 2.982
+            },
+            "unreal": {
+              "srgb": [
+                192.8,
+                132.8,
+                85
+              ],
+              "luminance": 0.2882,
+              "warmth": 2.269
+            }
+          },
+          {
+            "crop": "spot-3",
+            "luminanceRatio": 1.3175879396984924,
+            "relativeRG": 0.9917134260037984,
+            "relativeBG": 1.2332980370636595,
+            "luminancePass": false,
+            "existingFrontHuePass": null,
+            "passed": false,
+            "web": {
+              "srgb": [
+                162.9,
+                112.9,
+                60.6
+              ],
+              "luminance": 0.199,
+              "warmth": 2.689
+            },
+            "unreal": {
+              "srgb": [
+                183.3,
+                128.1,
+                84.8
+              ],
+              "luminance": 0.2622,
+              "warmth": 2.161
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "dayControl": {
+    "passed": true,
+    "rows": [
+      {
+        "crop": "cabinet-front",
+        "luminanceRatio": 1.0030534351145037,
+        "relativeRG": 1.005384462850257,
+        "relativeBG": 0.9709639953542393,
+        "luminancePass": true,
+        "existingFrontHuePass": true,
+        "passed": true,
+        "web": {
+          "srgb": [
+            106.6,
+            61.6,
+            19.6
+          ],
+          "luminance": 0.0655,
+          "warmth": 5.445
+        },
+        "unreal": {
+          "srgb": [
+            107,
+            61.5,
+            19
+          ],
+          "luminance": 0.0657,
+          "warmth": 5.633
+        }
+      }
+    ]
+  },
+  "currentV4CorrectedExistingComparisons": {
+    "after-final-secondary-settled/crop-stats.json": {
+      "sha256": "c3d58ef49881e39fb762f270e03f30142408c870c76ac8e88cc58cd906f78ea7",
+      "stats": {
+        "living-room-evening": {
+          "web": {
+            "rug": {
+              "srgb": [
+                110,
+                93.2,
+                59.9
+              ],
+              "luminance": 0.134,
+              "warmth": 1.838
+            },
+            "curtain": {
+              "srgb": [
+                90.2,
+                78.5,
+                53.7
+              ],
+              "luminance": 0.0963,
+              "warmth": 1.68
+            },
+            "coffee-table": {
+              "srgb": [
+                109,
+                69.2,
+                20.4
+              ],
+              "luminance": 0.0761,
+              "warmth": 5.333
+            },
+            "cabinet-front": {
+              "srgb": [
+                149.3,
+                98.7,
+                42.5
+              ],
+              "luminance": 0.1583,
+              "warmth": 3.512
+            },
+            "sofa": {
+              "srgb": [
+                106.7,
+                98.6,
+                61.5
+              ],
+              "luminance": 0.1241,
+              "warmth": 1.735
+            }
+          },
+          "unreal": {
+            "rug": {
+              "srgb": [
+                100.6,
+                91.3,
+                64.9
+              ],
+              "luminance": 0.1255,
+              "warmth": 1.549
+            },
+            "curtain": {
+              "srgb": [
+                90.3,
+                78.6,
+                51
+              ],
+              "luminance": 0.0833,
+              "warmth": 1.769
+            },
+            "coffee-table": {
+              "srgb": [
+                99.1,
+                61.8,
+                12.3
+              ],
+              "luminance": 0.061,
+              "warmth": 8.03
+            },
+            "cabinet-front": {
+              "srgb": [
+                144.2,
+                90.7,
+                32.5
+              ],
+              "luminance": 0.1374,
+              "warmth": 4.436
+            },
+            "sofa": {
+              "srgb": [
+                104.5,
+                100.1,
+                64
+              ],
+              "luminance": 0.1267,
+              "warmth": 1.633
+            }
+          }
+        }
+      }
+    },
+    "after-final-secondary-cabinet/crop-stats.json": {
+      "sha256": "d41d84e582bd5f6978f078a46d5ae1d8e2ebb5cef2b1cefe636570b480a545e9",
+      "stats": {
+        "living-room-day": {
+          "web": {
+            "cabinet-front": {
+              "srgb": [
+                106.6,
+                61.6,
+                19.6
+              ],
+              "luminance": 0.0655,
+              "warmth": 5.445
+            }
+          },
+          "unreal": {
+            "cabinet-front": {
+              "srgb": [
+                107,
+                61.5,
+                19
+              ],
+              "luminance": 0.0657,
+              "warmth": 5.633
+            }
+          }
+        },
+        "living-room-evening": {
+          "web": {
+            "cabinet-front": {
+              "srgb": [
+                149.3,
+                98.7,
+                42.5
+              ],
+              "luminance": 0.1583,
+              "warmth": 3.512
+            },
+            "spot-1": {
+              "srgb": [
+                176.3,
+                124.8,
+                68.3
+              ],
+              "luminance": 0.2432,
+              "warmth": 2.58
+            },
+            "spot-2": {
+              "srgb": [
+                183.5,
+                124.7,
+                65.3
+              ],
+              "luminance": 0.2551,
+              "warmth": 2.809
+            },
+            "spot-3": {
+              "srgb": [
+                167.5,
+                118.3,
+                64.5
+              ],
+              "luminance": 0.2166,
+              "warmth": 2.597
+            }
+          },
+          "unreal": {
+            "cabinet-front": {
+              "srgb": [
+                144.2,
+                90.7,
+                32.5
+              ],
+              "luminance": 0.1374,
+              "warmth": 4.436
+            },
+            "spot-1": {
+              "srgb": [
+                176.7,
+                123.9,
+                72.5
+              ],
+              "luminance": 0.2419,
+              "warmth": 2.437
+            },
+            "spot-2": {
+              "srgb": [
+                188.7,
+                130.5,
+                76.7
+              ],
+              "luminance": 0.2755,
+              "warmth": 2.461
+            },
+            "spot-3": {
+              "srgb": [
+                179,
+                125.9,
+                74.3
+              ],
+              "luminance": 0.2498,
+              "warmth": 2.408
+            }
+          }
+        }
+      }
+    }
+  },
+  "correctedPassingTrialIds": [
+    "blue390",
+    "blue420",
+    "green520-blue420",
+    "red780-green520-blue420"
+  ],
+  "selected": "blue390",
+  "status": "actual corrected-reference candidate found, visual/production confirmation pending",
+  "sourceCandidate": "f8b563c7",
+  "integratedSource": "c1de028da70d1947c59cd017826e4409baff511a",
+  "allFiveOriginalsViewed": true,
+  "visualReview": "Choose exact smallest blue390 palette: retains warmer whole-cabinet appearance while passing corrected front hue and3spotY. Root independently viewed all4 and agreed. Day control unchanged.",
+  "productionConfirmation": "V5running, no final colour/process acceptance inferred from diagnostic MID trial"
+}
