@@ -90,6 +90,48 @@ result["lamps"] = {"export": len(want), "unreal": len(found), "missing": missing
 log(f"lamps export {len(want)}, unreal {len(found)}, missing {missing}, extra {extra}, doubled {doubled}, misplaced {far}")
 if missing or extra or doubled or far:
     raise RuntimeError(f"Lamp ids differ from the export: {result['lamps']}")
+# #2384: after loading the saved level, the source colour must survive both
+# serialization and the real event path. Check every lamp, including colours
+# unlike the common warm white; a default-white fallback is a failure.
+colour_checks = []
+for lamp_id, row in want.items():
+    actor = found[lamp_id][0]
+    expected = tuple(bytes.fromhex(row["color"].lstrip("#")))
+    linear = u.LinearColor()
+    linear.set_from_srgb(u.Color(r=expected[0], g=expected[1], b=expected[2], a=255))
+    stored = actor.get_editor_property("LampColour")
+    if max(abs(a-b) for a,b in zip(vec(stored), (linear.r, linear.g, linear.b))) > 1e-6:
+        raise RuntimeError("Actor colour differs from the export: " + lamp_id)
+    component = actor.get_component_by_class(u.PointLightComponent)
+    mask = component.get_editor_property("light_function_material")
+    expected_mask = "/Game/Lunden/Generated/Lighting/StairLightFunctions/M_" + lamp_id
+    if row.get("stairVisibility"):
+        if not mask or mask.get_path_name().split(".")[0] != expected_mask:
+            raise RuntimeError("Existing exported stair light function missing: " + lamp_id)
+    before = component.get_editor_property("light_color")
+    if (before.r, before.g, before.b) != expected:
+        raise RuntimeError("Saved component lost exported colour: " + lamp_id)
+    was_on = actor.get_editor_property("IsOn")
+    # Force the actual editor reconstruction path, then reacquire the component:
+    # stale component handles are not valid evidence after actor property writes.
+    actor.set_editor_property("Auto", actor.get_editor_property("Auto"))
+    component = actor.get_component_by_class(u.PointLightComponent)
+    try:
+        actor.call_method("TurnOn")
+        after = component.get_editor_property("light_color")
+        if (after.r, after.g, after.b) != expected:
+            raise RuntimeError("Lamp event lost exported colour: " + lamp_id)
+        if component.get_editor_property("light_function_material") != mask:
+            raise RuntimeError("Colour update changed the existing light function: " + lamp_id)
+        colour_checks.append({"id": lamp_id, "source": row["color"],
+                              "savedRGB": [before.r, before.g, before.b],
+                              "reconstructedEventRGB": [after.r, after.g, after.b],
+                              "lightFunction": mask.get_path_name() if mask else None})
+    finally:
+        actor.call_method("TurnOn" if was_on else "TurnOff")
+result["lamps"]["sourceColours"] = colour_checks
+log(f"exported actor/event lamp colours passed: {len(colour_checks)}")
+
 probe = found[next(iter(sorted(want)))][0]
 light = probe.get_component_by_class(u.PointLightComponent)
 states = []

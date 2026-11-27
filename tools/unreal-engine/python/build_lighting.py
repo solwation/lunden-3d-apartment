@@ -933,6 +933,7 @@ def build_lamp(spec, mpc):
     variables(bp, {"IsOn": ("bool", False), "Auto": ("bool", False), "Candela": ("real", 0.0), "K": ("real", 0.0),
                    "Dusk": ("real", -1.0), "DuskOn": ("real", sky["duskOn"]), "DuskOff": ("real", sky["duskOff"]),
                    "DuskFade": ("real", sky["duskFade"]), "PatioDusk": ("bool", False), "Supply": ("real", 1.0),
+                   "LampColour": ("vector", u.Vector(1, 1, 1)),
                    "BulbIdle": ("real", 0.0),
                    "BulbBoost": ("real", 0.0), "BulbColour": ("vector", u.Vector(0, 0, 0))})
     patio_string_function(bp)
@@ -952,6 +953,15 @@ def build_lamp(spec, mpc):
         connect(G.get("Light"), "Light", power, "self")
         env.feed(power, "NewIntensity", env.run("c = Candela * K * Supply")["c"])
         chain.then(power)
+        # #2384: component-only colour was lost on later reconstruction/reload.
+        # Keep the exported linear colour on the actor and reapply on the same
+        # TurnOn/TurnOff/BeginPlay/Tick path that already restores intensity.
+        rgb = G.call("KismetMathLibrary:Conv_VectorToLinearColor")
+        connect(G.get("LampColour"), "LampColour", rgb, "InVec")
+        colour = G.call("LightComponent:SetLightColor", bSRGB=True)
+        connect(G.get("Light"), "Light", colour, "self")
+        connect(rgb, "ReturnValue", colour, "NewLightColor")
+        chain.then(colour)
         vis = G.call("SceneComponent:SetVisibility")
         connect(G.get("Light"), "Light", vis, "self")
         env.feed(vis, "bNewVisibility", env.run("v = K * Supply > 0.0001")["v"])
@@ -1385,19 +1395,26 @@ def build_level(spec, sky_bp, lamp_bp):
             lamp.set_editor_property("Dusk", 0.0)  # web strings start off and fade in from zero
             for prop, key in (("DuskOn", "on"), ("DuskOff", "off"), ("DuskFade", "fade")):
                 lamp.set_editor_property(prop, rule[key])
-        light = lamp.get_component_by_class(u.PointLightComponent)
-        light.set_intensity(row["candela"])
-        light.set_editor_property("attenuation_radius", row["radius"])
         r, g, b = bytes.fromhex(row["colour"].lstrip("#"))
         colour = u.LinearColor()
         colour.set_from_srgb(u.Color(r=r, g=g, b=b, a=255))
-        light.set_light_color(colour)
+        lamp.set_editor_property("LampColour", u.Vector(colour.r, colour.g, colour.b))
         if row["patioBulbs"]:
             lamp.set_editor_property("BulbColour", u.Vector(colour.r, colour.g, colour.b))
             lamp.set_editor_property("BulbIdle", row["patioBulbs"]["idle"])
             lamp.set_editor_property("BulbBoost", row["patioBulbs"]["boost"])
+        # Every actor property above can reconstruct its component. Persist all
+        # component fields only after the final actor-property write.
+        light = lamp.get_component_by_class(u.PointLightComponent)
+        light.set_intensity(row["candela"])
+        light.set_editor_property("attenuation_radius", row["radius"])
         if row["id"] in masks:
             assign_light_function(lamp, row, masks[row["id"]])
+        light = lamp.get_component_by_class(u.PointLightComponent)
+        light.set_editor_property("light_color", u.Color(r=r, g=g, b=b, a=255))
+        got = light.get_editor_property("light_color")
+        if (got.r, got.g, got.b) != (r, g, b):
+            raise RuntimeError("Could not persist the exported lamp colour: " + row["id"])
     if not levels.save_map(world, LEVEL):
         raise RuntimeError("Could not save " + LEVEL)
     u.log(f"LUNDEN_LIGHTING_LEVEL {LEVEL}: 1 sky, {len(spec['lamps'])} lamps")

@@ -1341,6 +1341,14 @@ sky's brightness and the locked exposure.
   rooms about 3 × as bright and whiter ([docs/verification/2307/](../verification/2307/README.md)). No lamp casts
   shadows (one shadow-casting light, as the web).
 
+**Lamp colour (#2384).** The exported sRGB colour is decoded into the instance's durable
+`LampColour` vector. The existing lamp event/fade path reapplies it to the point light; the generated
+level also persists `light_color` after its last actor-property and light-function writes. This avoids
+falling back to the white component template after reconstruction or save/reload. There is no chosen
+Kelvin value, intensity change or exposure fit. `test_lighting.py` checks the saved source colour,
+actor vector and reconstructed `TurnOn` result for every lamp while retaining its stair light-function
+binding. These checks and the stairs/room/furnishing image regressions still require an actual native run.
+
 **Window daylight (#2394).** `site.windowDaylight` exports L1007's actual `homeRegion`, floor bands, window/well
 transmission and 32 visibility rays per source, together with detached linear colours from
 `daycycle.js`'s `dayCycleLightColors()`. `python/window_light.py` translates the web's `WindowLight` and `sunbounce`
