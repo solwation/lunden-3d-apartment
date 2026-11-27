@@ -51,11 +51,12 @@ def parasol_test():
         driver.set_actor_tick_enabled(False)
         sky.set_editor_property('UseClock',False);sky.set_editor_property('TimeScale',0.0)
         original_mesh=canopy.get_component_by_class(u.StaticMeshComponent).static_mesh
+        if driver.get_editor_property('ParasolManual'):
+            raise RuntimeError('Fresh canopy driver must start without a manual override')
         for month in range(1,13):
             for sun in(RULE['sunThreshold']-1e-6,RULE['sunThreshold'],RULE['sunThreshold']+1e-6):
                 for overcast in(RULE['maxOvercast']-1e-6,RULE['maxOvercast'],RULE['maxOvercast']+1e-6):
                     expected=float(month in RULE['months']and sun>RULE['sunThreshold']and overcast<=RULE['maxOvercast'])
-                    driver.set_editor_property('ParasolManual',False)
                     driver.call_method('AdvanceParasol',(0.0,month,sun,overcast,True))
                     actual=driver.get_editor_property('ParasolOpen')
                     if abs(actual-expected)>1e-8:raise RuntimeError(f'Automatic parasol rule differs at {month,sun,overcast}: {actual} != {expected}')
