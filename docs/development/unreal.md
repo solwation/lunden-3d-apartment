@@ -1538,96 +1538,92 @@ the export and the pictures section of `notices.mjs`.
   `build_furnishing.py` therefore stay empty until something hand-made is needed. Not ported: normal, bump,
   roughness and alpha maps, emissive maps other than printed curtain cloth, the web's `onBeforeCompile` tweaks, video and animated canvases (the TV
   and the smart display show their first frame). The lighting and material comparisons below cover the upholstery and other furnishing surfaces.
-- **Colour checks (#2322).** In the UE 5.8.4 L1007 import from `98f42f51`, the living-room rug, sofa and oak
-  coffee table use sRGB colour textures. The rug has a white base factor and no vertex colours. Its two most frequent
-  GLB texels are the web ground `#5a6150` and stripe `#e6e1d6`. The exported 256 × 64 wood grain matches
-  `src/woodgrain.js` pixel for pixel after flipping Y. The saved coffee-table material instance carries the GLB's
-  linear tint (0.565, 0.332, 0.153) and UV scale (2, 6). The visible brown BESTÅ doors use a solid walnut colour.
-  On the web three additive light fans fall across the door fronts at night, with two more inside the glass cabinet.
-  The export keeps the web emitter 40 cm in front of the fitting, whose origin supplies the stable ID. The
-  lamp's optional `cabinetWashes` row also carries the five measured quads, UVs, original 128 × 256 sRGB
-  mask, linear tint, opacity and the veneer material key. `build_cabinet_washes.py` places five non-colliding
-  stock UE planes in the generated interaction level. Their additive material follows the lamp's actual
-  fade and mains supply. Its light stays in the same location. The individual point calibration, 7.95 cd
-  for this fitting, comes from a paired test with the five rendered fans hidden. The desktop draws and
-  blends the tone-mapped sRGB fan. UE adds the fan in scene-linear space. The native intensity, tint and edge
-  conversion are visual estimates (*guess*) measured in the same cameras.
-  The four solid walnut leaves share one native child material. They have no base-colour texture or vertex
-  multiplication, and the web room-probe code gives them no environment map. In the native day shot the
-  imported glTF `SpecularFactor` of 1 left sRGB (57, 58, 60) even on a black diffuse surface. With the
-  same material at zero specular, that floor fell to (4, 4, 4). A local diffuse RGB fit under the calibrated
-  exposure preserves the walnut hue. Only these four door components use the override. Run
-  `node tools/unreal-engine/tests/cabinet-washes.mjs unreal/Lunden/Import` after export and
-  `run-python.ps1 tools/unreal-engine/tests/test_cabinet_washes.py` after sync. Check the cabinet front and
-  three illuminated cone centres against the matching web views with `crop-stats.cjs`,
-  `tools/unreal-engine/tests/cabinet-crops.json` and `--check-cabinet`. The paired cameras and results
-  are recorded in [the furnishing verification](../verification/2322/README.md).
-  On the web `Curtain.glow` multiplies the curtains’ printed pattern by
-  changing daylight and room-lamp emission on the web. L1007 exports the same sRGB print, sampler and UV transform
-  for base colour and emission. The GLB's fallback factor is the cloth's linear RGB at full daylight with the room
-  lamps off. The six rows in `furnishing.curtains` give each fabric's two linear RGB coefficients, its mesh IDs
-  and the ceiling and small lamps in its real room. The daylight and warm gains are the web's visual estimates
-  (`CURTAIN_LIGHT`, *guess*). The export keeps the existing opacity, roughness and two-sided material.
-  After `build_interaction.py`, the full sync runs `build_curtains.py` on the generated apartment level. Each room's
-  controller changes the stock Interchange `EmissiveFactor` on its own panel material instances. It reads
-  `Daylight` and `DuskLight` from the existing weather collection, gates its warm contribution at
-  `PowerAvailable > 0.5`, and reads `IsOn` on its visible room lamps, including the seasonal fixtures. The
-  capture scripts refresh it after setting the lamps and month. Earlier exports omit the optional curtain rows.
-  UE 5.8.4 imports each panel's sRGB print as both `BaseColorTexture` and `EmissiveTexture`. At the game's calibrated
-  exposure, rendering the raw web emission coefficients still left the three curtain crops at 0.44, 0.21 and 0.44
-  times their web luminance. `build_curtains.py` scales the two RGB coefficients separately in native emissive units.
-  The conversions are visual estimates (*guess*) from 24 GPU shots at 0–64 times the raw emission. The living-room
-  print supplies the shared day and lamp reference; the violet print has its own evening fit. The four remaining
-  textiles use the shared conversion. See [the three camera pairs, ratios and colour measurements](../verification/2322/README.md).
-  Run `node tools/unreal-engine/tests/curtain-light.mjs unreal/Lunden/Import --blueprint` for the GLB and web math
-  and `run-python.ps1 tools/unreal-engine/tests/test_curtain_light.py` after a full UE sync for the materials and switches.
-  Pass `--check-curtains` to the crop check below to verify both luminance and print hue against the web.
-  For comparable measurements, run `tests/crop-stats.cjs <paired-image-directory> tests/furnishing-crops.json` from
-  `tools/unreal-engine/` on the shared daylight and evening camera pairs. Record the lighting revision and exposure
-  with the ratios. In [the #2313 calibration](../verification/2313/README.md) the
-  pre-correction Unreal/web ratios at 14:00 and 22:00 are rug 1.10/0.61, curtain 0.40/0.27, oak table 1.84/0.87,
-  cabinet front 2.14/0.11 and sofa 1.14/1.04. The upper-floor curtain at 22:00 is 0.62. The web renders with
-  `THREE.NeutralToneMapping`. Correcting every furnishing with a single brighter tint would amplify the daytime
-  error on the table and cabinet.
-- **Living-room pendant on the rug (#2322, native visual acceptance pending).** The optional
-  `furnishing.rugFloorPool` records the actual `ShadePools.commit` floor quad, its source UV corners in Unreal cm,
-  full-on linear vertex colour (already multiplied by `shade.pool.floor[1]`), opacity and original 128 × 128
-  linear canvas mask. The contribution uses the original coefficients without fitting the rug's sRGB textile.
-  The source floor quad is 12 mm above the floor; the original rug top is 14 mm. The web uses
-  `polygonOffsetFactor=-1`, `polygonOffsetUnits=-4` and render order 2 to layer the pool across the rug.
-  The export retains these values as provenance and separately records the actual exported rug mesh's top corners
-  and unchanged material key. After cabinet/curtain construction, full `sync-import.ps1` runs `build_rug_pool.py`.
-  It writes only `Generated/Interaction/RugPool` and the generated apartment interaction level. A Generated copy
-  of the original material's complete master/instance chain retains its PBR graph, effective parameters, static
-  switches and base-property overrides. Only the copied master's emissive input gains the source field. The original
-  rug mesh receives that copy; no extra plane, depth bias, height change or authored material edit is needed.
-  Geometric upward-face weight limits emission to the rug top. World-position UVs anchor it under the pendant;
-  a finite-quad mask zeros only the new emission outside the source field without discarding the original textile.
-  The texture stays linear (`sRGB=false`), preserving its original soft falloff. The controller
-  reads the existing source lamp's `K` times `MPC_LundenWeather.PowerAvailable`; capture helpers explicitly settle
-  it in editor worlds that do not tick. It never changes the source lamp's intensity or the imported rug material.
-  Actual composed-world assertions at `a39a2a9b` preserved 70 PBR parameters, all base-property overrides,
-  geometry/collision/shadow and source fades, including dirty/saved-source invalidation. Those two API processes
-  failed later in Python closure weakref finalization (#2401); `53ad3679` removes the test's retained bound method.
-  Real Vulkan captures at `53ad3679` rendered the contribution at all three distances with native exit 0. The
-  reference pair now differs in 30,140 pixels above 2/255, where the extra plane had disappeared entirely.
-  A separate minimal product-builder run on that revision passed twice unchanged and exited 0 in both native
-  and wrapper processes (101.73 s); it did not rerun the native regression's temporary objects.
-  The low-profile images establish this bounded visibility/occlusion result, not Windows/web colour acceptance.
-  The earlier coplanar implementation's UE 5.8.4 Linux NullRHI run at `27848bf9` passed the real zone import, builder/API/Blueprint execution,
-  unchanged second build, composed-world geometry/material/fade checks and the incremental component-drift
-  regression. All 246 authored LFS assets and 2,621 protected prerequisite files remained byte-identical and
-  read-only. Its later real 640 × 360 near/reference/far on/off images failed the visual gate: the entire reference
-  contribution disappeared despite 215 unobstructed source-mask samples. Near/far views retained it and furniture
-  occluded it. Analytically matching planes did not guarantee raster depth stability, so the extra surface was removed.
-  The [diagnosis and pending replacement](../verification/2322/README.md#mattans-pendelfält-källcheckpoint-2026-11-27)
-  distinguish the failed extra plane, the actual replacement images and the remaining gates. The source blends its
-  unlit contribution after output conversion while UE's additive material contributes in scene-linear space,
-  so unchanged source coefficients are not evidence of matched final luminance. No colour/exposure fit is made
-  in this slice. Surrounding floor and ceiling pools, moved/alternative rug materials and final matched day/evening
-  crops remain outside this slice under the still-open #2322 and the existing rearrangement/material port #2339.
-  Run `node tools/unreal-engine/tests/rug-floor-pool.mjs <export-dir>` for the real source contract, then
-  `run-python.ps1 tools/unreal-engine/tests/test_rug_floor_pool.py` after sync for composed-world receiver/fade checks.
+- **Furnishing colours and source display pools (#2322, final colour acceptance pending).**
+  The rug, sofa and oak table import their actual sRGB image textures. The table retains the exported
+  linear base tint (0.565, 0.332, 0.153) and UV scale (2, 6); the sofa retains its texture and vertex colours.
+  These facts do not establish a gamma, double-vertex-multiplication or clamped-factor defect. In particular,
+  an effective `BaseColorFactor` getter and an unchanged image do not prove which branch of Interchange's
+  serialized material function uses that parameter. Keep shader-cause hypotheses separate from measured output.
+  The solid walnut cabinet leaves have no colour texture. The source `Curtain.glow` coefficients and all six
+  original print textures, opacity, roughness and two-sided state remain exported in `furnishing.curtains`.
+
+  `furnishing.displayPools` now records every actual L1007 `ShadePools` floor/ceiling field, independent of
+  the nearest PointLight slot selection: three source lamps and five fields (dining copper floor, living-room
+  Silvia floor and ceiling, Sovrum 2 paper floor and ceiling). Each field carries its stable lamp ID, actual
+  world-space UV corners in native centimetres, full-on linear vertex colour, opacity and original depth
+  provenance. The shared 128 × 128 mask remains linear, `flipY=true`. `rugLamp` and `rugReceivers` bind the
+  exceptional original rug to its own source lamp and exported top surface. The older optional
+  `furnishing.rugFloorPool` remains available for legacy exports and their historical regressions.
+
+  Full sync still calls `build_rug_pool.py` after curtains and cabinet washes. With the new data it dispatches
+  to `build_display_pools.py`, then `build_furnishing_profile.py`. They save only their own
+  `Generated/Interaction` assets and the actual generated apartment interaction level. The current path restores
+  the original rug PBR material and retires the former rug emissive controllers. One Generated unbound
+  post-process material composites all source fields **after tonemapping**, priority 20, with pre-exposure
+  scaling disabled. The web uses a `toneMapped=false`, fog-free additive MeshBasic material: lamp fade `K`
+  multiplies linear vertex colour before output sRGB transfer, and opacity multiplies that encoded result
+  afterwards. The native pass therefore adds `OETF(mask * sourceColour * K * PowerAvailable) * opacity`
+  to the already encoded scene colour. No fitted pool RGB, exposure compensation or source intensity gain is used.
+  A separate driver per stable source lamp updates the Generated `MPC_DisplayPools`; capture helpers explicitly
+  settle it in editor worlds that do not tick. Hidden source lamps and a missing source owner contribute zero.
+
+  The pass intersects the real camera ray with each exported quad and rejects a field behind the visible surface,
+  preserving furniture occlusion without adding an overlay mesh or depth bias. Only the original upward rug top
+  may cross its source's actual 2 mm plane gap: the field must have the same `rugLamp` and matching exported
+  floor height. Another lamp or the upper-floor field cannot inherit that exception. Ordinary original textures,
+  roughness, alpha, UVs, static switches, geometry and collision remain inherited. Strict graph checks bind the
+  source code, sampler, collection parameter IDs and blendable placement; native tests inspect the actual composed
+  actor/material binding and real lamp/power/visibility values rather than accepting the existence of an asset.
+  `test_display_pool_data.py` guards invalid geometry/masks and cross-storey exception leakage. Run the actual
+  `display-pools.mjs` source fixture/export checks, then `test_rug_floor_pool.py` after a full sync.
+
+  The legacy rug-only path copied the complete original master/MIC chain and added raw source emission before
+  exposure/tonemapping. Its bounded API/depth results remain in the
+  [historical verification](../verification/2322/README.md#mattans-pendelfält-källcheckpoint-2026-11-27), including
+  the failed coplanar extra plane and the later PBR-preserving replacement. That emission path is not the current
+  display-space compositor and is not evidence of final web colour parity. Runtime moved/alternative rugs remain
+  under #2339. Sovrum 4's upper-camera dome has no ShadePools field: the exported paper lamp is in Sovrum 2.
+  Missing `IndoorHalos` and other lamp-display effects are tracked separately in #2481, and Silvia's reflected copper
+  in #2482; the weak emissive inner/dome materials also overlap #2460. Do not claim the five exported quads fixed
+  an unrelated room's entire ceiling-light distribution.
+
+  Material-side approximations are explicitly **guess** profile calibrations, permitted by #2322, not web
+  constants or a universal PBR fix. `build_furnishing_profile.py` creates local child MICs parented to the real
+  imported materials. The candidate wood factor is (1.34, 1.27, 1.15), with `SpecularFactor=0`; removing native
+  environment highlights also removes legitimate direct glints. It covers the oak table and named teak/trim keys.
+  Tilly's desktop has been retired from that shared guess; rebuilding restores only this builder's tagged child
+  to its original StaticMesh material, leaving other builders' overrides intact. The upholstery candidate is
+  (1, 1, 0.84), with original specular inherited. Every other effective scalar/vector/texture/static-switch value
+  remains inherited; metadata records the source and assumption. A successful parameter readback is not itself
+  a rendered response or colour acceptance.
+
+  `build_curtains.py` changes only each room's real panel MIDs through its existing controller. It reads actual
+  `Daylight` and `DuskLight`, gates lamp emission at `PowerAvailable > 0.5`, and checks visible room lamps' `IsOn`.
+  Candidate native-unit gains are `DAY_GAIN=(19.32,17.41,15.04)`, `LAMP_GAIN=(13.37,16.89,24.68)` and the separate
+  violet evening gain `(72.75,67.27,140.80)`. The living-room print supplies the common reference; four other
+  fabrics use an unmeasured shared conversion. These values remain candidates while the upper violet crop is
+  unresolved. Warm Blueprint rebuilds retire the old caller before replacing its visibility-library function,
+  avoiding a transient missing-function compiler error. Capture scripts refresh the real room controllers.
+
+  The cabinet retains five actual non-colliding wash planes, original mask/UVs and source owner. Its radiance
+  `(4.9,3.3,2.35)`, edge exponent 0.55 and point multiplier 3.65 are separate guesses, not source-derived units.
+  The four walnut leaves use a local Generated child with zero specular. The existing first wash controller
+  interpolates original-base-colour factors between day `(1.265,1.259,1.267)` and night `(0.755,0.560,0.155)` using
+  actual MPC `Daylight`, updating only those four MIDs independently of the lamp-fade cache. This day/night
+  reflectance change is an explicit visual approximation, not a claim that the source wood changes physically.
+  The other wash controllers receive no veneer targets. Native readback must verify each real panel's RGB and
+  preserved alpha; all three existing illuminated cone-centre crops remain required, not just the cabinet front.
+
+  Final verification belongs in [the furnishing verification](../verification/2322/README.md): use the fixed
+  matched day/evening cameras and the additional upper violet curtain crop. All eleven original luminance fields
+  must remain within 0.8–1.25, with actual same-hue review of the five families, the existing curtain/cabinet hue
+  guards, the cabinet's three spotlight fields and whole-image floor/ceiling inspection. Keep all raw originals,
+  source/export bindings, actual MID/controller values and process/log results. A Python commandlet result 0
+  does not override a Blueprint compiler error or nonzero native/wrapper exit. Current Linux work uses CPU
+  Vulkan, 640 × 360, conventional shadows 3/1024/three cascades, Lumen off and actual FXAA method 1.
+  `r.PostProcessAAQuality` is unavailable to the queried getter: its returned zero is a fallback, not a measured
+  quality setting. Windows and the full rendering profile remain unverified; no final #2322 colour pass is implied
+  by this source description.
 - **Signs and labels (#2400).** The same route carries every unlit web material (`MeshBasicMaterial`) that has a colour
   map, whatever node it is on: the flats' number signs and name plates (Hus A, B and C paint one `flat-door-atlas` each,
   Hus L a fourth), the garage's sign plates, exit pictograms, floor markings and wall plans, and the stairwells' floor
