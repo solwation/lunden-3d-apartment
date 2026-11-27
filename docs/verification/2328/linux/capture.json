@@ -1,0 +1,266 @@
+{
+  "map": "/Game/Lunden/Maps/L_Lunden",
+  "engine": "5.8.4-58902052+++UE5+Release-5.8",
+  "export": "a0e73607fe85144660d65aff9bfd5dbb79880a06",
+  "hour": 14.0,
+  "date": "2026-11-15",
+  "latentTimeoutSeconds": 900,
+  "views": {
+    "hus-a-closed": {
+      "eyeCm": [
+        60.0,
+        3835.5,
+        149.0
+      ],
+      "aimCm": [
+        -95.0,
+        3777.5,
+        111.18
+      ],
+      "horizontalFov": 86,
+      "id": "door_husa_l0_xm105_z3735_y0",
+      "targetOpen": false,
+      "changeCount": 0
+    },
+    "hus-a-open": {
+      "eyeCm": [
+        60.0,
+        3835.5,
+        149.0
+      ],
+      "aimCm": [
+        -95.0,
+        3777.5,
+        111.18
+      ],
+      "horizontalFov": 86,
+      "id": "door_husa_l0_xm105_z3735_y0",
+      "targetOpen": true,
+      "changeCount": 1
+    },
+    "hus-b-closed": {
+      "eyeCm": [
+        -3143.0,
+        4462.0,
+        149.0
+      ],
+      "aimCm": [
+        -3298.0,
+        4520.0,
+        111.18
+      ],
+      "horizontalFov": 86,
+      "id": "door_husb_l0_xm3308_z4565_y0",
+      "targetOpen": false,
+      "changeCount": 0
+    },
+    "hus-b-open": {
+      "eyeCm": [
+        -3143.0,
+        4462.0,
+        149.0
+      ],
+      "aimCm": [
+        -3298.0,
+        4520.0,
+        111.18
+      ],
+      "horizontalFov": 86,
+      "id": "door_husb_l0_xm3308_z4565_y0",
+      "targetOpen": true,
+      "changeCount": 1
+    },
+    "hus-c-closed": {
+      "eyeCm": [
+        -6069.0,
+        2118.0,
+        149.0
+      ],
+      "aimCm": [
+        -6224.0,
+        2060.0,
+        111.18
+      ],
+      "horizontalFov": 86,
+      "id": "door_husc_l0_xm6234_z2020_y0",
+      "targetOpen": false,
+      "changeCount": 0
+    },
+    "hus-c-open": {
+      "eyeCm": [
+        -6069.0,
+        2118.0,
+        149.0
+      ],
+      "aimCm": [
+        -6224.0,
+        2060.0,
+        111.18
+      ],
+      "horizontalFov": 86,
+      "id": "door_husc_l0_xm6234_z2020_y0",
+      "targetOpen": true,
+      "changeCount": 1
+    },
+    "steel-closed": {
+      "eyeCm": [
+        -6392.0,
+        3261.5,
+        -150.5
+      ],
+      "aimCm": [
+        -6450.0,
+        3416.5,
+        -193.165
+      ],
+      "horizontalFov": 86,
+      "id": "door_garage_steel_xm6495_z3427",
+      "targetOpen": false,
+      "changeCount": 0
+    },
+    "steel-open": {
+      "eyeCm": [
+        -6392.0,
+        3261.5,
+        -150.5
+      ],
+      "aimCm": [
+        -6450.0,
+        3416.5,
+        -193.165
+      ],
+      "horizontalFov": 86,
+      "id": "door_garage_steel_xm6495_z3427",
+      "targetOpen": true,
+      "changeCount": 1
+    },
+    "cage-closed": {
+      "eyeCm": [
+        -983.0,
+        465.0,
+        -146.0
+      ],
+      "aimCm": [
+        -1018.0,
+        330.0,
+        -193.0
+      ],
+      "horizontalFov": 86,
+      "id": "door_garage_cage_xm1063_z320",
+      "targetOpen": false,
+      "changeCount": 0
+    },
+    "cage-open": {
+      "eyeCm": [
+        -983.0,
+        465.0,
+        -146.0
+      ],
+      "aimCm": [
+        -1018.0,
+        330.0,
+        -193.0
+      ],
+      "horizontalFov": 86,
+      "id": "door_garage_cage_xm1063_z320",
+      "targetOpen": true,
+      "changeCount": 1
+    },
+    "park-closed": {
+      "eyeCm": [
+        -2195.0,
+        4790.5,
+        -150.5
+      ],
+      "aimCm": [
+        -2350.0,
+        4732.5,
+        -193.165
+      ],
+      "horizontalFov": 86,
+      "id": "door_garage_park_xm2360_z4680",
+      "targetOpen": false,
+      "changeCount": 0
+    },
+    "park-open": {
+      "eyeCm": [
+        -2195.0,
+        4790.5,
+        -150.5
+      ],
+      "aimCm": [
+        -2350.0,
+        4732.5,
+        -193.165
+      ],
+      "horizontalFov": 86,
+      "id": "door_garage_park_xm2360_z4680",
+      "targetOpen": true,
+      "changeCount": 1
+    },
+    "outside-button": {
+      "eyeCm": [
+        -7264.0,
+        4715.0,
+        -168.0
+      ],
+      "aimCm": [
+        -7149.0,
+        4760.0,
+        -194.0
+      ],
+      "horizontalFov": 72,
+      "id": "button_garage_outside",
+      "targetOpen": false,
+      "changeCount": 0
+    },
+    "outside-gate": {
+      "eyeCm": [
+        -7460.0,
+        4440.0,
+        -132.0
+      ],
+      "aimCm": [
+        -7040.0,
+        4400.0,
+        -157.0
+      ],
+      "horizontalFov": 80,
+      "id": "door_garage_l0_xm7050_z4400",
+      "targetOpen": true,
+      "changeCount": 1
+    },
+    "inside-button": {
+      "eyeCm": [
+        -6873.0,
+        4765.0,
+        -153.0
+      ],
+      "aimCm": [
+        -6988.0,
+        4810.0,
+        -179.0
+      ],
+      "horizontalFov": 72,
+      "id": "button_garage_inside",
+      "targetOpen": false,
+      "changeCount": 0
+    },
+    "inside-gate": {
+      "eyeCm": [
+        -6620.0,
+        4440.0,
+        -132.0
+      ],
+      "aimCm": [
+        -7040.0,
+        4400.0,
+        -157.0
+      ],
+      "horizontalFov": 80,
+      "id": "door_garage_l0_xm7050_z4400",
+      "targetOpen": false,
+      "changeCount": 2
+    }
+  }
+}

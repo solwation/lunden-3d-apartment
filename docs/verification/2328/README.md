@@ -1,5 +1,7 @@
 # Dörrar och portknappar i den sammansatta spelnivån
 
+De första avsnitten visar historiska Windowsbilder. [Aktuellt Linuxprov från 2026-11-27](#linuxkontroll-2026-11-27) finns längre ned.
+
 Bilderna kommer från spelvyn i Windows PIE på `L_Lunden`, Unreal Engine 5.8.4 (58902052), med den ordinarie spelbelysningen klockan 14.00 den 15 november 2026 i klart väder. Bildprovet använde gångjärn, dörrmått och knappositioner från [den provade exportrevisionen](https://github.com/solwation/lunden-3d-apartment/tree/bf9718ae3e862bda6d484050e49fc5381d6c2b6b).
 
 ## Trapphus
@@ -69,8 +71,8 @@ Varje oförändrat ordinarie prov registrerades tillfälligt i Content/Python oc
 med Epic PythonAutomationTest-pluginen. Rapporterna hade vardera `succeededWithWarnings: 1`,
 `failed: 0` och `notRun: 0`. Varningarna var motorns återkommande
 `Querying IsUsingWayland before SDL is initialized` i headlessläget; de undertrycktes inte.
-Aktuella renderade dörrvyer återstår. Tidigare Windowsbilder ovan är bevarad historisk
-bildevidens och ska inte läsas som nya bilder från denna Linuxrevision.
+Aktuella renderade dörrvyer är nu verifierade enligt bildprovet nedan. Tidigare Windowsbilder
+ovan är bevarad historisk bildevidens och ska inte läsas som nya bilder från denna Linuxrevision.
 
 [Sammanställda kördata](linux-verification.json), [interaktionsresultat](linux-interaction-result.json),
 [gångvägsresultat](linux-exterior-route-result.json) och [fasadresultat](linux-facades-result.json).
@@ -87,3 +89,42 @@ Tunna färgpixlar vid den undre bildkanten följs i [#2470](../2470/README.md).
 Dessa fel är inte avsedda grafikförenklingar. Lågprofilens avstängda Lumen/Nanite,
 skuggor och reflektioner är däremot avsiktliga utvecklingsinställningar; bilderna
 är ingen fullkvalitets- eller Windowsjämförelse.
+
+### Godkänt aktuellt bildprov
+
+På källrevision `7a137273801528d9d02723733664e174ab62c02a` kördes samma sexton vyer i den
+verkliga `L_Lunden`, med systemets llvmpipe LLVM 20.1.2 och Linux-lågprofilen.
+`test_door_groups_capture` avslutades med `succeededWithWarnings: 1`, `failed: 0`, `notRun: 0`;
+wrapper och motor avslutades med 0. Hela processen tog 994,04 s; det faktiska Automation-provet
+219,70 s. Den uttryckliga latentbudgeten var 900 s. Samtliga sex blads gångjärn/öppningsvinklar,
+E-händelser och båda portknapparnas lägen kontrollerades av den oförändrade fixturens assertioner.
+
+Motorns uppstart väntade först 600 s på minst 10 FPS, gav sedan upp väntan vid cirka 4 FPS och
+startade provet. Detta är **inte** ett uppfyllt 10 FPS-krav; onödig CPU-uppstartsväntan följs i
+[#2472](https://github.com/solwation/lunden-3d-apartment/issues/2472). Alla bilder är 1526 × 910,
+inte begärda 640 × 360 (#2469). De sexton originalen kopierades byte för byte, utan beskärning,
+storleksändring eller retuschering. Varje PNG-blocks CRC och filslut efter IEND kontrollerades.
+Alla 246 versionerade Unreal-filer var byte-identiska även efter bildprovet.
+
+Alla sexton bilder granskades: A/B/C-bladen lämnar öppningen fri, ståldörren visar garaget,
+förrådsnätet är genombrutet, parkdörrens glas och ram svänger tillsammans, uteknappen öppnar
+porten och inneknappen stänger den. Hus A/B/C är kontrollerade var för sig. Färgade kantpixlar
+finns kvar i originalen och hör till det öppna #2470. Lågprofilens plattare ljus, förenklade
+skuggor/reflektioner och lägre detaljskärpa är avsiktliga utvecklingsavvikelser. Dessa bilder
+bevisar dörrfunktionen; de är ingen ny Windows-, färgkalibrerings- eller releaseacceptans.
+
+[Alla filhashar och kameralägen](linux-capture-manifest.json) · [Originalens körmetadata](linux/capture.json).
+
+| Dörrgrupp | Stängd | Öppen efter E |
+| --- | --- | --- |
+| Hus A | ![Hus A stängd](linux/hus-a-closed.png) | ![Hus A öppen](linux/hus-a-open.png) |
+| Hus B | ![Hus B stängd](linux/hus-b-closed.png) | ![Hus B öppen](linux/hus-b-open.png) |
+| Hus C | ![Hus C stängd](linux/hus-c-closed.png) | ![Hus C öppen](linux/hus-c-open.png) |
+| Ståldörr | ![Ståldörr stängd](linux/steel-closed.png) | ![Ståldörr öppen](linux/steel-open.png) |
+| Förråd | ![Förråd stängt](linux/cage-closed.png) | ![Förråd öppet](linux/cage-open.png) |
+| Parkdörr | ![Parkdörr stängd](linux/park-closed.png) | ![Parkdörr öppen](linux/park-open.png) |
+
+| Garageknapp | Port efter E |
+| --- | --- |
+| ![Gul uteknapp](linux/outside-button.png) | ![Öppen port från utsidan](linux/outside-gate.png) |
+| ![Gul inneknapp](linux/inside-button.png) | ![Stängd port från insidan](linux/inside-gate.png) |
