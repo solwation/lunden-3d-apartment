@@ -1,0 +1,23 @@
+{
+  "completed": true,
+  "classification": "actualpriorprefix reused explicitly; overallpriorrunFAILED, notreclassified",
+  "sourceHead": "3a984f53f3a992748f2eda2679f64b7cb6ccd1d7",
+  "priorActualPrefixProof": "/home/devcontainers/.local/state/lunden-codex-20261127/2388/native-product-wrapper/product/canonical/sync-capture-steps.json",
+  "priorProofSHA256": "54dbeebd41cd5cbaa1dd068f5af545c60b8ef9a83a717834c94a57d33b819cdd",
+  "postcanonicalPinSHA256": "ece66b90e228daecc7438cf7b2e3d21ed063714b51d48efb7048c315b8c82556",
+  "offlinePreflightPassed": true,
+  "priorSuccessfulSteps": [
+    "single material build_entries/save",
+    "actual package reload + master/instance --check + recompile errors[]",
+    "actual full cached canonical sequence + freshsyncstamp + release"
+  ],
+  "actualRecoverySteps": [
+    "source/export/savedglass247RO/Generatedclosure checks",
+    "actual existing releasegate check",
+    "actual two patioframes + transientMID alpha0readback + restoredoriginal35bindings",
+    "actual nativePBR+fourregressioncaptures"
+  ],
+  "freshStampWrittenInRecovery": false,
+  "expectedGlassSHA256": "1aafeb23a6f8a4d0efc0ba86f2e7b96f48096a86613dddf1ba800f022f2c5e5e",
+  "all247AuthoredAndCurrentGeneratedExportExact": true
+}

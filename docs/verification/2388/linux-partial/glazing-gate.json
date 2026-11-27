@@ -1,0 +1,203 @@
+{
+  "classification": "actual locked diagnostic regions; whole-image review required separately",
+  "acceptanceContractSHA256": "e8a737d787a132776c48fb8051ac7eeb9df115a7e5354e428ace1a8b7fd54131",
+  "canonicalToolSHA256": "0a76bf7e7c43ad2e212f2d884806957030ec6dc08ce4c4d9901641f5f80bd1c6",
+  "browserBatches": 1,
+  "clearWebProofSHA256": "26230e94ef4ff8563039c8c3c83642923c7781e7cb6c67de0d1951041ad69a89",
+  "originalMeterSHA256": "00e6fc7c586299960eb80c4b60b854e6dcaef71780fa6d0868016098a2a9e50b",
+  "inputs": {
+    "patio-forward": {
+      "nativeSHA256": "6bc6ebdbd3a0f108ae1bc3e6de5262e5bea7f6a658cb7e3932b526edba357b55",
+      "webSHA256": "2809213185dca1b6aa17076983bc019514dbe27bd403b3b82fc0cba59f5f9851",
+      "classification": "LOCKED standard acceptance"
+    },
+    "patio-clear-diagnostic": {
+      "nativeSHA256": "15cdc24d6679c24117649142134490a75f8a83d4b7300336f3f216c13a7dc3aa",
+      "webSHA256": "f964661bfd45ae730a086af27c154bad0a7e34f32a1bf82ee4cabc37021d978c",
+      "classification": "DIAGNOSTIC clear-vs-clear"
+    }
+  },
+  "rows": [
+    {
+      "shot": "patio-forward",
+      "classification": "LOCKED standard acceptance",
+      "region": "door-interior",
+      "ratios": {
+        "luminance": 1.0029779630732578,
+        "saturation": 0.8723930004573317
+      },
+      "passed": true,
+      "web": {
+        "srgb": [
+          152.9,
+          143.8,
+          132.5
+        ],
+        "luminance": 0.3358,
+        "saturation": 0.17957105340328994,
+        "warmth": 1.154
+      },
+      "native": {
+        "srgb": [
+          155,
+          148,
+          136.4
+        ],
+        "luminance": 0.3368,
+        "saturation": 0.15665653007377986,
+        "warmth": 1.136
+      }
+    },
+    {
+      "shot": "patio-forward",
+      "classification": "LOCKED standard acceptance",
+      "region": "window-interior",
+      "ratios": {
+        "luminance": 0.9173201882142057,
+        "saturation": 1.0721267163693442
+      },
+      "passed": true,
+      "web": {
+        "srgb": [
+          154.7,
+          151.6,
+          141.3
+        ],
+        "luminance": 0.4463,
+        "saturation": 0.14547484492705778,
+        "warmth": 1.094
+      },
+      "native": {
+        "srgb": [
+          153.4,
+          153.1,
+          140.7
+        ],
+        "luminance": 0.4094,
+        "saturation": 0.15596746780598603,
+        "warmth": 1.09
+      }
+    },
+    {
+      "shot": "patio-forward",
+      "classification": "LOCKED standard acceptance",
+      "region": "upper-glass-interior",
+      "ratios": {
+        "luminance": 1.0105947167679052,
+        "saturation": 1.3319652414917815
+      },
+      "passed": false,
+      "web": {
+        "srgb": [
+          224.4,
+          217.5,
+          205.3
+        ],
+        "luminance": 0.7079,
+        "saturation": 0.08682905554594429,
+        "warmth": 1.093
+      },
+      "native": {
+        "srgb": [
+          227.7,
+          218.7,
+          201.8
+        ],
+        "luminance": 0.7154,
+        "saturation": 0.115653283938757,
+        "warmth": 1.128
+      }
+    },
+    {
+      "shot": "patio-clear-diagnostic",
+      "classification": "DIAGNOSTIC clear-vs-clear; does not relax standard acceptance",
+      "region": "door-interior",
+      "ratios": {
+        "luminance": 1.0997434252726106,
+        "saturation": 0.8570333953683015
+      },
+      "passed": true,
+      "web": {
+        "srgb": [
+          148,
+          134.8,
+          120.7
+        ],
+        "luminance": 0.3118,
+        "saturation": 0.24652221145680225,
+        "warmth": 1.226
+      },
+      "native": {
+        "srgb": [
+          157.1,
+          145.8,
+          131.6
+        ],
+        "luminance": 0.3429,
+        "saturation": 0.21127776791852562,
+        "warmth": 1.194
+      }
+    },
+    {
+      "shot": "patio-clear-diagnostic",
+      "classification": "DIAGNOSTIC clear-vs-clear; does not relax standard acceptance",
+      "region": "window-interior",
+      "ratios": {
+        "luminance": 0.9648518263266712,
+        "saturation": 0.585457940535597
+      },
+      "passed": false,
+      "web": {
+        "srgb": [
+          149.6,
+          143,
+          129.4
+        ],
+        "luminance": 0.4353,
+        "saturation": 0.253641198861344,
+        "warmth": 1.156
+      },
+      "native": {
+        "srgb": [
+          152,
+          147.6,
+          134.1
+        ],
+        "luminance": 0.42,
+        "saturation": 0.14849625392034227,
+        "warmth": 1.133
+      }
+    },
+    {
+      "shot": "patio-clear-diagnostic",
+      "classification": "DIAGNOSTIC clear-vs-clear; does not relax standard acceptance",
+      "region": "upper-glass-interior",
+      "ratios": {
+        "luminance": 1.0429136081309993,
+        "saturation": 1.0575624412869618
+      },
+      "passed": true,
+      "web": {
+        "srgb": [
+          227.8,
+          216.7,
+          201.1
+        ],
+        "luminance": 0.7084,
+        "saturation": 0.11920546821272975,
+        "warmth": 1.133
+      },
+      "native": {
+        "srgb": [
+          232.1,
+          221.6,
+          203.4
+        ],
+        "luminance": 0.7388,
+        "saturation": 0.12606722597780978,
+        "warmth": 1.142
+      }
+    }
+  ],
+  "forwardPassed": false
+}

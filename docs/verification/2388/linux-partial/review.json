@@ -1,0 +1,55 @@
+{
+  "classification": "PARTIAL; issue2388 stays OPEN; upper glass colour fails unchanged acceptance",
+  "sourceHead": "3a984f53f3a992748f2eda2679f64b7cb6ccd1d7",
+  "savedAssetCommit": "a76705f6",
+  "nativeRun": "20261127T180220879114-1503254",
+  "nativeAndRunnerExit": 0,
+  "outerExit": 0,
+  "seconds": 263.19,
+  "sourceChange": "SurfaceForwardShading only, existing physical colour/opacity/roughness/specular unchanged; other57of58 material fingerprints exact",
+  "wholeOriginalReview": {
+    "reviewer": "Root",
+    "nativeViewsReviewed": [
+      "patio-forward",
+      "patio-clear-diagnostic",
+      "living-room-day",
+      "living-room-evening",
+      "stairs-evening",
+      "upper-floor-evening"
+    ],
+    "webNormalReviewed": true,
+    "fourRegressions": "No new unmapped visible gap; exterior glass contribution differs as intended; existing visual gaps remain open under issues below."
+  },
+  "openVisualDifferences": [
+    2388,
+    2389,
+    2391,
+    2424,
+    2428,
+    2447,
+    2459,
+    2460,
+    2480,
+    2481,
+    2482,
+    2484,
+    2485,
+    2486,
+    2487,
+    2488,
+    2489,
+    2490
+  ],
+  "guards": "All247authored packages and current Generated/export bytes exact read-only during recovery. Prior save/reload/fullcanonical prefix actually passed, but overall priorrun FAILED; reused prefix explicitly, no full-run reclassification.",
+  "diagnosticConclusion": "Upper clear-vs-clear Y1.043/S1.058 passes; with-glass Y1.011/S1.332 fails. Therefore cannot call upper an independent opaque-background bug.",
+  "images": {
+    "unreal-living-room-day.png": "3600559d5de08214046ff8828097e09e096205f2ec1e771a0640467b3481ba57",
+    "unreal-living-room-evening.png": "429efd963f14ee6aae6ed855b0e03920d13072678b47f03c9955a492ec40c072",
+    "unreal-patio-clear-diagnostic.png": "15cdc24d6679c24117649142134490a75f8a83d4b7300336f3f216c13a7dc3aa",
+    "unreal-patio-forward.png": "6bc6ebdbd3a0f108ae1bc3e6de5262e5bea7f6a658cb7e3932b526edba357b55",
+    "unreal-stairs-evening.png": "ec0ec139af5aa7488697b5569cf2654237815e5fb882cf972385730b6227637f",
+    "unreal-upper-floor-evening.png": "f33fcf5a88812f58a59d623c25eca808d0f67bb9fcb269197c7305289a466f48",
+    "web-patio-clear-diagnostic.jpg": "f964661bfd45ae730a086af27c154bad0a7e34f32a1bf82ee4cabc37021d978c",
+    "web-patio-day.jpg": "2809213185dca1b6aa17076983bc019514dbe27bd403b3b82fc0cba59f5f9851"
+  }
+}

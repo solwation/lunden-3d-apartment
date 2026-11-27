@@ -1,0 +1,76 @@
+{
+  "issue": 2388,
+  "lockedBeforeAnyCurrentNativeImage": true,
+  "classification": "three source-glass interior regions selected on actual web original only; never moved after native",
+  "sourceHead": "2be4c8527e123fba8627f8ccdc0015ab49f2ba9c",
+  "sourceFilesBefore": "/home/devcontainers/.local/state/lunden-codex-20261127/2388/web-source-before.json",
+  "sourceUnchangedAfter": true,
+  "web": {
+    "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2388/web/web-patio-day.jpg",
+    "sha256": "2809213185dca1b6aa17076983bc019514dbe27bd403b3b82fc0cba59f5f9851",
+    "metadata": "/home/devcontainers/.local/state/lunden-codex-20261127/2388/web/web-capture.json",
+    "metadataSHA256": "27b79ca657bd03059286b12bd1f23b8da0251dfdcea3a0351b41a3a382d894dd",
+    "actualNodeExit": 0
+  },
+  "canonicalToolSHA256": "0a76bf7e7c43ad2e212f2d884806957030ec6dc08ce4c4d9901641f5f80bd1c6",
+  "nativeCamera": {
+    "xyz": [
+      230,
+      1610,
+      162
+    ],
+    "yaw": -82,
+    "pitch": 12,
+    "width": 640,
+    "height": 360,
+    "horizontalFov": 104.50486755371094
+  },
+  "date": [
+    2026,
+    6,
+    21
+  ],
+  "hour": 14,
+  "weather": "clear",
+  "lamps": "none",
+  "rects": {
+    "door-interior": [
+      0.30625,
+      0.6583333333333333,
+      0.375,
+      0.9
+    ],
+    "window-interior": [
+      0.51875,
+      0.6055555555555555,
+      0.571875,
+      0.8083333333333333
+    ],
+    "upper-glass-interior": [
+      0.3109375,
+      0.05555555555555555,
+      0.4234375,
+      0.175
+    ]
+  },
+  "criteria": {
+    "luminanceRatio": [
+      0.85,
+      1.15
+    ],
+    "meanPixelHSV_SaturationRatio": [
+      0.85,
+      1.15
+    ]
+  },
+  "metricDefinitions": {
+    "luminance": "same canonical mean per-pixel linear-sRGB Rec709 Y, rounded4decimals",
+    "saturation": "mean per-pixel HSV S=(max(sRGB)-min(sRGB))/max(sRGB), zero if black; no hue/exposure fitting"
+  },
+  "wholeImageReview": "actual full originals baseline/forward vs this web plus mapped preexisting issues; numeric crop pass alone not closure",
+  "scopeLimits": [
+    "CPU Linux-low profile, FXAA method1, GI none; no Windows hardware acceptance inferred",
+    "Forward mode is a causal hypothesis until actual images; roomprobe reflection not supplied",
+    "No camera or exposure adjustment"
+  ]
+}
