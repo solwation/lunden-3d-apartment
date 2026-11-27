@@ -47,6 +47,7 @@ DUSK = [(14.0, 0.0, None), (14.0, 0.0, ("C", "TurnOn")), (21.5, 0.0, None), (22.
 # The acceptance date is the shared camera list's (views.json, 21 June 2026): morning, 14:00 and 22:00. The others cover
 # winter, an equinox and the web's summer-time switch days (day of year 87 and 300).
 CASES = [(2026, 6, 21, 7.0), (2026, 6, 21, 14.0), (2026, 6, 21, 22.0),
+         (2026, 12, 24, 14.0),  # #2398: the actual low-sun image acceptance date
          (2026, 12, 21, 9.0), (2026, 12, 21, 12.0), (2026, 12, 21, 15.5),
          (2026, 3, 20, 10.25), (2026, 3, 28, 12.0), (2026, 10, 27, 12.0), (2027, 1, 10, 23.5)]
 
@@ -225,6 +226,7 @@ def sun_and_weather(game, sky):
     sky.set_editor_property("UseClock", False)
     sky.set_editor_property("TimeScale", 0.0)
     sun_light = [c for c in sky.get_components_by_class(u.DirectionalLightComponent) if c.get_name() == "Sun"][0]
+    colours = M["site"]["windowDaylight"]["runtimeColors"]
     for (y, mo, d, h) in CASES:
         for k, v in (("Year", y), ("Month", mo), ("Day", d), ("Hour", h)):
             sky.set_editor_property(k, v)
@@ -232,10 +234,22 @@ def sun_and_weather(game, sky):
         s, m = vec(sky.get_editor_property("SunDirection")), vec(sky.get_editor_property("MoonDirection"))
         light_dir = vec(u.MathLibrary.get_forward_vector(sun_light.get_world_rotation()))
         off = angle([-x for x in s], light_dir)
+        # #2398: inspect the actual component after UpdateSky, not just a stored
+        # Blueprint colour variable. LightColor is sRGB8, so allow its quantization.
+        blend = min(1.0, max(0.0, (s[2] - 0.05) / (0.4 - 0.05)))
+        blend = blend * blend * (3.0 - 2.0 * blend)
+        expected_colour = [a + (b - a) * blend for a, b in zip(colours["sunLow"], colours["sunHigh"])]
+        colour = sun_light.get_light_color()
+        actual_colour = [colour.r, colour.g, colour.b]
+        stored_colour = sun_light.get_editor_property("light_color")
+        if max(abs(a-b) for a, b in zip(actual_colour, expected_colour)) > 0.005:
+            raise RuntimeError(f"Sun component lost the source height-dependent colour at {(y, mo, d, h)}: "
+                               f"{actual_colour}, expected {expected_colour}")
         row = {"year": y, "month": mo, "day": d, "hour": h, "sun": s, "moon": m, "sunLightForward": light_dir,
                "lightVsDirectionDeg": round(off, 5), "sunElevation": sky.get_editor_property("SunElevation"),
                "daylight": sky.get_editor_property("Daylight"), "moonIllumination": sky.get_editor_property("MoonIllumination"),
-               "sunIntensity": sun_light.intensity, **mpc_state(game)}
+               "sunIntensity": sun_light.intensity, "sunLightColorLinear": actual_colour,
+               "sunLightColorSRGB8": [stored_colour.r, stored_colour.g, stored_colour.b], **mpc_state(game)}
         result["sun"].append(row)
         log("sun " + json.dumps(row))
         if off > 0.01:

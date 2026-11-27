@@ -15,7 +15,7 @@
 // lights.js keeps it in a class with the scene, so its five lines are repeated below) with the same hand switches.
 import { readFile } from 'node:fs/promises';
 import * as THREE from 'three';
-import { sunDirection, dayOfYear } from '../../src/daycycle.js';
+import { sunDirection, dayOfYear, dayCycleLightColors } from '../../src/daycycle.js';
 import { moonState } from '../../src/moon.js';
 import { DAY, LIGHTING, CLOUD_SHADOW } from '../../src/config.js';
 import { skyCloudState, stepCloudDrift } from '../../src/cloudshadow.js';
@@ -51,13 +51,22 @@ const moonAt = (y, m, d, h) => moonState(Date.UTC(y, m - 1, d) + (h - (summerTim
 const S = CLOUD_SHADOW.sky, full = CLOUD_SHADOW.thr[1];
 const coverOf = (oc) => (S.clearThr - skyCloudState(oc).thr) / (S.clearThr - full);
 const extra = [];
-const near = (what, got, want) => { const ok = got !== undefined && Math.abs(got - want) <= 1e-3; extra.push({ what, got, want, ok }); };
+const near = (what, got, want, tolerance = 1e-3) => { const ok = got !== undefined && Math.abs(got - want) <= tolerance; extra.push({ what, got, want, ok }); };
+const sourceColours = dayCycleLightColors();
 
 let worst = 0, failed = 0;
 const rows = [];
 for (const c of result.sun ?? []) {
   const doy = dayOfYear(c.year, c.month, c.day);
   const sunWeb = toUnreal(sunDirection(c.hour, doy));
+  if (c.sunLightColorLinear !== undefined) {
+    // The native Sun is separate from its Moon; on the moon branch this Sun is
+    // off. Match the source's solar branch, allowing only sRGB8 light storage.
+    const blend = smooth(0.05, 0.4, sunWeb[2]);
+    const expected = sourceColours.sunLow.map((v, i) => v + (sourceColours.sunHigh[i] - v) * blend);
+    expected.forEach((v, i) => near(`sun ${c.year}-${c.month}-${c.day} ${c.hour} h linear colour[${i}]`,
+      c.sunLightColorLinear?.[i], v, 0.005));
+  }
   const moon = moonState(Date.UTC(c.year, c.month - 1, c.day) + (c.hour - (summerTime(doy) ? 2 : 1)) * 36e5, DAY.lat, DAY.lon);
   const moonWeb = toUnreal(skyDirection(moon.ha / 15 + 12, moon.dec * RAD));
   for (const [body, web, ue] of [['sun', sunWeb, c.sun], ['moon', moonWeb, c.moon]]) {

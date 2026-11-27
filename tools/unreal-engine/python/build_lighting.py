@@ -1162,6 +1162,15 @@ def build_sky(spec, mpc, precip, clouds, tonemap, window_material):
     E.run(SKYDIR.format(p="moon", dec="mdec", ha="mha"))
     E.run(LIGHT)
     env = E.run(EXTRA)
+    # #2398: the same linear source colours and sun-height blend as daycycle.js.
+    # This is the Sun component only; its intensity is zero on the moon branch.
+    colours = spec["windowDaylight"]["runtimeColors"]
+    for i, channel in enumerate("RGB"):
+        E.env["SunLow" + channel] = float(colours["sunLow"][i])
+        E.env["SunHigh" + channel] = float(colours["sunHigh"][i])
+    E.run("sunColourBlend = smooth(0.05, 0.4, sunsinEl)")
+    for channel in "RGB":
+        E.run(f"sunColour{channel} = SunLow{channel} + (SunHigh{channel} - SunLow{channel}) * sunColourBlend")
 
     def vector(prefix):
         node = G.call("KismetMathLibrary:MakeVector")
@@ -1192,6 +1201,13 @@ def build_sky(spec, mpc, precip, clouds, tonemap, window_material):
         connect(G.get(comp), comp, power, "self")
         E.feed(power, "NewIntensity", lux)
         chain.then(power)
+    sun_colour = G.call("KismetMathLibrary:MakeColor", A=1.0)
+    for channel in "RGB":
+        E.feed(sun_colour, channel, env["sunColour" + channel])
+    tint = G.call("LightComponent:SetLightColor", bSRGB=True)
+    connect(G.get("Sun"), "Sun", tint, "self")
+    connect(sun_colour, "ReturnValue", tint, "NewLightColor")
+    chain.then(tint)
     weight = G.place(G.g.add_set_member_variable_node("BlendWeight", "/Script/Engine.PostProcessComponent"))
     connect(G.get("Ambient"), "Ambient", weight, "self")
     E.feed(weight, "BlendWeight", (E.k("Divide_DoubleDouble", A=env["fill"], B=env["AmbientRef"]), "ReturnValue"))
