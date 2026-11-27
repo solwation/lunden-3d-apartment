@@ -25,6 +25,25 @@ SETTINGS = Path.home() / ".config/lunden-unreal/linux.json"
 STOP_GRACE_SECONDS = 10
 
 
+class RunCancelled(Exception):
+    pass
+
+
+@contextlib.contextmanager
+def cancellation_signals():
+    # Record cancellation rather than exiting between editor completion and the
+    # durable result. Polling below observes it without interrupting cleanup.
+    received = []
+    previous = {}
+    for sig in (signal.SIGTERM, signal.SIGINT):
+        previous[sig] = signal.signal(sig, lambda signum, frame: received.append(signum))
+    try:
+        yield received
+    finally:
+        for sig, handler in previous.items():
+            signal.signal(sig, handler)
+
+
 def engine_version(engine):
     data = json.loads((engine / "Engine/Build/Build.version").read_text())
     return ".".join(str(data[k]) for k in ("MajorVersion", "MinorVersion", "PatchVersion"))
@@ -42,6 +61,12 @@ def automation_passed(report):
     result = json.loads(report.read_text(encoding="utf-8-sig")) if report.is_file() else {}
     return (result.get("succeeded", 0) + result.get("succeededWithWarnings", 0) > 0
             and result.get("failed") == 0 and result.get("notRun") == 0)
+
+
+def write_result(run, result):
+    temporary = run / "result.json.tmp"
+    temporary.write_text(json.dumps(result, indent=2) + "\n")
+    temporary.replace(run / "result.json")
 
 
 @contextlib.contextmanager
@@ -88,25 +113,53 @@ def child_pids():
     return [int(pid) for pid in Path(f"/proc/self/task/{os.getpid()}/children").read_text().split()]
 
 
-def stop_children(process):
+def owner_managed_service(pid, process):
+    # Parentage alone does not imply exclusive ownership of a shared daemon.
+    # Recognize the actual engine/installed executables and this editor's explicit
+    # owner/sponsor contract, never a process name or a global process search.
+    try:
+        executable = Path(f"/proc/{pid}/exe").resolve(strict=True)
+        args = Path(f"/proc/{pid}/cmdline").read_bytes().decode().split("\0")
+    except (OSError, UnicodeError):
+        return False
+    binaries = Path(process.args[0]).resolve().parent
+    if executable == (binaries / "UnrealTraceServer").resolve():
+        return "fork" in args and f"--sponsor={process.pid}" in args
+    zen = {binaries / "zenserver", Path.home() / ".config/Epic/UnrealEngine/Common/Zen/Install/zenserver"}
+    if executable in {path.resolve() for path in zen} and "--detach" in args:
+        return any(a == "--owner-pid" and b == str(process.pid) for a, b in zip(args, args[1:]))
+    return False
+
+
+def stop_children(process, protected=()):
     # Unreal starts shader workers in separate sessions. Adopted descendants must
-    # therefore be cleaned by parentage as well as by the editor's process group.
-    for sig in (signal.SIGTERM, signal.SIGKILL):
+    # therefore be cleaned by parentage rather than process-group membership.
+    # Give the editor its normal shutdown, then allow owner/sponsor-managed
+    # services to exit naturally. Never run an adopted orphan's SIGTERM handler:
+    # it may forward the signal to getppid(), which now names this supervisor.
+    protected = set(protected)
+    if process.poll() is None:
         try:
-            os.killpg(process.pid, sig)
+            process.send_signal(signal.SIGTERM)
         except ProcessLookupError:
             pass
+    for kill in (False, True):
         deadline = time.monotonic() + STOP_GRACE_SECONDS
         sent = set()
         while True:
             process.poll()  # Only Popen reaps the editor, preserving its exit code.
-            children = child_pids()
+            children = set(child_pids()) - protected
+            for pid in list(children):
+                if owner_managed_service(pid, process):
+                    protected.add(pid)
+                    children.remove(pid)
+                    print(f"Leaving owner/sponsor-managed service {pid} to its own lifetime", flush=True)
             if not children:
                 return
             for pid in children:
-                if pid not in sent:
+                if kill and pid not in sent:
                     try:
-                        os.kill(pid, sig)
+                        os.kill(pid, signal.SIGKILL)
                     except ProcessLookupError:
                         pass
                     sent.add(pid)
@@ -121,7 +174,7 @@ def stop_children(process):
     raise RuntimeError("Invocation children did not exit after SIGKILL")
 
 
-def run_process(command, env, timeout):
+def run_process(command, env, timeout, cancelled=()):
     # This single-invocation CLI owns no unrelated subprocesses. Become a Linux
     # child subreaper before launch, so detached workers return to us on editor exit.
     libc = ctypes.CDLL(None, use_errno=True)
@@ -129,11 +182,24 @@ def run_process(command, env, timeout):
     if libc.prctl(37, ctypes.byref(previous), 0, 0, 0) or libc.prctl(36, 1, 0, 0, 0):
         raise OSError(ctypes.get_errno(), "Cannot supervise engine descendants")
     try:
+        protected = child_pids()
+        if cancelled:
+            raise RunCancelled()
         process = subprocess.Popen(command, cwd=ROOT, env=env, start_new_session=True)
         try:
-            return process.wait(timeout=timeout)
+            deadline = time.monotonic() + timeout
+            while True:
+                if cancelled:
+                    raise RunCancelled()
+                remaining = deadline - time.monotonic()
+                if remaining <= 0:
+                    raise subprocess.TimeoutExpired(command, timeout)
+                try:
+                    return process.wait(timeout=min(0.1, remaining))
+                except subprocess.TimeoutExpired:
+                    pass
         finally:
-            stop_children(process)
+            stop_children(process, protected)
             process.wait()
     finally:
         if libc.prctl(36, previous.value, 0, 0, 0):
@@ -212,25 +278,38 @@ def main(argv=None):
         env["LD_LIBRARY_PATH"] = settings["libraryPath"] + ":" + env.get("LD_LIBRARY_PATH", "")
     print(shlex.join(command), flush=True)
     start = time.monotonic()
-    timed_out = False
-    with editor_slot(args.owner):
-        try:
-            code = run_process(command, env, args.timeout)
-        except subprocess.TimeoutExpired:
-            code, timed_out = 124, True
-    content = log.read_text(errors="replace") if log.is_file() else ""
-    ok = code == 0 and bool(content) and not re.search(r"LogPython: Error:|Traceback \(most recent call last\)", content)
-    if args.mode == "tests":
-        ok = ok and automation_passed(run / "automation/index.json")
     result = {"engine": actual, "profile": "linux-low" if args.render else "nullrhi",
-              "exitCode": code, "timedOut": timed_out, "passed": bool(ok), "seconds": round(time.monotonic() - start, 2),
+              "exitCode": None, "timedOut": False, "passed": False, "completed": False,
               "log": str(log), "command": command,
               "engineIniSha256": hashlib.sha256(ini.read_bytes()).hexdigest(),
               "vulkanIcd": env.get("VK_DRIVER_FILES") if args.render else None,
               "revision": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()}
-    (run / "result.json").write_text(json.dumps(result, indent=2) + "\n")
+    # A hard kill cannot run Python's finally blocks. Leave an explicit incomplete,
+    # failed record before launching, then replace it atomically on handled exits.
+    write_result(run, result)
+    code, ok, timed_out, error = 1, False, False, None
+    with cancellation_signals() as cancelled:
+        try:
+            with editor_slot(args.owner):
+                code = run_process(command, env, args.timeout, cancelled=cancelled)
+            content = log.read_text(errors="replace") if log.is_file() else ""
+            ok = code == 0 and bool(content) and not re.search(r"LogPython: Error:|Traceback \(most recent call last\)", content)
+            if args.mode == "tests":
+                ok = ok and automation_passed(run / "automation/index.json")
+        except subprocess.TimeoutExpired:
+            code, timed_out = 124, True
+        except (RunCancelled, OSError, ValueError, RuntimeError, subprocess.SubprocessError) as failure:
+            error = str(failure) or type(failure).__name__
+            code, ok = 1, False
+        finally:
+            if cancelled:
+                code, ok = 128 + cancelled[0], False
+            result.update(exitCode=code, timedOut=timed_out, passed=bool(ok), completed=True,
+                          signal=cancelled[0] if cancelled else None, error=error,
+                          seconds=round(time.monotonic() - start, 2))
+            write_result(run, result)
     print(json.dumps(result, indent=2))
-    return 0 if ok else 1
+    return code if cancelled else (0 if ok else 1)
 
 
 if __name__ == "__main__":

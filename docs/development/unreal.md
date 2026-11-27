@@ -389,7 +389,15 @@ Per-run logs, the effective INI, Automation report and `result.json` are under
 a Python traceback fails. Automation additionally needs a report with at least one
 pass, no failures and no unrun tests. Timeouts terminate this invocation's process
 tree, including detached shader workers: the Linux runner acts as their child
-subreaper. On WSL, the runner takes the same PC-wide editor slots and checks free Windows
+subreaper. It lets the editor shut down normally, gives orphaned workers a short
+exit grace, then kills/reaps remaining workers without invoking orphan signal handlers.
+Existing children are preserved. Trace/Zen services are left to their own owner/sponsor
+lifetime only when their actual executable path and this editor's owner/sponsor arguments
+match; process names alone grant no exception. The runner records an incomplete failed
+`result.json` before launch and atomically replaces it after completion, timeout, cleanup
+failure or SIGTERM/SIGINT cancellation. Cancellation remains failed with exit 143/130;
+an uncatchable hard kill leaves `completed: false`, never a successful result (#2471).
+On WSL, the runner takes the same PC-wide editor slots and checks free Windows
 memory immediately before launch, as required by the orchestra policy.
 The default timeout is 300 seconds; first-time shader compilation can exceed ten
 minutes on this host, so the first rendered probe above allows 1,800 seconds.

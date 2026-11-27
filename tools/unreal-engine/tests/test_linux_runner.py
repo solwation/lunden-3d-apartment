@@ -3,7 +3,9 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import shutil
 import signal
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -43,7 +45,7 @@ class LinuxRunnerTests(unittest.TestCase):
         self.arguments = ["--engine-root", str(self.engine), "--data-dir", str(self.root / "data")]
 
     def invoke(self, mode, *, exit_code=0, log="Normal log", report=None):
-        def engine_process(command, env, timeout):
+        def engine_process(command, env, timeout, **kwargs):
             path = Path(next(a.split("=", 1)[1] for a in command if a.startswith("-abslog=")))
             if log is not None:
                 path.write_text(log)
@@ -94,6 +96,160 @@ class LinuxRunnerTests(unittest.TestCase):
                 runner.time.sleep(0.01)
             else:
                 self.fail("Worker survived editor exit and process-group cleanup")
+        finally:
+            if pid_file.exists():
+                try:
+                    os.kill(int(pid_file.read_text()), signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
+
+    def supervisor(self, editor_code, *, timeout=5):
+        self.editor.write_text("#!" + sys.executable + "\n" + editor_code)
+        self.editor.chmod(0o755)
+        program = self.root / "supervisor.py"
+        program.write_text(
+            "import importlib.util,sys\nfrom pathlib import Path\n"
+            "from types import SimpleNamespace\nfrom unittest.mock import patch\n"
+            f"s=importlib.util.spec_from_file_location('runner',{str(Path(runner.__file__).resolve())!r})\n"
+            "r=importlib.util.module_from_spec(s);s.loader.exec_module(r)\n"
+            f"r.PROJECT=Path({str(self.project)!r});r.SETTINGS=Path({str(self.root / 'absent.json')!r})\n"
+            "r.STOP_GRACE_SECONDS=.1\n"
+            f"with patch.object(r.Path,'home',return_value=Path({str(self.root)!r})), "
+            "patch.object(r.os,'uname',return_value=SimpleNamespace(release='linux')):\n"
+            f" sys.exit(r.main({self.arguments + ['--timeout', str(timeout), 'python', str(self.script)]!r}))\n")
+        return subprocess.Popen([sys.executable, str(program)], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+    def test_adopted_worker_cannot_forward_cleanup_term_to_supervisor(self):
+        # The old cleanup reproducibly died with -SIGTERM before result.json.
+        child = ("import os,signal,time;"
+                 "signal.signal(signal.SIGTERM,lambda *_: (os.kill(os.getppid(),signal.SIGTERM),exit(0)));"
+                 "print('ready',flush=True);time.sleep(30)")
+        editor = ("import subprocess,sys\nfrom pathlib import Path\n"
+                  "log=Path(next(a.split('=',1)[1] for a in sys.argv if a.startswith('-abslog=')))\n"
+                  "log.write_text('Commandlet finished execution (result 0)')\n"
+                  f"c=subprocess.Popen([sys.executable,'-c',{child!r}],start_new_session=True,stdout=subprocess.PIPE,text=True)\n"
+                  "assert c.stdout.readline().strip()=='ready'\n")
+        p = self.supervisor(editor)
+        stdout, stderr = p.communicate(timeout=10)
+        self.assertEqual(p.returncode, 0, (stdout, stderr))
+        result = json.loads(next((self.root / "data/runs").glob("*/result.json")).read_text())
+        self.assertTrue(result["completed"])
+        self.assertTrue(result["passed"])
+        self.assertEqual(result["exitCode"], 0)
+
+    def test_external_cancellation_records_failure_and_releases_slot(self):
+        pid_file = self.root / "editor.pid"
+        editor = ("import os,signal,sys,time\nfrom pathlib import Path\n"
+                  "signal.signal(signal.SIGTERM,signal.SIG_IGN)\n"
+                  "Path(next(a.split('=',1)[1] for a in sys.argv if a.startswith('-abslog='))).write_text('Normal log')\n"
+                  f"Path({str(pid_file)!r}).write_text(str(os.getpid()))\n"
+                  "time.sleep(30)\n")
+        for sig in (signal.SIGTERM, signal.SIGINT):
+            with self.subTest(signal=sig):
+                pid_file.unlink(missing_ok=True)
+                p = self.supervisor(editor)
+                try:
+                    deadline = runner.time.monotonic() + 5
+                    while not pid_file.exists():
+                        self.assertLess(runner.time.monotonic(), deadline)
+                        runner.time.sleep(.01)
+                    editor_pid = int(pid_file.read_text())
+                    pending = json.loads(max((self.root / "data/runs").glob("*/result.json")).read_text())
+                    self.assertFalse(pending["completed"])
+                    self.assertFalse(pending["passed"])
+                    os.kill(p.pid, sig)
+                    stdout, stderr = p.communicate(timeout=10)
+                    self.assertEqual(p.returncode, 128 + sig, (stdout, stderr))
+                    results = [json.loads(path.read_text()) for path in (self.root / "data/runs").glob("*/result.json")]
+                    result = next(r for r in results if r.get("signal") == sig)
+                    self.assertTrue(result["completed"])
+                    self.assertFalse(result["passed"])
+                    self.assertEqual(result["exitCode"], 128 + sig)
+                    self.assertFalse(Path(f"/proc/{editor_pid}").exists())
+                    self.assertFalse(list((self.root / ".local/state/lunden-editor-slots").glob("slot-*")))
+                finally:
+                    if p.poll() is None:
+                        p.kill()
+                        p.communicate()
+
+    def test_cleanup_failure_still_records_failed_result(self):
+        with patch.object(runner, "editor_slot", return_value=runner.contextlib.nullcontext()), \
+                patch.object(runner, "run_process", side_effect=RuntimeError("cleanup failed")):
+            self.assertEqual(runner.main(self.arguments + ["python", str(self.script)]), 1)
+        result = json.loads(next((self.root / "data/runs").glob("*/result.json")).read_text())
+        self.assertTrue(result["completed"])
+        self.assertFalse(result["passed"])
+        self.assertEqual(result["error"], "cleanup failed")
+
+    def test_preexisting_service_is_not_an_invocation_child(self):
+        foreign = subprocess.Popen([sys.executable, "-c", "import time;time.sleep(30)"], start_new_session=True)
+        try:
+            self.assertEqual(runner.run_process([sys.executable, "-c", "pass"], os.environ.copy(), 5), 0)
+            self.assertIsNone(foreign.poll())
+        finally:
+            foreign.kill()
+            foreign.wait()
+
+    def test_owner_managed_daemon_uses_identity_and_sponsor_contract(self):
+        # A real detached executable at the exact engine service path, not a name
+        # match. Its owner/sponsor is responsible for its shared-service lifetime.
+        service = self.editor.with_name("UnrealTraceServer")
+        shutil.copy2(sys.executable, service)
+        pid_file = self.root / "daemon.pid"
+        daemon = f"import os,time;from pathlib import Path;Path({str(pid_file)!r}).write_text(str(os.getpid()));time.sleep(30)"
+        editor = ("import os,subprocess,sys,time\nfrom pathlib import Path\n"
+                  f"subprocess.Popen([{str(service)!r},'-c',{daemon!r},'fork','--sponsor='+str(os.getpid())],start_new_session=True,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)\n"
+                  f"p=Path({str(pid_file)!r})\nwhile not p.exists():time.sleep(.01)\n")
+        self.editor.write_text("#!" + sys.executable + "\n" + editor)
+        self.editor.chmod(0o755)
+        try:
+            with patch.object(runner, "STOP_GRACE_SECONDS", .1):
+                self.assertEqual(runner.run_process([str(self.editor)], os.environ.copy(), 5), 0)
+            self.assertTrue(Path(f"/proc/{int(pid_file.read_text())}").exists())
+        finally:
+            if pid_file.exists():
+                pid = int(pid_file.read_text())
+                try:
+                    os.kill(pid, signal.SIGKILL)
+                    os.waitpid(pid, 0)
+                except ProcessLookupError:
+                    pass
+
+    def test_daemon_name_without_matching_sponsor_is_cleaned(self):
+        service = self.editor.with_name("UnrealTraceServer")
+        shutil.copy2(sys.executable, service)
+        pid_file = self.root / "daemon.pid"
+        daemon = f"import os,time;from pathlib import Path;Path({str(pid_file)!r}).write_text(str(os.getpid()));time.sleep(30)"
+        editor = ("import subprocess,time\nfrom pathlib import Path\n"
+                  f"subprocess.Popen([{str(service)!r},'-c',{daemon!r},'fork','--sponsor=0'],start_new_session=True)\n"
+                  f"p=Path({str(pid_file)!r})\nwhile not p.exists():time.sleep(.01)\n")
+        self.editor.write_text("#!" + sys.executable + "\n" + editor)
+        self.editor.chmod(0o755)
+        try:
+            with patch.object(runner, "STOP_GRACE_SECONDS", .1):
+                self.assertEqual(runner.run_process([str(self.editor)], os.environ.copy(), 5), 0)
+            self.assertFalse(Path(f"/proc/{int(pid_file.read_text())}").exists())
+        finally:
+            if pid_file.exists():
+                try:
+                    os.kill(int(pid_file.read_text()), signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
+
+    def test_daemon_name_and_sponsor_without_engine_identity_is_cleaned(self):
+        service = self.root / "UnrealTraceServer"  # Outside the engine's Binaries directory.
+        shutil.copy2(sys.executable, service)
+        pid_file = self.root / "daemon.pid"
+        daemon = f"import os,time;from pathlib import Path;Path({str(pid_file)!r}).write_text(str(os.getpid()));time.sleep(30)"
+        editor = ("import os,subprocess,time\nfrom pathlib import Path\n"
+                  f"subprocess.Popen([{str(service)!r},'-c',{daemon!r},'fork','--sponsor='+str(os.getpid())],start_new_session=True)\n"
+                  f"p=Path({str(pid_file)!r})\nwhile not p.exists():time.sleep(.01)\n")
+        self.editor.write_text("#!" + sys.executable + "\n" + editor)
+        self.editor.chmod(0o755)
+        try:
+            with patch.object(runner, "STOP_GRACE_SECONDS", .1):
+                self.assertEqual(runner.run_process([str(self.editor)], os.environ.copy(), 5), 0)
+            self.assertFalse(Path(f"/proc/{int(pid_file.read_text())}").exists())
         finally:
             if pid_file.exists():
                 try:
