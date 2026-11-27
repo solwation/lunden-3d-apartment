@@ -1619,7 +1619,8 @@ the export and the pictures section of `notices.mjs`.
   must remain within 0.8–1.25, with actual same-hue review of the five families, the existing curtain/cabinet hue
   guards, the cabinet's three spotlight fields and whole-image floor/ceiling inspection. Keep all raw originals,
   source/export bindings, actual MID/controller values and process/log results. A Python commandlet result 0
-  does not override a Blueprint compiler error or nonzero native/wrapper exit. Current Linux work uses CPU
+  does not override a Blueprint compiler error or nonzero native exit. An interrupted outer wrapper such as
+  #2473 is reported separately from the durable native result; never infer wrapper success. Current Linux work uses CPU
   Vulkan, 640 × 360, conventional shadows 3/1024/three cascades, Lumen off and actual FXAA method 1.
   `r.PostProcessAAQuality` is unavailable to the queried getter: its returned zero is a fallback, not a measured
   quality setting. Windows and the full rendering profile remain unverified; no final #2322 colour pass is implied
