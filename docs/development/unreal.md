@@ -1582,6 +1582,10 @@ the export and the pictures section of `notices.mjs`.
   light beyond the pool. The mask stays linear (`sRGB=false`), preserving its original soft falloff. The controller
   reads the existing source lamp's `K` times `MPC_LundenWeather.PowerAvailable`; capture helpers explicitly settle
   it in editor worlds that do not tick. It never changes the source lamp's intensity or the imported rug material.
+  The UE 5.8.4 Linux NullRHI run at `27848bf9` passed the real zone import, builder/API/Blueprint execution,
+  unchanged second build, composed-world geometry/material/fade checks and the incremental component-drift
+  regression. All 246 authored LFS assets and 2,621 protected prerequisite files remained byte-identical and
+  read-only. These checks establish the native contract, not the rendered appearance.
   The coplanar strategy needs real near/far and table/sofa occlusion captures on the composed `L_Lunden` before
   visual acceptance; source geometry/math tests cannot establish stable native depth. The source blends its
   unlit contribution after output conversion while UE's additive material contributes in scene-linear space,

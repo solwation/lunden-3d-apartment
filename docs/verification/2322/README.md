@@ -112,10 +112,21 @@ utanför mattan och innanför mattan men utanför fältet täcker både tändnin
 `check-export.mjs` validerar 3 filer, 2 819 unika noder och 316 källfiler. Endast källkontraktet är därmed verifierat.
 Enbart `--zones l1007` stoppades i en befintlig kontroll för uteplatsglas; det separata exportfelet följs i #2468.
 
-Native builder, Blueprint och `test_rug_floor_pool.py` behöver fortfarande köras i den sammansatta `L_Lunden`.
-Den koplanära strategin måste därefter prövas med när-/fjärrkamera och bordets/soffans ocklusion för att upptäcka
+Den riktiga Linux/UE 5.8.4 NullRHI-körningen på `27848bf932e135ebee36b80dbb07dbd487100be5` passerade på 341,09 s
+med exit 0 och inga Pythonfel. Exporten gjordes rent på `cb303a48`, ES-källhash
+`1957835dab5f3a2e6d49ecdc812c476fe3a648493bc1eaeb5b6801dceb34617e`; reviewerfixen i `27848bf9` ändrar enbart
+Python-builder/prov, så exporten är fortfarande aktuell. Körningen använde verklig import för lägenhet/uteplats,
+befintliga interaktionsklassernas kontroll, en ny L1007-interaktionskopia och ordinarie gardin-/skåpsbuilders.
+Den nya mattbuilderns API/Blueprint gick igenom; nästa körning rapporterade `changed=False`.
+`test_rug_floor_pool.py` gick sedan igenom i sammansatta `L_Lunden`: verklig originalmottagare, koplanära koordinater,
+linjär mask, lampans K/ström/tändning/släckning samt regression för ändrad sorteringsordning, kollision och skugga.
+De 246 versionerade LFS-paketen var kopierade till en isolerad native-checkout, aldrig hårdlänkade. Alla 2 621
+skyddade paket/prereq, inklusive Lighting/Seasons/Vegetation och övriga interaktionsnivåer, var SHA-exakta och
+skrivskyddade före och efter provet. Källans ordinarie releasegrind eller sync-stämplar förfalskades inte.
+
+Den koplanära strategin måste fortfarande prövas med när-/fjärrkamera och bordets/soffans ocklusion för att upptäcka
 djupflimmer. Webbens output-blandning och Unreals scene-linear-blandning är olika; källtestet bevisar därför inte
 slutlig native luminans eller kulör. Bilder på samma dag-/kvällskameror, med dokumenterad exponering och samma
-renderprofil, återstår för matta och samtliga övriga #2322-mätfält. Surrounding golv-/takfält ingår inte i denna
+renderprofil, återstår för matta och samtliga övriga #2322-mätfält. Omgivande golv-/takfält ingår inte i denna
 mattslice. Flyttade möbler och alternativa mattmaterial hör till den öppna portningen #2339. #2322 hålls öppet;
 inga nya native resultatbilder eller färgpass påstås här.
