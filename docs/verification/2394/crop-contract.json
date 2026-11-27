@@ -1,0 +1,745 @@
+{
+  "issue": "solwation/lunden-3d-apartment#2394",
+  "status": "Predeclared preliminary readable crop contract only; no native images inspected and no acceptance result.",
+  "declaredAtUtc": "2026-11-27T11:17:32.591444+00:00",
+  "selectedFrom": "Only the four existing original web JPEGs; no browser, editor, repo edit or image retouch.",
+  "referenceDimensions": [
+    640,
+    360
+  ],
+  "coordinateConvention": "Half-open [x0,y0,x1,y1] pixel rectangles. Normalized values are exact x/640,y/360. At any same-aspect frame: X=round(x0norm*width),Y=round(y0norm*height),W=round((x1norm-x0norm)*width),H=round((y1norm-y0norm)*height), matching crop-stats.cjs. Reject changed camera/aspect; do not relocate fields from native appearance.",
+  "targetRepeatDimensions": [
+    1440,
+    810
+  ],
+  "materialGate": {
+    "views": [
+      "fruit-bowl",
+      "basketball"
+    ],
+    "materials": [
+      "floor",
+      "sofa",
+      "wall"
+    ],
+    "statistic": "Arithmetic mean of decoded display sRGB R,G,B bytes, each channel independently; record linear luminance separately if useful, without substituting it for this per-RGB gate.",
+    "relativeTolerance": 0.1,
+    "formula": "For each rgb-10-percent crop and channel: abs(nativeMean/webMean - 1) <= 0.10. Keep every predeclared crop, do not average passing/failing crops together. Invisible materials are N/A, not fabricated results."
+  },
+  "profileLimit": "Current LinuxLow shadows/GI-off baseline/after runs can diagnose this prototype. They do not establish full Windows-profile acceptance or permit closing #2394 without its remaining profile evidence.",
+  "views": {
+    "fruit-bowl": {
+      "role": "daylight-material-acceptance",
+      "visibility": {
+        "floor": "visible",
+        "sofa": "visible",
+        "wall": "visible"
+      },
+      "crops": [
+        {
+          "id": "floor-right-mid",
+          "material": "floor",
+          "xyxyPx640": [
+            510,
+            248,
+            530,
+            260
+          ],
+          "xyxyNormalized": [
+            0.796875,
+            0.6888888888888889,
+            0.828125,
+            0.7222222222222222
+          ],
+          "purpose": "rgb-10-percent",
+          "selectionNotes": "Exposed oak plank interior right of the rug, below the sharp rear sun bands; no pot, door edge or rug boundary."
+        },
+        {
+          "id": "floor-right-front",
+          "material": "floor",
+          "xyxyPx640": [
+            558,
+            314,
+            578,
+            326
+          ],
+          "xyxyNormalized": [
+            0.871875,
+            0.8722222222222222,
+            0.903125,
+            0.9055555555555556
+          ],
+          "purpose": "rgb-10-percent",
+          "selectionNotes": "Front-right oak plank interior, away from rug and frame; wood grain belongs to the sampled material."
+        },
+        {
+          "id": "sofa-chaise-seat",
+          "material": "sofa",
+          "xyxyPx640": [
+            66,
+            210,
+            90,
+            222
+          ],
+          "xyxyNormalized": [
+            0.103125,
+            0.5833333333333334,
+            0.140625,
+            0.6166666666666667
+          ],
+          "purpose": "rgb-10-percent",
+          "selectionNotes": "Plain sage chaise seat below the folded purple textile and above the seat front edge."
+        },
+        {
+          "id": "sofa-main-seat",
+          "material": "sofa",
+          "xyxyPx640": [
+            201,
+            150,
+            223,
+            160
+          ],
+          "xyxyNormalized": [
+            0.3140625,
+            0.4166666666666667,
+            0.3484375,
+            0.4444444444444444
+          ],
+          "purpose": "rgb-10-percent",
+          "selectionNotes": "Plain left main seat interior, below the back cushions and away from the central seam and sharp sunlight boundary."
+        },
+        {
+          "id": "wall-left-upper",
+          "material": "wall",
+          "xyxyPx640": [
+            16,
+            78,
+            34,
+            94
+          ],
+          "xyxyNormalized": [
+            0.025,
+            0.21666666666666667,
+            0.053125,
+            0.2611111111111111
+          ],
+          "purpose": "rgb-10-percent",
+          "selectionNotes": "Cream left wall below the picture frame and above the sofa; no artwork or textile."
+        },
+        {
+          "id": "wall-left-lower",
+          "material": "wall",
+          "xyxyPx640": [
+            14,
+            110,
+            30,
+            122
+          ],
+          "xyxyNormalized": [
+            0.021875,
+            0.3055555555555556,
+            0.046875,
+            0.3388888888888889
+          ],
+          "purpose": "rgb-10-percent",
+          "selectionNotes": "Second bare left-wall interior, clear of the sofa silhouette."
+        }
+      ],
+      "excluded": "Rug, curtains, cushions, coffee table, fruit bowl and localized sunlight edges are outside these three-material colour crops.",
+      "webFile": "/home/devcontainers/.local/state/lunden-codex-20261127/2394/web/fruit-bowl.jpg",
+      "webSha256": "820432b937241084d335d7fc018e5fb662a749ef1e9b56afbeceb74a8b7d7357",
+      "sourceBaselineMeanSrgb255": {
+        "floor-right-mid": [
+          195.575,
+          174.575,
+          156.14166666666668
+        ],
+        "floor-right-front": [
+          191.39583333333334,
+          171.49583333333334,
+          154.92916666666667
+        ],
+        "sofa-chaise-seat": [
+          162.15972222222223,
+          172.15972222222223,
+          145.82638888888889
+        ],
+        "sofa-main-seat": [
+          177.6681818181818,
+          188.6681818181818,
+          157.19545454545454
+        ],
+        "wall-left-upper": [
+          245.58333333333334,
+          237.51388888888889,
+          225.73611111111111
+        ],
+        "wall-left-lower": [
+          245.0,
+          237.0,
+          225.95833333333334
+        ]
+      }
+    },
+    "basketball": {
+      "role": "daylight-material-acceptance-and-halo",
+      "visibility": {
+        "floor": "not-visible",
+        "sofa": "not-visible",
+        "wall": "visible"
+      },
+      "crops": [
+        {
+          "id": "wall-left-of-ball",
+          "material": "wall",
+          "xyxyPx640": [
+            250,
+            140,
+            270,
+            156
+          ],
+          "xyxyNormalized": [
+            0.390625,
+            0.3888888888888889,
+            0.421875,
+            0.43333333333333335
+          ],
+          "purpose": "rgb-10-percent",
+          "selectionNotes": "Bare cream wall between the MOONRUSH poster and ball, outside the silhouette/near-wall halo probes."
+        },
+        {
+          "id": "wall-right-of-ball",
+          "material": "wall",
+          "xyxyPx640": [
+            366,
+            140,
+            386,
+            156
+          ],
+          "xyxyNormalized": [
+            0.571875,
+            0.3888888888888889,
+            0.603125,
+            0.43333333333333335
+          ],
+          "purpose": "rgb-10-percent",
+          "selectionNotes": "Bare cream wall between the ball and NOVA9 poster, clear of poster edges."
+        },
+        {
+          "id": "wall-below-ball",
+          "material": "wall",
+          "xyxyPx640": [
+            306,
+            216,
+            326,
+            232
+          ],
+          "xyxyNormalized": [
+            0.478125,
+            0.6,
+            0.509375,
+            0.6444444444444445
+          ],
+          "purpose": "rgb-10-percent",
+          "selectionNotes": "Bare cream wall below the ball holder and above bed/cushions."
+        },
+        {
+          "id": "ball-upper-orange",
+          "material": "basketball",
+          "xyxyPx640": [
+            313,
+            162,
+            321,
+            168
+          ],
+          "xyxyNormalized": [
+            0.4890625,
+            0.45,
+            0.5015625,
+            0.4666666666666667
+          ],
+          "purpose": "diagnostic-only",
+          "selectionNotes": "Small orange ball interior between black seams; no new ball-colour acceptance threshold."
+        },
+        {
+          "id": "ball-lower-orange",
+          "material": "basketball",
+          "xyxyPx640": [
+            316,
+            176,
+            326,
+            181
+          ],
+          "xyxyNormalized": [
+            0.49375,
+            0.4888888888888889,
+            0.509375,
+            0.5027777777777778
+          ],
+          "purpose": "diagnostic-only",
+          "selectionNotes": "Second orange interior below the horizontal seam and above the lower curved seam."
+        }
+      ],
+      "excluded": "No floor or sofa surface is visible in this frame. Bottom objects are bed/cushions, not substitute sofa samples. Posters, curtain, cushions and holder are excluded from wall colour fields.",
+      "webFile": "/home/devcontainers/.local/state/lunden-codex-20261127/2394/web/basketball.jpg",
+      "webSha256": "3b3fbdb027025ec06e05bbf1beae56d3c1e660511f4d870d4d2857364731d697",
+      "sourceBaselineMeanSrgb255": {
+        "wall-left-of-ball": [
+          248.484375,
+          236.559375,
+          222.534375
+        ],
+        "wall-right-of-ball": [
+          243.9375,
+          234.0125,
+          221.975
+        ],
+        "wall-below-ball": [
+          247.15,
+          235.0,
+          219.0
+        ],
+        "ball-upper-orange": [
+          249.41666666666666,
+          131.39583333333334,
+          82.79166666666667
+        ],
+        "ball-lower-orange": [
+          242.76,
+          114.58,
+          47.22
+        ]
+      }
+    },
+    "start": {
+      "role": "regression-control-only",
+      "visibility": {
+        "floor": "exterior-pavement-only",
+        "sofa": "not-visible",
+        "wall": "exterior-brick-only"
+      },
+      "crops": [
+        {
+          "id": "street-pavement",
+          "material": "exterior-asphalt",
+          "xyxyPx640": [
+            285,
+            303,
+            309,
+            319
+          ],
+          "xyxyNormalized": [
+            0.4453125,
+            0.8416666666666667,
+            0.4828125,
+            0.8861111111111111
+          ],
+          "purpose": "diagnostic-regression-only",
+          "selectionNotes": "Uniform street interior clear of painted lines and curved shadow edge."
+        },
+        {
+          "id": "rotunda-brick",
+          "material": "exterior-brick",
+          "xyxyPx640": [
+            113,
+            132,
+            131,
+            150
+          ],
+          "xyxyNormalized": [
+            0.1765625,
+            0.36666666666666664,
+            0.2046875,
+            0.4166666666666667
+          ],
+          "purpose": "diagnostic-regression-only",
+          "selectionNotes": "Brick interior on the stair rotunda, without window/edge/foliage."
+        },
+        {
+          "id": "clear-sky",
+          "material": "sky",
+          "xyxyPx640": [
+            30,
+            20,
+            54,
+            36
+          ],
+          "xyxyNormalized": [
+            0.046875,
+            0.05555555555555555,
+            0.084375,
+            0.1
+          ],
+          "purpose": "diagnostic-regression-only",
+          "selectionNotes": "Clear blue sky above the rotunda, away from roof or vegetation."
+        }
+      ],
+      "excluded": "Exterior control does not replace the two indoor daylight acceptance views; no new independent numeric tolerance is introduced.",
+      "webFile": "/home/devcontainers/.local/state/lunden-codex-20261127/2394/web/start.jpg",
+      "webSha256": "69e1f1d0cc81fa682b405aab0d00120a22fb87311d55851403ca13a4992b5431",
+      "sourceBaselineMeanSrgb255": {
+        "street-pavement": [
+          132.94270833333334,
+          131.94270833333334,
+          127.94270833333333
+        ],
+        "rotunda-brick": [
+          123.07098765432099,
+          71.03703703703704,
+          56.410493827160494
+        ],
+        "clear-sky": [
+          147.52864583333334,
+          180.7890625,
+          221.14322916666666
+        ]
+      }
+    },
+    "living-room-evening": {
+      "role": "regression-control-only",
+      "visibility": {
+        "floor": "visible",
+        "sofa": "visible",
+        "wall": "visible"
+      },
+      "crops": [
+        {
+          "id": "evening-floor",
+          "material": "floor",
+          "xyxyPx640": [
+            420,
+            327,
+            440,
+            339
+          ],
+          "xyxyNormalized": [
+            0.65625,
+            0.9083333333333333,
+            0.6875,
+            0.9416666666666667
+          ],
+          "purpose": "diagnostic-regression-only",
+          "selectionNotes": "Open floor interior in front of the cabinet, away from rug and furniture edges."
+        },
+        {
+          "id": "evening-sofa",
+          "material": "sofa",
+          "xyxyPx640": [
+            32,
+            290,
+            52,
+            302
+          ],
+          "xyxyNormalized": [
+            0.05,
+            0.8055555555555556,
+            0.08125,
+            0.8388888888888889
+          ],
+          "purpose": "diagnostic-regression-only",
+          "selectionNotes": "Plain chaise seat below the purple folded textile and above its front edge."
+        },
+        {
+          "id": "evening-right-wall",
+          "material": "wall",
+          "xyxyPx640": [
+            588,
+            266,
+            604,
+            282
+          ],
+          "xyxyNormalized": [
+            0.91875,
+            0.7388888888888889,
+            0.94375,
+            0.7833333333333333
+          ],
+          "purpose": "diagnostic-regression-only",
+          "selectionNotes": "Bare right wall below the wine rack, right of the cabinet silhouette."
+        }
+      ],
+      "excluded": "Evening regression is reported separately from #2394 daylight acceptance; full #2322 furnishing-colour acceptance remains separate.",
+      "webFile": "/home/devcontainers/.local/state/lunden-codex-20261127/2394/web/living-room-evening.jpg",
+      "webSha256": "caf943bc12f03f8f6b42e2701fa5f1dd7ad41f66bae7cca077afa1eac3183f89",
+      "sourceBaselineMeanSrgb255": {
+        "evening-floor": [
+          88.7,
+          64.08333333333333,
+          41.78333333333333
+        ],
+        "evening-sofa": [
+          89.37916666666666,
+          84.74583333333334,
+          51.03333333333333
+        ],
+        "evening-right-wall": [
+          126.08984375,
+          111.41796875,
+          94.32421875
+        ]
+      }
+    }
+  },
+  "halo": {
+    "view": "basketball",
+    "purpose": "Compare the existing soft ball/edge neighbourhood with the web, separately from wall-material means. No fitted gain, recolouring, new arbitrary halo threshold or synthetic native result.",
+    "silhouetteInspection": {
+      "id": "ball-silhouette-and-holder",
+      "material": "ball-edge-and-wall",
+      "xyxyPx640": [
+        288,
+        138,
+        353,
+        204
+      ],
+      "xyxyNormalized": [
+        0.45,
+        0.38333333333333336,
+        0.5515625,
+        0.5666666666666667
+      ],
+      "purpose": "visual-halo-control",
+      "selectionNotes": "Contains the entire visible orange ball silhouette (observed orange pixels x297..343,y147..192), a narrow surrounding wall margin, and the small lower holder; inspect the holder separately, not as wall glow."
+    },
+    "wallPairs": [
+      {
+        "direction": "left",
+        "near": {
+          "id": "halo-left-near",
+          "material": "wall",
+          "xyxyPx640": [
+            285,
+            163,
+            291,
+            177
+          ],
+          "xyxyNormalized": [
+            0.4453125,
+            0.4527777777777778,
+            0.4546875,
+            0.49166666666666664
+          ],
+          "purpose": "halo-wall-control",
+          "selectionNotes": "6\u201312 pixels clear of the visible left ball edge.",
+          "webMeanSrgb255": [
+            247.6547619047619,
+            236.3452380952381,
+            221.3452380952381
+          ]
+        },
+        "far": {
+          "id": "halo-left-far",
+          "material": "wall",
+          "xyxyPx640": [
+            268,
+            163,
+            274,
+            177
+          ],
+          "xyxyNormalized": [
+            0.41875,
+            0.4527777777777778,
+            0.428125,
+            0.49166666666666664
+          ],
+          "purpose": "halo-wall-control",
+          "selectionNotes": "Same wall and vertical interval farther left, not the poster.",
+          "webMeanSrgb255": [
+            248.0,
+            236.0,
+            222.0
+          ]
+        },
+        "webNearMinusFarSrgb255": [
+          -0.345238095238102,
+          0.345238095238102,
+          -0.654761904761898
+        ],
+        "webNearOverFarRgb": [
+          0.998607910906298,
+          1.0014628732849071,
+          0.9970506220506221
+        ]
+      },
+      {
+        "direction": "right",
+        "near": {
+          "id": "halo-right-near",
+          "material": "wall",
+          "xyxyPx640": [
+            349,
+            163,
+            355,
+            177
+          ],
+          "xyxyNormalized": [
+            0.5453125,
+            0.4527777777777778,
+            0.5546875,
+            0.49166666666666664
+          ],
+          "purpose": "halo-wall-control",
+          "selectionNotes": "6\u201312 pixels clear of the visible right ball edge.",
+          "webMeanSrgb255": [
+            244.9047619047619,
+            234.77380952380952,
+            221.03571428571428
+          ]
+        },
+        "far": {
+          "id": "halo-right-far",
+          "material": "wall",
+          "xyxyPx640": [
+            367,
+            163,
+            373,
+            177
+          ],
+          "xyxyNormalized": [
+            0.5734375,
+            0.4527777777777778,
+            0.5828125,
+            0.49166666666666664
+          ],
+          "purpose": "halo-wall-control",
+          "selectionNotes": "Same wall farther right, still clear of the poster.",
+          "webMeanSrgb255": [
+            244.42857142857142,
+            233.92857142857142,
+            222.14285714285714
+          ]
+        },
+        "webNearMinusFarSrgb255": [
+          0.4761904761904816,
+          0.845238095238102,
+          -1.1071428571428612
+        ],
+        "webNearOverFarRgb": [
+          1.0019481784531463,
+          1.0036132315521629,
+          0.995016077170418
+        ]
+      },
+      {
+        "direction": "above",
+        "near": {
+          "id": "halo-top-near",
+          "material": "wall",
+          "xyxyPx640": [
+            313,
+            136,
+            327,
+            142
+          ],
+          "xyxyNormalized": [
+            0.4890625,
+            0.37777777777777777,
+            0.5109375,
+            0.39444444444444443
+          ],
+          "purpose": "halo-wall-control",
+          "selectionNotes": "Bare wall immediately above the ball, without the edge itself.",
+          "webMeanSrgb255": [
+            245.64285714285714,
+            235.64285714285714,
+            223.64285714285714
+          ]
+        },
+        "far": {
+          "id": "halo-top-far",
+          "material": "wall",
+          "xyxyPx640": [
+            313,
+            113,
+            327,
+            119
+          ],
+          "xyxyNormalized": [
+            0.4890625,
+            0.3138888888888889,
+            0.5109375,
+            0.33055555555555555
+          ],
+          "purpose": "halo-wall-control",
+          "selectionNotes": "Bare wall below ZEPHYRA poster and farther above the ball.",
+          "webMeanSrgb255": [
+            245.78571428571428,
+            235.78571428571428,
+            223.78571428571428
+          ]
+        },
+        "webNearMinusFarSrgb255": [
+          -0.1428571428571388,
+          -0.1428571428571388,
+          -0.1428571428571388
+        ],
+        "webNearOverFarRgb": [
+          0.999418773612322,
+          0.9993941229930324,
+          0.999361634216406
+        ]
+      },
+      {
+        "direction": "below",
+        "near": {
+          "id": "halo-bottom-near",
+          "material": "wall",
+          "xyxyPx640": [
+            313,
+            198,
+            327,
+            204
+          ],
+          "xyxyNormalized": [
+            0.4890625,
+            0.55,
+            0.5109375,
+            0.5666666666666667
+          ],
+          "purpose": "halo-wall-control",
+          "selectionNotes": "Wall below the small holder; the holder itself is excluded.",
+          "webMeanSrgb255": [
+            246.95238095238096,
+            234.9404761904762,
+            221.22619047619048
+          ]
+        },
+        "far": {
+          "id": "halo-bottom-far",
+          "material": "wall",
+          "xyxyPx640": [
+            313,
+            221,
+            327,
+            227
+          ],
+          "xyxyNormalized": [
+            0.4890625,
+            0.6138888888888889,
+            0.5109375,
+            0.6305555555555555
+          ],
+          "purpose": "halo-wall-control",
+          "selectionNotes": "Same wall farther down, still above pillows.",
+          "webMeanSrgb255": [
+            247.0,
+            235.0,
+            219.0
+          ]
+        },
+        "webNearMinusFarSrgb255": [
+          -0.04761904761903679,
+          -0.05952380952379599,
+          2.2261904761904816
+        ],
+        "webNearOverFarRgb": [
+          0.9998072103335262,
+          0.9997467071935158,
+          1.0101652533159382
+        ]
+      }
+    ],
+    "metrics": "Report each side mean sRGB RGB, near-minus-far RGB and near/far RGB. Compare native against the same web ratios and inspect fixed silhouette. A spatial gradient already present on the web is not fitted away. No extra halo tolerance is invented."
+  },
+  "nativeComparison": null
+}

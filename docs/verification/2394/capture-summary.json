@@ -1,0 +1,468 @@
+{
+  "completed": true,
+  "material": "/Game/Lunden/Lighting/M_LundenWindowDaylight",
+  "materialPathActual": "/Game/Lunden/Lighting/M_LundenWindowDaylight.M_LundenWindowDaylight",
+  "sourceFileSha256": {
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2394/native-production-final-verifier.py": "f72080ff1c9bf2d7ab3545c28c33f1259c67210282595ebceb003a06c1a001ca",
+    "/home/devcontainers/lunden-linux/tools/unreal-engine/python/build_lighting.py": "c8a43a1e826cc943b3a4599cbef0b655d12ba4cbf66e22b09d33db24788b102b",
+    "/home/devcontainers/lunden-linux/tools/unreal-engine/python/build_window_light.py": "e04623ec09692af4cdb64599715d9c87080fcaf7e374ca9c7dc4db23c5526cc6",
+    "/home/devcontainers/lunden-linux/tools/unreal-engine/python/window_light.py": "c5ce15541bbc5f296d1b4d11f538f5e2306fc1d7d052199e331baf23d8756703",
+    "/home/devcontainers/lunden-linux/tools/unreal-engine/tests/capture_light.py": "d4bba40433a70ee4b1bc5482f6897f7ecfba9372e173392dc4988cb79e77eccc",
+    "/home/devcontainers/lunden-linux/tools/unreal-engine/python/screenshot_level.py": "1c25fc83235b83a64b3c9c89bfbef2665d1376975f272e3462ce135f1972f70f",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2394/season-visibility-only.py": "fa844d50bc9ac15225058ac1a1b0c95afdbaa87d8f44cdf1e78603fbbc486a88"
+  },
+  "measurementsSha256": "e892dedcd3f16053c5356aa5867c0acf70cccefd74c7bc7c4bab992bc6819949",
+  "runtimeWebEnvSha256": "c755eebf80b80cf331f9f0a9a1fdfafc1f5671f125dec393da6c0bd051e82e62",
+  "cameraWebEnvSha256": "b4225188033733e268e62f6e9501efcba4c4954b7d60c554976f7d2521702569",
+  "controlViewsSha256": "1002d90f5829bc167bac3db13f6d7e8bbd3d4347f7f7ba8aa51844165c54ce57",
+  "cropContractSha256": "353ca7c5425fa3d40c64e57c1ba638eacab08a269a3c01c8f4c9edf9f49273db",
+  "loadedLevels": [
+    "/Game/Lunden/Generated/Interaction/Level_l1007_interaction",
+    "/Game/Lunden/Generated/L1007World/Level_l1007_collision",
+    "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats",
+    "/Game/Lunden/Generated/l1007-entre/Level_l1007-entre",
+    "/Game/Lunden/Generated/Interaction/Level_hus-l_interaction",
+    "/Game/Lunden/Generated/Interaction/Level_kvarteret_interaction",
+    "/Game/Lunden/Generated/ExteriorWorld/Level_exterior_collision",
+    "/Game/Lunden/Generated/gard/Level_gard",
+    "/Game/Lunden/Generated/omgivning/Level_omgivning",
+    "/Game/Lunden/Generated/SiteWorld/Level_site_collision",
+    "/Game/Lunden/Generated/Lighting/Level_lighting",
+    "/Game/Lunden/Generated/FacadeLighting/Level_facade_lighting",
+    "/Game/Lunden/Generated/VegetationWorld/Level_vegetation_foliage",
+    "/Game/Lunden/Generated/Interaction/Level_lift_buttons",
+    "/Game/Lunden/Avatar/Looks/Level_LundenMirror",
+    "/Game/Lunden/Generated/fond/Level_fond"
+  ],
+  "actualCVars": {
+    "r.Shadow.Virtual.Enable": 0,
+    "r.SeparateTranslucency": 1,
+    "r.ShadowQuality": 3,
+    "r.Shadow.MaxResolution": 1024,
+    "r.Shadow.MaxCSMResolution": 1024,
+    "r.Shadow.CSM.MaxCascades": 3
+  },
+  "naniteOffInMemory": 3508,
+  "nativeGain": 0.3183098861837907,
+  "visibilityOnly": true,
+  "lumen": false,
+  "rainMapping": "Native Rain=observed web overcast; not web precipitation amplitude or a precipitation acceptance claim",
+  "scope": "Production material + real MPC + real Weather PP; static export-snapshot visibility; Linux diagnostic, not Windows full acceptance",
+  "baselineReuse": {
+    "directory": "/home/devcontainers/.local/state/lunden-codex-20261127/2394/native-production-nonotify",
+    "sourceCommit": "c6dfc621c5b904108441fff9c2b7305497787a2b",
+    "nativeRun": "20261127T123122564769-1934738",
+    "reason": "Only window replacement AO formula changed. Acceptance uses new after/web crops; previous weight0 images retained as historical before evidence, not new captures."
+  },
+  "sourceCommit": "2788460c9347cc9c3daed39fb9ed3d2e4f8994f6",
+  "assetCommit": "367c3969",
+  "runtimeProbes": [
+    {
+      "id": "day14-clear",
+      "actual": {
+        "WindowSkyStrength": 1.5,
+        "WindowSunStrength": 3.0,
+        "WindowAmbientFill": 1.058500051498413,
+        "Daylight": 1.0,
+        "SunDirNative": [
+          0.32902491092681885,
+          0.4451923966407776,
+          0.8327943086624146
+        ],
+        "SunDirWeb": [
+          0.32902491092681885,
+          0.8327943086624146,
+          0.4451923966407776
+        ],
+        "actualAmbient": {
+          "cube": "/Game/Lunden/Lighting/T_LundenHemisphere.T_LundenHemisphere",
+          "intensity": 2.1010000705718994,
+          "blendWeight": 0.5038077235221863,
+          "effectiveFill": 1.0585000626747814,
+          "tint": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "expectedNativeFill": 1.0585
+      },
+      "seasonMode": "render-only-season-visibility"
+    },
+    {
+      "id": "evening22-clear",
+      "actual": {
+        "WindowSkyStrength": 0.24129019677639008,
+        "WindowSunStrength": 0.1486421674489975,
+        "WindowAmbientFill": 0.15501858294010162,
+        "Daylight": 0.12452149391174316,
+        "SunDirNative": [
+          -0.9835368990898132,
+          0.17928315699100494,
+          -0.022644218057394028
+        ],
+        "SunDirWeb": [
+          -0.9835368990898132,
+          -0.022644218057394028,
+          0.17928315699100494
+        ],
+        "actualAmbient": {
+          "cube": "/Game/Lunden/Lighting/T_LundenHemisphere.T_LundenHemisphere",
+          "intensity": 2.1010000705718994,
+          "blendWeight": 0.07378324121236801,
+          "effectiveFill": 0.15501859499420867,
+          "tint": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "expectedNativeFill": 0.15501858673922944
+      },
+      "seasonMode": "render-only-season-visibility"
+    },
+    {
+      "id": "night00-clear",
+      "actual": {
+        "WindowSkyStrength": 0.0,
+        "WindowSunStrength": 0.06925053894519806,
+        "WindowAmbientFill": 0.030002223327755928,
+        "Daylight": 0.0,
+        "SunDirNative": [
+          -0.9479082226753235,
+          -0.27231067419052124,
+          -0.1652781218290329
+        ],
+        "SunDirWeb": [
+          -0.9479082226753235,
+          -0.1652781218290329,
+          -0.27231067419052124
+        ],
+        "actualAmbient": {
+          "cube": "/Game/Lunden/Lighting/T_LundenHemisphere.T_LundenHemisphere",
+          "intensity": 2.1010000705718994,
+          "blendWeight": 0.014279973693192005,
+          "effectiveFill": 0.03000222573716127,
+          "tint": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "expectedNativeFill": 0.030002224092416888
+      },
+      "seasonMode": "render-only-season-visibility"
+    },
+    {
+      "id": "day14-rain",
+      "actual": {
+        "WindowSkyStrength": 1.399999976158142,
+        "WindowSunStrength": 0.33000001311302185,
+        "WindowAmbientFill": 1.0012999773025513,
+        "Daylight": 1.0,
+        "SunDirNative": [
+          0.32902491092681885,
+          0.4451923966407776,
+          0.8327943086624146
+        ],
+        "SunDirWeb": [
+          0.32902491092681885,
+          0.8327943086624146,
+          0.4451923966407776
+        ],
+        "actualAmbient": {
+          "cube": "/Game/Lunden/Lighting/T_LundenHemisphere.T_LundenHemisphere",
+          "intensity": 2.1010000705718994,
+          "blendWeight": 0.4765825867652893,
+          "effectiveFill": 1.0013000484272112,
+          "tint": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "expectedNativeFill": 1.0012999999999999
+      },
+      "seasonMode": "render-only-season-visibility"
+    }
+  ],
+  "shots": [
+    {
+      "id": "fruit-bowl",
+      "actual": {
+        "WindowSkyStrength": 1.5,
+        "WindowSunStrength": 3.0,
+        "WindowAmbientFill": 1.058500051498413,
+        "Daylight": 1.0,
+        "SunDirNative": [
+          0.32902491092681885,
+          0.4451923966407776,
+          0.8327943086624146
+        ],
+        "SunDirWeb": [
+          0.32902491092681885,
+          0.8327943086624146,
+          0.4451923966407776
+        ],
+        "actualAmbient": {
+          "cube": "/Game/Lunden/Lighting/T_LundenHemisphere.T_LundenHemisphere",
+          "intensity": 2.1010000705718994,
+          "blendWeight": 0.5038077235221863,
+          "effectiveFill": 1.0585000626747814,
+          "tint": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "expectedNativeFill": 1.0585
+      },
+      "cameraWeb": [
+        3.32,
+        1.62,
+        9.35
+      ],
+      "pair": [
+        {
+          "name": "fruit-bowl-after",
+          "productionBlendableWeight": 1,
+          "fileSHA256": "689bff0ad7dc685b5d4afc74676b984a2c462a08fa24b9982de4e5c5aae8991b",
+          "weightState": {
+            "weatherPath": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.BP_LundenSky_C_0.Weather",
+            "ownerPath": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.BP_LundenSky_C_0",
+            "actualComponentIdentityPreserved": true,
+            "weatherVisible": true,
+            "ownerEditorHidden": false,
+            "editorNotifications": "NEVER; detached struct copy"
+          },
+          "xyz": [
+            332.0,
+            935.0,
+            162.0
+          ],
+          "yaw": 90.0,
+          "pitch": -38.00000000000001,
+          "roll": -4.036181824811567e-15,
+          "horizontalFov": 104.50486755371094,
+          "width": 640,
+          "height": 360,
+          "separateTranslucencyShowFlag": true,
+          "privateBlendableAttached": false
+        }
+      ]
+    },
+    {
+      "id": "basketball",
+      "actual": {
+        "WindowSkyStrength": 1.5,
+        "WindowSunStrength": 3.0,
+        "WindowAmbientFill": 1.058500051498413,
+        "Daylight": 1.0,
+        "SunDirNative": [
+          0.32902491092681885,
+          0.4451923966407776,
+          0.8327943086624146
+        ],
+        "SunDirWeb": [
+          0.32902491092681885,
+          0.8327943086624146,
+          0.4451923966407776
+        ],
+        "actualAmbient": {
+          "cube": "/Game/Lunden/Lighting/T_LundenHemisphere.T_LundenHemisphere",
+          "intensity": 2.1010000705718994,
+          "blendWeight": 0.5038077235221863,
+          "effectiveFill": 1.0585000626747814,
+          "tint": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "expectedNativeFill": 1.0585
+      },
+      "cameraWeb": [
+        1.55,
+        4.87,
+        11.08
+      ],
+      "pair": [
+        {
+          "name": "basketball-after",
+          "productionBlendableWeight": 1,
+          "fileSHA256": "f71a0e78becb3d7682c92609b8123d3f530c745c73afb636d127ab39d06602d0",
+          "weightState": {
+            "weatherPath": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.BP_LundenSky_C_0.Weather",
+            "ownerPath": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.BP_LundenSky_C_0",
+            "actualComponentIdentityPreserved": true,
+            "weatherVisible": true,
+            "ownerEditorHidden": false,
+            "editorNotifications": "NEVER; detached struct copy"
+          },
+          "xyz": [
+            155.0,
+            1108.0,
+            487.0
+          ],
+          "yaw": 180.0,
+          "pitch": -8.0,
+          "roll": -0.0,
+          "horizontalFov": 104.50486755371094,
+          "width": 640,
+          "height": 360,
+          "separateTranslucencyShowFlag": true,
+          "privateBlendableAttached": false
+        }
+      ]
+    },
+    {
+      "id": "start",
+      "actual": {
+        "WindowSkyStrength": 1.5,
+        "WindowSunStrength": 3.0,
+        "WindowAmbientFill": 1.058500051498413,
+        "Daylight": 1.0,
+        "SunDirNative": [
+          0.32902491092681885,
+          0.4451923966407776,
+          0.8327943086624146
+        ],
+        "SunDirWeb": [
+          0.32902491092681885,
+          0.8327943086624146,
+          0.4451923966407776
+        ],
+        "actualAmbient": {
+          "cube": "/Game/Lunden/Lighting/T_LundenHemisphere.T_LundenHemisphere",
+          "intensity": 2.1010000705718994,
+          "blendWeight": 0.5038077235221863,
+          "effectiveFill": 1.0585000626747814,
+          "tint": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "expectedNativeFill": 1.0585
+      },
+      "cameraWeb": [
+        2.875,
+        1.62,
+        -12
+      ],
+      "pair": [
+        {
+          "name": "start-after",
+          "productionBlendableWeight": 1,
+          "fileSHA256": "4f4435e67ea7fb71de594c5bff2ebcd59a06e8bb6e6fd1157e37376bdf299888",
+          "weightState": {
+            "weatherPath": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.BP_LundenSky_C_0.Weather",
+            "ownerPath": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.BP_LundenSky_C_0",
+            "actualComponentIdentityPreserved": true,
+            "weatherVisible": true,
+            "ownerEditorHidden": false,
+            "editorNotifications": "NEVER; detached struct copy"
+          },
+          "xyz": [
+            287.5,
+            -1200.0,
+            162.0
+          ],
+          "yaw": 89.99999999999999,
+          "pitch": 8.000000000000002,
+          "roll": -0.0,
+          "horizontalFov": 104.50486755371094,
+          "width": 640,
+          "height": 360,
+          "separateTranslucencyShowFlag": true,
+          "privateBlendableAttached": false
+        }
+      ]
+    },
+    {
+      "id": "living-room-evening",
+      "actual": {
+        "WindowSkyStrength": 0.24129019677639008,
+        "WindowSunStrength": 0.1486421674489975,
+        "WindowAmbientFill": 0.15501858294010162,
+        "Daylight": 0.12452149391174316,
+        "SunDirNative": [
+          -0.9835368990898132,
+          0.17928315699100494,
+          -0.022644218057394028
+        ],
+        "SunDirWeb": [
+          -0.9835368990898132,
+          -0.022644218057394028,
+          0.17928315699100494
+        ],
+        "actualAmbient": {
+          "cube": "/Game/Lunden/Lighting/T_LundenHemisphere.T_LundenHemisphere",
+          "intensity": 2.1010000705718994,
+          "blendWeight": 0.07378324121236801,
+          "effectiveFill": 0.15501859499420867,
+          "tint": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "expectedNativeFill": 0.15501858673922944
+      },
+      "cameraWeb": [
+        2.5,
+        1.62,
+        8.2
+      ],
+      "pair": [
+        {
+          "name": "living-room-evening-after",
+          "productionBlendableWeight": 1,
+          "fileSHA256": "868bcd119e9f19beeb9203d0a35639d9b83a13d538789e0d3acda004cccdf6b8",
+          "weightState": {
+            "weatherPath": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.BP_LundenSky_C_0.Weather",
+            "ownerPath": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.BP_LundenSky_C_0",
+            "actualComponentIdentityPreserved": true,
+            "weatherVisible": true,
+            "ownerEditorHidden": false,
+            "editorNotifications": "NEVER; detached struct copy"
+          },
+          "xyz": [
+            250.0,
+            819.9999999999999,
+            162.0
+          ],
+          "yaw": 96.99999999999999,
+          "pitch": -4.0,
+          "roll": 3.9854015897965574e-16,
+          "horizontalFov": 104.50486755371094,
+          "width": 640,
+          "height": 360,
+          "separateTranslucencyShowFlag": true,
+          "privateBlendableAttached": false
+        }
+      ]
+    }
+  ],
+  "wholeImageReview": {
+    "root": "four originals viewed; all known differences mapped",
+    "independent": "wsl_vulkan viewed all four fresh after and four web originals; no halo or new unmapped difference"
+  },
+  "remainingOpenIssues": [
+    2322,
+    2372,
+    2460,
+    2459,
+    2428,
+    2371,
+    2447
+  ],
+  "knownToolIssues": [
+    2469,
+    2473,
+    2475,
+    2476,
+    2477,
+    2478
+  ]
+}

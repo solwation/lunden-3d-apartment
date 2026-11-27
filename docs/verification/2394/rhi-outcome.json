@@ -1,0 +1,31 @@
+{
+  "native": {
+    "engine": "5.8.4",
+    "profile": "linux-low",
+    "exitCode": 0,
+    "timedOut": false,
+    "passed": true,
+    "completed": true,
+    "log": "/mnt/d/LundenLinux/runs/20261127T125215231369-2454799/editor.log",
+    "engineIniSha256": "e26c244f9d51fddd3e6577d5696a073521b417a73167c5dd6dc69c79a2db180e",
+    "vulkanIcd": "/usr/share/vulkan/icd.d/lvp_icd.json",
+    "revision": "2788460c9347cc9c3daed39fb9ed3d2e4f8994f6",
+    "signal": null,
+    "error": null,
+    "seconds": 450.07
+  },
+  "outerExitObserved": 143,
+  "invocationRecordInterrupted": true,
+  "postflight": {
+    "all247ByteExact": true,
+    "all247ReadOnly": true,
+    "changed": [],
+    "writable": []
+  },
+  "baselineReuse": {
+    "sourceCommit": "c6dfc621c5b904108441fff9c2b7305497787a2b",
+    "nativeRun": "20261127T123122564769-1934738",
+    "directory": "native-production-nonotify",
+    "role": "historical before at weight0; current after/web are acceptance measurements"
+  }
+}

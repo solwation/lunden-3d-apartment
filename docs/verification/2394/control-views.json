@@ -1,0 +1,42 @@
+[
+  {
+    "id": "fruit-bowl",
+    "subject": "The fruit bowl on the living-room table",
+    "x": 3.32,
+    "z": 9.35,
+    "feetY": 0,
+    "yawDeg": 180,
+    "pitchDeg": -38,
+    "lighting": "day"
+  },
+  {
+    "id": "basketball",
+    "subject": "The basketball in its holder on the upper floor",
+    "x": 1.55,
+    "z": 11.08,
+    "feetY": 3.25,
+    "yawDeg": 90,
+    "pitchDeg": -8,
+    "lighting": "day"
+  },
+  {
+    "id": "start",
+    "subject": "L1007 street entrance from START",
+    "x": 2.875,
+    "z": -12,
+    "feetY": 0,
+    "yawDeg": 180,
+    "pitchDeg": 8,
+    "lighting": "day"
+  },
+  {
+    "id": "living-room-evening",
+    "subject": "Living room towards the patio",
+    "x": 2.5,
+    "z": 8.2,
+    "feetY": 0,
+    "yawDeg": 173,
+    "pitchDeg": -4,
+    "lighting": "evening"
+  }
+]

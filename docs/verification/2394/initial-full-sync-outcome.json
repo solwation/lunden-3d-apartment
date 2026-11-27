@@ -1,0 +1,42 @@
+{
+  "native": {
+    "engine": "5.8.4",
+    "profile": "nullrhi",
+    "exitCode": 0,
+    "timedOut": false,
+    "passed": true,
+    "completed": true,
+    "log": "/mnt/d/LundenLinux/runs/20261127T115506792855-1010968/editor.log",
+    "command": [
+      "/mnt/d/UnrealEngine/5.8.4/Engine/Binaries/Linux/UnrealEditor-Cmd",
+      "/home/devcontainers/lunden-linux/unreal/Lunden/Lunden.uproject",
+      "-DefEngineIni=/mnt/d/LundenLinux/runs/20261127T115506792855-1010968/LowEngine.ini",
+      "-LocalDataCachePath=/mnt/d/LundenLinux/DerivedDataCache",
+      "-ZenDataPath=/mnt/d/LundenLinux/Zen",
+      "-unattended",
+      "-nosplash",
+      "-nosound",
+      "-nop4",
+      "-stdout",
+      "-FullStdOutLogOutput",
+      "-NoCrashDialog",
+      "-abslog=/mnt/d/LundenLinux/runs/20261127T115506792855-1010968/editor.log",
+      "-nullrhi",
+      "-run=pythonscript",
+      "-script=/home/devcontainers/.local/state/lunden-codex-20261127/2394/sync-production.py"
+    ],
+    "engineIniSha256": "e26c244f9d51fddd3e6577d5696a073521b417a73167c5dd6dc69c79a2db180e",
+    "vulkanIcd": null,
+    "revision": "c6dfc621c5b904108441fff9c2b7305497787a2b",
+    "signal": null,
+    "error": null,
+    "seconds": 1350.1
+  },
+  "outerExecExit": 143,
+  "pythonStepsAllPassed": true,
+  "nativeErrorLines": [],
+  "guardCount": 39,
+  "allGuardsPassed": true,
+  "protected239ByteExactReadOnly": true,
+  "note": "Whole native result is successful; outer tool shell143 retained separately as2473, not represented as shell success"
+}

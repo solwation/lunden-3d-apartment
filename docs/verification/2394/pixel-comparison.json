@@ -1,0 +1,943 @@
+{
+  "contractSha256": "353ca7c5425fa3d40c64e57c1ba638eacab08a269a3c01c8f4c9edf9f49273db",
+  "scope": "Original640x360 Linux-low prototype diagnosis; no full Windows/profile acceptance",
+  "allNineDiagnosticRgbGatesPass": true,
+  "gateCount": 9,
+  "views": {
+    "fruit-bowl": {
+      "crops": [
+        {
+          "id": "floor-right-mid",
+          "material": "floor",
+          "purpose": "rgb-10-percent",
+          "webMeanRgb": [
+            195.575,
+            174.575,
+            156.14166666666668
+          ],
+          "baselineMeanRgb": [
+            185.55,
+            175.1,
+            167.6875
+          ],
+          "afterMeanRgb": [
+            189.33333333333334,
+            172.7375,
+            157.65
+          ],
+          "baselineOverWeb": [
+            0.9487408922408285,
+            1.0030073034512388,
+            1.073944601590436
+          ],
+          "afterOverWeb": [
+            0.9680855596744643,
+            0.9894744379206646,
+            1.0096600309547952
+          ],
+          "rgbGate": true
+        },
+        {
+          "id": "floor-right-front",
+          "material": "floor",
+          "purpose": "rgb-10-percent",
+          "webMeanRgb": [
+            191.39583333333334,
+            171.49583333333334,
+            154.92916666666667
+          ],
+          "baselineMeanRgb": [
+            184.49583333333334,
+            174.32083333333333,
+            166.7125
+          ],
+          "afterMeanRgb": [
+            182.92916666666667,
+            166.89583333333334,
+            152.84583333333333
+          ],
+          "baselineOverWeb": [
+            0.9639490584521606,
+            1.0164727034184504,
+            1.0760562622703924
+          ],
+          "afterOverWeb": [
+            0.9557635789702841,
+            0.9731771908938507,
+            0.9865529946480918
+          ],
+          "rgbGate": true
+        },
+        {
+          "id": "sofa-chaise-seat",
+          "material": "sofa",
+          "purpose": "rgb-10-percent",
+          "webMeanRgb": [
+            162.15972222222223,
+            172.15972222222223,
+            145.82638888888889
+          ],
+          "baselineMeanRgb": [
+            151.81944444444446,
+            170.13194444444446,
+            151.88888888888889
+          ],
+          "afterMeanRgb": [
+            151.375,
+            163.47916666666666,
+            140.65277777777777
+          ],
+          "baselineOverWeb": [
+            0.9362339942614878,
+            0.9882215320075834,
+            1.041573408257536
+          ],
+          "afterOverWeb": [
+            0.9334932122821292,
+            0.9495784760598603,
+            0.9645221201009572
+          ],
+          "rgbGate": true
+        },
+        {
+          "id": "sofa-main-seat",
+          "material": "sofa",
+          "purpose": "rgb-10-percent",
+          "webMeanRgb": [
+            177.6681818181818,
+            188.6681818181818,
+            157.19545454545454
+          ],
+          "baselineMeanRgb": [
+            150.43636363636364,
+            168.42727272727274,
+            150.70909090909092
+          ],
+          "afterMeanRgb": [
+            163.1818181818182,
+            174.87272727272727,
+            149.29090909090908
+          ],
+          "baselineOverWeb": [
+            0.8467265331184282,
+            0.892716891126798,
+            0.9587369516814621
+          ],
+          "afterOverWeb": [
+            0.9184639394171976,
+            0.9268798034066543,
+            0.9497151779776191
+          ],
+          "rgbGate": true
+        },
+        {
+          "id": "wall-left-upper",
+          "material": "wall",
+          "purpose": "rgb-10-percent",
+          "webMeanRgb": [
+            245.58333333333334,
+            237.51388888888889,
+            225.73611111111111
+          ],
+          "baselineMeanRgb": [
+            209.61111111111111,
+            211.8125,
+            209.93055555555554
+          ],
+          "afterMeanRgb": [
+            239.54861111111111,
+            233.0,
+            221.51388888888889
+          ],
+          "baselineOverWeb": [
+            0.8535233570863024,
+            0.8917899538038712,
+            0.9299821571402201
+          ],
+          "afterOverWeb": [
+            0.9754269878972966,
+            0.9809952634348869,
+            0.9812957607826247
+          ],
+          "rgbGate": true
+        },
+        {
+          "id": "wall-left-lower",
+          "material": "wall",
+          "purpose": "rgb-10-percent",
+          "webMeanRgb": [
+            245.0,
+            237.0,
+            225.95833333333334
+          ],
+          "baselineMeanRgb": [
+            211.0,
+            213.0,
+            211.0
+          ],
+          "afterMeanRgb": [
+            238.97916666666666,
+            231.20833333333334,
+            219.41666666666666
+          ],
+          "baselineOverWeb": [
+            0.8612244897959184,
+            0.8987341772151899,
+            0.9338004794394247
+          ],
+          "afterOverWeb": [
+            0.9754251700680272,
+            0.9755625879043601,
+            0.9710492347409182
+          ],
+          "rgbGate": true
+        }
+      ],
+      "beforeAfterMaxChannelDelta": 125,
+      "beforeAfterPixelsDeltaOver2": 190225,
+      "visibility": {
+        "floor": "visible",
+        "sofa": "visible",
+        "wall": "visible"
+      }
+    },
+    "basketball": {
+      "crops": [
+        {
+          "id": "wall-left-of-ball",
+          "material": "wall",
+          "purpose": "rgb-10-percent",
+          "webMeanRgb": [
+            248.484375,
+            236.559375,
+            222.534375
+          ],
+          "baselineMeanRgb": [
+            211.0,
+            213.0,
+            211.0
+          ],
+          "afterMeanRgb": [
+            241.0,
+            231.66875,
+            218.65
+          ],
+          "baselineOverWeb": [
+            0.849147959504496,
+            0.900408195616851,
+            0.9481681200938057
+          ],
+          "afterOverWeb": [
+            0.9698798968748035,
+            0.9793260148747012,
+            0.9825448315569224
+          ],
+          "rgbGate": true
+        },
+        {
+          "id": "wall-right-of-ball",
+          "material": "wall",
+          "purpose": "rgb-10-percent",
+          "webMeanRgb": [
+            243.9375,
+            234.0125,
+            221.975
+          ],
+          "baselineMeanRgb": [
+            210.95,
+            212.95,
+            211.0
+          ],
+          "afterMeanRgb": [
+            233.76875,
+            226.0375,
+            213.6625
+          ],
+          "baselineOverWeb": [
+            0.8647706892134255,
+            0.9099941242454997,
+            0.9505574952134249
+          ],
+          "afterOverWeb": [
+            0.9583141173456317,
+            0.965920623898296,
+            0.9625520891992342
+          ],
+          "rgbGate": true
+        },
+        {
+          "id": "wall-below-ball",
+          "material": "wall",
+          "purpose": "rgb-10-percent",
+          "webMeanRgb": [
+            247.15,
+            235.0,
+            219.0
+          ],
+          "baselineMeanRgb": [
+            210.7,
+            212.7125,
+            210.975
+          ],
+          "afterMeanRgb": [
+            240.65,
+            229.9875,
+            214.925
+          ],
+          "baselineOverWeb": [
+            0.8525187133319846,
+            0.9051595744680851,
+            0.9633561643835616
+          ],
+          "afterOverWeb": [
+            0.9737001820756626,
+            0.9786702127659574,
+            0.981392694063927
+          ],
+          "rgbGate": true
+        },
+        {
+          "id": "ball-upper-orange",
+          "material": "basketball",
+          "purpose": "diagnostic-only",
+          "webMeanRgb": [
+            249.41666666666666,
+            131.39583333333334,
+            82.79166666666667
+          ],
+          "baselineMeanRgb": [
+            194.33333333333334,
+            96.0,
+            37.520833333333336
+          ],
+          "afterMeanRgb": [
+            222.20833333333334,
+            104.89583333333333,
+            38.145833333333336
+          ],
+          "baselineOverWeb": [
+            0.7791513531573673,
+            0.7306167750118915,
+            0.45319577252138904
+          ],
+          "afterOverWeb": [
+            0.8909121282993653,
+            0.7983193277310924,
+            0.4607448414695521
+          ],
+          "rgbGate": null
+        },
+        {
+          "id": "ball-lower-orange",
+          "material": "basketball",
+          "purpose": "diagnostic-only",
+          "webMeanRgb": [
+            242.76,
+            114.58,
+            47.22
+          ],
+          "baselineMeanRgb": [
+            189.12,
+            91.08,
+            29.36
+          ],
+          "afterMeanRgb": [
+            224.44,
+            102.6,
+            30.68
+          ],
+          "baselineOverWeb": [
+            0.7790410281759763,
+            0.7949031244545296,
+            0.6217704362558238
+          ],
+          "afterOverWeb": [
+            0.924534519690229,
+            0.8954442311049048,
+            0.649724692926726
+          ],
+          "rgbGate": null
+        }
+      ],
+      "beforeAfterMaxChannelDelta": 94,
+      "beforeAfterPixelsDeltaOver2": 197514,
+      "visibility": {
+        "floor": "not-visible",
+        "sofa": "not-visible",
+        "wall": "visible"
+      }
+    },
+    "start": {
+      "crops": [
+        {
+          "id": "street-pavement",
+          "material": "exterior-asphalt",
+          "purpose": "diagnostic-regression-only",
+          "webMeanRgb": [
+            132.94270833333334,
+            131.94270833333334,
+            127.94270833333333
+          ],
+          "baselineMeanRgb": [
+            138.6875,
+            138.84375,
+            136.56510416666666
+          ],
+          "afterMeanRgb": [
+            138.6875,
+            138.84375,
+            136.56510416666666
+          ],
+          "baselineOverWeb": [
+            1.0432125367286973,
+            1.0523033197805234,
+            1.0673926317932017
+          ],
+          "afterOverWeb": [
+            1.0432125367286973,
+            1.0523033197805234,
+            1.0673926317932017
+          ],
+          "rgbGate": null
+        },
+        {
+          "id": "rotunda-brick",
+          "material": "exterior-brick",
+          "purpose": "diagnostic-regression-only",
+          "webMeanRgb": [
+            123.07098765432099,
+            71.03703703703704,
+            56.410493827160494
+          ],
+          "baselineMeanRgb": [
+            131.37654320987653,
+            81.95061728395062,
+            68.12345679012346
+          ],
+          "afterMeanRgb": [
+            131.37654320987653,
+            81.95061728395062,
+            68.12345679012346
+          ],
+          "baselineOverWeb": [
+            1.0674858934169278,
+            1.1536322558220369,
+            1.2076380149915193
+          ],
+          "afterOverWeb": [
+            1.0674858934169278,
+            1.1536322558220369,
+            1.2076380149915193
+          ],
+          "rgbGate": null
+        },
+        {
+          "id": "clear-sky",
+          "material": "sky",
+          "purpose": "diagnostic-regression-only",
+          "webMeanRgb": [
+            147.52864583333334,
+            180.7890625,
+            221.14322916666666
+          ],
+          "baselineMeanRgb": [
+            148.27604166666666,
+            189.421875,
+            235.0
+          ],
+          "afterMeanRgb": [
+            148.27604166666666,
+            189.421875,
+            235.0
+          ],
+          "baselineOverWeb": [
+            1.0050661065118003,
+            1.0477507454301889,
+            1.0626597110187355
+          ],
+          "afterOverWeb": [
+            1.0050661065118003,
+            1.0477507454301889,
+            1.0626597110187355
+          ],
+          "rgbGate": null
+        }
+      ],
+      "beforeAfterMaxChannelDelta": 70,
+      "beforeAfterPixelsDeltaOver2": 2203,
+      "visibility": {
+        "floor": "exterior-pavement-only",
+        "sofa": "not-visible",
+        "wall": "exterior-brick-only"
+      }
+    },
+    "living-room-evening": {
+      "crops": [
+        {
+          "id": "evening-floor",
+          "material": "floor",
+          "purpose": "diagnostic-regression-only",
+          "webMeanRgb": [
+            88.7,
+            64.08333333333333,
+            41.78333333333333
+          ],
+          "baselineMeanRgb": [
+            95.97083333333333,
+            83.32083333333334,
+            71.78333333333333
+          ],
+          "afterMeanRgb": [
+            104.5625,
+            89.99166666666666,
+            77.6
+          ],
+          "baselineOverWeb": [
+            1.0819710635099586,
+            1.3001950585175555,
+            1.7179896290386918
+          ],
+          "afterOverWeb": [
+            1.1788331454340473,
+            1.404291287386216,
+            1.8571998404467491
+          ],
+          "rgbGate": null
+        },
+        {
+          "id": "evening-sofa",
+          "material": "sofa",
+          "purpose": "diagnostic-regression-only",
+          "webMeanRgb": [
+            89.37916666666666,
+            84.74583333333334,
+            51.03333333333333
+          ],
+          "baselineMeanRgb": [
+            68.35,
+            69.45833333333333,
+            45.483333333333334
+          ],
+          "afterMeanRgb": [
+            81.3875,
+            83.31666666666666,
+            59.854166666666664
+          ],
+          "baselineOverWeb": [
+            0.7647195934921449,
+            0.8196076503269579,
+            0.8912475506205095
+          ],
+          "afterOverWeb": [
+            0.9105869190247542,
+            0.9831358473867937,
+            1.1728445460483343
+          ],
+          "rgbGate": null
+        },
+        {
+          "id": "evening-right-wall",
+          "material": "wall",
+          "purpose": "diagnostic-regression-only",
+          "webMeanRgb": [
+            126.08984375,
+            111.41796875,
+            94.32421875
+          ],
+          "baselineMeanRgb": [
+            117.484375,
+            113.265625,
+            106.3125
+          ],
+          "afterMeanRgb": [
+            126.04296875,
+            121.51171875,
+            114.328125
+          ],
+          "baselineOverWeb": [
+            0.9317512934105765,
+            1.016583108368685,
+            1.1270965337308982
+          ],
+          "afterOverWeb": [
+            0.9996282412714148,
+            1.0905935560775515,
+            1.212076034289974
+          ],
+          "rgbGate": null
+        }
+      ],
+      "beforeAfterMaxChannelDelta": 73,
+      "beforeAfterPixelsDeltaOver2": 185966,
+      "visibility": {
+        "floor": "visible",
+        "sofa": "visible",
+        "wall": "visible"
+      }
+    }
+  },
+  "halo": [
+    {
+      "direction": "left",
+      "web": {
+        "nearMeanRgb": [
+          247.6547619047619,
+          236.3452380952381,
+          221.3452380952381
+        ],
+        "farMeanRgb": [
+          248.0,
+          236.0,
+          222.0
+        ],
+        "nearOverFar": [
+          0.998607910906298,
+          1.0014628732849071,
+          0.9970506220506221
+        ],
+        "nearMinusFar": [
+          -0.345238095238102,
+          0.345238095238102,
+          -0.654761904761898
+        ]
+      },
+      "baseline": {
+        "nearMeanRgb": [
+          197.23809523809524,
+          199.73809523809524,
+          198.28571428571428
+        ],
+        "farMeanRgb": [
+          210.16666666666666,
+          212.16666666666666,
+          210.8095238095238
+        ],
+        "nearOverFar": [
+          0.9384841962161551,
+          0.9414207159690271,
+          0.9405918229049017
+        ],
+        "nearMinusFar": [
+          -12.928571428571416,
+          -12.428571428571416,
+          -12.523809523809518
+        ]
+      },
+      "after": {
+        "nearMeanRgb": [
+          241.0,
+          230.97619047619048,
+          215.0
+        ],
+        "farMeanRgb": [
+          241.0,
+          231.5952380952381,
+          216.71428571428572
+        ],
+        "nearOverFar": [
+          1.0,
+          0.9973270278605942,
+          0.992089650626236
+        ],
+        "nearMinusFar": [
+          0.0,
+          -0.6190476190476204,
+          -1.7142857142857224
+        ]
+      }
+    },
+    {
+      "direction": "right",
+      "web": {
+        "nearMeanRgb": [
+          244.9047619047619,
+          234.77380952380952,
+          221.03571428571428
+        ],
+        "farMeanRgb": [
+          244.42857142857142,
+          233.92857142857142,
+          222.14285714285714
+        ],
+        "nearOverFar": [
+          1.0019481784531463,
+          1.0036132315521629,
+          0.995016077170418
+        ],
+        "nearMinusFar": [
+          0.4761904761904816,
+          0.845238095238102,
+          -1.1071428571428612
+        ]
+      },
+      "baseline": {
+        "nearMeanRgb": [
+          197.33333333333334,
+          199.73809523809524,
+          198.23809523809524
+        ],
+        "farMeanRgb": [
+          210.52380952380952,
+          212.52380952380952,
+          211.0
+        ],
+        "nearOverFar": [
+          0.9373444921963358,
+          0.939838673537979,
+          0.9395170390431055
+        ],
+        "nearMinusFar": [
+          -13.190476190476176,
+          -12.785714285714278,
+          -12.76190476190476
+        ]
+      },
+      "after": {
+        "nearMeanRgb": [
+          236.66666666666666,
+          227.57142857142858,
+          214.9047619047619
+        ],
+        "farMeanRgb": [
+          235.0,
+          227.0,
+          213.52380952380952
+        ],
+        "nearOverFar": [
+          1.0070921985815602,
+          1.0025173064820643,
+          1.0064674397859055
+        ],
+        "nearMinusFar": [
+          1.6666666666666572,
+          0.5714285714285836,
+          1.3809523809523796
+        ]
+      }
+    },
+    {
+      "direction": "above",
+      "web": {
+        "nearMeanRgb": [
+          245.64285714285714,
+          235.64285714285714,
+          223.64285714285714
+        ],
+        "farMeanRgb": [
+          245.78571428571428,
+          235.78571428571428,
+          223.78571428571428
+        ],
+        "nearOverFar": [
+          0.999418773612322,
+          0.9993941229930324,
+          0.999361634216406
+        ],
+        "nearMinusFar": [
+          -0.1428571428571388,
+          -0.1428571428571388,
+          -0.1428571428571388
+        ]
+      },
+      "baseline": {
+        "nearMeanRgb": [
+          193.42857142857142,
+          195.66666666666666,
+          193.66666666666666
+        ],
+        "farMeanRgb": [
+          210.78571428571428,
+          212.78571428571428,
+          210.95238095238096
+        ],
+        "nearOverFar": [
+          0.9176550321924771,
+          0.9195479467382791,
+          0.9180586907449209
+        ],
+        "nearMinusFar": [
+          -17.35714285714286,
+          -17.11904761904762,
+          -17.285714285714306
+        ]
+      },
+      "after": {
+        "nearMeanRgb": [
+          237.71428571428572,
+          229.0,
+          215.0
+        ],
+        "farMeanRgb": [
+          237.0,
+          229.0,
+          215.0
+        ],
+        "nearOverFar": [
+          1.0030138637733574,
+          1.0,
+          1.0
+        ],
+        "nearMinusFar": [
+          0.7142857142857224,
+          0.0,
+          0.0
+        ]
+      }
+    },
+    {
+      "direction": "below",
+      "web": {
+        "nearMeanRgb": [
+          246.95238095238096,
+          234.9404761904762,
+          221.22619047619048
+        ],
+        "farMeanRgb": [
+          247.0,
+          235.0,
+          219.0
+        ],
+        "nearOverFar": [
+          0.9998072103335262,
+          0.9997467071935158,
+          1.0101652533159382
+        ],
+        "nearMinusFar": [
+          -0.04761904761903679,
+          -0.05952380952379599,
+          2.2261904761904816
+        ]
+      },
+      "baseline": {
+        "nearMeanRgb": [
+          197.1904761904762,
+          199.76190476190476,
+          198.33333333333334
+        ],
+        "farMeanRgb": [
+          210.9047619047619,
+          212.9047619047619,
+          211.0
+        ],
+        "nearOverFar": [
+          0.9349740347708287,
+          0.9382688436591367,
+          0.9399684044233808
+        ],
+        "nearMinusFar": [
+          -13.714285714285694,
+          -13.142857142857139,
+          -12.666666666666657
+        ]
+      },
+      "after": {
+        "nearMeanRgb": [
+          239.0,
+          229.35714285714286,
+          215.0
+        ],
+        "farMeanRgb": [
+          240.35714285714286,
+          229.83333333333334,
+          214.95238095238096
+        ],
+        "nearOverFar": [
+          0.9943536404160476,
+          0.9979281052522532,
+          1.000221533008418
+        ],
+        "nearMinusFar": [
+          -1.3571428571428612,
+          -0.4761904761904816,
+          0.04761904761903679
+        ]
+      }
+    }
+  ],
+  "files": [
+    {
+      "file": "/home/devcontainers/.local/state/lunden-codex-20261127/2394/web/fruit-bowl.jpg",
+      "bytes": 85577,
+      "sha256": "820432b937241084d335d7fc018e5fb662a749ef1e9b56afbeceb74a8b7d7357"
+    },
+    {
+      "file": "/home/devcontainers/.local/state/lunden-codex-20261127/2394/native-production-final/fruit-bowl-baseline.png",
+      "bytes": 439995,
+      "sha256": "16e2f2e0c31d006ab75bfdcbddbe8a8cce0d0a122324a4983ee3e8fff4bb1969",
+      "pngCrcThroughIend": true,
+      "pngThroughIendBytes": 397186,
+      "trailingBytes": 42809
+    },
+    {
+      "file": "/home/devcontainers/.local/state/lunden-codex-20261127/2394/native-production-final/fruit-bowl-after.png",
+      "bytes": 439995,
+      "sha256": "689bff0ad7dc685b5d4afc74676b984a2c462a08fa24b9982de4e5c5aae8991b",
+      "pngCrcThroughIend": true,
+      "pngThroughIendBytes": 373772,
+      "trailingBytes": 66223
+    },
+    {
+      "file": "/home/devcontainers/.local/state/lunden-codex-20261127/2394/web/basketball.jpg",
+      "bytes": 42623,
+      "sha256": "3b3fbdb027025ec06e05bbf1beae56d3c1e660511f4d870d4d2857364731d697"
+    },
+    {
+      "file": "/home/devcontainers/.local/state/lunden-codex-20261127/2394/native-production-final/basketball-baseline.png",
+      "bytes": 225665,
+      "sha256": "98463d2a626fc1d7171e54d3c51fe0e5d353d2979c6df12f77f24ddb1459c2fa",
+      "pngCrcThroughIend": true,
+      "pngThroughIendBytes": 172473,
+      "trailingBytes": 53192
+    },
+    {
+      "file": "/home/devcontainers/.local/state/lunden-codex-20261127/2394/native-production-final/basketball-after.png",
+      "bytes": 217352,
+      "sha256": "f71a0e78becb3d7682c92609b8123d3f530c745c73afb636d127ab39d06602d0",
+      "pngCrcThroughIend": true,
+      "pngThroughIendBytes": 158079,
+      "trailingBytes": 59273
+    },
+    {
+      "file": "/home/devcontainers/.local/state/lunden-codex-20261127/2394/web/start.jpg",
+      "bytes": 69513,
+      "sha256": "69e1f1d0cc81fa682b405aab0d00120a22fb87311d55851403ca13a4992b5431"
+    },
+    {
+      "file": "/home/devcontainers/.local/state/lunden-codex-20261127/2394/native-production-final/start-baseline.png",
+      "bytes": 439995,
+      "sha256": "c9c5fdfa63e55c8cf9f8829487e544b75dcf786a9bf84c71fb7b094520e0f21b",
+      "pngCrcThroughIend": true,
+      "pngThroughIendBytes": 344853,
+      "trailingBytes": 95142
+    },
+    {
+      "file": "/home/devcontainers/.local/state/lunden-codex-20261127/2394/native-production-final/start-after.png",
+      "bytes": 439995,
+      "sha256": "4f4435e67ea7fb71de594c5bff2ebcd59a06e8bb6e6fd1157e37376bdf299888",
+      "pngCrcThroughIend": true,
+      "pngThroughIendBytes": 343394,
+      "trailingBytes": 96601
+    },
+    {
+      "file": "/home/devcontainers/.local/state/lunden-codex-20261127/2394/web/living-room-evening.jpg",
+      "bytes": 57818,
+      "sha256": "caf943bc12f03f8f6b42e2701fa5f1dd7ad41f66bae7cca077afa1eac3183f89"
+    },
+    {
+      "file": "/home/devcontainers/.local/state/lunden-codex-20261127/2394/native-production-final/living-room-evening-baseline.png",
+      "bytes": 439995,
+      "sha256": "ac47ab8a27e3c3d9a0575d5a4be81a63b4a1d19550f832488d8b4c6288d9c080",
+      "pngCrcThroughIend": true,
+      "pngThroughIendBytes": 334139,
+      "trailingBytes": 105856
+    },
+    {
+      "file": "/home/devcontainers/.local/state/lunden-codex-20261127/2394/native-production-final/living-room-evening-after.png",
+      "bytes": 315909,
+      "sha256": "868bcd119e9f19beeb9203d0a35639d9b83a13d538789e0d3acda004cccdf6b8",
+      "pngCrcThroughIend": true,
+      "pngThroughIendBytes": 301472,
+      "trailingBytes": 14437
+    }
+  ]
+}

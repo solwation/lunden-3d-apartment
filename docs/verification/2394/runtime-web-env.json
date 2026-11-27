@@ -1,0 +1,509 @@
+{
+  "views": {
+    "day14-clear": {
+      "dayShare": 1,
+      "skyStrength": 1.5,
+      "skyRgb": [
+        0.8227857543924378,
+        0.8962693533719567,
+        1
+      ],
+      "sunDirWeb": [
+        0.3290249069149738,
+        0.832794289174853,
+        0.44519241070277027
+      ],
+      "sunIntensity": 3,
+      "sunRgb": [
+        1,
+        0.8796223968851662,
+        0.7156935005005721
+      ],
+      "fill": 0.35,
+      "fillRgb": [
+        0.9046611743890203,
+        0.9215818562755338,
+        1
+      ],
+      "fillPositionWeb": [
+        8,
+        6,
+        -5
+      ],
+      "fillTargetWeb": [
+        0,
+        0,
+        0
+      ],
+      "hemiIntensityActual": 1.55,
+      "ambientIntensityActual": 0.275,
+      "date": [
+        2026,
+        6,
+        21
+      ],
+      "hour": 14,
+      "daylight": 1,
+      "overcast": 0,
+      "dim": 0,
+      "under": 0,
+      "weatherActual": {
+        "force": "clear",
+        "kind": null,
+        "rain": 0,
+        "snow": null,
+        "snowPropertyPresent": false,
+        "overcast": 0,
+        "storm": false,
+        "source": "forced",
+        "rainKindFraction": 0,
+        "snowKindFraction": 0
+      },
+      "sourceRuntimeColors": {
+        "space": "linear-srgb",
+        "skyDay": [
+          0.8227857543924378,
+          0.8962693533719567,
+          1
+        ],
+        "skyNight": [
+          0.14702726648767014,
+          0.20507873637973145,
+          0.3915724777393922
+        ],
+        "sunLow": [
+          1,
+          0.43415363616478553,
+          0.16202937562896222
+        ],
+        "sunHigh": [
+          1,
+          0.8796223968851662,
+          0.7156935005005721
+        ],
+        "moon": [
+          0.34670405634441115,
+          0.45641102317066595,
+          1
+        ]
+      },
+      "profile": {
+        "quality": 4,
+        "desktop": true,
+        "width": 640,
+        "height": 360,
+        "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "outputColorSpace": "srgb",
+        "toneMapping": 7,
+        "toneMappingExposure": 1.5750000000000002,
+        "contextLost": false,
+        "draws": 257
+      },
+      "camera": {
+        "eyeWeb": [
+          3.32,
+          1.62,
+          9.35
+        ],
+        "verticalFovDeg": 72,
+        "aspect": 1.7777777777777777
+      },
+      "yawWebDeg": 180,
+      "pitchWebDeg": -38
+    },
+    "evening22-clear": {
+      "dayShare": 0.12452149711509822,
+      "skyStrength": 0.24129019260830373,
+      "skyRgb": [
+        0.23117372508980683,
+        0.29114682679951176,
+        0.46733478369731285
+      ],
+      "sunDirWeb": [
+        -0.9835368767087977,
+        -0.022644218576034717,
+        0.17928316016565618
+      ],
+      "sunIntensity": 0.14864216656414744,
+      "sunRgb": [
+        0.34670405634441115,
+        0.45641102317066595,
+        1
+      ],
+      "fill": 0.10354126561950643,
+      "fillRgb": [
+        0.9046611743890203,
+        0.9215818562755338,
+        1
+      ],
+      "fillPositionWeb": [
+        8,
+        6,
+        -5
+      ],
+      "fillTargetWeb": [
+        0,
+        0,
+        0
+      ],
+      "hemiIntensityActual": 0.29129019260830374,
+      "ambientIntensityActual": 0.09428593713373404,
+      "date": [
+        2026,
+        6,
+        21
+      ],
+      "hour": 22,
+      "daylight": 0.12452149711509822,
+      "overcast": 0,
+      "dim": 0,
+      "under": 0,
+      "weatherActual": {
+        "force": "clear",
+        "kind": null,
+        "rain": 0,
+        "snow": null,
+        "snowPropertyPresent": false,
+        "overcast": 0,
+        "storm": false,
+        "source": "forced",
+        "rainKindFraction": 0,
+        "snowKindFraction": 0
+      },
+      "sourceRuntimeColors": {
+        "space": "linear-srgb",
+        "skyDay": [
+          0.8227857543924378,
+          0.8962693533719567,
+          1
+        ],
+        "skyNight": [
+          0.14702726648767014,
+          0.20507873637973145,
+          0.3915724777393922
+        ],
+        "sunLow": [
+          1,
+          0.43415363616478553,
+          0.16202937562896222
+        ],
+        "sunHigh": [
+          1,
+          0.8796223968851662,
+          0.7156935005005721
+        ],
+        "moon": [
+          0.34670405634441115,
+          0.45641102317066595,
+          1
+        ]
+      },
+      "profile": {
+        "quality": 4,
+        "desktop": true,
+        "width": 640,
+        "height": 360,
+        "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "outputColorSpace": "srgb",
+        "toneMapping": 7,
+        "toneMappingExposure": 1.0688744634943987,
+        "contextLost": false,
+        "draws": 271
+      },
+      "camera": {
+        "eyeWeb": [
+          3.32,
+          1.62,
+          9.35
+        ],
+        "verticalFovDeg": 72,
+        "aspect": 1.7777777777777777
+      },
+      "yawWebDeg": 180,
+      "pitchWebDeg": -38
+    },
+    "night00-clear": {
+      "dayShare": 0,
+      "skyStrength": 0,
+      "skyRgb": [
+        0.14702726648767017,
+        0.2050787363797314,
+        0.3915724777393922
+      ],
+      "sunDirWeb": [
+        -0.9479082490990384,
+        -0.16527811654061159,
+        -0.2723106598772502
+      ],
+      "sunIntensity": 0.06925054024842159,
+      "sunRgb": [
+        0.34670405634441115,
+        0.45641102317066595,
+        1
+      ],
+      "fill": 0,
+      "fillRgb": [
+        0.9046611743890203,
+        0.9215818562755338,
+        1
+      ],
+      "fillPositionWeb": [
+        8,
+        6,
+        -5
+      ],
+      "fillTargetWeb": [
+        0,
+        0,
+        0
+      ],
+      "hemiIntensityActual": 0.05,
+      "ambientIntensityActual": 0.025,
+      "date": [
+        2026,
+        6,
+        21
+      ],
+      "hour": 0,
+      "daylight": 0,
+      "overcast": 0,
+      "dim": 0,
+      "under": 0,
+      "weatherActual": {
+        "force": "clear",
+        "kind": null,
+        "rain": 0,
+        "snow": null,
+        "snowPropertyPresent": false,
+        "overcast": 0,
+        "storm": false,
+        "source": "forced",
+        "rainKindFraction": 0,
+        "snowKindFraction": 0
+      },
+      "sourceRuntimeColors": {
+        "space": "linear-srgb",
+        "skyDay": [
+          0.8227857543924378,
+          0.8962693533719567,
+          1
+        ],
+        "skyNight": [
+          0.14702726648767014,
+          0.20507873637973145,
+          0.3915724777393922
+        ],
+        "sunLow": [
+          1,
+          0.43415363616478553,
+          0.16202937562896222
+        ],
+        "sunHigh": [
+          1,
+          0.8796223968851662,
+          0.7156935005005721
+        ],
+        "moon": [
+          0.34670405634441115,
+          0.45641102317066595,
+          1
+        ]
+      },
+      "profile": {
+        "quality": 4,
+        "desktop": true,
+        "width": 640,
+        "height": 360,
+        "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "outputColorSpace": "srgb",
+        "toneMapping": 7,
+        "toneMappingExposure": 1,
+        "contextLost": false,
+        "draws": 263
+      },
+      "camera": {
+        "eyeWeb": [
+          3.32,
+          1.62,
+          9.35
+        ],
+        "verticalFovDeg": 72,
+        "aspect": 1.7777777777777777
+      },
+      "yawWebDeg": 180,
+      "pitchWebDeg": -38
+    },
+    "day14-rain": {
+      "dayShare": 1,
+      "skyStrength": 1.4,
+      "skyRgb": [
+        0.8227857543924378,
+        0.8962693533719567,
+        1
+      ],
+      "sunDirWeb": [
+        0.3290249069149738,
+        0.832794289174853,
+        0.44519241070277027
+      ],
+      "sunIntensity": 0.33000000000000007,
+      "sunRgb": [
+        1,
+        0.8796223968851662,
+        0.7156935005005721
+      ],
+      "fill": 0.9,
+      "fillRgb": [
+        0.9046611743890203,
+        0.9215818562755338,
+        1
+      ],
+      "fillPositionWeb": [
+        8,
+        6,
+        -5
+      ],
+      "fillTargetWeb": [
+        0,
+        0,
+        0
+      ],
+      "hemiIntensityActual": 1.4349999999999998,
+      "ambientIntensityActual": 0.46875,
+      "date": [
+        2026,
+        6,
+        21
+      ],
+      "hour": 14,
+      "daylight": 1,
+      "overcast": 1,
+      "dim": 0,
+      "under": 0,
+      "weatherActual": {
+        "force": "rain",
+        "kind": "rain",
+        "rain": 0.8,
+        "snow": null,
+        "snowPropertyPresent": false,
+        "overcast": 1,
+        "storm": false,
+        "source": "forced",
+        "rainKindFraction": 0.8,
+        "snowKindFraction": 0
+      },
+      "sourceRuntimeColors": {
+        "space": "linear-srgb",
+        "skyDay": [
+          0.8227857543924378,
+          0.8962693533719567,
+          1
+        ],
+        "skyNight": [
+          0.14702726648767014,
+          0.20507873637973145,
+          0.3915724777393922
+        ],
+        "sunLow": [
+          1,
+          0.43415363616478553,
+          0.16202937562896222
+        ],
+        "sunHigh": [
+          1,
+          0.8796223968851662,
+          0.7156935005005721
+        ],
+        "moon": [
+          0.34670405634441115,
+          0.45641102317066595,
+          1
+        ]
+      },
+      "profile": {
+        "quality": 4,
+        "desktop": true,
+        "width": 640,
+        "height": 360,
+        "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "outputColorSpace": "srgb",
+        "toneMapping": 7,
+        "toneMappingExposure": 1.05,
+        "contextLost": false,
+        "draws": 267
+      },
+      "camera": {
+        "eyeWeb": [
+          3.32,
+          1.62,
+          9.35
+        ],
+        "verticalFovDeg": 72,
+        "aspect": 1.7777777777777777
+      },
+      "yawWebDeg": 180,
+      "pitchWebDeg": -38
+    }
+  },
+  "previous14And22Comparison": {
+    "day14-clear": {
+      "dayShare": "exact",
+      "skyStrength": "exact",
+      "skyRgb": "exact",
+      "sunDirWeb": "exact",
+      "sunIntensity": "exact",
+      "sunRgb": "exact",
+      "date": "exact",
+      "hour": "exact"
+    },
+    "evening22-clear": {
+      "dayShare": "exact",
+      "skyStrength": "exact",
+      "skyRgb": "exact",
+      "sunDirWeb": "exact",
+      "sunIntensity": "exact",
+      "sunRgb": "exact",
+      "date": "exact",
+      "hour": "exact"
+    }
+  },
+  "provenance": {
+    "sourceRoot": "/home/devcontainers/wt/codex-2394",
+    "sourceCommit": "52bbee1d7269f02236200326b0c9af6ab48eeb82",
+    "trackedDiffSha256": "0e0be0bab2b8e34e9b449fd30faa0ee5e9bad34f301f3878b7ab2cdb5bb50e8b",
+    "chromeExecutableRequested": "/home/devcontainers/.cache/ms-playwright/chromium-1208/chrome-linux64/chrome",
+    "trackedDiffPaths": [
+      "shared/schema/measurements.schema.json",
+      "src/daycycle.js",
+      "tools/unreal-engine/export-window-light.js",
+      "tools/unreal-engine/python/build_lighting.py",
+      "tools/unreal-engine/tests/test_window_daylight_export.mjs"
+    ],
+    "gameSourceFileSha256": {
+      "src/daycycle.js": "ce91207b7d7d7e4a9f0f77477ac68246c62cf7caa42000f03ddf265bf15fd29e",
+      "src/weather.js": "3a8e9af3cd69ed7d43a37786a598e5b9e71ef0fa1eb3b6e947ffbef8008f3f78",
+      "src/windowlight.js": "4b44591fa5c6cb1c68d5c25cf4e9e99c4adfce30ee3eb4efc6c952e5efc5600c",
+      "src/main.js": "ac7902c916b7447deda82b417a0591cc60051fed7ef6eb6ae147e43f7739117a",
+      "src/config.js": "a36e730774ee48527ae9b1ac7e2f444ca0fe6e8cbf02e15d1da56cfcdc3f94e0"
+    },
+    "canonicalCapture": "tools/unreal-engine/tests/capture-web-lighting.cjs",
+    "canonicalCaptureSha256": "6ea061f4a9197a0d73aed717969c8862cd892fe172df48b98069c7bc4b911294",
+    "privateObservationSha256": "f8d6e8ec54de5b1a6017ae5b562c1ee0afe0149a569a69cc82ab6bed733f5af5",
+    "shotSetSha256": "ee7a4eba7280461d83e005b38e5962d29c7c1c5026b853cb35c39df5b0826b4c",
+    "baseUrl": "http://127.0.0.1:8839",
+    "observation": "Actual live fields immediately after canonical per-shot pose/date/weather.force/step(0)x2/light-slot settle/frame(1/60)/renderer.render. JSON only; original image output is discarded.",
+    "capturedAtUtc": "2026-11-27T11:48:46.646Z",
+    "browserVersion": "145.0.7632.6",
+    "actualChromiumExecutable": "/home/devcontainers/.cache/ms-playwright/chromium-1208/chrome-linux64/chrome",
+    "trackedDiffAfterSha256": "0e0be0bab2b8e34e9b449fd30faa0ee5e9bad34f301f3878b7ab2cdb5bb50e8b",
+    "gameSourceFileAfterSha256": {
+      "src/daycycle.js": "ce91207b7d7d7e4a9f0f77477ac68246c62cf7caa42000f03ddf265bf15fd29e",
+      "src/weather.js": "3a8e9af3cd69ed7d43a37786a598e5b9e71ef0fa1eb3b6e947ffbef8008f3f78",
+      "src/windowlight.js": "4b44591fa5c6cb1c68d5c25cf4e9e99c4adfce30ee3eb4efc6c952e5efc5600c",
+      "src/main.js": "ac7902c916b7447deda82b417a0591cc60051fed7ef6eb6ae147e43f7739117a",
+      "src/config.js": "a36e730774ee48527ae9b1ac7e2f444ca0fe6e8cbf02e15d1da56cfcdc3f94e0"
+    },
+    "browserErrors": [],
+    "precipitationNote": "Weather has one actual precipitation amplitude weather.rain and kind; absent weather.snow is null/presence=false. Kind fractions are explicit derivations from those observed fields."
+  }
+}

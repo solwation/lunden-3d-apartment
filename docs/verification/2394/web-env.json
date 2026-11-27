@@ -1,0 +1,234 @@
+{
+  "views": {
+    "fruit-bowl": {
+      "dayShare": 1,
+      "skyStrength": 1.5,
+      "skyRgb": [
+        0.8227857543924378,
+        0.8962693533719567,
+        1
+      ],
+      "sunDirWeb": [
+        0.3290249069149738,
+        0.832794289174853,
+        0.44519241070277027
+      ],
+      "sunIntensity": 3,
+      "sunRgb": [
+        1,
+        0.8796223968851662,
+        0.7156935005005721
+      ],
+      "date": [
+        2026,
+        6,
+        21
+      ],
+      "hour": 14,
+      "camera": {
+        "eyeWeb": [
+          3.32,
+          1.62,
+          9.35
+        ],
+        "feetWeb": [
+          3.32,
+          0,
+          9.35
+        ],
+        "yawWebDeg": 180,
+        "pitchWebDeg": -38,
+        "verticalFovDeg": 72,
+        "aspect": 1.7777777777777777
+      },
+      "profile": {
+        "viewport": {
+          "width": 640,
+          "height": 360
+        },
+        "quality": 4,
+        "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "desktop": true,
+        "contextLost": false,
+        "draws": 256,
+        "weather": "clear",
+        "lampsOn": false
+      }
+    },
+    "basketball": {
+      "dayShare": 1,
+      "skyStrength": 1.5,
+      "skyRgb": [
+        0.8227857543924378,
+        0.8962693533719567,
+        1
+      ],
+      "sunDirWeb": [
+        0.3290249069149738,
+        0.832794289174853,
+        0.44519241070277027
+      ],
+      "sunIntensity": 3,
+      "sunRgb": [
+        1,
+        0.8796223968851662,
+        0.7156935005005721
+      ],
+      "date": [
+        2026,
+        6,
+        21
+      ],
+      "hour": 14,
+      "camera": {
+        "eyeWeb": [
+          1.55,
+          4.87,
+          11.08
+        ],
+        "feetWeb": [
+          1.55,
+          3.25,
+          11.08
+        ],
+        "yawWebDeg": 90,
+        "pitchWebDeg": -8,
+        "verticalFovDeg": 72,
+        "aspect": 1.7777777777777777
+      },
+      "profile": {
+        "viewport": {
+          "width": 640,
+          "height": 360
+        },
+        "quality": 4,
+        "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "desktop": true,
+        "contextLost": false,
+        "draws": 197,
+        "weather": "clear",
+        "lampsOn": false
+      }
+    },
+    "start": {
+      "dayShare": 1,
+      "skyStrength": 1.5,
+      "skyRgb": [
+        0.8227857543924378,
+        0.8962693533719567,
+        1
+      ],
+      "sunDirWeb": [
+        0.3290249069149738,
+        0.832794289174853,
+        0.44519241070277027
+      ],
+      "sunIntensity": 3,
+      "sunRgb": [
+        1,
+        0.8796223968851662,
+        0.7156935005005721
+      ],
+      "date": [
+        2026,
+        6,
+        21
+      ],
+      "hour": 14,
+      "camera": {
+        "eyeWeb": [
+          2.875,
+          1.62,
+          -12
+        ],
+        "feetWeb": [
+          2.875,
+          0,
+          -12
+        ],
+        "yawWebDeg": 180,
+        "pitchWebDeg": 8,
+        "verticalFovDeg": 72,
+        "aspect": 1.7777777777777777
+      },
+      "profile": {
+        "viewport": {
+          "width": 640,
+          "height": 360
+        },
+        "quality": 4,
+        "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "desktop": true,
+        "contextLost": false,
+        "draws": 518,
+        "weather": "clear",
+        "lampsOn": false
+      }
+    },
+    "living-room-evening": {
+      "dayShare": 0.12452149711509822,
+      "skyStrength": 0.24129019260830373,
+      "skyRgb": [
+        0.23117372508980683,
+        0.29114682679951176,
+        0.46733478369731285
+      ],
+      "sunDirWeb": [
+        -0.9835368767087977,
+        -0.022644218576034717,
+        0.17928316016565618
+      ],
+      "sunIntensity": 0.14864216656414744,
+      "sunRgb": [
+        0.34670405634441115,
+        0.45641102317066595,
+        1
+      ],
+      "date": [
+        2026,
+        6,
+        21
+      ],
+      "hour": 22,
+      "camera": {
+        "eyeWeb": [
+          2.5,
+          1.62,
+          8.2
+        ],
+        "feetWeb": [
+          2.5,
+          0,
+          8.2
+        ],
+        "yawWebDeg": 173,
+        "pitchWebDeg": -4,
+        "verticalFovDeg": 72,
+        "aspect": 1.7777777777777777
+      },
+      "profile": {
+        "viewport": {
+          "width": 640,
+          "height": 360
+        },
+        "quality": 4,
+        "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "desktop": true,
+        "contextLost": false,
+        "draws": 440,
+        "weather": "clear",
+        "lampsOn": true
+      }
+    }
+  },
+  "provenance": {
+    "sourceCommit": "5b4234645c157e7b52815c7e160562c05610626c",
+    "originalCapture": "tools/unreal-engine/capture-web-views.cjs",
+    "originalCaptureSha256": "a16ca0191d6eb666c08b306c87214721ba5aaca5164cdf152d2745967e248238",
+    "privateObservationSha256": "285d597acd33f935c289b9789584827bfc2dd69749af8fb7be6eb0a6feb01daa",
+    "controlViewsSha256": "1002d90f5829bc167bac3db13f6d7e8bbd3d4347f7f7ba8aa51844165c54ce57",
+    "baseUrl": "http://127.0.0.1:8839",
+    "observation": "Actual day values immediately after the canonical two step(0), frame(1/60), renderer.render sequence. No guessed constants, colour conversion or separate simulation frame.",
+    "capturedAtUtc": "2026-11-27T11:12:58.806Z"
+  }
+}
