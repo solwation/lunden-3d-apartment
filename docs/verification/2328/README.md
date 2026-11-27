@@ -74,3 +74,16 @@ bildevidens och ska inte läsas som nya bilder från denna Linuxrevision.
 
 [Sammanställda kördata](linux-verification.json), [interaktionsresultat](linux-interaction-result.json),
 [gångvägsresultat](linux-exterior-route-result.json) och [fasadresultat](linux-facades-result.json).
+
+Första CPU-bildförsöket sparade tio riktiga bilder men underkändes av pluginens interna
+300 s latentgräns efter kall materialkompilering (motor exit 255, 562,55 s totalt).
+Wrapperns 1800 s-gräns nåddes inte. Bildfixturen har nu stöd för en uttrycklig
+`LUNDEN_DOOR_CAPTURE_TIMEOUT=900`; standarden är fortfarande 300 s. Endast bildfixturens
+budget kan ändras; gångjärns-, vinkel-, knapp-, tidsregel- och händelseassertioner är oförändrade.
+
+Editorvyns faktiska PNG-storlek var 1526 × 910 trots begärda 640 × 360;
+[upplösningsfel #2469](https://github.com/solwation/lunden-3d-apartment/issues/2469).
+Tunna färgpixlar vid den undre bildkanten följs i [#2470](../2470/README.md).
+Dessa fel är inte avsedda grafikförenklingar. Lågprofilens avstängda Lumen/Nanite,
+skuggor och reflektioner är däremot avsiktliga utvecklingsinställningar; bilderna
+är ingen fullkvalitets- eller Windowsjämförelse.

@@ -155,5 +155,104 @@
   "documentationChecks": {
     "gitDiffCheck": "passed",
     "markdownLinks": "All changed README links resolve; full checker reported only pre-existing release-notes/mall.md {{setupUrl}} placeholder, tracked in #2464"
+  },
+  "renderAttempts": [
+    {
+      "sourceRevision": "19f6083016a36defd7973bca84296fed7b84bac6",
+      "passed": false,
+      "exitCode": 255,
+      "seconds": 562.55,
+      "wrapperTimedOut": false,
+      "failure": "PythonAutomationTest latent command timeout 300 s during first cold composed-world CPU capture; secondary generator cleanup error",
+      "device": "llvmpipe LLVM20.1.2",
+      "profile": "linux-low",
+      "requestedResolution": [
+        640,
+        360
+      ],
+      "actualResolution": [
+        1526,
+        910
+      ],
+      "resolutionFollowup": 2469,
+      "files": [
+        {
+          "name": "cage-closed.png",
+          "width": 1526,
+          "height": 910,
+          "bytes": 1475712,
+          "sha256": "2a39672d4d0a1f1b0ae0a3af5217f48d69ddba4bdf44d7f5483353944540c36a"
+        },
+        {
+          "name": "cage-open.png",
+          "width": 1526,
+          "height": 910,
+          "bytes": 1408109,
+          "sha256": "ec14529aafc240cc6ce0802554c59d3e1d18ae49a4d6daace0d63fdec3396b23"
+        },
+        {
+          "name": "hus-a-closed.png",
+          "width": 1526,
+          "height": 910,
+          "bytes": 186794,
+          "sha256": "bc2277c20a82c5f4380f1298bb8eba966e36784e4f3b9bff237dbbc92dfc28ed"
+        },
+        {
+          "name": "hus-a-open.png",
+          "width": 1526,
+          "height": 910,
+          "bytes": 175843,
+          "sha256": "3a7d6a05a08b66e57f1523d8a251791d765fb4faf4e4ba2733a2d0a5000ae431"
+        },
+        {
+          "name": "hus-b-closed.png",
+          "width": 1526,
+          "height": 910,
+          "bytes": 112542,
+          "sha256": "83f80906b27c1ba494586fb4ad1e388eb4b0668d1f270470256e14c960b3f77d"
+        },
+        {
+          "name": "hus-b-open.png",
+          "width": 1526,
+          "height": 910,
+          "bytes": 121113,
+          "sha256": "5e1f420e47eeb1215af33800df146dc611e126f156a33bf3bae1976896664e3f"
+        },
+        {
+          "name": "hus-c-closed.png",
+          "width": 1526,
+          "height": 910,
+          "bytes": 114802,
+          "sha256": "f6ee9ce82b0c7cee2661402b3653e4fdade21cc33c72db50f4183c04607da8ad"
+        },
+        {
+          "name": "hus-c-open.png",
+          "width": 1526,
+          "height": 910,
+          "bytes": 100783,
+          "sha256": "26cac2b462a177516eae7cf395eefc7ad573c291e08465451c6da4fb858612a2"
+        },
+        {
+          "name": "steel-closed.png",
+          "width": 1526,
+          "height": 910,
+          "bytes": 504675,
+          "sha256": "e27a0944616b2638d8c60b0f6488bda14d223a490374e95c46326a9390618c40"
+        },
+        {
+          "name": "steel-open.png",
+          "width": 1526,
+          "height": 910,
+          "bytes": 476458,
+          "sha256": "638743a581c150abc2842092cdbfc98da3bacfd610b15dded27efeb3b93d8643"
+        }
+      ]
+    }
+  ],
+  "captureFixtureRetry": {
+    "status": "Prepared, not yet run; no pass claimed",
+    "latentTimeoutSeconds": 900,
+    "defaultLatentTimeoutSeconds": 300,
+    "poseInputAndRuleAssertions": "unchanged"
   }
 }

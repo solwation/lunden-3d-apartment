@@ -5,6 +5,7 @@ Each run writes game-viewport PNGs and a camera/state record under Saved/Automat
 """
 import json
 import math
+import os
 from pathlib import Path
 import sys
 import time
@@ -15,6 +16,13 @@ import unreal as u
 PROJECT = Path(u.Paths.convert_relative_path_to_full(u.Paths.project_dir()))
 sys.path.insert(0, str(PROJECT.parents[1] / "tools/unreal-engine/tests"))
 import save_isolation  # noqa: E402
+
+# Cold CPU rendering can spend most of the plugin's default 300 s compiling
+# materials. Keep the pose/input assertions unchanged and opt in to more time.
+LATENT_TIMEOUT = int(os.environ.get("LUNDEN_DOOR_CAPTURE_TIMEOUT", "300"))
+if not 300 <= LATENT_TIMEOUT <= 1800:
+    raise RuntimeError("LUNDEN_DOOR_CAPTURE_TIMEOUT must be between 300 and 1800 seconds")
+u.AutomationScheduler.set_latent_command_timeout(LATENT_TIMEOUT)
 
 MAP = "/Game/Lunden/Maps/L_Lunden"
 MEASURES = json.loads((PROJECT / "Import/measurements.json").read_text(encoding="utf-8"))
@@ -99,7 +107,8 @@ def capture():
         sky.call_method("UpdateSky")
         u.AutomationLibrary.finish_loading_before_screenshot()
         result = {"map": MAP, "engine": u.SystemLibrary.get_engine_version(), "export": MEASURES["sourceCommit"],
-                  "hour": sky.get_editor_property("Hour"), "date": "2026-11-15", "views": {}}
+                  "hour": sky.get_editor_property("Hour"), "date": "2026-11-15",
+                  "latentTimeoutSeconds": LATENT_TIMEOUT, "views": {}}
 
         def move(eye, target, fov):
             rotation = u.MathLibrary.find_look_at_rotation(eye, target)
