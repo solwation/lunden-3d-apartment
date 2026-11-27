@@ -1,0 +1,143 @@
+{
+  "actualFourNativeAndFourWebOriginalsViewed": true,
+  "sourceHead": "b8a31c02d5c281e695f87e2eb580486905f97c39",
+  "inputs": {
+    "living-room-day": {
+      "web": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/web/web-living-room-day.jpg",
+        "sha256": "be8023e5a4d1ba5cfb2d4f930273f6792c788658efd47dba6a6c153016af33ac"
+      },
+      "native": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2403/native-build-product-v3/product/regressions/unreal-living-room-day.png",
+        "sha256": "c7efece3b2f7c7a023bc9cc67ac378607333b24ce211bf4e0ea5ca4d2a612cb0"
+      }
+    },
+    "living-room-evening": {
+      "web": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2369/web/web-living-room-evening.jpg",
+        "sha256": "1a6d7cd06c97fbb1729662cece73490a808745d2511124f8dc0a987f0e810c0b"
+      },
+      "native": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2403/native-build-product-v3/product/regressions/unreal-living-room-evening.png",
+        "sha256": "2c05c2cc64f5b5024db3aea43601a75b446d3b90689311921957000fa1fee1c1"
+      }
+    },
+    "stairs-evening": {
+      "web": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2369/web/web-stairs-evening.jpg",
+        "sha256": "48dcb9b61e67c0d499f06d1d253d02251b4930a9bb567f138c6723ddf71574c5"
+      },
+      "native": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2403/native-build-product-v3/product/regressions/unreal-stairs-evening.png",
+        "sha256": "ecad3ad7f94d856494cc4fb6909c9564dde204bfd802edb7ea89d597ea2a7d90"
+      }
+    },
+    "upper-floor-evening": {
+      "web": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/web/web-upper-floor-evening.jpg",
+        "sha256": "16ed055836f8a6f6487ed1c6d99bfa45be5ceb9ecb2e53b5240c1692ebd7dbb8"
+      },
+      "native": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2403/native-build-product-v3/product/regressions/unreal-upper-floor-evening.png",
+        "sha256": "8ef5b1d5ee56fa45ea4d113218261fda5a534d7486caaa65b6444e6308384c59"
+      }
+    }
+  },
+  "existingFrozen22RowGatePassed": true,
+  "introducedIndoorProfileOrGeometryRegressionObserved": false,
+  "knownOpenMappings": [
+    {
+      "issues": [
+        2480
+      ],
+      "views": [
+        "stairs-evening"
+      ],
+      "observation": "The stair shaft and tread contrast remains flatter than the source despite existing warmth/full-frame gates passing."
+    },
+    {
+      "issues": [
+        2481
+      ],
+      "views": [
+        "living-room-evening",
+        "upper-floor-evening"
+      ],
+      "observation": "Room ceiling/fixture halos differ in shape/intensity; the camera-facing source halos are missing."
+    },
+    {
+      "issues": [
+        2482
+      ],
+      "views": [
+        "living-room-day",
+        "living-room-evening"
+      ],
+      "observation": "The Silvia pendant shade remains dark copper/brown rather than the source bright copper."
+    },
+    {
+      "issues": [
+        2484
+      ],
+      "views": [
+        "living-room-evening"
+      ],
+      "observation": "Wall above the Besta cabinet is brighter outside the existing lamp pools."
+    },
+    {
+      "issues": [
+        2487,
+        2489
+      ],
+      "views": [
+        "living-room-day",
+        "living-room-evening",
+        "stairs-evening",
+        "upper-floor-evening"
+      ],
+      "observation": "Floor raster and missing edge/corner ambient occlusion remain visible."
+    },
+    {
+      "issues": [
+        2490
+      ],
+      "views": [
+        "stairs-evening"
+      ],
+      "observation": "The round SKOGSGRANSEN mirror has a bright dome/glint absent from the source."
+    },
+    {
+      "issues": [
+        2388,
+        2443
+      ],
+      "views": [
+        "living-room-day",
+        "living-room-evening"
+      ],
+      "observation": "Through-glass outdoor/interior contrast and the patio screen dark raster differ."
+    },
+    {
+      "issues": [
+        2389,
+        2424
+      ],
+      "views": [
+        "living-room-day",
+        "living-room-evening"
+      ],
+      "observation": "Patio palm/foliage highlights remain pale/yellow versus source."
+    },
+    {
+      "issues": [
+        2447
+      ],
+      "views": [
+        "living-room-evening"
+      ],
+      "observation": "The source warm yellow patch on the sofa back remains missing."
+    }
+  ],
+  "parasolCaptureLimit": "The four indoor profile captures reload L_Lunden and apply fixed lighting-profile controls without running the canopy Tick/function. Their editor snapshot therefore retains the exported open canopy, visible outside the evening window; these four are not parasol motion/state acceptance. The separate targeted two native frames call the actual production controller and do prove the folded shape. The separate fresh canonical PIE now passes the actual game Tick and transitions; see functional-status.json.",
+  "scope": "No new crop, color fit, threshold or numerical criterion introduced."
+}

@@ -1,0 +1,52 @@
+{
+  "lightingActualAutomationState": "Success",
+  "originalJointNativeExitCode": 255,
+  "originalJointRunnerExitCode": 1,
+  "jointFailure": "parasol test wrote a private instance field before its first boundary; this whole process remains FAILED",
+  "checkSunExitCode": 0,
+  "resultSHA256": "fb66f19e18d576cbf04b1aa0e5b9a9eca804121bfc04de399ec6bf0c7db3242d",
+  "canonicalTestSHA256": "71f5c78cb9e422907990e18fa0be1089a029818f2056a5439577db1c1132b1d8",
+  "files": {
+    "tools/unreal-engine/check-sun.mjs": {
+      "sha256": "745c91de2a078a4306ffe84f0dee17a8d3489613a6d8388b99984161df5751dc",
+      "byteExactPreviousVerifiedSource": true
+    },
+    "tools/unreal-engine/coordinates.mjs": {
+      "sha256": "d59d8b3a3af1ff3688e3723fcfd13cd9cc634f69a5297fff2bd65608e2c889d0",
+      "byteExactPreviousVerifiedSource": true
+    },
+    "src/daycycle.js": {
+      "sha256": "ce91207b7d7d7e4a9f0f77477ac68246c62cf7caa42000f03ddf265bf15fd29e",
+      "byteExactPreviousVerifiedSource": true
+    },
+    "src/moon.js": {
+      "sha256": "fb289cd59ce9db1580f585f62bb64b33a6dae59fa2c147d487e0a74a11b3879b",
+      "byteExactPreviousVerifiedSource": true
+    },
+    "src/config.js": {
+      "sha256": "a36e730774ee48527ae9b1ac7e2f444ca0fe6e8cbf02e15d1da56cfcdc3f94e0",
+      "byteExactPreviousVerifiedSource": true
+    },
+    "src/cloudshadow.js": {
+      "sha256": "803910ae6674fe6a5318a3f338b470df0fc3123094fb31662b9cba79ace9f838",
+      "byteExactPreviousVerifiedSource": true
+    },
+    "tools/unreal-engine/tests/test_lighting.py": {
+      "sha256": "71f5c78cb9e422907990e18fa0be1089a029818f2056a5439577db1c1132b1d8",
+      "byteExactPreviousVerifiedSource": true
+    }
+  },
+  "reuseAfterTestOnlyFix": {
+    "onlyChangedSourceFile": [
+      "/home/devcontainers/lunden-linux/tools/unreal-engine/tests/test_parasol.py"
+    ],
+    "allProductionPythonAndLightingCanonicalUnchanged": true,
+    "all247AuthoredGeneratedAndExportBaselinesExact": true,
+    "rerunParasolSeparately": true
+  },
+  "command": [
+    "node",
+    "tools/unreal-engine/check-sun.mjs",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2403/null-fresh/lighting-result.json"
+  ]
+}

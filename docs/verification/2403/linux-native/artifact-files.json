@@ -1,0 +1,16 @@
+{
+  "rawImages": {
+    "unreal-living-room-day.png": "c7efece3b2f7c7a023bc9cc67ac378607333b24ce211bf4e0ea5ca4d2a612cb0",
+    "unreal-living-room-evening.png": "2c05c2cc64f5b5024db3aea43601a75b446d3b90689311921957000fa1fee1c1",
+    "unreal-patio-dusk.png": "c37adcaba8e95c0e875ab5004c347f61d660a326716f29b831452c63e4762abf",
+    "unreal-patio-overcast.png": "65823f8131c5d403da73c229b83c689ee020802d662f1d00d445c3f731732523",
+    "unreal-stairs-evening.png": "ecad3ad7f94d856494cc4fb6909c9564dde204bfd802edb7ea89d597ea2a7d90",
+    "unreal-upper-floor-evening.png": "8ef5b1d5ee56fa45ea4d113218261fda5a534d7486caaa65b6444e6308384c59",
+    "web-patio-dusk.jpg": "67bdf5f96a657877b5e3f2a367ff9922c9b12419432c33adf1c561c9a9a79a79",
+    "web-patio-overcast.jpg": "e38391f6017b98bfe78c95eb9af168628bc2d2dd26b206fa60100c9f60c8ffab"
+  },
+  "rawImageCount": 8,
+  "sourceHead": "b8a31c02d5c281e695f87e2eb580486905f97c39",
+  "classification": "actual eight unmodified raw images; actual fresh canonical functional acceptance PASS, with first joint failure preserved",
+  "acceptedNativeHead": "79e9d401d3b5f32356f20bda584a18676d0a4013"
+}

@@ -1,0 +1,58 @@
+{
+  "classification": "Prior process remains overall FAILED; lighting test independently succeeded, parasol failed before first boundary because the test attempted to edit a private instance field",
+  "nativeRun": "/mnt/d/LundenLinux/runs/20261127T195327491924-4055886",
+  "nativeResult": {
+    "engine": "5.8.4",
+    "profile": "nullrhi",
+    "exitCode": 255,
+    "timedOut": false,
+    "passed": false,
+    "completed": true,
+    "log": "/mnt/d/LundenLinux/runs/20261127T195327491924-4055886/editor.log",
+    "command": [
+      "/mnt/d/UnrealEngine/5.8.4/Engine/Binaries/Linux/UnrealEditor-Cmd",
+      "/home/devcontainers/lunden-linux/unreal/Lunden/Lunden.uproject",
+      "-DefEngineIni=/mnt/d/LundenLinux/runs/20261127T195327491924-4055886/LowEngine.ini",
+      "-LocalDataCachePath=/mnt/d/LundenLinux/DerivedDataCache",
+      "-ZenDataPath=/mnt/d/LundenLinux/Zen",
+      "-unattended",
+      "-nosplash",
+      "-nosound",
+      "-nop4",
+      "-stdout",
+      "-FullStdOutLogOutput",
+      "-NoCrashDialog",
+      "-abslog=/mnt/d/LundenLinux/runs/20261127T195327491924-4055886/editor.log",
+      "-nullrhi",
+      "-RenderOffscreen",
+      "-EnablePlugins=PythonAutomationTest",
+      "-ExecCmds=Automation RunTests Editor.Python.Lunden.test_lighting+Editor.Python.Lunden.test_parasol; Quit",
+      "-TestExit=Automation Test Queue Empty",
+      "-ReportExportPath=/mnt/d/LundenLinux/runs/20261127T195327491924-4055886/automation"
+    ],
+    "engineIniSha256": "e26c244f9d51fddd3e6577d5696a073521b417a73167c5dd6dc69c79a2db180e",
+    "vulkanIcd": null,
+    "revision": "348256549d10ecd580883b58d4a53cda3318a7fd",
+    "signal": null,
+    "error": null,
+    "seconds": 213.6
+  },
+  "runnerExitCode": 1,
+  "automationTests": [
+    {
+      "fullTestPath": "Editor.Python.Lunden.test_lighting",
+      "state": "Success"
+    },
+    {
+      "fullTestPath": "Editor.Python.Lunden.test_parasol",
+      "state": "Fail"
+    }
+  ],
+  "sourceExact": true,
+  "all247ExactReadonly": true,
+  "generatedExact": true,
+  "exportExact": true,
+  "failure": "test_parasol.py attempted driver.set_editor_property(ParasolManual,False), which is not instance-editable. No product Blueprint failure was shown.",
+  "sourceFix": "b6b6620b replaces that test write with an initial read assertion; no product/assets/assertion weakening",
+  "next": "Separate fresh canonical parasol-only Automation required; no duplicate RHI or Lighting build justified by this test setup fix"
+}

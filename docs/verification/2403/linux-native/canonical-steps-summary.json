@@ -1,0 +1,181 @@
+{
+  "rawProofSHA256": "688226acc62959017eb19c1623689c8bb66b179fe15373a7e2c7f193ee99f764",
+  "completed": true,
+  "sourceHead": "b8a31c02d5c281e695f87e2eb580486905f97c39",
+  "actualSteps": [
+    {
+      "step": "lighting-check-first",
+      "passed": true,
+      "result": null,
+      "seconds": 0.485
+    },
+    {
+      "step": "preflight-existing",
+      "passed": true,
+      "result": {
+        "seasons": "canonical --check passed",
+        "vegetation": "canonical materials(check=True) passed",
+        "interaction": {
+          "/Game/Lunden/Interaction/BP_LundenInteractionListener": true,
+          "/Game/Lunden/Blueprints/PilotDoors/BP_LundenSwingDoor": true
+        },
+        "lighting": "canonical --check required before actual skip invocation"
+      },
+      "seconds": 17.203
+    },
+    {
+      "step": "export",
+      "passed": true,
+      "result": {
+        "command": [
+          "/home/devcontainers/.nvm/versions/node/v22.20.0/bin/node",
+          "/home/devcontainers/lunden-linux/tools/unreal-engine/check-export.mjs",
+          "--dir",
+          "/home/devcontainers/lunden-linux/unreal/Lunden/Import"
+        ],
+        "exitCode": 0,
+        "stdout": "Unreal export is current: 11 files, 9402 nodes (9402 ids, each in one zone), 320 sources (exported from 863307a7, HEAD b8a31c02)\n",
+        "stderr": ""
+      },
+      "seconds": 4.811
+    },
+    {
+      "step": "seasons",
+      "passed": true,
+      "result": null,
+      "seconds": 0.59
+    },
+    {
+      "step": "import",
+      "passed": true,
+      "result": null,
+      "seconds": 9.608
+    },
+    {
+      "step": "build_l1007",
+      "passed": true,
+      "result": null,
+      "seconds": 0.408
+    },
+    {
+      "step": "build_exterior",
+      "passed": true,
+      "result": null,
+      "seconds": 0.545
+    },
+    {
+      "step": "build_site",
+      "passed": true,
+      "result": null,
+      "seconds": 0.463
+    },
+    {
+      "step": "build_lighting",
+      "passed": true,
+      "result": null,
+      "seconds": 0.476
+    },
+    {
+      "step": "build_facade",
+      "passed": true,
+      "result": null,
+      "seconds": 0.576
+    },
+    {
+      "step": "build_vegetation",
+      "passed": true,
+      "result": null,
+      "seconds": 0.469
+    },
+    {
+      "step": "build_interaction",
+      "passed": true,
+      "result": null,
+      "seconds": 16.029
+    },
+    {
+      "step": "build_curtains",
+      "passed": true,
+      "result": null,
+      "seconds": 1.774
+    },
+    {
+      "step": "build_cabinet_washes",
+      "passed": true,
+      "result": null,
+      "seconds": 1.909
+    },
+    {
+      "step": "build_rug_pool",
+      "passed": true,
+      "result": null,
+      "seconds": 4.655
+    },
+    {
+      "step": "compose-check",
+      "passed": true,
+      "result": null,
+      "seconds": 4.95
+    },
+    {
+      "step": "import-check",
+      "passed": true,
+      "result": null,
+      "seconds": 10.962
+    },
+    {
+      "step": "nanite-usage-check",
+      "passed": true,
+      "result": {
+        "zones": [
+          "fixture",
+          "fond",
+          "gard",
+          "hus-l",
+          "kvarteret",
+          "l1007",
+          "l1007-entre",
+          "l1007-uteplats",
+          "omgivning",
+          "vegetation"
+        ],
+        "checkOnly": true
+      },
+      "seconds": 1.063
+    },
+    {
+      "step": "sync-stamp",
+      "passed": true,
+      "result": {
+        "command": [
+          "/home/devcontainers/.nvm/versions/node/v22.20.0/bin/node",
+          "/home/devcontainers/lunden-linux/tools/unreal-engine/check-import.mjs",
+          "--write-sync-stamp",
+          "--steps",
+          "export,seasons,import,build_l1007,build_exterior,build_site,build_lighting,build_facade,build_vegetation,build_interaction,build_curtains,build_cabinet_washes,build_rug_pool,compose-check,import-check"
+        ],
+        "exitCode": 0,
+        "stdout": "sync stamp written: complete sync of 863307a7 (export, seasons, import, build_l1007, build_exterior, build_site, build_lighting, build_facade, build_vegetation, build_interaction, build_curtains, build_cabinet_washes, build_rug_pool, compose-check, import-check)\n",
+        "stderr": ""
+      },
+      "seconds": 0.469
+    },
+    {
+      "step": "release-gate",
+      "passed": true,
+      "result": {
+        "command": [
+          "/home/devcontainers/.nvm/versions/node/v22.20.0/bin/node",
+          "/home/devcontainers/lunden-linux/tools/unreal-engine/check-import.mjs"
+        ],
+        "exitCode": 0,
+        "stdout": "  Unreal export is current: 11 files, 9402 nodes (9402 ids, each in one zone), 320 sources (exported from 863307a7, HEAD b8a31c02)\nUnreal import is current: 10 zones (fixture, fond, gard, hus-l, kvarteret, l1007-entre, l1007-uteplats, l1007, omgivning, vegetation) match the export of 863307a7; last sync-import complete\n",
+        "stderr": ""
+      },
+      "seconds": 4.748
+    }
+  ],
+  "executionMode": "actual entire cached canonical sequence, no reused execution",
+  "reusedSteps": [],
+  "authoredUnchangedCount": 247
+}

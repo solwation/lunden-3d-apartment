@@ -1,0 +1,30 @@
+{
+  "rawProofSHA256": "02fcab25f72bde18861e49bc59fa4692f13b575a5b05a5d5cb136fc651884e81",
+  "executionContext": "Actual controlled RHI Lighting build only; the reused prefix instrumentation did not execute a PIE body in this process",
+  "completed": true,
+  "sourceHead": "b8a31c02d5c281e695f87e2eb580486905f97c39",
+  "actualSaveAttempts": [
+    "unreal/Lunden/Content/Lunden/Lighting/MPC_LundenWeather.uasset",
+    "unreal/Lunden/Content/Lunden/Lighting/M_LundenPrecipitation.uasset",
+    "unreal/Lunden/Content/Lunden/Lighting/M_LundenNeutralTonemap.uasset",
+    "unreal/Lunden/Content/Lunden/Lighting/M_LundenWindowDaylight.uasset",
+    "unreal/Lunden/Content/Lunden/Lighting/BP_LundenLamp.uasset",
+    "unreal/Lunden/Content/Lunden/Lighting/BP_LundenSky.uasset",
+    "unreal/Lunden/Content/Lunden/Lighting/T_LundenHemisphere.uasset"
+  ],
+  "changedAuthored": [
+    "unreal/Lunden/Content/Lunden/Lighting/BP_LundenLamp.uasset",
+    "unreal/Lunden/Content/Lunden/Lighting/BP_LundenSky.uasset",
+    "unreal/Lunden/Content/Lunden/Lighting/MPC_LundenWeather.uasset",
+    "unreal/Lunden/Content/Lunden/Lighting/M_LundenNeutralTonemap.uasset",
+    "unreal/Lunden/Content/Lunden/Lighting/M_LundenPrecipitation.uasset",
+    "unreal/Lunden/Content/Lunden/Lighting/M_LundenWindowDaylight.uasset",
+    "unreal/Lunden/Content/Lunden/Lighting/T_LundenHemisphere.uasset"
+  ],
+  "unexpectedProtected": [],
+  "all247Readonly": true,
+  "CloudsUnchanged": true,
+  "exportExact": true,
+  "sourceExact": true,
+  "noPackageReload": true
+}

@@ -1,0 +1,29 @@
+{
+  "completed": true,
+  "all718BeforeAfterExact": true,
+  "actualNodeAndWrapperExit": 0,
+  "frozenCamera": {
+    "eye": [
+      2.3,
+      1.62,
+      16.1
+    ],
+    "yaw": -65,
+    "pitch": 12,
+    "verticalFov": 72,
+    "viewport": [
+      640,
+      360
+    ]
+  },
+  "raw": {
+    "web-patio-overcast.jpg": "e38391f6017b98bfe78c95eb9af168628bc2d2dd26b206fa60100c9f60c8ffab",
+    "web-patio-dusk.jpg": "67bdf5f96a657877b5e3f2a367ff9922c9b12419432c33adf1c561c9a9a79a79"
+  },
+  "actualFoldedCanopyVisibleBothViews": true,
+  "oldDefaultCameraControlNotAcceptance": "../web/",
+  "captureMetadataSHA256": "e2612a779e4a7de6b9c24d56b41f075aa45d45c3ceb473c89d5215cc9c49645c",
+  "before718ProofSHA256": "d0c510827ce10e7c940042112317bad422b09f2c30a5284c5cfe5b1f64a43f8b",
+  "after718ProofSHA256": "d0c510827ce10e7c940042112317bad422b09f2c30a5284c5cfe5b1f64a43f8b",
+  "actualWebSourceFiles": 718
+}

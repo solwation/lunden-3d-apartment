@@ -1,0 +1,24 @@
+142/142 sky, cloud and dusk-lamp values as the web's
+ok   2026-06-21     7 h sun  elevation web   17.982 unreal   17.982  azimuth web  -73.446 unreal  -73.446  angle 0.0000°
+ok   2026-06-21     7 h moon elevation web  -32.248 unreal  -32.248  azimuth web -140.962 unreal -140.962  angle 0.0000°
+ok   2026-06-21    14 h sun  elevation web   56.387 unreal   56.387  azimuth web   53.533 unreal   53.533  angle 0.0000°
+ok   2026-06-21    14 h moon elevation web   10.008 unreal   10.008  azimuth web  -43.102 unreal  -43.102  angle 0.0000°
+ok   2026-06-21    22 h sun  elevation web   -1.298 unreal   -1.298  azimuth web  169.669 unreal  169.669  angle 0.0000°
+ok   2026-06-21    22 h moon elevation web   21.944 unreal   21.944  azimuth web   80.949 unreal   80.949  angle 0.0000°
+ok   2026-12-24    14 h sun  elevation web    7.365 unreal    7.365  azimuth web   57.817 unreal   57.817  angle 0.0000°
+ok   2026-12-24    14 h moon elevation web   -5.884 unreal   -5.884  azimuth web -129.459 unreal -129.459  angle 0.0000°
+ok   2026-12-21     9 h sun  elevation web    1.536 unreal    1.536  azimuth web   -9.802 unreal   -9.802  angle 0.0000°
+ok   2026-12-21     9 h moon elevation web  -11.258 unreal  -11.258  azimuth web -151.990 unreal -151.990  angle 0.0000°
+ok   2026-12-21    12 h sun  elevation web   10.849 unreal   10.849  azimuth web   30.531 unreal   30.531  angle 0.0000°
+ok   2026-12-21    12 h moon elevation web   -4.212 unreal   -4.212  azimuth web -112.657 unreal -112.657  angle 0.0000°
+ok   2026-12-21  15.5 h sun  elevation web   -0.156 unreal   -0.156  azimuth web   77.421 unreal   77.421  angle 0.0000°
+ok   2026-12-21  15.5 h moon elevation web   19.254 unreal   19.254  azimuth web  -72.572 unreal  -72.572  angle 0.0000°
+ok   2026-03-20 10.25 h sun  elevation web   28.409 unreal   28.409  azimuth web   -2.781 unreal   -2.781  angle 0.0000°
+ok   2026-03-20 10.25 h moon elevation web   32.227 unreal   32.227  azimuth web  -23.266 unreal  -23.266  angle 0.0000°
+ok   2026-03-28    12 h sun  elevation web   34.722 unreal   34.722  azimuth web    9.645 unreal    9.645  angle 0.0000°
+ok   2026-03-28    12 h moon elevation web   -9.075 unreal   -9.075  azimuth web -115.204 unreal -115.204  angle 0.0000°
+ok   2026-10-27    12 h sun  elevation web   20.496 unreal   20.496  azimuth web   34.351 unreal   34.351  angle 0.0000°
+ok   2026-10-27    12 h moon elevation web  -10.620 unreal  -10.620  azimuth web -160.533 unreal -160.533  angle 0.0000°
+ok   2027-01-10  23.5 h sun  elevation web  -55.318 unreal  -55.318  azimuth web -166.423 unreal -166.423  angle 0.0000°
+ok   2027-01-10  23.5 h moon elevation web  -35.103 unreal  -35.103  azimuth web  154.246 unreal  154.246  angle 0.0000°
+PASS: 22 directions, worst difference 0.0000° (tolerance 1°)

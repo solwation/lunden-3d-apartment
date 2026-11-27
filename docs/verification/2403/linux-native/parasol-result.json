@@ -1,0 +1,2139 @@
+{
+  "completed": true,
+  "boundaries": [
+    {
+      "month": 1,
+      "sunHeight": 0.019999,
+      "overcast": 0.599999,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 1,
+      "sunHeight": 0.019999,
+      "overcast": 0.6,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 1,
+      "sunHeight": 0.019999,
+      "overcast": 0.600001,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 1,
+      "sunHeight": 0.02,
+      "overcast": 0.599999,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 1,
+      "sunHeight": 0.02,
+      "overcast": 0.6,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 1,
+      "sunHeight": 0.02,
+      "overcast": 0.600001,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 1,
+      "sunHeight": 0.020001,
+      "overcast": 0.599999,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 1,
+      "sunHeight": 0.020001,
+      "overcast": 0.6,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 1,
+      "sunHeight": 0.020001,
+      "overcast": 0.600001,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 2,
+      "sunHeight": 0.019999,
+      "overcast": 0.599999,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 2,
+      "sunHeight": 0.019999,
+      "overcast": 0.6,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 2,
+      "sunHeight": 0.019999,
+      "overcast": 0.600001,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 2,
+      "sunHeight": 0.02,
+      "overcast": 0.599999,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 2,
+      "sunHeight": 0.02,
+      "overcast": 0.6,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 2,
+      "sunHeight": 0.02,
+      "overcast": 0.600001,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 2,
+      "sunHeight": 0.020001,
+      "overcast": 0.599999,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 2,
+      "sunHeight": 0.020001,
+      "overcast": 0.6,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 2,
+      "sunHeight": 0.020001,
+      "overcast": 0.600001,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 3,
+      "sunHeight": 0.019999,
+      "overcast": 0.599999,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 3,
+      "sunHeight": 0.019999,
+      "overcast": 0.6,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 3,
+      "sunHeight": 0.019999,
+      "overcast": 0.600001,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 3,
+      "sunHeight": 0.02,
+      "overcast": 0.599999,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 3,
+      "sunHeight": 0.02,
+      "overcast": 0.6,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 3,
+      "sunHeight": 0.02,
+      "overcast": 0.600001,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 3,
+      "sunHeight": 0.020001,
+      "overcast": 0.599999,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 3,
+      "sunHeight": 0.020001,
+      "overcast": 0.6,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 3,
+      "sunHeight": 0.020001,
+      "overcast": 0.600001,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 4,
+      "sunHeight": 0.019999,
+      "overcast": 0.599999,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 4,
+      "sunHeight": 0.019999,
+      "overcast": 0.6,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 4,
+      "sunHeight": 0.019999,
+      "overcast": 0.600001,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 4,
+      "sunHeight": 0.02,
+      "overcast": 0.599999,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 4,
+      "sunHeight": 0.02,
+      "overcast": 0.6,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 4,
+      "sunHeight": 0.02,
+      "overcast": 0.600001,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 4,
+      "sunHeight": 0.020001,
+      "overcast": 0.599999,
+      "expected": 1.0,
+      "fraction": 1.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        1.5,
+        1.5,
+        0.38,
+        12.000000000000005,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 4,
+      "sunHeight": 0.020001,
+      "overcast": 0.6,
+      "expected": 1.0,
+      "fraction": 1.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        1.5,
+        1.5,
+        0.38,
+        12.000000000000005,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 4,
+      "sunHeight": 0.020001,
+      "overcast": 0.600001,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 5,
+      "sunHeight": 0.019999,
+      "overcast": 0.599999,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 5,
+      "sunHeight": 0.019999,
+      "overcast": 0.6,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 5,
+      "sunHeight": 0.019999,
+      "overcast": 0.600001,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 5,
+      "sunHeight": 0.02,
+      "overcast": 0.599999,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 5,
+      "sunHeight": 0.02,
+      "overcast": 0.6,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 5,
+      "sunHeight": 0.02,
+      "overcast": 0.600001,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 5,
+      "sunHeight": 0.020001,
+      "overcast": 0.599999,
+      "expected": 1.0,
+      "fraction": 1.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        1.5,
+        1.5,
+        0.38,
+        12.000000000000005,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 5,
+      "sunHeight": 0.020001,
+      "overcast": 0.6,
+      "expected": 1.0,
+      "fraction": 1.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        1.5,
+        1.5,
+        0.38,
+        12.000000000000005,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 5,
+      "sunHeight": 0.020001,
+      "overcast": 0.600001,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 6,
+      "sunHeight": 0.019999,
+      "overcast": 0.599999,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 6,
+      "sunHeight": 0.019999,
+      "overcast": 0.6,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 6,
+      "sunHeight": 0.019999,
+      "overcast": 0.600001,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 6,
+      "sunHeight": 0.02,
+      "overcast": 0.599999,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 6,
+      "sunHeight": 0.02,
+      "overcast": 0.6,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 6,
+      "sunHeight": 0.02,
+      "overcast": 0.600001,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 6,
+      "sunHeight": 0.020001,
+      "overcast": 0.599999,
+      "expected": 1.0,
+      "fraction": 1.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        1.5,
+        1.5,
+        0.38,
+        12.000000000000005,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 6,
+      "sunHeight": 0.020001,
+      "overcast": 0.6,
+      "expected": 1.0,
+      "fraction": 1.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        1.5,
+        1.5,
+        0.38,
+        12.000000000000005,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 6,
+      "sunHeight": 0.020001,
+      "overcast": 0.600001,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 7,
+      "sunHeight": 0.019999,
+      "overcast": 0.599999,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 7,
+      "sunHeight": 0.019999,
+      "overcast": 0.6,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 7,
+      "sunHeight": 0.019999,
+      "overcast": 0.600001,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 7,
+      "sunHeight": 0.02,
+      "overcast": 0.599999,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 7,
+      "sunHeight": 0.02,
+      "overcast": 0.6,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 7,
+      "sunHeight": 0.02,
+      "overcast": 0.600001,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 7,
+      "sunHeight": 0.020001,
+      "overcast": 0.599999,
+      "expected": 1.0,
+      "fraction": 1.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        1.5,
+        1.5,
+        0.38,
+        12.000000000000005,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 7,
+      "sunHeight": 0.020001,
+      "overcast": 0.6,
+      "expected": 1.0,
+      "fraction": 1.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        1.5,
+        1.5,
+        0.38,
+        12.000000000000005,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 7,
+      "sunHeight": 0.020001,
+      "overcast": 0.600001,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 8,
+      "sunHeight": 0.019999,
+      "overcast": 0.599999,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 8,
+      "sunHeight": 0.019999,
+      "overcast": 0.6,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 8,
+      "sunHeight": 0.019999,
+      "overcast": 0.600001,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 8,
+      "sunHeight": 0.02,
+      "overcast": 0.599999,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 8,
+      "sunHeight": 0.02,
+      "overcast": 0.6,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 8,
+      "sunHeight": 0.02,
+      "overcast": 0.600001,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 8,
+      "sunHeight": 0.020001,
+      "overcast": 0.599999,
+      "expected": 1.0,
+      "fraction": 1.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        1.5,
+        1.5,
+        0.38,
+        12.000000000000005,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 8,
+      "sunHeight": 0.020001,
+      "overcast": 0.6,
+      "expected": 1.0,
+      "fraction": 1.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        1.5,
+        1.5,
+        0.38,
+        12.000000000000005,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 8,
+      "sunHeight": 0.020001,
+      "overcast": 0.600001,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 9,
+      "sunHeight": 0.019999,
+      "overcast": 0.599999,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 9,
+      "sunHeight": 0.019999,
+      "overcast": 0.6,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 9,
+      "sunHeight": 0.019999,
+      "overcast": 0.600001,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 9,
+      "sunHeight": 0.02,
+      "overcast": 0.599999,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 9,
+      "sunHeight": 0.02,
+      "overcast": 0.6,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 9,
+      "sunHeight": 0.02,
+      "overcast": 0.600001,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 9,
+      "sunHeight": 0.020001,
+      "overcast": 0.599999,
+      "expected": 1.0,
+      "fraction": 1.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        1.5,
+        1.5,
+        0.38,
+        12.000000000000005,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 9,
+      "sunHeight": 0.020001,
+      "overcast": 0.6,
+      "expected": 1.0,
+      "fraction": 1.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        1.5,
+        1.5,
+        0.38,
+        12.000000000000005,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 9,
+      "sunHeight": 0.020001,
+      "overcast": 0.600001,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 10,
+      "sunHeight": 0.019999,
+      "overcast": 0.599999,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 10,
+      "sunHeight": 0.019999,
+      "overcast": 0.6,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 10,
+      "sunHeight": 0.019999,
+      "overcast": 0.600001,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 10,
+      "sunHeight": 0.02,
+      "overcast": 0.599999,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 10,
+      "sunHeight": 0.02,
+      "overcast": 0.6,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 10,
+      "sunHeight": 0.02,
+      "overcast": 0.600001,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 10,
+      "sunHeight": 0.020001,
+      "overcast": 0.599999,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 10,
+      "sunHeight": 0.020001,
+      "overcast": 0.6,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 10,
+      "sunHeight": 0.020001,
+      "overcast": 0.600001,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 11,
+      "sunHeight": 0.019999,
+      "overcast": 0.599999,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 11,
+      "sunHeight": 0.019999,
+      "overcast": 0.6,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 11,
+      "sunHeight": 0.019999,
+      "overcast": 0.600001,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 11,
+      "sunHeight": 0.02,
+      "overcast": 0.599999,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 11,
+      "sunHeight": 0.02,
+      "overcast": 0.6,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 11,
+      "sunHeight": 0.02,
+      "overcast": 0.600001,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 11,
+      "sunHeight": 0.020001,
+      "overcast": 0.599999,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 11,
+      "sunHeight": 0.020001,
+      "overcast": 0.6,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 11,
+      "sunHeight": 0.020001,
+      "overcast": 0.600001,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 12,
+      "sunHeight": 0.019999,
+      "overcast": 0.599999,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 12,
+      "sunHeight": 0.019999,
+      "overcast": 0.6,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 12,
+      "sunHeight": 0.019999,
+      "overcast": 0.600001,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 12,
+      "sunHeight": 0.02,
+      "overcast": 0.599999,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 12,
+      "sunHeight": 0.02,
+      "overcast": 0.6,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 12,
+      "sunHeight": 0.02,
+      "overcast": 0.600001,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 12,
+      "sunHeight": 0.020001,
+      "overcast": 0.599999,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 12,
+      "sunHeight": 0.020001,
+      "overcast": 0.6,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "month": 12,
+      "sunHeight": 0.020001,
+      "overcast": 0.600001,
+      "expected": 0.0,
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    }
+  ],
+  "manual": [
+    {
+      "fraction": 0.25,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.3103125,
+        0.3103125,
+        1.0296874999999999,
+        1.8749999999999998,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "fraction": 0.5,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.7949999999999999,
+        0.7949999999999999,
+        0.7649999999999999,
+        6.0000000000000036,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "fraction": 0.75,
+      "actualNativeScaleRollPitchYawPosition": [
+        1.2796875,
+        1.2796875,
+        0.5003124999999999,
+        10.125000000000005,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    },
+    {
+      "fraction": 1.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        1.5,
+        1.5,
+        0.38,
+        12.000000000000005,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    }
+  ],
+  "tick": {
+    "initial": 1.0,
+    "actualFinal": 0.0,
+    "wallSeconds": 1.6105034130014246,
+    "pose": {
+      "fraction": 0.0,
+      "actualNativeScaleRollPitchYawPosition": [
+        0.09,
+        0.09,
+        1.15,
+        -0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        245.00000476837158
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+    }
+  }
+}

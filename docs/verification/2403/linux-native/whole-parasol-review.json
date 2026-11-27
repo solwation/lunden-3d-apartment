@@ -1,0 +1,72 @@
+{
+  "issue": 2403,
+  "classification": "whole-original review of actual completed two native parasol frames; not whole native/Automation outcome",
+  "sourceHead": "b8a31c02d5c281e695f87e2eb580486905f97c39",
+  "actualWholeOriginalsViewed": true,
+  "actualTwoNativeAndTwoWebOriginals": {
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2403/native-build-product-v3/product/parasol/unreal-patio-dusk.png": "c37adcaba8e95c0e875ab5004c347f61d660a326716f29b831452c63e4762abf",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2403/native-source/web-canopy/web-patio-dusk.jpg": "67bdf5f96a657877b5e3f2a367ff9922c9b12419432c33adf1c561c9a9a79a79",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2403/native-build-product-v3/product/parasol/unreal-patio-overcast.png": "65823f8131c5d403da73c229b83c689ee020802d662f1d00d445c3f731732523",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2403/native-source/web-canopy/web-patio-overcast.jpg": "e38391f6017b98bfe78c95eb9af168628bc2d2dd26b206fa60100c9f60c8ffab"
+  },
+  "camera": {
+    "webEye": [
+      2.3,
+      1.62,
+      16.1
+    ],
+    "webYaw": -65,
+    "pitch": 12,
+    "verticalFov": 72,
+    "viewport": [
+      640,
+      360
+    ]
+  },
+  "ownScope": {
+    "passedObservedFoldedShape": true,
+    "detail": "Both actual native originals show the same narrow vertical folded cloth on the original pole at the same screen location and height as the frozen source web; no remaining open disc or tilted canopy. Actual production function UpdatePatioParasol(2.0) yields fraction0, native local scale[.09,.09,1.15] and roll/pitch/yaw0 in both weather/time states. No direct transform writes used for capture.",
+    "limitations": [
+      "Actual season/threshold/manual/intermediate and real Tick PIE acceptance still required",
+      "Four interior regression frames and overall native exit not reviewed by this proof"
+    ]
+  },
+  "knownOpenVisualMappings": [
+    {
+      "issues": [
+        2443
+      ],
+      "observation": "Screen wall frame/vertical dark dot raster remains obvious in both Native originals, while source screen is smooth with a cream frame."
+    },
+    {
+      "issues": [
+        2421
+      ],
+      "observation": "Native dusk sky remains dark blue/black rather than source dusty lavender. Existing evening/sky parity issues remain open; this patch changes only canopy motion.",
+      "newViewCrosscheck": "21 June2026 22:00 clear, eye[2.3,1.62,16.1],yaw-65,pitch12. Root should append this additional exact-view colour evidence to2421 with pinned raw image links after publication.2451 covers missing clouds/moon, not this colour difference."
+    },
+    {
+      "issues": [
+        2428
+      ],
+      "observation": "Native distant brick edges and mortar differ from source filtering/local brightness."
+    },
+    {
+      "issues": [
+        2411,
+        2424
+      ],
+      "observation": "Hedge and foreground plant illumination differs; native foliage has broader/washed highlights."
+    },
+    {
+      "issues": [
+        2388
+      ],
+      "observation": "Window/interior contrast differs through facade glass; current glass issue remains open."
+    }
+  ],
+  "intentionalExistingProfileLimits": [
+    "Precipitation streak distribution/noise is not pixel-identical between the source and native implementations; this scope compares actual parasol state, scale/tilt and placement rather than fitting the precipitation shader.",
+    "No new color gain, pose fit, crop, numerical tolerance or acceptance gate introduced"
+  ]
+}

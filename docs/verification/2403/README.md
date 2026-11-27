@@ -1,4 +1,15 @@
-# Parasol source/export portion (#2403)
+# Parasol automatic folding (#2403)
+
+**Current verified result:** the native controller, imported canopy binding,
+108-case PIE/actual Tick checks and matched dusk/overcast raw image pairs now pass.
+The source mesh and UVs are preserved. See [Linux native verification](linux-native/README.md)
+for actual build/render/Automation results, source-bound lighting reuse and the
+preserved failed attempts. Root owns final publication and closure.
+
+The following sections record the earlier source-only handoff chronologically;
+statements that native work was pending describe that historical checkpoint.
+
+# Historical source/export portion
 
 The web's existing fold geometry and rule are now described in the shared export.
 This is a partial source handoff: **the native parasol still needs its importer tag,

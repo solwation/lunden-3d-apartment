@@ -1,0 +1,201 @@
+{
+  "completed": true,
+  "world": "/Game/Lunden/Maps/L_Lunden.L_Lunden",
+  "canopyID": "furn_parasol_l0_x450_z1555__5",
+  "actors": [
+    {
+      "path": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555__5",
+      "name": "furn_parasol_l0_x450_z1555__5",
+      "tags": [
+        "furn_parasol_l0_x450_z1555__5",
+        "kind:part",
+        "parent:furn_parasol_l0_x450_z1555"
+      ],
+      "location": [
+        450.0,
+        1555.0000190734863,
+        245.00000476837158
+      ],
+      "rotation": {
+        "pitch": -0.0,
+        "yaw": 0.0,
+        "roll": 11.999999880335064
+      },
+      "scale": [
+        1.5,
+        1.5,
+        0.3799999952316284
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555",
+      "root": {
+        "path": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555__5.StaticMeshComponent0",
+        "relativeLocation": [
+          0.0,
+          0.0,
+          245.00000476837158
+        ],
+        "relativeRotation": {
+          "pitch": -0.0,
+          "yaw": 0.0,
+          "roll": 11.999999880335064
+        },
+        "relativeScale": [
+          1.5,
+          1.5,
+          0.3799999952316284
+        ],
+        "mobility": "<ComponentMobility.STATIC: 0>"
+      },
+      "mesh": {
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555__5.StaticMeshComponent0",
+        "path": "/Game/Lunden/Generated/l1007-uteplats/StaticMeshes/furn_parasol_l0_x450_z1555__5.furn_parasol_l0_x450_z1555__5",
+        "boundsMin": [
+          -100.0,
+          -100.0,
+          -100.0
+        ],
+        "boundsMax": [
+          100.0,
+          100.0,
+          0.0
+        ],
+        "vertices": 24,
+        "triangles": 8
+      }
+    },
+    {
+      "path": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555",
+      "name": "furn_parasol_l0_x450_z1555",
+      "tags": [
+        "furn_parasol_l0_x450_z1555",
+        "kind:furniture",
+        "zone:l1007-uteplats",
+        "level:0",
+        "webId:f-parasol-0-4.5-15.55-0-0",
+        "source:src/config.js#FURNITURE[41]"
+      ],
+      "location": [
+        450.0,
+        1555.0000190734863,
+        0.0
+      ],
+      "rotation": {
+        "pitch": 0.0,
+        "yaw": 0.0,
+        "roll": 0.0
+      },
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.l1007-uteplats",
+      "root": {
+        "path": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555.DefaultSceneRoot",
+        "relativeLocation": [
+          450.0,
+          1555.0000190734863,
+          0.0
+        ],
+        "relativeRotation": {
+          "pitch": 0.0,
+          "yaw": 0.0,
+          "roll": 0.0
+        },
+        "relativeScale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "mobility": "<ComponentMobility.STATIC: 0>"
+      }
+    },
+    {
+      "path": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.l1007-uteplats",
+      "name": "l1007-uteplats",
+      "tags": [
+        "l1007-uteplats",
+        "kind:zone",
+        "zone:l1007-uteplats"
+      ],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation": {
+        "pitch": 0.0,
+        "yaw": 0.0,
+        "roll": 0.0
+      },
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "parent": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.l1007-uteplats__scene",
+      "root": {
+        "path": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.l1007-uteplats.DefaultSceneRoot",
+        "relativeLocation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "relativeRotation": {
+          "pitch": 0.0,
+          "yaw": 0.0,
+          "roll": 0.0
+        },
+        "relativeScale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "mobility": "<ComponentMobility.STATIC: 0>"
+      }
+    },
+    {
+      "path": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.l1007-uteplats__scene",
+      "name": "l1007-uteplats__scene",
+      "tags": [],
+      "location": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "rotation": {
+        "pitch": 0.0,
+        "yaw": 0.0,
+        "roll": 0.0
+      },
+      "scale": [
+        1.0,
+        1.0,
+        1.0
+      ],
+      "parent": null,
+      "root": {
+        "path": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.l1007-uteplats__scene.DefaultSceneRoot",
+        "relativeLocation": [
+          0.0,
+          0.0,
+          0.0
+        ],
+        "relativeRotation": {
+          "pitch": 0.0,
+          "yaw": 0.0,
+          "roll": 0.0
+        },
+        "relativeScale": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "mobility": "<ComponentMobility.STATIC: 0>"
+      }
+    }
+  ],
+  "measurementsSHA256": "5629cdadf41c8a231eebc4c374a91ec9bf73ee3418f13c278404ef0a5b60c822",
+  "noMapReload": true,
+  "noNativeOrAssetWrites": true
+}

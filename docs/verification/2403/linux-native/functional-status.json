@@ -1,0 +1,62 @@
+{
+  "status": "PASS",
+  "actualCanonicalPIEPassed": true,
+  "acceptedNativeHead": "79e9d401d3b5f32356f20bda584a18676d0a4013",
+  "integrationHead": "202b032d",
+  "parasolActual": {
+    "nativeRun": "/mnt/d/LundenLinux/runs/20261127T195832162750-4177631",
+    "nativeExitCode": 0,
+    "runnerExitCode": 0,
+    "outerExitCode": 0,
+    "seconds": 210.55,
+    "boundaries": 108,
+    "manualIntermediatePoses": 4,
+    "actualTick": {
+      "initial": 1.0,
+      "actualFinal": 0.0,
+      "wallSeconds": 1.6105034130014246,
+      "pose": {
+        "fraction": 0.0,
+        "actualNativeScaleRollPitchYawPosition": [
+          0.09,
+          0.09,
+          1.15,
+          -0.0,
+          0.0,
+          0.0,
+          0.0,
+          0.0,
+          245.00000476837158
+        ],
+        "parent": "/Game/Lunden/Generated/l1007-uteplats/UEDPIE_0_Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_parasol_l0_x450_z1555"
+      }
+    },
+    "sourceExact": true,
+    "all247ExactReadonly": true,
+    "generatedExact": true,
+    "exportExact": true,
+    "canonicalBodiesLiteralByteExact": true,
+    "observer": false
+  },
+  "lightingActual": {
+    "testState": "Success",
+    "checkSunExitCode": 0,
+    "resultSHA256": "fb66f19e18d576cbf04b1aa0e5b9a9eca804121bfc04de399ec6bf0c7db3242d",
+    "canonicalTestSHA256": "71f5c78cb9e422907990e18fa0be1089a029818f2056a5439577db1c1132b1d8",
+    "reuse": "Only test_parasol.py changed for the denied test-setup write. Production Python, lighting canonical body and saved authored/Generated/export bytes stayed exact.",
+    "priorJointProcessNativeExit": 255,
+    "priorJointProcessRunnerExit": 1,
+    "priorJointProcessOverallPassed": false
+  },
+  "renderActual": {
+    "nativeRun": "20261127T194119392390-3782914",
+    "nativeRunnerOuterExitCodes": [
+      0,
+      0,
+      0
+    ],
+    "seconds": 409.69,
+    "sourceHead": "b8a31c02d5c281e695f87e2eb580486905f97c39",
+    "unchangedAfterRender": "Subsequent product bytes are exactly the saved outputs; the only later code change fixes the canonical test setup, not product behavior."
+  }
+}
