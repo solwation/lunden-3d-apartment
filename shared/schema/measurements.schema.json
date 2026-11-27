@@ -228,7 +228,7 @@
       "properties": {
         "items": { "type": "array", "items": { "type": "object", "required": ["id", "kind", "zone", "web", "unreal"] } },
         "rugFloorPool": { "type": "object", "required": ["lamp", "corners", "colour", "opacity", "maskPng", "mask", "depth", "receivers", "source", "scope"],
-          "description": "#2322: the source pendant's linear additive floor quad (corners keyed by source UV, Unreal cm), full-on vertex colour and actual original rug top receiver. Native overlay is coplanar with that receiver; no rug recolour or intensity fit.",
+          "description": "#2322: the source pendant's linear additive floor quad (corners keyed by source UV, Unreal cm), full-on vertex colour and actual original rug top receiver. Native copied material adds source emission to that original receiver without recolouring, elevation or an intensity fit.",
           "properties": { "lamp": { "type": "string" }, "corners": { "$ref": "#/$defs/uvQuad" }, "colour": { "$ref": "#/$defs/vec3" }, "opacity": { "type": "number" }, "maskPng": { "type": "string", "minLength": 1 },
             "mask": { "type": "object", "required": ["width", "height", "colorSpace", "flipY"], "properties": { "width": { "type": "integer" }, "height": { "type": "integer" }, "colorSpace": { "const": "linear" }, "flipY": { "const": true } } },
             "depth": { "type": "object", "required": ["write", "test", "polygonOffset", "factor", "units", "renderOrder"] },

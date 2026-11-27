@@ -99,10 +99,13 @@ verkliga mottagaryta. Mottagaren är originalmattan, 300 × 200 cm med ovansidan
 240 × 240 cm, centrerat under pendeln (364, 1056 cm), på höjden 1,2 cm. Färgen vid full tändning är linjär RGB
 (0,2000000, 0,1387744, 0,0783145); detta är källans färg × peak, ingen ny native kalibrering.
 
-Den nya buildern skriver endast under `Generated`: additivt material, linjär mask, styrenhet och en yta i den
-befintliga genererade interaktionsnivån. Ytan ligger exakt på mattans uppmätta ovansida och behåller djupkontroll;
-ingen liten påhittad höjning används. Världs-UV håller fältet kvar under pendeln. Geometrin klipper till mattan och
-shadern klipper utanför originalquaden, så maskens kantpixel inte kan smetas ut över resten av mattan.
+Den första nativeimplementationen använde en separat yta exakt på mattans uppmätta ovansida. Det verkliga
+bildprovet nedan underkände den strategin. Ersättaren kopierar i stället originalmaterialets hela arvskedja till
+`Generated/Interaction/RugPool`, behåller PBR-grafen, statiska parametrar och samtliga instansöverstyrningar och
+lägger enbart källfältet till den kopierade grafens emission. Mattans befintliga geometri använder materialkopian.
+Inga extra trianglar, höjningar eller ändringar av originalets materialpaket behövs. Geometriska ytnormaler
+begränsar bidraget till ovansidan. Världs-UV håller fältet kvar under pendeln, och utanför källquaden nollas enbart
+det nya bidraget; originaltextilen klipps aldrig bort. Denna ersättare väntar på verkligt nativeprov.
 Fade följer källampans `K` × den befintliga strömmatningen. Ordinarie full import och bildverktygens settle-steg
 anropar buildern respektive styrenheten.
 
@@ -112,7 +115,7 @@ utanför mattan och innanför mattan men utanför fältet täcker både tändnin
 `check-export.mjs` validerar 3 filer, 2 819 unika noder och 316 källfiler. Endast källkontraktet är därmed verifierat.
 Enbart `--zones l1007` stoppades i en befintlig kontroll för uteplatsglas; det separata exportfelet följs i #2468.
 
-Den riktiga Linux/UE 5.8.4 NullRHI-körningen på `27848bf932e135ebee36b80dbb07dbd487100be5` passerade på 341,09 s
+Den tidigare koplanära implementationens riktiga Linux/UE 5.8.4 NullRHI-körning på `27848bf932e135ebee36b80dbb07dbd487100be5` passerade på 341,09 s
 med exit 0 och inga Pythonfel. Exporten gjordes rent på `cb303a48`, ES-källhash
 `1957835dab5f3a2e6d49ecdc812c476fe3a648493bc1eaeb5b6801dceb34617e`; reviewerfixen i `27848bf9` ändrar enbart
 Python-builder/prov, så exporten är fortfarande aktuell. Körningen använde verklig import för lägenhet/uteplats,
@@ -124,9 +127,33 @@ De 246 versionerade LFS-paketen var kopierade till en isolerad native-checkout, 
 skyddade paket/prereq, inklusive Lighting/Seasons/Vegetation och övriga interaktionsnivåer, var SHA-exakta och
 skrivskyddade före och efter provet. Källans ordinarie releasegrind eller sync-stämplar förfalskades inte.
 
-Den koplanära strategin måste fortfarande prövas med när-/fjärrkamera och bordets/soffans ocklusion för att upptäcka
-djupflimmer. Webbens output-blandning och Unreals scene-linear-blandning är olika; källtestet bevisar därför inte
-slutlig native luminans eller kulör. Bilder på samma dag-/kvällskameror, med dokumenterad exponering och samma
-renderprofil, återstår för matta och samtliga övriga #2322-mätfält. Omgivande golv-/takfält ingår inte i denna
-mattslice. Flyttade möbler och alternativa mattmaterial hör till den öppna portningen #2339. #2322 hålls öppet;
-inga nya native resultatbilder eller färgpass påstås här.
+### Verkligt bildprov: koplanär strategi underkänd
+
+Den 27 november renderades sex riktiga 640 × 360-bilder i sammansatta `L_Lunden`, med alla 16 delnivåer laddade.
+Körningen använde LinuxLow/SM5 på llvmpipe, utan Lumen, med samma kvällsljus och exponeringskompensation
+−2,462862 EV i varje par. Nanite stängdes av i minnet enligt det befintliga bildverktyget. Profilen kan pröva
+synlighet och ocklusion, men accepterar inte Windows-/webbkulör.
+
+| Avstånd | Fält på | Fält av | Bildskillnad |
+|---|---|---|---|
+| Nära | [På](before/rug-depth/near-pool-on.png) | [Av](before/rug-depth/near-pool-off.png) | 75 401 pixlar med kanalskillnad över 2; största skillnad 30/255. |
+| Referens | [På](before/rug-depth/reference-pool-on.png) | [Av](before/rug-depth/reference-pool-off.png) | Samtliga avkodade pixlar identiska. |
+| Fjärran | [På](before/rug-depth/far-pool-on.png) | [Av](before/rug-depth/far-pool-off.png) | 15 600 pixlar med kanalskillnad över 2; största skillnad 29/255. |
+
+Soffans och bordets inre bildytor dolde bidraget i nära/fjärran vy. Däremot försvann hela bidraget i referensvyn.
+En efterföljande strålmätning mot den verkliga exporterade GLB-geometrin fann 215 oblockerade provpunkter med
+maskvärde minst 30/255, av 263 prov. Bord och fruktskål skymde övriga 48. Referensfelet förklaras därför inte
+av att möbler täckte hela fältet. Exportens och originalmeshens ovansida har samma matematiska höjd, men det
+säkrar inte identisk rasterisering av två separata ytor. Materialkopian tar bort den extra djupkonkurrensen.
+
+Commandleten skrev alla sex bilder, rapporterade `LUNDEN_2322_DEPTH_CAPTURE_OK` och avslutade Unreal med
+resultat 0 efter 344,05 s commandletarbete. Omslutande Linuxprocess avslutades ändå med 143 och ingen
+`result.json`; körningen redovisas därför inte som godkänd runnerkörning. Det separata runnerfelet följs i
+[#2471](https://github.com/solwation/lunden-3d-apartment/issues/2471). Alla 2 621 skyddade filer var fortfarande
+SHA-exakta och skrivskyddade efteråt. Inga renderprocesser lämnades kvar.
+
+**Nuvarande grind:** bildprovet är underkänt. Materialersättarens riktiga API-/PBR-/fadeprov och nya tre bildpar
+återstår. Webbens output-blandning och Unreals scene-linear-blandning är olika; källtestet bevisar därför inte
+slutlig native luminans eller kulör. Matchade dag-/kvällsbilder återstår för samtliga #2322-mätfält.
+Omgivande golv-/takfält ingår inte i denna mattslice. Flyttade möbler och alternativa mattmaterial hör till den
+öppna portningen #2339. #2322 hålls öppet, utan integrationsklar eller slutlig färgacceptans.
