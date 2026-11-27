@@ -2560,6 +2560,22 @@ What is exported:
   (1 at startup). A power change scales both point lights and bulb glow while preserving the dusk state.
   Other automatic lamps use cloud-adjusted daylight. The static canopy represents the export date. Reacting to later
   changes of sun, season or manual folding in the Windows game requires runtime interaction.
+- **Source floor/ceiling display pools (#2322).** `furnishing.displayPools` records every configured surface from
+  the actual L1007 `Lights.shadePools`, independently of the four PointLight pool slots. `export-display-pools.js`
+  reads full-on vertex colours and real quad UVs/world positions through `ShadePools.commit`, then restores every
+  source lamp K exactly (including values within the runtime setter's 0.001 upload threshold). Actual lamp object
+  identity binds each field to its stable `measurements.lights` ID; a missing binding fails the export. Multiple
+  anchors may share a fitting ID. Absent floor/ceiling surfaces are the source's degenerate zero-colour quads and
+  add no fields. The current configured shaded pendants yield three source lamps and five fields (copper floor,
+  Silvia floor/ceiling and upstairs paper floor/ceiling); the full export must confirm the actual world population.
+  The original 128×128 linear falloff PNG/flipY, source material opacity and depth/polygon-offset/render-order flags
+  travel with the fields, in Unreal cm. `rugReceivers` reuses the exact original rug quads from `rugFloorPool`.
+  These are untonemapped additive MeshBasic surfaces: mask × full-on linear RGB × owner fade × mains goes through
+  the output sRGB OETF; material opacity multiplies the display-space result afterward. They are not PBR albedo or
+  linear emission added before the world's tonemapper. Coverage includes all source items, not only selected camera
+  lights. Moved/rearranged layouts remain #2339. Run `node tools/unreal-engine/tests/display-pools.mjs [EXPORT_DIR]`
+  for real source floor/ceiling geometry/fade/restoration and optional final export binding/mask/rug checks. This
+  source contract alone establishes no native colour, occlusion or five-family acceptance.
 - **Parasol fold contract (#2403, source portion).** `src/patio.js` exposes read-only `parasolProfiles` handles to the
   actual canopy meshes. `export-parasols.js` records each exported patio furniture ID and its direct canopy part ID
   in `measurements.furnishing.parasols`; no new GLB nodes, importer tags or native controllers are added. Each row

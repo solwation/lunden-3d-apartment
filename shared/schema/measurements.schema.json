@@ -264,6 +264,18 @@
                 "sunComparison": { "const": ">" }, "overcastComparison": { "const": "<=" }, "easing": { "const": "f*f*(3-2*f)" }, "manual": { "const": "holds until automatic state changes" }, "first": { "const": "snap to target" } } }
           }
         } },
+        "displayPools": { "type": "object", "required": ["maskPng", "mask", "fields", "rugReceivers", "source", "runtimeCoverage"],
+          "description": "#2322: every actual L1007 ShadePools floor/ceiling quad, original linear mask/full-on tint, stable measurement light IDs and original rug exceptions. No PointLight slot selection.",
+          "properties": { "maskPng": { "type": "string", "minLength": 1 },
+            "mask": { "type": "object", "required": ["width", "height", "colorSpace", "flipY"], "properties": { "width": { "const": 128 }, "height": { "const": 128 }, "colorSpace": { "const": "linear" }, "flipY": { "const": true } } },
+            "fields": { "type": "array", "minItems": 1, "items": { "type": "object", "required": ["lamp", "kind", "corners", "colour", "opacity", "depth", "source"],
+              "properties": { "lamp": { "type": "string", "minLength": 1 }, "kind": { "enum": ["floor", "ceiling"] }, "corners": { "$ref": "#/$defs/uvQuad" }, "colour": { "$ref": "#/$defs/vec3" }, "opacity": { "type": "number", "minimum": 0, "maximum": 1 },
+                "depth": { "$ref": "#/$defs/displayPoolDepth" }, "source": { "type": "string", "minLength": 1 } } } },
+            "rugReceivers": { "type": "array", "minItems": 1, "items": { "type": "object", "required": ["id", "mesh", "key", "corners"], "properties": { "id": { "type": "string" }, "mesh": { "type": "string" }, "key": { "type": "string" }, "corners": { "$ref": "#/$defs/uvQuad" } } } },
+            "source": { "type": "string", "minLength": 1 }, "runtimeCoverage": { "type": "object", "required": ["sourceLampCount", "fieldCount", "scope", "fade", "blend", "movement"],
+              "properties": { "sourceLampCount": { "type": "integer", "minimum": 1 }, "fieldCount": { "type": "integer", "minimum": 1 }, "scope": { "type": "string" }, "fade": { "type": "string" }, "blend": { "type": "string" }, "movement": { "type": "string" } } }
+          }
+        },
         "rugFloorPool": { "type": "object", "required": ["lamp", "corners", "colour", "opacity", "maskPng", "mask", "depth", "receivers", "source", "scope"],
           "description": "#2322: the source pendant's linear additive floor quad (corners keyed by source UV, Unreal cm), full-on vertex colour and actual original rug top receiver. Native copied material adds source emission to that original receiver without recolouring, elevation or an intensity fit.",
           "properties": { "lamp": { "type": "string" }, "corners": { "$ref": "#/$defs/uvQuad" }, "colour": { "$ref": "#/$defs/vec3" }, "opacity": { "type": "number" }, "maskPng": { "type": "string", "minLength": 1 },
@@ -292,6 +304,7 @@
     }
   },
   "$defs": {
+    "displayPoolDepth": { "type": "object", "required": ["write", "test", "polygonOffset", "factor", "units", "renderOrder"], "properties": { "write": { "const": false }, "test": { "const": true }, "polygonOffset": { "const": true }, "factor": { "type": "number" }, "units": { "type": "number" }, "renderOrder": { "type": "number" } } },
     "parasolPose": { "type": "object", "required": ["position", "scale", "rotationX"], "properties": { "position": { "$ref": "#/$defs/vec3" }, "scale": { "$ref": "#/$defs/vec3" }, "rotationX": { "type": "number" } } },
     "uvQuad": { "type": "object", "required": ["0,0", "1,0", "1,1", "0,1"], "additionalProperties": false, "properties": { "0,0": { "$ref": "#/$defs/vec3" }, "1,0": { "$ref": "#/$defs/vec3" }, "1,1": { "$ref": "#/$defs/vec3" }, "0,1": { "$ref": "#/$defs/vec3" } } },
     "vec3": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 },

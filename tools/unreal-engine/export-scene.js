@@ -8,6 +8,7 @@
 // synchronously (nothing loaded later can slip in), walks the scene in its child order, and writes no time stamps.
 import { curtainProfiles, curtainRows } from './export-curtains.js';
 import { rugPoolProfile, rugPoolRow } from './export-rug-pool.js';
+import { displayPoolProfile, displayPoolRows } from './export-display-pools.js';
 import { parasolRows } from './export-parasols.js';
 import * as THREE from 'three';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
@@ -468,13 +469,15 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     const L = new Lights(group, world, { quality: { register() {} }, lowMemory: true }); // (no quality tiers in the export)
     const stairLight = stairLampProfiles(world, L);
     const lamps = [];
-    for (const R of L.rooms.values()) for (const l of R.lamps) lamps.push({ room: R.name, level: R.level, pos: l.pos.clone(),
+    for (const R of L.rooms.values()) for (const l of R.lamps) lamps.push({ poolLamp: l, room: R.name, level: R.level, pos: l.pos.clone(),
       stairVisibility: stairLight.profiles.get(l), intensity: l.intensity ?? null, distance: l.range ?? null, color: typeof l.color === 'number' ? '#' + l.color.toString(16).padStart(6, '0') : null });
     // #2285: the room switches (their room decides which lamps they switch, src/lights.js Switch / Room)
     const switches = L.switches.map((s) => ({ object: s.object, room: s.room.name, level: s.room.level }));
     const floorRooms = new Map(L.floorLamps.filter(f => f.room.lamps[0]).map(f => [f.spec, L.lampRoom(f.room.lamps[0])]));
     const rugPool = wanted.includes('l1007') ? rugPoolProfile(L) : null;
-    lightsInfo = { lamps, group, switches, stairLight, floorRooms, rugPool, exportedFloorRooms: new Map(), error: null };
+    const displayPools = wanted.includes('l1007') ? displayPoolProfile(L) : null;
+    lightsInfo = { lamps, group, switches, stairLight, floorRooms, rugPool, displayPools,
+      exportedPoolLamps: new Map(), exportedFloorRooms: new Map(), error: null };
   } catch (e) { lightsInfo.error = String(e?.message ?? e); }
   // #2279: the garage under the courtyard and the four stairwells/lifts (Hus L's and Hus A/B/C's), which main.js builds
   // next to the world. Loaded after the world and the lights so their modules cannot shift the seeded random sequence
@@ -1095,6 +1098,7 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
   if (wanted.includes('l1007')) {
     if (!lightsInfo.rugPool) throw Error('Missing living-room rug floor pool: ' + lightsInfo.error);
     measurements.furnishing.rugFloorPool = rugPoolRow(lightsInfo.rugPool, byZone.get('l1007'), roots.l1007.root, measurements.lights);
+    measurements.furnishing.displayPools = displayPoolRows(lightsInfo.displayPools, lightsInfo.exportedPoolLamps, measurements.furnishing.rugFloorPool);
   }
   if (beerGlasses.length) measurements.furnishing.patioBeers = patioBeerRows(beerGlasses, beerParts, beerWindow);
   const snowmanAtom = loose.snowman && atoms.find((a) => a.object === loose.snowman && a.id);
@@ -1475,10 +1479,15 @@ function measurementData({ world, planCopy, W, D, byZone, lightsInfo, seasons, m
       row.cabinetWashes = { fans, veneerKey: materialInfo(l.cabinetDoorMaterial).key, maskPng: map.image.toDataURL('image/png').split(',')[1] };
     }
     lights.push(row);
+    for (const anchor of anchors ?? []) lightsInfo.exportedPoolLamps?.set(anchor, row);
     lightsInfo.exportedFloorRooms?.set(row, lightsInfo.floorRooms.get(l));
   }
-  for (const l of lightsInfo.lamps) lights.push({ id: null, kind: 'room', name: null, level: l.level, room: l.room, position: P(l.pos.x, l.pos.y, l.pos.z),
-    intensity: l.intensity, distance: l.distance, color: l.color, ...(l.stairVisibility ? { stairVisibility: [l.stairVisibility] } : {}) });
+  for (const l of lightsInfo.lamps) {
+    const row = { id: null, kind: 'room', name: null, level: l.level, room: l.room, position: P(l.pos.x, l.pos.y, l.pos.z),
+      intensity: l.intensity, distance: l.distance, color: l.color, ...(l.stairVisibility ? { stairVisibility: [l.stairVisibility] } : {}) };
+    lights.push(row);
+    lightsInfo.exportedPoolLamps?.set(l.poolLamp, row);
+  }
   for (const [index, l] of (lightsInfo.patioStrings ?? []).entries()) {
     const { on, off, fade, bulbIdle, bulbBoost } = C.PATIO.stringLights;
     lights.push({ id: null, kind: 'lamp', name: 'ljusslingan', room: null, level: l.level, auto: true,
