@@ -1,0 +1,84 @@
+{
+  "issue": 2423,
+  "classification": "ONE fixed-mask diagnostic meter; no approved physical-shadow acceptance masks, no closure/PASS",
+  "contractSHA256": "8980330563be11967b162e6c565a7bfafee7b297e4c27fe2c2c5fd0929902e2a",
+  "referencesSHA256": "55198344a6cb00e418bd02539f9649197a666c969b2999e9a418df32601f31fd",
+  "actualCaptureSHA256": "cbc31e42edf301c8003030c76cc1b25c7c463873ae57af445f60013209f431bc",
+  "reportOnly": true,
+  "formalAcceptanceMasksApproved": false,
+  "rows": [
+    {
+      "id": "patio-christmas",
+      "diagnosticOnly": true,
+      "formalAcceptance": false,
+      "sourceFixedMaskPixelCounts": {
+        "lit": 84,
+        "shadow": 82
+      },
+      "nativeMeanLinearRec709": {
+        "lit": 0.18175292758315995,
+        "shadow": 0.1490913687469511
+      },
+      "nativeDeltaY": 0.03266155883620886,
+      "webDeltaY": 0.02428693533807383,
+      "nativeDeltaYOverWeb": 1.3448201010774057,
+      "nativeLitOverShadow": 1.2190707558104485,
+      "webLitOverShadow": 1.1480332975848686,
+      "nativeSHA256": "232c7b7fdb632cc54d1ac36ff067ce9fac6d3b68bafa48b2601455e3ba66e371",
+      "webSHA256": "f7308309602136009e1ed9b9665699064ff2fd4eef56ac5eec9fcb661d125f8e"
+    },
+    {
+      "id": "patio-summer",
+      "diagnosticOnly": true,
+      "formalAcceptance": false,
+      "sourceFixedMaskPixelCounts": {
+        "lit": 35,
+        "shadow": 33
+      },
+      "nativeMeanLinearRec709": {
+        "lit": 0.2263433332272885,
+        "shadow": 0.21546245625314453
+      },
+      "nativeDeltaY": 0.010880876974143971,
+      "webDeltaY": 0.013120763051481465,
+      "nativeDeltaYOverWeb": 0.8292869043859009,
+      "nativeLitOverShadow": 1.050500106437848,
+      "webLitOverShadow": 1.077477392121865,
+      "nativeSHA256": "d7e2361d5ac78c7c3309bdd299bc6345213ee8d1e54fe452179149afbdd8bce8",
+      "webSHA256": "2809213185dca1b6aa17076983bc019514dbe27bd403b3b82fc0cba59f5f9851"
+    },
+    {
+      "id": "patio-christmas-shadow4096-diagnostic",
+      "diagnosticOnly": true,
+      "formalAcceptance": false,
+      "sourceFixedMaskPixelCounts": {
+        "lit": 84,
+        "shadow": 82
+      },
+      "nativeMeanLinearRec709": {
+        "lit": 0.18175292758315995,
+        "shadow": 0.1490913687469511
+      },
+      "nativeDeltaY": 0.03266155883620886,
+      "webDeltaY": 0.02428693533807383,
+      "nativeDeltaYOverWeb": 1.3448201010774057,
+      "nativeLitOverShadow": 1.2190707558104485,
+      "webLitOverShadow": 1.1480332975848686,
+      "nativeSHA256": "e7299b0e5ecdc14399b7231870b3c6640747de4af944a17265e4de4403e45384",
+      "webSHA256": "f7308309602136009e1ed9b9665699064ff2fd4eef56ac5eec9fcb661d125f8e"
+    }
+  ],
+  "winter1024vs4096PixelDifference": {
+    "imagePixels": 230400,
+    "RGBChannels": 691200,
+    "maxAbsolute8bitRGBDifference": 0,
+    "RMS8bitRGBDifference": 0.0,
+    "pixelsWithAnyExactChannelDifference": 0,
+    "channelsWithExactDifference": 0,
+    "maxAbsoluteLinearRec709Difference": 0,
+    "RMSLinearRec709Difference": 0.0,
+    "threshold": "Exact unequal bytes; no fitted threshold",
+    "interpretation": "Wholeframe change is diagnostic only; not attribution solely to a validated shadow ROI."
+  },
+  "conclusion": "Resolution-only4096 does not visibly recover source winter branch shadows; fixedmask numbers cannot establish original +/-20% contrast acceptance. Original remains unmet/open."
+}

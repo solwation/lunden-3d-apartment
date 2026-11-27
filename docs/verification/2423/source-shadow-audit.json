@@ -1,0 +1,112 @@
+{
+  "issue": 2423,
+  "sourceHead": "f4b2d00f96d09d5450150bf4a0cea0619787c066",
+  "actualSourceAuditOnly": true,
+  "engineArchive": "/mnt/d/UnrealDownloads/Linux_Unreal_Engine_5.8.4.zip",
+  "engineSourceSHA256": {
+    "Engine/Source/Runtime/Engine/Private/Components/DirectionalLightComponent.cpp": "bf207d146b7bb0e791c7a4fbc7325b521a86eddc61f51249292c5c68aaec3f17",
+    "Engine/Source/Runtime/Engine/Private/Components/LightComponent.cpp": "a1008a1fcedf81685ee316c0dd282e8e7e0153acb0b0213a635c03ff93d5ef98"
+  },
+  "actualReadPolicy": [
+    "CLAUDE.md",
+    ".orchestra/project.md",
+    ".orchestra/shared/ISSUE-WORKFLOW.md"
+  ],
+  "fullIssueAndCommentsRead": true,
+  "checksChosen": [
+    "Current web and native shadow/source settings + exact engine default declarations",
+    "Published2386 diagnosis and actual2398 winter/June originals/provenance",
+    "Precise no-save two-state baseline plus optional single-factor shadow-resolution diagnostic plan"
+  ],
+  "findings": [
+    {
+      "finding": "Web Ultra4 shadowSize4096 over28m orthographic box, source resolution6.8359375mm/texel; H\u00f6g2048 is13.671875mm/texel",
+      "source": "src/config.js3734-3741; src/main.js395-398",
+      "limit": "Actual target frozen web runtime quality/mapSize must be recorded, not inferred from tier alone."
+    },
+    {
+      "finding": "Current Linux proof profile forces conventional max1024/3CSM, while persisted game DefaultEngine.ini enables VSM. Resolution/coverage/filter paths differ; no equivalent shadow footprint proved.",
+      "source": "docs/verification/2398/README.md112; unreal/Lunden/Config/DefaultEngine.ini26",
+      "limit": "User accepts lower graphics, but issue contrast +/-20% stays required. This is a limitation, not acceptance."
+    },
+    {
+      "finding": "Native build_sky sets cast_shadows roles but does not author CSM distance/count/distribution, ShadowBias/SlopeBias, SourceAngle, contact shadows.",
+      "source": "tools/unreal-engine/python/build_lighting.py1074-1100",
+      "limit": "Cannot claim constructor defaults are actual saved asset values; BP templates may retain old or migrated values."
+    },
+    {
+      "finding": "Exact5.8.4 constructor defaults distanceMovable40000cm, cascades4, distribution3, angle0.5357; old migrated fields can use20000cm/3. Generic ShadowBias/SlopeBias0.5/contact0.",
+      "source": "DirectionalLightComponent.cpp1043-1055 and1469-1471; LightComponent.cpp467-470",
+      "limit": "Actual source-bound Native runtime readback needed before any product setting change."
+    },
+    {
+      "finding": "2386 diagnosed unshadowed fill swamping direct sun; both CSM and VSM had same weak contrast; disabling fill revealed all shadows. Existing SUN_LUX20/CLEAR_FILL.75 are explicitly historical guesses.",
+      "source": "docs/verification/2386/README.md",
+      "limit": "No new intensity/fill/exposure fit is justified by this audit."
+    },
+    {
+      "finding": "2398 actual source split removes atmosphere transmission from surface Sun and retains shadow/fog roles; those winter/June raw images are newer than2423 original report. Whole originals show remaining pattern/contrast differences.",
+      "source": "docs/verification/2398/linux-split/solar-whole-review.json; both published solar originals viewed",
+      "limit": "2398 warmth rows do not measure2423 lit-minus-shadow contrast. No contrastPASS inferred."
+    }
+  ],
+  "candidate": null,
+  "candidateReason": "No safe source-derived product correction proven. New sun/fill/bias/CSM coverage constants would fit or guess before current runtime baseline.",
+  "baselinePlan": {
+    "states": [
+      {
+        "name": "patio-christmas",
+        "date": [
+          2026,
+          12,
+          24
+        ],
+        "hour": 14,
+        "weather": "clear"
+      },
+      {
+        "name": "patio-summer",
+        "date": [
+          2026,
+          6,
+          21
+        ],
+        "hour": 14,
+        "weather": "clear"
+      }
+    ],
+    "camera": "Exact canonical patio camera from unreal/Lunden/Tests/views.json; eye[2.3,1.62,16.1],yawWeb-8,pitch12 => Native[230,1610,162],yaw-82,pitch12,roll0,VFOV72,640x360",
+    "lampState": "Match frozen actual source small lamp IDs; rooms off. Actual ApplyPatioBulbs and UpdatePatioParasol(2.0), actual season visibility. Winter folded canopy is already product behavior; retain it.",
+    "runtimeReadback": [
+      "all3Directional names, actual cast_shadows/affects_world/diffuse_scale/specular_scale/intensity/linearRGB, rotation",
+      "actual dynamic_shadow_distance_movable_light,dynamic_shadow_cascades,cascade_distribution_exponent,shadow_bias,shadow_slope_bias,light_source_angle,contact_shadow_length; unavailable API fields explicitly unknown",
+      "r.Shadow.Virtual.Enable,r.ShadowQuality,r.Shadow.MaxResolution,r.Shadow.MaxCSMResolution,r.Shadow.CSM.MaxCascades,r.Shadow.FilterMethod,AA,exactprofile",
+      "fog density/volumetric flag; source sunheight/daylight/overcast/gameExposureBias; actual PP Ambient cubemap/weight/intensity"
+    ],
+    "ROI": {
+      "brickEnvelopeReportOnly": [
+        0.425,
+        0.22,
+        0.625,
+        0.5
+      ],
+      "classification": "Provisional geometric report envelope between upper/lower windows, not a validated shadow mask or acceptance region. No existing2423 lit/shadow ROI definition found in2386 evidence.",
+      "beforeNativeRequirement": "On source WEB ONLY, freeze same-material lit/shadow strip polygons excluding mortar, glass and geometry silhouettes for EACH season, then apply identical polygons to Native. Do not call envelope full-frame luminance or2398warmth the shadow-contrast test.",
+      "formalMetric": "DeltaY=mean(linearRec709(litBrick))-mean(linearRec709(shadowBrick)); compare NativeDeltaY/WebDeltaY in[0.8,1.2] for winter AND June. Also report lit/shadow ratio and full originals; tiny/zero WebDeltaY invalidates a strip pair and must be resolved before Native."
+    },
+    "cost": "Capture-only two baselines in one warmed world; no import/build/full20/Automation rerun, guards all247RO + Generated/export/source exact."
+  },
+  "optionalSingleFactorDiagnostic": {
+    "allowedOnlyAfterRootReview": true,
+    "change": "In memory only r.Shadow.MaxResolution and r.Shadow.MaxCSMResolution1024=>4096, retaining ShadowQuality3, CSM3, same light values/camera/fog/materials. Freeze and restore BOTH originalCVars in finally.",
+    "purpose": "Test map-resolution contribution to thin/soft shadows. It is not exact source-equivalent CSM coverage or proof of contrast cause.",
+    "frames": "One winter diagnostic in existing warmed world after baseline; June diagnostic only if new winter evidence justifies it. No persisted change or exposure/light fit.",
+    "reject": "If contrast remains outside original band, resolution hypothesis does not deliver product fix. Do not modify tolerances/ROIs or claim optionalhighquality as accepted lowprofile."
+  },
+  "courtyardAB": "Issue comment7077864802 is retained: benches/bollards/trees on Nov16@14. Not established as same cause; sourceweb also has groundao baked far-shadow overlays outside sunbox. Check separate current A/B source camera before claiming global correction; no new dependency2424.",
+  "productChanges": [],
+  "nativeLaunches": 0,
+  "browserLaunches": 0,
+  "exports": 0,
+  "completion": "Source audit finished; original issue remains open. Root decides small next Native diagnostic or release."
+}

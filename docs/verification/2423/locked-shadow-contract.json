@@ -1,0 +1,28 @@
+{
+  "issue": 2423,
+  "lockedBeforeCurrentNative": true,
+  "baselineNames": [
+    "patio-christmas",
+    "patio-summer"
+  ],
+  "viewport": [
+    640,
+    360
+  ],
+  "verticalFov": 72,
+  "contrastBand": [
+    0.8,
+    1.2
+  ],
+  "metric": "DeltaY=mean linear Rec709 in fixedsource-lit pixelmask minus mean in fixedsource-shadow pixelmask. NativeDeltaY/WebDeltaY. Bothseasons required.",
+  "maskSource": "Source-web-only hardcoded rectangles and web redbrick mask r>1.2g and g>1.1b excludes mortar; exact same coordinate masks used on Native. No Native-based pixel selection.",
+  "maskLimit": "Tiny thin-branch regions; texture/JPEG variation may confound. Root MUST review source physical lit/shadow interpretation before launch; not yet an approved acceptance mask. Winter narrow branch above lowerwindow right; June narrow branch above lowerwindow left.",
+  "rootROIReviewRequired": false,
+  "sourceReferences": "/home/devcontainers/.local/state/lunden-codex-20261127/2423/web-reused/references.json",
+  "optionalDiagnostic": "At most one winter4096maxresolution/maxCSM, quality3/cascades3 unchanged, sameprocess; restorefinally; never acceptedlowprofile",
+  "rootROIReviewCompleted": true,
+  "formalAcceptanceMasksApproved": false,
+  "reportOnlyMasks": true,
+  "rootReview": "Winter thinbranch plausible; June strip appears mostly brick/joints. Physicalshadow certainty insufficient. Both prelocked masks retained EXACT as diagnostic/reportonly; no closure/contrastPASS even if ratios withinband.",
+  "formalAcceptanceRemaining": "Unchanged original +/-20% physical lit-minus-shadow brick contrast requires confirmed valid source shadow regions in BOTH seasons. This baseline/diagnostic does not satisfy that requirement."
+}

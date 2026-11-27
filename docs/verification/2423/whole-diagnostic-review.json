@@ -1,0 +1,83 @@
+{
+  "issue": 2423,
+  "actualWholeOriginalsViewed": true,
+  "views": [
+    "nativewinter1024",
+    "nativesummer1024",
+    "nativewinter4096diagnostic",
+    "webwinter",
+    "websummer"
+  ],
+  "scope": "CurrentNative8a91342f capture-only; no new product change",
+  "meter": "/home/devcontainers/.local/state/lunden-codex-20261127/2423/diagnostic-meter.json",
+  "meterSHA256": "193027bf1608504c885e2622e1ac35e00fcc1797d4ea08a46e3e5caa04a66b46",
+  "formalAcceptanceMasksApproved": false,
+  "originalAcceptanceStillRequired": true,
+  "findings": [
+    {
+      "scope": 2423,
+      "observation": "Current winter source has distinct diagonal/thin branch shadows across brick above/beside lower windows and across the left fence. Native winter shadow contribution there is much weaker or missing. Optional4096 original is pixel-identical to1024 and cannot be called a visual improvement."
+    },
+    {
+      "scope": 2423,
+      "observation": "June source also has subtle local shadows around window/vegetation edges; Native remains different, while prelocked June mask lacks enough physical certainty to isolate direct-shadow contrast. Whole-frame similarity or the diagnostic .829 ratio does not establish June formal acceptance."
+    },
+    {
+      "scope": 2423,
+      "observation": "Winter folded canopy and June open canopy reflect actual current production controller and source seasonal state. Previous2398 winter open-canopy mismatch is now fixed2403; do not recycle that historical failure."
+    },
+    {
+      "scope": "diagnostic validity",
+      "observation": "Actual metadata confirms all3directional roles, Sun casttrue/intensity19.449/40000cm/4cascade property/exponent3/bias.5/slope.5/angle.5357/contact0; globalCSMcap3 and1024. SunAtmosphere castfalse/diffuse0/specular0; fogvolumetricfalse.4096CVar values passed and restored, but actual allocated shadow atlas size was not read."
+    },
+    {
+      "scope": "diagnostic limit",
+      "observation": "DecodedRGB1024/4096 are exactly identical0changedpixels/max0/RMS0, despite different PNGSHA. This shows no image change in this run. It does not prove the atlas really increased or rule out all resolution-related effects; cache/caps/allocation unknown."
+    }
+  ],
+  "commonExistingMappings": [
+    {
+      "issues": [
+        2398
+      ],
+      "observation": "Winter Native brick/frame are visibly brighter and less source-warm overall; existing solar-colour work remains partial. No new sunlight/fill fit justified."
+    },
+    {
+      "issues": [
+        2428
+      ],
+      "observation": "Native mortar/brick has sharper bright regular raster/aliasing and different local brightness in both seasons; current sourceworker handles filter independently."
+    },
+    {
+      "issues": [
+        2388
+      ],
+      "observation": "Through-glass interiors remain flatter/brighter and less layered than source; known openpartial."
+    },
+    {
+      "issues": [
+        2389,
+        2424
+      ],
+      "observation": "Patio palm is paler/yellower than source, an existing mapped issue; not promoted to a dependency for2423."
+    },
+    {
+      "issues": [
+        2443
+      ],
+      "observation": "Native screen-wall dots/perforated-looking regular pattern and brighter rail/faces differ from source wood."
+    },
+    {
+      "issues": [
+        2444
+      ],
+      "observation": "Screen-wall branch-shadow pattern differences were already mapped there; no claim this run isolates that separate branch geometry issue."
+    }
+  ],
+  "boundedOfflineCasterInspection": {
+    "sourceImporter": "import_world.py261\u2013277 defaults absent castShadow to true, disables only explicit extras false; check_shadows774\u2013785 compares every actor to source extras. No broad cast-shadow-off default found.",
+    "export": "Read current l1007-uteplats.glb JSON. No human-readable climb/vine node IDs; cannot identify exact climber actor or prove its live castShadow/geometry from that name search.",
+    "noNewCauseProven": true
+  },
+  "conclusion": "Keep2423 OPEN. Actual process/readbacks and unchanged-file/restoreddiagnostic evidence are valid; visual issue persists, no safe small source candidate proven, formalwinter+June physicalshadow metrics remain unavailable. Root may publish this bounded diagnostic and release."
+}

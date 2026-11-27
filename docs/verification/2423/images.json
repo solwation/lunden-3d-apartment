@@ -1,0 +1,22 @@
+[
+  {
+    "file": "unreal-patio-christmas-shadow4096-diagnostic.png",
+    "sha256": "e7299b0e5ecdc14399b7231870b3c6640747de4af944a17265e4de4403e45384"
+  },
+  {
+    "file": "unreal-patio-christmas.png",
+    "sha256": "232c7b7fdb632cc54d1ac36ff067ce9fac6d3b68bafa48b2601455e3ba66e371"
+  },
+  {
+    "file": "unreal-patio-summer.png",
+    "sha256": "d7e2361d5ac78c7c3309bdd299bc6345213ee8d1e54fe452179149afbdd8bce8"
+  },
+  {
+    "file": "web-patio-christmas.jpg",
+    "sha256": "f7308309602136009e1ed9b9665699064ff2fd4eef56ac5eec9fcb661d125f8e"
+  },
+  {
+    "file": "web-patio-summer.jpg",
+    "sha256": "2809213185dca1b6aa17076983bc019514dbe27bd403b3b82fc0cba59f5f9851"
+  }
+]
