@@ -105,7 +105,7 @@ bildprovet nedan underkände den strategin. Ersättaren kopierar i stället orig
 lägger enbart källfältet till den kopierade grafens emission. Mattans befintliga geometri använder materialkopian.
 Inga extra trianglar, höjningar eller ändringar av originalets materialpaket behövs. Geometriska ytnormaler
 begränsar bidraget till ovansidan. Världs-UV håller fältet kvar under pendeln, och utanför källquaden nollas enbart
-det nya bidraget; originaltextilen klipps aldrig bort. Denna ersättare väntar på verkligt nativeprov.
+det nya bidraget; originaltextilen klipps aldrig bort. Ersättarens faktiska prov redovisas nedan.
 Fade följer källampans `K` × den befintliga strömmatningen. Ordinarie full import och bildverktygens settle-steg
 anropar buildern respektive styrenheten.
 
@@ -152,8 +152,52 @@ resultat 0 efter 344,05 s commandletarbete. Omslutande Linuxprocess avslutades �
 [#2471](https://github.com/solwation/lunden-3d-apartment/issues/2471). Alla 2 621 skyddade filer var fortfarande
 SHA-exakta och skrivskyddade efteråt. Inga renderprocesser lämnades kvar.
 
-**Nuvarande grind:** bildprovet är underkänt. Materialersättarens riktiga API-/PBR-/fadeprov och nya tre bildpar
-återstår. Webbens output-blandning och Unreals scene-linear-blandning är olika; källtestet bevisar därför inte
+### Materialkopian: verkligt native- och bildprov
+
+Materialkopian på `a39a2a9b` klarade två riktiga prov av 70 bevarade effektiva PBR-parametrar, alla
+basmaterialöverstyrningar inklusive displacementfält, originalmesh/transform/kollision/skugga och källampans
+K/ström/på/av. Bygge nummer två rapporterade `changed=False`. En separat Generated-testkopia med ändrad sparad
+råhet men samma namn gav en ny materialkopia; osparade källpaket avvisades. Originalpaketen ändrades inte.
+De båda kompletta processerna är ändå **underkända**: efter godkända assertions kraschade Python weakref-GC.
+Provet behöll en bunden Unrealmetod i modulens cykliska globala variabler, samma dokumenterade motorfel som
+#2401. Testkoden i `53ad3679` tar bort aliaset. Ett ändrat test gör inte de tidigare processerna godkända.
+
+Den riktiga Vulkan-renderingen på `53ad36797de7750ee9c71ffe95279fa944cf0b2c` använde samma sparade produktkod
+och material som `a39a2a9b`; endast testfilen ändrades däremellan. Renderingen körde inte regressionstestets
+tillfälliga objekt. Alla 16 delnivåer var laddade. Sex faktiska render targets och PNG-bilder var 640 × 360,
+med samma LinuxLow/SM5/llvmpipe-profil, exponering och kameror som det tidigare djupfelet.
+Fältets materialfade växlades mellan exakt 1 och 0; mattan, källampans övriga ljus och exponeringen behölls.
+
+| Avstånd | Fält på | Fält av | Bildskillnad |
+|---|---|---|---|
+| Nära | [På](rug-depth-linux/near-pool-on.png) | [Av](rug-depth-linux/near-pool-off.png) | 84 274 pixlar över 2/255; största kanalskillnad 29/255. |
+| Referens | [På](rug-depth-linux/reference-pool-on.png) | [Av](rug-depth-linux/reference-pool-off.png) | 30 140 pixlar över 2/255; största kanalskillnad 27/255. |
+| Fjärran | [På](rug-depth-linux/far-pool-on.png) | [Av](rug-depth-linux/far-pool-off.png) | 21 449 pixlar över 2/255; största kanalskillnad 29/255. |
+
+Referensvyn visar nu bidraget även vid den tidigare oblockerade provpunkten runt pixel (251, 160), där skillnaden
+är 5/255. Alla sex bilder granskades visuellt: fältet följer originalmattan utan en separat höjd eller kontur.
+Soffans inre mätfält gav exakt noll skillnad på nära och långt håll. Bordets inre fält gav högst 1/255 nära och
+noll i fjärrvyn. Ett bredare fjärrfält som även omfattade bordskanten hade tre pixlar över 2/255 och max 16/255;
+den kantblandningen redovisas separat i [pixelmåtten](rug-depth-linux/pixel-check.json). Provet täcker tre fasta
+avstånd och ocklusion, inte varje kamerarörelse eller samtliga renderprofiler.
+
+Native-processens `result.json` anger exit 0, `completed=true`, `passed=true`, 238,73 s totalt och 106,07 s
+commandletarbete. Unreal avslutade rent och alla editor-/shader-/Zen-barn städades bort. Den yttre
+shellsessionen gav ändå 143; det är fortfarande en separat avvikelse, inte ett godkänt shellexitresultat.
+Alla 2 621 skyddade filer förblev SHA-exakta och skrivskyddade. [Kameror och laddade nivåer](rug-depth-linux/capture.json)
+och [filhashar](rug-depth-linux/files.json) binder bilderna till körningen. Varje PNG avkodar korrekt och alla
+chunk-CRC fram till IEND är giltiga. Motorverktygets filer innehåller även bytes efter IEND; originalfilerna
+har bevarats byte-exakt.
+
+En separat minimal NullRHI-körning på samma `53ad3679` anropade därefter enbart den ordinarie buildern två gånger,
+utan regressionstestets tillfälliga objekt. Båda anropen gav `changed=False`. Hela körningen passerade på 101,73 s,
+med commandletarbete 4,74 s, native exit 0 och wrapper exit 0. Alla barnprocesser var borta efteråt och samtliga
+2 621 skyddade filer var fortfarande SHA-exakta och skrivskyddade. Detta verifierar produktbuilderns rena
+finalisering; det gör inte de tidigare kraschade testprocesserna godkända.
+
+**Nuvarande grind:** materialkopians avgränsade synlighets-/ocklusionsprov passerar i dessa tre Linuxvyer.
+Produktbuilderns separata oförändrade ombyggnad och finalisering passerar. De tidigare API-processerna förblir underkända.
+Webbens output-blandning och Unreals scene-linear-blandning är olika; källtestet bevisar därför inte
 slutlig native luminans eller kulör. Matchade dag-/kvällsbilder återstår för samtliga #2322-mätfält.
 Omgivande golv-/takfält ingår inte i denna mattslice. Flyttade möbler och alternativa mattmaterial hör till den
 öppna portningen #2339. #2322 hålls öppet, utan integrationsklar eller slutlig färgacceptans.

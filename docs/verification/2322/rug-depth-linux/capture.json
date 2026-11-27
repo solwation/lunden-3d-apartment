@@ -1,0 +1,130 @@
+{
+  "purpose": "depth/receiver/occlusion diagnosis only, no colour acceptance",
+  "map": "/Game/Lunden/Maps/L_Lunden",
+  "loadedLevels": [
+    "/Game/Lunden/Generated/Interaction/Level_l1007_interaction",
+    "/Game/Lunden/Generated/L1007World/Level_l1007_collision",
+    "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats",
+    "/Game/Lunden/Generated/l1007-entre/Level_l1007-entre",
+    "/Game/Lunden/Generated/Interaction/Level_hus-l_interaction",
+    "/Game/Lunden/Generated/Interaction/Level_kvarteret_interaction",
+    "/Game/Lunden/Generated/ExteriorWorld/Level_exterior_collision",
+    "/Game/Lunden/Generated/gard/Level_gard",
+    "/Game/Lunden/Generated/omgivning/Level_omgivning",
+    "/Game/Lunden/Generated/SiteWorld/Level_site_collision",
+    "/Game/Lunden/Generated/Lighting/Level_lighting",
+    "/Game/Lunden/Generated/FacadeLighting/Level_facade_lighting",
+    "/Game/Lunden/Generated/VegetationWorld/Level_vegetation_foliage",
+    "/Game/Lunden/Generated/Interaction/Level_lift_buttons",
+    "/Game/Lunden/Avatar/Looks/Level_LundenMirror",
+    "/Game/Lunden/Generated/fond/Level_fond"
+  ],
+  "sourceCommit": "53ad36797de7750ee9c71ffe95279fa944cf0b2c",
+  "exposureBias": -2.462862008455037,
+  "profile": "linux-low, direct-light capture, lumen disabled",
+  "naniteOffInMemory": 3508,
+  "shots": [
+    {
+      "name": "near-pool-on",
+      "contributionOn": true,
+      "measuredMaterialFade": 1.0,
+      "sourceLampFade": 1.0,
+      "xyz": [
+        299.0000033378601,
+        904.0000133514404,
+        105.79000002164393
+      ],
+      "yaw": 59.743565101403625,
+      "pitch": -30.028426311305225,
+      "roll": 2.315965964528166e-07,
+      "horizontalFov": 70.0,
+      "width": 640,
+      "height": 360
+    },
+    {
+      "name": "near-pool-off",
+      "contributionOn": false,
+      "measuredMaterialFade": 0.0,
+      "sourceLampFade": 1.0,
+      "xyz": [
+        299.0000033378601,
+        904.0000133514404,
+        105.79000002164393
+      ],
+      "yaw": 59.743565101403625,
+      "pitch": -30.028426311305225,
+      "roll": 2.315965964528166e-07,
+      "horizontalFov": 70.0,
+      "width": 640,
+      "height": 360
+    },
+    {
+      "name": "reference-pool-on",
+      "contributionOn": true,
+      "measuredMaterialFade": 1.0,
+      "sourceLampFade": 1.0,
+      "xyz": [
+        250.0,
+        820.0,
+        162.0
+      ],
+      "yaw": 59.743565101403625,
+      "pitch": -30.028426311305225,
+      "roll": 2.315965964528166e-07,
+      "horizontalFov": 70.0,
+      "width": 640,
+      "height": 360
+    },
+    {
+      "name": "reference-pool-off",
+      "contributionOn": false,
+      "measuredMaterialFade": 0.0,
+      "sourceLampFade": 1.0,
+      "xyz": [
+        250.0,
+        820.0,
+        162.0
+      ],
+      "yaw": 59.743565101403625,
+      "pitch": -30.028426311305225,
+      "roll": 2.315965964528166e-07,
+      "horizontalFov": 70.0,
+      "width": 640,
+      "height": 360
+    },
+    {
+      "name": "far-pool-on",
+      "contributionOn": true,
+      "measuredMaterialFade": 1.0,
+      "sourceLampFade": 1.0,
+      "xyz": [
+        228.99999856948853,
+        783.9999942779541,
+        186.089999990724
+      ],
+      "yaw": 59.743565101403625,
+      "pitch": -30.028426311305225,
+      "roll": 2.3159659828963707e-07,
+      "horizontalFov": 70.0,
+      "width": 640,
+      "height": 360
+    },
+    {
+      "name": "far-pool-off",
+      "contributionOn": false,
+      "measuredMaterialFade": 0.0,
+      "sourceLampFade": 1.0,
+      "xyz": [
+        228.99999856948853,
+        783.9999942779541,
+        186.089999990724
+      ],
+      "yaw": 59.743565101403625,
+      "pitch": -30.028426311305225,
+      "roll": 2.3159659828963707e-07,
+      "horizontalFov": 70.0,
+      "width": 640,
+      "height": 360
+    }
+  ]
+}

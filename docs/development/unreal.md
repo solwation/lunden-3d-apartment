@@ -1584,7 +1584,14 @@ the export and the pictures section of `notices.mjs`.
   The texture stays linear (`sRGB=false`), preserving its original soft falloff. The controller
   reads the existing source lamp's `K` times `MPC_LundenWeather.PowerAvailable`; capture helpers explicitly settle
   it in editor worlds that do not tick. It never changes the source lamp's intensity or the imported rug material.
-  This replacement still needs actual native API/PBR/fade and rendered on/off validation.
+  Actual composed-world assertions at `a39a2a9b` preserved 70 PBR parameters, all base-property overrides,
+  geometry/collision/shadow and source fades, including dirty/saved-source invalidation. Those two API processes
+  failed later in Python closure weakref finalization (#2401); `53ad3679` removes the test's retained bound method.
+  Real Vulkan captures at `53ad3679` rendered the contribution at all three distances with native exit 0. The
+  reference pair now differs in 30,140 pixels above 2/255, where the extra plane had disappeared entirely.
+  A separate minimal product-builder run on that revision passed twice unchanged and exited 0 in both native
+  and wrapper processes (101.73 s); it did not rerun the native regression's temporary objects.
+  The low-profile images establish this bounded visibility/occlusion result, not Windows/web colour acceptance.
   The earlier coplanar implementation's UE 5.8.4 Linux NullRHI run at `27848bf9` passed the real zone import, builder/API/Blueprint execution,
   unchanged second build, composed-world geometry/material/fade checks and the incremental component-drift
   regression. All 246 authored LFS assets and 2,621 protected prerequisite files remained byte-identical and
@@ -1592,7 +1599,7 @@ the export and the pictures section of `notices.mjs`.
   contribution disappeared despite 215 unobstructed source-mask samples. Near/far views retained it and furniture
   occluded it. Analytically matching planes did not guarantee raster depth stability, so the extra surface was removed.
   The [diagnosis and pending replacement](../verification/2322/README.md#mattans-pendelfält-källcheckpoint-2026-11-27)
-  distinguish those historical API checks from current unverified code. The source blends its
+  distinguish the failed extra plane, the actual replacement images and the remaining gates. The source blends its
   unlit contribution after output conversion while UE's additive material contributes in scene-linear space,
   so unchanged source coefficients are not evidence of matched final luminance. No colour/exposure fit is made
   in this slice. Surrounding floor and ceiling pools, moved/alternative rug materials and final matched day/evening

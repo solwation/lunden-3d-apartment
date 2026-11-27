@@ -1,0 +1,119 @@
+{
+  "near": {
+    "dimensions": [
+      640,
+      360
+    ],
+    "maxChannelDelta": 29,
+    "pixelsAbove2": 84274,
+    "positivePixelsAbove2": 84137,
+    "negativePixelsBelowMinus2": 147,
+    "bboxAbove2": [
+      71,
+      116,
+      639,
+      359
+    ],
+    "regions": {
+      "sofa": {
+        "xyxy": [
+          90,
+          10,
+          190,
+          40
+        ],
+        "maxDelta": 0
+      },
+      "table": {
+        "xyxy": [
+          270,
+          80,
+          390,
+          115
+        ],
+        "maxDelta": 1
+      }
+    }
+  },
+  "reference": {
+    "dimensions": [
+      640,
+      360
+    ],
+    "maxChannelDelta": 27,
+    "pixelsAbove2": 30140,
+    "positivePixelsAbove2": 30046,
+    "negativePixelsBelowMinus2": 104,
+    "bboxAbove2": [
+      168,
+      140,
+      527,
+      320
+    ],
+    "regions": {
+      "sourceVisibleSample": {
+        "xyxy": [
+          250,
+          159,
+          254,
+          163
+        ],
+        "maxDelta": 5
+      }
+    }
+  },
+  "far": {
+    "dimensions": [
+      640,
+      360
+    ],
+    "maxChannelDelta": 29,
+    "pixelsAbove2": 21449,
+    "positivePixelsAbove2": 21350,
+    "negativePixelsBelowMinus2": 115,
+    "bboxAbove2": [
+      189,
+      144,
+      490,
+      283
+    ],
+    "regions": {
+      "sofa": {
+        "xyxy": [
+          210,
+          70,
+          310,
+          105
+        ],
+        "maxDelta": 0
+      },
+      "tableInterior": {
+        "xyxy": [
+          275,
+          131,
+          310,
+          140
+        ],
+        "maxDelta": 0
+      },
+      "bookInterior": {
+        "xyxy": [
+          330,
+          133,
+          345,
+          140
+        ],
+        "maxDelta": 0
+      },
+      "tableEdgeIncluded": {
+        "xyxy": [
+          300,
+          130,
+          350,
+          150
+        ],
+        "maxDelta": 16
+      }
+    }
+  }
+}

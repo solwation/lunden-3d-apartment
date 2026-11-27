@@ -1,0 +1,44 @@
+[
+  {
+    "file": "reference-pool-off.png",
+    "bytes": 439995,
+    "pngThroughIendBytes": 346748,
+    "trailingBytes": 93247,
+    "sha256": "cd13e467e7b99e4ed4c1645fe9eefc7ba88a26f03eaab6e8206ad62c538f119d"
+  },
+  {
+    "file": "near-pool-on.png",
+    "bytes": 439995,
+    "pngThroughIendBytes": 327187,
+    "trailingBytes": 112808,
+    "sha256": "84157a7f28765a85f599e5d90ccedf35da996634018fc9fe77d3dace86c052a1"
+  },
+  {
+    "file": "far-pool-on.png",
+    "bytes": 439995,
+    "pngThroughIendBytes": 342921,
+    "trailingBytes": 97074,
+    "sha256": "20b06e17f5229efab0c900f39a2f328cd9c633a44f0d488b91a04134303a44a1"
+  },
+  {
+    "file": "far-pool-off.png",
+    "bytes": 439995,
+    "pngThroughIendBytes": 343073,
+    "trailingBytes": 96922,
+    "sha256": "10c396b268c88e34ead7b759e559561566b438d18d901735392f0fb794e8d45e"
+  },
+  {
+    "file": "reference-pool-on.png",
+    "bytes": 439995,
+    "pngThroughIendBytes": 347231,
+    "trailingBytes": 92764,
+    "sha256": "be55a8b0c45d12dc0fdd23a5fa90d85c4cef5635355004cbc5dc3ce5ca6a3391"
+  },
+  {
+    "file": "near-pool-off.png",
+    "bytes": 439995,
+    "pngThroughIendBytes": 326616,
+    "trailingBytes": 113379,
+    "sha256": "d8818c55e695e0caa36ea68c13cd2530ff0b2a54bf56cdba83a20e1cd7ae45e8"
+  }
+]
