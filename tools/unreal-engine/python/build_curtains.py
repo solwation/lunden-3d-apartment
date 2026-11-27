@@ -20,8 +20,8 @@ VISIBILITY = "/Game/Lunden/Generated/Interaction/BFL_LundenCurtainLighting"
 # unmeasured; source-transcribed window irradiance on translucent cloth is absent.
 DAY_GAIN = (19.32, 17.41, 15.04)
 LAMP_GAIN = (13.37, 16.89, 24.68)
-# Guess selected from five actual fixed-pose upper-floor render trials.
-VIOLET_LAMP_GAIN = (80.0, 130.0, 180.0)
+# Native upper-floor profile guess with the exported warm room light (#2384).
+VIOLET_LAMP_GAIN = (80.0, 140.0, 220.0)
 
 
 def native_colours(row):

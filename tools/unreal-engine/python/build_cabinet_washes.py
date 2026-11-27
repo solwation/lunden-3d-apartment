@@ -23,7 +23,7 @@ VENEER_FACTOR = (1.265, 1.259, 1.267)
 # Guess: separate day/night native reflectance endpoints. The single static
 # factor could not match both the day veneer and its warm spotlit evening view.
 # Interpolate with the real weather collection; retain original texture/UV/alpha.
-VENEER_NIGHT_FACTOR = (.755, .560, .155)
+VENEER_NIGHT_FACTOR = (.755, .720, .600)
 # Guess selected from actual existing-MID trials against the independently
 # settled source reference (#2485); retain the original day/night veneer factors.
 WASH_RADIANCE = (7.35, 4.95, 3.9)
