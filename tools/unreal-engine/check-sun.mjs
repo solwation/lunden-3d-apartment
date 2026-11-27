@@ -53,13 +53,14 @@ const coverOf = (oc) => (S.clearThr - skyCloudState(oc).thr) / (S.clearThr - ful
 const extra = [];
 const near = (what, got, want, tolerance = 1e-3) => { const ok = got !== undefined && Math.abs(got - want) <= tolerance; extra.push({ what, got, want, ok }); };
 const sourceColours = dayCycleLightColors();
+const hasSunColours = (result.sun ?? []).some(c => c.sunLightColorLinear !== undefined);
 
 let worst = 0, failed = 0;
 const rows = [];
 for (const c of result.sun ?? []) {
   const doy = dayOfYear(c.year, c.month, c.day);
   const sunWeb = toUnreal(sunDirection(c.hour, doy));
-  if (c.sunLightColorLinear !== undefined) {
+  if (hasSunColours) {
     // The native Sun is separate from its Moon; on the moon branch this Sun is
     // off. Match the source's solar branch, allowing only sRGB8 light storage.
     const blend = smooth(0.05, 0.4, sunWeb[2]);
