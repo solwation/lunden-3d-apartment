@@ -61,6 +61,7 @@ utgivaren skiljer sig eller Windows fortsätter att blockera filen. [Microsofts 
 Kör lokalt med `python3 -m http.server 8137` och öppna http://localhost:8137/. Hur projektet är byggt
 står i [CLAUDE.md](CLAUDE.md) och [docs/development/](docs/development/); den tidigare, långa README:n
 finns i [docs/development/readme-archive.md](docs/development/readme-archive.md).
+För lokalt Unreal-arbete i WSL finns en separat [Linuxprofil med enklare grafik](docs/development/unreal.md#linux-development-in-wsl-2467).
 
 Väderdata från [Open-Meteo.com](https://open-meteo.com/) (CC BY 4.0). Musiken har CC BY 4.0-licens;
 musiker och källor finns under *Om musiken* i spelets meny.

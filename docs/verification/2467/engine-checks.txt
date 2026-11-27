@@ -1,0 +1,33 @@
+#2467 engine checks, 2026-11-27 UTC
+Engine archive and installed Build.version: 5.8.4, exact project lock
+Prebuilt runtime: 82757 files, about31 GiB; six core files CRC verified against Epic archive; ldd missing dependencies:0
+NullRHI quality probe: PASS; source 14261011173f5b65bbb64e5d66c42fcec3ecfca7; elapsed161.15s; exit0
+Profile: all seven required quality CVars read as0 inside real Unreal Python
+This verifies engine/project loading/configuration, not graphics, C++ SDK or packaging.
+
+Actual Vulkan GPU attempt: source567183ef, 20261127T081223554104-935542
+SM5 profile accepted, device Microsoft Direct3D12 (Intel UHD Graphics630)
+FAILED: Intel D3D12 driver SIGSEGV at address0x38 during RHI resource initialization
+Stack: libigd12um64kbl.so -> libd3d12core.so -> libvulkan_dzn.so+0x3daab -> VulkanRHI
+Root terminated the post-crash process group after the fatal log; recorded exit-9, passed:false.
+Separate GPU triangle probe passing does not establish Unreal compatibility.
+
+NullRHI asset roundtrip: PASS, source a344311f, 120.53s, exit0
+Created/saved/reloaded/deleted scratch material; loaded real 2067-byte LFS fixture.
+System llvmpipe first attempt: source a344311f, 88.52s, exit1, passed:false
+Unreal filters CPU devices unless explicitly allowed; retry uses supported -AllowCPUDevices.
+Dozen diagnosis: early timestamp pool reset, no verified supported timing CVar fix; no feature spoofing.
+
+Explicit CPU Vulkan capture first attempt: source24ff8b37
+Actual VulkanSM5 initialized on llvmpipe (LLVM20.1.2, 256bits), shaders compiling.
+Incomplete: 600s timeout (611.02s including cleanup), exit124, timedOut:true, passed:false.
+No image was produced and no graphics success is claimed for this attempt.
+Review at10min: initial global shader compile was still making slow-job progress.
+Preserved warm Zen cache; next invocation moves DDC/Zen to D using verified Unix variable names and explicit CLI paths.
+Detached-worker cleanup improved with Linux child subreaper and tested using a SIGTERM-resistant separately-sessioned child.
+
+Actual Automation execution: sourcecf444cde, test_fixture_material
+Engine log TEST COMPLETE EXIT CODE:0; report counts1success/0warnings/0failed/0notRun.
+Wrapper reported failure reading UTF-8 BOM, not a green wrapper run.
+Fixed reader re-parsed the same saved report successfully; exact hash/counts in automation-review.json.
+Engine log confirms filecache /mnt/d/LundenLinux/DerivedDataCache writable and Zen /mnt/d/LundenLinux/Zen statusOK.

@@ -1,0 +1,14 @@
+{
+  "engineExecutionSource": "cf444cde",
+  "test": "Editor.Python.Lunden.test_fixture_material",
+  "engineExitCode": 0,
+  "wrapperBeforeFix": "failed reading UTF-8 BOM; not a green wrapper invocation",
+  "fixedReaderRecheckPassed": true,
+  "reportSha256": "623039fe15bff887aebb56bf786f04da8f162994ac780df80bee31c476e0df8a",
+  "counts": {
+    "succeeded": 1,
+    "succeededWithWarnings": 0,
+    "failed": 0,
+    "notRun": 0
+  }
+}

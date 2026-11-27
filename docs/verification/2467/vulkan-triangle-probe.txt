@@ -1,0 +1,12 @@
+WARNING: dzn is not a conformant Vulkan implementation, testing use only.
+Device 0: Microsoft Direct3D12 (Intel(R) UHD Graphics 630), Vulkan 1.2.354, type 1
+Features: dynamicRendering=1 synchronization2=1 shaderInt64=1 descriptorIndexing=0 bufferDeviceAddress=0
+Extension: VK_KHR_dynamic_rendering
+Extension: VK_KHR_synchronization2
+GPU command + coherent buffer readback: PASS (4096 bytes)
+Pixel (8,8): 255/0/0/255 expected 255/0/0/255
+Pixel (8,5): 255/0/0/255 expected 255/0/0/255
+Pixel (0,0): 64/128/191/255 expected 64/128/191/255
+Pixel (15,15): 64/128/191/255 expected 64/128/191/255
+Pixel (0,15): 64/128/191/255 expected 64/128/191/255
+Shader-based offscreen triangle + representative pixel readback: PASS (16x16 RGBA8)

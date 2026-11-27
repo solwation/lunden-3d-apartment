@@ -44,6 +44,11 @@ tools/unreal-engine/check-environment.ps1         environment report and check (
 tools/unreal-engine/build-editor.ps1              compatibility entry point; reports that the installed editor is ready
 tools/unreal-engine/run-python.ps1                runs a Python script headless (UnrealEditor-Cmd -run=pythonscript)
 tools/unreal-engine/run-tests.ps1                 runs Automation Tests headless and reads the exported report
+tools/unreal-engine/run-linux.py                  opt-in Linux/WSL editor runner: version check, Python and Automation
+tools/unreal-engine/linux-low.ini                 local SM5 low-quality overrides, never loaded by Windows scripts
+tools/unreal-engine/tests/test_linux_runner.py    rejects wrong versions, Python errors and empty/incomplete reports
+tools/unreal-engine/python/probe_linux.py         reads low-profile CVars inside the real engine, logs success or fails
+tools/unreal-engine/python/smoke_render_linux.py  captures a 640x360 cube with the committed fixture material
 tools/unreal-engine/release.ps1                     runs a clean Win64 Shipping build, archives it with build-info.json and keeps the log
 tools/unreal-engine/sign-manifest.mjs             signs/fetches/uploads a release manifest's 64-byte P-256 .sig (.github/workflows/sign-manifest.yml)
 tools/unreal-engine/create-manifest-key.sh        one-time admin script: manifest key pair → signing secret + public variable, never on disk
@@ -275,7 +280,8 @@ look for a project-specific editor receipt.
 
 ## Scripts (`tools/unreal-engine/`)
 
-All scripts are PowerShell (Windows PowerShell 5.1 or PowerShell 7), run on Windows and callable from WSL:
+The Windows entry points use PowerShell (Windows PowerShell 5.1 or PowerShell 7) and are callable from WSL.
+For a local Linux development engine, use the [separate Linux runner](#linux-development-in-wsl-2467).
 
 ```text
 powershell.exe -NoProfile -File tools/unreal-engine/check-environment.ps1
@@ -320,6 +326,98 @@ With the material removed from that copy, the same test reported one failure
 and exit 255. The check produced no project DLL and no new Code Integrity
 3033/3077 events for Lunden DLLs. These command lines ran directly through
 the installed editor on the Smart App Control host.
+
+### Linux development in WSL (#2467)
+
+The user also develops on `olw-win10`, away from the Windows Unreal workstation.
+Use Epic's [precompiled Linux archive](https://dev.epicgames.com/documentation/en-us/unreal-engine/linux-development-quickstart-for-unreal-engine)
+at the **same exact version as `ENGINE_VERSION`**. The Linux runner refuses a missing or
+different engine. This is a local development setup, not the Linux release requested in
+#2422 or a replacement for Windows packaging and visual acceptance.
+
+`tools/unreal-engine/run-linux.py` reads local, untracked settings from
+`~/.config/lunden-unreal/linux.json`:
+
+```json
+{
+  "engineRoot": "/mnt/d/UnrealEngine/5.8.4",
+  "dataDir": "/mnt/d/LundenLinux",
+  "vulkanIcd": "/usr/share/vulkan/icd.d/lvp_icd.json",
+  "allowCpuDevice": true
+}
+```
+
+`engineRoot` and `dataDir` can also be supplied as `--engine-root` and `--data-dir`;
+`LUNDEN_UNREAL_LINUX_ROOT` overrides the local engine setting. The Vulkan fields are
+optional and apply only to a rendered invocation. Keep the source checkout on ext4.
+`allowCpuDevice` explicitly allows a software Vulkan device; it does not emulate
+unsupported Vulkan features. Optional `libraryPath` supplies per-process driver
+libraries when an isolated runtime needs them.
+On this host the WSL virtual disk is on C:, which has little physical free space;
+its advertised virtual capacity is not free host storage. The engine and caches use
+D: instead. This avoids moving or shutting down the running WSL distribution.
+
+```sh
+python3 tools/unreal-engine/run-linux.py check
+python3 tools/unreal-engine/run-linux.py python tools/unreal-engine/python/smoke_create_asset.py
+python3 tools/unreal-engine/run-linux.py tests Editor.Python.Lunden.test_fixture_material
+# Explicit, reduced offscreen renderer/profile probe:
+python3 tools/unreal-engine/run-linux.py --render --timeout 1800 python tools/unreal-engine/python/probe_linux.py
+# Explicit CPU renderer (slow; no GPU acceleration):
+python3 tools/unreal-engine/run-linux.py --render --allow-cpu-device --timeout 1800 --vulkan-icd /usr/share/vulkan/icd.d/lvp_icd.json python tools/unreal-engine/python/smoke_render_linux.py /absolute/output/path
+```
+
+Python and Automation use NullRHI by default, so functional checks need no GPU.
+`--render` explicitly allows commandlet rendering and selects offscreen Vulkan SM5
+with a 640×360 viewport and the low profile: no Lumen,
+Nanite, ray tracing, virtual shadows, volumetric fog/clouds or expensive post effects.
+These quality values are **guesses for local development**, not equivalent image
+acceptance settings. Capture scripts that create their own render targets must also
+choose a reduced target size; the viewport flags cannot change those targets. The
+runner appends `linux-low.ini` to a per-run copy of the
+current `DefaultEngine.ini` and selects it with `-DefEngineIni`; it does not edit the
+project's defaults. This preserves the base config hierarchy and supports the RHI
+array, unlike individual command-line property overrides
+([Epic's configuration rules](https://dev.epicgames.com/documentation/unreal-engine/configuration-files-in-unreal-engine)).
+Use `python tools/unreal-engine/python/probe_linux.py` through the runner to check
+the applied quality settings inside the engine. `--vulkan-icd /absolute/path.json`
+can select a different installed driver for one rendered run; the recorded result
+includes the selected ICD, source revision and effective INI hash.
+
+Per-run logs, the effective INI, Automation report and `result.json` are under
+`dataDir/runs/`; caches use `dataDir/DerivedDataCache` and `dataDir/Zen`. A zero exit without a log or with
+a Python traceback fails. Automation additionally needs a report with at least one
+pass, no failures and no unrun tests. Timeouts terminate this invocation's process
+tree, including detached shader workers: the Linux runner acts as their child
+subreaper. On WSL, the runner takes the same PC-wide editor slots and checks free Windows
+memory immediately before launch, as required by the orchestra policy.
+The default timeout is 300 seconds; first-time shader compilation can exceed ten
+minutes on this host, so the first rendered probe above allows 1,800 seconds.
+
+The standard Ubuntu Mesa packages on this host expose only llvmpipe (CPU). A private
+Mesa Dozen 26.1.8 runtime in `~/.local/share/lunden-unreal/vulkan` exposes the actual
+Intel UHD 630 through D3D12. Its GPU buffer, 16×16 render-target clear/readback and shader-based
+triangle/pixel-readback probes pass. However, actual Unreal SM5 startup crashes in
+the Intel D3D12 driver during early timestamp-query-pool reset; no supported
+workaround was verified. Keep this driver experimental and use the explicit CPU
+fallback for the local renderer. Dozen reports Vulkan 1.2.354,
+dynamic rendering and synchronization2, but no descriptor indexing or buffer device
+address. The headless build has no window/swapchain support. Never raise advertised
+API versions or bypass profile checks to call it compatible with Unreal. Select it
+per process; no system driver or global loader configuration is replaced. Exact local
+source versions/hashes are in the runtime's `provenance.json`; the investigation and
+engine verification are tracked in #2467.
+
+The local installation contains the prebuilt x86-64 editor/runtime (about 31 GiB).
+Source, intermediate files, debug symbols, templates, Extras and LinuxArm64 were
+omitted to save space; the original Epic archive is retained on D: for restoration.
+This content-only setup does not establish C++ compilation, cooking or packaging
+support. The prepared source/assets checkout is `/home/devcontainers/lunden-linux`;
+generated world/lighting assets still require their documented build steps.
+Git LFS is installed in the user's `~/.local/bin`; the prepared checkout contains
+the real committed assets, rather than LFS pointer text.
+
+### Python test collector caveat
 
 **Bound Unreal methods and the cycle collector (#2401).** The PythonAutomationTest plugin runs every `test_*.py` in
 its own copy of the globals dict. The test's functions point back at that dict, so after the test it is cyclic
