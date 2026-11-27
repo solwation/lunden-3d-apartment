@@ -181,7 +181,15 @@ def _postprocess(mat, stamp):
         comp.set_editor_property('settings', settings, u.PropertyAccessChangeNotifyMode.NEVER)
         pp.compiled(bp)
         _save(bp, stamp)
-    actual = u.get_default_object(bp.generated_class()).get_component_by_class(u.PostProcessComponent)
+    # SCS component templates are not Actor.OwnedComponents on the class CDO.
+    # Use the same actual-template lookup as build_lighting.window_bound.
+    actual = None
+    subsystem = u.get_engine_subsystem(u.SubobjectDataSubsystem)
+    library = u.SubobjectDataBlueprintFunctionLibrary
+    for handle in subsystem.k2_gather_subobject_data_for_blueprint(bp):
+        data = subsystem.k2_find_subobject_data_from_handle(handle)
+        if data is not None and str(library.get_variable_name(data)) == 'DisplayPools':
+            actual = library.get_object(data)
     blends = actual.get_editor_property('settings').get_editor_property('weighted_blendables').array if actual else []
     if not actual or not actual.get_editor_property('unbound') or not actual.get_editor_property('enabled') \
             or actual.get_editor_property('blend_weight') != 1 or len(blends) != 1 or blends[0].object != mat or blends[0].weight != 1:

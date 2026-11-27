@@ -39,6 +39,22 @@ class SourceGeometry(unittest.TestCase):
         self.assertEqual(module.lamps(self.data), ['room_source'])
         self.assertEqual(self.data, before)
 
+    def test_rug_depth_exception_cannot_escape_its_source_floor(self):
+        data = copy.deepcopy(self.data)
+        lower = data['fields'][0]
+        receiver = {'corners': {k: [*p[:2], 1.4] for k, p in lower['corners'].items()}}
+        data.update(rugLamp='room_source', rugReceivers=[receiver])
+        self.assertEqual(module.rug_receivers(data, lower), [receiver])
+        upper = copy.deepcopy(lower)
+        upper['lamp'] = 'upper_room'
+        upper['corners'] = {k: [*p[:2], p[2]+325] for k, p in lower['corners'].items()}
+        self.assertEqual(module.rug_receivers(data, upper), [])
+        # A bad ID association cannot bypass the independently checked plane gap.
+        upper['lamp'] = 'room_source'
+        self.assertEqual(module.rug_receivers(data, upper), [])
+        other = {**lower, 'lamp': 'another_lower_lamp'}
+        self.assertEqual(module.rug_receivers(data, other), [])
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -34,6 +34,8 @@ def validate(data):
     for receiver in data.get('rugReceivers', []):
         for key in ('0,0', '1,0', '1,1', '0,1'):
             _vector(receiver['corners'][key], 3)
+    if data.get('rugReceivers') and not isinstance(data.get('rugLamp'), str):
+        raise ValueError('Rug receivers require their actual source floor-pool lamp binding')
 
 
 def _finite(v):
@@ -67,6 +69,25 @@ def lamps(data):
     return sorted({f['lamp'] for f in data['fields']})
 
 
+def rug_receivers(data, field):
+    """Only the associated lower-floor pool can cross its actual 2mm rug gap.
+
+    Other lamps/levels retain ordinary source quad depth testing. Heights come
+    from the exported planes; 0.001cm permits only source float32 rounding.
+    """
+    if field['kind'] != 'floor' or field['lamp'] != data.get('rugLamp'):
+        return []
+    heights = [p[2] for p in field['corners'].values()]
+    if max(heights)-min(heights) > .001:
+        return []
+    result = []
+    for receiver in data.get('rugReceivers', []):
+        top = [p[2] for p in receiver['corners'].values()]
+        if max(top)-min(top) <= .001 and abs(top[0]-heights[0]-.2) <= .001:
+            result.append(receiver)
+    return result
+
+
 def code(data):
     """UE Custom body. Inputs: Scene,WPos,Cam,N,Mask,Lamp0..N (native centimetres)."""
     order = lamps(data)
@@ -79,17 +100,17 @@ float3 encode(float3 v) {
 SourceDisplayPool pool;
 float3 ray=WPos-Cam;
 float3 added=0.0;
-bool sourceRug=false;
 ''']
     # Only the original exported rug is permitted across the source's 2mm floor
     # decal/receiver discrepancy. This is a numeric receiver test, no depth bias.
-    for receiver in data.get('rugReceivers', []):
-        c = receiver['corners']
-        o = c['0,0']
-        a, b = [_minus(c[k], o) for k in ('1,0', '0,1')]
-        out.append('{ float3 d=WPos-'+_vec(o)+'; float2 uv=float2(dot(d,'+_vec(a)+')/'+_number(_dot(a,a))+',dot(d,'+_vec(b)+')/'+_number(_dot(b,b))+');\n'
-                   'sourceRug=sourceRug || (all(uv>=0.0) && all(uv<=1.0) && abs(d.z)<=0.1 && N.z>0.5); }\n')
     for field in data['fields']:
+        out.append('{\nbool sourceRug=false;\n')
+        for receiver in rug_receivers(data, field):
+            c = receiver['corners']
+            o = c['0,0']
+            a, b = [_minus(c[k], o) for k in ('1,0', '0,1')]
+            out.append('{ float3 d=WPos-'+_vec(o)+'; float2 uv=float2(dot(d,'+_vec(a)+')/'+_number(_dot(a,a))+',dot(d,'+_vec(b)+')/'+_number(_dot(b,b))+');\n'
+                       'sourceRug=sourceRug || (all(uv>=0.0) && all(uv<=1.0) && abs(d.z)<=0.1 && N.z>0.5); }\n')
         c = field['corners']
         o = c['0,0']
         a, b = [_minus(c[k], o) for k in ('1,0', '0,1')]
@@ -97,7 +118,7 @@ bool sourceRug=false;
         length = math.sqrt(_dot(n, n))
         n = [x/length for x in n]
         fade = 'Lamp'+str(order.index(field['lamp']))
-        out.append('{\nfloat denominator=dot(ray,'+_vec(n)+');\n'
+        out.append('float denominator=dot(ray,'+_vec(n)+');\n'
                    'if(abs(denominator)>1e-8 && '+fade+'>0.0) {\n'
                    'float t=dot('+_vec(o)+'-Cam,'+_vec(n)+')/denominator;\n'
                    'float3 d=Cam+ray*t-'+_vec(o)+';\n'
