@@ -72,6 +72,12 @@ class ScanTests(unittest.TestCase):
         _, links = self.scan("[open\n\nclosed](missing.md)\n- [a](README.md)\n")
         self.assertEqual(links, [(4, "README.md")])
 
+    def test_code_span_wrapping_lines_hides_only_its_own_text(self):
+        _, links = self.scan(
+            "Run `git\nstatus [code](ignored.md)` then see [the guide](missing.md) and `x`.\n"
+        )
+        self.assertEqual(links, [(2, "missing.md")])
+
     def test_heading_collision_with_generated_suffix(self):
         anchors, _ = self.scan("# Foo\n# Foo\n# Foo-1\n# Foo\n")
         self.assertEqual(anchors, {"foo", "foo-1", "foo-1-1", "foo-2"})
