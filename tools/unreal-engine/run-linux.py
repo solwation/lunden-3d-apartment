@@ -150,6 +150,7 @@ def main(argv=None):
     ini.write_text(low_ini())
     log = run / "editor.log"
     command = [str(editor), str(PROJECT / "Lunden.uproject"), f"-DefEngineIni={ini}",
+               f"-LocalDataCachePath={data / 'DerivedDataCache'}",
                "-unattended", "-nosplash", "-nosound", "-nop4", "-stdout", "-FullStdOutLogOutput",
                "-NoCrashDialog", f"-abslog={log}"]
     command += (["-vulkan", "-sm5", "-AllowCommandletRendering", "-RenderOffscreen", "-ResX=640", "-ResY=360", "-windowed"]
@@ -165,8 +166,8 @@ def main(argv=None):
         command += ["-EnablePlugins=PythonAutomationTest", f"-ExecCmds=Automation RunTests {args.filter}; Quit",
                     "-TestExit=Automation Test Queue Empty", f"-ReportExportPath={run / 'automation'}"]
     env = os.environ.copy()
-    env["UE-LocalDataCachePath"] = str(data / "DerivedDataCache")
-    env["UE-ZenDataPath"] = str(data / "Zen")
+    # UnixPlatformMisc translates '-' to '_' when reading environment variable names.
+    env["UE_LocalDataCachePath"] = str(data / "DerivedDataCache")
     if args.render and (args.vulkan_icd or settings.get("vulkanIcd")):
         env["VK_DRIVER_FILES"] = str(args.vulkan_icd.resolve()) if args.vulkan_icd else settings["vulkanIcd"]
     if args.render and settings.get("libraryPath"):
