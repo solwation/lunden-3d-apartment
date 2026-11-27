@@ -1163,7 +1163,7 @@ def build_sky(spec, mpc, precip, clouds, tonemap, window_material):
     # UpdateSky: the web's sun and moon for Year/Month/Day/Hour, then lights, fog and the weather collection
     start = G.custom("UpdateSky")
     chain = Chain(start)
-    getters = {n: (G.get(n), n) for n in ("Hour", "Latitude", "Longitude", "PlanNorth", "Rain", "Snow", "Wet", "WindSpeed",
+    getters = {n: (G.get(n), n) for n in ("Hour", "Month", "Latitude", "Longitude", "PlanNorth", "Rain", "Snow", "Wet", "WindSpeed",
                                           "WindFromDeg", "SunLux", "SunOvercast", "SunClear", "Moonlight", "MoonFloor",
                                           "MoonExp", "SunCut", "FogClear", "FogOvercast", "SkyScale", "FogGrey", "AmbientRef", "AmbientOvercast", "AmbientClear", "NightAmbient",
                                           "HemiShare", "SkyLuminance", "SkyOvercast", "HemiOvercast", "HemiClear", "HemiNight")}
