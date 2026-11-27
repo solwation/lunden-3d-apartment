@@ -77,12 +77,15 @@ formal failure. Existing apartment differences remain mapped to OPEN #2480/#2490
 #2489 (otherAO), #2487 (timber dots), #2488 (evening exterior through glass) and #2470 (bottom-edge colour noise).
 No new shared-master apartment regression was observed.
 
-Exterior lawn/foliage colour and contrast differ (#2437; the foreground in these images does not establish the same
-historical lighter/bleacher direction). Railing sampling remains #2483. Fine patio-screen raster belongs to #2443 when
-that exact screen surface is observed; **exterior paving/fence dots are not relabeled as that screen or #2487 timber**.
-Paving/fence raster and bright/scalloped window-surround highlights are **new issue registration pending Root**; no ID
-is invented here, and closed #2425 is not presented as OPEN coverage. Sky/cloud and fine-shadow sampling differences
-are recorded without asserting a new brick-filter cause. These pending mappings do not turn whole acceptance true.
+Exterior lawn/foliage colour and contrast differ (#2437; these current images do not establish the same
+historical lighter/bleacher direction). Railing sampling remains #2483. The beige right-hand patio screen's
+raster and missing frame are the exact OPEN #2443 feature, confirmed by the subsequent
+[exterior mapping review](exterior-mapping-review.json); that follow-up supersedes the earlier provisional
+combined paving/fence wording in the whole-image review. Interior dots on courtyard paving and bright
+scalloped window upper edges are two distinct new issue registrations pending Root. They are not #2487
+(timber only), #2442 (wrong portico tiles) or CLOSED #2425 (a different corrected soldier-course texture).
+Sky/cloud and fine-shadow sampling differences are recorded without inventing a new filter cause. These
+pending mappings do not turn whole acceptance true.
 
 ## Raw originals
 

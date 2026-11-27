@@ -1,0 +1,67 @@
+{
+  "reviewedAtUtc": "2026-11-27T22:46:18.578073+00:00",
+  "readOnlyProductReview": true,
+  "actualOriginalsViewed": {
+    "web-entrance-a.jpg": "c61c6e2e7784c75ba29afafe8e9bf2e5724f00bc0686aba94d6fa8b7034e7ef0",
+    "unreal-entrance-a.png": "c9b42d54df6e6aa390ba4b27776cabb2ff117736d1e751a570564e0a6fd5796e",
+    "web-courtyard.jpg": "e5f9cc4237917ff75dcd83edb686ea5e34baf6390e86f345effba1eabfd9e169",
+    "unreal-courtyard.png": "265987c2302953a9d8d15aa215268e8e096f6a42a6d79e64dee6b3f9d1a5b68d"
+  },
+  "sourceHead": "a1ff6c9cfbb790f5014965e62219b6921cf57db6",
+  "readIssuesFullBodyAndComments": [
+    2425,
+    2434,
+    2443,
+    2483,
+    2442,
+    2424,
+    2437
+  ],
+  "readFixCommit": "362619e462b10c45edb686596b220af54ba66d68",
+  "queue": "Fresh gh open list --limit300 inspected by full issue titles; no matching independent paving raster/window-wave issue found",
+  "mappings": [
+    {
+      "feature": "right beige screenwall fence has dots/lost boards and missing pale frame",
+      "issue": 2443,
+      "state": "OPEN",
+      "fit": "exact feature/material scope; do not use2487 or2483"
+    },
+    {
+      "feature": "general pale surface/environment reflections",
+      "issue": 2424,
+      "state": "OPEN",
+      "fit": "brightness only; wave cause not established"
+    },
+    {
+      "feature": "June summer sky difference",
+      "issue": 2434,
+      "fit": "NOT established:2434 is specifically Nov16@14; not reused here"
+    }
+  ],
+  "unmapped": [
+    {
+      "feature": "courtyard paving interior dark dot/shortdash raster",
+      "decision": "draft independent low-priority bug; cause unknown; no beforefilter regression assertion",
+      "draft": "draft-paving-raster.md",
+      "notCoveredBy": [
+        2487,
+        2443,
+        2483,
+        2442
+      ]
+    },
+    {
+      "feature": "distant ABC bright wavy/scalloped top surrounds",
+      "decision": "draft independent low-priority bug; not reopening2425;2424 may affect brightness, not proven wave cause",
+      "draft": "draft-window-upper-edge.md",
+      "notCoveredBy": [
+        2425
+      ]
+    }
+  ],
+  "intendedProfileDeviationEstablished": false,
+  "whyNotFXAAExemption": "Paving dots cover surface interiors; no source/probe establishes a deliberate approved edge-only deviation. Visible window-contour mismatch remains unisolated.",
+  "noPixelMeasurements": true,
+  "noEngineBrowserOrProductWrites": true,
+  "rootOwnsPublicationAndRegistration": true
+}
