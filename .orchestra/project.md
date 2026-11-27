@@ -393,7 +393,21 @@ The conductor runs this loop in every `/orkester` queue session:
 
 ## Shared version and maintenance
 
-Shared release: **v0.15.1**, commit **647b06c2964687aab93804944cd641a020fa988d**. Imported with
+Shared release: **v0.15.2**, commit **851689b7b6ecba35bf2a36a4032bf5998809019e**. Imported with
+`git subtree pull --prefix=.orchestra/shared https://github.com/solwation/dirigenten-och-orkestern.git 851689b7b6ecba35bf2a36a4032bf5998809019e --squash`
+in [original #2466](https://github.com/solwation/lunden-3d-apartment/issues/2466).
+The complete [v0.15.1..v0.15.2 diff](https://github.com/solwation/dirigenten-och-orkestern/compare/647b06c2964687aab93804944cd641a020fa988d...851689b7b6ecba35bf2a36a4032bf5998809019e)
+was reviewed: `scripts/check-links.py` now blanks an inline code span that wraps onto
+the next line as one span, preserving real links after it and ignoring links inside
+it (#85, regression test included). CHANGELOG, README, INSTALL and the Pages site
+carry the release version. ORCHESTRA.md, COORDINATION.md, WORKER.md, ISSUE-WORKFLOW.md
+and the Issueflow snapshot are unchanged, so no host rule changes. Public adoption is
+tracked in [public #354](https://github.com/solwation/kvarteret-lunden/issues/354).
+The stable release and exact v0.15.2 tag were checked on 2026-11-27 and resolve to
+the imported commit. Tooling/documentation only: no player changelog, result images
+or Unreal transfer applies.
+
+The previous v0.15.1 import, commit **647b06c2964687aab93804944cd641a020fa988d**, used
 `git subtree pull --prefix=.orchestra/shared https://github.com/solwation/dirigenten-och-orkestern.git 647b06c2964687aab93804944cd641a020fa988d --squash`
 in [original #2301](https://github.com/solwation/lunden-3d-apartment/issues/2301).
 The complete [v0.15.0..v0.15.1 diff](https://github.com/solwation/dirigenten-och-orkestern/compare/141aa62399af12b48fadd8dec38137b40d8a7be5...647b06c2964687aab93804944cd641a020fa988d)
