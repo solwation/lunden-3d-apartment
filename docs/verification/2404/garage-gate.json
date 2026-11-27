@@ -1,0 +1,323 @@
+{
+  "classification": "Predelared local comparison guesses for same fixed views; original2404 has no numeric threshold. All five coloured bicycles + white/blue wall fields require actualwhole-image visual review too.",
+  "contractSHA256": "48997fc092475cc12ddce2587a0a1cf922e611e2cd82631639f45d119a3db9b0",
+  "canonicalToolSHA256": "0a76bf7e7c43ad2e212f2d884806957030ec6dc08ce4c4d9901641f5f80bd1c6",
+  "nativeCaptureMetadataSHA256": "20a7cf21f64c161c06b097cb9d4d65d2d4034cdadded46c41bdb85dccc059f29",
+  "browserBatches": 1,
+  "inputs": {
+    "parked-garage-day": {
+      "web": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2404/web/web-parked-garage-day.jpg",
+        "sha256": "fcc37407af81eaa1c179ceec5ea660422adca2d775fc3a026850febcb0098ac2"
+      },
+      "native": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2404/native-sixframe/captures/parked-garage-day.png",
+        "sha256": "1895992b54c026c415724490066fc18aac10cf8205380268addbf31c6b80dbdd"
+      }
+    },
+    "parked-garage-night": {
+      "web": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2404/web/web-parked-garage-night.jpg",
+        "sha256": "bc4bc01aa3466cbd6090bbc93f0c5ba2c7ce551e33b3cbded6540a8ebcaa5451"
+      },
+      "native": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2404/native-sixframe/captures/parked-garage-night.png",
+        "sha256": "56da0a0c3f469cfef61971153d91a085a9d245084f7c8d73cfa54514ed455444"
+      }
+    }
+  },
+  "rows": [
+    {
+      "shot": "parked-garage-day",
+      "region": "frame",
+      "passed": false,
+      "luminanceRatio": 1.4820388349514564,
+      "rgbRatios": [
+        1.2122762148337596,
+        1.2082630691399665,
+        1.1972437553832904
+      ],
+      "web": {
+        "srgb": [
+          117.3,
+          118.6,
+          116.1
+        ],
+        "luminance": 0.206,
+        "warmth": 1.01
+      },
+      "native": {
+        "srgb": [
+          142.2,
+          143.3,
+          139
+        ],
+        "luminance": 0.3053,
+        "warmth": 1.023
+      }
+    },
+    {
+      "shot": "parked-garage-day",
+      "region": "white-back-wall",
+      "passed": false,
+      "luminanceRatio": 1.469325153374233,
+      "rgbRatios": [
+        1.200906344410876,
+        1.1910197869101977,
+        1.180379746835443
+      ],
+      "web": {
+        "srgb": [
+          132.4,
+          131.4,
+          126.4
+        ],
+        "luminance": 0.2282,
+        "warmth": 1.047
+      },
+      "native": {
+        "srgb": [
+          159,
+          156.5,
+          149.2
+        ],
+        "luminance": 0.3353,
+        "warmth": 1.065
+      }
+    },
+    {
+      "shot": "parked-garage-day",
+      "region": "blue-back-wall",
+      "passed": false,
+      "luminanceRatio": 1.6253443526170799,
+      "rgbRatios": [
+        1.2946298984034832,
+        1.2691807542262676,
+        1.2334152334152333
+      ],
+      "web": {
+        "srgb": [
+          68.9,
+          76.9,
+          81.4
+        ],
+        "luminance": 0.0726,
+        "warmth": 0.846
+      },
+      "native": {
+        "srgb": [
+          89.2,
+          97.6,
+          100.4
+        ],
+        "luminance": 0.118,
+        "warmth": 0.888
+      }
+    },
+    {
+      "shot": "parked-garage-day",
+      "region": "ceiling",
+      "passed": false,
+      "luminanceRatio": 1.4550844945152683,
+      "rgbRatios": [
+        1.191139240506329,
+        1.18343949044586,
+        1.174342105263158
+      ],
+      "web": {
+        "srgb": [
+          158,
+          157,
+          152
+        ],
+        "luminance": 0.3373,
+        "warmth": 1.039
+      },
+      "native": {
+        "srgb": [
+          188.2,
+          185.8,
+          178.5
+        ],
+        "luminance": 0.4908,
+        "warmth": 1.054
+      }
+    },
+    {
+      "shot": "parked-garage-day",
+      "region": "floor",
+      "passed": false,
+      "luminanceRatio": 1.62217659137577,
+      "rgbRatios": [
+        1.253409090909091,
+        1.2613636363636365,
+        1.2546511627906978
+      ],
+      "web": {
+        "srgb": [
+          88,
+          88,
+          86
+        ],
+        "luminance": 0.0974,
+        "warmth": 1.023
+      },
+      "native": {
+        "srgb": [
+          110.3,
+          111,
+          107.9
+        ],
+        "luminance": 0.158,
+        "warmth": 1.023
+      }
+    },
+    {
+      "shot": "parked-garage-night",
+      "region": "frame",
+      "passed": true,
+      "luminanceRatio": 1.0416455053326563,
+      "rgbRatios": [
+        1.0226480836236935,
+        1.021551724137931,
+        1.0088028169014085
+      ],
+      "web": {
+        "srgb": [
+          114.8,
+          116,
+          113.6
+        ],
+        "luminance": 0.1969,
+        "warmth": 1.01
+      },
+      "native": {
+        "srgb": [
+          117.4,
+          118.5,
+          114.6
+        ],
+        "luminance": 0.2051,
+        "warmth": 1.025
+      }
+    },
+    {
+      "shot": "parked-garage-night",
+      "region": "white-back-wall",
+      "passed": true,
+      "luminanceRatio": 1.0348304307974334,
+      "rgbRatios": [
+        1.0223592906707788,
+        1.014763014763015,
+        1.0121261115602262
+      ],
+      "web": {
+        "srgb": [
+          129.7,
+          128.7,
+          123.7
+        ],
+        "luminance": 0.2182,
+        "warmth": 1.048
+      },
+      "native": {
+        "srgb": [
+          132.6,
+          130.6,
+          125.2
+        ],
+        "luminance": 0.2258,
+        "warmth": 1.059
+      }
+    },
+    {
+      "shot": "parked-garage-night",
+      "region": "blue-back-wall",
+      "passed": true,
+      "luminanceRatio": 1.052941176470588,
+      "rgbRatios": [
+        1.0253731343283583,
+        1.0336473755047106,
+        0.9987373737373736
+      ],
+      "web": {
+        "srgb": [
+          67,
+          74.3,
+          79.2
+        ],
+        "luminance": 0.068,
+        "warmth": 0.846
+      },
+      "native": {
+        "srgb": [
+          68.7,
+          76.8,
+          79.1
+        ],
+        "luminance": 0.0716,
+        "warmth": 0.868
+      }
+    },
+    {
+      "shot": "parked-garage-night",
+      "region": "ceiling",
+      "passed": true,
+      "luminanceRatio": 1.0361892978657594,
+      "rgbRatios": [
+        1.0225806451612902,
+        1.014935064935065,
+        1.0073825503355704
+      ],
+      "web": {
+        "srgb": [
+          155,
+          154,
+          149
+        ],
+        "luminance": 0.3233,
+        "warmth": 1.04
+      },
+      "native": {
+        "srgb": [
+          158.5,
+          156.3,
+          150.1
+        ],
+        "luminance": 0.335,
+        "warmth": 1.056
+      }
+    },
+    {
+      "shot": "parked-garage-night",
+      "region": "floor",
+      "passed": true,
+      "luminanceRatio": 1.0780065005417119,
+      "rgbRatios": [
+        1.0326340326340326,
+        1.0396270396270397,
+        1.022673031026253
+      ],
+      "web": {
+        "srgb": [
+          85.8,
+          85.8,
+          83.8
+        ],
+        "luminance": 0.0923,
+        "warmth": 1.024
+      },
+      "native": {
+        "srgb": [
+          88.6,
+          89.2,
+          85.7
+        ],
+        "luminance": 0.0995,
+        "warmth": 1.034
+      }
+    }
+  ],
+  "numericPassed": false,
+  "wholeImageReviewRequired": true
+}

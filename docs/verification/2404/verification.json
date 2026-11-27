@@ -1,0 +1,138 @@
+{
+  "issue": 2404,
+  "codeCommit": "febb33eeb94600fae7d65107f2d1badef4e11d56",
+  "exportSourceCommit": "f7ef67edcda887f1c01d18c3e6c3141bb6ecbab7",
+  "nativeSourceCommit": "f4df951c7db0c5e6be6702744c469515b98f0160",
+  "sourceFixCommit": "18cb3f657e71c34b0a030be2636d03eac269d639",
+  "sourceBakeAndCutoutsVisuallyCorrect": true,
+  "fullVisualParityPassed": false,
+  "combinedNumericPassed": false,
+  "garageNightPassRows": 5,
+  "garageDayFailRows": 5,
+  "apartment22RowsPassed": true,
+  "actualNativeCaptureCount": 6,
+  "canonicalBrowserBatches": 1,
+  "all20ActualCanonicalStepsPassed": true,
+  "wholeNativeRunsPassed": false,
+  "outcomes": {
+    "native-outcome.json": {
+      "completed": true,
+      "passed": false,
+      "runnerExitCode": 1,
+      "nativeRun": "/mnt/d/LundenLinux/runs/20261127T202058406917-494784",
+      "nativeResult": {
+        "exitCode": 255,
+        "signal": null,
+        "seconds": 806.26,
+        "passed": false,
+        "timedOut": false
+      }
+    },
+    "capture-only-outcome.json": {
+      "completed": true,
+      "passed": false,
+      "runnerExitCode": 1,
+      "nativeRun": "/mnt/d/LundenLinux/runs/20261127T203625222783-824633",
+      "nativeResult": {
+        "exitCode": 255,
+        "signal": null,
+        "seconds": 210.1,
+        "passed": false,
+        "timedOut": false
+      }
+    },
+    "capture-only-v2-outcome.json": {
+      "completed": false,
+      "passed": false,
+      "runnerExitCode": 143,
+      "nativeRun": "/mnt/d/LundenLinux/runs/20261127T204235863582-956781",
+      "nativeResult": {
+        "exitCode": 143,
+        "signal": 15,
+        "seconds": 38.97,
+        "passed": false,
+        "timedOut": false
+      }
+    },
+    "capture-only-v3-outcome.json": {
+      "completed": true,
+      "passed": true,
+      "runnerExitCode": 0,
+      "nativeRun": "/mnt/d/LundenLinux/runs/20261127T204341868839-980123",
+      "nativeResult": {
+        "exitCode": 0,
+        "signal": null,
+        "seconds": 197.93,
+        "passed": true,
+        "timedOut": false
+      }
+    },
+    "native-v4-outcome.json": {
+      "completed": true,
+      "passed": false,
+      "runnerExitCode": 1,
+      "nativeRun": "/mnt/d/LundenLinux/runs/20261127T205816293091-1284272",
+      "nativeResult": {
+        "exitCode": 255,
+        "signal": null,
+        "seconds": 744.8,
+        "passed": false,
+        "timedOut": false
+      }
+    },
+    "sixframe-outcome.json": {
+      "completed": true,
+      "passed": false,
+      "runnerExitCode": 1,
+      "nativeRun": "/mnt/d/LundenLinux/runs/20261127T211715092978-1697416",
+      "nativeResult": {
+        "exitCode": -11,
+        "signal": null,
+        "seconds": 290.71,
+        "passed": false,
+        "timedOut": false
+      }
+    }
+  },
+  "postflight": {
+    "actualPostflightMethod": "ExternalPython after actualcaptureprocesscrash, no Unreallaunch or assetsaves",
+    "all247ExactReadonly": true,
+    "allGeneratedExact": true,
+    "allExportExact": true,
+    "allDependenciesExact": true,
+    "headExact": true,
+    "freshPersistedFingerprintBeforeCapture": "00de1f6cf83ea77183ca2ff2d35000928c8284f6e11a3b46ebdcbbf994e527e0",
+    "originalBefore": "00de1f6cf83ea77183ca2ff2d35000928c8284f6e11a3b46ebdcbbf994e527e0",
+    "originalWholePassed": false,
+    "nativeAfterSemanticDumpCompleted": false,
+    "actualCaptureCount": 6,
+    "freshPersistedFingerprintMatchesOriginalBefore": true
+  },
+  "freshPersistedApartment": {
+    "canonicalCurrentFingerprint": "00de1f6cf83ea77183ca2ff2d35000928c8284f6e11a3b46ebdcbbf994e527e0",
+    "currentSemanticSHA256": "cf54dafa782676f69b73c0dd50b41fa797827d935b18a4e43c9fc940cbcf0fc2",
+    "actorCount": 2773,
+    "assetCount": 35
+  },
+  "webSource718FilesExact": true,
+  "remainingDayExposureIssue": "PENDING_PUBLICATION_BEFORE_CLOSURE",
+  "newExposureFit": false,
+  "newPointLights": 0,
+  "authoredPackageWrites": 0,
+  "publicTransfer": "Not applicable: original-only Unreal tooling",
+  "windowsReleaseOrPerformanceTested": false,
+  "images": {
+    "web-parked-garage-day.jpg": "fcc37407af81eaa1c179ceec5ea660422adca2d775fc3a026850febcb0098ac2",
+    "web-living-room-evening.jpg": "1a6d7cd06c97fbb1729662cece73490a808745d2511124f8dc0a987f0e810c0b",
+    "unreal-living-room-day.png": "636f19db64f2db3237e250b60534db0a48ca16adb192dd549fa3620ad95532b9",
+    "web-upper-floor-evening.jpg": "16ed055836f8a6f6487ed1c6d99bfa45be5ceb9ecb2e53b5240c1692ebd7dbb8",
+    "unreal-stairs-evening.png": "973f41b7c19216eb90f3755b699d65750bb1b95324f234af7fdad382c3ec7105",
+    "web-stairs-evening.jpg": "48dcb9b61e67c0d499f06d1d253d02251b4930a9bb567f138c6723ddf71574c5",
+    "web-living-room-day.jpg": "be8023e5a4d1ba5cfb2d4f930273f6792c788658efd47dba6a6c153016af33ac",
+    "unreal-parked-garage-night.png": "56da0a0c3f469cfef61971153d91a085a9d245084f7c8d73cfa54514ed455444",
+    "unreal-upper-floor-evening.png": "feb9d28e058cc595b9fc664223275cf79175dfa5d9c5ba5d735151af379f487d",
+    "unreal-living-room-evening.png": "704a95710dcd9cbd0f922f2894e12435ec2bebb0347bdd036814ccc8c1d0ef80",
+    "web-parked-garage-night.jpg": "bc4bc01aa3466cbd6090bbc93f0c5ba2c7ce551e33b3cbded6540a8ebcaa5451",
+    "unreal-parked-garage-day.png": "1895992b54c026c415724490066fc18aac10cf8205380268addbf31c6b80dbdd"
+  }
+}

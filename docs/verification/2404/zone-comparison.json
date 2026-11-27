@@ -1,0 +1,68 @@
+{
+  "completed": true,
+  "onlyChangedZone": "kvarteret",
+  "rows": [
+    {
+      "zone": "fixture",
+      "beforeSHA256": "4636b1948a94ae9ead1697597026fb784135703be441a97ddd400a0c1446e649",
+      "afterSHA256": "4636b1948a94ae9ead1697597026fb784135703be441a97ddd400a0c1446e649",
+      "same": true
+    },
+    {
+      "zone": "fond",
+      "beforeSHA256": "3296dac9ba0e5dd15a7838b56cdf1310ec6c4ed7d93f086684c091abfcaabde3",
+      "afterSHA256": "3296dac9ba0e5dd15a7838b56cdf1310ec6c4ed7d93f086684c091abfcaabde3",
+      "same": true
+    },
+    {
+      "zone": "gard",
+      "beforeSHA256": "559a4bd2a880d6624a5dd5cb451e2ec256b2ae1ed415983c6a759cd3540e995b",
+      "afterSHA256": "559a4bd2a880d6624a5dd5cb451e2ec256b2ae1ed415983c6a759cd3540e995b",
+      "same": true
+    },
+    {
+      "zone": "hus-l",
+      "beforeSHA256": "df489d6ca499c5eccba334d113402f5ef6e5dfa53670f3f727b190192089ac22",
+      "afterSHA256": "df489d6ca499c5eccba334d113402f5ef6e5dfa53670f3f727b190192089ac22",
+      "same": true
+    },
+    {
+      "zone": "kvarteret",
+      "beforeSHA256": "8fb3fe94adbc369f00f19483bee49245b6609d9425391f437314eed79f9064f5",
+      "afterSHA256": "f9ee5c34380769365942fbb30d3ef811724c0733816115afbc3688d736134fb2",
+      "same": false
+    },
+    {
+      "zone": "l1007-entre",
+      "beforeSHA256": "4738e1b53b2c981cdb5e68f27da6eec734c5db294de770929e3dc15cc4b320c3",
+      "afterSHA256": "4738e1b53b2c981cdb5e68f27da6eec734c5db294de770929e3dc15cc4b320c3",
+      "same": true
+    },
+    {
+      "zone": "l1007-uteplats",
+      "beforeSHA256": "163ce0bc28191a075ec67161e77f2ccac3699d5f01666e7624899762d0fc3941",
+      "afterSHA256": "163ce0bc28191a075ec67161e77f2ccac3699d5f01666e7624899762d0fc3941",
+      "same": true
+    },
+    {
+      "zone": "l1007",
+      "beforeSHA256": "9b08d5770fdc54efcb6392be62711a8d3db56c9cf5f5ddc83c6db588251b6899",
+      "afterSHA256": "9b08d5770fdc54efcb6392be62711a8d3db56c9cf5f5ddc83c6db588251b6899",
+      "same": true
+    },
+    {
+      "zone": "omgivning",
+      "beforeSHA256": "92e00d3d4948282a469f186937e7bb6032969518bec387286b72fd954e7c615c",
+      "afterSHA256": "92e00d3d4948282a469f186937e7bb6032969518bec387286b72fd954e7c615c",
+      "same": true
+    },
+    {
+      "zone": "vegetation",
+      "beforeSHA256": "e01b8c3c721b54531468165e986a0223b5cb875080fb16e6003579c8a2c48433",
+      "afterSHA256": "e01b8c3c721b54531468165e986a0223b5cb875080fb16e6003579c8a2c48433",
+      "same": true
+    }
+  ],
+  "oldExport": "/mnt/d/LundenLinux/exports/issue2404-garage",
+  "newExport": "/mnt/d/LundenLinux/exports/issue2404-garage-v4"
+}

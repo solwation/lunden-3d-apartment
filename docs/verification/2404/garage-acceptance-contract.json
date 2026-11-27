@@ -1,0 +1,101 @@
+{
+  "issue": 2404,
+  "lockedBeforeAnyCurrentNativeImage": true,
+  "sourceHead": "12e6f91c",
+  "webSourceFilesBeforeAfterExact": 718,
+  "sourceProof": "/home/devcontainers/.local/state/lunden-codex-20261127/2404/web-proof.json",
+  "sourceProofSHA256": "985f462b28eafc332c05735616ecb97d7d93ebc9c2c00ece80bee2801c38a119",
+  "profile": "Current production Web desktop Ultra4/640x360; exact2374garagepose. Canonical capture with real4s source sensor/flicker settling; no direct material/power/level edits.",
+  "shots": [
+    {
+      "id": "parked-garage-day",
+      "image": "/home/devcontainers/.local/state/lunden-codex-20261127/2404/web/web-parked-garage-day.jpg",
+      "imageSHA256": "fcc37407af81eaa1c179ceec5ea660422adca2d775fc3a026850febcb0098ac2",
+      "eye": [
+        -39.4,
+        -1.38,
+        5.6
+      ],
+      "yaw": 0,
+      "pitch": -10.999999999999998,
+      "day": [
+        2026,
+        6,
+        21,
+        14,
+        true
+      ],
+      "area": "basementW",
+      "actualLevel": 1,
+      "actualUnder": 0.92,
+      "actualLit": 1
+    },
+    {
+      "id": "parked-garage-night",
+      "image": "/home/devcontainers/.local/state/lunden-codex-20261127/2404/web/web-parked-garage-night.jpg",
+      "imageSHA256": "bc4bc01aa3466cbd6090bbc93f0c5ba2c7ce551e33b3cbded6540a8ebcaa5451",
+      "eye": [
+        -39.4,
+        -1.38,
+        5.6
+      ],
+      "yaw": 0,
+      "pitch": -10.999999999999998,
+      "day": [
+        2026,
+        6,
+        21,
+        22,
+        true
+      ],
+      "area": "basementW",
+      "actualLevel": 1,
+      "actualUnder": 0.92,
+      "actualLit": 1
+    }
+  ],
+  "rects": {
+    "frame": [
+      0,
+      0,
+      1,
+      1
+    ],
+    "white-back-wall": [
+      0.38,
+      0.28,
+      0.6,
+      0.42
+    ],
+    "blue-back-wall": [
+      0.45625,
+      0.48333333333333334,
+      0.503125,
+      0.6083333333333333
+    ],
+    "ceiling": [
+      0.4,
+      0.045,
+      0.58,
+      0.15
+    ],
+    "floor": [
+      0.3,
+      0.8,
+      0.6,
+      0.94
+    ]
+  },
+  "criteria": {
+    "meanLinearRec709LuminanceRatio": [
+      0.8,
+      1.25
+    ],
+    "meanSRGBChannelRatios": [
+      0.9,
+      1.1
+    ],
+    "classification": "Predelared local comparison guesses for same fixed views; original2404 has no numeric threshold. All five coloured bicycles + white/blue wall fields require actualwhole-image visual review too."
+  },
+  "preserve": "No generic world exposure/light changes; source23PBRgaragecars/other zones not fixed by this bake snapshot; no physicalWindows acceptance inferred."
+}

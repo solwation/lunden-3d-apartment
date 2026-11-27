@@ -1,0 +1,14 @@
+{
+  "actualPostflightMethod": "ExternalPython after actualcaptureprocesscrash, no Unreallaunch or assetsaves",
+  "all247ExactReadonly": true,
+  "allGeneratedExact": true,
+  "allExportExact": true,
+  "allDependenciesExact": true,
+  "headExact": true,
+  "freshPersistedFingerprintBeforeCapture": "00de1f6cf83ea77183ca2ff2d35000928c8284f6e11a3b46ebdcbbf994e527e0",
+  "originalBefore": "00de1f6cf83ea77183ca2ff2d35000928c8284f6e11a3b46ebdcbbf994e527e0",
+  "originalWholePassed": false,
+  "nativeAfterSemanticDumpCompleted": false,
+  "actualCaptureCount": 6,
+  "freshPersistedFingerprintMatchesOriginalBefore": true
+}

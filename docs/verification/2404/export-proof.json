@@ -1,0 +1,20 @@
+{
+  "completed": true,
+  "sourceCommit": "f7ef67edcda887f1c01d18c3e6c3141bb6ecbab7",
+  "sourceDirty": false,
+  "sourceHash": "13bd3b29a401a27296e9d6f591bff1229ebb2c0eef8207a605fc3b59f72638fc",
+  "manifestSHA256": "29bdcf87a7db0b9aa1641707f4228daca579a0f4d15d3ea0486b1b7f77bd1b19",
+  "actualFullExportOuterExitCode": 0,
+  "actualSourceGarageFixtureExitCode": 0,
+  "actualExportCheckerExitCode": 0,
+  "actualMaterialCoverageExitCode": 0,
+  "actualLightingCheckerExitCode": 0,
+  "lightingSpecHash": "5448b300419399a63f802d450fd5c64941ca4c1147ca61f75624012c0b8bca67",
+  "garageKeys": 55,
+  "sourceRuntimeReferences718FilesUnchanged": true,
+  "measurementsSHA256": "cfd94bade4a6e26f2d0837c1d571c7f39c7c5cf4042a08835e0d2d72f959901b",
+  "kvarteretSHA256": "f9ee5c34380769365942fbb30d3ef811724c0733816115afbc3688d736134fb2",
+  "sourceFixCommit": "18cb3f657e71c34b0a030be2636d03eac269d639",
+  "rootIntegrationCommit": "febb33eeb94600fae7d65107f2d1badef4e11d56",
+  "nativeSourceCommit": "f4df951c7db0c5e6be6702744c469515b98f0160"
+}

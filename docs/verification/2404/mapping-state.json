@@ -1,0 +1,73 @@
+{
+  "observedAtUTC": "2026-11-27T21:23:51.327779+00:00",
+  "method": "One read-only gh api graphql repository.issue query; number/state/title returned for every mapped issue",
+  "repository": "solwation/lunden-3d-apartment",
+  "issues": [
+    {
+      "number": 2480,
+      "state": "OPEN",
+      "url": "https://github.com/solwation/lunden-3d-apartment/issues/2480"
+    },
+    {
+      "number": 2482,
+      "state": "OPEN",
+      "url": "https://github.com/solwation/lunden-3d-apartment/issues/2482"
+    },
+    {
+      "number": 2460,
+      "state": "OPEN",
+      "url": "https://github.com/solwation/lunden-3d-apartment/issues/2460"
+    },
+    {
+      "number": 2481,
+      "state": "OPEN",
+      "url": "https://github.com/solwation/lunden-3d-apartment/issues/2481"
+    },
+    {
+      "number": 2484,
+      "state": "OPEN",
+      "url": "https://github.com/solwation/lunden-3d-apartment/issues/2484"
+    },
+    {
+      "number": 2486,
+      "state": "OPEN",
+      "url": "https://github.com/solwation/lunden-3d-apartment/issues/2486"
+    },
+    {
+      "number": 2459,
+      "state": "OPEN",
+      "url": "https://github.com/solwation/lunden-3d-apartment/issues/2459"
+    },
+    {
+      "number": 2447,
+      "state": "OPEN",
+      "url": "https://github.com/solwation/lunden-3d-apartment/issues/2447"
+    },
+    {
+      "number": 2489,
+      "state": "OPEN",
+      "url": "https://github.com/solwation/lunden-3d-apartment/issues/2489"
+    },
+    {
+      "number": 2487,
+      "state": "OPEN",
+      "url": "https://github.com/solwation/lunden-3d-apartment/issues/2487"
+    },
+    {
+      "number": 2488,
+      "state": "OPEN",
+      "url": "https://github.com/solwation/lunden-3d-apartment/issues/2488"
+    },
+    {
+      "number": 2428,
+      "state": "OPEN",
+      "url": "https://github.com/solwation/lunden-3d-apartment/issues/2428"
+    },
+    {
+      "number": 2490,
+      "state": "OPEN",
+      "url": "https://github.com/solwation/lunden-3d-apartment/issues/2490"
+    }
+  ],
+  "exposureIssue": "PENDING; not assigned an ID or claimed OPEN"
+}

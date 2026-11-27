@@ -1,0 +1,67 @@
+{
+  "classification": "Source-bound reuse facts; does NOT prove V4 historical actor equality or naming-only actualdelta",
+  "unchangedMeasurementInputs": {
+    "doors": {
+      "unchanged": true,
+      "sha256": "37a0c8eff880f15b004f2cbb48d66a0be40f7555a6fd980d3b75125b85e14eaf",
+      "canonicalJSONBytes": 88462
+    },
+    "windows": {
+      "unchanged": true,
+      "sha256": "8b4e09d1fb32ce86606c431eab5ee05db36b50ba7b566539dacf64c544249d7f",
+      "canonicalJSONBytes": 4627
+    },
+    "interaction": {
+      "unchanged": true,
+      "sha256": "6f9b826024c6c1bad665c11097f5f23da3cd7b7e20cfa7abf27e53fde657f1b5",
+      "canonicalJSONBytes": 11868
+    }
+  },
+  "unchangedBuilders": {
+    "tools/unreal-engine/python/build_interaction.py": {
+      "sha256": "d53b63f861fb4c720c7f9eb3127a8bbef9452eefd8ca0b5dfe8fa074eedfe2d8",
+      "matchesActualV4PinnedSource": true
+    },
+    "tools/unreal-engine/python/garage_control.py": {
+      "sha256": "f7e1831d8d6fcb9507a51129f5e4abe8bff4c2816ab859f5f1347709311b9ccb",
+      "matchesActualV4PinnedSource": true
+    }
+  },
+  "actualOfficialArchive": "/mnt/d/UnrealDownloads/Linux_Unreal_Engine_5.8.4.zip",
+  "engineUniqueNameSource": {
+    "Engine/Source/Editor/UnrealEd/Private/Subsystems/EditorActorSubsystem.cpp": {
+      "sha256": "9644f365f0f30f9c6ed90268cc0b9d42693be62d94a9dcd8b7375329ef4a8abe",
+      "relevantLines": [
+        99,
+        121,
+        521,
+        536
+      ]
+    },
+    "Engine/Source/Runtime/Engine/Private/ActorEditor.cpp": {
+      "sha256": "b91d9eace1bfa579bceb3435df5b0d8b980ed5e1cccc25c5772166fd9926e951",
+      "relevantLines": [
+        1291,
+        1307,
+        1316
+      ]
+    },
+    "Engine/Source/Runtime/Engine/Private/LevelActor.cpp": {
+      "sha256": "23d8198aba79e3118ec9140c9bd5b5a760a1495b2f9af99214643a6861ad949b",
+      "relevantLines": [
+        349,
+        365,
+        569,
+        574
+      ]
+    }
+  },
+  "facts": [
+    "SetActorLabel only stores label and dispatches property-change notification; no UObject Rename",
+    "EditorActorSubsystem spawn does not take explicit actor name from this builder",
+    "Unnamed spawn uses MakeUniqueActorName/MakeUniqueObjectName, so get_name is not a source stable ID",
+    "V4 old/new fingerprint equality FAILED; old raw entries were not stored and are unrecoverable from the hash alone"
+  ],
+  "nativeStarted": false,
+  "browserStarted": false
+}

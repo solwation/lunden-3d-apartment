@@ -1,0 +1,16 @@
+{
+  "completed": true,
+  "allNodesTransformsTopologyAndGeometryBytesExact": true,
+  "differentNodes": [],
+  "before": {
+    "fileSHA256": "58e5b478496ab3931f0e44e22f5569a4ab13284c144c771169f5c4253c053a80",
+    "nodeCount": 477,
+    "accessorCount": 1075
+  },
+  "after": {
+    "fileSHA256": "f9ee5c34380769365942fbb30d3ef811724c0733816115afbc3688d736134fb2",
+    "nodeCount": 477,
+    "accessorCount": 1075
+  },
+  "exclusions": "Only material bindings, material/image definitions, mesh display names and extras.materialKeys excluded. All actual accessor definitions and typed element bytes, nodes/children/transforms/other extras, scene roots and primitive modes retained."
+}

@@ -1,0 +1,27 @@
+{
+  "classification": "Actual native bias/web under readbacks + explicit source-derived web exposure; no exposure override experiment or fitted gain",
+  "source": "src/daycycle.js398-403; config LIGHTING.sky exposureOvercast1/exposureClear1.5; nativegame_bias actualreadback",
+  "captureSHA256": "d19038464bbeb3a15b379a2a99532202dd6cd37046f7ece8fc62b333072bc9ab",
+  "rows": [
+    {
+      "id": "parked-garage-day",
+      "actualNativeExposureBias": -1.96503746509552,
+      "sourceEXPOSURE_BIAS": -2.55,
+      "nativeRelativeExposureDerivedFromActualBias": 1.500000035541112,
+      "sourceGarageUnderActualWeb": 0.92,
+      "webExposureDerivedFromExactSourceNotBrowserGetter": 1.04,
+      "exposureRatio": 1.4423077264818385,
+      "actualFrameYRatio": 1.4669902912621362
+    },
+    {
+      "id": "parked-garage-night",
+      "actualNativeExposureBias": -2.462862008455037,
+      "sourceEXPOSURE_BIAS": -2.55,
+      "nativeRelativeExposureDerivedFromActualBias": 1.0622607852343702,
+      "sourceGarageUnderActualWeb": 0.92,
+      "webExposureDerivedFromExactSourceNotBrowserGetter": 1.004980859884604,
+      "exposureRatio": 1.0569960360800736,
+      "actualFrameYRatio": 1.0309801929913662
+    }
+  ]
+}
