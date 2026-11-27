@@ -1,0 +1,1356 @@
+{
+  "metadata": {
+    "harness": "/home/devcontainers/.local/state/lunden-codex-20261127/2394/sync-incremental-halo.py",
+    "expectedSource": "2788460c9347cc9c3daed39fb9ed3d2e4f8994f6",
+    "project": "/home/devcontainers/lunden-linux/unreal/Lunden",
+    "baseline": "/home/devcontainers/.local/state/lunden-codex-20261127/2394/native-baseline.json",
+    "historicallyChangedExistingLighting": [
+      "unreal/Lunden/Content/Lunden/Lighting/BP_LundenLamp.uasset",
+      "unreal/Lunden/Content/Lunden/Lighting/BP_LundenSky.uasset",
+      "unreal/Lunden/Content/Lunden/Lighting/MPC_LundenWeather.uasset",
+      "unreal/Lunden/Content/Lunden/Lighting/M_LundenClouds.uasset",
+      "unreal/Lunden/Content/Lunden/Lighting/M_LundenNeutralTonemap.uasset",
+      "unreal/Lunden/Content/Lunden/Lighting/M_LundenPrecipitation.uasset",
+      "unreal/Lunden/Content/Lunden/Lighting/T_LundenHemisphere.uasset"
+    ],
+    "historicallyCreatedLighting": [
+      "unreal/Lunden/Content/Lunden/Lighting/M_LundenWindowDaylight.uasset"
+    ],
+    "canonicalDerivedOrder": [
+      "build_l1007",
+      "build_exterior",
+      "build_site",
+      "build_lighting",
+      "build_facade",
+      "build_vegetation",
+      "build_interaction",
+      "build_curtains",
+      "build_cabinet_washes",
+      "build_rug_pool"
+    ],
+    "nativeLogErrorsCheckedBy": "external run-python-linux runner; Python records exceptions only",
+    "status": "python-steps-passed-native-process-exit-and-log-review-pending",
+    "harnessSha256": "159a7dddf747641f2fc8723b7229ff20067cb49292eebca27a6f3bf18e7504e6",
+    "sourceCommit": "2788460c9347cc9c3daed39fb9ed3d2e4f8994f6",
+    "initialDirtyPaths": [
+      "unreal/Lunden/Content/Lunden/Lighting/BP_LundenLamp.uasset",
+      "unreal/Lunden/Content/Lunden/Lighting/BP_LundenSky.uasset",
+      "unreal/Lunden/Content/Lunden/Lighting/MPC_LundenWeather.uasset",
+      "unreal/Lunden/Content/Lunden/Lighting/M_LundenNeutralTonemap.uasset",
+      "unreal/Lunden/Content/Lunden/Lighting/M_LundenPrecipitation.uasset",
+      "unreal/Lunden/Content/Lunden/Lighting/M_LundenWindowDaylight.uasset",
+      "unreal/Lunden/Content/Lunden/Lighting/T_LundenHemisphere.uasset"
+    ],
+    "previousFullSyncProof": {
+      "/home/devcontainers/.local/state/lunden-codex-20261127/2394/sync-production-steps.json": "bbd9a08fb37dee7f83355995d51e0b407bf1d7e109ea9978c38f8e2e8eb3632b",
+      "/home/devcontainers/.local/state/lunden-codex-20261127/2394/sync-production-outcome.json": "6b0bf235ee1b6cc8555390fb870a37ec7537d04d48f5e8655031fa80fe8aeba6"
+    },
+    "changedSourcesSinceFullSync": [
+      "tools/unreal-engine/python/build_window_light.py"
+    ],
+    "currentAuthoredSnapshot": {
+      "unreal/Lunden/Content/Lunden/UI/BFL_LundenSettings.uasset": {
+        "sha256": "1d33f2cc0c21bcb06eafe4ec468ebde3cbddaea521ad1d75f1680766793a6e24",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/UI/WBP_LundenHud.uasset": {
+        "sha256": "78aae3d60df57ff3278035ad3ef527e4e6875e733483740df08deedca634bdef",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/UI/WBP_LundenMenu.uasset": {
+        "sha256": "5c8fe0e8679c652c093c75f89bf0bf4edd9ae3ac325a4bfab60de5c838162db8",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/UI/SM_LundenVolumes.uasset": {
+        "sha256": "806df5d72a625f7b2a6fadaa6c5a1d2edf80eeb2b6cec3c42ed779ec646e450a",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/UI/BPC_LundenUI.uasset": {
+        "sha256": "88c41319584525ea5648879eebe50d9eb21dd738a40c851dfdc5aaacb18b3677",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/UI/Input/IA_LundenMenu.uasset": {
+        "sha256": "b24bb574d1ecd3ed591f058bae969ece4ab5a395f1769cd26aa9d49d5074c350",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/UI/Input/IMC_LundenUI.uasset": {
+        "sha256": "3930a022bc8cb7385a10eedd251528f6b625fc60043a3724ac0b07961930ec94",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/UI/Input/IMC_LundenInvertY.uasset": {
+        "sha256": "f18863d1a3bdedbc7332792499137d9b422800f20415e684a55ce9a293297846",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Seasons/BPC_LundenSeasons.uasset": {
+        "sha256": "934b58082ae15ae9a183989288736345861569eefefbac39824921c6a38f7ee4",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Seasons/MPC_LundenVegetation.uasset": {
+        "sha256": "c78bd10d4be7f15529a491e3f5bbb233df580bd5f349b3f5a6210a175d3e0d94",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Interaction/BP_LundenInteractionListener.uasset": {
+        "sha256": "85152fa96c2c07a2e6afe97e0cb738bfb570d4952a9794ae3d8510e44d11a8a1",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/IK_LundenLook.uasset": {
+        "sha256": "112327dc71c66f39bdc6db20b99b03a41d432ef67b97c6b00d1fa7771a6dd962",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/M_LundenLook.uasset": {
+        "sha256": "10f830f362b94c4e8d33173e696de56041874ac6e9f5398bd7efb518d4827cf0",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/RTG_LundenMannequinToWeb.uasset": {
+        "sha256": "f517fff09b813d426c3eddd5322124e50554369dd6058db6965fa83726119649",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/ABP_LundenLook.uasset": {
+        "sha256": "ac48677cb7e06a9bdaf9f0d97ee8e2325c392901711a884be86c40338f7e9e28",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/BPC_LundenLook.uasset": {
+        "sha256": "60c07ed3f50bef0669c223e6a70648c2537211c9c4bbbcfb32032adae0fd55bb",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/BP_LundenMirror.uasset": {
+        "sha256": "f5b3c2a887b428ef2746728ea730df4cbf2a169ecbe4599b404e3d9df4dfed3b",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/M_LundenMirror.uasset": {
+        "sha256": "65e86ea8a35dadabb2bca069fd0ea9533abc07545b340308c3bc2cd1929a2d29",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/SK_LundenLook.uasset": {
+        "sha256": "80d0e4748e6726b2c69ae1252791b338d4b9c83fd971b111f3214734126ab4c7",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/WBP_LundenLookMenu.uasset": {
+        "sha256": "3ad80e0ff7781bbe82d80f32fd1a83bf0735f09deced9c704b73e5979d5469d9",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Level_LundenMirror.umap": {
+        "sha256": "2336d3a34fefe5acf6e2983c4c49022cb8446b7144e77bd81fc40797b0011dcd",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_014.uasset": {
+        "sha256": "ee22183054b747121cf447c10ce06d06ab1003ce32748600d98755dbe2567933",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_012.uasset": {
+        "sha256": "8b4f8c4c00bd3046d935f8af1ece5f85ebfce580dea735b0026ba5805313419d",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_006.uasset": {
+        "sha256": "be0bc2488024087d73c45b5920aa07ed39a3649ddffa6d45a6eef8724b4d45eb",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_085.uasset": {
+        "sha256": "ffd88d75a6de0e1d448bca19cb1d1a82a4615399460309953680e3529ef20cfe",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_008.uasset": {
+        "sha256": "6d4c120f8dfae6f46ae1540f98de755768db9e5f8a57ba08e5df07a827142c3b",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_088.uasset": {
+        "sha256": "12bedda7c57b00052fb038a900c742643546ddc43535089096c92dc5577b8c17",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_082.uasset": {
+        "sha256": "18807c8dc23d8874097acd47f9ddc85cd271da897bde3e31ab5c898ec934309d",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_092.uasset": {
+        "sha256": "bfc3b1831544121e5a752798c927c960503e3a56404f67b0b202d659f80c2029",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_037.uasset": {
+        "sha256": "479edd78c58102a8ad39008bc909eef0cd4be9252d859c68ae33f24b8de54892",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_001.uasset": {
+        "sha256": "21ac7eb6a76e3ee4b68a6d3139315dfe2fa11b3cddbf32ecb590f92604a812e3",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_002.uasset": {
+        "sha256": "2597b9c23a832a46314490d679c2ca5566755cb479be33bdfef19f7c411ea38f",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_033.uasset": {
+        "sha256": "236bd3d13c7df3724cd4f3421ba6d50d8f0d334252c1c685b588bbacd3d94649",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_093.uasset": {
+        "sha256": "0473258cb1cb5a4b1c734250a60c58181b71dcbac8ae9bf2d8ada4c2d8e099cc",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_013.uasset": {
+        "sha256": "fe014d8d346e21a8651fde3106d56b1997a3bbb6cff69a43cea0883b80a13388",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_042.uasset": {
+        "sha256": "d22a821b7aaf5d709590f7a00e23b32c26021d05b322b2ea39bf64e1c180d369",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_075.uasset": {
+        "sha256": "c803a16f961760d1af0821137487693275618ce8f082975034c3fe54daa53dcb",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_080.uasset": {
+        "sha256": "705eec74749657ca5431a1e152e98fa7e1dd608b12c55e839e043b2aeb7f5231",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_074.uasset": {
+        "sha256": "7faf5e81ddfb1c7233f0d6209f4c3a526fc7f52420224d308c89582848df5ba4",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_086.uasset": {
+        "sha256": "cbf9760d39f336b10bef075470e3e3325228fa7cdc5bcb3b482ce03de0d0ff15",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_090.uasset": {
+        "sha256": "1bcc37beb5284230c3b9ec7463a6a21a25ed7efeda967a8ed3d9e82a1e1405e7",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_031.uasset": {
+        "sha256": "763f1644f5194c0aa085bdb3b37145d5128329c32958fa890a5420a2117af6fe",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_022.uasset": {
+        "sha256": "b7773a265feaca4a571bc42b2bde47361bd5927587f6690035ce0b948c5fb6ea",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_010.uasset": {
+        "sha256": "3ab561ded7c15086f4f9352200b562fed31dfbc61b7b5c260331e0a85a34d71f",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_068.uasset": {
+        "sha256": "416471898cbbd7ed3e982f9bae12370c4dc2151203ad5eaed8ba71199200d536",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_004.uasset": {
+        "sha256": "15c19968e36b576a623cdcc7cb8feae882af7194c5873f6d323ffc40a6404dd2",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_019.uasset": {
+        "sha256": "676c1d780e1ea9aee3e7cd9a1bb5b3fd3c9ca22a75ad63325afcaa3975075259",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_087.uasset": {
+        "sha256": "d55ac81b94ee18d74f1f8e29acb772d556fc8f1dcd6955bb07e5a30f8fa4d03b",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_043.uasset": {
+        "sha256": "60089df9964bed04ce34f0412c5724f2cdd65f78e5d2757d55409e8d3687f423",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_036.uasset": {
+        "sha256": "125f3c638cb7b22049b51ebe8e6b3dfd86877d6c246726803cb70edb312222be",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_094.uasset": {
+        "sha256": "50c17823d5a268979166dfd88e75bb3d3fbacac5ef9c376063f55de8778aa5bc",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_027.uasset": {
+        "sha256": "334f2cfe9593b8cf3bb893238f85876322aeac2a7eff4063eafbb1b6f92a2a34",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_020.uasset": {
+        "sha256": "f60873bf8d28a96c00b3bc100b645d91ca2ce31069c2f7d0bf782a22bac575c5",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_018.uasset": {
+        "sha256": "49c64851045000907c097c72bdfb2380c0426b1551e8b5d7046c10f5a8e2c33e",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_038.uasset": {
+        "sha256": "13141e279fb40eea79888a59b6463a60393beaa74142fb9b896310ff3d15098b",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_067.uasset": {
+        "sha256": "62ffcf9a028932d7f7978f4d401f38b8d598c183b9a57bceaeb83f7df1c79d4e",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_083.uasset": {
+        "sha256": "122bfc33d6d6edb8c394819991aa68a078c22c099894e6b7a18249815bd49055",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_049.uasset": {
+        "sha256": "785a1458c509fdb48e1a2437495b191413a7364652bbb8a6f93abdc1a1a84839",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_025.uasset": {
+        "sha256": "40a10fe1faa926ff67353a5e1b9eaf19376bd3c32f83b9f06f81d3e7d6d419b4",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_057.uasset": {
+        "sha256": "513785de9fc146760320d9eec5de730726b230615aa61ac5d5de8087417bf452",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_064.uasset": {
+        "sha256": "04af39aff8001e48fc557067b862d37f357372bd7d4e8370ae0f40945c74d40d",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_095.uasset": {
+        "sha256": "2839b341b6b9629ca91e77ff3561672fef7a415e9c3ae4708519f93917d4f16f",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_077.uasset": {
+        "sha256": "ecc4fe052bacc8dfffe79421bf875e4b84993755279f932b6cb5c271b9426112",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_060.uasset": {
+        "sha256": "cb9b6bef8b3b9c432ee6960277a2201435babad9899f370b7da7631ccbd80d81",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_015.uasset": {
+        "sha256": "afbefa9152b4fbaef569347ac92a7fb5fe22572ed656e7116e0648f536aed147",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_091.uasset": {
+        "sha256": "e7154dfe407aead426c729d41ebeaf992e5ef566ecc6c8fb5b2a6a0b4f55e11d",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_030.uasset": {
+        "sha256": "c0d8292fe8133ce79dfdd78f552ca3d10510093a6bb0ac8920d5bbad6e9a310f",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_011.uasset": {
+        "sha256": "eb26d4dc8dfb526528215a5707506d96306b51519086264b707bffd787dffb19",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_061.uasset": {
+        "sha256": "11ca6e45ae42f998bb2730c4ac42429fa8fbba1725ae9b5efc00ec68e12ae6e6",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_047.uasset": {
+        "sha256": "11ac6132a72c88b7c07f2065c224ba2490060f060e9ee5cb475653060771b389",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_016.uasset": {
+        "sha256": "e65f44d8bbceeb585cc1a8365ebcef8e29beab58406080904727b87ef82581f7",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_069.uasset": {
+        "sha256": "8bcae7a16e507997840399b9b9797fd17c8bc3a1d7806d566364ba2ba47f3064",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_045.uasset": {
+        "sha256": "2433ea8627bbf54607c9fbcae1a6841e18a26bfe8198318d74c4b225d10d5ca3",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_070.uasset": {
+        "sha256": "406de8686a1f76c32a685080f8d90c91d0f98fe9f9e3bc73d8554c8420ff74f1",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_005.uasset": {
+        "sha256": "fc6d58de8e9ba770384835c146be120061ca720943f9083e3391ca2cd09e8ed5",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_076.uasset": {
+        "sha256": "49f3a1b0796a188743bf65f5d224d17800f598736a92ab2d0cfa8b4f733b9fa8",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_048.uasset": {
+        "sha256": "7c92e09a403af96835eccd916e6604d28a17f5141356b7a04b11bcc2046b9d49",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_040.uasset": {
+        "sha256": "12dd54a453670e7422a0aad7ac15e58eed43c1d38e33981a328a4fff07e37b05",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_046.uasset": {
+        "sha256": "5aabb228b2102b4bf3a7e095bedcbdc5971747f3775a5b98f320f8f1645683ba",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_054.uasset": {
+        "sha256": "4ec2c06b1bf40a3a3087c53a84730785fdb49835b357015e31ce0fab626d3362",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_023.uasset": {
+        "sha256": "ffac333099235160d8b6b5f383976355dc36180e64e4afe22488a605d0d3f9aa",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_078.uasset": {
+        "sha256": "6497d32777cd57a83822267e95bdcc8dfdadf16eba51db021139971bd6def8de",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_056.uasset": {
+        "sha256": "df079c866ad201005b11985fa6b459659760f9ec94aebca06832b4ce3fde0fb8",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_009.uasset": {
+        "sha256": "2d02de8ecd94789b0495f905cab2380a17e86e279a0828cbff32024b26035eb7",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_003.uasset": {
+        "sha256": "eb687398333f337ccf5966da8f44550f00ece7ca6fda5c78114300dd88d47280",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_053.uasset": {
+        "sha256": "d6d1ddabf70cd9a61adcf8d7ad9685f579a76910c082c1c1c453d0bb70b2937f",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_029.uasset": {
+        "sha256": "13e859df03bd1e697628408a48ea75ce554891f30a5b90949a4de352c345248c",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_044.uasset": {
+        "sha256": "baa1140baece6b98b16556166bcc8d491563b09c0d213ce51af1d7f4cac34f73",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_021.uasset": {
+        "sha256": "3499a34e02792a523843a15a5e8720cce113bd0d285afd1e1035dff96d638fe8",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_055.uasset": {
+        "sha256": "3a9459582d45ca3482a7afba3f05f3bb910499294494d26ce60233793ccd0cf3",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_063.uasset": {
+        "sha256": "4ff9ce75cc692727185eefff9453abd63c93633ab793547abb34783cb7e9c5d2",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_065.uasset": {
+        "sha256": "fa3e715b3473768963b2e6bb62fc8b58b6448be79798d40162743d884807fef0",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_034.uasset": {
+        "sha256": "bad428a71991f4602664f4ad733284a99512c2284ba288e4d01e0334055874db",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_035.uasset": {
+        "sha256": "5f1cc6557dd6c541ae6bd7e40f7000b3ae6308bd2218d3240087de343f327e1e",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_026.uasset": {
+        "sha256": "ce4d5e8115ca29402683233b307136f787b9c74277d44409a7db657b77b9d399",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_062.uasset": {
+        "sha256": "6feca8703ffb44653023a14fc8ffbd0596018a070aabb3fbea66afe9d2f5f1d9",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_051.uasset": {
+        "sha256": "665fbcd2015fd35f4264374a0d6a2ca394fe0294e54706d5a71b4d0d6b035a37",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_007.uasset": {
+        "sha256": "9add469f0235080750ae47ba0fe13ee195d8d27289487d85f47c7734e000c8df",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_071.uasset": {
+        "sha256": "0d42729d7b8f190db5cddc48b2c61609e728cffb2896b172901ca35498f6678a",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_039.uasset": {
+        "sha256": "b9256ef2134927677fe6478449cc8b895a1ac7749d1ec58f0aa4f61bd68edf22",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_052.uasset": {
+        "sha256": "99c4b508c610bf5c49d63549174c7b2ca866c865d6611d4c5771390b11a01341",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_000.uasset": {
+        "sha256": "b8b2629b6b89d445f9e16f36d8131bb3c0d57bd15f438ef7a920204f280fb7ba",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_017.uasset": {
+        "sha256": "983ecf9a8a82a669901a037099363a58ea9bb7d453df5a38842e5d6127968916",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_041.uasset": {
+        "sha256": "cd257535ad9e3da1f185d115e98935d68a78aca65a589f033eeeca8fb792db85",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_059.uasset": {
+        "sha256": "6bac8a3d1505bc6d73ab540d3d8a9b8e647f81c1815d2a23e06923c7d34b0a0e",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_024.uasset": {
+        "sha256": "134d0430b42ca3750a271585a08cfabaf60577e5cc6dac5d53326dcf5e216452",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_096.uasset": {
+        "sha256": "5b13f236d6ca1eac8e823137651f936f4d2626b7072d46cf0c8e6da9689c3934",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_089.uasset": {
+        "sha256": "375d28ad96589cda4bd824ead67e820a88eb3cf7f6f2f3276025e396b61a6e53",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_066.uasset": {
+        "sha256": "e8ab44c1a18350203087563de0753c674f0a11f7c8d72b34440783f147a49db1",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_081.uasset": {
+        "sha256": "cb2e5aedb2bd6463886948608bd2e6135a69bd844232bfb7a0f4162983a3b809",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_032.uasset": {
+        "sha256": "b566c0816faa7b2668af52c6a28d9b96be4d600e3409a1029ba0cd808c8f87b5",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_084.uasset": {
+        "sha256": "1d5b49895175b4daba79fe7748b18b2f29cd23bae356b85e9a1966db8385d753",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_028.uasset": {
+        "sha256": "7fa54d4a0e0299ea7ebc89960bbe7019dfb786211eae3ed95f55e8c6d8b8d510",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_058.uasset": {
+        "sha256": "ca518f9c3926ec75d3726b280eaf0e3aa5ea388b063b0b1392fe5807f2f77d0c",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_072.uasset": {
+        "sha256": "30a6b3ac87a67203b62a6315525c52fbc6db1b3007c47ee4873f7ef2980e653f",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_079.uasset": {
+        "sha256": "dc58b712a72036d5a1856c170ce83b6878bc70da0fac22f73605b23cb2923979",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_073.uasset": {
+        "sha256": "5c55e96dedacd9634a316fc3c6b45d42e2f667c2a557059904f6a3b3239a31b3",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Looks/Pieces/SKM_LundenLookPiece_050.uasset": {
+        "sha256": "0de8ce8c0e9009a96876b404f68b1cef4d8395fd1c465167436fed7b71e55919",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Rig/BP_LundenAvatar.uasset": {
+        "sha256": "e408dddc131bd72c5efd59c0f4139d3e4221f9ef54f7bd2ece6214fbc58fa326",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Rig/IK_LundenMannequin.uasset": {
+        "sha256": "4a01cb47753d91a4ea6d13e19b32bbc0b3de9ad8254a4e5102aa4eba3ea19e82",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Rig/RTG_LundenWebToMannequin.uasset": {
+        "sha256": "7c5872847fbb60345c0848d9bfaf5c5143a5c8e7c652026eb69c5f1cfad83479",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Rig/M_LundenAvatarNeutral.uasset": {
+        "sha256": "96aafa893a85f6fda92e9f0357deb3d257c087e79b66e8244dde5a324e19333b",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Rig/IK_LundenWeb.uasset": {
+        "sha256": "58a4e5b5cd2cdbb575d0b977af651d079f4bcac0c52710282e42ebb56c5eccf6",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Rig/Mannequin/PA_Mannequin.uasset": {
+        "sha256": "17595862270ae388512206367c50df0694e4857419db2a337e1c13e83c70d487",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Rig/Mannequin/SKM_Manny_Simple.uasset": {
+        "sha256": "19af1d2a7870de4f98d0764991ac260075fb8e7953804d98c468106f8345b036",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Rig/Mannequin/SK_Mannequin.uasset": {
+        "sha256": "dd42d6bd221da80db4b1c55d41fd699ad8b2e57d1e65b9bee9854aacda62e908",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Rig/Web/MI_LundenWebAvatar.uasset": {
+        "sha256": "c44cbed28b9cb9119045d3253b48a44c71f7df7d4ac77362b28a2b8a763ec502",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Rig/Web/SK_LundenWebAvatar.uasset": {
+        "sha256": "528249d9132de76b1de2da0d26080eeaabbe7ae46b1098528c0b6a919b459ebd",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Rig/Web/PA_LundenWebAvatar.uasset": {
+        "sha256": "42882e129e956ef7ae6fe06b96e5b220c840118747b4745e15d23a3195c2fa05",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Rig/Web/SKM_LundenWebAvatar.uasset": {
+        "sha256": "8f4b10d31133493cd0d2cd7ee59a428bf6eee25312294299c16d99602668cd55",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Rig/Web/AS_Web_sit.uasset": {
+        "sha256": "cd8e9c08776a49d738db1cfc1739ff54842c77aa6e45bbcc38482e2012bd98ce",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Animation/AS_LundenSit.uasset": {
+        "sha256": "4e4fc1b26d320b095e12cb36a2a54cccf75b56a1689d6e5b490c9c213c7c4d2e",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Animation/ABP_LundenAvatar.uasset": {
+        "sha256": "07d9aac01dcb7f9d00fec856c58ddf98495dbdf6ad9629112ec47df6f9b432de",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Animation/Mannequin/MF_Unarmed_Walk_Fwd.uasset": {
+        "sha256": "a80362a6b0fe2aabc944319ed9aef156bbffb703baafc3bcd00f07a34d55a4ba",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Animation/Mannequin/MM_Jump.uasset": {
+        "sha256": "8bb97ab58cb157aee4a6e80f481e1656c3e40f49112f1426ecd1482552216f11",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Animation/Mannequin/MM_Idle.uasset": {
+        "sha256": "01ad0fa355189dfcf3a51fe32538b6fb5cc3ea4c32d28161ef17d3f68539302b",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Avatar/Animation/Mannequin/MF_Unarmed_Jog_Fwd.uasset": {
+        "sha256": "2314f9b682eeebc661108f27dcb6b75f561c667c93796b2f703593d0dfd3caa4",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Fixtures/M_LundenFixture.uasset": {
+        "sha256": "e89abbc8bc7439c75beb2eaffaae79b20324259c5534b04e2c44e1471b6f639d",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Network/ST_LundenGame.uasset": {
+        "sha256": "30c8388f2b59767a7e9dffe9b02b38189b3be32f93f06f19d751119db1fc45ff",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Network/BP_LundenNetworkListener.uasset": {
+        "sha256": "5bbc0032c5e0a8b45e8a55d362767b014c162be71560297c6a70c13b3bc6b187",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Network/ST_LundenPeers.uasset": {
+        "sha256": "7dff38a50258482e10499f1972179b9a4af7e3bd28acf5e82d82a5521a28071e",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Network/BPC_LundenNetwork.uasset": {
+        "sha256": "d1e636692d23368ef57a6920b9f154a160ed683e396980199974a8ff610a2937",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Network/BPC_LundenNetworkPeers.uasset": {
+        "sha256": "6cfedf8c6f03591f841c6342ebdf857d72e9e5a4460eab90dde3f39d4ff319c8",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Network/BP_LundenPeer.uasset": {
+        "sha256": "4d2285640a09d279fb30271a1501a872e48f8228a38ce886b24679e7c399c7fb",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Network/Shared/BP_LundenSharedDoorListener.uasset": {
+        "sha256": "c9dc54a930147edf9b1f613a243a7432166281a602f3042847028456acd2c511",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Network/Shared/BPC_LundenSharedRoom.uasset": {
+        "sha256": "f70598586dc54b116974a1eafec8d74a17908d3009685243c25c23598ee43b08",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Network/Shared/BP_LundenSharedWelcomeListener.uasset": {
+        "sha256": "4d65b858649d90da2517b97304f31aeeed8aa17cdbb8a4d597c23f566fa236ff",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Network/Shared/WBP_LundenSharedChat.uasset": {
+        "sha256": "bcb82f75369b55571e28322186f64ce04ac17162945a11f88deab4e643ffc45d",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Maps/L_Lunden.umap": {
+        "sha256": "6743ae966a22ae6ab7b1b814cc7fa4a5e57851cfdfe332ad9c4ca8e9fe3317e0",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Maps/Pilot_L1007.umap": {
+        "sha256": "177b73664e32aecf8afe4b3ae4ec2bf349d9db8aeea0f441760b526bec34d7a3",
+        "mode": 365
+      },
+      "unreal/Lunden/Content/Lunden/Save/BPC_LundenSave.uasset": {
+        "sha256": "18e49da421ec88d226002ba540fbe91770ca66fdbe3c7f9f9e3d627fc139678d",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Save/SG_LundenSave.uasset": {
+        "sha256": "d4dd8c6c8df3fabc336b12df573bf9dbe764cdc106f215632a5d00953852140e",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Save/BFL_LundenSave.uasset": {
+        "sha256": "1ce334148e44d9843316832055661c929fbd4fcf7ee7e8ae98811bbfc98b3757",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Audio/MS_LundenStep_snowCold.uasset": {
+        "sha256": "c1ff243fdb717b0c99279a26c28182c22fd26bc9382cd3f1a28a97fccf350a57",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Audio/SC_LundenMusic.uasset": {
+        "sha256": "ea08c165c226e6f86268fd44736d82dbdb31385ab96dcf3204a0586d72d2bdab",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Audio/MS_LundenStep_gravel.uasset": {
+        "sha256": "74d2057a4eb30a06a8252b1a0e561752d70e09bfb3deefb6eadb30b8495dc095",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Audio/RE_LundenCourtyard.uasset": {
+        "sha256": "1477195f6d3bfe960fe250ec9d26522ba6c2b1562c1d673c33bd7f41d56d8e38",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Audio/MS_LundenStep_grass.uasset": {
+        "sha256": "6d06d539b6c7ec2b71c7931c49feeba915156499e35049a0360a3eb83c575ff6",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Audio/MS_LundenStep_leaves.uasset": {
+        "sha256": "18242b78262e1adacf7ac536786bc6288d2018807fff36e14fa292e55bda212e",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Audio/MS_LundenStep_wet.uasset": {
+        "sha256": "b9f5233e33e9c7a03bb6c801870d033ae704186b5bbb7c9b1e5a1c470113684d",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Audio/ATT_LundenWindowWind.uasset": {
+        "sha256": "d3eb63d02229fc2eaae0c80f799b150ed6cf23586fb0a12f351f42d96d5887af",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Audio/MS_LundenWind.uasset": {
+        "sha256": "06adea9a515b9dfc0a0ff6881ba36a93c6b0d7368aa48853a694ccc0d819a253",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Audio/MS_LundenStep_snow.uasset": {
+        "sha256": "c1b76c497192a82c868669f1ce7cc5bc90ecb529cc637f75065413e02c89a69d",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Audio/MS_LundenStep_hard.uasset": {
+        "sha256": "3058883aa87ebfea8e33f1fe67ed04e6c9031be731b943e35261b5581332eb04",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Audio/RE_LundenSoft.uasset": {
+        "sha256": "38e8d05fe14e10c534df05628344515d703018f82202549cc5349d04e47cc6e7",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Audio/SC_LundenAmbience.uasset": {
+        "sha256": "23c09414beec093bdaa1cf6e829be576548db2f604cee465e1a9ee976ac20704",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Audio/BPC_LundenAudio.uasset": {
+        "sha256": "6f6842af413dd8ddac9c7406f2a51fa8600332894bdad835f66c2c9b6511449e",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Audio/MS_LundenStep_stair.uasset": {
+        "sha256": "53045e79bcf4d771cb2bf60742a6346d5bf9c3a96ca1ecef2fdfae76087ef764",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Audio/MS_LundenWindowWind.uasset": {
+        "sha256": "61dfab0fbd9e53b60c8f904c62eeb8ea748ea241cab748cdd0370be9b92ee1af",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Audio/SC_LundenMaster.uasset": {
+        "sha256": "b4a4eec486a18ff4208cfa334e82a3cc3abcf3290cfb4bf6b168853c2b65ebcd",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Audio/MS_LundenThunder.uasset": {
+        "sha256": "453d6bdf68726a2dcb301ae1f928d1b60002cd77813c58e962fac9ed8802daeb",
+        "mode": 365
+      },
+      "unreal/Lunden/Content/Lunden/Audio/MS_LundenStep_wood.uasset": {
+        "sha256": "0fdc3f019a4fdd186a72f451b3e75828c5c8a5a3d8bc638ba4088108692d13c6",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Audio/SC_LundenEffects.uasset": {
+        "sha256": "45760e871ba305799c74d507ec31ab93d0262f7653a2a33c8ba18b979a60bc31",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Audio/RE_LundenBright.uasset": {
+        "sha256": "7692129325f3062616858ce0e5f3544e87fa9e37e192e4aff5396793f657ef74",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Audio/RE_LundenConcrete.uasset": {
+        "sha256": "e58791c112972475709463d807ffa7cc9759d7c4c79e6b803e9862bd7e88df54",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Audio/MS_LundenAmbience.uasset": {
+        "sha256": "ae4150f4ba371af9802f6b2ef2371db54c8cbc56148426b33ccc1c0a84c91da2",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Vegetation/MI_LundenVine.uasset": {
+        "sha256": "f9905cd5f0981b8b0be65545ee59d22492abcc9a41be858356460c40dcb164c4",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Vegetation/MI_LundenLeaf.uasset": {
+        "sha256": "285a7e21ad6cfa425a62a4c693da08597e8bd44f79e6de672b192207fb0a918e",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Vegetation/MI_LundenPerennial.uasset": {
+        "sha256": "947c6dc4cdef20f05a0efdeea2f6ec4621f423c4b855be6c3ecbd0a660febb79",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Vegetation/M_LundenFoliage.uasset": {
+        "sha256": "d5c604b897bed716172e58ec7a9184a8874b78cc7211a32b48aa0ea70a15a660",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Blueprints/PilotDoors/BP_LundenSwingDoor.uasset": {
+        "sha256": "4356be3fdb377d8194ed1f31928ba950f3921d0069d7b4e370b103e6ea201e1f",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Lighting/M_LundenPrecipitation.uasset": {
+        "sha256": "fcf6cf5a56788583da13f20f906c58098f934264808f5d1ced58ba949cdd2cc5",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Lighting/BP_LundenSky.uasset": {
+        "sha256": "56e7cbcf13b416e85528e596115b0c5a759117e75c1494727d64b6d4d397d686",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Lighting/T_PilotClearSky.uasset": {
+        "sha256": "def97e047cd1f9662a8eaa31f60b700d04e14f417c7c665481d5e1484307db14",
+        "mode": 365
+      },
+      "unreal/Lunden/Content/Lunden/Lighting/M_LundenWindowDaylight.uasset": {
+        "sha256": "4808e6c254251bfcb81959a6b7a20006aa5192f332e397d5335d8f17e738f70c",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Lighting/BP_LundenLamp.uasset": {
+        "sha256": "e7d2821ea00bb664c094de1294ed3293b25001413839841fe95ad81cfc57499f",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Lighting/MPC_LundenWeather.uasset": {
+        "sha256": "660aa3f25e7f3bf2179bb43f9a3abe31bbbe97b213ade89f3eb6da2dfe8e1b22",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Lighting/T_LundenHemisphere.uasset": {
+        "sha256": "3a7ae17e03223b042ade78ed0fc226e63474a4f69c6a61a9a5456a6106c4dce2",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Lighting/M_LundenNeutralTonemap.uasset": {
+        "sha256": "9eef87d566fe9d6c917507a5652c088bf323a2c0f8b9e90b2664dbaa5fe0c95c",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Lighting/M_LundenClouds.uasset": {
+        "sha256": "8265a00f9b7b4cbe9a20e4d23590fb32556b3481d018b7e12982f95edbe9d57c",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Player/BP_LundenCameraManager.uasset": {
+        "sha256": "e365a151a7c27b7fdefd75d3b28beefac7345fe5542456f4acb0f92305922d3d",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Player/BPC_LundenRest.uasset": {
+        "sha256": "575fdba42602061beb21dadfc1a423bb63b79a2fcb90438fe1887b5abfc3e67a",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Player/BP_LundenPlayer.uasset": {
+        "sha256": "f89d59702655a5c1d901c391fc7ba08461f1e2b53c3244c03c24c91d036df845",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Player/BP_LundenGameMode.uasset": {
+        "sha256": "760debdb0f23e1200bfeefc37a4fef61ae930daa9c48b1064e66b9048eac273a",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Player/BPC_LundenStepSurface.uasset": {
+        "sha256": "2ac99a30ec1a60a9f425f07f2170841a4c9e4c22d1094c495894eef6b90882a1",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Player/BP_LundenPlayerController.uasset": {
+        "sha256": "36cbf82e42d482505b55779c2b6a84a3464ca39293285a70e4d75927f18b6823",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Player/Input/IA_LundenLookY.uasset": {
+        "sha256": "01ba2f57571bbf2c3e014e7ae22bef7e03a86521738b63d67257e145bc79e3e5",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Player/Input/IA_LundenRight.uasset": {
+        "sha256": "7d420e8bcff3f0c6a6f5d0dc80c6a74d6263b9b2f27055e2065bac105e744163",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Player/Input/IA_LundenRun.uasset": {
+        "sha256": "dd4ee7c8e166cb8996f6ce4be629d5237798bae8b981f516b945e1f7960a1a2e",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Player/Input/IMC_LundenPlayer.uasset": {
+        "sha256": "280ce95f42d809424cbaf5514d04c399b757de6ce866d294b0896f9c5e72e2b9",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Player/Input/IA_LundenCrouch.uasset": {
+        "sha256": "9c35bef21f6c3556d132db89fbf27fc8bb8c2056c86863f23ebda7a3c6a2a5f5",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Player/Input/IA_LundenLookX.uasset": {
+        "sha256": "c2ff5b20de706b42389b376afe19a15913b2046005eefe5ca77c6d165bf26896",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Player/Input/IA_LundenJump.uasset": {
+        "sha256": "01b4ee9e18472ce4da8471668e50dc58fcf58a9e7cc6fad7d9d98b670cf3f0b6",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Player/Input/IA_LundenForward.uasset": {
+        "sha256": "2068e0203e56505c5e9d65d63e520fcb557a48a826c406fa5ef4725ff66b835c",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Player/Input/IA_LundenLeft.uasset": {
+        "sha256": "2b6192c25a3d8a1ffd8be8d3f796573c58c3852632cb47ed716673a436a27664",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Player/Input/IA_LundenBack.uasset": {
+        "sha256": "fc350dd876d1c908da0d1accbd4b9f7300178b4e5d480979c0ed82e9b9bdf9a6",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Materials/MI_LundenTileSplash.uasset": {
+        "sha256": "f16aa4100c492efa65febe1e51856144c429c75852dcc7fc8203098b8fefd102",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Materials/MI_LundenRiserPaint.uasset": {
+        "sha256": "7516e99182a94e38abe2964573091f1246ac9a41dabc8e01821f55242e20233f",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Materials/MI_LundenFramePaint.uasset": {
+        "sha256": "0855eb7e979e9761757cbdd18c37167feb4a884fdde4b1cf790df823ff00bc66",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Materials/M_LundenGltfVertexColor.uasset": {
+        "sha256": "eeeb610fd1cf0191bc8721e2acb1e9296f175ba463cc8c70153c06c2d3235fa2",
+        "mode": 365
+      },
+      "unreal/Lunden/Content/Lunden/Materials/MI_LundenFacadeBrickAHus.uasset": {
+        "sha256": "94f5acc5be231bb7e607f362f5e5de5a944265c122ce6b1b8c45a56e832f73d7",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Materials/MI_LundenAsphaltPatch.uasset": {
+        "sha256": "1259186028438f3ce676daadd1673658444d6d7e87936888592969a152c6c394",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Materials/MI_LundenPatioPaving.uasset": {
+        "sha256": "6c6d76d3c176935ff5dbc57ee3f34255315d87c072b476bae2effaecde5f330e",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Materials/MI_LundenRoofSeam.uasset": {
+        "sha256": "d399cf9231f0328d4d795032d4e13e1609fe16f0ef1f0694dbd679d582d1b47f",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Materials/M_LundenGravel.uasset": {
+        "sha256": "8b4e1b5b1e5ee1b93cafb0ccc33383ff49fec20fa90138d40be5da36e1df5b0b",
+        "mode": 365
+      },
+      "unreal/Lunden/Content/Lunden/Materials/MI_LundenRoofFeltAHus.uasset": {
+        "sha256": "a8b8913ed0a1d3ba8c4be47f7ac3ef05aa21466a0efe8dda00c57c66d2b887c9",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Materials/MI_LundenCourtBrickPaving.uasset": {
+        "sha256": "1ee3b4c95849671fd34e9cec0dbf3191d171d1d5d593730eba2f1aac70125c9a",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Materials/M_LundenGrass.uasset": {
+        "sha256": "cbb1ad58f75f71a650ac3bcbb9f99962063052aaac25d6fcfa4ce5c6ec6f8a78",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Materials/MI_LundenAsphalt.uasset": {
+        "sha256": "d324e874b5643056bcbaa509ecb3afebdbd2e5df78e257d6da7043295bbe068f",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Materials/MI_LundenRailPaint.uasset": {
+        "sha256": "2bf1ea9a425f2f66f0cb5fb65e0db8298df609e48161237d170aca58a57f11ad",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Materials/MI_LundenGravelPark.uasset": {
+        "sha256": "e90da5a496f46be10c53dd16ccb3b4255cd28a6b1984a972d54cbd39c68c7df4",
+        "mode": 365
+      },
+      "unreal/Lunden/Content/Lunden/Materials/M_LundenWallPaint.uasset": {
+        "sha256": "9b3b005274a133cf5afd748e7caeb8c0b02b4117a09538f3d124a9533048a937",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Materials/MI_LundenRoofFeltHusL.uasset": {
+        "sha256": "6b92245882cccc70bac4f28fb3e633301842dbd6ad16394e7087808e1453fa26",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Materials/M_LundenGltfUnlitVertexColor.uasset": {
+        "sha256": "30e85fddf523ac91eb1c44d94f0213f30b59502e9901087c494052c13ab1d32a",
+        "mode": 365
+      },
+      "unreal/Lunden/Content/Lunden/Materials/MI_LundenStreetPaving.uasset": {
+        "sha256": "29e22eb1a293cf9aa467a72e1207184cc0da5359827e1716037c070aba84cc71",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Materials/MI_LundenGravelCourtyard.uasset": {
+        "sha256": "8c3e77f3691d991d6f03940be2479eef80848e2e4aa5a6db347aac2c34536bbe",
+        "mode": 365
+      },
+      "unreal/Lunden/Content/Lunden/Materials/MI_LundenFacadeBrick.uasset": {
+        "sha256": "98a7378382c88d47652c9d457df12a1300351ae0c95c11c1977cb47028fda897",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Materials/MI_LundenGrassLawn.uasset": {
+        "sha256": "15e5b6b25dd5807b2c9b53c4bb93c9e85bf8045d04be419524ad4f5d98cc2062",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Materials/M_LundenGlass.uasset": {
+        "sha256": "fd82c5ead186f1595763fd897020d3511b9ff58d2c8d48817ea737a0f28eb7f0",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Materials/MI_LundenTileWetFloor.uasset": {
+        "sha256": "afce602c6b074069e1b33357d9982be5d1be076830d8ea4c18408a4150b18fbb",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Materials/MI_LundenTileHallFloor.uasset": {
+        "sha256": "218d9b34192a0a82629ffd266603f5cd513146f5594669e028120ddee5c0ac47",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Materials/M_LundenCollision.uasset": {
+        "sha256": "29fdf6a18502659bdbd9e026b97595141a056f60b800a05d52218d8b7d14827e",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Materials/M_LundenSurface.uasset": {
+        "sha256": "05831dd16f1911e2d3f514d9a24b639e341712805ea376a4c5f92e6b6aa5e234",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Materials/MI_LundenDoorPaint.uasset": {
+        "sha256": "0132dc2a5c522437b4c38490177107cfbeaad244407967a30b5377806cff33b6",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Materials/MI_LundenCobbles.uasset": {
+        "sha256": "faffefa753f873a9cd9651e90b47179e5d121f27c93eabb900bf3b5a8f409d9e",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Materials/MI_LundenCeilingPaint.uasset": {
+        "sha256": "f6a16fac09527cf0e0be7332fdcc40ba0fbe8e8ddc8da9dbc1175d4334bf4367",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Materials/MI_LundenWindowGlass.uasset": {
+        "sha256": "6a555614bf8d6904a52250325b03104f67ebe5a9ef88b61018559cd37aabd010",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Materials/MI_LundenGrassStreet.uasset": {
+        "sha256": "5f68f1d89dfe220d83af0ac2f534097715a6d4f0efca02ce7dd5a75030c51e4b",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Materials/MI_LundenCopperWire.uasset": {
+        "sha256": "4ee469eceaf1324ca3528f5e3220b71bea45780f8840099cb979caeb12fc197c",
+        "mode": 365
+      },
+      "unreal/Lunden/Content/Lunden/Materials/MI_LundenTileWall.uasset": {
+        "sha256": "71023273827795759f852b5c3809fa22f7290ceb0be8477cef1ab433f8f2c776",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Materials/MI_LundenParquetEkChalk.uasset": {
+        "sha256": "94aa9fb15ad2872d485b451adc3776dbfbb5fdab018e7b25331fb33564514eb9",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Materials/M_LundenTiled.uasset": {
+        "sha256": "f440606d08e04d9068f0de65664b58b4cb3b8ef23935855243287c96d0a907c2",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Materials/MI_LundenBrickHistoric.uasset": {
+        "sha256": "6da6149ae2cfc2a4043475014331ae3798ba826db7cf74b127fefe827784aaca",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Materials/MI_LundenScreenWall.uasset": {
+        "sha256": "fc23bf4ca6ce414e13d65d350ad554f17e0ff23b3a662462026e4668b21f8c22",
+        "mode": 292
+      },
+      "unreal/Lunden/Content/Lunden/Materials/Textures/T_LundenLeafLitter.uasset": {
+        "sha256": "1d99c681252b64459eba73e04d44bf1f81f6697164465adcb6162805a978728f",
+        "mode": 365
+      },
+      "unreal/Lunden/Content/Lunden/Materials/Textures/T_LundenGravelSurface.uasset": {
+        "sha256": "4b586251f1ff90921c963ddf3749e77fde0143dcea44134a317ac63040defa62",
+        "mode": 365
+      },
+      "unreal/Lunden/Content/Lunden/Materials/Textures/T_LundenGravelColour.uasset": {
+        "sha256": "e65ec49cb311accbd9bb0f86522b6d691e960b72683c3924e05ac1f02cfa0ea5",
+        "mode": 365
+      }
+    },
+    "allCurrentAuthoredMustRemainExact": true,
+    "exportSourceCommit": "c6dfc621c5b904108441fff9c2b7305497787a2b",
+    "sourceFileSha256": {
+      "tools/unreal-engine/check-export.mjs": "88900f16c9bc8a939ce9510c6605094bc9e2ebeff63aa8ffba1c93d6afab4f41",
+      "tools/unreal-engine/check-import.mjs": "a90f0c80ab8752f881131272bd1ac79d0c6a9b51d8d3169d4f53fb47c17769ba",
+      "tools/unreal-engine/material-map.json": "8a04a4c9eb565ffea150ab853e0753a7d9f6e0f2c32425c594299dd9c34627c0",
+      "tools/unreal-engine/python/backdrop_material.py": "6280e951029a456a3b3ec5dab116f719883fe9b0ae025b05a345363e72a2cda1",
+      "tools/unreal-engine/python/build_audio.py": "30678701f9eb6b32e73247d67f6404bc802964bb4e7774e65fca3877b67b8a6c",
+      "tools/unreal-engine/python/build_avatar_looks.py": "c0cc0e05ee1abc38b9111c3735d94ba6b6e2dafa45ea858ada2cb955d32c0eeb",
+      "tools/unreal-engine/python/build_avatar_rig.py": "991ca953463fc561b1a4b47f3fcb9021df94e3691229ba0e6395fc8ad0a0606b",
+      "tools/unreal-engine/python/build_cabinet_washes.py": "4134571223c94c705b1dbea93c62feb4d1ddbfe8efe3b596249cd8494d9e7396",
+      "tools/unreal-engine/python/build_curtains.py": "1a9136dbaf0e41a4cf80841e957b4b9d55ebccf61941758598e6725365ce1e98",
+      "tools/unreal-engine/python/build_exterior.py": "4a29cf45a8eeffb7dafbbadfd683a9e49fe50f34cce59be0b246d5d4ca2e9d7b",
+      "tools/unreal-engine/python/build_facade.py": "18561970d999c68e8b81b4ea34346331a623715d9d044980fbf84da9eca90505",
+      "tools/unreal-engine/python/build_interaction.py": "d53b63f861fb4c720c7f9eb3127a8bbef9452eefd8ca0b5dfe8fa074eedfe2d8",
+      "tools/unreal-engine/python/build_l1007.py": "fda05805b5e7a657ff27182c132d16c0b114de71591164bf909614ff37b55a7b",
+      "tools/unreal-engine/python/build_lighting.py": "c8a43a1e826cc943b3a4599cbef0b655d12ba4cbf66e22b09d33db24788b102b",
+      "tools/unreal-engine/python/build_materials.py": "657ca2c83e9ad4541a6ec6e70169cbd2637feed81035fcbf6ec57e3945648f53",
+      "tools/unreal-engine/python/build_network.py": "0125a84221237b9fa0214adb3a018b911535edfca10c65f78f9eb04362624edc",
+      "tools/unreal-engine/python/build_network_peers.py": "8b7ec00269bdf406ab2158b5179068aad50c60aa1be2ca9138b233f353fde5c5",
+      "tools/unreal-engine/python/build_network_shared.py": "ed0b602d087b53b1a7d705b4d001bb6769c437521cc8733b3637312cd498aaf9",
+      "tools/unreal-engine/python/build_pilot_collision.py": "49a8279a6294a1dc8697f35d019a00ac2539891454b15a1ea3342b62a3064d0e",
+      "tools/unreal-engine/python/build_pilot_doors.py": "b91c226d744eee4d83f3ed1ce7289362671cb85e4aa16042b9eab310565631be",
+      "tools/unreal-engine/python/build_player.py": "8e5fa5c5fac002c62160181c03a551bad7f037e7c0718fe7d5c7871a2cc30e06",
+      "tools/unreal-engine/python/build_rug_pool.py": "9ccc9df3604a4e689b069584cfe78dddd07cd34162bb30b9f518fc6a37027ce5",
+      "tools/unreal-engine/python/build_save.py": "04adffb8613d94303738f20f264d6f5c2495a4d334fe4b97093f09517843ef54",
+      "tools/unreal-engine/python/build_seasons.py": "33ab2c0759b6a54cd465f6a3ec7e72cdede9e366e96a59b0dfd80b812c3d3e9c",
+      "tools/unreal-engine/python/build_site.py": "2a60182a083a63606c414a9f67cc23325232acaf44fa893d217c1e934b660180",
+      "tools/unreal-engine/python/build_ui.py": "edf7596c59c06e1cb347f83278f09b0833278c645f473c23faee5cafcde2f57c",
+      "tools/unreal-engine/python/build_vegetation.py": "4f0e748c4c87d6f890bded4efff8ec3e33ef6da5894f82c984f9c0627f9994f4",
+      "tools/unreal-engine/python/build_window_light.py": "e04623ec09692af4cdb64599715d9c87080fcaf7e374ca9c7dc4db23c5526cc6",
+      "tools/unreal-engine/python/capture_pilot.py": "26538f43b91535bb2aaf2dc3859ccf3176c2470cd96c8b64ffcd6951d859d14d",
+      "tools/unreal-engine/python/chunk_spike.py": "ff1f551ecf30279ec947305ff80e7f8b56c59fe5404df505a06bbdaffc6093cf",
+      "tools/unreal-engine/python/collection_ids.py": "8e8939f517fbacc0b6aa15eaae00c9673e6d4dd661951758fbdb1d4a2ae6f765",
+      "tools/unreal-engine/python/compose_world.py": "a2c1a93ea9a683125010f467829cd6981e875e6e43a4ec61392c8d4f7099b2ea",
+      "tools/unreal-engine/python/create_base_materials.py": "5e8ca1c2f4d32fccb7a6d5be41c729e5598426bfaf5f44e608a5ffae9a63d433",
+      "tools/unreal-engine/python/facade_scene.py": "81cdaab79609eb622c9af44f2ced5882cccf3e7b597d026e95451ce4b78713bb",
+      "tools/unreal-engine/python/garage_control.py": "f7e1831d8d6fcb9507a51129f5e4abe8bff4c2816ab859f5f1347709311b9ccb",
+      "tools/unreal-engine/python/ground_litter.py": "0e22ba302d9c72871b1ac81728046f63d7baeb3f510ad4580e8dd15e17857394",
+      "tools/unreal-engine/python/import_world.py": "e6fc66de4010e7e2cc0a72767cd26208b307b553e2f5f044d98f7759f69c858e",
+      "tools/unreal-engine/python/measure_pilot.py": "73ec8f828aab5c02fed498988680385f812841769f1227761505ab274ad3aa0d",
+      "tools/unreal-engine/python/network_events.py": "fe11d20ef6927e474e9c78333ee2a8e27bd5ba8d54d705537e67b9d3848d4b05",
+      "tools/unreal-engine/python/neutral_tonemap.py": "94af6286bf9642f4a90c040f750992a15285902c42841f7353f1769a6afaee7f",
+      "tools/unreal-engine/python/player_parts.py": "b522d04048eccf7a6ee03d04c460790f279157f91d4f2a8548a76a67ad4980f0",
+      "tools/unreal-engine/python/player_pitch.py": "7b40b1282035e0965c63ff4cc66a9d2ced956b6c60a840df2ce8f0f10b1a8706",
+      "tools/unreal-engine/python/prepare_nanite_materials.py": "e12dffcbb0c12b7e0233f65b86e1cf3149f36e1761d4ba6cdd6387be82ed4050",
+      "tools/unreal-engine/python/prepare_playable_pilot.py": "5fda5eeffaf953cffdc0e56f0a0e5797ef344ace9423d11d3e23fc67c08054e4",
+      "tools/unreal-engine/python/prepare_profile_camera.py": "dc3be8acae5471e007915f990e9682a658dcbc84e694476f4a7b75de2c22b16b",
+      "tools/unreal-engine/python/privacy_content.py": "acd9c5dfbe4f87d3a7d41da9fdc4cf2090ea3eb20e7682fed1a1f3b2d78564ed",
+      "tools/unreal-engine/python/probe_linux.py": "5eb00cd2386edd52ac43f35a9e23cbcf154b0c8a2376d3f3517134bdc4c97c71",
+      "tools/unreal-engine/python/river_material.py": "7da824bdcdbe3fcfd7ffd809cb60b186953fb37c313f66454e1ea2a01031d7e1",
+      "tools/unreal-engine/python/screenshot_level.py": "1c25fc83235b83a64b3c9c89bfbef2665d1376975f272e3462ce135f1972f70f",
+      "tools/unreal-engine/python/season_tags.py": "665d9040d7a5744135de23e2421c8b13b40fb8228838cbb752e4f1ea148e0da7",
+      "tools/unreal-engine/python/shared_chat_widget.py": "2382cbb03e0b111bbf728a0bde7f70ab9163453708cd109ec92f6b7785a41602",
+      "tools/unreal-engine/python/shared_door_ids.py": "f5b281256ec8500b5a4a59f20b71a8fddb72795c8fcb09a823fee7de9fadb8f9",
+      "tools/unreal-engine/python/shared_room_life.py": "f65a3e112605ba7ac00981065f07693618ef447500c4eff276899a220a844bb7",
+      "tools/unreal-engine/python/sky_clouds.py": "0fd0fcc059a0cc1131b84706d0db657b3437956c066d32c5ba0c245d1105a2ae",
+      "tools/unreal-engine/python/smoke_create_asset.py": "49c9b374c0dc093fcf344e05b7b250f9c42ed725a3f88ef3df065ee37e747677",
+      "tools/unreal-engine/python/smoke_render_linux.py": "6f3c699aa291215c34d998a1c624ea848fa7809279d983e68683b739b3375a90",
+      "tools/unreal-engine/python/stair_lamp.py": "dfeda5dc8af3a28d93c74b56b1e678ac96e32771fa80e8a037b6c50410ef0358",
+      "tools/unreal-engine/python/weather_audio.py": "f67ddbd1b9927bd77307e4b6bc7fa6e7e660e086932eef2ace3ff819c70c1a85",
+      "tools/unreal-engine/python/window_audio.py": "154a3dd3ad3315296ca6d499304663357f856086ce46250c09d184bb4c9617fe",
+      "tools/unreal-engine/python/window_light.py": "c5ce15541bbc5f296d1b4d11f538f5e2306fc1d7d052199e331baf23d8756703",
+      "tools/unreal-engine/sync-import.ps1": "aef4dfdd192bafb71dd97ff36e15da22435b857f8f9b57571111311ad6292b74",
+      "tools/unreal-engine/world-levels.json": "afd64b0b10d01500c39b65dc733e0e626fb465385d2ef09585664136252c125c"
+    },
+    "baselineSha256": "a914893ed04b4a152b7499f3f9ef6751b7b491577b08c65df0447eb22e02771f",
+    "exportManifestSha256": "c900de9de32018a261fb166ba0443c167782732a6b35915b8bd3870895cc6d40",
+    "exportSourceHash": "242611841827a97400e8129d543f0e239be514a78d665141d529ed7d63b00ef9",
+    "exportResolvedPath": "/mnt/d/LundenLinux/exports/issue2394-production",
+    "loadedBuilders": {
+      "build_seasons": {
+        "sha256": "33ab2c0759b6a54cd465f6a3ec7e72cdede9e366e96a59b0dfd80b812c3d3e9c",
+        "omittedStandaloneCalls": [
+          434
+        ]
+      },
+      "build_vegetation": {
+        "sha256": "4f0e748c4c87d6f890bded4efff8ec3e33ef6da5894f82c984f9c0627f9994f4",
+        "omittedStandaloneCalls": [
+          716
+        ]
+      },
+      "build_interaction": {
+        "sha256": "d53b63f861fb4c720c7f9eb3127a8bbef9452eefd8ca0b5dfe8fa074eedfe2d8",
+        "omittedStandaloneCalls": [
+          800
+        ]
+      },
+      "build_lighting": {
+        "sha256": "c8a43a1e826cc943b3a4599cbef0b655d12ba4cbf66e22b09d33db24788b102b",
+        "omittedStandaloneCalls": []
+      },
+      "import_world": {
+        "sha256": "e6fc66de4010e7e2cc0a72767cd26208b307b553e2f5f044d98f7759f69c858e",
+        "omittedStandaloneCalls": [
+          874
+        ]
+      },
+      "build_l1007": {
+        "sha256": "fda05805b5e7a657ff27182c132d16c0b114de71591164bf909614ff37b55a7b",
+        "omittedStandaloneCalls": [
+          155
+        ]
+      },
+      "build_exterior": {
+        "sha256": "4a29cf45a8eeffb7dafbbadfd683a9e49fe50f34cce59be0b246d5d4ca2e9d7b",
+        "omittedStandaloneCalls": [
+          178
+        ]
+      },
+      "build_site": {
+        "sha256": "2a60182a083a63606c414a9f67cc23325232acaf44fa893d217c1e934b660180",
+        "omittedStandaloneCalls": [
+          168
+        ]
+      },
+      "build_facade": {
+        "sha256": "18561970d999c68e8b81b4ea34346331a623715d9d044980fbf84da9eca90505",
+        "omittedStandaloneCalls": []
+      },
+      "build_curtains": {
+        "sha256": "1a9136dbaf0e41a4cf80841e957b4b9d55ebccf61941758598e6725365ce1e98",
+        "omittedStandaloneCalls": []
+      },
+      "build_cabinet_washes": {
+        "sha256": "4134571223c94c705b1dbea93c62feb4d1ddbfe8efe3b596249cd8494d9e7396",
+        "omittedStandaloneCalls": []
+      },
+      "build_rug_pool": {
+        "sha256": "9ccc9df3604a4e689b069584cfe78dddd07cd34162bb30b9f518fc6a37027ce5",
+        "omittedStandaloneCalls": []
+      },
+      "compose_world": {
+        "sha256": "a2c1a93ea9a683125010f467829cd6981e875e6e43a4ec61392c8d4f7099b2ea",
+        "omittedStandaloneCalls": [
+          150
+        ]
+      }
+    },
+    "majorDerivedSkipPreflight": {
+      "build_l1007": "actual unchanged(inputs) passed",
+      "build_exterior": "actual unchanged(inputs) passed",
+      "build_site": "actual unchanged(inputs) passed"
+    },
+    "currentAuthoredUnchangedCount": 247,
+    "originalProtectedBaselineUnchangedCount": 239
+  },
+  "steps": [
+    {
+      "step": "export",
+      "passed": true,
+      "result": {
+        "command": [
+          "/home/devcontainers/.nvm/versions/node/v22.20.0/bin/node",
+          "/home/devcontainers/lunden-linux/tools/unreal-engine/check-export.mjs",
+          "--dir",
+          "/home/devcontainers/lunden-linux/unreal/Lunden/Import"
+        ],
+        "exitCode": 0,
+        "stdout": "Unreal export is current: 11 files, 9402 nodes (9402 ids, each in one zone), 317 sources (exported from c6dfc621, HEAD 2788460c)\n",
+        "stderr": ""
+      },
+      "seconds": 14.124
+    },
+    {
+      "step": "preflight-existing",
+      "passed": true,
+      "result": {
+        "seasons": "canonical --check passed",
+        "vegetation": "canonical materials(check=True) passed",
+        "interaction": {
+          "/Game/Lunden/Interaction/BP_LundenInteractionListener": true,
+          "/Game/Lunden/Blueprints/PilotDoors/BP_LundenSwingDoor": true
+        },
+        "lighting": "canonical --check required before actual skip invocation"
+      },
+      "seconds": 35.855
+    },
+    {
+      "step": "seasons",
+      "passed": true,
+      "result": null,
+      "seconds": 6.431
+    },
+    {
+      "step": "import",
+      "passed": true,
+      "result": null,
+      "seconds": 19.978
+    },
+    {
+      "step": "build_l1007",
+      "passed": true,
+      "result": null,
+      "seconds": 4.646
+    },
+    {
+      "step": "build_exterior",
+      "passed": true,
+      "result": null,
+      "seconds": 5.959
+    },
+    {
+      "step": "build_site",
+      "passed": true,
+      "result": null,
+      "seconds": 11.182
+    },
+    {
+      "step": "build_lighting",
+      "passed": true,
+      "result": null,
+      "seconds": 11.901
+    },
+    {
+      "step": "build_facade",
+      "passed": true,
+      "result": null,
+      "seconds": 6.621
+    },
+    {
+      "step": "build_vegetation",
+      "passed": true,
+      "result": null,
+      "seconds": 4.746
+    },
+    {
+      "step": "build_interaction",
+      "passed": true,
+      "result": null,
+      "seconds": 21.542
+    },
+    {
+      "step": "build_curtains",
+      "passed": true,
+      "result": null,
+      "seconds": 5.316
+    },
+    {
+      "step": "build_cabinet_washes",
+      "passed": true,
+      "result": null,
+      "seconds": 5.823
+    },
+    {
+      "step": "build_rug_pool",
+      "passed": true,
+      "result": null,
+      "seconds": 5.541
+    },
+    {
+      "step": "compose-check",
+      "passed": true,
+      "result": null,
+      "seconds": 8.579
+    },
+    {
+      "step": "import-check",
+      "passed": true,
+      "result": null,
+      "seconds": 14.356
+    },
+    {
+      "step": "nanite-usage-check",
+      "passed": true,
+      "result": {
+        "zones": [
+          "fixture",
+          "fond",
+          "gard",
+          "hus-l",
+          "kvarteret",
+          "l1007",
+          "l1007-entre",
+          "l1007-uteplats",
+          "omgivning",
+          "vegetation"
+        ],
+        "checkOnly": true
+      },
+      "seconds": 5.221
+    },
+    {
+      "step": "sync-stamp",
+      "passed": true,
+      "result": {
+        "command": [
+          "/home/devcontainers/.nvm/versions/node/v22.20.0/bin/node",
+          "/home/devcontainers/lunden-linux/tools/unreal-engine/check-import.mjs",
+          "--write-sync-stamp",
+          "--steps",
+          "export,seasons,import,build_l1007,build_exterior,build_site,build_lighting,build_facade,build_vegetation,build_interaction,build_curtains,build_cabinet_washes,build_rug_pool,compose-check,import-check"
+        ],
+        "exitCode": 0,
+        "stdout": "sync stamp written: complete sync of c6dfc621 (export, seasons, import, build_l1007, build_exterior, build_site, build_lighting, build_facade, build_vegetation, build_interaction, build_curtains, build_cabinet_washes, build_rug_pool, compose-check, import-check)\n",
+        "stderr": ""
+      },
+      "seconds": 4.003
+    },
+    {
+      "step": "release-gate",
+      "passed": true,
+      "result": {
+        "command": [
+          "/home/devcontainers/.nvm/versions/node/v22.20.0/bin/node",
+          "/home/devcontainers/lunden-linux/tools/unreal-engine/check-import.mjs"
+        ],
+        "exitCode": 0,
+        "stdout": "  Unreal export is current: 11 files, 9402 nodes (9402 ids, each in one zone), 317 sources (exported from c6dfc621, HEAD 2788460c)\nUnreal import is current: 10 zones (fixture, fond, gard, hus-l, kvarteret, l1007-entre, l1007-uteplats, l1007, omgivning, vegetation) match the export of c6dfc621; last sync-import complete\n",
+        "stderr": ""
+      },
+      "seconds": 9.805
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "native": {
+    "engine": "5.8.4",
+    "profile": "nullrhi",
+    "exitCode": 0,
+    "passed": true,
+    "completed": true,
+    "revision": "2788460c9347cc9c3daed39fb9ed3d2e4f8994f6",
+    "seconds": 368.38
+  },
+  "outerExit": 0,
+  "stepCount": 19,
+  "allStepsPassed": true,
+  "guardCount": 40,
+  "allGuardsPassed": true,
+  "all247AuthoredExactAndReadOnly": true,
+  "run": "20261127T130004705295-2680685"
+}

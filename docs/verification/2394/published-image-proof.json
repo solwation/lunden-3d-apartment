@@ -1,0 +1,96 @@
+{
+  "imageCommit": "4d36ac290c590855559e165a7121485bdf85a50d",
+  "images": [
+    {
+      "path": "docs/verification/2394/web/fruit-bowl.jpg",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/4d36ac290c590855559e165a7121485bdf85a50d/docs/verification/2394/web/fruit-bowl.jpg",
+      "http": 200,
+      "bytes": 85577,
+      "sha256": "820432b937241084d335d7fc018e5fb662a749ef1e9b56afbeceb74a8b7d7357"
+    },
+    {
+      "path": "docs/verification/2394/web/living-room-evening.jpg",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/4d36ac290c590855559e165a7121485bdf85a50d/docs/verification/2394/web/living-room-evening.jpg",
+      "http": 200,
+      "bytes": 57818,
+      "sha256": "caf943bc12f03f8f6b42e2701fa5f1dd7ad41f66bae7cca077afa1eac3183f89"
+    },
+    {
+      "path": "docs/verification/2394/web/start.jpg",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/4d36ac290c590855559e165a7121485bdf85a50d/docs/verification/2394/web/start.jpg",
+      "http": 200,
+      "bytes": 69513,
+      "sha256": "69e1f1d0cc81fa682b405aab0d00120a22fb87311d55851403ca13a4992b5431"
+    },
+    {
+      "path": "docs/verification/2394/web/basketball.jpg",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/4d36ac290c590855559e165a7121485bdf85a50d/docs/verification/2394/web/basketball.jpg",
+      "http": 200,
+      "bytes": 42623,
+      "sha256": "3b3fbdb027025ec06e05bbf1beae56d3c1e660511f4d870d4d2857364731d697"
+    },
+    {
+      "path": "docs/verification/2394/after/fruit-bowl.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/4d36ac290c590855559e165a7121485bdf85a50d/docs/verification/2394/after/fruit-bowl.png",
+      "http": 200,
+      "bytes": 439995,
+      "sha256": "689bff0ad7dc685b5d4afc74676b984a2c462a08fa24b9982de4e5c5aae8991b"
+    },
+    {
+      "path": "docs/verification/2394/after/start.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/4d36ac290c590855559e165a7121485bdf85a50d/docs/verification/2394/after/start.png",
+      "http": 200,
+      "bytes": 439995,
+      "sha256": "4f4435e67ea7fb71de594c5bff2ebcd59a06e8bb6e6fd1157e37376bdf299888"
+    },
+    {
+      "path": "docs/verification/2394/after/living-room-evening.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/4d36ac290c590855559e165a7121485bdf85a50d/docs/verification/2394/after/living-room-evening.png",
+      "http": 200,
+      "bytes": 315909,
+      "sha256": "868bcd119e9f19beeb9203d0a35639d9b83a13d538789e0d3acda004cccdf6b8"
+    },
+    {
+      "path": "docs/verification/2394/after/basketball.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/4d36ac290c590855559e165a7121485bdf85a50d/docs/verification/2394/after/basketball.png",
+      "http": 200,
+      "bytes": 217352,
+      "sha256": "f71a0e78becb3d7682c92609b8123d3f530c745c73afb636d127ab39d06602d0"
+    },
+    {
+      "path": "docs/verification/2394/before/fruit-bowl.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/4d36ac290c590855559e165a7121485bdf85a50d/docs/verification/2394/before/fruit-bowl.png",
+      "http": 200,
+      "bytes": 439995,
+      "sha256": "16e2f2e0c31d006ab75bfdcbddbe8a8cce0d0a122324a4983ee3e8fff4bb1969"
+    },
+    {
+      "path": "docs/verification/2394/before/halo-original.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/4d36ac290c590855559e165a7121485bdf85a50d/docs/verification/2394/before/halo-original.png",
+      "http": 200,
+      "bytes": 225665,
+      "sha256": "0abe260dde0371dfd833daea63aee0fee8373fb2d23015043ed16a0d2ee39902"
+    },
+    {
+      "path": "docs/verification/2394/before/start.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/4d36ac290c590855559e165a7121485bdf85a50d/docs/verification/2394/before/start.png",
+      "http": 200,
+      "bytes": 439995,
+      "sha256": "c9c5fdfa63e55c8cf9f8829487e544b75dcf786a9bf84c71fb7b094520e0f21b"
+    },
+    {
+      "path": "docs/verification/2394/before/living-room-evening.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/4d36ac290c590855559e165a7121485bdf85a50d/docs/verification/2394/before/living-room-evening.png",
+      "http": 200,
+      "bytes": 439995,
+      "sha256": "ac47ab8a27e3c3d9a0575d5a4be81a63b4a1d19550f832488d8b4c6288d9c080"
+    },
+    {
+      "path": "docs/verification/2394/before/basketball.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/4d36ac290c590855559e165a7121485bdf85a50d/docs/verification/2394/before/basketball.png",
+      "http": 200,
+      "bytes": 225665,
+      "sha256": "98463d2a626fc1d7171e54d3c51fe0e5d353d2979c6df12f77f24ddb1459c2fa"
+    }
+  ]
+}

@@ -11,7 +11,7 @@ camera-specific RGB fitting, exposure adjustment, or private material instance i
 - Actual RHI run `20261127T125215231369-2454799`: native exit 0, completed/passed true, 450.07 seconds.
   The outer launcher ended 143 (#2473); this is recorded separately, not reported as wrapper success.
 - Four fresh original 640×360 result PNGs; PNG CRC through IEND and original trailing bytes are preserved.
-  `artifact-files.json` binds the raw files. `capture-summary.json` binds source, camera, material, real MPC and loaded levels.
+  `artifact-files.json` lists the raw artifacts as published at image commit `4d36ac29`, including the subsequently pruned before images. `capture-summary.json` binds source, camera, material, real MPC and loaded levels.
 - All nine **predeclared** floor/sofa/wall fields pass ±10% separately for every decoded RGB channel in both day views.
   See `crop-contract.json` and `pixel-comparison.json`; fixed crop contract SHA256
   `353ca7c5425fa3d40c64e57c1ba638eacab08a269a3c01c8f4c9edf9f49273db` predates native inspection.
@@ -36,8 +36,9 @@ The initial full ten-zone production sync passed all canonical stages and 39 pre
 After the single AO formula change, actual Lighting build plus `--check` passed at source `2788460c`
 (run `20261127T124911870147-2350932`, native/outer exit 0, 170.87 seconds).
 All 247 authored packages stayed byte-identical/read-only throughout the final RHI capture; 239 original packages
-outside the eight locked Lighting outputs also match the original baseline. Full incremental final-gate evidence
-is added separately after its actual completion; no stale stamp is called current.
+outside the eight locked Lighting outputs also match the original baseline. The subsequent full incremental sync actually reran all 19 canonical steps and passed all 40 guards,
+including a fresh sync stamp and the release gate: run `20261127T130004705295-2680685`, native/outer exit 0, 368.38 seconds.
+All 247 authored packages stayed exact/read-only throughout. See `incremental-sync-outcome.json` and the raw step/guard records.
 
 ## Limits and remaining differences
 
@@ -54,3 +55,5 @@ changes seen through windows belong to the interior window-light region.
 
 Original Unreal-only implementation; no public downstream transfer. The web colour getter exposes the existing values
 without changing web rendering. Result images follow the repository's 30-day retention policy; text metadata remains.
+
+[Published result comparison and pinned before/web/after images](https://github.com/solwation/lunden-3d-apartment/issues/2394#issuecomment-7219006551).
