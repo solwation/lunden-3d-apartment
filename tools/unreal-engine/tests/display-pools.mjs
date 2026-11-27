@@ -34,11 +34,12 @@ assert.deepEqual([...pools.mesh.geometry.attributes.position.array], saved.posit
 assert.equal(profile.sourceLampCount, lamps.length);
 assert.equal(profile.fields.length, lamps.reduce((n, l) => n + Number(!!l.shade.pool.floor) + Number(!!l.shade.pool.ceiling), 0));
 assert.equal(stops.length, 11); for (const [i, [t, v]] of stops.entries()) { near(t, i/10); assert.equal(v, Math.round(255*(1-i/10)**1.5)); }
-const rug = { receivers: [{ id: 'actual-rug-fixture', mesh: 'actual-rug-fixture__1', key: 'unchanged-rug',
+const rug = { lamp: 'source-lamp-1', receivers: [{ id: 'actual-rug-fixture', mesh: 'actual-rug-fixture__1', key: 'unchanged-rug',
   corners: {'0,0':[0,0,1.4], '1,0':[100,0,1.4], '1,1':[100,100,1.4], '0,1':[0,100,1.4]} }] };
 const rows = new Map(lamps.map((l, i) => [l, { id: 'source-lamp-' + i }]));
 const data = displayPoolRows(profile, rows, rug);
 assert.deepEqual(data.rugReceivers, rug.receivers); assert.notEqual(data.rugReceivers, rug.receivers);
+assert.equal(data.rugLamp, rug.lamp, 'receiver exception belongs to its actual original source lamp only');
 assert.throws(() => displayPoolRows(profile, new Map(), rug), /stable measurement light ID/);
 assert.throws(() => displayPoolRows(profile, rows, null), /rug receiver/);
 const schema = JSON.parse(fs.readFileSync(new URL('../../../shared/schema/measurements.schema.json', import.meta.url)));
@@ -46,6 +47,8 @@ const contract = schema.properties.furnishing.properties.displayPools;
 assert.deepEqual(validate(data, contract, schema), []);
 const missing = structuredClone(data); delete missing.fields[0].lamp;
 assert.ok(validate(missing, contract, schema).some(s => s.includes('lamp')));
+const missingRugLamp = structuredClone(data); delete missingRugLamp.rugLamp;
+assert.ok(validate(missingRugLamp, contract, schema).some(s => s.includes('rugLamp')));
 const wrong = structuredClone(data); wrong.mask.colorSpace = 'srgb';
 assert.ok(validate(wrong, contract, schema).length);
 // Source commit itself supplies every quad at each fade/power level, including moved upper-floor geometry.
@@ -86,6 +89,7 @@ if (process.argv[2]) {
   assert.deepEqual(validate(actual,contract,schema),[]);
   assert.equal(actual.maskPng,m.furnishing.rugFloorPool.maskPng,'same actual source falloff canvas');
   assert.deepEqual(actual.rugReceivers,m.furnishing.rugFloorPool.receivers);
+  assert.equal(actual.rugLamp,m.furnishing.rugFloorPool.lamp);
   assert.equal(actual.runtimeCoverage.fieldCount,actual.fields.length);
   assert.ok(actual.runtimeCoverage.sourceLampCount>=new Set(actual.fields.map(f=>f.lamp)).size,
     'multiple source anchors may share one stable fitting/lamp ID');

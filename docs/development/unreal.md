@@ -2569,7 +2569,8 @@ What is exported:
   add no fields. The current configured shaded pendants yield three source lamps and five fields (copper floor,
   Silvia floor/ceiling and upstairs paper floor/ceiling); the full export must confirm the actual world population.
   The original 128×128 linear falloff PNG/flipY, source material opacity and depth/polygon-offset/render-order flags
-  travel with the fields, in Unreal cm. `rugReceivers` reuses the exact original rug quads from `rugFloorPool`.
+  travel with the fields, in Unreal cm. `rugReceivers` reuses the exact original rug quads from `rugFloorPool`;
+  `rugLamp` binds its receiver exception to that original field's actual stable lamp ID, across no other floor/storey.
   These are untonemapped additive MeshBasic surfaces: mask × full-on linear RGB × owner fade × mains goes through
   the output sRGB OETF; material opacity multiplies the display-space result afterward. They are not PBR albedo or
   linear emission added before the world's tonemapper. Coverage includes all source items, not only selected camera

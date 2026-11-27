@@ -50,8 +50,8 @@ export function displayPoolRows(profile, lampRows, rugPool) {
     if (!row?.id) throw Error('Missing stable measurement light ID for actual ShadePools lamp');
     return { ...field, lamp: row.id };
   });
-  if (!rugPool?.receivers?.length) throw Error('Missing actual original rug receiver for display pools');
-  return { maskPng: profile.maskPng, mask: profile.mask, fields, rugReceivers: structuredClone(rugPool.receivers),
+  if (!rugPool?.lamp || !rugPool.receivers?.length) throw Error('Missing actual original rug receiver/lamp for display pools');
+  return { maskPng: profile.maskPng, mask: profile.mask, fields, rugLamp: rugPool.lamp, rugReceivers: structuredClone(rugPool.receivers),
     source: 'Actual src/lights.js Lights.shadePools / src/shadepools.js, bound by lamp object identity to measurements.lights',
     runtimeCoverage: { sourceLampCount: profile.sourceLampCount, fieldCount: fields.length,
       scope: 'Every configured floor/ceiling surface of actual L1007 ShadePools; no camera/PointLight-slot selection',
