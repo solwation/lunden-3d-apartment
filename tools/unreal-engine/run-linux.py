@@ -157,8 +157,12 @@ def main(argv=None):
         env["LD_LIBRARY_PATH"] = settings["libraryPath"] + ":" + env.get("LD_LIBRARY_PATH", "")
     print(shlex.join(command), flush=True)
     start = time.monotonic()
+    timed_out = False
     with editor_slot(args.owner):
-        code = run_process(command, env, args.timeout)
+        try:
+            code = run_process(command, env, args.timeout)
+        except subprocess.TimeoutExpired:
+            code, timed_out = 124, True
     content = log.read_text(errors="replace") if log.is_file() else ""
     ok = code == 0 and bool(content) and not re.search(r"LogPython: Error:|Traceback \(most recent call last\)", content)
     if args.mode == "tests":
@@ -167,7 +171,7 @@ def main(argv=None):
         ok = ok and result.get("succeeded", 0) + result.get("succeededWithWarnings", 0) > 0
         ok = ok and result.get("failed") == 0 and result.get("notRun") == 0
     result = {"engine": actual, "profile": "linux-low" if args.render else "nullrhi",
-              "exitCode": code, "passed": bool(ok), "seconds": round(time.monotonic() - start, 2),
+              "exitCode": code, "timedOut": timed_out, "passed": bool(ok), "seconds": round(time.monotonic() - start, 2),
               "log": str(log), "command": command,
               "engineIniSha256": hashlib.sha256(ini.read_bytes()).hexdigest(),
               "vulkanIcd": env.get("VK_DRIVER_FILES") if args.render else None,

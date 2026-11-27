@@ -61,6 +61,15 @@ class LinuxRunnerTests(unittest.TestCase):
     def test_zero_exit_with_python_error_fails(self):
         self.assertEqual(self.invoke(["python", str(self.script)], log="LogPython: Error: script failed"), 1)
 
+    def test_timeout_records_failed_result(self):
+        with patch.object(runner, "editor_slot", return_value=runner.contextlib.nullcontext()), \
+                patch.object(runner, "run_process", side_effect=runner.subprocess.TimeoutExpired("editor", 1)):
+            self.assertEqual(runner.main(self.arguments + ["python", str(self.script)]), 1)
+        result = json.loads(next((self.root / "data/runs").glob("*/result.json")).read_text())
+        self.assertEqual(result["exitCode"], 124)
+        self.assertTrue(result["timedOut"])
+        self.assertFalse(result["passed"])
+
     def test_missing_log_and_failed_process_fail(self):
         self.assertEqual(self.invoke(["python", str(self.script)], log=None), 1)
         self.assertEqual(self.invoke(["python", str(self.script)], exit_code=1), 1)
