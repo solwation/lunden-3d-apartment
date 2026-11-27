@@ -10,6 +10,7 @@ WEATHER = "/Game/Lunden/Lighting/MPC_LundenWeather"
 LEVEL = "/Game/Lunden/Generated/Interaction/Level_l1007_interaction"
 TAG = "lunden:curtain-light"
 APPLY = "UpdateCurtainLight"
+VISIBILITY = "/Game/Lunden/Generated/Interaction/BFL_LundenCurtainLighting"
 
 
 # Native emissive-unit profile guesses, not source RGB or a gamma correction.
@@ -43,7 +44,7 @@ def lamp_visibility(signature):
     # getter always means self. A function library exposes the real target actor pin.
     import unreal as u
     import player_parts as pp
-    path = "/Game/Lunden/Generated/Interaction/BFL_LundenCurtainLighting"
+    path = VISIBILITY
     method = "IsLampVisible"
     assets = u.EditorAssetLibrary
     if assets.does_asset_exist(path):
@@ -70,14 +71,15 @@ def controller():
     import player_parts as pp
     assets, bp_lib = u.EditorAssetLibrary, u.BlueprintEditorLibrary
     signature = hashlib.sha256(Path(__file__).read_bytes().replace(b"\r\n", b"\n")).hexdigest()
-    visible = lamp_visibility(signature)
     lamp = assets.load_asset(LAMP)
     weather = assets.load_asset(WEATHER)
     if not lamp or not weather:
         raise RuntimeError("Build the Lunden lighting assets before building the curtain controller")
     if assets.does_asset_exist(PATH):
         bp = assets.load_asset(PATH)
-        if assets.get_metadata_tag(bp, "Lunden.SpecHash") == signature:
+        visibility = assets.load_asset(VISIBILITY) if assets.does_asset_exist(VISIBILITY) else None
+        if (assets.get_metadata_tag(bp, "Lunden.SpecHash") == signature and visibility
+                and assets.get_metadata_tag(visibility, "Lunden.SpecHash") == signature):
             return bp.generated_class()
         # Remove event calls before deleting their implementation. The graph helper compiles
         # between those operations when rebuilding a warm checkout.
@@ -90,6 +92,10 @@ def controller():
         factory.set_editor_property("parent_class", u.Actor)
         folder, name = PATH.rsplit("/", 1)
         bp = u.AssetToolsHelpers.get_asset_tools().create_asset(name, folder, u.Blueprint, factory)
+    # Removing a library function compiles its dependent Blueprints immediately.
+    # Retire this caller first, or a warm rebuild logs a missing IsLampVisible
+    # compiler error even though the final regenerated controller is valid.
+    visible = lamp_visibility(signature)
     fields = {"LampTags": pp.array(pp.NAME), "Panels": pp.array(bp_lib.get_object_reference_type(u.StaticMeshActor.static_class())),
               "DaylightColour": pp.VEC, "LampColour": pp.VEC}
     pp.variables(bp, {**fields, "RoomLit": pp.BOOL, "AppliedColour": pp.VEC, "Applied": pp.BOOL})
