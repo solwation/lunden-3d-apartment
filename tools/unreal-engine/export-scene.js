@@ -10,6 +10,7 @@ import { curtainProfiles, curtainRows } from './export-curtains.js';
 import { rugPoolProfile, rugPoolRow } from './export-rug-pool.js';
 import { displayPoolProfile, displayPoolRows } from './export-display-pools.js';
 import { parasolRows } from './export-parasols.js';
+import { garageLightingMaterials } from './export-garage-lighting.js';
 import * as THREE from 'three';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 import * as C from '../../src/config.js';
@@ -514,6 +515,7 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
       garage.setLevel(a, k);
       for (const m of [a.mats.signs, ...a.mats.floors, a.mats.plans]) if (m?.map) { m.color.setScalar(on); extra.labelPower.set(m, off / on); }
     }
+    extra.garageBake = garageLightingMaterials(garage);
 
   } catch (e) { extra.error = String(e?.stack ?? e); }
   // #2310: the fruit bowl on the coffee table (src/fruit.js) and Tilly's basketball in its wall holder (src/basket.js),
@@ -825,10 +827,23 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
   };
   // `furnish` (#2289): a furniture/appliance/lamp/curtain mesh keeps its base-colour image (FURNISH_KINDS)
   const curtains = wanted.includes('l1007') ? curtainProfiles(world.blinds) : new Map();
-  const exportMaterial = (m, furnish = false, bark = null) => {
+  const exportMaterial = (m, furnish = false, bark = null, garageSource = null) => {
     const cache = furnish ? furnishCache : matCache;
     if (cache.has(m)) { noteLook(m, cache.get(m).name); return cache.get(m); }
-    const { key: base, info } = materialInfo(m);
+    let garageBake = extra.garageBake?.get(m);
+    if (!garageBake && garageSource && extra.garageBake?.has(garageSource)) {
+      // parkedMaterial clones a spoke's alpha texture or folds an instance tint into the factor.
+      // Keep that tint and mask, but apply the original garage material's real on/off endpoint.
+      const profile = extra.garageBake.get(garageSource);
+      const previous = garageSource.color.toArray();
+      garageBake = { ...profile, colour: m.color.toArray().map((v, i) => {
+        if (!(previous[i] > 0)) throw Error('Cannot normalise a zero garage instance colour');
+        return v * profile.colour[i] / previous[i];
+      }) };
+    }
+    const source = garageBake ? m.clone() : m;
+    if (garageBake) source.color.fromArray(garageBake.colour);
+    const { key: base, info } = materialInfo(source);
     // The rail and sign need distinct keys; the hedge tints already identify them.
     // In particular the pilot ground builder loads the original patio-hedge material path.
     const hedge = m.name === 'patio-hedge' || m.name === 'boxwood';
@@ -843,14 +858,15 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     const tex = (furnish || label) && !hedge && !siteMap ? furnishingTexture(m.map, textures, textureOfMap) : null;
     // #2435: ... and stays unlit (KHR_materials_unlit; import_world.py puts it on the display-gain master), with the share
     // of its colour a power cut leaves (1 unless the web dims it: extra.labelPower)
-    const unlit = !!(tex && m.isMeshBasicMaterial);
-    const powerCut = unlit ? r4(extra.labelPower?.get(m) ?? 1) : null;
+    const unlit = !!garageBake || !!(tex && m.isMeshBasicMaterial);
+    const powerCut = unlit ? r4(garageBake?.powerCut ?? extra.labelPower?.get(m) ?? 1) : null;
     const bulb = m === lightsInfo.patioBulb;
     const siteSuffix = siteMap ? m.map.name.replaceAll('-', '_') : null;
     // Keep the unlit bulbs, bark textures and three foliage types distinct from furnishing images.
     const river = m.userData.riverSurface;
     const riverSuffix = river && (river.flow ? 'river_flow' : 'river_edge');
-    const suffix = bulb ? 'patio_string_bulb' : riverSuffix || siteSuffix || bark || LEAF_VARIANTS.get(m.name) || tex?.id;
+    const originalSuffix = bulb ? 'patio_string_bulb' : riverSuffix || siteSuffix || bark || LEAF_VARIANTS.get(m.name) || tex?.id;
+    const suffix = [originalSuffix, garageBake ? `garage_baked_p${Math.round(powerCut * 1000000)}` : null].filter(Boolean).join('_');
     const key = suffix ? `${base}_${suffix}` : base;
     let em = materials.get(key);
     if (!em) {
@@ -870,7 +886,8 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
         em.emissiveMap = em.map; // same sRGB texels, sampler, UV channel and transform
         em.emissive.fromArray(curtain.daylight); // daylight fallback for an imported mesh without a running controller
       }
-      materials.set(key, em); materialTable[key] = tex ? { ...info, texture: tex.id, ...(unlit ? { unlit: true, powerCut } : {}) } : info;
+      materials.set(key, em); materialTable[key] = { ...info, ...(tex ? { texture: tex.id } : {}),
+        ...(unlit ? { unlit: true, powerCut } : {}), ...(garageBake ? { garageBake: true } : {}) };
     } else if (unlit && materialTable[key].powerCut !== powerCut) {
       throw new Error(`${key}: unlit labels with power-cut shares ${materialTable[key].powerCut} and ${powerCut} share one key`);
     }
@@ -893,7 +910,8 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     else if (mesh.geometry.getAttribute('bedMud')) g = riverBedGeometry(mesh, g); // #2441: the terrain's river-bed mud
     const cloth = furnish || !!mesh.userData?.door;
     const trunk = mesh.geometry.userData.bark; // trunkGeometry marks both detailed species and the plain far LOD
-    const em = ms.map((m) => exportMaterial(m, cloth, trunk === 'bark' || trunk === 'birch' ? trunk : null));
+    const originals = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+    const em = ms.map((m, i) => exportMaterial(m, cloth, trunk === 'bark' || trunk === 'birch' ? trunk : null, originals[i]));
     const n = new THREE.Mesh(g, Array.isArray(mesh.material) ? em : em[0]);
     if (!mesh.castShadow) noShadow.add(n); // #2426: written as extras.castShadow once the node's extras are final
     return n;
@@ -949,7 +967,12 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
       let node;
       const furnish = FURNISH_KINDS.has(a.kind);
       lookAtom = a.id;
-      if (a.instance !== undefined || parked.meshes.has(a.object)) node = meshNode(a.object, furnish, parked.meshes.has(a.object) ? parkedMaterial(a.object, a.instance) : a.object.material), node && (Array.isArray(node.material) ? node.material : [node.material]).forEach((m) => keys.add(m.name));
+      if (a.instance !== undefined || parked.meshes.has(a.object)) {
+        const garageInstance = a.instance !== undefined && extra.garageBake?.has(a.object.material);
+        const material = parked.meshes.has(a.object) || garageInstance ? parkedMaterial(a.object, a.instance) : a.object.material;
+        node = meshNode(a.object, furnish, material);
+        node && (Array.isArray(node.material) ? node.material : [node.material]).forEach((m) => keys.add(m.name));
+      }
       else node = subtree(a.object, a.id, counter, keys, furnish);
       if (!node) continue;
       worldMatrix(a).decompose(node.position, node.quaternion, node.scale);

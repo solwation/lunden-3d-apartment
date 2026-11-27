@@ -51,6 +51,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from prepare_nanite_materials import prepare_zone, static_mesh_editor
 from season_tags import season_tags
 from build_materials import prepare_generated_materials, prepare_landscape_materials
+import garage_materials
 
 SUPPORTED_FORMAT_VERSION = 1
 IMPORTER_VERSION = 8  # bump when the importer's output changes for the same export (forces a re-import)
@@ -431,7 +432,7 @@ def apply_vertex_color(zone, table):
     return len(done)
 
 
-def check_vertex_color(zone, table):
+def check_vertex_color(zone, table, checked_garage=None):
     """--check (#2321): every vertex-coloured key's instance in the zone draws the vertex colour."""
     rx, masters = vertex_color_masters(table)
     wanted, bad, seen = set(masters.values()), [], set()
@@ -443,6 +444,8 @@ def check_vertex_color(zone, table):
             seen.add(mi.get_path_name())
             if not mi.get_path_name().startswith(f"{GENERATED_ROOT}/{zone}/"):
                 continue  # a rule's hand-made material: tests/test_materials.py checks that it uses the vertex colour
+            if mi.get_path_name() in (checked_garage or set()):
+                continue  # #2404: source/vertex/map/power checked on the Generated garage master immediately before this
             if mi.get_base_material().get_path_name() not in wanted and not textured(mi):
                 bad.append(f"{mi.get_name()} ({mi.get_base_material().get_path_name()})")
     if bad:
@@ -452,7 +455,8 @@ def check_vertex_color(zone, table):
 
 def unlit_labels(measurements):
     """#2435: {material key: power-cut share} of every web unlit label the export keeps with its image."""
-    return {k: float(v.get("powerCut", 1)) for k, v in measurements.get("materials", {}).items() if v.get("unlit")}
+    return {k: float(v.get("powerCut", 1)) for k, v in measurements.get("materials", {}).items()
+            if v.get("unlit") and not v.get("garageBake")}
 
 
 def label_master(table):
@@ -640,7 +644,7 @@ def clear_zone(zone):
         raise RuntimeError(f"{folder} still lists {len(left)} assets after clearing, e.g. {left[0]}")
 
 
-def import_zone(zone, glb_path, glb_entry, manifest, table, map_sha, labels):
+def import_zone(zone, glb_path, glb_entry, manifest, table, map_sha, labels, garage_data=None):
     folder, stamp_file = f"{GENERATED_ROOT}/{zone}", os.path.join(zone_disk_dir(zone), STAMP)
     clear_zone(zone)
     # the actors go into a fresh blank (not World Partition) map, saved as Level_<zone> only after the import worked:
@@ -661,6 +665,7 @@ def import_zone(zone, glb_path, glb_entry, manifest, table, map_sha, labels):
     materials = apply_materials(zone, table)
     apply_vertex_color(zone, table)  # after the rules: a key a rule maps keeps its hand-made material
     apply_unlit_labels(zone, table, labels)  # #2435 (textured, so the vertex-colour step left them on Interchange's master)
+    garage_materials.apply(zone, table, garage_data or {})  # #2404: actual Basic bake, maps and cut-outs remain unlit
     apply_instance_overrides(zone, table)  # #2440: before prepare_zone, which reads the blend mode for Nanite
     double = apply_double_sided(zone)
     shadows = apply_shadows(by_id, extras)
@@ -837,8 +842,11 @@ def main(argv):
     if any(e["zone"] in ("fond", "omgivning") for e in entries):
         prepare_landscape_materials(table, check_only, measurements["site"].get("riverSurface"))
     labels = unlit_labels(measurements)
+    garage_data = garage_materials.entries(measurements)
     if entries:  # #2431: the stairwells' baked-light masters and #2435's unlit label master, before the rules run
         prepare_generated_materials(table, check_only)
+    if not check_only and any(e["zone"] == "kvarteret" for e in entries):
+        garage_materials.prepare(table, garage_data)
     for entry in entries:
         zone, glb_path = entry["zone"], os.path.join(export_dir, entry["path"])
         if check_only:
@@ -849,13 +857,14 @@ def main(argv):
                 unreal.log(f"LUNDEN_IMPORT zone {zone}: skipped, {why} ({len(read_stamp(zone)['files'])} package files byte-identical)")
             else:
                 unreal.log(f"LUNDEN_IMPORT zone {zone}: importing ({'forced' if force else why})")
-                import_zone(zone, glb_path, entry, manifest, table, map_sha, labels)
+                import_zone(zone, glb_path, entry, manifest, table, map_sha, labels, garage_data)
         load_level(zone)
         check_ids(zone, glb_path)
         check_collision(zone, glb_path)
         check_double_sided(zone)
         check_shadows(zone, glb_path)
-        check_vertex_color(zone, table)
+        checked_garage = garage_materials.check(zone, table, garage_data)
+        check_vertex_color(zone, table, checked_garage)
         check_unlit_labels(zone, table, labels)
         check_instance_overrides(zone, table)
         if zone == "fixture":

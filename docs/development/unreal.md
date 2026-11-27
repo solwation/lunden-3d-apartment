@@ -3373,6 +3373,26 @@ rack on a flat test slab, because the zone levels alone have no walkable ground.
 web's stopping line. Evidence: [docs/verification/2374/](../verification/2374/README.md).
 The entrance plants use their near models. The `entrance-plants-far` distance stand-in stays in the web renderer.
 
+**Garage baked light (#2404).** `src/garage.js` already bakes the fluorescent tubes' light into vertex colours and
+draws the shell, bicycles, storage cages and signs with `MeshBasicMaterial`. Exporting the constructor's off-state
+(`setLevel(0)`, colour multiplier 0.035) as a lit PBR material loses both that brightness and its independence from
+daylight. `export-garage-lighting.js` observes the real on/off endpoints, restores the exact previous state, and exports
+the full-on Basic colour with `KHR_materials_unlit`, vertex colours, maps, cage/spoke cut-outs and instance tints intact.
+Garage-only material keys and `materials[].garageBake` keep this rule separate from stairwells and other zones.
+
+`import_world.py` applies `garage_materials.py` only to these keys in `kvarteret`. Textured instances use the existing
+Generated unlit-label master; untextured vertex-coloured instances use its equivalent built from the existing project
+vertex-colour master under `/Game/Lunden/Generated/GarageMaterials/`. Both retain the source colour and apply the existing
+display gain `2^-EXPOSURE_BIAS` and `PowerCut + (1-PowerCut)*PowerAvailable`. The actual source off/on ratios are 0.035
+for area surfaces, 0.25 for tubes, and 1 for independent Basic materials which the web does not dim with `setLevel`.
+The importer checks the source keys, parent graph, vertex-colour multiplication, texture branch and power parameter.
+This is a full-on area snapshot, like the existing garage labels; dynamic presence sensors remain outside this port
+(Later #2332). Cars keep their PBR materials; no native point-light or exposure calibration is introduced.
+The material map and importer version stay unchanged: only a changed `kvarteret.glb` should require re-import, provided
+the actual export proves every other zone byte-identical. `node tools/unreal-engine/tests/garage-lighting.mjs` checks
+the real source setter and exact restoration; supplying an export directory also checks the actual GLB attributes,
+unlit extensions, maps and cut-outs. Source checks alone do not establish native rendering parity.
+
 **The split.** A merged mesh (the web bakes one mesh per material for all of Hus L, all of Hus A/B/C or the whole
 terrain) that crosses a split zone's box is clipped at the box sides (vertical planes; attributes interpolated) and
 each piece goes to the zone holding its centroid. A triangle is thus in at most one zone. Its node id comes from the
