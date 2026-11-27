@@ -1,0 +1,101 @@
+{
+  "classification": "Unchanged issue2409 acceptance; paving report only; current baseline, no code fix",
+  "contractSHA256": "67241e35bbeb5c835f5922dfe4a0fa2db82c8828abb10a533a303d93ee266387",
+  "canonicalToolSHA256": "0a76bf7e7c43ad2e212f2d884806957030ec6dc08ce4c4d9901641f5f80bd1c6",
+  "nativeCaptureMetadataSHA256": "2691dc1dfd24d2198cc87c632b99fa54dd13379f3fd96a96c9d95ff0dc3ed56a",
+  "browserBatches": 1,
+  "inputs": {
+    "patio-parasol-dusk": {
+      "web": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2409/web/web-patio-parasol-dusk.jpg",
+        "sha256": "0b797aea107fbeb4fa022044f0c3aaa633da9f05c6461630cca21374f79e6033"
+      },
+      "native": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2409/native-baseline/product/target/unreal-patio-parasol-dusk.png",
+        "sha256": "6346b231b0b51da47409750c88ab7baf391c667bdceb03d14bef0ca0a8ab9b21"
+      }
+    }
+  },
+  "rows": [
+    {
+      "shot": "patio-parasol-dusk",
+      "region": "bulb-row",
+      "target": true,
+      "passed": false,
+      "luminanceRatio": 0.3152492668621701,
+      "warmthRatio": 2.0593675417661097,
+      "web": {
+        "srgb": [
+          94.6,
+          74.7,
+          28.2
+        ],
+        "luminance": 0.1364,
+        "warmth": 3.352
+      },
+      "native": {
+        "srgb": [
+          61.8,
+          45.3,
+          9
+        ],
+        "luminance": 0.043,
+        "warmth": 6.903
+      }
+    },
+    {
+      "shot": "patio-parasol-dusk",
+      "region": "fence-pool",
+      "target": true,
+      "passed": false,
+      "luminanceRatio": 0.4792719919110212,
+      "warmthRatio": 1.6213466817374456,
+      "web": {
+        "srgb": [
+          102.4,
+          74.9,
+          16.5
+        ],
+        "luminance": 0.0989,
+        "warmth": 6.193
+      },
+      "native": {
+        "srgb": [
+          71.8,
+          51.8,
+          7.1
+        ],
+        "luminance": 0.0474,
+        "warmth": 10.041
+      }
+    },
+    {
+      "shot": "patio-parasol-dusk",
+      "region": "paving",
+      "target": false,
+      "passed": null,
+      "luminanceRatio": 0.46964490263459335,
+      "warmthRatio": 1.2567049808429118,
+      "web": {
+        "srgb": [
+          101.6,
+          77,
+          43.3
+        ],
+        "luminance": 0.0873,
+        "warmth": 2.349
+      },
+      "native": {
+        "srgb": [
+          69.9,
+          51.6,
+          23.7
+        ],
+        "luminance": 0.041,
+        "warmth": 2.952
+      }
+    }
+  ],
+  "numericPassed": false,
+  "wholeImageReviewRequired": true
+}

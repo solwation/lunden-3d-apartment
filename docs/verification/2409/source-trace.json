@@ -1,0 +1,91 @@
+{
+  "issue": 2409,
+  "sourceHead": "51e12698788ca2a0e7d5d7086122abec8aeb2c63",
+  "observedAtUTC": "2026-11-27T21:38:07.595890+00:00",
+  "claim": "https://github.com/solwation/lunden-3d-apartment/issues/2409#issuecomment-7228579385",
+  "integrationOwner": "Root",
+  "sourceFiles": {
+    "src/patio.js": "021da4ada519ffa2980a7749e2f26279cbfd72ae78d5fa3f1e2f74054ddcb991",
+    "src/config.js": "a36e730774ee48527ae9b1ac7e2f444ca0fe6e8cbf02e15d1da56cfcdc3f94e0",
+    "src/lights.js": "d6d849368edc24a528d95430e9ceb6f869375867a277b4ebcd2c032cbb572611",
+    "src/world.js": "6ecc618d754666e6f3fb9e60ced3c899ea62f55c6dce2adcf14cbb512f469310",
+    "tools/unreal-engine/export-scene.js": "8dfe4fad39f24c6ab71f7872358f7bcb62d54372a09def3552ecfe9c9ae59956",
+    "tools/unreal-engine/python/build_lighting.py": "ca48ad5de1a5e6f28914f0bc13fcac5a0e8cc4789c438ea42da3b892bc2dda0d",
+    "tools/unreal-engine/python/build_materials.py": "47269a0d7adfa03937dcba01e0870710d333b21c1ce5439ccef9a0b1d4fca9dc",
+    "tools/unreal-engine/python/neutral_tonemap.py": "94af6286bf9642f4a90c040f750992a15285902c42841f7353f1769a6afaee7f",
+    "tools/unreal-engine/tests/test_patio_strings.py": "f3b861386ce55d99524ec6b9568b7e0fbee078b38e5b00a1d712a7b1e891324b",
+    "tools/unreal-engine/python/wall_ao_depth.py": "0b6e334dbd70052da45d42eb5b2192eaf96b62eebe5a08d8d939632051a99111"
+  },
+  "sourceBulbs": {
+    "colourSRGB": "#ffcf8a",
+    "colourLinear": [
+      1.0,
+      0.6239603916750761,
+      0.25415209433082675
+    ],
+    "fullOnLinear": [
+      1.46,
+      0.9109821718456111,
+      0.37106205772300704
+    ],
+    "formula": "linear(sourceColour) * (bulbIdle + bulbBoost * glow * supply)",
+    "bulbIdle": 0.06,
+    "bulbBoost": 1.4,
+    "materialType": "MeshBasicMaterial",
+    "toneMapped": false,
+    "export": "KHR_materials_unlit; unique patio_string_bulb key; no toneMapped:false metadata",
+    "native": "ApplyPatioBulbs writes BaseColorFactor on shared imported glTF-unlit MID, sourceamount unchanged. Untextured bulbs are excluded from import_world.unlit_labels/display-gain master."
+  },
+  "sourceFencePool": {
+    "count": 2,
+    "kind": "Actual THREE.PointLight; not ShadePools or added wall mesh",
+    "intensityEach": 1.4,
+    "rangeMetresEach": 4,
+    "colourSRGB": "#ffcf8a",
+    "powerFade": "source intensity * K * settled pool share * supply",
+    "washEntriesIncludePatio": false,
+    "reason": "lights.extra receives patio anchors after Lights constructor builds its lampwash entries. Actual fence StandardMaterial receives direct point light.",
+    "native": "two exported BP_LundenLamp pointlights, CANDELA_PER_WEB2.8 ->3.92candela each, exactcolour. Existing2384 LampColour now reapplied through ApplyK/Show after component reconstruction."
+  },
+  "hypotheses": {
+    "historicalFenceWhite": "May already be resolved by2384 durable LampColour; actual current readback/render not yet available. No duplicate overlay justified.",
+    "bulbTonemapMismatch": "Source bypasses Neutral, native does not. Existing label master only cancels exposurebias and still traverses Neutral; not an exact bypass. No safe small exact source fix established within bounded audit."
+  },
+  "nextActualEvidence": {
+    "camera": {
+      "eye": [
+        1,
+        1.62,
+        13.2
+      ],
+      "yaw": -126,
+      "pitch": -6,
+      "VFOV": 72,
+      "viewport": [
+        640,
+        360
+      ],
+      "date": [
+        2026,
+        6,
+        21
+      ],
+      "hour": 23.5,
+      "weather": "clear"
+    },
+    "requires": "Root current no-rebuild baseline/render and actual two PointLight plus sharedMID readback; actual test_patio_strings latent Automation, not import-only.",
+    "acceptance": "unchanged locked bulb-row/fence-pool Y .8\u20131.25 and R/B ratio .85\u20131.15"
+  },
+  "limits": [
+    "No source patch or fittedgain prepared",
+    "No Unreal/browser/export launched by sourceworker",
+    "No authored/Generated/runtime assets changed",
+    "Current source checkout clean; Root owns Native/LFS/publication"
+  ],
+  "smallPerMaterialBypassReview": {
+    "visibilityMaskRequired": "A post-tonemap overwrite needs actual bulb raster coverage/depth so it does not paint over occluding geometry.",
+    "existingCustomDepthConflict": "wall_ao_depth.py121\u2013124 rejects foreign CustomDepth users to preserve2372 source cloth/occlusion. No free existing mask proven.",
+    "analyticAlternativeRejected": "Ray-sphere would substitute analytic coverage for original SphereGeometry(.022,8,6); no equivalent coverage demonstrated.",
+    "conclusion": "No small exact existing per-material bypass established; no architecture/feature changes attempted."
+  }
+}

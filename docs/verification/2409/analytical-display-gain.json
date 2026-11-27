@@ -1,0 +1,103 @@
+{
+  "classification": "Analytical pure material RGB only; not actual raster/background pixel or screenshot acceptance",
+  "sourceColourLinear": [
+    1.0,
+    0.6239603916750761,
+    0.25415209433082675
+  ],
+  "derivedDisplayGain": 5.856342783782501,
+  "cases": [
+    {
+      "case": "night-full-on",
+      "nativePath": "current-no-gain",
+      "sourceLinear": [
+        1.46,
+        0.9109821718456111,
+        0.37106205772300704
+      ],
+      "webEncodedClamped": [
+        1,
+        0.9598032404174127,
+        0.6430042365406133
+      ],
+      "nativeEncodedClamped": [
+        0.4967420432307407,
+        0.3769598076256258,
+        0.17219382315558415
+      ],
+      "luminanceRatio": 0.14654813382772625,
+      "relativeRB": 1.8549285474462651,
+      "YPassed": false,
+      "RBPassed": false
+    },
+    {
+      "case": "night-full-on",
+      "nativePath": "existing-label-display-gain",
+      "sourceLinear": [
+        1.46,
+        0.9109821718456111,
+        0.37106205772300704
+      ],
+      "webEncodedClamped": [
+        1,
+        0.9598032404174127,
+        0.6430042365406133
+      ],
+      "nativeEncodedClamped": [
+        0.9713234565053691,
+        0.7969151407891945,
+        0.5533734812403281
+      ],
+      "luminanceRatio": 0.7255196618049545,
+      "relativeRB": 1.1286502132056055,
+      "YPassed": false,
+      "RBPassed": true
+    },
+    {
+      "case": "day-idle",
+      "nativePath": "current-no-gain",
+      "sourceLinear": [
+        0.06,
+        0.037437623500504565,
+        0.015249125659849604
+      ],
+      "webEncodedClamped": [
+        0.27170588655254974,
+        0.2134151868314325,
+        0.12962193467486038
+      ],
+      "nativeEncodedClamped": [
+        0.10948463891367277,
+        0.06822296547633167,
+        0.0012318617140721626
+      ],
+      "luminanceRatio": 0.16235832020654614,
+      "relativeRB": 42.40047133565647,
+      "YPassed": false,
+      "RBPassed": false
+    },
+    {
+      "case": "day-idle",
+      "nativePath": "existing-label-display-gain",
+      "sourceLinear": [
+        0.06,
+        0.037437623500504565,
+        0.015249125659849604
+      ],
+      "webEncodedClamped": [
+        0.27170588655254974,
+        0.2134151868314325,
+        0.12962193467486038
+      ],
+      "nativeEncodedClamped": [
+        0.29419876025408825,
+        0.2107534359266341,
+        0.04219991200151634
+      ],
+      "luminanceRatio": 1.0175348874398062,
+      "relativeRB": 3.3258966111162573,
+      "YPassed": true,
+      "RBPassed": false
+    }
+  ]
+}

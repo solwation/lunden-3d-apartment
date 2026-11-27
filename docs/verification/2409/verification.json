@@ -1,0 +1,22 @@
+{
+  "issue": 2409,
+  "scope": "Current diagnosis only; NO product fix, issue remains OPEN",
+  "sourceHead": "f4df951c7db0c5e6be6702744c469515b98f0160",
+  "nativeRun": "/mnt/d/LundenLinux/runs/20261127T214210175878-2248014",
+  "nativeExit": 0,
+  "runnerExit": 0,
+  "outerExit": 0,
+  "seconds": 234.59,
+  "all247ExactReadonly": true,
+  "generatedExact": true,
+  "exportExact": true,
+  "dependenciesExact": true,
+  "canonicalStepsExecutedHere": 0,
+  "AutomationExecutedHere": false,
+  "wholeNativeCaptureRunPassed": true,
+  "visualAcceptancePassed": false,
+  "oneCanonicalPixelBatch": true,
+  "references": "Fresh exact23:30 camera; current settled on/glow1/poolshare1. Old2396web crops are not the same settled reference; no before/after improvement claim. Existing2485 tracks unsettled old pointpool references.",
+  "windowsAcceptancePassed": false,
+  "publicTransfer": "Original-only Unreal diagnosis; not applicable"
+}

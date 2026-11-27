@@ -1,0 +1,73 @@
+{
+  "issue": 2409,
+  "lockedAt": "2026-11-27T21:36:03Z",
+  "criteriaSource": "issue body + exact existing2396 crop rectangle data",
+  "cropRectangles": {
+    "bulb-row": [
+      0.16,
+      0.415,
+      0.55,
+      0.435
+    ],
+    "fence-pool": [
+      0.36,
+      0.44,
+      0.48,
+      0.56
+    ],
+    "paving": [
+      0.45,
+      0.82,
+      0.65,
+      0.95
+    ]
+  },
+  "targetFields": [
+    "bulb-row",
+    "fence-pool"
+  ],
+  "Yratio": [
+    0.8,
+    1.25
+  ],
+  "sRGB_RB_ratio_relative": [
+    0.85,
+    1.15
+  ],
+  "paving": "report only; body has no formal paving threshold",
+  "noCurrentCandidateNativeViewed": true,
+  "noExposureOrFittedGain": true,
+  "fullPictureReview": true,
+  "referenceSelection": "Exact existing patio-parasol-dusk pose at21June23:30; source 718-file byte checks before reference reuse. Do not reuse22:00 canopy proof as23:30.",
+  "exactReference": {
+    "image": "/home/devcontainers/.local/state/lunden-codex-20261127/2409/web/web-patio-parasol-dusk.jpg",
+    "sha256": "0b797aea107fbeb4fa022044f0c3aaa633da9f05c6461630cca21374f79e6033",
+    "actualWebMetadata": "/home/devcontainers/.local/state/lunden-codex-20261127/2409/web/web-capture.json",
+    "metadataSHA256": "c7b98ac2bb6155166072ea64a31980c5a0372d49d8625e87acee3ec107517bd8",
+    "eye": [
+      1,
+      1.62,
+      13.2
+    ],
+    "yaw": -126,
+    "pitch": -6,
+    "date": [
+      2026,
+      6,
+      21
+    ],
+    "hour": 23.5,
+    "verticalFov": 72,
+    "viewport": [
+      640,
+      360
+    ],
+    "source718Exact": true,
+    "wholeWebOriginalViewed": true,
+    "actualStringsOn": true,
+    "actualStringsGlow": 1,
+    "actualSupply": 1,
+    "actualExposureGetter": 1,
+    "toneMapped": false
+  }
+}

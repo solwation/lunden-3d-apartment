@@ -1,0 +1,646 @@
+{
+ "crops": {
+  "stairs-evening": {
+   "frame": [
+    0,
+    0,
+    1,
+    1
+   ],
+   "shaft-wall": [
+    0.37,
+    0.22,
+    0.43,
+    0.46
+   ],
+   "riser": [
+    0.455,
+    0.875,
+    0.54,
+    0.92
+   ],
+   "tread": [
+    0.46,
+    0.84,
+    0.53,
+    0.853
+   ],
+   "hall-door": [
+    0.12,
+    0.07,
+    0.29,
+    0.24
+   ]
+  },
+  "living-room-day": {
+   "frame": [
+    0,
+    0,
+    1,
+    1
+   ],
+   "rug": [
+    0.385,
+    0.9,
+    0.45,
+    0.985
+   ],
+   "curtain": [
+    0.445,
+    0.24,
+    0.473,
+    0.666
+   ],
+   "coffee-table": [
+    0.177,
+    0.808,
+    0.211,
+    0.832
+   ],
+   "cabinet-front": [
+    0.765,
+    0.3,
+    0.809,
+    0.409
+   ],
+   "sofa": [
+    0.221,
+    0.72,
+    0.348,
+    0.744
+   ]
+  },
+  "living-room-evening": {
+   "frame": [
+    0,
+    0,
+    1,
+    1
+   ],
+   "rug": [
+    0.385,
+    0.9,
+    0.45,
+    0.985
+   ],
+   "curtain": [
+    0.445,
+    0.24,
+    0.473,
+    0.666
+   ],
+   "coffee-table": [
+    0.177,
+    0.808,
+    0.211,
+    0.832
+   ],
+   "cabinet-front": [
+    0.765,
+    0.3,
+    0.809,
+    0.409
+   ],
+   "sofa": [
+    0.221,
+    0.72,
+    0.348,
+    0.744
+   ],
+   "spot-1": [
+    0.6996185,
+    0.3153762,
+    0.7037851,
+    0.3277218
+   ],
+   "spot-2": [
+    0.7388803,
+    0.294855,
+    0.743047,
+    0.3072007
+   ],
+   "spot-3": [
+    0.7928169,
+    0.2666638,
+    0.7969836,
+    0.2790094
+   ]
+  },
+  "upper-floor-evening": {
+   "frame": [
+    0,
+    0,
+    1,
+    1
+   ],
+   "curtain": [
+    0.352,
+    0.283,
+    0.374,
+    0.583
+   ]
+  },
+  "patio-parasol-dusk": {
+   "bulb-row": [
+    0.16,
+    0.415,
+    0.55,
+    0.435
+   ],
+   "fence-pool": [
+    0.36,
+    0.44,
+    0.48,
+    0.56
+   ],
+   "paving": [
+    0.45,
+    0.82,
+    0.65,
+    0.95
+   ]
+  }
+ },
+ "stats": {
+  "stairs-evening": {
+   "web": {
+    "frame": {
+     "srgb": [
+      119.3,
+      106.8,
+      90.8
+     ],
+     "luminance": 0.1845,
+     "warmth": 1.314
+    },
+    "shaft-wall": {
+     "srgb": [
+      44.8,
+      45.9,
+      47.8
+     ],
+     "luminance": 0.0271,
+     "warmth": 0.936
+    },
+    "riser": {
+     "srgb": [
+      84.5,
+      77.4,
+      68.1
+     ],
+     "luminance": 0.0769,
+     "warmth": 1.24
+    },
+    "tread": {
+     "srgb": [
+      60.2,
+      43.5,
+      29.4
+     ],
+     "luminance": 0.0283,
+     "warmth": 2.049
+    },
+    "hall-door": {
+     "srgb": [
+      239.2,
+      215.7,
+      181.4
+     ],
+     "luminance": 0.7085,
+     "warmth": 1.318
+    }
+   },
+   "unreal": {
+    "frame": {
+     "srgb": [
+      112.5,
+      104.4,
+      92.1
+     ],
+     "luminance": 0.1617,
+     "warmth": 1.222
+    },
+    "shaft-wall": {
+     "srgb": [
+      69,
+      70.8,
+      70
+     ],
+     "luminance": 0.0619,
+     "warmth": 0.986
+    },
+    "riser": {
+     "srgb": [
+      85.6,
+      82.9,
+      77.5
+     ],
+     "luminance": 0.0867,
+     "warmth": 1.104
+    },
+    "tread": {
+     "srgb": [
+      69.9,
+      58.7,
+      48.5
+     ],
+     "luminance": 0.0463,
+     "warmth": 1.442
+    },
+    "hall-door": {
+     "srgb": [
+      223,
+      200.5,
+      165.4
+     ],
+     "luminance": 0.6099,
+     "warmth": 1.349
+    }
+   }
+  },
+  "living-room-day": {
+   "web": {
+    "frame": {
+     "srgb": [
+      185.7,
+      176.6,
+      159.4
+     ],
+     "luminance": 0.5075,
+     "warmth": 1.165
+    },
+    "rug": {
+     "srgb": [
+      146.4,
+      146.8,
+      128.7
+     ],
+     "luminance": 0.3477,
+     "warmth": 1.138
+    },
+    "curtain": {
+     "srgb": [
+      184.1,
+      181.3,
+      160.6
+     ],
+     "luminance": 0.5053,
+     "warmth": 1.146
+    },
+    "coffee-table": {
+     "srgb": [
+      147.7,
+      108.7,
+      61.1
+     ],
+     "luminance": 0.1749,
+     "warmth": 2.418
+    },
+    "cabinet-front": {
+     "srgb": [
+      106.6,
+      61.6,
+      19.6
+     ],
+     "luminance": 0.0655,
+     "warmth": 5.445
+    },
+    "sofa": {
+     "srgb": [
+      177.8,
+      186.1,
+      154.6
+     ],
+     "luminance": 0.474,
+     "warmth": 1.15
+    }
+   },
+   "unreal": {
+    "frame": {
+     "srgb": [
+      182.3,
+      174,
+      155.6
+     ],
+     "luminance": 0.4859,
+     "warmth": 1.172
+    },
+    "rug": {
+     "srgb": [
+      132.5,
+      135.8,
+      121.8
+     ],
+     "luminance": 0.2857,
+     "warmth": 1.088
+    },
+    "curtain": {
+     "srgb": [
+      179.2,
+      175.5,
+      151.2
+     ],
+     "luminance": 0.4405,
+     "warmth": 1.185
+    },
+    "coffee-table": {
+     "srgb": [
+      152.8,
+      111.4,
+      59.7
+     ],
+     "luminance": 0.1853,
+     "warmth": 2.559
+    },
+    "cabinet-front": {
+     "srgb": [
+      107.1,
+      61.5,
+      19
+     ],
+     "luminance": 0.0657,
+     "warmth": 5.637
+    },
+    "sofa": {
+     "srgb": [
+      183.1,
+      189,
+      149.9
+     ],
+     "luminance": 0.4914,
+     "warmth": 1.221
+    }
+   }
+  },
+  "living-room-evening": {
+   "web": {
+    "frame": {
+     "srgb": [
+      115.2,
+      99.6,
+      76.5
+     ],
+     "luminance": 0.1667,
+     "warmth": 1.505
+    },
+    "rug": {
+     "srgb": [
+      110,
+      93.2,
+      59.9
+     ],
+     "luminance": 0.134,
+     "warmth": 1.838
+    },
+    "curtain": {
+     "srgb": [
+      90.2,
+      78.5,
+      53.7
+     ],
+     "luminance": 0.0963,
+     "warmth": 1.68
+    },
+    "coffee-table": {
+     "srgb": [
+      109,
+      69.2,
+      20.4
+     ],
+     "luminance": 0.0761,
+     "warmth": 5.333
+    },
+    "cabinet-front": {
+     "srgb": [
+      149.3,
+      98.7,
+      42.5
+     ],
+     "luminance": 0.1583,
+     "warmth": 3.512
+    },
+    "sofa": {
+     "srgb": [
+      106.7,
+      98.6,
+      61.5
+     ],
+     "luminance": 0.1241,
+     "warmth": 1.735
+    },
+    "spot-1": {
+     "srgb": [
+      176.3,
+      124.8,
+      68.3
+     ],
+     "luminance": 0.2432,
+     "warmth": 2.58
+    },
+    "spot-2": {
+     "srgb": [
+      183.5,
+      124.7,
+      65.3
+     ],
+     "luminance": 0.2551,
+     "warmth": 2.809
+    },
+    "spot-3": {
+     "srgb": [
+      167.5,
+      118.3,
+      64.5
+     ],
+     "luminance": 0.2166,
+     "warmth": 2.597
+    }
+   },
+   "unreal": {
+    "frame": {
+     "srgb": [
+      111.3,
+      97.2,
+      74.5
+     ],
+     "luminance": 0.1567,
+     "warmth": 1.494
+    },
+    "rug": {
+     "srgb": [
+      101.2,
+      90.9,
+      63.3
+     ],
+     "luminance": 0.1245,
+     "warmth": 1.599
+    },
+    "curtain": {
+     "srgb": [
+      90.4,
+      77.9,
+      48.8
+     ],
+     "luminance": 0.082,
+     "warmth": 1.854
+    },
+    "coffee-table": {
+     "srgb": [
+      100.4,
+      62.4,
+      12.5
+     ],
+     "luminance": 0.0625,
+     "warmth": 8.049
+    },
+    "cabinet-front": {
+     "srgb": [
+      144.1,
+      86.9,
+      35
+     ],
+     "luminance": 0.1314,
+     "warmth": 4.124
+    },
+    "sofa": {
+     "srgb": [
+      104.5,
+      100.1,
+      63.8
+     ],
+     "luminance": 0.1266,
+     "warmth": 1.637
+    },
+    "spot-1": {
+     "srgb": [
+      176.7,
+      122.9,
+      78.3
+     ],
+     "luminance": 0.2402,
+     "warmth": 2.255
+    },
+    "spot-2": {
+     "srgb": [
+      189.2,
+      128.2,
+      81.3
+     ],
+     "luminance": 0.2705,
+     "warmth": 2.326
+    },
+    "spot-3": {
+     "srgb": [
+      179,
+      124.8,
+      80.3
+     ],
+     "luminance": 0.2477,
+     "warmth": 2.228
+    }
+   }
+  },
+  "upper-floor-evening": {
+   "web": {
+    "frame": {
+     "srgb": [
+      110,
+      97.7,
+      82.6
+     ],
+     "luminance": 0.171,
+     "warmth": 1.332
+    },
+    "curtain": {
+     "srgb": [
+      40.5,
+      22.9,
+      27.5
+     ],
+     "luminance": 0.0151,
+     "warmth": 1.471
+    }
+   },
+   "unreal": {
+    "frame": {
+     "srgb": [
+      107.1,
+      96.3,
+      82.2
+     ],
+     "luminance": 0.1499,
+     "warmth": 1.302
+    },
+    "curtain": {
+     "srgb": [
+      42.4,
+      23.2,
+      26.5
+     ],
+     "luminance": 0.0132,
+     "warmth": 1.597
+    }
+   }
+  },
+  "patio-parasol-dusk": {
+   "web": {
+    "bulb-row": {
+     "srgb": [
+      94.6,
+      74.7,
+      28.2
+     ],
+     "luminance": 0.1364,
+     "warmth": 3.352
+    },
+    "fence-pool": {
+     "srgb": [
+      102.4,
+      74.9,
+      16.5
+     ],
+     "luminance": 0.0989,
+     "warmth": 6.193
+    },
+    "paving": {
+     "srgb": [
+      101.6,
+      77,
+      43.3
+     ],
+     "luminance": 0.0873,
+     "warmth": 2.349
+    }
+   },
+   "unreal": {
+    "bulb-row": {
+     "srgb": [
+      61.8,
+      45.3,
+      9
+     ],
+     "luminance": 0.043,
+     "warmth": 6.903
+    },
+    "fence-pool": {
+     "srgb": [
+      71.8,
+      51.8,
+      7.1
+     ],
+     "luminance": 0.0474,
+     "warmth": 10.041
+    },
+    "paving": {
+     "srgb": [
+      69.9,
+      51.6,
+      23.7
+     ],
+     "luminance": 0.041,
+     "warmth": 2.952
+    }
+   }
+  }
+ }
+}

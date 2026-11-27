@@ -1,0 +1,11 @@
+{
+  "completed": true,
+  "sourceHead": "f4df951c7db0c5e6be6702744c469515b98f0160",
+  "classification": "Capture-only baseline; no build/import/canonical/PBR/Automation or asset saves here",
+  "canonicalStepsExecutedHere": 0,
+  "capturedImages": 5,
+  "all247ExactReadonly": true,
+  "generatedExactAfterBuild": true,
+  "sourceExportExact": true,
+  "noLateWorldReload": true
+}
