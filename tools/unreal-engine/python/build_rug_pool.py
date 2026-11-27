@@ -112,23 +112,22 @@ def add_emission(mat, spec):
     faded = MEL.create_material_expression(mat, u.MaterialExpressionMultiply, -100, 200)
     contribution = MEL.create_material_expression(mat, u.MaterialExpressionMultiply, 150, 0)
     emission = MEL.create_material_expression(mat, u.MaterialExpressionAdd, 400, 0)
-    if not all((MEL.connect_material_expressions(position, "XYZ", uv, "WorldCm"),
-                MEL.connect_material_expressions(uv, "", sample, "UVs"),
-                MEL.connect_material_expressions(uv, "", coverage, "UV"),
-                MEL.connect_material_expressions(normal, "", up, "Input"),
-                MEL.connect_material_expressions(up, "", top, "A"),
-                MEL.connect_material_expressions(top, "", face, "Input"),
-                MEL.connect_material_expressions(face, "", weight, "A"),
-                MEL.connect_material_expressions(coverage, "", weight, "B"),
-                MEL.connect_material_expressions(sample, "RGB", product, "A"),
-                MEL.connect_material_expressions(colour, "", product, "B"),
-                MEL.connect_material_expressions(product, "", faded, "A"),
-                MEL.connect_material_expressions(fade, "", faded, "B"),
-                MEL.connect_material_expressions(faded, "", contribution, "A"),
-                MEL.connect_material_expressions(weight, "", contribution, "B"),
-                MEL.connect_material_expressions(contribution, "", emission, "B"),
-                MEL.connect_material_property(emission, "", u.MaterialProperty.MP_EMISSIVE_COLOR))):
-        raise RuntimeError("Could not wire the source rug floor pool")
+    connections = ((position, "XYZ", uv, "WorldCm"), (uv, "", sample, "UVs"),
+                   (uv, "", coverage, "UV"), (normal, "", up, ""), (up, "", top, "A"),
+                   (top, "", face, ""), (face, "", weight, "A"), (coverage, "", weight, "B"),
+                   (sample, "RGB", product, "A"), (colour, "", product, "B"),
+                   (product, "", faded, "A"), (fade, "", faded, "B"),
+                   (faded, "", contribution, "A"), (weight, "", contribution, "B"),
+                   (contribution, "", emission, "B"))
+    for source, output_name, target, input_name in connections:
+        # Empty selects the first input on the single-input expressions, whose
+        # displayed pin can be unnamed. Preserve precise native errors otherwise.
+        if not MEL.connect_material_expressions(source, output_name, target, input_name):
+            raise RuntimeError(f"Could not wire {source.get_class().get_name()}:{output_name} to "
+                               f"{target.get_class().get_name()}:{input_name}; available inputs "
+                               f"{list(MEL.get_material_expression_input_names(target))}")
+    if not MEL.connect_material_property(emission, "", u.MaterialProperty.MP_EMISSIVE_COLOR):
+        raise RuntimeError("Could not connect the copied rug's emission")
     if previous and not MEL.connect_material_expressions(previous, output, emission, "A"):
         raise RuntimeError("Could not retain the rug's original emission")
     MEL.recompile_material(mat)
