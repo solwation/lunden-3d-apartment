@@ -1,0 +1,3986 @@
+{
+ "engine": "5.8.4-58902052+++UE5+Release-5.8",
+ "map": "/Game/Lunden/Maps/L_Lunden",
+ "doors": {
+  "door_l0_x80_z0": {
+   "opened": {
+    "hingeCm": [
+     80.47,
+     0.0,
+     0.0
+    ],
+    "yaw": -90.0,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     80.47,
+     0.0,
+     0.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_l0_x95_z1270": {
+   "opened": {
+    "hingeCm": [
+     95.47,
+     1269.86,
+     0.0
+    ],
+    "yaw": 90.0,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     95.47,
+     1269.86,
+     0.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_l0_x85_z305": {
+   "opened": {
+    "hingeCm": [
+     85.47,
+     304.97,
+     0.0
+    ],
+    "yaw": -90.0,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     85.47,
+     304.97,
+     0.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_l0_x215_z525": {
+   "opened": {
+    "hingeCm": [
+     215.16,
+     524.74,
+     0.0
+    ],
+    "yaw": 0.0,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     215.16,
+     524.74,
+     0.0
+    ],
+    "yaw": 90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_l0_x335_z570": {
+   "opened": {
+    "hingeCm": [
+     335.14,
+     570.24,
+     0.0
+    ],
+    "yaw": 180.0,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     335.14,
+     570.24,
+     0.0
+    ],
+    "yaw": 90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_l0_x143_z496": {
+   "opened": {
+    "hingeCm": [
+     66.18,
+     495.7,
+     105.0
+    ],
+    "yaw": 0.0,
+    "open": true,
+    "changes": 1,
+    "boxCm": [
+     66.18,
+     495.7,
+     105.0
+    ]
+   },
+   "closed": {
+    "hingeCm": [
+     142.67,
+     495.7,
+     105.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2,
+    "boxCm": [
+     142.67,
+     495.7,
+     105.0
+    ]
+   }
+  },
+  "door_l1_x255_z501": {
+   "opened": {
+    "hingeCm": [
+     255.37,
+     501.45,
+     325.0
+    ],
+    "yaw": -90.0,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     255.37,
+     501.45,
+     325.0
+    ],
+    "yaw": 180.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_l1_x275_z501": {
+   "opened": {
+    "hingeCm": [
+     275.47,
+     501.45,
+     325.0
+    ],
+    "yaw": -90.0,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     275.47,
+     501.45,
+     325.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_l1_x154_z705": {
+   "opened": {
+    "hingeCm": [
+     154.18,
+     705.13,
+     325.0
+    ],
+    "yaw": 0.0,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     154.18,
+     705.13,
+     325.0
+    ],
+    "yaw": -90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_l1_x275_z780": {
+   "opened": {
+    "hingeCm": [
+     275.47,
+     780.42,
+     325.0
+    ],
+    "yaw": 90.0,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     275.47,
+     780.42,
+     325.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_l1_x263_z780": {
+   "opened": {
+    "hingeCm": [
+     262.87,
+     780.42,
+     325.0
+    ],
+    "yaw": 90.0,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     262.87,
+     780.42,
+     325.0
+    ],
+    "yaw": 180.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_l1_x432_z413": {
+   "opened": {
+    "hingeCm": [
+     510.89,
+     413.46,
+     430.0
+    ],
+    "yaw": 0.0,
+    "open": true,
+    "changes": 1,
+    "boxCm": [
+     510.9,
+     413.46,
+     430.0
+    ]
+   },
+   "closed": {
+    "hingeCm": [
+     431.9,
+     413.46,
+     430.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2,
+    "boxCm": [
+     431.91,
+     413.46,
+     430.0
+    ]
+   }
+  },
+  "door_l0_xm1355_z1055": {
+   "opened": {
+    "hingeCm": [
+     -1355.0,
+     1055.0,
+     0.0
+    ],
+    "yaw": 180.0,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -1355.0,
+     1055.0,
+     0.0
+    ],
+    "yaw": -90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husl_l0_xm1612_z948": {
+   "opened": {
+    "hingeCm": [
+     -1612.0,
+     948.0,
+     0.0
+    ],
+    "yaw": -4.06,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -1612.0,
+     948.0,
+     0.0
+    ],
+    "yaw": -90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husl_l1_xm1707_z158": {
+   "opened": {
+    "hingeCm": [
+     -1707.0,
+     158.0,
+     640.0
+    ],
+    "yaw": -94.06,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -1707.0,
+     158.0,
+     640.0
+    ],
+    "yaw": 180.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husa_l0_x222_z3090": {
+   "opened": {
+    "hingeCm": [
+     222.0,
+     3090.0,
+     0.0
+    ],
+    "yaw": -94.06,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     222.0,
+     3090.0,
+     0.0
+    ],
+    "yaw": 180.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husa_l0_xm105_z3735_y0": {
+   "opened": {
+    "hingeCm": [
+     -105.0,
+     3735.0,
+     0.0
+    ],
+    "yaw": 4.06,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -105.0,
+     3735.0,
+     0.0
+    ],
+    "yaw": 90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husa_l0_xm105_z3735_y300": {
+   "opened": {
+    "hingeCm": [
+     -105.0,
+     3735.0,
+     300.0
+    ],
+    "yaw": 4.06,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -105.0,
+     3735.0,
+     300.0
+    ],
+    "yaw": 90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husa_l1_xm105_z3735_y600": {
+   "opened": {
+    "hingeCm": [
+     -105.0,
+     3735.0,
+     600.0
+    ],
+    "yaw": 4.06,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -105.0,
+     3735.0,
+     600.0
+    ],
+    "yaw": 90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husa_l1_xm105_z3735_y900": {
+   "opened": {
+    "hingeCm": [
+     -105.0,
+     3735.0,
+     900.0
+    ],
+    "yaw": 4.06,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -105.0,
+     3735.0,
+     900.0
+    ],
+    "yaw": 90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husa_l0_xm105_z4110_y0": {
+   "opened": {
+    "hingeCm": [
+     -105.0,
+     4110.0,
+     0.0
+    ],
+    "yaw": -4.06,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -105.0,
+     4110.0,
+     0.0
+    ],
+    "yaw": -90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husa_l0_xm105_z4110_y300": {
+   "opened": {
+    "hingeCm": [
+     -105.0,
+     4110.0,
+     300.0
+    ],
+    "yaw": -4.06,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -105.0,
+     4110.0,
+     300.0
+    ],
+    "yaw": -90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husa_l1_xm105_z4110_y600": {
+   "opened": {
+    "hingeCm": [
+     -105.0,
+     4110.0,
+     600.0
+    ],
+    "yaw": -4.06,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -105.0,
+     4110.0,
+     600.0
+    ],
+    "yaw": -90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husa_l1_xm105_z4110_y900": {
+   "opened": {
+    "hingeCm": [
+     -105.0,
+     4110.0,
+     900.0
+    ],
+    "yaw": -4.06,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -105.0,
+     4110.0,
+     900.0
+    ],
+    "yaw": -90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husa_l0_x80_z3820_y300": {
+   "opened": {
+    "hingeCm": [
+     80.0,
+     3820.0,
+     300.0
+    ],
+    "yaw": -175.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     80.0,
+     3820.0,
+     300.0
+    ],
+    "yaw": -90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husa_l1_x80_z3820_y600": {
+   "opened": {
+    "hingeCm": [
+     80.0,
+     3820.0,
+     600.0
+    ],
+    "yaw": -175.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     80.0,
+     3820.0,
+     600.0
+    ],
+    "yaw": -90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husa_l1_x80_z3820_y900": {
+   "opened": {
+    "hingeCm": [
+     80.0,
+     3820.0,
+     900.0
+    ],
+    "yaw": -175.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     80.0,
+     3820.0,
+     900.0
+    ],
+    "yaw": -90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husa_l0_x80_z4110_y0": {
+   "opened": {
+    "hingeCm": [
+     80.0,
+     4110.0,
+     0.0
+    ],
+    "yaw": -175.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     80.0,
+     4110.0,
+     0.0
+    ],
+    "yaw": -90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husa_l0_x80_z4110_y300": {
+   "opened": {
+    "hingeCm": [
+     80.0,
+     4110.0,
+     300.0
+    ],
+    "yaw": -175.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     80.0,
+     4110.0,
+     300.0
+    ],
+    "yaw": -90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husa_l1_x80_z4110_y600": {
+   "opened": {
+    "hingeCm": [
+     80.0,
+     4110.0,
+     600.0
+    ],
+    "yaw": -175.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     80.0,
+     4110.0,
+     600.0
+    ],
+    "yaw": -90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husa_l1_x80_z4110_y900": {
+   "opened": {
+    "hingeCm": [
+     80.0,
+     4110.0,
+     900.0
+    ],
+    "yaw": -175.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     80.0,
+     4110.0,
+     900.0
+    ],
+    "yaw": -90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husa_l0_xm90_z4145_y0": {
+   "opened": {
+    "hingeCm": [
+     -90.0,
+     4145.0,
+     0.0
+    ],
+    "yaw": 85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -90.0,
+     4145.0,
+     0.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husa_l0_xm90_z4145_y300": {
+   "opened": {
+    "hingeCm": [
+     -90.0,
+     4145.0,
+     300.0
+    ],
+    "yaw": 85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -90.0,
+     4145.0,
+     300.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husa_l1_xm90_z4145_y600": {
+   "opened": {
+    "hingeCm": [
+     -90.0,
+     4145.0,
+     600.0
+    ],
+    "yaw": 85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -90.0,
+     4145.0,
+     600.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husa_l1_xm90_z4145_y900": {
+   "opened": {
+    "hingeCm": [
+     -90.0,
+     4145.0,
+     900.0
+    ],
+    "yaw": 85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -90.0,
+     4145.0,
+     900.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husb_l0_xm3450_z3540": {
+   "opened": {
+    "hingeCm": [
+     -3450.0,
+     3540.0,
+     0.0
+    ],
+    "yaw": -85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -3450.0,
+     3540.0,
+     0.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husb_l0_xm3308_z4215_y300": {
+   "opened": {
+    "hingeCm": [
+     -3308.0,
+     4215.0,
+     300.0
+    ],
+    "yaw": 4.06,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -3308.0,
+     4215.0,
+     300.0
+    ],
+    "yaw": 90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husb_l1_xm3308_z4215_y600": {
+   "opened": {
+    "hingeCm": [
+     -3308.0,
+     4215.0,
+     600.0
+    ],
+    "yaw": 4.06,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -3308.0,
+     4215.0,
+     600.0
+    ],
+    "yaw": 90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husb_l0_xm3308_z4565_y0": {
+   "opened": {
+    "hingeCm": [
+     -3308.0,
+     4565.0,
+     0.0
+    ],
+    "yaw": -4.06,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -3308.0,
+     4565.0,
+     0.0
+    ],
+    "yaw": -90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husb_l0_xm3308_z4565_y300": {
+   "opened": {
+    "hingeCm": [
+     -3308.0,
+     4565.0,
+     300.0
+    ],
+    "yaw": -4.06,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -3308.0,
+     4565.0,
+     300.0
+    ],
+    "yaw": -90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husb_l1_xm3308_z4565_y600": {
+   "opened": {
+    "hingeCm": [
+     -3308.0,
+     4565.0,
+     600.0
+    ],
+    "yaw": -4.06,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -3308.0,
+     4565.0,
+     600.0
+    ],
+    "yaw": -90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husb_l0_xm3116_z4215_y0": {
+   "opened": {
+    "hingeCm": [
+     -3116.0,
+     4215.0,
+     0.0
+    ],
+    "yaw": 175.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -3116.0,
+     4215.0,
+     0.0
+    ],
+    "yaw": 90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husb_l0_xm3116_z4215_y300": {
+   "opened": {
+    "hingeCm": [
+     -3116.0,
+     4215.0,
+     300.0
+    ],
+    "yaw": 175.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -3116.0,
+     4215.0,
+     300.0
+    ],
+    "yaw": 90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husb_l1_xm3116_z4215_y600": {
+   "opened": {
+    "hingeCm": [
+     -3116.0,
+     4215.0,
+     600.0
+    ],
+    "yaw": 175.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -3116.0,
+     4215.0,
+     600.0
+    ],
+    "yaw": 90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husb_l0_xm3116_z4565_y0": {
+   "opened": {
+    "hingeCm": [
+     -3116.0,
+     4565.0,
+     0.0
+    ],
+    "yaw": -175.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -3116.0,
+     4565.0,
+     0.0
+    ],
+    "yaw": -90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husb_l0_xm3116_z4565_y300": {
+   "opened": {
+    "hingeCm": [
+     -3116.0,
+     4565.0,
+     300.0
+    ],
+    "yaw": -175.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -3116.0,
+     4565.0,
+     300.0
+    ],
+    "yaw": -90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husb_l1_xm3116_z4565_y600": {
+   "opened": {
+    "hingeCm": [
+     -3116.0,
+     4565.0,
+     600.0
+    ],
+    "yaw": -175.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -3116.0,
+     4565.0,
+     600.0
+    ],
+    "yaw": -90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husb_l0_xm3478_z4335_y0": {
+   "opened": {
+    "hingeCm": [
+     -3478.0,
+     4335.0,
+     0.0
+    ],
+    "yaw": -4.06,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -3478.0,
+     4335.0,
+     0.0
+    ],
+    "yaw": -90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husc_l0_xm5340_z2405": {
+   "opened": {
+    "hingeCm": [
+     -5340.0,
+     2405.0,
+     0.0
+    ],
+    "yaw": -4.06,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -5340.0,
+     2405.0,
+     0.0
+    ],
+    "yaw": -90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husc_l0_xm6234_z2020_y0": {
+   "opened": {
+    "hingeCm": [
+     -6234.0,
+     2020.0,
+     0.0
+    ],
+    "yaw": 4.06,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -6234.0,
+     2020.0,
+     0.0
+    ],
+    "yaw": 90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husc_l0_xm6234_z2020_y300": {
+   "opened": {
+    "hingeCm": [
+     -6234.0,
+     2020.0,
+     300.0
+    ],
+    "yaw": 4.06,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -6234.0,
+     2020.0,
+     300.0
+    ],
+    "yaw": 90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husc_l1_xm6234_z2020_y600": {
+   "opened": {
+    "hingeCm": [
+     -6234.0,
+     2020.0,
+     600.0
+    ],
+    "yaw": 4.06,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -6234.0,
+     2020.0,
+     600.0
+    ],
+    "yaw": 90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husc_l1_xm6234_z2020_y900": {
+   "opened": {
+    "hingeCm": [
+     -6234.0,
+     2020.0,
+     900.0
+    ],
+    "yaw": 4.06,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -6234.0,
+     2020.0,
+     900.0
+    ],
+    "yaw": 90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husc_l1_xm6234_z2020_y1200": {
+   "opened": {
+    "hingeCm": [
+     -6234.0,
+     2020.0,
+     1200.0
+    ],
+    "yaw": 4.06,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -6234.0,
+     2020.0,
+     1200.0
+    ],
+    "yaw": 90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husc_l0_xm6234_z2640_y0": {
+   "opened": {
+    "hingeCm": [
+     -6234.0,
+     2640.0,
+     0.0
+    ],
+    "yaw": -4.06,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -6234.0,
+     2640.0,
+     0.0
+    ],
+    "yaw": -90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husc_l0_xm6234_z2640_y300": {
+   "opened": {
+    "hingeCm": [
+     -6234.0,
+     2640.0,
+     300.0
+    ],
+    "yaw": -4.06,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -6234.0,
+     2640.0,
+     300.0
+    ],
+    "yaw": -90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husc_l1_xm6234_z2640_y600": {
+   "opened": {
+    "hingeCm": [
+     -6234.0,
+     2640.0,
+     600.0
+    ],
+    "yaw": -4.06,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -6234.0,
+     2640.0,
+     600.0
+    ],
+    "yaw": -90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husc_l1_xm6234_z2640_y900": {
+   "opened": {
+    "hingeCm": [
+     -6234.0,
+     2640.0,
+     900.0
+    ],
+    "yaw": -4.06,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -6234.0,
+     2640.0,
+     900.0
+    ],
+    "yaw": -90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husc_l1_xm6234_z2640_y1200": {
+   "opened": {
+    "hingeCm": [
+     -6234.0,
+     2640.0,
+     1200.0
+    ],
+    "yaw": -4.06,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -6234.0,
+     2640.0,
+     1200.0
+    ],
+    "yaw": -90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husc_l0_xm6044_z2020_y0": {
+   "opened": {
+    "hingeCm": [
+     -6044.0,
+     2020.0,
+     0.0
+    ],
+    "yaw": 175.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -6044.0,
+     2020.0,
+     0.0
+    ],
+    "yaw": 90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husc_l0_xm6044_z2290_y300": {
+   "opened": {
+    "hingeCm": [
+     -6044.0,
+     2290.0,
+     300.0
+    ],
+    "yaw": -175.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -6044.0,
+     2290.0,
+     300.0
+    ],
+    "yaw": -90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husc_l1_xm6044_z2290_y600": {
+   "opened": {
+    "hingeCm": [
+     -6044.0,
+     2290.0,
+     600.0
+    ],
+    "yaw": -175.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -6044.0,
+     2290.0,
+     600.0
+    ],
+    "yaw": -90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husc_l1_xm6044_z2290_y900": {
+   "opened": {
+    "hingeCm": [
+     -6044.0,
+     2290.0,
+     900.0
+    ],
+    "yaw": -175.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -6044.0,
+     2290.0,
+     900.0
+    ],
+    "yaw": -90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husc_l1_xm6044_z2290_y1200": {
+   "opened": {
+    "hingeCm": [
+     -6044.0,
+     2290.0,
+     1200.0
+    ],
+    "yaw": -175.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -6044.0,
+     2290.0,
+     1200.0
+    ],
+    "yaw": -90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husc_l0_xm6044_z2640_y0": {
+   "opened": {
+    "hingeCm": [
+     -6044.0,
+     2640.0,
+     0.0
+    ],
+    "yaw": -175.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -6044.0,
+     2640.0,
+     0.0
+    ],
+    "yaw": -90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husc_l0_xm6044_z2640_y300": {
+   "opened": {
+    "hingeCm": [
+     -6044.0,
+     2640.0,
+     300.0
+    ],
+    "yaw": -175.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -6044.0,
+     2640.0,
+     300.0
+    ],
+    "yaw": -90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husc_l1_xm6044_z2640_y600": {
+   "opened": {
+    "hingeCm": [
+     -6044.0,
+     2640.0,
+     600.0
+    ],
+    "yaw": -175.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -6044.0,
+     2640.0,
+     600.0
+    ],
+    "yaw": -90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husc_l1_xm6044_z2640_y900": {
+   "opened": {
+    "hingeCm": [
+     -6044.0,
+     2640.0,
+     900.0
+    ],
+    "yaw": -175.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -6044.0,
+     2640.0,
+     900.0
+    ],
+    "yaw": -90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husc_l1_xm6044_z2640_y1200": {
+   "opened": {
+    "hingeCm": [
+     -6044.0,
+     2640.0,
+     1200.0
+    ],
+    "yaw": -175.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -6044.0,
+     2640.0,
+     1200.0
+    ],
+    "yaw": -90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husc_l0_xm6162_z2012_y0": {
+   "opened": {
+    "hingeCm": [
+     -6162.0,
+     2012.0,
+     0.0
+    ],
+    "yaw": -85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -6162.0,
+     2012.0,
+     0.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husc_l0_xm6162_z2012_y300": {
+   "opened": {
+    "hingeCm": [
+     -6162.0,
+     2012.0,
+     300.0
+    ],
+    "yaw": -85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -6162.0,
+     2012.0,
+     300.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husc_l1_xm6162_z2012_y600": {
+   "opened": {
+    "hingeCm": [
+     -6162.0,
+     2012.0,
+     600.0
+    ],
+    "yaw": -85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -6162.0,
+     2012.0,
+     600.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husc_l1_xm6162_z2012_y900": {
+   "opened": {
+    "hingeCm": [
+     -6162.0,
+     2012.0,
+     900.0
+    ],
+    "yaw": -85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -6162.0,
+     2012.0,
+     900.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_husc_l1_xm6162_z2012_y1200": {
+   "opened": {
+    "hingeCm": [
+     -6162.0,
+     2012.0,
+     1200.0
+    ],
+    "yaw": -85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -6162.0,
+     2012.0,
+     1200.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_cage_xm1063_z320": {
+   "opened": {
+    "hingeCm": [
+     -1063.0,
+     320.0,
+     -295.0
+    ],
+    "yaw": 85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -1063.0,
+     320.0,
+     -295.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_cage_xm800_z320": {
+   "opened": {
+    "hingeCm": [
+     -800.5,
+     320.0,
+     -295.0
+    ],
+    "yaw": 85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -800.5,
+     320.0,
+     -295.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_cage_xm1063_z480": {
+   "opened": {
+    "hingeCm": [
+     -1063.0,
+     480.0,
+     -295.0
+    ],
+    "yaw": -85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -1063.0,
+     480.0,
+     -295.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_cage_xm800_z480": {
+   "opened": {
+    "hingeCm": [
+     -800.5,
+     480.0,
+     -295.0
+    ],
+    "yaw": -85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -800.5,
+     480.0,
+     -295.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_cage_xm508_z320": {
+   "opened": {
+    "hingeCm": [
+     -508.0,
+     320.0,
+     -295.0
+    ],
+    "yaw": 85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -508.0,
+     320.0,
+     -295.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_cage_xm246_z320": {
+   "opened": {
+    "hingeCm": [
+     -245.5,
+     320.0,
+     -295.0
+    ],
+    "yaw": 85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -245.5,
+     320.0,
+     -295.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_cage_xm508_z480": {
+   "opened": {
+    "hingeCm": [
+     -508.0,
+     480.0,
+     -295.0
+    ],
+    "yaw": -85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -508.0,
+     480.0,
+     -295.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_cage_x47_z320": {
+   "opened": {
+    "hingeCm": [
+     47.0,
+     320.0,
+     -295.0
+    ],
+    "yaw": 85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     47.0,
+     320.0,
+     -295.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_cage_x310_z320": {
+   "opened": {
+    "hingeCm": [
+     309.5,
+     320.0,
+     -295.0
+    ],
+    "yaw": 85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     309.5,
+     320.0,
+     -295.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_cage_x47_z480": {
+   "opened": {
+    "hingeCm": [
+     47.0,
+     480.0,
+     -295.0
+    ],
+    "yaw": -85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     47.0,
+     480.0,
+     -295.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_cage_x310_z480": {
+   "opened": {
+    "hingeCm": [
+     309.5,
+     480.0,
+     -295.0
+    ],
+    "yaw": -85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     309.5,
+     480.0,
+     -295.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_cage_x602_z320": {
+   "opened": {
+    "hingeCm": [
+     602.0,
+     320.0,
+     -295.0
+    ],
+    "yaw": 85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     602.0,
+     320.0,
+     -295.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_cage_x865_z320": {
+   "opened": {
+    "hingeCm": [
+     864.5,
+     320.0,
+     -295.0
+    ],
+    "yaw": 85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     864.5,
+     320.0,
+     -295.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_cage_x602_z480": {
+   "opened": {
+    "hingeCm": [
+     602.0,
+     480.0,
+     -295.0
+    ],
+    "yaw": -85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     602.0,
+     480.0,
+     -295.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_cage_x865_z480": {
+   "opened": {
+    "hingeCm": [
+     864.5,
+     480.0,
+     -295.0
+    ],
+    "yaw": -85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     864.5,
+     480.0,
+     -295.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_cage_xm6945_z1950": {
+   "opened": {
+    "hingeCm": [
+     -6945.0,
+     1950.0,
+     -295.0
+    ],
+    "yaw": 85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -6945.0,
+     1950.0,
+     -295.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_cage_xm6720_z1950": {
+   "opened": {
+    "hingeCm": [
+     -6720.0,
+     1950.0,
+     -295.0
+    ],
+    "yaw": 85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -6720.0,
+     1950.0,
+     -295.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_cage_xm5975_z1520": {
+   "opened": {
+    "hingeCm": [
+     -5975.0,
+     1520.0,
+     -295.0
+    ],
+    "yaw": 85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -5975.0,
+     1520.0,
+     -295.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_cage_xm5722_z1520": {
+   "opened": {
+    "hingeCm": [
+     -5721.67,
+     1520.0,
+     -295.0
+    ],
+    "yaw": 85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -5721.67,
+     1520.0,
+     -295.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_cage_xm5468_z1520": {
+   "opened": {
+    "hingeCm": [
+     -5468.33,
+     1520.0,
+     -295.0
+    ],
+    "yaw": 85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -5468.33,
+     1520.0,
+     -295.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_cage_xm5805_z1910": {
+   "opened": {
+    "hingeCm": [
+     -5805.0,
+     1910.0,
+     -295.0
+    ],
+    "yaw": -85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -5805.0,
+     1910.0,
+     -295.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_cage_xm5510_z1910": {
+   "opened": {
+    "hingeCm": [
+     -5510.0,
+     1910.0,
+     -295.0
+    ],
+    "yaw": -85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -5510.0,
+     1910.0,
+     -295.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_cage_xm5975_z2740": {
+   "opened": {
+    "hingeCm": [
+     -5975.0,
+     2740.0,
+     -295.0
+    ],
+    "yaw": 85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -5975.0,
+     2740.0,
+     -295.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_cage_xm5750_z2740": {
+   "opened": {
+    "hingeCm": [
+     -5750.0,
+     2740.0,
+     -295.0
+    ],
+    "yaw": 85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -5750.0,
+     2740.0,
+     -295.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_cage_xm4065_z3610": {
+   "opened": {
+    "hingeCm": [
+     -4065.0,
+     3610.0,
+     -295.0
+    ],
+    "yaw": 85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -4065.0,
+     3610.0,
+     -295.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_cage_xm3825_z3610": {
+   "opened": {
+    "hingeCm": [
+     -3825.0,
+     3610.0,
+     -295.0
+    ],
+    "yaw": 85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -3825.0,
+     3610.0,
+     -295.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_cage_xm3145_z3570": {
+   "opened": {
+    "hingeCm": [
+     -3145.0,
+     3570.0,
+     -295.0
+    ],
+    "yaw": 85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -3145.0,
+     3570.0,
+     -295.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_cage_xm2895_z3570": {
+   "opened": {
+    "hingeCm": [
+     -2895.0,
+     3570.0,
+     -295.0
+    ],
+    "yaw": 85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -2895.0,
+     3570.0,
+     -295.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_cage_xm4065_z4570": {
+   "opened": {
+    "hingeCm": [
+     -4065.0,
+     4570.0,
+     -295.0
+    ],
+    "yaw": 85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -4065.0,
+     4570.0,
+     -295.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_cage_xm3895_z4570": {
+   "opened": {
+    "hingeCm": [
+     -3895.0,
+     4570.0,
+     -295.0
+    ],
+    "yaw": 85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -3895.0,
+     4570.0,
+     -295.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_cage_xm865_z3140": {
+   "opened": {
+    "hingeCm": [
+     -865.0,
+     3140.0,
+     -295.0
+    ],
+    "yaw": 85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -865.0,
+     3140.0,
+     -295.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_cage_xm590_z3140": {
+   "opened": {
+    "hingeCm": [
+     -590.0,
+     3140.0,
+     -295.0
+    ],
+    "yaw": 85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -590.0,
+     3140.0,
+     -295.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_cage_xm315_z3140": {
+   "opened": {
+    "hingeCm": [
+     -315.0,
+     3140.0,
+     -295.0
+    ],
+    "yaw": 85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -315.0,
+     3140.0,
+     -295.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_cage_x335_z3140": {
+   "opened": {
+    "hingeCm": [
+     335.0,
+     3140.0,
+     -295.0
+    ],
+    "yaw": 85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     335.0,
+     3140.0,
+     -295.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_cage_x605_z3140": {
+   "opened": {
+    "hingeCm": [
+     605.0,
+     3140.0,
+     -295.0
+    ],
+    "yaw": 85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     605.0,
+     3140.0,
+     -295.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_cage_x560_z4370": {
+   "opened": {
+    "hingeCm": [
+     560.0,
+     4370.0,
+     -295.0
+    ],
+    "yaw": -85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     560.0,
+     4370.0,
+     -295.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_cage_x718_z4370": {
+   "opened": {
+    "hingeCm": [
+     717.5,
+     4370.0,
+     -295.0
+    ],
+    "yaw": -85.94,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     717.5,
+     4370.0,
+     -295.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_steel_xm6495_z3427": {
+   "opened": {
+    "hingeCm": [
+     -6495.0,
+     3426.5,
+     -299.5
+    ],
+    "yaw": -88.81,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -6495.0,
+     3426.5,
+     -299.5
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_steel_xm2400_z250": {
+   "opened": {
+    "hingeCm": [
+     -2400.0,
+     250.0,
+     -299.5
+    ],
+    "yaw": 88.81,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -2400.0,
+     250.0,
+     -299.5
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_steel_xm1545_z765": {
+   "opened": {
+    "hingeCm": [
+     -1545.0,
+     764.5,
+     -299.5
+    ],
+    "yaw": -88.81,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -1545.0,
+     764.5,
+     -299.5
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_steel_xm98_z765": {
+   "opened": {
+    "hingeCm": [
+     -98.0,
+     764.5,
+     -299.5
+    ],
+    "yaw": 88.81,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -98.0,
+     764.5,
+     -299.5
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_steel_xm1545_z1236": {
+   "opened": {
+    "hingeCm": [
+     -1545.0,
+     1236.5,
+     -299.5
+    ],
+    "yaw": 88.81,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -1545.0,
+     1236.5,
+     -299.5
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_steel_xm6210_z1530": {
+   "opened": {
+    "hingeCm": [
+     -6210.0,
+     1530.0,
+     -299.5
+    ],
+    "yaw": -88.81,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -6210.0,
+     1530.0,
+     -299.5
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_steel_xm6255_z1750": {
+   "opened": {
+    "hingeCm": [
+     -6255.0,
+     1750.0,
+     -299.5
+    ],
+    "yaw": 178.81,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -6255.0,
+     1750.0,
+     -299.5
+    ],
+    "yaw": 90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_park_xm2360_z4680": {
+   "opened": {
+    "hingeCm": [
+     -2360.0,
+     4680.0,
+     -299.5
+    ],
+    "yaw": 1.19,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -2360.0,
+     4680.0,
+     -299.5
+    ],
+    "yaw": 90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_park_xm901_z4225": {
+   "opened": {
+    "hingeCm": [
+     -901.0,
+     4225.0,
+     -299.5
+    ],
+    "yaw": 178.81,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -901.0,
+     4225.0,
+     -299.5
+    ],
+    "yaw": 90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_steel_xm4072_z765": {
+   "opened": {
+    "hingeCm": [
+     -4072.0,
+     764.5,
+     -299.5
+    ],
+    "yaw": 88.81,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -4072.0,
+     764.5,
+     -299.5
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_steel_xm6210_z3427": {
+   "opened": {
+    "hingeCm": [
+     -6210.0,
+     3426.5,
+     -299.5
+    ],
+    "yaw": 88.81,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -6210.0,
+     3426.5,
+     -299.5
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_steel_xm5365_z2340": {
+   "opened": {
+    "hingeCm": [
+     -5365.0,
+     2340.0,
+     -299.5
+    ],
+    "yaw": 178.81,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -5365.0,
+     2340.0,
+     -299.5
+    ],
+    "yaw": 90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_steel_xm6255_z2005": {
+   "opened": {
+    "hingeCm": [
+     -6255.0,
+     2005.0,
+     -299.5
+    ],
+    "yaw": 178.81,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -6255.0,
+     2005.0,
+     -299.5
+    ],
+    "yaw": 90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_steel_xm6255_z2490": {
+   "opened": {
+    "hingeCm": [
+     -6255.0,
+     2490.0,
+     -299.5
+    ],
+    "yaw": 178.81,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -6255.0,
+     2490.0,
+     -299.5
+    ],
+    "yaw": 90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_steel_xm6785_z2448": {
+   "opened": {
+    "hingeCm": [
+     -6785.0,
+     2447.5,
+     -299.5
+    ],
+    "yaw": 88.81,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -6785.0,
+     2447.5,
+     -299.5
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_steel_xm6037_z1560": {
+   "opened": {
+    "hingeCm": [
+     -6037.5,
+     1560.0,
+     -299.5
+    ],
+    "yaw": 1.19,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -6037.5,
+     1560.0,
+     -299.5
+    ],
+    "yaw": 90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_steel_xm6037_z2005": {
+   "opened": {
+    "hingeCm": [
+     -6037.5,
+     2005.0,
+     -299.5
+    ],
+    "yaw": 1.19,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -6037.5,
+     2005.0,
+     -299.5
+    ],
+    "yaw": 90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_steel_xm5610_z2315": {
+   "opened": {
+    "hingeCm": [
+     -5610.0,
+     2315.0,
+     -299.5
+    ],
+    "yaw": -88.81,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -5610.0,
+     2315.0,
+     -299.5
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_steel_xm5470_z2480": {
+   "opened": {
+    "hingeCm": [
+     -5470.0,
+     2480.0,
+     -299.5
+    ],
+    "yaw": 88.81,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -5470.0,
+     2480.0,
+     -299.5
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_steel_xm5670_z3427": {
+   "opened": {
+    "hingeCm": [
+     -5670.0,
+     3426.5,
+     -299.5
+    ],
+    "yaw": 88.81,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -5670.0,
+     3426.5,
+     -299.5
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_steel_xm6255_z1560": {
+   "opened": {
+    "hingeCm": [
+     -6255.0,
+     1560.0,
+     -299.5
+    ],
+    "yaw": 178.81,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -6255.0,
+     1560.0,
+     -299.5
+    ],
+    "yaw": 90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_steel_xm3450_z3343": {
+   "opened": {
+    "hingeCm": [
+     -3450.0,
+     3343.0,
+     -299.5
+    ],
+    "yaw": 88.81,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -3450.0,
+     3343.0,
+     -299.5
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_steel_xm3460_z4363": {
+   "opened": {
+    "hingeCm": [
+     -3460.0,
+     4362.5,
+     -299.5
+    ],
+    "yaw": 88.81,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -3460.0,
+     4362.5,
+     -299.5
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_steel_xm3495_z3705": {
+   "opened": {
+    "hingeCm": [
+     -3495.0,
+     3705.0,
+     -299.5
+    ],
+    "yaw": 178.81,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -3495.0,
+     3705.0,
+     -299.5
+    ],
+    "yaw": 90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_steel_xm3215_z3535": {
+   "opened": {
+    "hingeCm": [
+     -3215.0,
+     3535.0,
+     -299.5
+    ],
+    "yaw": 1.19,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -3215.0,
+     3535.0,
+     -299.5
+    ],
+    "yaw": 90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_steel_xm3775_z4125": {
+   "opened": {
+    "hingeCm": [
+     -3775.0,
+     4125.0,
+     -299.5
+    ],
+    "yaw": 178.81,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -3775.0,
+     4125.0,
+     -299.5
+    ],
+    "yaw": 90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_steel_xm3555_z4455": {
+   "opened": {
+    "hingeCm": [
+     -3555.0,
+     4455.0,
+     -299.5
+    ],
+    "yaw": 178.81,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -3555.0,
+     4455.0,
+     -299.5
+    ],
+    "yaw": 90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_steel_x130_z2903": {
+   "opened": {
+    "hingeCm": [
+     130.0,
+     2903.0,
+     -299.5
+    ],
+    "yaw": 88.81,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     130.0,
+     2903.0,
+     -299.5
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_steel_xm10_z3195": {
+   "opened": {
+    "hingeCm": [
+     -10.0,
+     3195.0,
+     -299.5
+    ],
+    "yaw": 178.81,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     -10.0,
+     3195.0,
+     -299.5
+    ],
+    "yaw": 90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_steel_x268_z3290": {
+   "opened": {
+    "hingeCm": [
+     267.5,
+     3290.0,
+     -299.5
+    ],
+    "yaw": 1.19,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     267.5,
+     3290.0,
+     -299.5
+    ],
+    "yaw": 90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_steel_x553_z3630": {
+   "opened": {
+    "hingeCm": [
+     552.5,
+     3630.0,
+     -299.5
+    ],
+    "yaw": 1.19,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     552.5,
+     3630.0,
+     -299.5
+    ],
+    "yaw": 90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_garage_steel_x270_z3960": {
+   "opened": {
+    "hingeCm": [
+     270.0,
+     3960.0,
+     -299.5
+    ],
+    "yaw": 1.19,
+    "open": true,
+    "changes": 1
+   },
+   "closed": {
+    "hingeCm": [
+     270.0,
+     3960.0,
+     -299.5
+    ],
+    "yaw": 90.0,
+    "open": false,
+    "changes": 2
+   }
+  },
+  "door_l0_x84_z210": {
+   "opened": {
+    "hingeCm": [
+     84.15,
+     269.63,
+     108.0
+    ],
+    "yaw": 0.0,
+    "open": true,
+    "changes": 1,
+    "boxCm": [
+     84.15,
+     269.63,
+     108.0
+    ]
+   },
+   "closedByPartner": {
+    "hingeCm": [
+     84.15,
+     210.33,
+     108.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2,
+    "boxCm": [
+     84.15,
+     210.33,
+     108.0
+    ]
+   }
+  },
+  "door_l0_x82_z270": {
+   "opened": {
+    "hingeCm": [
+     81.65,
+     210.33,
+     108.0
+    ],
+    "yaw": 0.0,
+    "open": true,
+    "changes": 1,
+    "boxCm": [
+     81.65,
+     210.33,
+     108.0
+    ]
+   },
+   "closed": {
+    "hingeCm": [
+     81.65,
+     269.63,
+     108.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2,
+    "boxCm": [
+     81.65,
+     269.63,
+     108.0
+    ]
+   }
+  },
+  "door_l1_x55_z417": {
+   "opened": {
+    "hingeCm": [
+     115.73,
+     417.45,
+     433.0
+    ],
+    "yaw": 0.0,
+    "open": true,
+    "changes": 1,
+    "boxCm": [
+     115.73,
+     417.45,
+     433.0
+    ]
+   },
+   "closedByPartner": {
+    "hingeCm": [
+     54.84,
+     417.45,
+     433.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2,
+    "boxCm": [
+     54.84,
+     417.45,
+     433.0
+    ]
+   }
+  },
+  "door_l1_x116_z420": {
+   "opened": {
+    "hingeCm": [
+     54.84,
+     419.95,
+     433.0
+    ],
+    "yaw": 0.0,
+    "open": true,
+    "changes": 1,
+    "boxCm": [
+     54.84,
+     419.95,
+     433.0
+    ]
+   },
+   "closed": {
+    "hingeCm": [
+     115.73,
+     419.95,
+     433.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2,
+    "boxCm": [
+     115.73,
+     419.95,
+     433.0
+    ]
+   }
+  },
+  "door_l1_x439_z854": {
+   "opened": {
+    "hingeCm": [
+     513.54,
+     854.41,
+     433.0
+    ],
+    "yaw": 0.0,
+    "open": true,
+    "changes": 1,
+    "boxCm": [
+     513.54,
+     854.41,
+     433.0
+    ]
+   },
+   "closedByPartner": {
+    "hingeCm": [
+     438.75,
+     854.41,
+     433.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2,
+    "boxCm": [
+     438.75,
+     854.41,
+     433.0
+    ]
+   }
+  },
+  "door_l1_x514_z852": {
+   "opened": {
+    "hingeCm": [
+     438.75,
+     851.91,
+     433.0
+    ],
+    "yaw": 0.0,
+    "open": true,
+    "changes": 1,
+    "boxCm": [
+     438.75,
+     851.91,
+     433.0
+    ]
+   },
+   "closed": {
+    "hingeCm": [
+     513.54,
+     851.91,
+     433.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2,
+    "boxCm": [
+     513.54,
+     851.91,
+     433.0
+    ]
+   }
+  }
+ },
+ "sashes": {
+  "window_l0_x385_z7": {
+   "opened": {
+    "hingeCm": [
+     385.24,
+     7.0,
+     212.0
+    ],
+    "yaw": 0.0,
+    "open": true,
+    "changes": 1,
+    "angle": 40.0,
+    "checkCm": [
+     385.24,
+     -73.99,
+     115.48
+    ]
+   },
+   "closed": {
+    "hingeCm": [
+     385.24,
+     7.0,
+     212.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2,
+    "angle": 0.0,
+    "checkCm": [
+     385.24,
+     7.0,
+     86.0
+    ]
+   }
+  },
+  "window_l0_x318_z1263": {
+   "opened": {
+    "hingeCm": [
+     317.57,
+     1262.86,
+     212.0
+    ],
+    "yaw": 0.0,
+    "open": true,
+    "changes": 1,
+    "angle": 4.0,
+    "checkCm": [
+     317.57,
+     1273.04,
+     66.36
+    ]
+   },
+   "closed": {
+    "hingeCm": [
+     317.57,
+     1262.86,
+     212.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2,
+    "angle": 0.0,
+    "checkCm": [
+     317.57,
+     1262.86,
+     66.0
+    ]
+   }
+  },
+  "window_l1_x179_z7": {
+   "opened": {
+    "hingeCm": [
+     179.48,
+     7.0,
+     544.0
+    ],
+    "yaw": 0.0,
+    "open": true,
+    "changes": 1,
+    "angle": 40.0,
+    "checkCm": [
+     179.48,
+     -72.06,
+     449.78
+    ]
+   },
+   "closed": {
+    "hingeCm": [
+     179.48,
+     7.0,
+     544.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2,
+    "angle": 0.0,
+    "checkCm": [
+     179.48,
+     7.0,
+     421.0
+    ]
+   }
+  },
+  "window_l1_x385_z7": {
+   "opened": {
+    "hingeCm": [
+     385.16,
+     7.0,
+     544.0
+    ],
+    "yaw": 0.0,
+    "open": true,
+    "changes": 1,
+    "angle": 40.0,
+    "checkCm": [
+     385.16,
+     -84.92,
+     434.46
+    ]
+   },
+   "closed": {
+    "hingeCm": [
+     385.16,
+     7.0,
+     544.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2,
+    "angle": 0.0,
+    "checkCm": [
+     385.16,
+     7.0,
+     401.0
+    ]
+   }
+  },
+  "window_l1_x146_z1263": {
+   "opened": {
+    "hingeCm": [
+     145.68,
+     1262.86,
+     522.0
+    ],
+    "yaw": 0.0,
+    "open": true,
+    "changes": 1,
+    "angle": 40.0,
+    "checkCm": [
+     145.68,
+     1340.64,
+     429.31
+    ]
+   },
+   "closed": {
+    "hingeCm": [
+     145.68,
+     1262.86,
+     522.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2,
+    "angle": 0.0,
+    "checkCm": [
+     145.68,
+     1262.86,
+     401.0
+    ]
+   }
+  },
+  "window_l1_x385_z1263": {
+   "opened": {
+    "hingeCm": [
+     384.66,
+     1262.86,
+     544.0
+    ],
+    "yaw": 0.0,
+    "open": true,
+    "changes": 1,
+    "angle": 40.0,
+    "checkCm": [
+     384.66,
+     1354.78,
+     434.46
+    ]
+   },
+   "closed": {
+    "hingeCm": [
+     384.66,
+     1262.86,
+     544.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2,
+    "angle": 0.0,
+    "checkCm": [
+     384.66,
+     1262.86,
+     401.0
+    ]
+   }
+  }
+ },
+ "overhead": {
+  "door_garage_l0_xm7050_z4400": {
+   "opened": {
+    "hingeCm": [
+     -7040.0,
+     4400.0,
+     -40.0
+    ],
+    "yaw": 0.0,
+    "open": true,
+    "changes": 1,
+    "angle": 90.0,
+    "checkCm": [
+     -6780.0,
+     4400.0,
+     -40.0
+    ]
+   },
+   "closed": {
+    "hingeCm": [
+     -7040.0,
+     4400.0,
+     -40.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 2,
+    "angle": 0.0,
+    "checkCm": [
+     -7040.0,
+     4400.0,
+     -300.0
+    ]
+   }
+  }
+ },
+ "frontDoorWithE": {
+  "hingeCm": [
+   80.47,
+   0.0,
+   0.0
+  ],
+  "yaw": -90.0,
+  "open": true,
+  "changes": 3
+ },
+ "outsideWithE": {
+  "door_l0_xm1355_z1055": {
+   "opened": {
+    "hingeCm": [
+     -1355.0,
+     1055.0,
+     0.0
+    ],
+    "yaw": 180.0,
+    "open": true,
+    "changes": 3
+   },
+   "closed": {
+    "hingeCm": [
+     -1355.0,
+     1055.0,
+     0.0
+    ],
+    "yaw": -90.0,
+    "open": false,
+    "changes": 4
+   }
+  },
+  "door_husl_l0_xm1612_z948": {
+   "opened": {
+    "hingeCm": [
+     -1612.0,
+     948.0,
+     0.0
+    ],
+    "yaw": -4.06,
+    "open": true,
+    "changes": 3
+   },
+   "closed": {
+    "hingeCm": [
+     -1612.0,
+     948.0,
+     0.0
+    ],
+    "yaw": -90.0,
+    "open": false,
+    "changes": 4
+   }
+  },
+  "door_husl_l1_xm1707_z158": {
+   "opened": {
+    "hingeCm": [
+     -1707.0,
+     158.0,
+     640.0
+    ],
+    "yaw": -94.06,
+    "open": true,
+    "changes": 3
+   },
+   "closed": {
+    "hingeCm": [
+     -1707.0,
+     158.0,
+     640.0
+    ],
+    "yaw": 180.0,
+    "open": false,
+    "changes": 4
+   }
+  },
+  "door_husa_l0_x222_z3090": {
+   "opened": {
+    "hingeCm": [
+     222.0,
+     3090.0,
+     0.0
+    ],
+    "yaw": -94.06,
+    "open": true,
+    "changes": 3
+   },
+   "closed": {
+    "hingeCm": [
+     222.0,
+     3090.0,
+     0.0
+    ],
+    "yaw": 180.0,
+    "open": false,
+    "changes": 4
+   }
+  },
+  "door_husa_l0_xm105_z3735_y0": {
+   "opened": {
+    "hingeCm": [
+     -105.0,
+     3735.0,
+     0.0
+    ],
+    "yaw": 4.06,
+    "open": true,
+    "changes": 3
+   },
+   "closed": {
+    "hingeCm": [
+     -105.0,
+     3735.0,
+     0.0
+    ],
+    "yaw": 90.0,
+    "open": false,
+    "changes": 4
+   }
+  },
+  "door_husb_l0_xm3450_z3540": {
+   "opened": {
+    "hingeCm": [
+     -3450.0,
+     3540.0,
+     0.0
+    ],
+    "yaw": -85.94,
+    "open": true,
+    "changes": 3
+   },
+   "closed": {
+    "hingeCm": [
+     -3450.0,
+     3540.0,
+     0.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 4
+   }
+  },
+  "door_husb_l0_xm3308_z4215_y300": {
+   "opened": {
+    "hingeCm": [
+     -3308.0,
+     4215.0,
+     300.0
+    ],
+    "yaw": 4.06,
+    "open": true,
+    "changes": 3
+   },
+   "closed": {
+    "hingeCm": [
+     -3308.0,
+     4215.0,
+     300.0
+    ],
+    "yaw": 90.0,
+    "open": false,
+    "changes": 4
+   }
+  },
+  "door_husc_l0_xm5340_z2405": {
+   "opened": {
+    "hingeCm": [
+     -5340.0,
+     2405.0,
+     0.0
+    ],
+    "yaw": -4.06,
+    "open": true,
+    "changes": 3
+   },
+   "closed": {
+    "hingeCm": [
+     -5340.0,
+     2405.0,
+     0.0
+    ],
+    "yaw": -90.0,
+    "open": false,
+    "changes": 4
+   }
+  },
+  "door_husc_l0_xm6234_z2020_y0": {
+   "opened": {
+    "hingeCm": [
+     -6234.0,
+     2020.0,
+     0.0
+    ],
+    "yaw": 4.06,
+    "open": true,
+    "changes": 3
+   },
+   "closed": {
+    "hingeCm": [
+     -6234.0,
+     2020.0,
+     0.0
+    ],
+    "yaw": 90.0,
+    "open": false,
+    "changes": 4
+   }
+  },
+  "door_garage_cage_xm1063_z320": {
+   "opened": {
+    "hingeCm": [
+     -1063.0,
+     320.0,
+     -295.0
+    ],
+    "yaw": 85.94,
+    "open": true,
+    "changes": 3
+   },
+   "closed": {
+    "hingeCm": [
+     -1063.0,
+     320.0,
+     -295.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 4
+   }
+  },
+  "door_garage_steel_xm6495_z3427": {
+   "opened": {
+    "hingeCm": [
+     -6495.0,
+     3426.5,
+     -299.5
+    ],
+    "yaw": -88.81,
+    "open": true,
+    "changes": 3
+   },
+   "closed": {
+    "hingeCm": [
+     -6495.0,
+     3426.5,
+     -299.5
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 4
+   }
+  },
+  "door_garage_park_xm2360_z4680": {
+   "opened": {
+    "hingeCm": [
+     -2360.0,
+     4680.0,
+     -299.5
+    ],
+    "yaw": 1.19,
+    "open": true,
+    "changes": 3
+   },
+   "closed": {
+    "hingeCm": [
+     -2360.0,
+     4680.0,
+     -299.5
+    ],
+    "yaw": 90.0,
+    "open": false,
+    "changes": 4
+   }
+  },
+  "door_garage_l0_xm7050_z4400": {
+   "opened": {
+    "hingeCm": [
+     -7040.0,
+     4400.0,
+     -40.0
+    ],
+    "yaw": 0.0,
+    "open": true,
+    "changes": 3,
+    "angle": 90.0,
+    "checkCm": [
+     -6780.0,
+     4400.0,
+     -40.0
+    ]
+   },
+   "closed": {
+    "hingeCm": [
+     -7040.0,
+     4400.0,
+     -40.0
+    ],
+    "yaw": 0.0,
+    "open": false,
+    "changes": 4,
+    "angle": 0.0,
+    "checkCm": [
+     -7040.0,
+     4400.0,
+     -300.0
+    ]
+   }
+  }
+ },
+ "switch": {
+  "id": "light_fixture_l0_x195_z48",
+  "room": "Hall",
+  "on": {
+   "room_hall_l0_x117_z175": true,
+   "room_hall_l0_x288_z634": true
+  },
+  "off": {
+   "room_hall_l0_x117_z175": false,
+   "room_hall_l0_x288_z634": false
+  },
+  "otherRoomLamp": [
+   "room_badrum_l0_x117_z631",
+   false
+  ]
+ },
+ "tap": {
+  "id": "tap_koksblandaren_l0_x531_z208",
+  "hiddenBefore": true,
+  "hiddenOn": false,
+  "hiddenOff": true
+ },
+ "liftButtons": {
+  "count": 49,
+  "litOnceAfterTwoPresses": 49
+ },
+ "garageButtons": {
+  "button_garage_outside": 1,
+  "button_garage_inside": 1
+ },
+ "event": {
+  "listener": "/Game/Lunden/Interaction/BP_LundenInteractionListener.BP_LundenInteractionListener_C",
+  "calls": 401,
+  "changes": 401,
+  "interactables": 226,
+  "mismatched": 0,
+  "samples": {
+   "door": [
+    "door_l0_x80_z0",
+    [
+     true,
+     false,
+     true
+    ]
+   ],
+   "sash": [
+    "window_l0_x385_z7",
+    [
+     true,
+     false
+    ]
+   ],
+   "switch": [
+    "light_fixture_l0_x195_z48",
+    [
+     true,
+     false
+    ]
+   ],
+   "tap": [
+    "tap_koksblandaren_l0_x531_z208",
+    [
+     true,
+     false
+    ]
+   ]
+  },
+  "lastSource": "BP_LundenSwingDoor_C_128"
+ },
+ "problems": []
+}

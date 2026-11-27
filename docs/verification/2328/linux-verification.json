@@ -1,0 +1,159 @@
+{
+  "date": "2026-11-27",
+  "sourceRevision": "19f6083016a36defd7973bca84296fed7b84bac6",
+  "engine": "5.8.4",
+  "host": "WSL2 Ubuntu24.04 x86_64",
+  "profile": "NullRHI with opt-in Linux config; not a Windows visual acceptance run",
+  "engineIniSha256": "e26c244f9d51fddd3e6577d5696a073521b417a73167c5dd6dc69c79a2db180e",
+  "export": {
+    "sourceCommit": "a0e73607fe85144660d65aff9bfd5dbb79880a06",
+    "sourceHash": "ae022d718eac083aba091e963cab405919f3fbfc1a23e68706b1a55f713a5787",
+    "zones": 10,
+    "nodes": 9402,
+    "verifiedSources": 315
+  },
+  "authoredAssets": {
+    "count": 246,
+    "byteIdenticalBeforeAfterSync": true,
+    "lightingOrOtherAuthoredWrites": false,
+    "byteIdenticalAfterThreeAutomationTests": true
+  },
+  "preflight": {
+    "lighting": {
+      "skySpecMatches": true,
+      "expectedSpec": "3e5a5504f90eb5243571b3a52a3f8f76765b07a7d11fb877850fcc0f8da4f5a5",
+      "present": {
+        "/Game/Lunden/Lighting/BP_LundenSky": true,
+        "/Game/Lunden/Lighting/BP_LundenLamp": true,
+        "/Game/Lunden/Lighting/MPC_LundenWeather": true,
+        "/Game/Lunden/Lighting/M_LundenPrecipitation": true,
+        "/Game/Lunden/Lighting/M_LundenClouds": true,
+        "/Game/Lunden/Lighting/T_LundenHemisphere": true,
+        "/Game/Lunden/Lighting/M_LundenNeutralTonemap": true
+      },
+      "precipMatches": true,
+      "cloudUnresolved": []
+    },
+    "interaction": {
+      "/Game/Lunden/Interaction/BP_LundenInteractionListener": true,
+      "/Game/Lunden/Blueprints/PilotDoors/BP_LundenSwingDoor": true
+    },
+    "checks": {
+      "lighting": true,
+      "seasons": true,
+      "vegetation": true,
+      "interaction": true
+    },
+    "passed": true
+  },
+  "sync": {
+    "passed": true,
+    "seconds": 675.42,
+    "exitCode": 0,
+    "steps": [
+      {
+        "step": "seasons",
+        "passed": true,
+        "seconds": 0.11
+      },
+      {
+        "step": "import",
+        "passed": true,
+        "seconds": 492.33
+      },
+      {
+        "step": "build_l1007",
+        "passed": true,
+        "seconds": 1.03
+      },
+      {
+        "step": "build_exterior",
+        "passed": true,
+        "seconds": 18.14
+      },
+      {
+        "step": "build_site",
+        "passed": true,
+        "seconds": 4.22
+      },
+      {
+        "step": "build_lighting",
+        "passed": true,
+        "seconds": 3.99
+      },
+      {
+        "step": "build_facade",
+        "passed": true,
+        "seconds": 6.15
+      },
+      {
+        "step": "build_vegetation",
+        "passed": true,
+        "seconds": 2.27
+      },
+      {
+        "step": "build_interaction",
+        "passed": true,
+        "seconds": 6.67
+      },
+      {
+        "step": "build_curtains",
+        "passed": true,
+        "seconds": 1.56
+      },
+      {
+        "step": "build_cabinet_washes",
+        "passed": true,
+        "seconds": 2.18
+      },
+      {
+        "step": "compose-check",
+        "passed": true,
+        "seconds": 3.22
+      },
+      {
+        "step": "import-check",
+        "passed": true,
+        "seconds": 10.21
+      }
+    ],
+    "checkImport": "passed after complete stamp"
+  },
+  "automation": {
+    "test_interaction": {
+      "passed": true,
+      "seconds": 297.5,
+      "exitCode": 0,
+      "succeeded": 0,
+      "succeededWithWarnings": 1,
+      "failed": 0,
+      "notRun": 0,
+      "warning": "Repeated engine LogInit warnings: Querying IsUsingWayland before SDL is initialized; no suppression or changed test assertions"
+    },
+    "test_exterior_route": {
+      "passed": true,
+      "seconds": 216.83,
+      "exitCode": 0,
+      "succeeded": 0,
+      "succeededWithWarnings": 1,
+      "failed": 0,
+      "notRun": 0
+    },
+    "test_facades": {
+      "passed": true,
+      "seconds": 223.19,
+      "exitCode": 0,
+      "succeeded": 0,
+      "succeededWithWarnings": 1,
+      "failed": 0,
+      "notRun": 0
+    }
+  },
+  "remaining": [
+    "current rendered door views; no new Windows colour/lighting claims"
+  ],
+  "documentationChecks": {
+    "gitDiffCheck": "passed",
+    "markdownLinks": "All changed README links resolve; full checker reported only pre-existing release-notes/mall.md {{setupUrl}} placeholder, tracked in #2464"
+  }
+}

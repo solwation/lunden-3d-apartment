@@ -1,0 +1,333 @@
+{
+  "engine": "5.8.4-58902052+++UE5+Release-5.8",
+  "map": "/Game/Lunden/Maps/L_Lunden",
+  "export": "a0e73607fe85144660d65aff9bfd5dbb79880a06",
+  "facades": [
+    {
+      "id": "husl_street_facade",
+      "house": "L",
+      "what": "street (north) fa\u00e7ade, storey 2",
+      "facadeCm": [
+        -2700,
+        -0.6
+      ],
+      "floorCm": 0.8,
+      "stopCm": [
+        -2700.0,
+        -27.2,
+        95.45
+      ],
+      "pastFacadeCm": -26.6,
+      "walkedThrough": false,
+      "ok": true
+    },
+    {
+      "id": "husl_court_facade",
+      "house": "L",
+      "what": "courtyard (south) fa\u00e7ade, storey 2",
+      "facadeCm": [
+        -2700,
+        1270.5
+      ],
+      "floorCm": -0.0,
+      "stopCm": [
+        -2679.06,
+        1297.08,
+        94.65
+      ],
+      "pastFacadeCm": -26.58,
+      "walkedThrough": false,
+      "ok": true
+    },
+    {
+      "id": "husl_west_gable",
+      "house": "L",
+      "what": "west gable",
+      "facadeCm": [
+        -4176.1,
+        600
+      ],
+      "floorCm": -1.0,
+      "stopCm": [
+        -4198.2,
+        599.9,
+        93.65
+      ],
+      "pastFacadeCm": -22.1,
+      "walkedThrough": false,
+      "ok": true
+    },
+    {
+      "id": "husl_east_gable",
+      "house": "L",
+      "what": "east gable",
+      "facadeCm": [
+        1158.6,
+        600
+      ],
+      "floorCm": -39.6,
+      "stopCm": [
+        1183.1,
+        600.0,
+        60.37
+      ],
+      "pastFacadeCm": -24.5,
+      "walkedThrough": false,
+      "ok": true
+    },
+    {
+      "id": "husa_north_facade",
+      "house": "A",
+      "what": "north fa\u00e7ade, storey 2 above the base",
+      "facadeCm": [
+        462.5,
+        2880
+      ],
+      "floorCm": -1.0,
+      "stopCm": [
+        462.4,
+        2853.15,
+        93.65
+      ],
+      "pastFacadeCm": -26.85,
+      "walkedThrough": false,
+      "ok": true
+    },
+    {
+      "id": "husa_east_facade",
+      "house": "A",
+      "what": "east fa\u00e7ade",
+      "facadeCm": [
+        942,
+        4564.2
+      ],
+      "floorCm": -301.0,
+      "stopCm": [
+        964.1,
+        4564.35,
+        -206.35
+      ],
+      "pastFacadeCm": -22.1,
+      "walkedThrough": false,
+      "ok": true
+    },
+    {
+      "id": "husa_west_facade",
+      "house": "A",
+      "what": "west fa\u00e7ade",
+      "facadeCm": [
+        -976,
+        4564.2
+      ],
+      "floorCm": -301.0,
+      "stopCm": [
+        -1002.85,
+        4564.2,
+        -206.35
+      ],
+      "pastFacadeCm": -26.85,
+      "walkedThrough": false,
+      "ok": true
+    },
+    {
+      "id": "husa_south_facade",
+      "house": "A",
+      "what": "south fa\u00e7ade",
+      "facadeCm": [
+        462.5,
+        5280
+      ],
+      "floorCm": -301.0,
+      "stopCm": [
+        462.61,
+        5310.1,
+        -206.35
+      ],
+      "pastFacadeCm": -30.1,
+      "walkedThrough": false,
+      "ok": true
+    },
+    {
+      "id": "husb_north_facade",
+      "house": "B",
+      "what": "north fa\u00e7ade, storey 2 above the base",
+      "facadeCm": [
+        -2738.5,
+        3330
+      ],
+      "floorCm": -1.0,
+      "stopCm": [
+        -2738.5,
+        3303.15,
+        93.65
+      ],
+      "pastFacadeCm": -26.85,
+      "walkedThrough": false,
+      "ok": true
+    },
+    {
+      "id": "husb_east_facade",
+      "house": "B",
+      "what": "east fa\u00e7ade",
+      "facadeCm": [
+        -2260,
+        5013.5
+      ],
+      "floorCm": -301.0,
+      "stopCm": [
+        -2233.23,
+        5013.6,
+        -206.35
+      ],
+      "pastFacadeCm": -26.77,
+      "walkedThrough": false,
+      "ok": true
+    },
+    {
+      "id": "husb_west_facade",
+      "house": "B",
+      "what": "west fa\u00e7ade",
+      "facadeCm": [
+        -4174,
+        5013.5
+      ],
+      "floorCm": -1.0,
+      "stopCm": [
+        -4200.85,
+        5013.5,
+        93.65
+      ],
+      "pastFacadeCm": -26.85,
+      "walkedThrough": false,
+      "ok": true
+    },
+    {
+      "id": "husb_south_facade",
+      "house": "B",
+      "what": "south fa\u00e7ade",
+      "facadeCm": [
+        -2738.5,
+        5729
+      ],
+      "floorCm": -299.2,
+      "stopCm": [
+        -2738.39,
+        5759.1,
+        -206.35
+      ],
+      "pastFacadeCm": -30.1,
+      "walkedThrough": false,
+      "ok": true
+    },
+    {
+      "id": "husc_north_facade",
+      "house": "C",
+      "what": "north fa\u00e7ade, storey 2 above the base",
+      "facadeCm": [
+        -5620,
+        1260
+      ],
+      "floorCm": -1.0,
+      "stopCm": [
+        -5620.0,
+        1233.15,
+        93.65
+      ],
+      "pastFacadeCm": -26.85,
+      "walkedThrough": false,
+      "ok": true
+    },
+    {
+      "id": "husc_east_facade",
+      "house": "C",
+      "what": "east fa\u00e7ade",
+      "facadeCm": [
+        -5140,
+        2945.6
+      ],
+      "floorCm": -1.0,
+      "stopCm": [
+        -5113.15,
+        2945.7,
+        93.65
+      ],
+      "pastFacadeCm": -26.85,
+      "walkedThrough": false,
+      "ok": true
+    },
+    {
+      "id": "husc_west_facade",
+      "house": "C",
+      "what": "west fa\u00e7ade",
+      "facadeCm": [
+        -7060,
+        2945.6
+      ],
+      "floorCm": -225.49,
+      "stopCm": [
+        -7082.1,
+        2945.6,
+        -129.34
+      ],
+      "pastFacadeCm": -22.1,
+      "walkedThrough": false,
+      "ok": true
+    },
+    {
+      "id": "husc_south_facade",
+      "house": "C",
+      "what": "south fa\u00e7ade",
+      "facadeCm": [
+        -5620,
+        3662
+      ],
+      "floorCm": -1.0,
+      "stopCm": [
+        -5619.93,
+        3500.1,
+        100.65
+      ],
+      "pastFacadeCm": 161.9,
+      "walkedThrough": false,
+      "ok": true
+    }
+  ],
+  "passages": [
+    {
+      "name": "Hus L portik, street to courtyard",
+      "reached": true,
+      "stopCm": [
+        -1496.0,
+        1490.45,
+        93.65
+      ]
+    },
+    {
+      "name": "drive up to the garage door",
+      "reached": true,
+      "stopCm": [
+        -7098.86,
+        4400.0,
+        -204.15
+      ]
+    }
+  ],
+  "houses": {
+    "L": {
+      "points": 4,
+      "stopped": 4
+    },
+    "A": {
+      "points": 4,
+      "stopped": 4
+    },
+    "B": {
+      "points": 4,
+      "stopped": 4
+    },
+    "C": {
+      "points": 4,
+      "stopped": 4
+    }
+  }
+}
