@@ -31,3 +31,16 @@ Engine log TEST COMPLETE EXIT CODE:0; report counts1success/0warnings/0failed/0n
 Wrapper reported failure reading UTF-8 BOM, not a green wrapper run.
 Fixed reader re-parsed the same saved report successfully; exact hash/counts in automation-review.json.
 Engine log confirms filecache /mnt/d/LundenLinux/DerivedDataCache writable and Zen /mnt/d/LundenLinux/Zen statusOK.
+
+First completed actual CPU Vulkan capture: sourcea5fcc597980af72554bd34adce553aeddce6c620
+PASS: exit0, timedOut:false,1131.37s, actual llvmpipe VulkanSM5,640x360 PNG.
+All seven expected low-profile CVars verified as0 in this rendered process.
+Visual review: fixture cube is visible but too dark for easy inspection.
+Recapture uses the same fixture beside a bright built-in control/floor, with test lighting, saved shader cache.
+No whole-world/Windows rendering or frame-rate acceptance is claimed.
+
+Visible actual CPU capture: source9ba06ed73794c69cc9444055d1bb21fe7c78d641
+PASS: exit0,timedOut:false,107.52s;640x360 actual PNG, profileCVars all0.
+Reviewed: dark project fixture(right), bright built-in control(left), bright floor. No shadows intentional.
+Image hash/device/config/source in render-check.json. Runtime git working tree clean and no engine/shader/Zen/Trace child left after completion.
+This run uses an existing cache and a changed test scene; it is not a comparable performance benchmark.

@@ -1,0 +1,20 @@
+{
+  "engine": "5.8.4",
+  "profile": "linux-low",
+  "exitCode": 0,
+  "timedOut": false,
+  "passed": true,
+  "seconds": 107.52,
+  "revision": "9ba06ed73794c69cc9444055d1bb21fe7c78d641",
+  "engineIniSha256": "e26c244f9d51fddd3e6577d5696a073521b417a73167c5dd6dc69c79a2db180e",
+  "device": "llvmpipe (LLVM 20.1.2, 256 bits)",
+  "icd": "system lvp_icd.json",
+  "resolution": [
+    640,
+    360
+  ],
+  "image": "linux-fixture.png",
+  "imageSha256": "e532d84235d91d6fa4ce9374305f88ba9e808324d2c77a83fd8fc757cf42ef2a",
+  "visualReview": "pass: fixture cube and bright built-in control/floor visible; intentional no shadows and test lighting",
+  "scope": "small temporary project fixture; no whole-world, Windows, packaging or FPS acceptance"
+}

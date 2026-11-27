@@ -48,7 +48,7 @@ tools/unreal-engine/run-linux.py                  opt-in Linux/WSL editor runner
 tools/unreal-engine/linux-low.ini                 local SM5 low-quality overrides, never loaded by Windows scripts
 tools/unreal-engine/tests/test_linux_runner.py    rejects wrong versions, Python errors and empty/incomplete reports
 tools/unreal-engine/python/probe_linux.py         reads low-profile CVars inside the real engine, logs success or fails
-tools/unreal-engine/python/smoke_render_linux.py  captures a 640x360 cube with the committed fixture material
+tools/unreal-engine/python/smoke_render_linux.py  captures a 640x360 fixture with project material and a bright control
 tools/unreal-engine/release.ps1                     runs a clean Win64 Shipping build, archives it with build-info.json and keeps the log
 tools/unreal-engine/sign-manifest.mjs             signs/fetches/uploads a release manifest's 64-byte P-256 .sig (.github/workflows/sign-manifest.yml)
 tools/unreal-engine/create-manifest-key.sh        one-time admin script: manifest key pair → signing secret + public variable, never on disk
@@ -407,6 +407,7 @@ API versions or bypass profile checks to call it compatible with Unreal. Select 
 per process; no system driver or global loader configuration is replaced. Exact local
 source versions/hashes are in the runtime's `provenance.json`; the investigation and
 engine verification are tracked in #2467.
+The actual CPU Vulkan fixture render passes; [results and limitations](../verification/2467/README.md).
 
 The local installation contains the prebuilt x86-64 editor/runtime (about 31 GiB).
 Source, intermediate files, debug symbols, templates, Extras and LinuxArm64 were

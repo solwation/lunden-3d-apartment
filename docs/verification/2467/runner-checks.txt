@@ -1,7 +1,7 @@
-Source a5fcc597
-Python runner regression tests:7passed
+Source9ba06ed7 (runner unchanged since a5fcc597; Linux guard included).
+Python runner regression tests:7passed.
 Includes separately-sessioned SIGTERM-resistant worker cleanup and actual UTF-8-BOM report shape.
 Actual engine Automation report reread by the fixed reader:1passed,0failed,0unrun.
-Changed documentation relative links:159pass
-Diff whitespace check:pass
+Affected documentation relative links:162pass.
+Diff whitespace check:pass.
 Full Markdown checker:known existing {{setupUrl}} template placeholder only; not introduced here.

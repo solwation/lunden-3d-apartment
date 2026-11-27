@@ -43,10 +43,28 @@ filling the Windows disk backing WSL.
   with cleanup), `timedOut:true`, `passed:false`. Vulkan SM5 initialized and
   shaders compiled, but no PNG was produced. Preserved the warm cache and
   reassessed the initial-compile cost before the longer retry.
+- Completed CPU Vulkan capture: **pass**, 1,131.37 seconds including initial
+  shader/material compilation, source `a5fcc597`. Its very dark test material
+  made the image difficult to review, so only the fixture view was recaptured.
+- Reviewed CPU Vulkan capture: **pass**, 107.52 seconds, source `9ba06ed7`.
+  Real llvmpipe SM5, all seven low-profile CVars checked inside the rendered
+  process, 640×360 PNG, clean editor exit and worker cleanup.
+  [Source/configuration/device/image hash](render-check.json).
+  This used an existing cache and a changed test scene; it is no performance benchmark.
+
+## Result image
+
+![Linux Unreal fixture at 640x360](linux-fixture.png)
+
+Temporary two-cube fixture: dark committed project material on the right, a
+bright built-in control on the left. Bright test lighting, a bright floor,
+black background and disabled shadows are intentional. This verifies local
+loading/rendering. Generated-world and Windows material/lighting acceptance,
+interactive frame rate, cooking and packaging remain separate.
 
 Scoped engine results: [engine-checks.txt](engine-checks.txt). Full raw logs and
 installation/driver provenance remain private in the local runtime directories.
 The repository-wide link checker still reports the pre-existing release-note
-template placeholder `{{setupUrl}}`; the changed documentation's 155 relative
+template placeholder `{{setupUrl}}`; the affected relative documentation
 links pass. No web/export source, Windows default or public downstream behavior
 is changed, and this Unreal-only tooling has no public port.
