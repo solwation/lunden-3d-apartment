@@ -14,8 +14,10 @@ def entries(measurements):
         if not info.get("garageBake"):
             continue
         cut = info.get("powerCut")
+        alpha = info.get("garageAlphaCutoff")
         if (info.get("type") != "bas" or info.get("unlit") is not True
                 or not isinstance(cut, (int, float)) or not 0 <= cut <= 1
+                or not isinstance(alpha, (int, float)) or not 0 <= alpha <= 1
                 or "_garage_baked_p" not in key):
             raise RuntimeError("Invalid source garage bake: " + key)
         result[key] = info
@@ -77,14 +79,23 @@ def apply(zone, table, data):
                 mi.set_editor_property("base_property_overrides", overrides)
                 if mi.get_blend_mode() != blend:
                     raise RuntimeError("Garage cut-out blend changed: " + mi.get_name())
-            if instance_scalar(mi, "PowerCut") != info["powerCut"]:
+            wanted = {"PowerCut": info["powerCut"]}
+            if info["garageAlphaCutoff"] > 0:
+                # UE5.8.4 InterchangeGLTFMaterial deliberately omits this value for unlit MASK.
+                # MF_Unlit_Body already has the wired parameter; retain the source cut-off on our own MIC.
+                if "AlphaCutoff" not in {str(name) for name in u.MaterialEditingLibrary.get_scalar_parameter_names(target)}:
+                    raise RuntimeError("Garage mask master has no AlphaCutoff: " + target_path)
+                wanted["AlphaCutoff"] = info["garageAlphaCutoff"]
+            for name, number in wanted.items():
+                if instance_scalar(mi, name) == number:
+                    continue
                 parameter = u.MaterialParameterInfo()
-                parameter.set_editor_property("name", "PowerCut")
+                parameter.set_editor_property("name", name)
                 value = u.ScalarParameterValue()
                 value.set_editor_property("parameter_info", parameter)
-                value.set_editor_property("parameter_value", float(info["powerCut"]))
+                value.set_editor_property("parameter_value", float(number))
                 scalars = [v for v in mi.get_editor_property("scalar_parameter_values")
-                           if str(v.get_editor_property("parameter_info").get_editor_property("name")) != "PowerCut"]
+                           if str(v.get_editor_property("parameter_info").get_editor_property("name")) != name]
                 mi.set_editor_property("scalar_parameter_values", scalars + [value])
             u.MaterialEditingLibrary.update_material_instance(mi)
             done.add(mi.get_path_name())
@@ -120,6 +131,17 @@ def check(zone, table, data):
                     or cut is None or abs(float(cut) - info["powerCut"]) > 1e-6
                     or info.get("textured") and not textured(mi)):
                 raise RuntimeError("Garage source unlit/vertex/map/power check failed: " + mi.get_name())
+            alpha = info["garageAlphaCutoff"]
+            if alpha > 0:
+                actual = instance_scalar(mi, "AlphaCutoff")
+                mask = u.MaterialEditingLibrary.get_material_property_input_node(mi.get_base_material(), u.MaterialProperty.MP_OPACITY_MASK)
+                inputs = u.MaterialEditingLibrary.get_inputs_for_material_expression(mi.get_base_material(), mask) if mask else []
+                if (mi.get_blend_mode() != u.BlendMode.BLEND_MASKED or actual is None or abs(actual - alpha) > 1e-6
+                        or not isinstance(mask, u.MaterialExpressionMaterialFunctionCall)
+                        or mask.get_editor_property("material_function").get_path_name() != "/InterchangeAssets/gltf/MaterialBodies/MF_Unlit_Body.MF_Unlit_Body"
+                        or not any(isinstance(node, u.MaterialExpressionScalarParameter)
+                                   and str(node.get_editor_property("parameter_name")) == "AlphaCutoff" for node in inputs)):
+                    raise RuntimeError("Garage source mask/cut-off is missing or disconnected: " + mi.get_name())
             seen.add(mi.get_path_name()); keys.add(mi.get_name())
     missing = set(data) - keys
     if missing:

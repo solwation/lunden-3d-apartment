@@ -217,7 +217,7 @@
       "type": "object",
       "description": "material key → the web material's look (no web material has a name; the key is built from type, colour, roughness, metalness, opacity, emissive, vertex colours, textures, sides). Unreal maps keys to hand-made materials. Since #2308 `map` names the colour map or is null. Since #2435 unlit labels kept with their image have `unlit: true` and `powerCut`, the off/on colour ratio (1: unchanged). #2404 marks garage-owned Basic bakes with `garageBake: true`, their actual full-on colour and unlit extension; `_garage_baked_p…` prevents collisions with other zones and different power shares. Vertex light, textures and masks are retained, not replaced by invented native lights.",
       "additionalProperties": { "type": "object", "required": ["type", "color", "roughness", "metalness", "opacity", "emissive", "vertexColors", "textured", "doubleSided", "hint"],
-        "properties": { "garageBake": {"type": "boolean"}, "unlit": {"type": "boolean"}, "powerCut": {"type": "number", "minimum": 0, "maximum": 1} } }
+        "properties": { "garageBake": {"type": "boolean"}, "garageAlphaCutoff": {"type": "number", "minimum": 0, "maximum": 1, "description": "#2404 actual garage Basic alphaTest (0 opaque); Interchange omits AlphaCutoff for unlit masks, so the Generated instance preserves this source value."}, "unlit": {"type": "boolean"}, "powerCut": {"type": "number", "minimum": 0, "maximum": 1} } }
     },
     "ground": {
       "type": "object", "required": ["source", "walkableName", "collision", "points", "route"],

@@ -887,7 +887,8 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
         em.emissive.fromArray(curtain.daylight); // daylight fallback for an imported mesh without a running controller
       }
       materials.set(key, em); materialTable[key] = { ...info, ...(tex ? { texture: tex.id } : {}),
-        ...(unlit ? { unlit: true, powerCut } : {}), ...(garageBake ? { garageBake: true } : {}) };
+        ...(unlit ? { unlit: true, powerCut } : {}),
+        ...(garageBake ? { garageBake: true, garageAlphaCutoff: m.alphaTest } : {}) };
     } else if (unlit && materialTable[key].powerCut !== powerCut) {
       throw new Error(`${key}: unlit labels with power-cut shares ${materialTable[key].powerCut} and ${powerCut} share one key`);
     }

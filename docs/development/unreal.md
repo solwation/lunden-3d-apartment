@@ -3379,6 +3379,12 @@ draws the shell, bicycles, storage cages and signs with `MeshBasicMaterial`. Exp
 daylight. `export-garage-lighting.js` observes the real on/off endpoints, restores the exact previous state, and exports
 the full-on Basic colour with `KHR_materials_unlit`, vertex colours, maps, cage/spoke cut-outs and instance tints intact.
 Garage-only material keys and `materials[].garageBake` keep this rule separate from stairwells and other zones.
+The bicycle LOD material clones share their area's actual `Color` object (`src/garagelods.js`); the export follows that
+identity to retain the same on/off endpoints rather than treating the restored off colour as an independent material.
+`garageAlphaCutoff` records each source `alphaTest`. UE5.8.4's Interchange deliberately omits `AlphaCutoff` for unlit
+materials, so the importer sets that existing `MF_Unlit_Body` parameter on the Generated masked instances; `--check`
+requires the source value, actual masked mode and wired opacity-mask input. The source thresholds (spokes0.35, cages0.5)
+are preserved; neither a new clipping threshold nor an authored master change is introduced.
 
 `import_world.py` applies `garage_materials.py` only to these keys in `kvarteret`. Textured instances use the existing
 Generated unlit-label master; untextured vertex-coloured instances use its equivalent built from the existing project
@@ -3391,7 +3397,8 @@ This is a full-on area snapshot, like the existing garage labels; dynamic presen
 The material map and importer version stay unchanged: only a changed `kvarteret.glb` should require re-import, provided
 the actual export proves every other zone byte-identical. `node tools/unreal-engine/tests/garage-lighting.mjs` checks
 the real source setter and exact restoration; supplying an export directory also checks the actual GLB attributes,
-unlit extensions, maps and cut-outs. Source checks alone do not establish native rendering parity.
+unlit extensions, maps and cut-outs. `python3 tools/unreal-engine/tests/garage-materials.py` checks that missing/stale
+or invalid source cut-offs fail before import. Source checks alone do not establish native rendering parity.
 
 **The split.** A merged mesh (the web bakes one mesh per material for all of Hus L, all of Hus A/B/C or the whole
 terrain) that crosses a split zone's box is clipped at the box sides (vertical planes; attributes interpolated) and

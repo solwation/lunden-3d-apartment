@@ -25,12 +25,15 @@ export function garageLightingMaterials(garage) {
       for (const [material, colour] of before) material.color.fromArray(colour);
     }
   }
+  // garageBikeRowLod clones the material but deliberately shares the live area's exact Color.
+  // Follow that source identity; comparing numeric colours would confuse unrelated/off materials.
+  const areaColours = new Map([...result].map(([material, profile]) => [material.color, profile]));
   // Independent Basic doors, spokes and emergency signs already have their own baked colour.
   // They do not follow setLevel on the web; never invent a sensor/power multiplier for them.
   garage.object.traverse(object => {
     for (const material of (Array.isArray(object.material) ? object.material : [object.material])) {
       if (material?.isMeshBasicMaterial && material.visible !== false && !result.has(material))
-        result.set(material, { colour: material.color.toArray(), powerCut: 1 });
+        result.set(material, areaColours.get(material.color) ?? { colour: material.color.toArray(), powerCut: 1 });
     }
   });
   return result;
