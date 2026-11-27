@@ -201,6 +201,10 @@ def _driver(stamp):
         if u.BlueprintEditorLibrary.find_graph(bp, method):
             u.BlueprintEditorLibrary.remove_function_graph(bp, method)
     lamp = u.EditorAssetLibrary.load_asset('/Game/Lunden/Lighting/BP_LundenLamp').generated_class()
+    weather = u.EditorAssetLibrary.load_asset('/Game/Lunden/Lighting/MPC_LundenWeather')
+    collection = u.EditorAssetLibrary.load_asset(MPC)
+    if not isinstance(weather, u.MaterialParameterCollection) or not isinstance(collection, u.MaterialParameterCollection):
+        raise RuntimeError('Display pool driver needs the real weather and Generated fade collections')
     visible = _visibility(stamp)
     pp.variables(bp, {'LampTag': pp.NAME, 'Parameter': pp.NAME,
                       'SourceLamp': u.BlueprintEditorLibrary.get_object_reference_type(lamp), 'AppliedFade': pp.REAL})
@@ -217,12 +221,12 @@ def _driver(stamp):
     g.run(pp.class_path(path)+':FindLamp')
     source = g.get('SourceLamp')
     missing = g.branch(g.pure('KismetSystemLibrary:IsValid', Object=source))
-    supply = g.pure('KismetMaterialLibrary:GetScalarParameterValue', Collection='/Game/Lunden/Lighting/MPC_LundenWeather', ParameterName='PowerAvailable')
+    supply = g.pure('KismetMaterialLibrary:GetScalarParameterValue', Collection=weather.get_path_name(), ParameterName='PowerAvailable')
     fade = g.op('Multiply_DoubleDouble', A=g.get('K', lamp.get_path_name(), source), B=supply)
     fade = g.op('SelectFloat', A=fade, B='0', bPickA=g.pure(visible, result='Visible', Lamp=source))
     def apply(graph, value):
         graph.set('AppliedFade', value)
-        graph.run('KismetMaterialLibrary:SetScalarParameterValue', Collection=MPC,
+        graph.run('KismetMaterialLibrary:SetScalarParameterValue', Collection=collection.get_path_name(),
                   ParameterName=graph.get('Parameter'), ParameterValue=graph.get('AppliedFade'))
     apply(g, fade)
     apply(g.fork(missing, 800), 0)
