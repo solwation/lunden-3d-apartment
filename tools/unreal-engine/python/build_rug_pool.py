@@ -209,6 +209,7 @@ def controller(lamp_tag):
         bp = TOOLS.create_asset("BP_LundenRugPoolReceiver", DIR, u.Blueprint, factory)
     pp.variables(bp, {"SourceLamp": lib.get_object_reference_type(lamp),
                       "Receiver": lib.get_object_reference_type(u.Actor.static_class()), "AppliedFade": pp.REAL})
+    lib.set_blueprint_variable_instance_editable(bp, "Receiver", True)
     g, _ = pp.function(bp, "FindLamp")
     g.branch(g.op("Not_PreBool", A=g.pure("KismetSystemLibrary:IsValid", Object=g.get("SourceLamp"))))
     found = g.run("GameplayStatics:GetAllActorsWithTag", Tag=lamp_tag)
