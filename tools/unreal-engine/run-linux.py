@@ -180,6 +180,7 @@ def main(argv=None):
     log = run / "editor.log"
     command = [str(editor), str(PROJECT / "Lunden.uproject"), f"-DefEngineIni={ini}",
                f"-LocalDataCachePath={data / 'DerivedDataCache'}",
+               f"-ZenDataPath={data / 'Zen'}",
                "-unattended", "-nosplash", "-nosound", "-nop4", "-stdout", "-FullStdOutLogOutput",
                "-NoCrashDialog", f"-abslog={log}"]
     command += (["-vulkan", "-sm5", "-AllowCommandletRendering", "-RenderOffscreen", "-ResX=640", "-ResY=360", "-windowed"]
@@ -197,6 +198,7 @@ def main(argv=None):
     env = os.environ.copy()
     # UnixPlatformMisc translates '-' to '_' when reading environment variable names.
     env["UE_LocalDataCachePath"] = str(data / "DerivedDataCache")
+    env["UE_ZenDataPath"] = str(data / "Zen")
     if args.render and (args.vulkan_icd or settings.get("vulkanIcd")):
         env["VK_DRIVER_FILES"] = str(args.vulkan_icd.resolve()) if args.vulkan_icd else settings["vulkanIcd"]
     if args.render and settings.get("libraryPath"):
