@@ -1609,13 +1609,18 @@ the export and the pictures section of `notices.mjs`.
   avoiding a transient missing-function compiler error. Capture scripts refresh the real room controllers.
 
   The cabinet retains five actual non-colliding wash planes, original mask/UVs and source owner. Its radiance
-  `(7.35,4.95,3.525)`, edge exponent 0.55 and point multiplier 3.65 are separate guesses, not source-derived units.
+  `(7.35,4.95,3.9)`, edge exponent 0.55 and point multiplier 3.65 are separate guesses, not source-derived units.
   The four walnut leaves use a local Generated child with zero specular. The existing first wash controller
   interpolates original-base-colour factors between day `(1.265,1.259,1.267)` and night `(0.755,0.560,0.155)` using
   actual MPC `Daylight`, updating only those four MIDs independently of the lamp-fade cache. This day/night
   reflectance change is an explicit visual approximation, not a claim that the source wood changes physically.
   The other wash controllers receive no veneer targets. Native readback must verify each real panel's RGB and
   preserved alpha; all three existing illuminated cone-centre crops remain required, not just the cabinet front.
+  The wash candidate was selected from four actual runtime-MID palettes against a source reference with verified
+  full point-light-pool shares. The older evening capture omitted pool settling (#2485); its raw image, locked
+  contract and failed comparisons remain historical diagnostics. The corrected whole evening image uses the same
+  camera, crops and thresholds; day and upper references remain byte-identical. This is a reference-harness
+  correction, not a relaxation of material acceptance.
 
   Final verification belongs in [the furnishing verification](../verification/2322/README.md): use the fixed
   matched day/evening cameras and the additional upper violet curtain crop. All eleven original luminance fields

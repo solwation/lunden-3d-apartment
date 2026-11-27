@@ -24,8 +24,9 @@ VENEER_FACTOR = (1.265, 1.259, 1.267)
 # factor could not match both the day veneer and its warm spotlit evening view.
 # Interpolate with the real weather collection; retain original texture/UV/alpha.
 VENEER_NIGHT_FACTOR = (.755, .560, .155)
-# Guess: 1.5 times the previous wash radiance to include the first cone centre.
-WASH_RADIANCE = (7.35, 4.95, 3.525)
+# Guess selected from actual existing-MID trials against the independently
+# settled source reference (#2485); retain the original day/night veneer factors.
+WASH_RADIANCE = (7.35, 4.95, 3.9)
 WASH_PROFILE = .55
 POINT_GAIN = 3.65
 
