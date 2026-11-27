@@ -220,12 +220,49 @@ def dusk_run(game, sky):
         raise RuntimeError(f"Lamp A at full fade has {a['intensity']} cd, expected its Candela 10")
 
 
+
+def sun_roles(sun, atmosphere):
+    """The visual atmosphere light preserves sky/fog but adds no surface light or shadow caster."""
+    expected = {"atmosphere_sun_light": True, "atmosphere_sun_light_index": 0, "affects_world": True,
+                "diffuse_scale": 0.0, "specular_scale": 0.0, "affect_translucent_lighting": False,
+                "affect_global_illumination": False, "affect_reflection": False, "indirect_lighting_intensity": 0.0,
+                "volumetric_scattering_intensity": 1.0, "cast_shadows": False, "cast_volumetric_shadow": False,
+                "cast_shadows_on_clouds": False, "cast_shadows_on_atmosphere": False, "cast_cloud_shadows": False}
+    actual = {key: atmosphere.get_editor_property(key) for key in expected}
+    if actual != expected:
+        raise RuntimeError(f"Atmosphere-only Sun role changed: {actual}, expected {expected}")
+    channels = atmosphere.get_editor_property("lighting_channels")
+    actual["lightingChannels"] = [channels.channel0, channels.channel1, channels.channel2]
+    if any(actual["lightingChannels"]):
+        raise RuntimeError("Atmosphere-only Sun has surface lighting channels")
+    if sun.get_editor_property("atmosphere_sun_light") or sun.get_editor_property("volumetric_scattering_intensity") != 0:
+        raise RuntimeError("Source surface Sun acquired extra atmosphere transmission or duplicate fog scattering")
+    colour = atmosphere.get_light_color()
+    direct_colour = sun.get_light_color()
+    actual["linearRGB"] = [colour.r, colour.g, colour.b]
+    if max(abs(a-b) for a, b in zip(actual["linearRGB"], (direct_colour.r, direct_colour.g, direct_colour.b))) > 1e-6:
+        raise RuntimeError("Atmosphere Sun lost the original solar colour")
+    actual["intensity"] = atmosphere.intensity
+    if abs(atmosphere.intensity - sun.intensity) > 1e-6:
+        raise RuntimeError("Atmosphere Sun lost the original solar intensity")
+    actual["directionVsDirectDeg"] = angle(vec(u.MathLibrary.get_forward_vector(atmosphere.get_world_rotation())),
+                                           vec(u.MathLibrary.get_forward_vector(sun.get_world_rotation())))
+    if actual["directionVsDirectDeg"] > 0.01:
+        raise RuntimeError("Atmosphere Sun lost the original solar direction")
+    return actual
+
+
 def sun_and_weather(game, sky):
     """2./3. in the game world (in an editor world a property change re-runs the construction script and resets the
     light components, so the lights are read where the game runs them)."""
     sky.set_editor_property("UseClock", False)
     sky.set_editor_property("TimeScale", 0.0)
-    sun_light = [c for c in sky.get_components_by_class(u.DirectionalLightComponent) if c.get_name() == "Sun"][0]
+    directional = {c.get_name(): c for c in sky.get_components_by_class(u.DirectionalLightComponent)}
+    if set(directional) != {"Sun", "SunAtmosphere", "Moon"}:
+        raise RuntimeError("Expected only the source Sun/Moon and one separate atmosphere Sun")
+    if sum(bool(c.get_editor_property("cast_shadows")) for c in directional.values()) != 2:
+        raise RuntimeError("The atmosphere split added or removed an original directional shadow caster")
+    sun_light, atmosphere = directional["Sun"], directional["SunAtmosphere"]
     colours = M["site"]["windowDaylight"]["runtimeColors"]
     for (y, mo, d, h) in CASES:
         for k, v in (("Year", y), ("Month", mo), ("Day", d), ("Hour", h)):
@@ -249,7 +286,8 @@ def sun_and_weather(game, sky):
                "lightVsDirectionDeg": round(off, 5), "sunElevation": sky.get_editor_property("SunElevation"),
                "daylight": sky.get_editor_property("Daylight"), "moonIllumination": sky.get_editor_property("MoonIllumination"),
                "sunIntensity": sun_light.intensity, "sunLightColorLinear": actual_colour,
-               "sunLightColorSRGB8": [stored_colour.r, stored_colour.g, stored_colour.b], **mpc_state(game)}
+               "sunLightColorSRGB8": [stored_colour.r, stored_colour.g, stored_colour.b],
+               "sunAtmosphere": sun_roles(sun_light, atmosphere), **mpc_state(game)}
         result["sun"].append(row)
         log("sun " + json.dumps(row))
         if off > 0.01:

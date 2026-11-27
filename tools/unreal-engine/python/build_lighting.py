@@ -1055,16 +1055,30 @@ moving = (kNew - K) * (kNew - K) > 0.0000000001
 
 def build_sky(spec, mpc, precip, clouds, tonemap, window_material):
     bp = load_or_create_blueprint(SKY, u.Actor)
-    comps = components(bp, {"Sun": u.DirectionalLightComponent, "Moon": u.DirectionalLightComponent,
+    comps = components(bp, {"Sun": u.DirectionalLightComponent, "SunAtmosphere": u.DirectionalLightComponent,
+                            "Moon": u.DirectionalLightComponent,
                             "Atmosphere": u.SkyAtmosphereComponent, "SkyLight": u.SkyLightComponent,
                             "Fog": u.ExponentialHeightFogComponent, "Clouds": u.VolumetricCloudComponent,
                             "Weather": u.PostProcessComponent, "Ambient": u.PostProcessComponent, "Exposure": u.PostProcessComponent})
-    for name in ("Sun", "Moon"):
+    for name in ("Sun", "SunAtmosphere", "Moon"):
         c = comps[name]
         c.set_editor_property("mobility", u.ComponentMobility.MOVABLE)
-        c.set_editor_property("atmosphere_sun_light", True)
-        c.set_editor_property("atmosphere_sun_light_index", 0 if name == "Sun" else 1)
-        c.set_editor_property("cast_shadows", True)
+        c.set_editor_property("atmosphere_sun_light", name != "Sun")
+        c.set_editor_property("atmosphere_sun_light_index", 1 if name == "Moon" else 0)
+        c.set_editor_property("cast_shadows", name != "SunAtmosphere")
+    # #2398: the web already supplies the surface Sun tint. Its direct light
+    # bypasses atmosphere transmission; the original atmosphere/fog illumination
+    # remains on a separate component with no surface, GI, reflection or shadow contribution.
+    comps["Sun"].set_editor_property("volumetric_scattering_intensity", 0.0)
+    atmosphere_sun = comps["SunAtmosphere"]
+    for prop, value in (("affects_world", True), ("diffuse_scale", 0.0), ("specular_scale", 0.0),
+                        ("affect_translucent_lighting", False), ("affect_global_illumination", False),
+                        ("affect_reflection", False), ("indirect_lighting_intensity", 0.0),
+                        ("volumetric_scattering_intensity", 1.0), ("cast_volumetric_shadow", False),
+                        ("cast_shadows_on_clouds", False), ("cast_shadows_on_atmosphere", False),
+                        ("cast_cloud_shadows", False)):
+        atmosphere_sun.set_editor_property(prop, value)
+    atmosphere_sun.set_editor_property("lighting_channels", u.LightingChannels(channel0=False, channel1=False, channel2=False))
     comps["Moon"].set_editor_property("light_color", u.Color(r=196, g=210, b=255, a=255))  # daycycle.js MOON tint, *guess*
     # the moon's disc is the post process's (with its phase, #2307), not the atmosphere's round light disk
     comps["Moon"].set_editor_property("atmosphere_sun_disk_color_scale", u.LinearColor(0, 0, 0, 1))
@@ -1188,7 +1202,8 @@ def build_sky(spec, mpc, precip, clouds, tonemap, window_material):
         s = G.place(G.g.add_set_member_variable_node(name))
         E.feed(s, name, value)
         chain.then(s)
-    for comp, vec, lux in (("Sun", sun_vec, env["sunOut"]), ("Moon", moon_vec, env["moonOut"])):
+    for comp, vec, lux in (("Sun", sun_vec, env["sunOut"]), ("SunAtmosphere", sun_vec, env["sunOut"]),
+                           ("Moon", moon_vec, env["moonOut"])):
         neg = G.call("KismetMathLibrary:NegateVector")
         connect(vec, "ReturnValue", neg, "A")
         rot = G.call("KismetMathLibrary:MakeRotFromX")
@@ -1204,10 +1219,11 @@ def build_sky(spec, mpc, precip, clouds, tonemap, window_material):
     sun_colour = G.call("KismetMathLibrary:MakeColor", A=1.0)
     for channel in "RGB":
         E.feed(sun_colour, channel, env["sunColour" + channel])
-    tint = G.call("LightComponent:SetLightColor", bSRGB=True)
-    connect(G.get("Sun"), "Sun", tint, "self")
-    connect(sun_colour, "ReturnValue", tint, "NewLightColor")
-    chain.then(tint)
+    for comp in ("Sun", "SunAtmosphere"):
+        tint = G.call("LightComponent:SetLightColor", bSRGB=True)
+        connect(G.get(comp), comp, tint, "self")
+        connect(sun_colour, "ReturnValue", tint, "NewLightColor")
+        chain.then(tint)
     weight = G.place(G.g.add_set_member_variable_node("BlendWeight", "/Script/Engine.PostProcessComponent"))
     connect(G.get("Ambient"), "Ambient", weight, "self")
     E.feed(weight, "BlendWeight", (E.k("Divide_DoubleDouble", A=env["fill"], B=env["AmbientRef"]), "ReturnValue"))
