@@ -1,8 +1,9 @@
 # #2403: Linux native parasol verification
 
 The actual source-driven controller now folds the imported patio canopy in the two
-required rendered states. Fresh canonical PIE acceptance now passes as documented below. Root owns final
-publication, pinned-image verification and issue closure.
+required rendered states. Fresh canonical PIE acceptance now passes as documented below. The result images and report were published at `2b4b599bb2eef66fab5d19e423f05a3c0066a03a`;
+all eight immutable raw-image URLs returned HTTPS200 with exact SHA256 before the
+[completion image comment](https://github.com/solwation/lunden-3d-apartment/issues/2403#issuecomment-7227172932).
 
 The RHI build/render run used source `b8a31c02d5c281e695f87e2eb580486905f97c39`,
 UE 5.8.4, CPU Vulkan, 640×360 and the existing Linux rendering profile. Actual native,
