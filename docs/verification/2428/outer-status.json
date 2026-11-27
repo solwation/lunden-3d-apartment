@@ -1,0 +1,10 @@
+{
+  "actualExecSession": 53606,
+  "actualOuterExit": 143,
+  "nativeExit": 0,
+  "runnerExit": 0,
+  "nativeSeconds": 325.72,
+  "rawOutcomePassed": true,
+  "shaderLogErrors": [],
+  "classification": "Actual outerSIGTERM143 despite completed inner results; existing2473 remainsOPEN. Rawoutcome unchanged, no full outerall0claim."
+}

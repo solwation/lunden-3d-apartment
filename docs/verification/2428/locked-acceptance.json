@@ -1,0 +1,124 @@
+{
+  "issue": 2428,
+  "historicalCameraSource": "docs/verification/2393/unreal-capture.json",
+  "viewport": [
+    1440,
+    810
+  ],
+  "verticalFov": 72,
+  "views": [
+    {
+      "id": "courtyard",
+      "x": 12.5,
+      "z": 26.0,
+      "feetY": 4.0,
+      "yawDeg": 80.0,
+      "pitchDeg": -14.0
+    },
+    {
+      "id": "entrance-a",
+      "x": 6.5,
+      "z": 27.0,
+      "feetY": 0.0,
+      "yawDeg": 115.0,
+      "pitchDeg": 5.0
+    }
+  ],
+  "shots": [
+    {
+      "name": "courtyard",
+      "camera": "courtyard",
+      "date": [
+        2026,
+        6,
+        21
+      ],
+      "hour": 14,
+      "lamps": "none",
+      "weather": "clear"
+    },
+    {
+      "name": "entrance-a",
+      "camera": "entrance-a",
+      "date": [
+        2026,
+        6,
+        21
+      ],
+      "hour": 14,
+      "lamps": "none",
+      "weather": "clear"
+    }
+  ],
+  "crops": {
+    "entrance-a": {
+      "wall-near": [
+        0.1,
+        0.15,
+        0.32,
+        0.7
+      ],
+      "wall-far": [
+        0.5,
+        0.03,
+        0.525,
+        0.28
+      ]
+    },
+    "courtyard": {
+      "husA-near": [
+        0.0,
+        0.32,
+        0.03,
+        0.62
+      ],
+      "husA-mid": [
+        0.25,
+        0.32,
+        0.27,
+        0.46
+      ],
+      "husL-far": [
+        0.885,
+        0.245,
+        0.99,
+        0.275
+      ],
+      "husL-mid2": [
+        0.81,
+        0.13,
+        0.83,
+        0.24
+      ]
+    }
+  },
+  "farCrops": [
+    "entrance-a/wall-far",
+    "courtyard/husA-mid",
+    "courtyard/husL-far",
+    "courtyard/husL-mid2"
+  ],
+  "nearCrops": [
+    "entrance-a/wall-near",
+    "courtyard/husA-near"
+  ],
+  "criteria": {
+    "farMortarShareRatio": [
+      0.9,
+      1.1
+    ],
+    "farMortarLRatio": [
+      0.9,
+      1.1
+    ],
+    "farBrickLRatio": [
+      0.9,
+      1.1
+    ],
+    "near": "Report all ratios and review against original close-up result; no silent acceptance relaxation",
+    "moire": "Whole original courtyard HusL and HusA must show no moire; visual review required"
+  },
+  "nativeProfile": "LinuxCPU FXAA1, conventional shadows3/1024/3cascades, SeparateTranslucency1, LumenFalse; original W11 reference used a different rendering profile",
+  "oldWebReuse": false,
+  "reason": "Old2393 source9f662b65 cannot prove equality to current718web sources. Fresh canonical two-view web batch required before Native."
+}

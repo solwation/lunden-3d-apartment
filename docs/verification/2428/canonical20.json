@@ -1,0 +1,372 @@
+{
+  "metadata": {
+    "harness": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/cached-canonical.py",
+    "expectedSource": "a1ff6c9cfbb790f5014965e62219b6921cf57db6",
+    "project": "/home/devcontainers/lunden-linux/unreal/Lunden",
+    "baseline": "/home/devcontainers/.local/state/lunden-codex-20261127/2394/native-baseline.json",
+    "historicallyChangedExistingLighting": [
+      "unreal/Lunden/Content/Lunden/Lighting/BP_LundenLamp.uasset",
+      "unreal/Lunden/Content/Lunden/Lighting/BP_LundenSky.uasset",
+      "unreal/Lunden/Content/Lunden/Lighting/MPC_LundenWeather.uasset",
+      "unreal/Lunden/Content/Lunden/Lighting/M_LundenClouds.uasset",
+      "unreal/Lunden/Content/Lunden/Lighting/M_LundenNeutralTonemap.uasset",
+      "unreal/Lunden/Content/Lunden/Lighting/M_LundenPrecipitation.uasset",
+      "unreal/Lunden/Content/Lunden/Lighting/T_LundenHemisphere.uasset"
+    ],
+    "historicallyCreatedLighting": [
+      "unreal/Lunden/Content/Lunden/Lighting/M_LundenWindowDaylight.uasset"
+    ],
+    "canonicalDerivedOrder": [
+      "build_l1007",
+      "build_exterior",
+      "build_site",
+      "build_lighting",
+      "build_facade",
+      "build_vegetation",
+      "build_interaction",
+      "build_curtains",
+      "build_cabinet_washes",
+      "build_rug_pool"
+    ],
+    "nativeLogErrorsCheckedBy": "external run-python-linux runner; Python records exceptions only",
+    "status": "actual-cached-canonical-freshstamp-release-passed",
+    "completed": true,
+    "executionMode": "actual entire cached canonical sequence, no reused execution",
+    "reusedSteps": [],
+    "configurationSHA256": "ec87101b3e2a40787100b9fcd4b6536d1dec04dd0d77af4f639fd3fee73993d4",
+    "harnessSha256": "78464485dbdf2b32dc7a5622eaaee0f245f636cbd757e8bc56a0208d0de79c0b",
+    "sourceCommit": "a1ff6c9cfbb790f5014965e62219b6921cf57db6",
+    "initialDirtyPaths": [
+      "unreal/Lunden/Content/Lunden/Materials/M_LundenTiled.uasset"
+    ],
+    "allCurrentAuthoredMustRemainExact": true,
+    "exportSourceCommit": "f7ef67edcda887f1c01d18c3e6c3141bb6ecbab7",
+    "sourceFileSha256": {
+      "tools/unreal-engine/check-export.mjs": "88900f16c9bc8a939ce9510c6605094bc9e2ebeff63aa8ffba1c93d6afab4f41",
+      "tools/unreal-engine/check-import.mjs": "a90f0c80ab8752f881131272bd1ac79d0c6a9b51d8d3169d4f53fb47c17769ba",
+      "tools/unreal-engine/material-map.json": "8a04a4c9eb565ffea150ab853e0753a7d9f6e0f2c32425c594299dd9c34627c0",
+      "tools/unreal-engine/python/backdrop_material.py": "6280e951029a456a3b3ec5dab116f719883fe9b0ae025b05a345363e72a2cda1",
+      "tools/unreal-engine/python/build_audio.py": "30678701f9eb6b32e73247d67f6404bc802964bb4e7774e65fca3877b67b8a6c",
+      "tools/unreal-engine/python/build_avatar_looks.py": "c0cc0e05ee1abc38b9111c3735d94ba6b6e2dafa45ea858ada2cb955d32c0eeb",
+      "tools/unreal-engine/python/build_avatar_rig.py": "991ca953463fc561b1a4b47f3fcb9021df94e3691229ba0e6395fc8ad0a0606b",
+      "tools/unreal-engine/python/build_cabinet_washes.py": "080fd1cb68d86166f87e0f66dd97e19f7845186d6e2a82ae6d37bde2375aa17a",
+      "tools/unreal-engine/python/build_curtains.py": "29cd459085e437a9e1d3457e64dc8a5a7907b5486094b8bb2d426feae5c3c21c",
+      "tools/unreal-engine/python/build_display_pools.py": "f1a0b0562c107a1a30331faff8dc6012864105ede0daddba21c332cf263f8812",
+      "tools/unreal-engine/python/build_exterior.py": "4a29cf45a8eeffb7dafbbadfd683a9e49fe50f34cce59be0b246d5d4ca2e9d7b",
+      "tools/unreal-engine/python/build_facade.py": "18561970d999c68e8b81b4ea34346331a623715d9d044980fbf84da9eca90505",
+      "tools/unreal-engine/python/build_furnishing_profile.py": "d4cbaacfd64d9f0a2ea38ff74ef175e5faee64724267a5225757707c354d9b7b",
+      "tools/unreal-engine/python/build_interaction.py": "d53b63f861fb4c720c7f9eb3127a8bbef9452eefd8ca0b5dfe8fa074eedfe2d8",
+      "tools/unreal-engine/python/build_l1007.py": "fda05805b5e7a657ff27182c132d16c0b114de71591164bf909614ff37b55a7b",
+      "tools/unreal-engine/python/build_lighting.py": "9285fd89a5b7c3bd532eb0ff17600b342a75010b622c4da5500fab0e3550f67b",
+      "tools/unreal-engine/python/build_materials.py": "39a91f5562d5b1f6479a1e4b0f4cb10d32849e6247ee687909ebf3269180c1f1",
+      "tools/unreal-engine/python/build_network.py": "0125a84221237b9fa0214adb3a018b911535edfca10c65f78f9eb04362624edc",
+      "tools/unreal-engine/python/build_network_peers.py": "8b7ec00269bdf406ab2158b5179068aad50c60aa1be2ca9138b233f353fde5c5",
+      "tools/unreal-engine/python/build_network_shared.py": "ed0b602d087b53b1a7d705b4d001bb6769c437521cc8733b3637312cd498aaf9",
+      "tools/unreal-engine/python/build_pilot_collision.py": "49a8279a6294a1dc8697f35d019a00ac2539891454b15a1ea3342b62a3064d0e",
+      "tools/unreal-engine/python/build_pilot_doors.py": "b91c226d744eee4d83f3ed1ce7289362671cb85e4aa16042b9eab310565631be",
+      "tools/unreal-engine/python/build_player.py": "8e5fa5c5fac002c62160181c03a551bad7f037e7c0718fe7d5c7871a2cc30e06",
+      "tools/unreal-engine/python/build_rug_pool.py": "aa171753e9728ba12fd425b9038fc4332a2c5cb32490f7042027c3c688a58392",
+      "tools/unreal-engine/python/build_save.py": "04adffb8613d94303738f20f264d6f5c2495a4d334fe4b97093f09517843ef54",
+      "tools/unreal-engine/python/build_seasons.py": "33ab2c0759b6a54cd465f6a3ec7e72cdede9e366e96a59b0dfd80b812c3d3e9c",
+      "tools/unreal-engine/python/build_site.py": "2a60182a083a63606c414a9f67cc23325232acaf44fa893d217c1e934b660180",
+      "tools/unreal-engine/python/build_ui.py": "edf7596c59c06e1cb347f83278f09b0833278c645f473c23faee5cafcde2f57c",
+      "tools/unreal-engine/python/build_vegetation.py": "4f0e748c4c87d6f890bded4efff8ec3e33ef6da5894f82c984f9c0627f9994f4",
+      "tools/unreal-engine/python/build_wall_ao.py": "fea74ea9110184cc0329a9b6813f652aacf0a0e5f443aca938f970d9f7e2485f",
+      "tools/unreal-engine/python/build_window_light.py": "e04623ec09692af4cdb64599715d9c87080fcaf7e374ca9c7dc4db23c5526cc6",
+      "tools/unreal-engine/python/capture_pilot.py": "26538f43b91535bb2aaf2dc3859ccf3176c2470cd96c8b64ffcd6951d859d14d",
+      "tools/unreal-engine/python/chunk_spike.py": "ff1f551ecf30279ec947305ff80e7f8b56c59fe5404df505a06bbdaffc6093cf",
+      "tools/unreal-engine/python/collection_ids.py": "8e8939f517fbacc0b6aa15eaae00c9673e6d4dd661951758fbdb1d4a2ae6f765",
+      "tools/unreal-engine/python/compose_world.py": "a2c1a93ea9a683125010f467829cd6981e875e6e43a4ec61392c8d4f7099b2ea",
+      "tools/unreal-engine/python/create_base_materials.py": "5e8ca1c2f4d32fccb7a6d5be41c729e5598426bfaf5f44e608a5ffae9a63d433",
+      "tools/unreal-engine/python/display_pools.py": "ff6559f6ec7a63a363178e5b3cceecbe82477d805cc07d11b3bb96983cf6b2da",
+      "tools/unreal-engine/python/facade_scene.py": "81cdaab79609eb622c9af44f2ced5882cccf3e7b597d026e95451ce4b78713bb",
+      "tools/unreal-engine/python/garage_control.py": "f7e1831d8d6fcb9507a51129f5e4abe8bff4c2816ab859f5f1347709311b9ccb",
+      "tools/unreal-engine/python/garage_materials.py": "b57debaef9131f3289b3296d4f05fd16585a868aafb8cca23c6f67ac38d635f2",
+      "tools/unreal-engine/python/ground_litter.py": "0e22ba302d9c72871b1ac81728046f63d7baeb3f510ad4580e8dd15e17857394",
+      "tools/unreal-engine/python/import_world.py": "17c3d3244ab2194759132b830edae0202ff6915ec3f9d5afd8c56c2d21593331",
+      "tools/unreal-engine/python/measure_pilot.py": "73ec8f828aab5c02fed498988680385f812841769f1227761505ab274ad3aa0d",
+      "tools/unreal-engine/python/network_events.py": "fe11d20ef6927e474e9c78333ee2a8e27bd5ba8d54d705537e67b9d3848d4b05",
+      "tools/unreal-engine/python/neutral_tonemap.py": "94af6286bf9642f4a90c040f750992a15285902c42841f7353f1769a6afaee7f",
+      "tools/unreal-engine/python/parasol_control.py": "76e87a22bf6356bbaba8d65026e4aafdb83abcd9253a11aca22910a52db7171a",
+      "tools/unreal-engine/python/player_parts.py": "b522d04048eccf7a6ee03d04c460790f279157f91d4f2a8548a76a67ad4980f0",
+      "tools/unreal-engine/python/player_pitch.py": "7b40b1282035e0965c63ff4cc66a9d2ced956b6c60a840df2ce8f0f10b1a8706",
+      "tools/unreal-engine/python/prepare_nanite_materials.py": "e12dffcbb0c12b7e0233f65b86e1cf3149f36e1761d4ba6cdd6387be82ed4050",
+      "tools/unreal-engine/python/prepare_playable_pilot.py": "5fda5eeffaf953cffdc0e56f0a0e5797ef344ace9423d11d3e23fc67c08054e4",
+      "tools/unreal-engine/python/prepare_profile_camera.py": "dc3be8acae5471e007915f990e9682a658dcbc84e694476f4a7b75de2c22b16b",
+      "tools/unreal-engine/python/privacy_content.py": "acd9c5dfbe4f87d3a7d41da9fdc4cf2090ea3eb20e7682fed1a1f3b2d78564ed",
+      "tools/unreal-engine/python/probe_linux.py": "5eb00cd2386edd52ac43f35a9e23cbcf154b0c8a2376d3f3517134bdc4c97c71",
+      "tools/unreal-engine/python/river_material.py": "7da824bdcdbe3fcfd7ffd809cb60b186953fb37c313f66454e1ea2a01031d7e1",
+      "tools/unreal-engine/python/screenshot_level.py": "1c25fc83235b83a64b3c9c89bfbef2665d1376975f272e3462ce135f1972f70f",
+      "tools/unreal-engine/python/season_tags.py": "665d9040d7a5744135de23e2421c8b13b40fb8228838cbb752e4f1ea148e0da7",
+      "tools/unreal-engine/python/shared_chat_widget.py": "2382cbb03e0b111bbf728a0bde7f70ab9163453708cd109ec92f6b7785a41602",
+      "tools/unreal-engine/python/shared_door_ids.py": "f5b281256ec8500b5a4a59f20b71a8fddb72795c8fcb09a823fee7de9fadb8f9",
+      "tools/unreal-engine/python/shared_room_life.py": "f65a3e112605ba7ac00981065f07693618ef447500c4eff276899a220a844bb7",
+      "tools/unreal-engine/python/sky_clouds.py": "0bd1bccfc02e5f986e230f7ec15a92cceca5cbb6dd7253e7936dce575d6a1d56",
+      "tools/unreal-engine/python/smoke_create_asset.py": "49c9b374c0dc093fcf344e05b7b250f9c42ed725a3f88ef3df065ee37e747677",
+      "tools/unreal-engine/python/smoke_render_linux.py": "6f3c699aa291215c34d998a1c624ea848fa7809279d983e68683b739b3375a90",
+      "tools/unreal-engine/python/stair_lamp.py": "dfeda5dc8af3a28d93c74b56b1e678ac96e32771fa80e8a037b6c50410ef0358",
+      "tools/unreal-engine/python/wall_ao.py": "dd351009a7ca8a2533bf286e7e56e7dd97d0117f3b07e3ad9c29c4a4ed0616aa",
+      "tools/unreal-engine/python/wall_ao_depth.py": "0b6e334dbd70052da45d42eb5b2192eaf96b62eebe5a08d8d939632051a99111",
+      "tools/unreal-engine/python/weather_audio.py": "f67ddbd1b9927bd77307e4b6bc7fa6e7e660e086932eef2ace3ff819c70c1a85",
+      "tools/unreal-engine/python/window_audio.py": "154a3dd3ad3315296ca6d499304663357f856086ce46250c09d184bb4c9617fe",
+      "tools/unreal-engine/python/window_light.py": "c5ce15541bbc5f296d1b4d11f538f5e2306fc1d7d052199e331baf23d8756703",
+      "tools/unreal-engine/sync-import.ps1": "aef4dfdd192bafb71dd97ff36e15da22435b857f8f9b57571111311ad6292b74",
+      "tools/unreal-engine/world-levels.json": "afd64b0b10d01500c39b65dc733e0e626fb465385d2ef09585664136252c125c"
+    },
+    "baselineSha256": "a914893ed04b4a152b7499f3f9ef6751b7b491577b08c65df0447eb22e02771f",
+    "exportManifestSha256": "29bdcf87a7db0b9aa1641707f4228daca579a0f4d15d3ea0486b1b7f77bd1b19",
+    "exportSourceHash": "13bd3b29a401a27296e9d6f591bff1229ebb2c0eef8207a605fc3b59f72638fc",
+    "exportResolvedPath": "/mnt/d/LundenLinux/exports/issue2404-garage-v4",
+    "loadedBuilders": {
+      "build_lighting": {
+        "sha256": "9285fd89a5b7c3bd532eb0ff17600b342a75010b622c4da5500fab0e3550f67b",
+        "omittedStandaloneCalls": []
+      },
+      "build_seasons": {
+        "sha256": "33ab2c0759b6a54cd465f6a3ec7e72cdede9e366e96a59b0dfd80b812c3d3e9c",
+        "omittedStandaloneCalls": [
+          434
+        ]
+      },
+      "build_vegetation": {
+        "sha256": "4f0e748c4c87d6f890bded4efff8ec3e33ef6da5894f82c984f9c0627f9994f4",
+        "omittedStandaloneCalls": [
+          716
+        ]
+      },
+      "build_interaction": {
+        "sha256": "d53b63f861fb4c720c7f9eb3127a8bbef9452eefd8ca0b5dfe8fa074eedfe2d8",
+        "omittedStandaloneCalls": [
+          800
+        ]
+      },
+      "import_world": {
+        "sha256": "17c3d3244ab2194759132b830edae0202ff6915ec3f9d5afd8c56c2d21593331",
+        "omittedStandaloneCalls": [
+          883
+        ]
+      },
+      "build_l1007": {
+        "sha256": "fda05805b5e7a657ff27182c132d16c0b114de71591164bf909614ff37b55a7b",
+        "omittedStandaloneCalls": [
+          155
+        ]
+      },
+      "build_exterior": {
+        "sha256": "4a29cf45a8eeffb7dafbbadfd683a9e49fe50f34cce59be0b246d5d4ca2e9d7b",
+        "omittedStandaloneCalls": [
+          178
+        ]
+      },
+      "build_site": {
+        "sha256": "2a60182a083a63606c414a9f67cc23325232acaf44fa893d217c1e934b660180",
+        "omittedStandaloneCalls": [
+          168
+        ]
+      },
+      "build_facade": {
+        "sha256": "18561970d999c68e8b81b4ea34346331a623715d9d044980fbf84da9eca90505",
+        "omittedStandaloneCalls": []
+      },
+      "build_curtains": {
+        "sha256": "29cd459085e437a9e1d3457e64dc8a5a7907b5486094b8bb2d426feae5c3c21c",
+        "omittedStandaloneCalls": []
+      },
+      "build_cabinet_washes": {
+        "sha256": "080fd1cb68d86166f87e0f66dd97e19f7845186d6e2a82ae6d37bde2375aa17a",
+        "omittedStandaloneCalls": []
+      },
+      "build_rug_pool": {
+        "sha256": "aa171753e9728ba12fd425b9038fc4332a2c5cb32490f7042027c3c688a58392",
+        "omittedStandaloneCalls": []
+      },
+      "compose_world": {
+        "sha256": "a2c1a93ea9a683125010f467829cd6981e875e6e43a4ec61392c8d4f7099b2ea",
+        "omittedStandaloneCalls": [
+          150
+        ]
+      }
+    },
+    "majorDerivedSkipPreflight": "omitted redundant geometry preflight; actual canonical builders retain their own unchanged checks",
+    "currentAuthoredUnchangedCount": 247,
+    "publishedAuthoredSnapshotReference": "native-verification.json:authoredAfter (exact value equality checked during packaging)"
+  },
+  "steps": [
+    {
+      "step": "lighting-check-first",
+      "passed": true,
+      "result": null,
+      "seconds": 1.427
+    },
+    {
+      "step": "preflight-existing",
+      "passed": true,
+      "result": {
+        "seasons": "canonical --check passed",
+        "vegetation": "canonical materials(check=True) passed",
+        "interaction": {
+          "/Game/Lunden/Interaction/BP_LundenInteractionListener": true,
+          "/Game/Lunden/Blueprints/PilotDoors/BP_LundenSwingDoor": true
+        },
+        "lighting": "canonical --check required before actual skip invocation"
+      },
+      "seconds": 19.368
+    },
+    {
+      "step": "export",
+      "passed": true,
+      "result": {
+        "command": [
+          "/home/devcontainers/.nvm/versions/node/v22.20.0/bin/node",
+          "/home/devcontainers/lunden-linux/tools/unreal-engine/check-export.mjs",
+          "--dir",
+          "/home/devcontainers/lunden-linux/unreal/Lunden/Import"
+        ],
+        "exitCode": 0,
+        "stdout": "Unreal export is current: 11 files, 9402 nodes (9402 ids, each in one zone), 321 sources (exported from f7ef67ed, HEAD a1ff6c9c)\n",
+        "stderr": ""
+      },
+      "seconds": 4.633
+    },
+    {
+      "step": "seasons",
+      "passed": true,
+      "result": null,
+      "seconds": 0.456
+    },
+    {
+      "step": "import",
+      "passed": true,
+      "result": null,
+      "seconds": 9.019
+    },
+    {
+      "step": "build_l1007",
+      "passed": true,
+      "result": null,
+      "seconds": 0.388
+    },
+    {
+      "step": "build_exterior",
+      "passed": true,
+      "result": null,
+      "seconds": 0.529
+    },
+    {
+      "step": "build_site",
+      "passed": true,
+      "result": null,
+      "seconds": 0.47
+    },
+    {
+      "step": "build_lighting",
+      "passed": true,
+      "result": null,
+      "seconds": 0.482
+    },
+    {
+      "step": "build_facade",
+      "passed": true,
+      "result": null,
+      "seconds": 0.57
+    },
+    {
+      "step": "build_vegetation",
+      "passed": true,
+      "result": null,
+      "seconds": 0.483
+    },
+    {
+      "step": "build_interaction",
+      "passed": true,
+      "result": null,
+      "seconds": 12.655
+    },
+    {
+      "step": "build_curtains",
+      "passed": true,
+      "result": null,
+      "seconds": 1.565
+    },
+    {
+      "step": "build_cabinet_washes",
+      "passed": true,
+      "result": null,
+      "seconds": 1.649
+    },
+    {
+      "step": "build_rug_pool",
+      "passed": true,
+      "result": null,
+      "seconds": 4.369
+    },
+    {
+      "step": "compose-check",
+      "passed": true,
+      "result": null,
+      "seconds": 4.596
+    },
+    {
+      "step": "import-check",
+      "passed": true,
+      "result": null,
+      "seconds": 10.831
+    },
+    {
+      "step": "nanite-usage-check",
+      "passed": true,
+      "result": {
+        "zones": [
+          "fixture",
+          "fond",
+          "gard",
+          "hus-l",
+          "kvarteret",
+          "l1007",
+          "l1007-entre",
+          "l1007-uteplats",
+          "omgivning",
+          "vegetation"
+        ],
+        "checkOnly": true
+      },
+      "seconds": 1.035
+    },
+    {
+      "step": "sync-stamp",
+      "passed": true,
+      "result": {
+        "command": [
+          "/home/devcontainers/.nvm/versions/node/v22.20.0/bin/node",
+          "/home/devcontainers/lunden-linux/tools/unreal-engine/check-import.mjs",
+          "--write-sync-stamp",
+          "--steps",
+          "export,seasons,import,build_l1007,build_exterior,build_site,build_lighting,build_facade,build_vegetation,build_interaction,build_curtains,build_cabinet_washes,build_rug_pool,compose-check,import-check"
+        ],
+        "exitCode": 0,
+        "stdout": "sync stamp written: complete sync of f7ef67ed (export, seasons, import, build_l1007, build_exterior, build_site, build_lighting, build_facade, build_vegetation, build_interaction, build_curtains, build_cabinet_washes, build_rug_pool, compose-check, import-check)\n",
+        "stderr": ""
+      },
+      "seconds": 0.448
+    },
+    {
+      "step": "release-gate",
+      "passed": true,
+      "result": {
+        "command": [
+          "/home/devcontainers/.nvm/versions/node/v22.20.0/bin/node",
+          "/home/devcontainers/lunden-linux/tools/unreal-engine/check-import.mjs"
+        ],
+        "exitCode": 0,
+        "stdout": "  Unreal export is current: 11 files, 9402 nodes (9402 ids, each in one zone), 321 sources (exported from f7ef67ed, HEAD a1ff6c9c)\nUnreal import is current: 10 zones (fixture, fond, gard, hus-l, kvarteret, l1007-entre, l1007-uteplats, l1007, omgivning, vegetation) match the export of f7ef67ed; last sync-import complete\n",
+        "stderr": ""
+      },
+      "seconds": 4.56
+    }
+  ],
+  "publicationNote": {
+    "privateOriginal": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/native-product/product/canonical/sync-capture-steps.json",
+    "privateOriginalSHA256": "c7f2a152ee1721b73935fdeca49def8cd8529dd9d6c1e3b8b8f6e73a0d98e2f9",
+    "omittedOnly": "247-file snapshot identical to native-verification.json:authoredAfter"
+  }
+}

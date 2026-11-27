@@ -1,0 +1,1660 @@
+{
+  "brick": {
+    "completed": true,
+    "sourceHead": "a1ff6c9cfbb790f5014965e62219b6921cf57db6",
+    "contractSHA256": "060ded446fac756fcd1d25839fdb77d6a723bb3e76c4b4c1183785adb620c5cf",
+    "shots": [
+      {
+        "id": "courtyard",
+        "camera": {
+          "xyz": [
+            1250.0,
+            2600.0,
+            562.0
+          ],
+          "yaw": -170.0,
+          "pitch": -13.999999999999998,
+          "roll": 2.0487018772555777e-16,
+          "horizontalFov": 104.50486755371094,
+          "width": 1440,
+          "height": 810,
+          "separateTranslucencyShowFlag": true,
+          "privateBlendableAttached": false
+        },
+        "sourceReference": {
+          "date": [
+            2026,
+            6,
+            21
+          ],
+          "hour": 14,
+          "overcast": 0,
+          "under": 0,
+          "dim": 0,
+          "dayShare": 1,
+          "skyStrength": 1.5,
+          "sunIntensity": 3,
+          "sunDirWeb": [
+            0.3290249069149738,
+            0.832794289174853,
+            0.44519241070277027
+          ]
+        },
+        "actualRuntime": {
+          "WindowSkyStrength": 1.5,
+          "WindowSunStrength": 3.0,
+          "WindowAmbientFill": 1.058500051498413,
+          "Daylight": 1.0,
+          "SunDirNative": [
+            0.32902491092681885,
+            0.4451923966407776,
+            0.8327943086624146
+          ],
+          "SunDirWeb": [
+            0.32902491092681885,
+            0.8327943086624146,
+            0.4451923966407776
+          ],
+          "actualAmbient": {
+            "cube": "/Game/Lunden/Lighting/T_LundenHemisphere.T_LundenHemisphere",
+            "intensity": 2.1010000705718994,
+            "blendWeight": 0.5038077235221863,
+            "effectiveFill": 1.0585000626747814,
+            "tint": [
+              1.0,
+              1.0,
+              1.0
+            ]
+          },
+          "expectedNativeFill": 1.0585
+        },
+        "actualPatio": {
+          "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_ljusslingan_l0_x47_z1522",
+          "functions": [
+            "ApplyPatioBulbs",
+            "UpdatePatioParasol(2.0)"
+          ],
+          "K": 0.0,
+          "Supply": 1.0,
+          "BulbIdle": 0.06,
+          "BulbBoost": 1.4,
+          "BulbColour": [
+            1.0,
+            0.6239603757858276,
+            0.2541520893573761
+          ],
+          "BaseColorFactor": [
+            0.05999999865889549,
+            0.037437621504068375,
+            0.01524912565946579,
+            1.0
+          ],
+          "ParasolOpen": 1.0,
+          "StringMaterial": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+          "StringMaster": "/InterchangeAssets/gltf/M_Unlit.M_Unlit",
+          "StringMasterShadingModel": "<MaterialShadingModel.MSM_UNLIT: 0>",
+          "actualSharedBulbs": 82,
+          "pools": [
+            {
+              "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_ljusslingan_l0_x47_z1522",
+              "tags": [
+                "lamp:lamp_ljusslingan_l0_x47_z1522",
+                "kind:lamp",
+                "level:0",
+                "auto:dusk",
+                "patio:string-driver"
+              ],
+              "K": 0.0,
+              "Supply": 1.0,
+              "Candela": 3.9199999999999995,
+              "Auto": true,
+              "PatioDusk": true,
+              "light_color_sRGB_bytes": [
+                255,
+                207,
+                138,
+                255
+              ],
+              "get_light_color_linear": [
+                1.0,
+                0.6239603757858276,
+                0.2541520893573761,
+                1.0
+              ],
+              "intensity": 0.0,
+              "attenuation_radius": 400.0,
+              "visible": false,
+              "positionNative": [
+                46.95,
+                1522.3,
+                158.0
+              ]
+            },
+            {
+              "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_ljusslingan_l0_x528_z1522",
+              "tags": [
+                "lamp:lamp_ljusslingan_l0_x528_z1522",
+                "kind:lamp",
+                "level:0",
+                "auto:dusk"
+              ],
+              "K": 0.0,
+              "Supply": 1.0,
+              "Candela": 3.9199999999999995,
+              "Auto": true,
+              "PatioDusk": true,
+              "light_color_sRGB_bytes": [
+                255,
+                207,
+                138,
+                255
+              ],
+              "get_light_color_linear": [
+                1.0,
+                0.6239603757858276,
+                0.2541520893573761,
+                1.0
+              ],
+              "intensity": 0.0,
+              "attenuation_radius": 400.0,
+              "visible": false,
+              "positionNative": [
+                527.87,
+                1522.3,
+                158.0
+              ]
+            }
+          ],
+          "MPC": {
+            "DuskLight": 1.0,
+            "PowerAvailable": 1.0
+          }
+        },
+        "imageSHA256": "265987c2302953a9d8d15aa215268e8e096f6a42a6d79e64dee6b3f9d1a5b68d",
+        "exposureBias": -1.96503746509552,
+        "seasonVisibilitySummary": {
+          "mode": "render-only-season-visibility",
+          "rule": "Actual BPC_LundenSeasons.TagValue/InSeason/InHours; no Python calendar/window formula",
+          "date": [
+            2026,
+            6,
+            21
+          ],
+          "hour": 14.0,
+          "nativeIntegerHour": 14,
+          "componentClass": "/Game/Lunden/Seasons/BPC_LundenSeasons.BPC_LundenSeasons_C",
+          "componentSpecHash": "33ab2c0759b6a54cd465f6a3ec7e72cdede9e366e96a59b0dfd80b812c3d3e9c",
+          "loadedLevels": [
+            "/Game/Lunden/Generated/Interaction/Level_l1007_interaction",
+            "/Game/Lunden/Generated/L1007World/Level_l1007_collision",
+            "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats",
+            "/Game/Lunden/Generated/l1007-entre/Level_l1007-entre",
+            "/Game/Lunden/Generated/Interaction/Level_hus-l_interaction",
+            "/Game/Lunden/Generated/Interaction/Level_kvarteret_interaction",
+            "/Game/Lunden/Generated/ExteriorWorld/Level_exterior_collision",
+            "/Game/Lunden/Generated/gard/Level_gard",
+            "/Game/Lunden/Generated/omgivning/Level_omgivning",
+            "/Game/Lunden/Generated/SiteWorld/Level_site_collision",
+            "/Game/Lunden/Generated/Lighting/Level_lighting",
+            "/Game/Lunden/Generated/FacadeLighting/Level_facade_lighting",
+            "/Game/Lunden/Generated/VegetationWorld/Level_vegetation_foliage",
+            "/Game/Lunden/Generated/Interaction/Level_lift_buttons",
+            "/Game/Lunden/Avatar/Looks/Level_LundenMirror",
+            "/Game/Lunden/Generated/fond/Level_fond"
+          ],
+          "calendar": "/Game/Lunden/Seasons/MPC_LundenVegetation",
+          "observedMonth": 6.0,
+          "clockDriven": false,
+          "seasonalActors": 219,
+          "hiddenActors": 184,
+          "editorLampPolicy": "original editor-hidden OR current native-rule game-hidden",
+          "editorLamps": 2,
+          "collisionApplied": false,
+          "physicsOrCollisionApiInvoked": false,
+          "limitation": "Visibility/MPC only in static editor captures. Existing collision is not synchronized; no gameplay, PIE, interaction or Chaos acceptance. ApplySeason/ApplySeasonAt/ApplyClock are not called. Do not save these transient world changes.",
+          "sourceFileSha256": {
+            "/home/devcontainers/.local/state/lunden-codex-20261127/2394/season-visibility-only.py": "fa844d50bc9ac15225058ac1a1b0c95afdbaa87d8f44cdf1e78603fbbc486a88",
+            "/home/devcontainers/lunden-linux/tools/unreal-engine/tests/capture_world.py": "380545105f0ff30e6cca3095ff44c7bbf138491f731ecd6dd6a7564606f9d553",
+            "/home/devcontainers/lunden-linux/tools/unreal-engine/python/build_seasons.py": "33ab2c0759b6a54cd465f6a3ec7e72cdede9e366e96a59b0dfd80b812c3d3e9c"
+          }
+        },
+        "omittedSeasonActorList": {
+          "sha256OfCanonicalJSON": "6a3581fd4ce239a1a4bbe23eec5cf52d9e71279856e04ff9899423e0211b66d5",
+          "count": 219,
+          "sourcePrivateMetadata": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/native-product/product/target/capture.json"
+        }
+      },
+      {
+        "id": "entrance-a",
+        "camera": {
+          "xyz": [
+            650.0,
+            2700.0,
+            162.0
+          ],
+          "yaw": 155.0,
+          "pitch": 5.000000000000001,
+          "roll": 3.9908798545555505e-16,
+          "horizontalFov": 104.50486755371094,
+          "width": 1440,
+          "height": 810,
+          "separateTranslucencyShowFlag": true,
+          "privateBlendableAttached": false
+        },
+        "sourceReference": {
+          "date": [
+            2026,
+            6,
+            21
+          ],
+          "hour": 14,
+          "overcast": 0,
+          "under": 0,
+          "dim": 0,
+          "dayShare": 1,
+          "skyStrength": 1.5,
+          "sunIntensity": 3,
+          "sunDirWeb": [
+            0.3290249069149738,
+            0.832794289174853,
+            0.44519241070277027
+          ]
+        },
+        "actualRuntime": {
+          "WindowSkyStrength": 1.5,
+          "WindowSunStrength": 3.0,
+          "WindowAmbientFill": 1.058500051498413,
+          "Daylight": 1.0,
+          "SunDirNative": [
+            0.32902491092681885,
+            0.4451923966407776,
+            0.8327943086624146
+          ],
+          "SunDirWeb": [
+            0.32902491092681885,
+            0.8327943086624146,
+            0.4451923966407776
+          ],
+          "actualAmbient": {
+            "cube": "/Game/Lunden/Lighting/T_LundenHemisphere.T_LundenHemisphere",
+            "intensity": 2.1010000705718994,
+            "blendWeight": 0.5038077235221863,
+            "effectiveFill": 1.0585000626747814,
+            "tint": [
+              1.0,
+              1.0,
+              1.0
+            ]
+          },
+          "expectedNativeFill": 1.0585
+        },
+        "actualPatio": {
+          "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_ljusslingan_l0_x47_z1522",
+          "functions": [
+            "ApplyPatioBulbs",
+            "UpdatePatioParasol(2.0)"
+          ],
+          "K": 0.0,
+          "Supply": 1.0,
+          "BulbIdle": 0.06,
+          "BulbBoost": 1.4,
+          "BulbColour": [
+            1.0,
+            0.6239603757858276,
+            0.2541520893573761
+          ],
+          "BaseColorFactor": [
+            0.05999999865889549,
+            0.037437621504068375,
+            0.01524912565946579,
+            1.0
+          ],
+          "ParasolOpen": 1.0,
+          "StringMaterial": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+          "StringMaster": "/InterchangeAssets/gltf/M_Unlit.M_Unlit",
+          "StringMasterShadingModel": "<MaterialShadingModel.MSM_UNLIT: 0>",
+          "actualSharedBulbs": 82,
+          "pools": [
+            {
+              "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_ljusslingan_l0_x47_z1522",
+              "tags": [
+                "lamp:lamp_ljusslingan_l0_x47_z1522",
+                "kind:lamp",
+                "level:0",
+                "auto:dusk",
+                "patio:string-driver"
+              ],
+              "K": 0.0,
+              "Supply": 1.0,
+              "Candela": 3.9199999999999995,
+              "Auto": true,
+              "PatioDusk": true,
+              "light_color_sRGB_bytes": [
+                255,
+                207,
+                138,
+                255
+              ],
+              "get_light_color_linear": [
+                1.0,
+                0.6239603757858276,
+                0.2541520893573761,
+                1.0
+              ],
+              "intensity": 0.0,
+              "attenuation_radius": 400.0,
+              "visible": false,
+              "positionNative": [
+                46.95,
+                1522.3,
+                158.0
+              ]
+            },
+            {
+              "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_ljusslingan_l0_x528_z1522",
+              "tags": [
+                "lamp:lamp_ljusslingan_l0_x528_z1522",
+                "kind:lamp",
+                "level:0",
+                "auto:dusk"
+              ],
+              "K": 0.0,
+              "Supply": 1.0,
+              "Candela": 3.9199999999999995,
+              "Auto": true,
+              "PatioDusk": true,
+              "light_color_sRGB_bytes": [
+                255,
+                207,
+                138,
+                255
+              ],
+              "get_light_color_linear": [
+                1.0,
+                0.6239603757858276,
+                0.2541520893573761,
+                1.0
+              ],
+              "intensity": 0.0,
+              "attenuation_radius": 400.0,
+              "visible": false,
+              "positionNative": [
+                527.87,
+                1522.3,
+                158.0
+              ]
+            }
+          ],
+          "MPC": {
+            "DuskLight": 1.0,
+            "PowerAvailable": 1.0
+          }
+        },
+        "imageSHA256": "c9b42d54df6e6aa390ba4b27776cabb2ff117736d1e751a570564e0a6fd5796e",
+        "exposureBias": -1.96503746509552,
+        "seasonVisibilitySummary": {
+          "mode": "render-only-season-visibility",
+          "rule": "Actual BPC_LundenSeasons.TagValue/InSeason/InHours; no Python calendar/window formula",
+          "date": [
+            2026,
+            6,
+            21
+          ],
+          "hour": 14.0,
+          "nativeIntegerHour": 14,
+          "componentClass": "/Game/Lunden/Seasons/BPC_LundenSeasons.BPC_LundenSeasons_C",
+          "componentSpecHash": "33ab2c0759b6a54cd465f6a3ec7e72cdede9e366e96a59b0dfd80b812c3d3e9c",
+          "loadedLevels": [
+            "/Game/Lunden/Generated/Interaction/Level_l1007_interaction",
+            "/Game/Lunden/Generated/L1007World/Level_l1007_collision",
+            "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats",
+            "/Game/Lunden/Generated/l1007-entre/Level_l1007-entre",
+            "/Game/Lunden/Generated/Interaction/Level_hus-l_interaction",
+            "/Game/Lunden/Generated/Interaction/Level_kvarteret_interaction",
+            "/Game/Lunden/Generated/ExteriorWorld/Level_exterior_collision",
+            "/Game/Lunden/Generated/gard/Level_gard",
+            "/Game/Lunden/Generated/omgivning/Level_omgivning",
+            "/Game/Lunden/Generated/SiteWorld/Level_site_collision",
+            "/Game/Lunden/Generated/Lighting/Level_lighting",
+            "/Game/Lunden/Generated/FacadeLighting/Level_facade_lighting",
+            "/Game/Lunden/Generated/VegetationWorld/Level_vegetation_foliage",
+            "/Game/Lunden/Generated/Interaction/Level_lift_buttons",
+            "/Game/Lunden/Avatar/Looks/Level_LundenMirror",
+            "/Game/Lunden/Generated/fond/Level_fond"
+          ],
+          "calendar": "/Game/Lunden/Seasons/MPC_LundenVegetation",
+          "observedMonth": 6.0,
+          "clockDriven": false,
+          "seasonalActors": 219,
+          "hiddenActors": 184,
+          "editorLampPolicy": "original editor-hidden OR current native-rule game-hidden",
+          "editorLamps": 2,
+          "collisionApplied": false,
+          "physicsOrCollisionApiInvoked": false,
+          "limitation": "Visibility/MPC only in static editor captures. Existing collision is not synchronized; no gameplay, PIE, interaction or Chaos acceptance. ApplySeason/ApplySeasonAt/ApplyClock are not called. Do not save these transient world changes.",
+          "sourceFileSha256": {
+            "/home/devcontainers/.local/state/lunden-codex-20261127/2394/season-visibility-only.py": "fa844d50bc9ac15225058ac1a1b0c95afdbaa87d8f44cdf1e78603fbbc486a88",
+            "/home/devcontainers/lunden-linux/tools/unreal-engine/tests/capture_world.py": "380545105f0ff30e6cca3095ff44c7bbf138491f731ecd6dd6a7564606f9d553",
+            "/home/devcontainers/lunden-linux/tools/unreal-engine/python/build_seasons.py": "33ab2c0759b6a54cd465f6a3ec7e72cdede9e366e96a59b0dfd80b812c3d3e9c"
+          }
+        },
+        "omittedSeasonActorList": {
+          "sha256OfCanonicalJSON": "6a3581fd4ce239a1a4bbe23eec5cf52d9e71279856e04ff9899423e0211b66d5",
+          "count": 219,
+          "sourcePrivateMetadata": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/native-product/product/target/capture.json"
+        }
+      }
+    ],
+    "publicationNote": "Only repeated seasonVisibility.actors lists omitted. All actual cameras, clock/PBR/profile/readbacks and image hashes retained; complete private metadata fingerprint in provenance."
+  },
+  "apartment": {
+    "completed": true,
+    "sourceHead": "a1ff6c9cfbb790f5014965e62219b6921cf57db6",
+    "measurementsSHA256": "cfd94bade4a6e26f2d0837c1d571c7f39c7c5cf4042a08835e0d2d72f959901b",
+    "contractSHA256": "d3c89d4b9a50404ed629c5c54ce863ad1eca9b804249748a1b39abef1514abe8",
+    "runtimeEnvSHA256": "c755eebf80b80cf331f9f0a9a1fdfafc1f5671f125dec393da6c0bd051e82e62",
+    "correctedFurnishingContractSHA256": "1f559812415bdc9a6bbfcd5030957bae510b208833318c45021d3a89545d47b6",
+    "sourceSHA256": {
+      "/home/devcontainers/.local/state/lunden-codex-20261127/2428/capture-four.py": "6d4e11870e83a3e5471d1d24bcca6a841e8ba2399c3c3fa12f5f498fc7c82c59",
+      "/home/devcontainers/lunden-linux/tools/unreal-engine/python/build_lighting.py": "9285fd89a5b7c3bd532eb0ff17600b342a75010b622c4da5500fab0e3550f67b",
+      "/home/devcontainers/lunden-linux/tools/unreal-engine/tests/capture_light.py": "cccd11fe7dc9a4a4d999a512cfb6694e53a8f31b918018b771ecf0e9899b41b2",
+      "/home/devcontainers/lunden-linux/tools/unreal-engine/python/screenshot_level.py": "1c25fc83235b83a64b3c9c89bfbef2665d1376975f272e3462ce135f1972f70f",
+      "/home/devcontainers/.local/state/lunden-codex-20261127/2394/verify-production.py": "1d4a19a4c360e7f79f3970e23e5e55a691711a47b07d7c62e6953879eb24c6f2",
+      "/home/devcontainers/.local/state/lunden-codex-20261127/2394/season-visibility-only.py": "fa844d50bc9ac15225058ac1a1b0c95afdbaa87d8f44cdf1e78603fbbc486a88",
+      "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/probe-after-production-v2.py": "40bb40cd992556d91ee03dc7f1c455bdda73452325c526a0f326fd8343a78f3b",
+      "/home/devcontainers/.local/state/lunden-codex-20261127/2384/audit-lamp-colours.py": "630e7838fbc4ee99d5a05e8624ecd673a7d686ca28147472b625480cd5ccae9f"
+    },
+    "shots": [
+      {
+        "id": "stairs-evening",
+        "camera": {
+          "xyz": [
+            215.0,
+            738.0,
+            162.0
+          ],
+          "yaw": -6.999999999999999,
+          "pitch": 7.999999999999998,
+          "roll": -0.0,
+          "horizontalFov": 104.50486755371094,
+          "width": 640,
+          "height": 360,
+          "separateTranslucencyShowFlag": true,
+          "privateBlendableAttached": false
+        },
+        "imageSHA256": "47e302af9bbdae1a169e64e5a573679858003c918887dabf4b1838545e42596b",
+        "actualRuntime": {
+          "WindowSkyStrength": 0.24129019677639008,
+          "WindowSunStrength": 0.1486421674489975,
+          "WindowAmbientFill": 0.15501858294010162,
+          "Daylight": 0.12452149391174316,
+          "SunDirNative": [
+            -0.9835368990898132,
+            0.17928315699100494,
+            -0.022644218057394028
+          ],
+          "SunDirWeb": [
+            -0.9835368990898132,
+            -0.022644218057394028,
+            0.17928315699100494
+          ],
+          "actualAmbient": {
+            "cube": "/Game/Lunden/Lighting/T_LundenHemisphere.T_LundenHemisphere",
+            "intensity": 2.1010000705718994,
+            "blendWeight": 0.07378324121236801,
+            "effectiveFill": 0.15501859499420867,
+            "tint": [
+              1.0,
+              1.0,
+              1.0
+            ]
+          },
+          "expectedNativeFill": 0.15501858673922944
+        },
+        "actualPatio": {
+          "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_ljusslingan_l0_x47_z1522",
+          "functions": [
+            "ApplyPatioBulbs",
+            "UpdatePatioParasol(2.0)"
+          ],
+          "K": 1.0,
+          "Supply": 1.0,
+          "BulbIdle": 0.06,
+          "BulbBoost": 1.4,
+          "BulbColour": [
+            1.0,
+            0.6239603757858276,
+            0.2541520893573761
+          ],
+          "BaseColorFactor": [
+            1.4600000381469727,
+            0.9109821319580078,
+            0.3710620403289795,
+            1.0
+          ],
+          "ParasolOpen": 0.0,
+          "StringMaterial": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+          "StringMaster": "/InterchangeAssets/gltf/M_Unlit.M_Unlit",
+          "StringMasterShadingModel": "<MaterialShadingModel.MSM_UNLIT: 0>",
+          "actualSharedBulbs": 82,
+          "pools": [
+            {
+              "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_ljusslingan_l0_x47_z1522",
+              "tags": [
+                "lamp:lamp_ljusslingan_l0_x47_z1522",
+                "kind:lamp",
+                "level:0",
+                "auto:dusk",
+                "patio:string-driver"
+              ],
+              "K": 1.0,
+              "Supply": 1.0,
+              "Candela": 3.9199999999999995,
+              "Auto": true,
+              "PatioDusk": true,
+              "light_color_sRGB_bytes": [
+                255,
+                207,
+                138,
+                255
+              ],
+              "get_light_color_linear": [
+                1.0,
+                0.6239603757858276,
+                0.2541520893573761,
+                1.0
+              ],
+              "intensity": 3.9200000762939453,
+              "attenuation_radius": 400.0,
+              "visible": true,
+              "positionNative": [
+                46.95,
+                1522.3,
+                158.0
+              ]
+            },
+            {
+              "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_ljusslingan_l0_x528_z1522",
+              "tags": [
+                "lamp:lamp_ljusslingan_l0_x528_z1522",
+                "kind:lamp",
+                "level:0",
+                "auto:dusk"
+              ],
+              "K": 1.0,
+              "Supply": 1.0,
+              "Candela": 3.9199999999999995,
+              "Auto": true,
+              "PatioDusk": true,
+              "light_color_sRGB_bytes": [
+                255,
+                207,
+                138,
+                255
+              ],
+              "get_light_color_linear": [
+                1.0,
+                0.6239603757858276,
+                0.2541520893573761,
+                1.0
+              ],
+              "intensity": 3.9200000762939453,
+              "attenuation_radius": 400.0,
+              "visible": true,
+              "positionNative": [
+                527.87,
+                1522.3,
+                158.0
+              ]
+            }
+          ],
+          "MPC": {
+            "DuskLight": 0.12452149391174316,
+            "PowerAvailable": 1.0
+          }
+        },
+        "displayPools": [
+          {
+            "sourceLampId": "room_kok-matplats_l0_x350_z141",
+            "sourceLamp": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_kok-matplats_l0_x350_z141",
+            "K": 1.0,
+            "isOn": true,
+            "hidden": false,
+            "AppliedFade": 1.0,
+            "collectionParameter": "Lamp0",
+            "actualMPC": 1.0
+          },
+          {
+            "sourceLampId": "room_sovrum-2_l1_x370_z960",
+            "sourceLamp": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_sovrum-2_l1_x370_z960",
+            "K": 1.0,
+            "isOn": true,
+            "hidden": false,
+            "AppliedFade": 1.0,
+            "collectionParameter": "Lamp1",
+            "actualMPC": 1.0
+          },
+          {
+            "sourceLampId": "room_vardagsrum_l0_x364_z1056",
+            "sourceLamp": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_vardagsrum_l0_x364_z1056",
+            "K": 1.0,
+            "isOn": true,
+            "hidden": false,
+            "AppliedFade": 1.0,
+            "collectionParameter": "Lamp2",
+            "actualMPC": 1.0
+          }
+        ],
+        "cabinetProfile": {
+          "passed": true,
+          "Daylight": 0.12452149391174316,
+          "expectedRGB": [
+            0.12762674202852453,
+            0.0553816323480783,
+            0.02261240373971126
+          ],
+          "panels": [
+            {
+              "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__59",
+              "material": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__59.StaticMeshComponent0.MID_MI_CabinetWalnut_0",
+              "actualBaseColor": [
+                0.12762674689292908,
+                0.05538163334131241,
+                0.022612404078245163,
+                1.0
+              ]
+            },
+            {
+              "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__62",
+              "material": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__62.StaticMeshComponent0.MID_MI_CabinetWalnut_0",
+              "actualBaseColor": [
+                0.12762674689292908,
+                0.05538163334131241,
+                0.022612404078245163,
+                1.0
+              ]
+            },
+            {
+              "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__79",
+              "material": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__79.StaticMeshComponent0.MID_MI_CabinetWalnut_0",
+              "actualBaseColor": [
+                0.12762674689292908,
+                0.05538163334131241,
+                0.022612404078245163,
+                1.0
+              ]
+            },
+            {
+              "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__82",
+              "material": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__82.StaticMeshComponent0.MID_MI_CabinetWalnut_0",
+              "actualBaseColor": [
+                0.12762674689292908,
+                0.05538163334131241,
+                0.022612404078245163,
+                1.0
+              ]
+            }
+          ],
+          "assumption": "guess: day/night interpolation; texture, UVs, original material and alpha inherited"
+        },
+        "exposureBias": -2.462862008455037,
+        "sourceColourCount": 38,
+        "actualStairBindingCount": 28,
+        "seasonVisibilitySummary": {
+          "mode": "render-only-season-visibility",
+          "rule": "Actual BPC_LundenSeasons.TagValue/InSeason/InHours; no Python calendar/window formula",
+          "date": [
+            2026,
+            6,
+            21
+          ],
+          "hour": 22.0,
+          "nativeIntegerHour": 22,
+          "componentClass": "/Game/Lunden/Seasons/BPC_LundenSeasons.BPC_LundenSeasons_C",
+          "componentSpecHash": "33ab2c0759b6a54cd465f6a3ec7e72cdede9e366e96a59b0dfd80b812c3d3e9c",
+          "loadedLevels": [
+            "/Game/Lunden/Generated/Interaction/Level_l1007_interaction",
+            "/Game/Lunden/Generated/L1007World/Level_l1007_collision",
+            "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats",
+            "/Game/Lunden/Generated/l1007-entre/Level_l1007-entre",
+            "/Game/Lunden/Generated/Interaction/Level_hus-l_interaction",
+            "/Game/Lunden/Generated/Interaction/Level_kvarteret_interaction",
+            "/Game/Lunden/Generated/ExteriorWorld/Level_exterior_collision",
+            "/Game/Lunden/Generated/gard/Level_gard",
+            "/Game/Lunden/Generated/omgivning/Level_omgivning",
+            "/Game/Lunden/Generated/SiteWorld/Level_site_collision",
+            "/Game/Lunden/Generated/Lighting/Level_lighting",
+            "/Game/Lunden/Generated/FacadeLighting/Level_facade_lighting",
+            "/Game/Lunden/Generated/VegetationWorld/Level_vegetation_foliage",
+            "/Game/Lunden/Generated/Interaction/Level_lift_buttons",
+            "/Game/Lunden/Avatar/Looks/Level_LundenMirror",
+            "/Game/Lunden/Generated/fond/Level_fond"
+          ],
+          "calendar": "/Game/Lunden/Seasons/MPC_LundenVegetation",
+          "observedMonth": 6.0,
+          "clockDriven": false,
+          "seasonalActors": 219,
+          "hiddenActors": 184,
+          "editorLampPolicy": "original editor-hidden OR current native-rule game-hidden",
+          "editorLamps": 2,
+          "collisionApplied": false,
+          "physicsOrCollisionApiInvoked": false,
+          "limitation": "Visibility/MPC only in static editor captures. Existing collision is not synchronized; no gameplay, PIE, interaction or Chaos acceptance. ApplySeason/ApplySeasonAt/ApplyClock are not called. Do not save these transient world changes.",
+          "sourceFileSha256": {
+            "/home/devcontainers/.local/state/lunden-codex-20261127/2394/season-visibility-only.py": "fa844d50bc9ac15225058ac1a1b0c95afdbaa87d8f44cdf1e78603fbbc486a88",
+            "/home/devcontainers/lunden-linux/tools/unreal-engine/tests/capture_world.py": "380545105f0ff30e6cca3095ff44c7bbf138491f731ecd6dd6a7564606f9d553",
+            "/home/devcontainers/lunden-linux/tools/unreal-engine/python/build_seasons.py": "33ab2c0759b6a54cd465f6a3ec7e72cdede9e366e96a59b0dfd80b812c3d3e9c"
+          }
+        },
+        "omittedSeasonActorList": {
+          "sha256OfCanonicalJSON": "6a3581fd4ce239a1a4bbe23eec5cf52d9e71279856e04ff9899423e0211b66d5",
+          "count": 219,
+          "sourcePrivateMetadata": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/native-product/product/regressions/capture.json"
+        }
+      },
+      {
+        "id": "living-room-day",
+        "camera": {
+          "xyz": [
+            250.0,
+            819.9999999999999,
+            162.0
+          ],
+          "yaw": 96.99999999999999,
+          "pitch": -4.0,
+          "roll": 3.9854015897965574e-16,
+          "horizontalFov": 104.50486755371094,
+          "width": 640,
+          "height": 360,
+          "separateTranslucencyShowFlag": true,
+          "privateBlendableAttached": false
+        },
+        "imageSHA256": "aa3d9f52fb0c2ecabd18470648179e0ddd61beff721d3590d402265fb961992e",
+        "actualRuntime": {
+          "WindowSkyStrength": 1.5,
+          "WindowSunStrength": 3.0,
+          "WindowAmbientFill": 1.058500051498413,
+          "Daylight": 1.0,
+          "SunDirNative": [
+            0.32902491092681885,
+            0.4451923966407776,
+            0.8327943086624146
+          ],
+          "SunDirWeb": [
+            0.32902491092681885,
+            0.8327943086624146,
+            0.4451923966407776
+          ],
+          "actualAmbient": {
+            "cube": "/Game/Lunden/Lighting/T_LundenHemisphere.T_LundenHemisphere",
+            "intensity": 2.1010000705718994,
+            "blendWeight": 0.5038077235221863,
+            "effectiveFill": 1.0585000626747814,
+            "tint": [
+              1.0,
+              1.0,
+              1.0
+            ]
+          },
+          "expectedNativeFill": 1.0585
+        },
+        "actualPatio": {
+          "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_ljusslingan_l0_x47_z1522",
+          "functions": [
+            "ApplyPatioBulbs",
+            "UpdatePatioParasol(2.0)"
+          ],
+          "K": 0.0,
+          "Supply": 1.0,
+          "BulbIdle": 0.06,
+          "BulbBoost": 1.4,
+          "BulbColour": [
+            1.0,
+            0.6239603757858276,
+            0.2541520893573761
+          ],
+          "BaseColorFactor": [
+            0.05999999865889549,
+            0.037437621504068375,
+            0.01524912565946579,
+            1.0
+          ],
+          "ParasolOpen": 1.0,
+          "StringMaterial": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+          "StringMaster": "/InterchangeAssets/gltf/M_Unlit.M_Unlit",
+          "StringMasterShadingModel": "<MaterialShadingModel.MSM_UNLIT: 0>",
+          "actualSharedBulbs": 82,
+          "pools": [
+            {
+              "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_ljusslingan_l0_x47_z1522",
+              "tags": [
+                "lamp:lamp_ljusslingan_l0_x47_z1522",
+                "kind:lamp",
+                "level:0",
+                "auto:dusk",
+                "patio:string-driver"
+              ],
+              "K": 0.0,
+              "Supply": 1.0,
+              "Candela": 3.9199999999999995,
+              "Auto": true,
+              "PatioDusk": true,
+              "light_color_sRGB_bytes": [
+                255,
+                207,
+                138,
+                255
+              ],
+              "get_light_color_linear": [
+                1.0,
+                0.6239603757858276,
+                0.2541520893573761,
+                1.0
+              ],
+              "intensity": 0.0,
+              "attenuation_radius": 400.0,
+              "visible": false,
+              "positionNative": [
+                46.95,
+                1522.3,
+                158.0
+              ]
+            },
+            {
+              "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_ljusslingan_l0_x528_z1522",
+              "tags": [
+                "lamp:lamp_ljusslingan_l0_x528_z1522",
+                "kind:lamp",
+                "level:0",
+                "auto:dusk"
+              ],
+              "K": 0.0,
+              "Supply": 1.0,
+              "Candela": 3.9199999999999995,
+              "Auto": true,
+              "PatioDusk": true,
+              "light_color_sRGB_bytes": [
+                255,
+                207,
+                138,
+                255
+              ],
+              "get_light_color_linear": [
+                1.0,
+                0.6239603757858276,
+                0.2541520893573761,
+                1.0
+              ],
+              "intensity": 0.0,
+              "attenuation_radius": 400.0,
+              "visible": false,
+              "positionNative": [
+                527.87,
+                1522.3,
+                158.0
+              ]
+            }
+          ],
+          "MPC": {
+            "DuskLight": 1.0,
+            "PowerAvailable": 1.0
+          }
+        },
+        "displayPools": [
+          {
+            "sourceLampId": "room_kok-matplats_l0_x350_z141",
+            "sourceLamp": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_kok-matplats_l0_x350_z141",
+            "K": 0.0,
+            "isOn": false,
+            "hidden": false,
+            "AppliedFade": 0.0,
+            "collectionParameter": "Lamp0",
+            "actualMPC": 0.0
+          },
+          {
+            "sourceLampId": "room_sovrum-2_l1_x370_z960",
+            "sourceLamp": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_sovrum-2_l1_x370_z960",
+            "K": 0.0,
+            "isOn": false,
+            "hidden": false,
+            "AppliedFade": 0.0,
+            "collectionParameter": "Lamp1",
+            "actualMPC": 0.0
+          },
+          {
+            "sourceLampId": "room_vardagsrum_l0_x364_z1056",
+            "sourceLamp": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_vardagsrum_l0_x364_z1056",
+            "K": 0.0,
+            "isOn": false,
+            "hidden": false,
+            "AppliedFade": 0.0,
+            "collectionParameter": "Lamp2",
+            "actualMPC": 0.0
+          }
+        ],
+        "cabinetProfile": {
+          "passed": true,
+          "Daylight": 1.0,
+          "expectedRGB": [
+            0.19724697947502134,
+            0.0885833587348461,
+            0.04194373872503638
+          ],
+          "panels": [
+            {
+              "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__59",
+              "material": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__59.StaticMeshComponent0.MID_MI_CabinetWalnut_0",
+              "actualBaseColor": [
+                0.1972469836473465,
+                0.08858335763216019,
+                0.0419437400996685,
+                1.0
+              ]
+            },
+            {
+              "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__62",
+              "material": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__62.StaticMeshComponent0.MID_MI_CabinetWalnut_0",
+              "actualBaseColor": [
+                0.1972469836473465,
+                0.08858335763216019,
+                0.0419437400996685,
+                1.0
+              ]
+            },
+            {
+              "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__79",
+              "material": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__79.StaticMeshComponent0.MID_MI_CabinetWalnut_0",
+              "actualBaseColor": [
+                0.1972469836473465,
+                0.08858335763216019,
+                0.0419437400996685,
+                1.0
+              ]
+            },
+            {
+              "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__82",
+              "material": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__82.StaticMeshComponent0.MID_MI_CabinetWalnut_0",
+              "actualBaseColor": [
+                0.1972469836473465,
+                0.08858335763216019,
+                0.0419437400996685,
+                1.0
+              ]
+            }
+          ],
+          "assumption": "guess: day/night interpolation; texture, UVs, original material and alpha inherited"
+        },
+        "exposureBias": -1.96503746509552,
+        "sourceColourCount": 38,
+        "actualStairBindingCount": 28,
+        "seasonVisibilitySummary": {
+          "mode": "render-only-season-visibility",
+          "rule": "Actual BPC_LundenSeasons.TagValue/InSeason/InHours; no Python calendar/window formula",
+          "date": [
+            2026,
+            6,
+            21
+          ],
+          "hour": 14.0,
+          "nativeIntegerHour": 14,
+          "componentClass": "/Game/Lunden/Seasons/BPC_LundenSeasons.BPC_LundenSeasons_C",
+          "componentSpecHash": "33ab2c0759b6a54cd465f6a3ec7e72cdede9e366e96a59b0dfd80b812c3d3e9c",
+          "loadedLevels": [
+            "/Game/Lunden/Generated/Interaction/Level_l1007_interaction",
+            "/Game/Lunden/Generated/L1007World/Level_l1007_collision",
+            "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats",
+            "/Game/Lunden/Generated/l1007-entre/Level_l1007-entre",
+            "/Game/Lunden/Generated/Interaction/Level_hus-l_interaction",
+            "/Game/Lunden/Generated/Interaction/Level_kvarteret_interaction",
+            "/Game/Lunden/Generated/ExteriorWorld/Level_exterior_collision",
+            "/Game/Lunden/Generated/gard/Level_gard",
+            "/Game/Lunden/Generated/omgivning/Level_omgivning",
+            "/Game/Lunden/Generated/SiteWorld/Level_site_collision",
+            "/Game/Lunden/Generated/Lighting/Level_lighting",
+            "/Game/Lunden/Generated/FacadeLighting/Level_facade_lighting",
+            "/Game/Lunden/Generated/VegetationWorld/Level_vegetation_foliage",
+            "/Game/Lunden/Generated/Interaction/Level_lift_buttons",
+            "/Game/Lunden/Avatar/Looks/Level_LundenMirror",
+            "/Game/Lunden/Generated/fond/Level_fond"
+          ],
+          "calendar": "/Game/Lunden/Seasons/MPC_LundenVegetation",
+          "observedMonth": 6.0,
+          "clockDriven": false,
+          "seasonalActors": 219,
+          "hiddenActors": 184,
+          "editorLampPolicy": "original editor-hidden OR current native-rule game-hidden",
+          "editorLamps": 2,
+          "collisionApplied": false,
+          "physicsOrCollisionApiInvoked": false,
+          "limitation": "Visibility/MPC only in static editor captures. Existing collision is not synchronized; no gameplay, PIE, interaction or Chaos acceptance. ApplySeason/ApplySeasonAt/ApplyClock are not called. Do not save these transient world changes.",
+          "sourceFileSha256": {
+            "/home/devcontainers/.local/state/lunden-codex-20261127/2394/season-visibility-only.py": "fa844d50bc9ac15225058ac1a1b0c95afdbaa87d8f44cdf1e78603fbbc486a88",
+            "/home/devcontainers/lunden-linux/tools/unreal-engine/tests/capture_world.py": "380545105f0ff30e6cca3095ff44c7bbf138491f731ecd6dd6a7564606f9d553",
+            "/home/devcontainers/lunden-linux/tools/unreal-engine/python/build_seasons.py": "33ab2c0759b6a54cd465f6a3ec7e72cdede9e366e96a59b0dfd80b812c3d3e9c"
+          }
+        },
+        "omittedSeasonActorList": {
+          "sha256OfCanonicalJSON": "6a3581fd4ce239a1a4bbe23eec5cf52d9e71279856e04ff9899423e0211b66d5",
+          "count": 219,
+          "sourcePrivateMetadata": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/native-product/product/regressions/capture.json"
+        }
+      },
+      {
+        "id": "living-room-evening",
+        "camera": {
+          "xyz": [
+            250.0,
+            819.9999999999999,
+            162.0
+          ],
+          "yaw": 96.99999999999999,
+          "pitch": -4.0,
+          "roll": 3.9854015897965574e-16,
+          "horizontalFov": 104.50486755371094,
+          "width": 640,
+          "height": 360,
+          "separateTranslucencyShowFlag": true,
+          "privateBlendableAttached": false
+        },
+        "imageSHA256": "ef1b132776dc8a36f398c03c092d3eff1503f39219522124212991faeb702da4",
+        "actualRuntime": {
+          "WindowSkyStrength": 0.24129019677639008,
+          "WindowSunStrength": 0.1486421674489975,
+          "WindowAmbientFill": 0.15501858294010162,
+          "Daylight": 0.12452149391174316,
+          "SunDirNative": [
+            -0.9835368990898132,
+            0.17928315699100494,
+            -0.022644218057394028
+          ],
+          "SunDirWeb": [
+            -0.9835368990898132,
+            -0.022644218057394028,
+            0.17928315699100494
+          ],
+          "actualAmbient": {
+            "cube": "/Game/Lunden/Lighting/T_LundenHemisphere.T_LundenHemisphere",
+            "intensity": 2.1010000705718994,
+            "blendWeight": 0.07378324121236801,
+            "effectiveFill": 0.15501859499420867,
+            "tint": [
+              1.0,
+              1.0,
+              1.0
+            ]
+          },
+          "expectedNativeFill": 0.15501858673922944
+        },
+        "actualPatio": {
+          "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_ljusslingan_l0_x47_z1522",
+          "functions": [
+            "ApplyPatioBulbs",
+            "UpdatePatioParasol(2.0)"
+          ],
+          "K": 1.0,
+          "Supply": 1.0,
+          "BulbIdle": 0.06,
+          "BulbBoost": 1.4,
+          "BulbColour": [
+            1.0,
+            0.6239603757858276,
+            0.2541520893573761
+          ],
+          "BaseColorFactor": [
+            1.4600000381469727,
+            0.9109821319580078,
+            0.3710620403289795,
+            1.0
+          ],
+          "ParasolOpen": 0.0,
+          "StringMaterial": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+          "StringMaster": "/InterchangeAssets/gltf/M_Unlit.M_Unlit",
+          "StringMasterShadingModel": "<MaterialShadingModel.MSM_UNLIT: 0>",
+          "actualSharedBulbs": 82,
+          "pools": [
+            {
+              "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_ljusslingan_l0_x47_z1522",
+              "tags": [
+                "lamp:lamp_ljusslingan_l0_x47_z1522",
+                "kind:lamp",
+                "level:0",
+                "auto:dusk",
+                "patio:string-driver"
+              ],
+              "K": 1.0,
+              "Supply": 1.0,
+              "Candela": 3.9199999999999995,
+              "Auto": true,
+              "PatioDusk": true,
+              "light_color_sRGB_bytes": [
+                255,
+                207,
+                138,
+                255
+              ],
+              "get_light_color_linear": [
+                1.0,
+                0.6239603757858276,
+                0.2541520893573761,
+                1.0
+              ],
+              "intensity": 3.9200000762939453,
+              "attenuation_radius": 400.0,
+              "visible": true,
+              "positionNative": [
+                46.95,
+                1522.3,
+                158.0
+              ]
+            },
+            {
+              "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_ljusslingan_l0_x528_z1522",
+              "tags": [
+                "lamp:lamp_ljusslingan_l0_x528_z1522",
+                "kind:lamp",
+                "level:0",
+                "auto:dusk"
+              ],
+              "K": 1.0,
+              "Supply": 1.0,
+              "Candela": 3.9199999999999995,
+              "Auto": true,
+              "PatioDusk": true,
+              "light_color_sRGB_bytes": [
+                255,
+                207,
+                138,
+                255
+              ],
+              "get_light_color_linear": [
+                1.0,
+                0.6239603757858276,
+                0.2541520893573761,
+                1.0
+              ],
+              "intensity": 3.9200000762939453,
+              "attenuation_radius": 400.0,
+              "visible": true,
+              "positionNative": [
+                527.87,
+                1522.3,
+                158.0
+              ]
+            }
+          ],
+          "MPC": {
+            "DuskLight": 0.12452149391174316,
+            "PowerAvailable": 1.0
+          }
+        },
+        "displayPools": [
+          {
+            "sourceLampId": "room_kok-matplats_l0_x350_z141",
+            "sourceLamp": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_kok-matplats_l0_x350_z141",
+            "K": 1.0,
+            "isOn": true,
+            "hidden": false,
+            "AppliedFade": 1.0,
+            "collectionParameter": "Lamp0",
+            "actualMPC": 1.0
+          },
+          {
+            "sourceLampId": "room_sovrum-2_l1_x370_z960",
+            "sourceLamp": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_sovrum-2_l1_x370_z960",
+            "K": 1.0,
+            "isOn": true,
+            "hidden": false,
+            "AppliedFade": 1.0,
+            "collectionParameter": "Lamp1",
+            "actualMPC": 1.0
+          },
+          {
+            "sourceLampId": "room_vardagsrum_l0_x364_z1056",
+            "sourceLamp": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_vardagsrum_l0_x364_z1056",
+            "K": 1.0,
+            "isOn": true,
+            "hidden": false,
+            "AppliedFade": 1.0,
+            "collectionParameter": "Lamp2",
+            "actualMPC": 1.0
+          }
+        ],
+        "cabinetProfile": {
+          "passed": true,
+          "Daylight": 0.12452149391174316,
+          "expectedRGB": [
+            0.12762674202852453,
+            0.0553816323480783,
+            0.02261240373971126
+          ],
+          "panels": [
+            {
+              "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__59",
+              "material": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__59.StaticMeshComponent0.MID_MI_CabinetWalnut_0",
+              "actualBaseColor": [
+                0.12762674689292908,
+                0.05538163334131241,
+                0.022612404078245163,
+                1.0
+              ]
+            },
+            {
+              "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__62",
+              "material": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__62.StaticMeshComponent0.MID_MI_CabinetWalnut_0",
+              "actualBaseColor": [
+                0.12762674689292908,
+                0.05538163334131241,
+                0.022612404078245163,
+                1.0
+              ]
+            },
+            {
+              "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__79",
+              "material": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__79.StaticMeshComponent0.MID_MI_CabinetWalnut_0",
+              "actualBaseColor": [
+                0.12762674689292908,
+                0.05538163334131241,
+                0.022612404078245163,
+                1.0
+              ]
+            },
+            {
+              "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__82",
+              "material": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__82.StaticMeshComponent0.MID_MI_CabinetWalnut_0",
+              "actualBaseColor": [
+                0.12762674689292908,
+                0.05538163334131241,
+                0.022612404078245163,
+                1.0
+              ]
+            }
+          ],
+          "assumption": "guess: day/night interpolation; texture, UVs, original material and alpha inherited"
+        },
+        "exposureBias": -2.462862008455037,
+        "sourceColourCount": 38,
+        "actualStairBindingCount": 28,
+        "seasonVisibilitySummary": {
+          "mode": "render-only-season-visibility",
+          "rule": "Actual BPC_LundenSeasons.TagValue/InSeason/InHours; no Python calendar/window formula",
+          "date": [
+            2026,
+            6,
+            21
+          ],
+          "hour": 22.0,
+          "nativeIntegerHour": 22,
+          "componentClass": "/Game/Lunden/Seasons/BPC_LundenSeasons.BPC_LundenSeasons_C",
+          "componentSpecHash": "33ab2c0759b6a54cd465f6a3ec7e72cdede9e366e96a59b0dfd80b812c3d3e9c",
+          "loadedLevels": [
+            "/Game/Lunden/Generated/Interaction/Level_l1007_interaction",
+            "/Game/Lunden/Generated/L1007World/Level_l1007_collision",
+            "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats",
+            "/Game/Lunden/Generated/l1007-entre/Level_l1007-entre",
+            "/Game/Lunden/Generated/Interaction/Level_hus-l_interaction",
+            "/Game/Lunden/Generated/Interaction/Level_kvarteret_interaction",
+            "/Game/Lunden/Generated/ExteriorWorld/Level_exterior_collision",
+            "/Game/Lunden/Generated/gard/Level_gard",
+            "/Game/Lunden/Generated/omgivning/Level_omgivning",
+            "/Game/Lunden/Generated/SiteWorld/Level_site_collision",
+            "/Game/Lunden/Generated/Lighting/Level_lighting",
+            "/Game/Lunden/Generated/FacadeLighting/Level_facade_lighting",
+            "/Game/Lunden/Generated/VegetationWorld/Level_vegetation_foliage",
+            "/Game/Lunden/Generated/Interaction/Level_lift_buttons",
+            "/Game/Lunden/Avatar/Looks/Level_LundenMirror",
+            "/Game/Lunden/Generated/fond/Level_fond"
+          ],
+          "calendar": "/Game/Lunden/Seasons/MPC_LundenVegetation",
+          "observedMonth": 6.0,
+          "clockDriven": false,
+          "seasonalActors": 219,
+          "hiddenActors": 184,
+          "editorLampPolicy": "original editor-hidden OR current native-rule game-hidden",
+          "editorLamps": 2,
+          "collisionApplied": false,
+          "physicsOrCollisionApiInvoked": false,
+          "limitation": "Visibility/MPC only in static editor captures. Existing collision is not synchronized; no gameplay, PIE, interaction or Chaos acceptance. ApplySeason/ApplySeasonAt/ApplyClock are not called. Do not save these transient world changes.",
+          "sourceFileSha256": {
+            "/home/devcontainers/.local/state/lunden-codex-20261127/2394/season-visibility-only.py": "fa844d50bc9ac15225058ac1a1b0c95afdbaa87d8f44cdf1e78603fbbc486a88",
+            "/home/devcontainers/lunden-linux/tools/unreal-engine/tests/capture_world.py": "380545105f0ff30e6cca3095ff44c7bbf138491f731ecd6dd6a7564606f9d553",
+            "/home/devcontainers/lunden-linux/tools/unreal-engine/python/build_seasons.py": "33ab2c0759b6a54cd465f6a3ec7e72cdede9e366e96a59b0dfd80b812c3d3e9c"
+          }
+        },
+        "omittedSeasonActorList": {
+          "sha256OfCanonicalJSON": "6a3581fd4ce239a1a4bbe23eec5cf52d9e71279856e04ff9899423e0211b66d5",
+          "count": 219,
+          "sourcePrivateMetadata": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/native-product/product/regressions/capture.json"
+        }
+      },
+      {
+        "id": "upper-floor-evening",
+        "camera": {
+          "xyz": [
+            175.0,
+            795.0,
+            487.0
+          ],
+          "yaw": 99.99999999999997,
+          "pitch": -3.0000000000000004,
+          "roll": -0.0,
+          "horizontalFov": 104.50486755371094,
+          "width": 640,
+          "height": 360,
+          "separateTranslucencyShowFlag": true,
+          "privateBlendableAttached": false
+        },
+        "imageSHA256": "6615f8a21b78048009596404e466490963afe9ceb6dce90da8febd54dfde345f",
+        "actualRuntime": {
+          "WindowSkyStrength": 0.24129019677639008,
+          "WindowSunStrength": 0.1486421674489975,
+          "WindowAmbientFill": 0.15501858294010162,
+          "Daylight": 0.12452149391174316,
+          "SunDirNative": [
+            -0.9835368990898132,
+            0.17928315699100494,
+            -0.022644218057394028
+          ],
+          "SunDirWeb": [
+            -0.9835368990898132,
+            -0.022644218057394028,
+            0.17928315699100494
+          ],
+          "actualAmbient": {
+            "cube": "/Game/Lunden/Lighting/T_LundenHemisphere.T_LundenHemisphere",
+            "intensity": 2.1010000705718994,
+            "blendWeight": 0.07378324121236801,
+            "effectiveFill": 0.15501859499420867,
+            "tint": [
+              1.0,
+              1.0,
+              1.0
+            ]
+          },
+          "expectedNativeFill": 0.15501858673922944
+        },
+        "actualPatio": {
+          "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_ljusslingan_l0_x47_z1522",
+          "functions": [
+            "ApplyPatioBulbs",
+            "UpdatePatioParasol(2.0)"
+          ],
+          "K": 1.0,
+          "Supply": 1.0,
+          "BulbIdle": 0.06,
+          "BulbBoost": 1.4,
+          "BulbColour": [
+            1.0,
+            0.6239603757858276,
+            0.2541520893573761
+          ],
+          "BaseColorFactor": [
+            1.4600000381469727,
+            0.9109821319580078,
+            0.3710620403289795,
+            1.0
+          ],
+          "ParasolOpen": 0.0,
+          "StringMaterial": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+          "StringMaster": "/InterchangeAssets/gltf/M_Unlit.M_Unlit",
+          "StringMasterShadingModel": "<MaterialShadingModel.MSM_UNLIT: 0>",
+          "actualSharedBulbs": 82,
+          "pools": [
+            {
+              "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_ljusslingan_l0_x47_z1522",
+              "tags": [
+                "lamp:lamp_ljusslingan_l0_x47_z1522",
+                "kind:lamp",
+                "level:0",
+                "auto:dusk",
+                "patio:string-driver"
+              ],
+              "K": 1.0,
+              "Supply": 1.0,
+              "Candela": 3.9199999999999995,
+              "Auto": true,
+              "PatioDusk": true,
+              "light_color_sRGB_bytes": [
+                255,
+                207,
+                138,
+                255
+              ],
+              "get_light_color_linear": [
+                1.0,
+                0.6239603757858276,
+                0.2541520893573761,
+                1.0
+              ],
+              "intensity": 3.9200000762939453,
+              "attenuation_radius": 400.0,
+              "visible": true,
+              "positionNative": [
+                46.95,
+                1522.3,
+                158.0
+              ]
+            },
+            {
+              "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_ljusslingan_l0_x528_z1522",
+              "tags": [
+                "lamp:lamp_ljusslingan_l0_x528_z1522",
+                "kind:lamp",
+                "level:0",
+                "auto:dusk"
+              ],
+              "K": 1.0,
+              "Supply": 1.0,
+              "Candela": 3.9199999999999995,
+              "Auto": true,
+              "PatioDusk": true,
+              "light_color_sRGB_bytes": [
+                255,
+                207,
+                138,
+                255
+              ],
+              "get_light_color_linear": [
+                1.0,
+                0.6239603757858276,
+                0.2541520893573761,
+                1.0
+              ],
+              "intensity": 3.9200000762939453,
+              "attenuation_radius": 400.0,
+              "visible": true,
+              "positionNative": [
+                527.87,
+                1522.3,
+                158.0
+              ]
+            }
+          ],
+          "MPC": {
+            "DuskLight": 0.12452149391174316,
+            "PowerAvailable": 1.0
+          }
+        },
+        "displayPools": [
+          {
+            "sourceLampId": "room_kok-matplats_l0_x350_z141",
+            "sourceLamp": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_kok-matplats_l0_x350_z141",
+            "K": 1.0,
+            "isOn": true,
+            "hidden": false,
+            "AppliedFade": 1.0,
+            "collectionParameter": "Lamp0",
+            "actualMPC": 1.0
+          },
+          {
+            "sourceLampId": "room_sovrum-2_l1_x370_z960",
+            "sourceLamp": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_sovrum-2_l1_x370_z960",
+            "K": 1.0,
+            "isOn": true,
+            "hidden": false,
+            "AppliedFade": 1.0,
+            "collectionParameter": "Lamp1",
+            "actualMPC": 1.0
+          },
+          {
+            "sourceLampId": "room_vardagsrum_l0_x364_z1056",
+            "sourceLamp": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_vardagsrum_l0_x364_z1056",
+            "K": 1.0,
+            "isOn": true,
+            "hidden": false,
+            "AppliedFade": 1.0,
+            "collectionParameter": "Lamp2",
+            "actualMPC": 1.0
+          }
+        ],
+        "cabinetProfile": {
+          "passed": true,
+          "Daylight": 0.12452149391174316,
+          "expectedRGB": [
+            0.12762674202852453,
+            0.0553816323480783,
+            0.02261240373971126
+          ],
+          "panels": [
+            {
+              "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__59",
+              "material": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__59.StaticMeshComponent0.MID_MI_CabinetWalnut_0",
+              "actualBaseColor": [
+                0.12762674689292908,
+                0.05538163334131241,
+                0.022612404078245163,
+                1.0
+              ]
+            },
+            {
+              "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__62",
+              "material": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__62.StaticMeshComponent0.MID_MI_CabinetWalnut_0",
+              "actualBaseColor": [
+                0.12762674689292908,
+                0.05538163334131241,
+                0.022612404078245163,
+                1.0
+              ]
+            },
+            {
+              "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__79",
+              "material": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__79.StaticMeshComponent0.MID_MI_CabinetWalnut_0",
+              "actualBaseColor": [
+                0.12762674689292908,
+                0.05538163334131241,
+                0.022612404078245163,
+                1.0
+              ]
+            },
+            {
+              "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__82",
+              "material": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_besta_l0_x42_z1055__82.StaticMeshComponent0.MID_MI_CabinetWalnut_0",
+              "actualBaseColor": [
+                0.12762674689292908,
+                0.05538163334131241,
+                0.022612404078245163,
+                1.0
+              ]
+            }
+          ],
+          "assumption": "guess: day/night interpolation; texture, UVs, original material and alpha inherited"
+        },
+        "exposureBias": -2.462862008455037,
+        "sourceColourCount": 38,
+        "actualStairBindingCount": 28,
+        "seasonVisibilitySummary": {
+          "mode": "render-only-season-visibility",
+          "rule": "Actual BPC_LundenSeasons.TagValue/InSeason/InHours; no Python calendar/window formula",
+          "date": [
+            2026,
+            6,
+            21
+          ],
+          "hour": 22.0,
+          "nativeIntegerHour": 22,
+          "componentClass": "/Game/Lunden/Seasons/BPC_LundenSeasons.BPC_LundenSeasons_C",
+          "componentSpecHash": "33ab2c0759b6a54cd465f6a3ec7e72cdede9e366e96a59b0dfd80b812c3d3e9c",
+          "loadedLevels": [
+            "/Game/Lunden/Generated/Interaction/Level_l1007_interaction",
+            "/Game/Lunden/Generated/L1007World/Level_l1007_collision",
+            "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats",
+            "/Game/Lunden/Generated/l1007-entre/Level_l1007-entre",
+            "/Game/Lunden/Generated/Interaction/Level_hus-l_interaction",
+            "/Game/Lunden/Generated/Interaction/Level_kvarteret_interaction",
+            "/Game/Lunden/Generated/ExteriorWorld/Level_exterior_collision",
+            "/Game/Lunden/Generated/gard/Level_gard",
+            "/Game/Lunden/Generated/omgivning/Level_omgivning",
+            "/Game/Lunden/Generated/SiteWorld/Level_site_collision",
+            "/Game/Lunden/Generated/Lighting/Level_lighting",
+            "/Game/Lunden/Generated/FacadeLighting/Level_facade_lighting",
+            "/Game/Lunden/Generated/VegetationWorld/Level_vegetation_foliage",
+            "/Game/Lunden/Generated/Interaction/Level_lift_buttons",
+            "/Game/Lunden/Avatar/Looks/Level_LundenMirror",
+            "/Game/Lunden/Generated/fond/Level_fond"
+          ],
+          "calendar": "/Game/Lunden/Seasons/MPC_LundenVegetation",
+          "observedMonth": 6.0,
+          "clockDriven": false,
+          "seasonalActors": 219,
+          "hiddenActors": 184,
+          "editorLampPolicy": "original editor-hidden OR current native-rule game-hidden",
+          "editorLamps": 2,
+          "collisionApplied": false,
+          "physicsOrCollisionApiInvoked": false,
+          "limitation": "Visibility/MPC only in static editor captures. Existing collision is not synchronized; no gameplay, PIE, interaction or Chaos acceptance. ApplySeason/ApplySeasonAt/ApplyClock are not called. Do not save these transient world changes.",
+          "sourceFileSha256": {
+            "/home/devcontainers/.local/state/lunden-codex-20261127/2394/season-visibility-only.py": "fa844d50bc9ac15225058ac1a1b0c95afdbaa87d8f44cdf1e78603fbbc486a88",
+            "/home/devcontainers/lunden-linux/tools/unreal-engine/tests/capture_world.py": "380545105f0ff30e6cca3095ff44c7bbf138491f731ecd6dd6a7564606f9d553",
+            "/home/devcontainers/lunden-linux/tools/unreal-engine/python/build_seasons.py": "33ab2c0759b6a54cd465f6a3ec7e72cdede9e366e96a59b0dfd80b812c3d3e9c"
+          }
+        },
+        "omittedSeasonActorList": {
+          "sha256OfCanonicalJSON": "6a3581fd4ce239a1a4bbe23eec5cf52d9e71279856e04ff9899423e0211b66d5",
+          "count": 219,
+          "sourcePrivateMetadata": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/native-product/product/regressions/capture.json"
+        }
+      }
+    ],
+    "lightingCheckExecutedHere": false,
+    "classification": "Current actual controlled Lighting/full20 prefix and PBR passed before this same-world capture; no fresh Automation claim",
+    "nativePBRContract": {
+      "source": "/home/devcontainers/lunden-linux/tools/unreal-engine/tests/test_rug_floor_pool.py",
+      "sha256": "909bae44d60d0e0caf6951391ba9533c13303e6dfb4ad99ed921d29adecd319f",
+      "actualMainPassed": true,
+      "scope": "existing source/PBR/controller contract; rendered fourteen-crop acceptance is separate"
+    },
+    "actualCVars": {
+      "r.AntiAliasingMethod": 1,
+      "r.LightFunctionQuality": 2,
+      "r.ShadowQuality": 3,
+      "r.SeparateTranslucency": 1,
+      "r.Shadow.MaxResolution": 1024,
+      "r.Shadow.MaxCSMResolution": 1024,
+      "r.Shadow.CSM.MaxCascades": 3
+    },
+    "profile": "LinuxCPU, conventional shadows3/1024/3cascades, SeparateTranslucency1, LumenFalse; actual FXAA1, AAquality unavailable",
+    "nanitePolicy": "Caller warmed once; no mesh setting changed here",
+    "fadeControls": {
+      "executedHere": false,
+      "classification": "Capture-only scope; no controller test loop"
+    },
+    "loadedLevels": [
+      "/Game/Lunden/Generated/Interaction/Level_l1007_interaction",
+      "/Game/Lunden/Generated/L1007World/Level_l1007_collision",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats",
+      "/Game/Lunden/Generated/l1007-entre/Level_l1007-entre",
+      "/Game/Lunden/Generated/Interaction/Level_hus-l_interaction",
+      "/Game/Lunden/Generated/Interaction/Level_kvarteret_interaction",
+      "/Game/Lunden/Generated/ExteriorWorld/Level_exterior_collision",
+      "/Game/Lunden/Generated/gard/Level_gard",
+      "/Game/Lunden/Generated/omgivning/Level_omgivning",
+      "/Game/Lunden/Generated/SiteWorld/Level_site_collision",
+      "/Game/Lunden/Generated/Lighting/Level_lighting",
+      "/Game/Lunden/Generated/FacadeLighting/Level_facade_lighting",
+      "/Game/Lunden/Generated/VegetationWorld/Level_vegetation_foliage",
+      "/Game/Lunden/Generated/Interaction/Level_lift_buttons",
+      "/Game/Lunden/Avatar/Looks/Level_LundenMirror",
+      "/Game/Lunden/Generated/fond/Level_fond"
+    ],
+    "publicationNote": "Only repeated seasonVisibility.actors lists omitted. All actual cameras, clock/PBR/profile/readbacks and image hashes retained; complete private metadata fingerprint in provenance."
+  }
+}

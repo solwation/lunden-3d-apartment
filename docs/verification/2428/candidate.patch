@@ -1,0 +1,275 @@
+diff --git a/docs/development/unreal.md b/docs/development/unreal.md
+index facc28fc77e1032aad4ee5c97aa5b4ed4c8e7e26..5524874ef47d060950ff3edb8a70263be0e391ca 100644
+--- a/docs/development/unreal.md
++++ b/docs/development/unreal.md
+@@ -3227,12 +3227,23 @@ import default: the old S:t Lars bays' painted window grid (`std_ffffff_r95_m0_t
+ The three running-bond brick instances use `FilterBrick` to integrate mortar over the pixel footprint. Close up, two
+ more parameters give the web's softer joints (#2393). The web's 256 px canvases (512 px on Hus L) box-filter their 1.5-2 px
+ joints, and the GPU then magnifies them bilinearly. `TexelBlur` (UV units) stands for that blur: 1.3 texels, the
+-canvas's 1.73 less what Unreal's own anti-aliasing adds. It replaces the pixel footprint only while it is the wider of
+-the two, so distant walls keep the plain integration. A narrower distant footprint brought #2318's moiré back on Hus
+-L's courtyard façade. `BedJoint` sets the bed joint apart from the head joint: the Å-husen and the retaining walls draw
++canvas's 1.73 less what Unreal's own anti-aliasing adds. #2428 combines it with the pixel footprint in quadrature.
++A joint narrower than 0.5 effective pixels keeps the whole-pixel box integral against moiré. From 0.8 pixels it uses a
++normalized tent (two half-width boxes, the same total support), with a smooth transition between the two. The
++0.5/0.8 thresholds and source-blur approximation are **guess** reconstruction choices, not a port of the web GPU's
++anisotropic sampler. At equal pixel/source-blur widths, quadrature is up to √2 wider than the old `max` rule,
++so close-up appearance also needs fresh verification. This changes neither the source colours nor the existing distance fade of per-brick jitter.
++`python3 tools/unreal-engine/tests/test_brick_filter.py` executes the actual box/tent scalar kernel as float32 C++
++and compares it with independent numerical integration, including negative phases, running bond and conserved mean.
++It requires a C++ compiler (`CXX` or `c++`); it does not validate Unreal compilation or image acceptance. A globally
++narrowed distant footprint previously brought #2318's moiré back on Hus L's courtyard façade. `BedJoint` sets the
++bed joint apart from the head joint: the Å-husen and the retaining walls draw
+ 1.5 px bed and 2 px head joints. Check joint share and lightness against the web with
+ `PLAYWRIGHT_MODULE=… node tools/unreal-engine/tests/brick-joints.cjs DIR crops.json --check` (web-/unreal-<shot>
+-pairs, crops that hold only brick; Otsu split of L*): [#2393](../verification/2393/README.md).
++pairs, crops that hold only brick; Otsu split of L*): [#2393](../verification/2393/README.md). For #2428 use
++`--check --brick-check --tolerance 0.10`: mortar share, mortar L* and brick L* must all pass in the locked far crops;
++near crops and full Hus L/Å-husen courtyard images also need review for regression and moiré. The filter candidate
++has no native image acceptance yet; separate sky-reflection brightness belongs to #2424.
+ **Per-brick colour (#2427).** The web's brick canvases give every brick its own colour with
+ `THREE.Color.offsetHSL((rand - 0.5) * range, …)`: `src/exterior.js` brickTexture (Hus L: hue 0.02, saturation 0.1,
+ lightness 0.07) and `src/surroundings.js` facadeTexture and brickCourses (the Å-husen and the retaining walls: 0, 0.1,
+diff --git a/tools/unreal-engine/python/build_materials.py b/tools/unreal-engine/python/build_materials.py
+index 519009e75a86a97bf78d43af560a89ebae965058..64bf44d705eb14e1e31cb4c7fe54278a1963ee81 100644
+--- a/tools/unreal-engine/python/build_materials.py
++++ b/tools/unreal-engine/python/build_materials.py
+@@ -87,12 +87,15 @@ float joint = Joint > 0.0 ? 1.0 - smoothstep(hj, hj + max(hj, 0.0006), edge) : 0
+ # over that footprint for each of the two alternating rows. The complement is the mortar coverage.
+ # #2393: the web draws this brick from a canvas of a few hundred px per UV unit, whose 1.5-2 px joints the canvas
+ # box-filters and the GPU then magnifies bilinearly. Close up that blur (TexelBlur, in UV units) shows as soft joints
+-# that never reach the full mortar colour; it replaces the pixel footprint while it is the wider of the two, so distant
+-# walls keep the plain pixel integration (a narrower footprint brings #2318's moiré back on Hus L's courtyard façade).
++# that never reach the full mortar colour. #2428 combines this source-texel blur and the pixel footprint in quadrature.
++# Subpixel joints keep the whole box against moire. Resolved joints use a tent with the SAME support (two half-width
++# boxes); this preserves the periodic mean without the old box's broad, flat transition. The .5/.8-pixel switch is a
++# reconstruction-filter guess, not a claim to reproduce the web's anisotropic sampler.
+ # BedJoint, when > 0, is the bed joint along V (the web's canvases draw 1.5 px bed and 2 px head joints).
+ BRICK_FILTER = r"""
+ if (FilterBrick > 0.5) {
+-    float2 footprint = max(fwidth(UV), TexelBlur) / S;
++    float2 pixel = fwidth(UV);
++    float2 footprint = sqrt(pixel * pixel + TexelBlur * TexelBlur) / S;
+     float2 gap = saturate(float2(Joint, BedJoint > 0.0 ? BedJoint : Joint) / S);
+     float4 span = max(float4(footprint.xx, 0.5 * footprint.yy), 0.0001);
+     float4 faceWidth = float4(1.0 - gap.xx, 0.5 * (1.0 - gap.yy));
+@@ -105,6 +108,25 @@ if (FilterBrick > 0.5) {
+     float4 area = (floor(hi) - floor(lo)) * faceWidth
+                 + min(frac(hi), faceWidth) - min(frac(lo), faceWidth);
+     float4 coverage = saturate(area / span);
++    struct BrickTent {
++        float4 cdf(float4 q) {
++            float4 ramp = saturate(1.0 - abs(q));
++            return lerp(0.5 * ramp * ramp, 1.0 - 0.5 * ramp * ramp, step(0.0, q));
++        }
++        float4 face(float4 c, float4 width, float4 support) {
++            float4 total = 0.0;
++            // The tent is used only with gap/support > .5; adjacent periods suffice.
++            [unroll] for (int k = -1; k <= 1; ++k) {
++                total += cdf((k + width - c) / (0.5 * support))
++                       - cdf((k - c) / (0.5 * support));
++            }
++            return saturate(total);
++        }
++    };
++    BrickTent brickTent;
++    float2 jointPixels = gap / max(footprint, 0.0001);
++    float4 resolved = smoothstep(0.5, 0.8, float4(jointPixels.xx, jointPixels.yy));
++    coverage = lerp(coverage, brickTent.face(center, faceWidth, span), resolved);
+     joint = saturate(1.0 - dot(coverage.xy, coverage.zw));
+     float2 cells = fwidth(UV) / S;
+     float detail = 1.0 - smoothstep(0.5, 2.0, max(cells.x, cells.y));
+diff --git a/tools/unreal-engine/tests/brick-joints.cjs b/tools/unreal-engine/tests/brick-joints.cjs
+index 47c5a1b87373ed5e8466e8b2bd250a048884a3e1..08e60b9e86d69b7c79c160fe3ea0041574755ff4 100644
+--- a/tools/unreal-engine/tests/brick-joints.cjs
++++ b/tools/unreal-engine/tests/brick-joints.cjs
+@@ -1,5 +1,5 @@
+ // #2393: mortar share and mortar lightness of brick crops in web / Unreal picture pairs.
+-//   PLAYWRIGHT_MODULE=… node tools/unreal-engine/tests/brick-joints.cjs DIR crops.json [--check] [--tolerance 0.15]
++//   PLAYWRIGHT_MODULE=… node tools/unreal-engine/tests/brick-joints.cjs DIR crops.json [--check] [--brick-check] [--tolerance 0.15]
+ // crops.json has crop-stats.cjs's format: { "<shot>": { "<crop>": [x0, y0, x1, y1] (fractions) } }. For each shot it
+ // reads DIR/web-<shot>.(jpg|png) and DIR/unreal-<shot>.(jpg|png). Each crop must hold only brick and its joints. Per
+ // crop and side, the CIE L* of every pixel is split in two by Otsu's threshold: the light class is mortar, the dark
+@@ -8,6 +8,8 @@
+ // exits 1 when the share or the mortar L* ratio lies outside 1 ± tolerance (#2393's acceptance); the contrast ratio is
+ // reported only (the brick class also carries how much a distant pixel blends brick and mortar). --crops-out OUT writes each crop, 3x enlarged with
+ // nearest-neighbour sampling, as OUT/<shot>-<crop>-<side>.png for review.
++// #2428: --brick-check also includes brick L* in --check; use --tolerance 0.10 for its far-crop acceptance.
++// The default #2393 check remains share + mortar L* only.
+ // #2427: it also prints the spread of the bricks' own colour: each brick is a 4-connected region of the brick-class
+ // pixels whose 3 x 3 neighbourhood is all brick (no joint blend), at least 6 pixels; over the bricks' mean colours it
+ // prints the p10-p90 width of CIE L*, C* and hue (degrees), and Unreal / web for each.
+@@ -22,6 +24,7 @@ async function main() {
+   const [dir, cropsFile] = args;
+   const tolIndex = args.indexOf('--tolerance');
+   const tolerance = tolIndex >= 0 ? Number(args[tolIndex + 1]) : 0.15;
++  const brickChecked = args.includes('--brick-check');
+   const cropsOutIndex = args.indexOf('--crops-out');
+   const cropsOut = cropsOutIndex >= 0 ? args[cropsOutIndex + 1] : null;
+   const colourIndex = args.indexOf('--colour-check');
+@@ -120,11 +123,13 @@ async function main() {
+       for (const name of Object.keys(rects)) {
+         const w = out[shot].web[name], u = out[shot].unreal[name];
+         const shareRatio = u.share / w.share, contrastRatio = u.contrast / w.contrast, mortarRatio = u.mortarL / w.mortarL;
+-        const ok = Math.abs(shareRatio - 1) <= tolerance && Math.abs(mortarRatio - 1) <= tolerance;
+-        out[shot][name] = {shareRatio: +shareRatio.toFixed(3), contrastRatio: +contrastRatio.toFixed(3), mortarRatio: +mortarRatio.toFixed(3), ok};
++        const brickRatio = u.brickL / w.brickL;
++        const ok = Math.abs(shareRatio - 1) <= tolerance && Math.abs(mortarRatio - 1) <= tolerance
++          && (!brickChecked || Math.abs(brickRatio - 1) <= tolerance);
++        out[shot][name] = {shareRatio: +shareRatio.toFixed(3), contrastRatio: +contrastRatio.toFixed(3), mortarRatio: +mortarRatio.toFixed(3), brickRatio: +brickRatio.toFixed(3), brickChecked, ok};
+         if (!ok) failed = true;
+         const fmt = (s) => `share ${s.share.toFixed(3)} mortar L* ${s.mortarL.toFixed(1)} brick L* ${s.brickL.toFixed(1)} contrast ${s.contrast.toFixed(1)}`;
+-        console.log(`${shot.padEnd(18)} ${name.padEnd(14)} web ${fmt(w)} | unreal ${fmt(u)} | share x${shareRatio.toFixed(2)} mortar L* x${mortarRatio.toFixed(2)} (contrast x${contrastRatio.toFixed(2)}) ${ok ? 'ok' : 'OUTSIDE'}`);
++        console.log(`${shot.padEnd(18)} ${name.padEnd(14)} web ${fmt(w)} | unreal ${fmt(u)} | share x${shareRatio.toFixed(2)} mortar L* x${mortarRatio.toFixed(2)} brick L* x${brickRatio.toFixed(2)}${brickChecked ? ' checked' : ' report-only'} (contrast x${contrastRatio.toFixed(2)}) ${ok ? 'ok' : 'OUTSIDE'}`);
+         const lRatio = u.spreadL / w.spreadL, cRatio = u.spreadC / w.spreadC, hRatio = u.spreadHue / w.spreadHue;
+         const checked = colourCrops.includes(`${shot}/${name}`);
+         const colourOk = Math.abs(lRatio - 1) <= colourTolerance && Math.abs(hRatio - 1) <= colourTolerance;
+diff --git a/tools/unreal-engine/tests/test_brick_filter.py b/tools/unreal-engine/tests/test_brick_filter.py
+new file mode 100644
+index 0000000000000000000000000000000000000000..688e421b691be635354367c9730bbafbf19daab6
+--- /dev/null
++++ b/tools/unreal-engine/tests/test_brick_filter.py
+@@ -0,0 +1,143 @@
++"""#2428: execute the actual HLSL scalar kernels as C++ and compare numerical integration.
++
++No Unreal/GPU. Requires a C++ compiler (CXX or c++); all build output is temporary.
++Checks periodic/negative phases, subpixel full boxes, resolved tents, running bond,
++mean coverage and unchanged non-brick shader inputs. Native compilation/images remain separate.
++"""
++import ast
++import ctypes
++import hashlib
++import json
++import math
++import os
++from pathlib import Path
++import random
++import re
++import subprocess
++import tempfile
++import unittest
++from types import SimpleNamespace
++
++ROOT = Path(__file__).resolve().parents[3]
++
++
++def constant(name):
++    tree = ast.parse((ROOT/'tools/unreal-engine/python/build_materials.py').read_text())
++    return next(ast.literal_eval(n.value) for n in tree.body if isinstance(n, ast.Assign)
++                and any(isinstance(t, ast.Name) and t.id == name for t in n.targets))
++
++
++def frac(x):
++    return x-math.floor(x)
++
++
++def smooth(a,b,x):
++    t=max(0,min(1,(x-a)/(b-a)))
++    return t*t*(3-2*t)
++
++
++def reference(c,width,support,tent,n=8192):
++    # Independent midpoint quadrature of the periodic indicator, not its antiderivative.
++    total=0.0
++    for i in range(n):
++        x=(i+.5)/n-.5
++        weight=2*(1-2*abs(x)) if tent else 1
++        total += weight * (frac(c+x*support)<width)
++    return total/n
++
++
++class BrickFilterTests(unittest.TestCase):
++    @classmethod
++    def setUpClass(cls):
++        cls.directory=tempfile.TemporaryDirectory()
++        code=constant('BRICK_FILTER')
++        start=code.index('struct BrickTent {')
++        end=code.index('\n    BrickTent brickTent;',start)
++        kernel=code[start:end].replace('float4','float').replace('[unroll]','')
++        box=code[code.index('    float4 lo ='):code.index('    struct BrickTent')].replace('float4','float')
++        source='''#include <algorithm>
++#include <cmath>
++using std::min;using std::max;using std::floor;using std::abs;
++float frac(float x){return x-floor(x);}
++float saturate(float x){return std::clamp(x,0.f,1.f);}
++float step(float e,float x){return x>=e?1.f:0.f;}
++float lerp(float a,float b,float t){return a+(b-a)*t;}
++'''+kernel+'''
++extern "C" float tent(float c,float w,float s){BrickTent f;return f.face(c,w,s);}
++extern "C" float box(float center,float faceWidth,float span){
++'''+box+'return coverage;}\n'
++        # HLSL literals are float; C++ decimal literals need the same type for min/max.
++        source=re.sub(r'(?<![\w.])(\d+\.\d+)(?![\w.])',r'\1f',source)
++        folder=Path(cls.directory.name);cpp=folder/'filter.cpp';cpp.write_text(source)
++        library=folder/'filter.so'
++        subprocess.run([os.environ.get('CXX','c++'),'-std=c++17','-shared','-fPIC','-O2',str(cpp),'-o',str(library)],check=True,capture_output=True,text=True)
++        cls.library=ctypes.CDLL(str(library))
++        for name in ('box','tent'):
++            f=getattr(cls.library,name);f.argtypes=[ctypes.c_float]*3;f.restype=ctypes.c_float
++        cls.code=code
++
++    @classmethod
++    def tearDownClass(cls):
++        cls.directory.cleanup()
++
++    def test_actual_kernels_against_independent_quadrature(self):
++        rng=random.Random(2428)
++        for tent in (False,True):
++            for i in range(100):
++                gap=rng.uniform(.01,.4);w=1-gap
++                support=rng.uniform(.0001,2*gap) if tent else rng.uniform(.0001,5)
++                c=rng.uniform(-.5*gap,1-.5*gap)
++                if i<8:c=[-.5*gap,0,w,1,w+support*.2,1-support*.2,.5,w-support*.2][i]
++                got=getattr(self.library,'tent' if tent else 'box')(c,w,support)
++                self.assertAlmostEqual(got,reference(c,w,support,tent),delta=.001)
++
++    def test_resolution_gate_and_quadrature_blur(self):
++        self.assertIn('sqrt(pixel * pixel + TexelBlur * TexelBlur) / S',self.code)
++        self.assertIn('smoothstep(0.5, 0.8,',self.code)
++        for joint_pixels in (0,.1,.499,.5):self.assertEqual(smooth(.5,.8,joint_pixels),0)
++        self.assertEqual(smooth(.5,.8,.8),1)
++        # No global footprint shrink or source-colour/jitter edits.
++        self.assertNotIn('0.7 * footprint',self.code)
++        for name in ('Variation','Grain','HueJitter','SaturationJitter','LightnessJitter'):
++            self.assertIn(name+' *= detail;',self.code)
++
++    def test_only_tiled_master_requires_new_asset_stamp(self):
++        # Execute the production hash function for the complete tiled family. None reads
++        # a collection/engine-dependent graph; rebuilding a parent must not dirty its MIs.
++        tree=ast.parse((ROOT/'tools/unreal-engine/python/build_materials.py').read_text())
++        function=next(n for n in tree.body if isinstance(n,ast.FunctionDef) and n.name=='spec_hash')
++        env={name:constant(name) for name in ('TILED_GRID','TILED_FINISH','TILED_HSL','BRICK_FILTER',
++                                               'BAKED','GLTF_VC','GLTF_LABEL','GLTF_FORWARD')}
++        env.update(hashlib=hashlib,json=json,collection_reads=lambda spec:{},
++                   backdrop_material=SimpleNamespace(GRAPH='landscape-backdrop'))
++        exec(compile(ast.Module(body=[function],type_ignores=[]),'<production spec_hash>','exec'),env)
++        table=json.loads((ROOT/'tools/unreal-engine/material-map.json').read_text())['materials']
++        master='/Game/Lunden/Materials/M_LundenTiled'
++        family={p:s for p,s in table.items() if p==master or s.get('parent')==master}
++        current={p:env['spec_hash'](p,s) for p,s in family.items()}
++        env['BRICK_FILTER']='previous-filter'
++        changed=[p for p,s in family.items() if env['spec_hash'](p,s)!=current[p]]
++        self.assertEqual(changed,[master])
++        self.assertEqual(len(family),19)
++
++    def test_running_bond_integral_and_mean(self):
++        rng=random.Random(2318)
++        for i in range(12):
++            gx,gy=.08,.12
++            sx,sy=rng.uniform(.02,.18),rng.uniform(.02,.22)
++            x,y=rng.random(),rng.random()
++            fx=1-gx;fy=.5*(1-gy)
++            xs=[x-.5*gx,frac(x+.5)-.5*gx]
++            ys=[y-.25*gy,frac(y+.5)-.25*gy]
++            # Separable tent applied to the actual two alternating-row rectangles.
++            got=1-sum(self.library.tent(c,fx,sx)*self.library.tent(d,fy,.5*sy) for c,d in zip(xs,ys))
++            ref=1-sum(reference(c,fx,sx,True,4096)*reference(d,fy,.5*sy,True,4096) for c,d in zip(xs,ys))
++            self.assertAlmostEqual(got,ref,delta=.0015)
++        # Normalized kernels preserve the actual periodic face mean; no fog-area gain.
++        for support in (.0001,.05,.3):
++            values=[self.library.tent((i+.5)/4096, .82, support) for i in range(4096)]
++            self.assertAlmostEqual(sum(values)/len(values),.82,delta=.0003)
++
++
++if __name__=='__main__':
++    unittest.main()

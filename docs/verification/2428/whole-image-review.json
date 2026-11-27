@@ -1,0 +1,1046 @@
+{
+  "issue": 2428,
+  "reviewedAtUtc": "2026-11-27T22:43:23.563339+00:00",
+  "reviewScope": "All12 original images opened at original dimensions; no new pixel measurement, browser, engine, exposure or parameter changes.",
+  "sourceHead": "a1ff6c9cfbb790f5014965e62219b6921cf57db6",
+  "sourceCandidate": "392e945b691580fa1b4e3c9c9cd6d6af2e5f27e3",
+  "wholeAcceptancePassed": false,
+  "numericAcceptancePassed": false,
+  "inputs": [
+    {
+      "shot": "entrance-a",
+      "side": "web",
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/paired-final/web-entrance-a.jpg",
+      "sha256": "c61c6e2e7784c75ba29afafe8e9bf2e5724f00bc0686aba94d6fa8b7034e7ef0",
+      "actualOriginalViewed": true
+    },
+    {
+      "shot": "entrance-a",
+      "side": "unreal",
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/paired-final/unreal-entrance-a.png",
+      "sha256": "c9b42d54df6e6aa390ba4b27776cabb2ff117736d1e751a570564e0a6fd5796e",
+      "actualOriginalViewed": true
+    },
+    {
+      "shot": "courtyard",
+      "side": "web",
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/paired-final/web-courtyard.jpg",
+      "sha256": "e5f9cc4237917ff75dcd83edb686ea5e34baf6390e86f345effba1eabfd9e169",
+      "actualOriginalViewed": true
+    },
+    {
+      "shot": "courtyard",
+      "side": "unreal",
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/paired-final/unreal-courtyard.png",
+      "sha256": "265987c2302953a9d8d15aa215268e8e096f6a42a6d79e64dee6b3f9d1a5b68d",
+      "actualOriginalViewed": true
+    },
+    {
+      "shot": "living-room-day",
+      "side": "web",
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/paired-final/web-living-room-day.jpg",
+      "sha256": "be8023e5a4d1ba5cfb2d4f930273f6792c788658efd47dba6a6c153016af33ac",
+      "actualOriginalViewed": true
+    },
+    {
+      "shot": "living-room-day",
+      "side": "unreal",
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/paired-final/unreal-living-room-day.png",
+      "sha256": "aa3d9f52fb0c2ecabd18470648179e0ddd61beff721d3590d402265fb961992e",
+      "actualOriginalViewed": true
+    },
+    {
+      "shot": "living-room-evening",
+      "side": "web",
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/paired-final/web-living-room-evening.jpg",
+      "sha256": "1a6d7cd06c97fbb1729662cece73490a808745d2511124f8dc0a987f0e810c0b",
+      "actualOriginalViewed": true
+    },
+    {
+      "shot": "living-room-evening",
+      "side": "unreal",
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/paired-final/unreal-living-room-evening.png",
+      "sha256": "ef1b132776dc8a36f398c03c092d3eff1503f39219522124212991faeb702da4",
+      "actualOriginalViewed": true
+    },
+    {
+      "shot": "stairs-evening",
+      "side": "web",
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/paired-final/web-stairs-evening.jpg",
+      "sha256": "48dcb9b61e67c0d499f06d1d253d02251b4930a9bb567f138c6723ddf71574c5",
+      "actualOriginalViewed": true
+    },
+    {
+      "shot": "stairs-evening",
+      "side": "unreal",
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/paired-final/unreal-stairs-evening.png",
+      "sha256": "47e302af9bbdae1a169e64e5a573679858003c918887dabf4b1838545e42596b",
+      "actualOriginalViewed": true
+    },
+    {
+      "shot": "upper-floor-evening",
+      "side": "web",
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/paired-final/web-upper-floor-evening.jpg",
+      "sha256": "16ed055836f8a6f6487ed1c6d99bfa45be5ceb9ecb2e53b5240c1692ebd7dbb8",
+      "actualOriginalViewed": true
+    },
+    {
+      "shot": "upper-floor-evening",
+      "side": "unreal",
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/paired-final/unreal-upper-floor-evening.png",
+      "sha256": "6615f8a21b78048009596404e466490963afe9ceb6dce90da8febd54dfde345f",
+      "actualOriginalViewed": true
+    }
+  ],
+  "combinedGateSHA256": "7771a485d3e9d124d9cf5468b9a91ffe9fcda6c0f179a992c8888e88e2cd47f2",
+  "actualRows": [
+    {
+      "shot": "entrance-a",
+      "crop": "wall-near",
+      "role": "near",
+      "rect": [
+        0.1,
+        0.15,
+        0.32,
+        0.7
+      ],
+      "ratios": {
+        "mortarShare": 0.9639494215765403,
+        "mortarL": 1.1083922109253832,
+        "brickL": 1.0222608695652173
+      },
+      "checks": {
+        "mortarShare": true,
+        "mortarL": false,
+        "brickL": true
+      },
+      "passed": false,
+      "web": {
+        "pixels": 141065,
+        "threshold": 43.5,
+        "share": 0.3717,
+        "mortarL": 58.03,
+        "brickL": 28.75,
+        "contrast": 29.27,
+        "bricks": 86,
+        "spreadL": 6.4,
+        "spreadC": 8.99,
+        "spreadHue": 2.34
+      },
+      "native": {
+        "pixels": 141065,
+        "threshold": 46.5,
+        "share": 0.3583,
+        "mortarL": 64.32,
+        "brickL": 29.39,
+        "contrast": 34.92,
+        "bricks": 87,
+        "spreadL": 7.28,
+        "spreadC": 9,
+        "spreadHue": 2.27
+      },
+      "canonicalRoundedReport": {
+        "shareRatio": 0.964,
+        "contrastRatio": 1.193,
+        "mortarRatio": 1.108,
+        "brickRatio": 1.022,
+        "brickChecked": true,
+        "ok": false,
+        "spreadLRatio": 1.137,
+        "spreadCRatio": 1.001,
+        "spreadHueRatio": 0.97,
+        "colourChecked": false,
+        "colourOk": true
+      }
+    },
+    {
+      "shot": "entrance-a",
+      "crop": "wall-far",
+      "role": "far",
+      "rect": [
+        0.5,
+        0.03,
+        0.525,
+        0.28
+      ],
+      "ratios": {
+        "mortarShare": 1.1239768897448243,
+        "mortarL": 1.0188133140376265,
+        "brickL": 1.1711362032462949
+      },
+      "checks": {
+        "mortarShare": false,
+        "mortarL": true,
+        "brickL": false
+      },
+      "passed": false,
+      "web": {
+        "pixels": 7308,
+        "threshold": 41.5,
+        "share": 0.4154,
+        "mortarL": 55.28,
+        "brickL": 28.34,
+        "contrast": 26.95,
+        "bricks": 15,
+        "spreadL": 6.54,
+        "spreadC": 8.84,
+        "spreadHue": 3.18
+      },
+      "native": {
+        "pixels": 7308,
+        "threshold": 44.5,
+        "share": 0.4669,
+        "mortarL": 56.32,
+        "brickL": 33.19,
+        "contrast": 23.12,
+        "bricks": 11,
+        "spreadL": 4.88,
+        "spreadC": 5.22,
+        "spreadHue": 1.71
+      },
+      "canonicalRoundedReport": {
+        "shareRatio": 1.124,
+        "contrastRatio": 0.858,
+        "mortarRatio": 1.019,
+        "brickRatio": 1.171,
+        "brickChecked": true,
+        "ok": false,
+        "spreadLRatio": 0.746,
+        "spreadCRatio": 0.59,
+        "spreadHueRatio": 0.538,
+        "colourChecked": false,
+        "colourOk": false
+      }
+    },
+    {
+      "shot": "courtyard",
+      "crop": "husA-near",
+      "role": "near",
+      "rect": [
+        0.0,
+        0.32,
+        0.03,
+        0.62
+      ],
+      "ratios": {
+        "mortarShare": 0.8992697053638881,
+        "mortarL": 1.0750969743987588,
+        "brickL": 1.0190332326283986
+      },
+      "checks": {
+        "mortarShare": false,
+        "mortarL": true,
+        "brickL": true
+      },
+      "passed": false,
+      "web": {
+        "pixels": 10449,
+        "threshold": 48.5,
+        "share": 0.3971,
+        "mortarL": 64.45,
+        "brickL": 33.1,
+        "contrast": 31.35,
+        "bricks": 27,
+        "spreadL": 11.82,
+        "spreadC": 14.67,
+        "spreadHue": 2.62
+      },
+      "native": {
+        "pixels": 10449,
+        "threshold": 51.5,
+        "share": 0.3571,
+        "mortarL": 69.29,
+        "brickL": 33.73,
+        "contrast": 35.56,
+        "bricks": 25,
+        "spreadL": 15.31,
+        "spreadC": 11.44,
+        "spreadHue": 1.72
+      },
+      "canonicalRoundedReport": {
+        "shareRatio": 0.899,
+        "contrastRatio": 1.134,
+        "mortarRatio": 1.075,
+        "brickRatio": 1.019,
+        "brickChecked": true,
+        "ok": false,
+        "spreadLRatio": 1.295,
+        "spreadCRatio": 0.78,
+        "spreadHueRatio": 0.656,
+        "colourChecked": false,
+        "colourOk": false
+      }
+    },
+    {
+      "shot": "courtyard",
+      "crop": "husA-mid",
+      "role": "far",
+      "rect": [
+        0.25,
+        0.32,
+        0.27,
+        0.46
+      ],
+      "ratios": {
+        "mortarShare": 1.0799792261750194,
+        "mortarL": 1.0388673935983117,
+        "brickL": 1.191625266146203
+      },
+      "checks": {
+        "mortarShare": true,
+        "mortarL": true,
+        "brickL": false
+      },
+      "passed": false,
+      "web": {
+        "pixels": 3277,
+        "threshold": 42.5,
+        "share": 0.3851,
+        "mortarL": 56.86,
+        "brickL": 28.18,
+        "contrast": 28.67,
+        "bricks": 49,
+        "spreadL": 6.82,
+        "spreadC": 7.43,
+        "spreadHue": 4.09
+      },
+      "native": {
+        "pixels": 3277,
+        "threshold": 46.5,
+        "share": 0.4159,
+        "mortarL": 59.07,
+        "brickL": 33.58,
+        "contrast": 25.48,
+        "bricks": 48,
+        "spreadL": 6.42,
+        "spreadC": 7.65,
+        "spreadHue": 2.67
+      },
+      "canonicalRoundedReport": {
+        "shareRatio": 1.08,
+        "contrastRatio": 0.889,
+        "mortarRatio": 1.039,
+        "brickRatio": 1.192,
+        "brickChecked": true,
+        "ok": false,
+        "spreadLRatio": 0.941,
+        "spreadCRatio": 1.03,
+        "spreadHueRatio": 0.653,
+        "colourChecked": false,
+        "colourOk": false
+      }
+    },
+    {
+      "shot": "courtyard",
+      "crop": "husL-far",
+      "role": "far",
+      "rect": [
+        0.885,
+        0.245,
+        0.99,
+        0.275
+      ],
+      "ratios": {
+        "mortarShare": 1.024195624195624,
+        "mortarL": 0.9923806561965479,
+        "brickL": 1.138228377319049
+      },
+      "checks": {
+        "mortarShare": true,
+        "mortarL": true,
+        "brickL": false
+      },
+      "passed": false,
+      "web": {
+        "pixels": 3624,
+        "threshold": 51.5,
+        "share": 0.3885,
+        "mortarL": 64.31,
+        "brickL": 38.27,
+        "contrast": 26.04,
+        "bricks": 31,
+        "spreadL": 7.6,
+        "spreadC": 9.85,
+        "spreadHue": 10.22
+      },
+      "native": {
+        "pixels": 3624,
+        "threshold": 53.5,
+        "share": 0.3979,
+        "mortarL": 63.82,
+        "brickL": 43.56,
+        "contrast": 20.26,
+        "bricks": 28,
+        "spreadL": 6.16,
+        "spreadC": 9.46,
+        "spreadHue": 9.93
+      },
+      "canonicalRoundedReport": {
+        "shareRatio": 1.024,
+        "contrastRatio": 0.778,
+        "mortarRatio": 0.992,
+        "brickRatio": 1.138,
+        "brickChecked": true,
+        "ok": false,
+        "spreadLRatio": 0.811,
+        "spreadCRatio": 0.96,
+        "spreadHueRatio": 0.972,
+        "colourChecked": false,
+        "colourOk": true
+      }
+    },
+    {
+      "shot": "courtyard",
+      "crop": "husL-mid2",
+      "role": "far",
+      "rect": [
+        0.81,
+        0.13,
+        0.83,
+        0.24
+      ],
+      "ratios": {
+        "mortarShare": 0.9679769894534996,
+        "mortarL": 1.0326919802485952,
+        "brickL": 1.119017790027562
+      },
+      "checks": {
+        "mortarShare": true,
+        "mortarL": true,
+        "brickL": false
+      },
+      "passed": false,
+      "web": {
+        "pixels": 2581,
+        "threshold": 49.5,
+        "share": 0.5215,
+        "mortarL": 58.73,
+        "brickL": 39.91,
+        "contrast": 18.82,
+        "bricks": 0,
+        "spreadL": 0,
+        "spreadC": 0,
+        "spreadHue": 0
+      },
+      "native": {
+        "pixels": 2581,
+        "threshold": 52.5,
+        "share": 0.5048,
+        "mortarL": 60.65,
+        "brickL": 44.66,
+        "contrast": 15.99,
+        "bricks": 0,
+        "spreadL": 0,
+        "spreadC": 0,
+        "spreadHue": 0
+      },
+      "canonicalRoundedReport": {
+        "shareRatio": 0.968,
+        "contrastRatio": 0.85,
+        "mortarRatio": 1.033,
+        "brickRatio": 1.119,
+        "brickChecked": true,
+        "ok": false,
+        "spreadLRatio": null,
+        "spreadCRatio": null,
+        "spreadHueRatio": null,
+        "colourChecked": false,
+        "colourOk": false
+      }
+    }
+  ],
+  "formalFailures": [
+    {
+      "shot": "entrance-a",
+      "crop": "wall-near",
+      "role": "near",
+      "rect": [
+        0.1,
+        0.15,
+        0.32,
+        0.7
+      ],
+      "ratios": {
+        "mortarShare": 0.9639494215765403,
+        "mortarL": 1.1083922109253832,
+        "brickL": 1.0222608695652173
+      },
+      "checks": {
+        "mortarShare": true,
+        "mortarL": false,
+        "brickL": true
+      },
+      "passed": false,
+      "web": {
+        "pixels": 141065,
+        "threshold": 43.5,
+        "share": 0.3717,
+        "mortarL": 58.03,
+        "brickL": 28.75,
+        "contrast": 29.27,
+        "bricks": 86,
+        "spreadL": 6.4,
+        "spreadC": 8.99,
+        "spreadHue": 2.34
+      },
+      "native": {
+        "pixels": 141065,
+        "threshold": 46.5,
+        "share": 0.3583,
+        "mortarL": 64.32,
+        "brickL": 29.39,
+        "contrast": 34.92,
+        "bricks": 87,
+        "spreadL": 7.28,
+        "spreadC": 9,
+        "spreadHue": 2.27
+      },
+      "canonicalRoundedReport": {
+        "shareRatio": 0.964,
+        "contrastRatio": 1.193,
+        "mortarRatio": 1.108,
+        "brickRatio": 1.022,
+        "brickChecked": true,
+        "ok": false,
+        "spreadLRatio": 1.137,
+        "spreadCRatio": 1.001,
+        "spreadHueRatio": 0.97,
+        "colourChecked": false,
+        "colourOk": true
+      }
+    },
+    {
+      "shot": "entrance-a",
+      "crop": "wall-far",
+      "role": "far",
+      "rect": [
+        0.5,
+        0.03,
+        0.525,
+        0.28
+      ],
+      "ratios": {
+        "mortarShare": 1.1239768897448243,
+        "mortarL": 1.0188133140376265,
+        "brickL": 1.1711362032462949
+      },
+      "checks": {
+        "mortarShare": false,
+        "mortarL": true,
+        "brickL": false
+      },
+      "passed": false,
+      "web": {
+        "pixels": 7308,
+        "threshold": 41.5,
+        "share": 0.4154,
+        "mortarL": 55.28,
+        "brickL": 28.34,
+        "contrast": 26.95,
+        "bricks": 15,
+        "spreadL": 6.54,
+        "spreadC": 8.84,
+        "spreadHue": 3.18
+      },
+      "native": {
+        "pixels": 7308,
+        "threshold": 44.5,
+        "share": 0.4669,
+        "mortarL": 56.32,
+        "brickL": 33.19,
+        "contrast": 23.12,
+        "bricks": 11,
+        "spreadL": 4.88,
+        "spreadC": 5.22,
+        "spreadHue": 1.71
+      },
+      "canonicalRoundedReport": {
+        "shareRatio": 1.124,
+        "contrastRatio": 0.858,
+        "mortarRatio": 1.019,
+        "brickRatio": 1.171,
+        "brickChecked": true,
+        "ok": false,
+        "spreadLRatio": 0.746,
+        "spreadCRatio": 0.59,
+        "spreadHueRatio": 0.538,
+        "colourChecked": false,
+        "colourOk": false
+      }
+    },
+    {
+      "shot": "courtyard",
+      "crop": "husA-near",
+      "role": "near",
+      "rect": [
+        0.0,
+        0.32,
+        0.03,
+        0.62
+      ],
+      "ratios": {
+        "mortarShare": 0.8992697053638881,
+        "mortarL": 1.0750969743987588,
+        "brickL": 1.0190332326283986
+      },
+      "checks": {
+        "mortarShare": false,
+        "mortarL": true,
+        "brickL": true
+      },
+      "passed": false,
+      "web": {
+        "pixels": 10449,
+        "threshold": 48.5,
+        "share": 0.3971,
+        "mortarL": 64.45,
+        "brickL": 33.1,
+        "contrast": 31.35,
+        "bricks": 27,
+        "spreadL": 11.82,
+        "spreadC": 14.67,
+        "spreadHue": 2.62
+      },
+      "native": {
+        "pixels": 10449,
+        "threshold": 51.5,
+        "share": 0.3571,
+        "mortarL": 69.29,
+        "brickL": 33.73,
+        "contrast": 35.56,
+        "bricks": 25,
+        "spreadL": 15.31,
+        "spreadC": 11.44,
+        "spreadHue": 1.72
+      },
+      "canonicalRoundedReport": {
+        "shareRatio": 0.899,
+        "contrastRatio": 1.134,
+        "mortarRatio": 1.075,
+        "brickRatio": 1.019,
+        "brickChecked": true,
+        "ok": false,
+        "spreadLRatio": 1.295,
+        "spreadCRatio": 0.78,
+        "spreadHueRatio": 0.656,
+        "colourChecked": false,
+        "colourOk": false
+      }
+    },
+    {
+      "shot": "courtyard",
+      "crop": "husA-mid",
+      "role": "far",
+      "rect": [
+        0.25,
+        0.32,
+        0.27,
+        0.46
+      ],
+      "ratios": {
+        "mortarShare": 1.0799792261750194,
+        "mortarL": 1.0388673935983117,
+        "brickL": 1.191625266146203
+      },
+      "checks": {
+        "mortarShare": true,
+        "mortarL": true,
+        "brickL": false
+      },
+      "passed": false,
+      "web": {
+        "pixels": 3277,
+        "threshold": 42.5,
+        "share": 0.3851,
+        "mortarL": 56.86,
+        "brickL": 28.18,
+        "contrast": 28.67,
+        "bricks": 49,
+        "spreadL": 6.82,
+        "spreadC": 7.43,
+        "spreadHue": 4.09
+      },
+      "native": {
+        "pixels": 3277,
+        "threshold": 46.5,
+        "share": 0.4159,
+        "mortarL": 59.07,
+        "brickL": 33.58,
+        "contrast": 25.48,
+        "bricks": 48,
+        "spreadL": 6.42,
+        "spreadC": 7.65,
+        "spreadHue": 2.67
+      },
+      "canonicalRoundedReport": {
+        "shareRatio": 1.08,
+        "contrastRatio": 0.889,
+        "mortarRatio": 1.039,
+        "brickRatio": 1.192,
+        "brickChecked": true,
+        "ok": false,
+        "spreadLRatio": 0.941,
+        "spreadCRatio": 1.03,
+        "spreadHueRatio": 0.653,
+        "colourChecked": false,
+        "colourOk": false
+      }
+    },
+    {
+      "shot": "courtyard",
+      "crop": "husL-far",
+      "role": "far",
+      "rect": [
+        0.885,
+        0.245,
+        0.99,
+        0.275
+      ],
+      "ratios": {
+        "mortarShare": 1.024195624195624,
+        "mortarL": 0.9923806561965479,
+        "brickL": 1.138228377319049
+      },
+      "checks": {
+        "mortarShare": true,
+        "mortarL": true,
+        "brickL": false
+      },
+      "passed": false,
+      "web": {
+        "pixels": 3624,
+        "threshold": 51.5,
+        "share": 0.3885,
+        "mortarL": 64.31,
+        "brickL": 38.27,
+        "contrast": 26.04,
+        "bricks": 31,
+        "spreadL": 7.6,
+        "spreadC": 9.85,
+        "spreadHue": 10.22
+      },
+      "native": {
+        "pixels": 3624,
+        "threshold": 53.5,
+        "share": 0.3979,
+        "mortarL": 63.82,
+        "brickL": 43.56,
+        "contrast": 20.26,
+        "bricks": 28,
+        "spreadL": 6.16,
+        "spreadC": 9.46,
+        "spreadHue": 9.93
+      },
+      "canonicalRoundedReport": {
+        "shareRatio": 1.024,
+        "contrastRatio": 0.778,
+        "mortarRatio": 0.992,
+        "brickRatio": 1.138,
+        "brickChecked": true,
+        "ok": false,
+        "spreadLRatio": 0.811,
+        "spreadCRatio": 0.96,
+        "spreadHueRatio": 0.972,
+        "colourChecked": false,
+        "colourOk": true
+      }
+    },
+    {
+      "shot": "courtyard",
+      "crop": "husL-mid2",
+      "role": "far",
+      "rect": [
+        0.81,
+        0.13,
+        0.83,
+        0.24
+      ],
+      "ratios": {
+        "mortarShare": 0.9679769894534996,
+        "mortarL": 1.0326919802485952,
+        "brickL": 1.119017790027562
+      },
+      "checks": {
+        "mortarShare": true,
+        "mortarL": true,
+        "brickL": false
+      },
+      "passed": false,
+      "web": {
+        "pixels": 2581,
+        "threshold": 49.5,
+        "share": 0.5215,
+        "mortarL": 58.73,
+        "brickL": 39.91,
+        "contrast": 18.82,
+        "bricks": 0,
+        "spreadL": 0,
+        "spreadC": 0,
+        "spreadHue": 0
+      },
+      "native": {
+        "pixels": 2581,
+        "threshold": 52.5,
+        "share": 0.5048,
+        "mortarL": 60.65,
+        "brickL": 44.66,
+        "contrast": 15.99,
+        "bricks": 0,
+        "spreadL": 0,
+        "spreadC": 0,
+        "spreadHue": 0
+      },
+      "canonicalRoundedReport": {
+        "shareRatio": 0.968,
+        "contrastRatio": 0.85,
+        "mortarRatio": 1.033,
+        "brickRatio": 1.119,
+        "brickChecked": true,
+        "ok": false,
+        "spreadLRatio": null,
+        "spreadCRatio": null,
+        "spreadHueRatio": null,
+        "colourChecked": false,
+        "colourOk": false
+      }
+    }
+  ],
+  "apartmentNumericPassed": true,
+  "apartmentVisualFindings": [
+    {
+      "view": "living-room-day",
+      "finding": "Curtain/sofa/rug/table/cabinet families remain visually coherent and all existing numerical guards pass. Dark Silvia, repeated timber-floor dots, non-target wall/AO distribution, sofa-back field and outside-glass mismatch remain visible. No new shared-master nonbrick regression observed."
+    },
+    {
+      "view": "living-room-evening",
+      "finding": "Warm ceiling/source pools and cabinet cones remain; dark Silvia surface, green/brown outside-glass field, high wall overcabinet, timber dots and remaining AO differences correspond to existing mapped gaps. No new own nonbrick regression observed."
+    },
+    {
+      "view": "stairs-evening",
+      "finding": "Warm source-light colour preserved; native shaft/treads remain flatter, mirror retains white dome-like highlight, lower image has thin colour noise. Existing2480/2490/2470, no new own brick-master regression observed."
+    },
+    {
+      "view": "upper-floor-evening",
+      "finding": "Plum curtain and hue/Y guard preserved. Dome/halo, Tilly/wardrobe wood, roomAO and distant window contrast remain different; existing2460/2481/2486/2489/2459. No new own brick-master regression observed."
+    }
+  ],
+  "brickWholeImageFindings": [
+    {
+      "view": "entrance-a",
+      "finding": "NearNative head/bed joints are brighter and have crisper transition shoulders than the web softblurred joints; no conspicuous new overblur visible. Far upperwall is washed/paler and numerically too bright. Exact currentsource nearFAIL mortarL1.1084 and farFAIL share1.124/brickL1.171 remain unaccepted."
+    },
+    {
+      "view": "courtyard",
+      "finding": "NearleftHusA pier mortarshare0.89927 misses0.9; native light mortar against brick remains crisper than web. Far HusA/HusL brick is paler/less contrasty; farbrickL1.12\u20131.19 fails even where sharepasses. No broad curved moire arcs visible on full1440 rightHusL or backgroundHusA/B facades; fine raster/alias remains and this is static visual evidence only."
+    }
+  ],
+  "nearRegressionAssessment": {
+    "proven": "Current candidate/reference mismatches in two nearROIs, exactly as reported; broadeningrisk from sqrt(pixel\u00b2+TexelBlur\u00b2) remains real.",
+    "notProven": "A new regression relative to old filter under the same current718 web/source/Linux profile. No matching beforefilter baseline was rendered; historical2393 websource equality is not established.",
+    "visibleBlurAssessment": "Current native joints do not look excessively smeared; they look sharper than web. This does not override numerical failures or prove closeupunchanged."
+  },
+  "moireAssessment": {
+    "fullOriginalsReviewed": true,
+    "broadCurvedBandsVisible": false,
+    "housesReviewed": [
+      "HusL right courtyardwall",
+      "HusA near/left/back",
+      "HusB/C visible background wall"
+    ],
+    "limits": "Static wholeimage visual review, not temporal motion or all distances; retain original wholeacceptancefalse."
+  },
+  "preexistingApartmentVisualMappings": [
+    {
+      "views": [
+        "stairs-evening"
+      ],
+      "difference": "shaft/tread darkness contrast too weak",
+      "issue": 2480,
+      "currentStateVerifiedReadOnly": "OPEN",
+      "freshStateProof": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/open-review-issues.json"
+    },
+    {
+      "views": [
+        "living-room-day",
+        "living-room-evening"
+      ],
+      "difference": "Silvia reflected copper outside dark",
+      "issue": 2482,
+      "currentStateVerifiedReadOnly": "OPEN",
+      "freshStateProof": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/open-review-issues.json"
+    },
+    {
+      "views": [
+        "living-room-evening",
+        "upper-floor-evening"
+      ],
+      "difference": "emissive lamp interior/dome brightness",
+      "issue": 2460,
+      "currentStateVerifiedReadOnly": "OPEN",
+      "freshStateProof": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/open-review-issues.json"
+    },
+    {
+      "views": [
+        "upper-floor-evening"
+      ],
+      "difference": "camera-facing lamp halo missing; ceiling field not isolated wholly to halo",
+      "issue": 2481,
+      "currentStateVerifiedReadOnly": "OPEN",
+      "freshStateProof": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/open-review-issues.json"
+    },
+    {
+      "views": [
+        "living-room-evening"
+      ],
+      "difference": "high wall above cabinet field",
+      "issue": 2484,
+      "currentStateVerifiedReadOnly": "OPEN",
+      "freshStateProof": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/open-review-issues.json"
+    },
+    {
+      "views": [
+        "upper-floor-evening"
+      ],
+      "difference": "Tilly wood brighter/different olive tone",
+      "issue": 2486,
+      "currentStateVerifiedReadOnly": "OPEN",
+      "freshStateProof": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/open-review-issues.json"
+    },
+    {
+      "views": [
+        "living-room-day",
+        "living-room-evening",
+        "upper-floor-evening"
+      ],
+      "difference": "distant glass/tint/behind-glass mismatch",
+      "issue": 2459,
+      "currentStateVerifiedReadOnly": "OPEN",
+      "freshStateProof": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/open-review-issues.json"
+    },
+    {
+      "views": [
+        "living-room-day"
+      ],
+      "difference": "yellow sofa-back source field",
+      "issue": 2447,
+      "currentStateVerifiedReadOnly": "OPEN",
+      "freshStateProof": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/open-review-issues.json"
+    },
+    {
+      "views": [
+        "living-room-day",
+        "living-room-evening",
+        "upper-floor-evening"
+      ],
+      "difference": "remaining non-target wall/floor/ceiling AO source omissions",
+      "issue": 2489,
+      "currentStateVerifiedReadOnly": "OPEN",
+      "freshStateProof": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/open-review-issues.json"
+    },
+    {
+      "views": [
+        "living-room-day",
+        "living-room-evening",
+        "upper-floor-evening"
+      ],
+      "difference": "repeated dark dot raster on timber floor",
+      "issue": 2487,
+      "currentStateVerifiedReadOnly": "OPEN",
+      "freshStateProof": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/open-review-issues.json"
+    },
+    {
+      "views": [
+        "living-room-evening"
+      ],
+      "difference": "outside through glass dark green/brown",
+      "issue": 2488,
+      "currentStateVerifiedReadOnly": "OPEN",
+      "freshStateProof": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/open-review-issues.json"
+    },
+    {
+      "views": [
+        "living-room-day",
+        "upper-floor-evening"
+      ],
+      "difference": "distant brick facade brightness/mortar detail",
+      "issue": 2428,
+      "currentStateVerifiedReadOnly": "OPEN",
+      "freshStateProof": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/open-review-issues.json"
+    },
+    {
+      "views": [
+        "stairs-evening"
+      ],
+      "difference": "SKOGSGRANSEN decorative mirror retains hard white highlight/dome-like appearance versus flatter copper web mirror",
+      "issue": 2490,
+      "stateVerifiedViaFreshIssueRead": "open",
+      "cause": "not established; preexisting in published2369 originals",
+      "currentStateVerifiedReadOnly": "OPEN",
+      "freshStateProof": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/open-review-issues.json"
+    }
+  ],
+  "additionalFreshOpenMappings": [
+    {
+      "issue": 2470,
+      "difference": "Thin coloured bottomedge noise in native controls",
+      "state": "OPEN"
+    },
+    {
+      "issue": 2424,
+      "difference": "General pale/cool/specular surface response, including far brick; candidate causal contribution not isolated",
+      "state": "OPEN"
+    },
+    {
+      "issue": 2437,
+      "difference": "Exterior lawn/foliage colour and contrast differ; nativeforeground leaves look darker/morecontrasted here than the historical lighter/bleacher wording, so no claim of same directional numeric effect",
+      "state": "OPEN"
+    },
+    {
+      "issue": 2483,
+      "difference": "Exterior railing fine light/dark sampling/raster",
+      "state": "OPEN"
+    }
+  ],
+  "unresolvedExteriorMappingNotes": [
+    "Native exterior paving/fence have regular fine dark dot/raster absent on web. Do not map this to2487 (timber floors) or2443 (patio screen) without exact feature evidence; may be intentional lowprofile shadow/raster difference or need scoped followup. No cause isolated and no new brickfilter regression established.",
+    "Native distant window surrounds show brighter/scalloped top highlights versus web flat rectangular frames. Closed2425 is not reused as an OPEN mapping; brightness may overlap2424, actual geometry/normal appearance not isolated.",
+    "Sky/cloud shapes and fine foliage/shadow raster differ between current sourceRenderers; no new cloud implementation regression or new brickfilter cause inferred."
+  ],
+  "recommendation": {
+    "decision": "HOLD_UNACCEPTED_CANDIDATE_FOR_ALREADY_PLANNED_CONTROLLED_2424_TRIAL",
+    "reason": "Actual shadercompilation clean, normalized sourcekernel verified, allAPT guards preserved and no broad moire observed. Three of four far sharechecks pass; remaining strong farbrickL may be lighting-sensitive. This is enough to keep a bounded diagnostic candidate, not enough to publish as fixed or to attribute failures to2424.",
+    "mustRemainFailed": [
+      "whole2428acceptance",
+      "entrancefarshare",
+      "allfourfarbrickL",
+      "entranceNearMortarL",
+      "HusANearShare"
+    ],
+    "noHistoricalTrendClaim": true,
+    "noParameterFitOrNewRunAuthorizedByReview": true
+  },
+  "executionTruth": {
+    "nativeExit": 0,
+    "runnerExit": 0,
+    "nativeSeconds": 325.72,
+    "logErrors": [],
+    "all20CanonicalPassed": true,
+    "sixActualCapturesComplete": true,
+    "all247Readonly": true,
+    "outerExecExit": 143,
+    "outerIssue": 2473,
+    "native0NotOverallOuter0": true,
+    "outcomeSHA256": "bd96f12929229686e344845f77b807fbd8a9510690b77ee99dd149e55cc1db82",
+    "outerStatusSHA256": "08b85ec68431bcea223324c622d7a5dc77d312c998a626ccb8375ea9acbd8fba"
+  },
+  "intentionalProfileLimits": [
+    "UE5.8.4 CPUVulkan SM5, FXAA1; AAquality not established by invalid getter. Conventional shadows3/1024/3cascades; SeparateTranslucency1, LumenFalse, Nanite disabled in memory only.",
+    "Targets1440x810 preserve2393 ROI sampling. APT640x360 existing source-profile criteria unchanged; lowprofile alias/raster alone is not Windows acceptance.",
+    "No current-source/source-profile oldfilter beforeimage exists; historical Windows measurements are retained only as history."
+  ],
+  "freshIssueStateProof": {
+    "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/open-review-issues.json",
+    "sha256": "a7f8f8bab0756bd87415f3c81948180c5c1beff1c6dc41a234227b45599e8aae"
+  },
+  "publicationOwner": "Root; no push, issue changes, new issues, engine launches or asset writes by this review."
+}

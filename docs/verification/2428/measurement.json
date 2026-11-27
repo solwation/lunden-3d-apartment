@@ -1,0 +1,1443 @@
+{
+  "crop-stats.json": {
+    "crops": {
+      "stairs-evening": {
+        "frame": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "shaft-wall": [
+          0.37,
+          0.22,
+          0.43,
+          0.46
+        ],
+        "riser": [
+          0.455,
+          0.875,
+          0.54,
+          0.92
+        ],
+        "tread": [
+          0.46,
+          0.84,
+          0.53,
+          0.853
+        ],
+        "hall-door": [
+          0.12,
+          0.07,
+          0.29,
+          0.24
+        ]
+      },
+      "living-room-day": {
+        "frame": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "rug": [
+          0.385,
+          0.9,
+          0.45,
+          0.985
+        ],
+        "curtain": [
+          0.445,
+          0.24,
+          0.473,
+          0.666
+        ],
+        "coffee-table": [
+          0.177,
+          0.808,
+          0.211,
+          0.832
+        ],
+        "cabinet-front": [
+          0.765,
+          0.3,
+          0.809,
+          0.409
+        ],
+        "sofa": [
+          0.221,
+          0.72,
+          0.348,
+          0.744
+        ]
+      },
+      "living-room-evening": {
+        "frame": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "rug": [
+          0.385,
+          0.9,
+          0.45,
+          0.985
+        ],
+        "curtain": [
+          0.445,
+          0.24,
+          0.473,
+          0.666
+        ],
+        "coffee-table": [
+          0.177,
+          0.808,
+          0.211,
+          0.832
+        ],
+        "cabinet-front": [
+          0.765,
+          0.3,
+          0.809,
+          0.409
+        ],
+        "sofa": [
+          0.221,
+          0.72,
+          0.348,
+          0.744
+        ],
+        "spot-1": [
+          0.6996185,
+          0.3153762,
+          0.7037851,
+          0.3277218
+        ],
+        "spot-2": [
+          0.7388803,
+          0.294855,
+          0.743047,
+          0.3072007
+        ],
+        "spot-3": [
+          0.7928169,
+          0.2666638,
+          0.7969836,
+          0.2790094
+        ]
+      },
+      "upper-floor-evening": {
+        "frame": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "curtain": [
+          0.352,
+          0.283,
+          0.374,
+          0.583
+        ]
+      }
+    },
+    "stats": {
+      "stairs-evening": {
+        "web": {
+          "frame": {
+            "srgb": [
+              119.3,
+              106.8,
+              90.8
+            ],
+            "luminance": 0.1845,
+            "warmth": 1.314
+          },
+          "shaft-wall": {
+            "srgb": [
+              44.8,
+              45.9,
+              47.8
+            ],
+            "luminance": 0.0271,
+            "warmth": 0.936
+          },
+          "riser": {
+            "srgb": [
+              84.5,
+              77.4,
+              68.1
+            ],
+            "luminance": 0.0769,
+            "warmth": 1.24
+          },
+          "tread": {
+            "srgb": [
+              60.2,
+              43.5,
+              29.4
+            ],
+            "luminance": 0.0283,
+            "warmth": 2.049
+          },
+          "hall-door": {
+            "srgb": [
+              239.2,
+              215.7,
+              181.4
+            ],
+            "luminance": 0.7085,
+            "warmth": 1.318
+          }
+        },
+        "unreal": {
+          "frame": {
+            "srgb": [
+              112.3,
+              104.4,
+              92
+            ],
+            "luminance": 0.1616,
+            "warmth": 1.22
+          },
+          "shaft-wall": {
+            "srgb": [
+              69,
+              70.8,
+              70
+            ],
+            "luminance": 0.0619,
+            "warmth": 0.986
+          },
+          "riser": {
+            "srgb": [
+              85.5,
+              82.9,
+              77.5
+            ],
+            "luminance": 0.0867,
+            "warmth": 1.104
+          },
+          "tread": {
+            "srgb": [
+              69.7,
+              58.7,
+              48.4
+            ],
+            "luminance": 0.0461,
+            "warmth": 1.442
+          },
+          "hall-door": {
+            "srgb": [
+              223,
+              200.5,
+              165.3
+            ],
+            "luminance": 0.6099,
+            "warmth": 1.349
+          }
+        }
+      },
+      "living-room-day": {
+        "web": {
+          "frame": {
+            "srgb": [
+              185.7,
+              176.6,
+              159.4
+            ],
+            "luminance": 0.5075,
+            "warmth": 1.165
+          },
+          "rug": {
+            "srgb": [
+              146.4,
+              146.8,
+              128.7
+            ],
+            "luminance": 0.3477,
+            "warmth": 1.138
+          },
+          "curtain": {
+            "srgb": [
+              184.1,
+              181.3,
+              160.6
+            ],
+            "luminance": 0.5053,
+            "warmth": 1.146
+          },
+          "coffee-table": {
+            "srgb": [
+              147.7,
+              108.7,
+              61.1
+            ],
+            "luminance": 0.1749,
+            "warmth": 2.418
+          },
+          "cabinet-front": {
+            "srgb": [
+              106.6,
+              61.6,
+              19.6
+            ],
+            "luminance": 0.0655,
+            "warmth": 5.445
+          },
+          "sofa": {
+            "srgb": [
+              177.8,
+              186.1,
+              154.6
+            ],
+            "luminance": 0.474,
+            "warmth": 1.15
+          }
+        },
+        "unreal": {
+          "frame": {
+            "srgb": [
+              182.3,
+              173.5,
+              155.6
+            ],
+            "luminance": 0.485,
+            "warmth": 1.172
+          },
+          "rug": {
+            "srgb": [
+              132.5,
+              135.8,
+              121.8
+            ],
+            "luminance": 0.2856,
+            "warmth": 1.088
+          },
+          "curtain": {
+            "srgb": [
+              179.2,
+              175.5,
+              151.2
+            ],
+            "luminance": 0.4404,
+            "warmth": 1.185
+          },
+          "coffee-table": {
+            "srgb": [
+              152.8,
+              111.3,
+              59.7
+            ],
+            "luminance": 0.1851,
+            "warmth": 2.56
+          },
+          "cabinet-front": {
+            "srgb": [
+              107.1,
+              61.5,
+              19
+            ],
+            "luminance": 0.0657,
+            "warmth": 5.636
+          },
+          "sofa": {
+            "srgb": [
+              182.8,
+              188.7,
+              149.4
+            ],
+            "luminance": 0.4895,
+            "warmth": 1.224
+          }
+        }
+      },
+      "living-room-evening": {
+        "web": {
+          "frame": {
+            "srgb": [
+              115.2,
+              99.6,
+              76.5
+            ],
+            "luminance": 0.1667,
+            "warmth": 1.505
+          },
+          "rug": {
+            "srgb": [
+              110,
+              93.2,
+              59.9
+            ],
+            "luminance": 0.134,
+            "warmth": 1.838
+          },
+          "curtain": {
+            "srgb": [
+              90.2,
+              78.5,
+              53.7
+            ],
+            "luminance": 0.0963,
+            "warmth": 1.68
+          },
+          "coffee-table": {
+            "srgb": [
+              109,
+              69.2,
+              20.4
+            ],
+            "luminance": 0.0761,
+            "warmth": 5.333
+          },
+          "cabinet-front": {
+            "srgb": [
+              149.3,
+              98.7,
+              42.5
+            ],
+            "luminance": 0.1583,
+            "warmth": 3.512
+          },
+          "sofa": {
+            "srgb": [
+              106.7,
+              98.6,
+              61.5
+            ],
+            "luminance": 0.1241,
+            "warmth": 1.735
+          },
+          "spot-1": {
+            "srgb": [
+              176.3,
+              124.8,
+              68.3
+            ],
+            "luminance": 0.2432,
+            "warmth": 2.58
+          },
+          "spot-2": {
+            "srgb": [
+              183.5,
+              124.7,
+              65.3
+            ],
+            "luminance": 0.2551,
+            "warmth": 2.809
+          },
+          "spot-3": {
+            "srgb": [
+              167.5,
+              118.3,
+              64.5
+            ],
+            "luminance": 0.2166,
+            "warmth": 2.597
+          }
+        },
+        "unreal": {
+          "frame": {
+            "srgb": [
+              111.3,
+              97.1,
+              74.5
+            ],
+            "luminance": 0.1565,
+            "warmth": 1.494
+          },
+          "rug": {
+            "srgb": [
+              101.2,
+              90.9,
+              63.2
+            ],
+            "luminance": 0.1244,
+            "warmth": 1.599
+          },
+          "curtain": {
+            "srgb": [
+              90.4,
+              77.9,
+              48.8
+            ],
+            "luminance": 0.082,
+            "warmth": 1.854
+          },
+          "coffee-table": {
+            "srgb": [
+              100.3,
+              62.4,
+              12.5
+            ],
+            "luminance": 0.0625,
+            "warmth": 8.047
+          },
+          "cabinet-front": {
+            "srgb": [
+              143.9,
+              86.7,
+              34.9
+            ],
+            "luminance": 0.131,
+            "warmth": 4.126
+          },
+          "sofa": {
+            "srgb": [
+              104.3,
+              99.9,
+              63.6
+            ],
+            "luminance": 0.1261,
+            "warmth": 1.639
+          },
+          "spot-1": {
+            "srgb": [
+              176.7,
+              122.8,
+              78.3
+            ],
+            "luminance": 0.24,
+            "warmth": 2.255
+          },
+          "spot-2": {
+            "srgb": [
+              189,
+              128,
+              81
+            ],
+            "luminance": 0.2698,
+            "warmth": 2.333
+          },
+          "spot-3": {
+            "srgb": [
+              178.8,
+              124.7,
+              80
+            ],
+            "luminance": 0.2473,
+            "warmth": 2.235
+          }
+        }
+      },
+      "upper-floor-evening": {
+        "web": {
+          "frame": {
+            "srgb": [
+              110,
+              97.7,
+              82.6
+            ],
+            "luminance": 0.171,
+            "warmth": 1.332
+          },
+          "curtain": {
+            "srgb": [
+              40.5,
+              22.9,
+              27.5
+            ],
+            "luminance": 0.0151,
+            "warmth": 1.471
+          }
+        },
+        "unreal": {
+          "frame": {
+            "srgb": [
+              107,
+              96.2,
+              82.2
+            ],
+            "luminance": 0.1498,
+            "warmth": 1.302
+          },
+          "curtain": {
+            "srgb": [
+              42.4,
+              23.2,
+              26.5
+            ],
+            "luminance": 0.0131,
+            "warmth": 1.598
+          }
+        }
+      }
+    }
+  },
+  "brick-joints.json": {
+    "crops": {
+      "entrance-a": {
+        "wall-near": [
+          0.1,
+          0.15,
+          0.32,
+          0.7
+        ],
+        "wall-far": [
+          0.5,
+          0.03,
+          0.525,
+          0.28
+        ]
+      },
+      "courtyard": {
+        "husA-near": [
+          0,
+          0.32,
+          0.03,
+          0.62
+        ],
+        "husA-mid": [
+          0.25,
+          0.32,
+          0.27,
+          0.46
+        ],
+        "husL-far": [
+          0.885,
+          0.245,
+          0.99,
+          0.275
+        ],
+        "husL-mid2": [
+          0.81,
+          0.13,
+          0.83,
+          0.24
+        ]
+      }
+    },
+    "tolerance": 0.1,
+    "colourTolerance": 0.2,
+    "colourCrops": [],
+    "stats": {
+      "entrance-a": {
+        "web": {
+          "wall-near": {
+            "pixels": 141065,
+            "threshold": 43.5,
+            "share": 0.3717,
+            "mortarL": 58.03,
+            "brickL": 28.75,
+            "contrast": 29.27,
+            "bricks": 86,
+            "spreadL": 6.4,
+            "spreadC": 8.99,
+            "spreadHue": 2.34
+          },
+          "wall-far": {
+            "pixels": 7308,
+            "threshold": 41.5,
+            "share": 0.4154,
+            "mortarL": 55.28,
+            "brickL": 28.34,
+            "contrast": 26.95,
+            "bricks": 15,
+            "spreadL": 6.54,
+            "spreadC": 8.84,
+            "spreadHue": 3.18
+          }
+        },
+        "unreal": {
+          "wall-near": {
+            "pixels": 141065,
+            "threshold": 46.5,
+            "share": 0.3583,
+            "mortarL": 64.32,
+            "brickL": 29.39,
+            "contrast": 34.92,
+            "bricks": 87,
+            "spreadL": 7.28,
+            "spreadC": 9,
+            "spreadHue": 2.27
+          },
+          "wall-far": {
+            "pixels": 7308,
+            "threshold": 44.5,
+            "share": 0.4669,
+            "mortarL": 56.32,
+            "brickL": 33.19,
+            "contrast": 23.12,
+            "bricks": 11,
+            "spreadL": 4.88,
+            "spreadC": 5.22,
+            "spreadHue": 1.71
+          }
+        },
+        "wall-near": {
+          "shareRatio": 0.964,
+          "contrastRatio": 1.193,
+          "mortarRatio": 1.108,
+          "brickRatio": 1.022,
+          "brickChecked": true,
+          "ok": false,
+          "spreadLRatio": 1.137,
+          "spreadCRatio": 1.001,
+          "spreadHueRatio": 0.97,
+          "colourChecked": false,
+          "colourOk": true
+        },
+        "wall-far": {
+          "shareRatio": 1.124,
+          "contrastRatio": 0.858,
+          "mortarRatio": 1.019,
+          "brickRatio": 1.171,
+          "brickChecked": true,
+          "ok": false,
+          "spreadLRatio": 0.746,
+          "spreadCRatio": 0.59,
+          "spreadHueRatio": 0.538,
+          "colourChecked": false,
+          "colourOk": false
+        }
+      },
+      "courtyard": {
+        "web": {
+          "husA-near": {
+            "pixels": 10449,
+            "threshold": 48.5,
+            "share": 0.3971,
+            "mortarL": 64.45,
+            "brickL": 33.1,
+            "contrast": 31.35,
+            "bricks": 27,
+            "spreadL": 11.82,
+            "spreadC": 14.67,
+            "spreadHue": 2.62
+          },
+          "husA-mid": {
+            "pixels": 3277,
+            "threshold": 42.5,
+            "share": 0.3851,
+            "mortarL": 56.86,
+            "brickL": 28.18,
+            "contrast": 28.67,
+            "bricks": 49,
+            "spreadL": 6.82,
+            "spreadC": 7.43,
+            "spreadHue": 4.09
+          },
+          "husL-far": {
+            "pixels": 3624,
+            "threshold": 51.5,
+            "share": 0.3885,
+            "mortarL": 64.31,
+            "brickL": 38.27,
+            "contrast": 26.04,
+            "bricks": 31,
+            "spreadL": 7.6,
+            "spreadC": 9.85,
+            "spreadHue": 10.22
+          },
+          "husL-mid2": {
+            "pixels": 2581,
+            "threshold": 49.5,
+            "share": 0.5215,
+            "mortarL": 58.73,
+            "brickL": 39.91,
+            "contrast": 18.82,
+            "bricks": 0,
+            "spreadL": 0,
+            "spreadC": 0,
+            "spreadHue": 0
+          }
+        },
+        "unreal": {
+          "husA-near": {
+            "pixels": 10449,
+            "threshold": 51.5,
+            "share": 0.3571,
+            "mortarL": 69.29,
+            "brickL": 33.73,
+            "contrast": 35.56,
+            "bricks": 25,
+            "spreadL": 15.31,
+            "spreadC": 11.44,
+            "spreadHue": 1.72
+          },
+          "husA-mid": {
+            "pixels": 3277,
+            "threshold": 46.5,
+            "share": 0.4159,
+            "mortarL": 59.07,
+            "brickL": 33.58,
+            "contrast": 25.48,
+            "bricks": 48,
+            "spreadL": 6.42,
+            "spreadC": 7.65,
+            "spreadHue": 2.67
+          },
+          "husL-far": {
+            "pixels": 3624,
+            "threshold": 53.5,
+            "share": 0.3979,
+            "mortarL": 63.82,
+            "brickL": 43.56,
+            "contrast": 20.26,
+            "bricks": 28,
+            "spreadL": 6.16,
+            "spreadC": 9.46,
+            "spreadHue": 9.93
+          },
+          "husL-mid2": {
+            "pixels": 2581,
+            "threshold": 52.5,
+            "share": 0.5048,
+            "mortarL": 60.65,
+            "brickL": 44.66,
+            "contrast": 15.99,
+            "bricks": 0,
+            "spreadL": 0,
+            "spreadC": 0,
+            "spreadHue": 0
+          }
+        },
+        "husA-near": {
+          "shareRatio": 0.899,
+          "contrastRatio": 1.134,
+          "mortarRatio": 1.075,
+          "brickRatio": 1.019,
+          "brickChecked": true,
+          "ok": false,
+          "spreadLRatio": 1.295,
+          "spreadCRatio": 0.78,
+          "spreadHueRatio": 0.656,
+          "colourChecked": false,
+          "colourOk": false
+        },
+        "husA-mid": {
+          "shareRatio": 1.08,
+          "contrastRatio": 0.889,
+          "mortarRatio": 1.039,
+          "brickRatio": 1.192,
+          "brickChecked": true,
+          "ok": false,
+          "spreadLRatio": 0.941,
+          "spreadCRatio": 1.03,
+          "spreadHueRatio": 0.653,
+          "colourChecked": false,
+          "colourOk": false
+        },
+        "husL-far": {
+          "shareRatio": 1.024,
+          "contrastRatio": 0.778,
+          "mortarRatio": 0.992,
+          "brickRatio": 1.138,
+          "brickChecked": true,
+          "ok": false,
+          "spreadLRatio": 0.811,
+          "spreadCRatio": 0.96,
+          "spreadHueRatio": 0.972,
+          "colourChecked": false,
+          "colourOk": true
+        },
+        "husL-mid2": {
+          "shareRatio": 0.968,
+          "contrastRatio": 0.85,
+          "mortarRatio": 1.033,
+          "brickRatio": 1.119,
+          "brickChecked": true,
+          "ok": false,
+          "spreadLRatio": null,
+          "spreadCRatio": null,
+          "spreadHueRatio": null,
+          "colourChecked": false,
+          "colourOk": false
+        }
+      }
+    }
+  },
+  "canonical-batch.json": {
+    "browserLaunches": 1,
+    "evaluators": [
+      {
+        "tool": "/home/devcontainers/wt/codex-2428/tools/unreal-engine/tests/crop-stats.cjs",
+        "sha256": "0a76bf7e7c43ad2e212f2d884806957030ec6dc08ce4c4d9901641f5f80bd1c6",
+        "args": [
+          "/home/devcontainers/.local/state/lunden-codex-20261127/2428/paired-final",
+          "/home/devcontainers/.local/state/lunden-codex-20261127/2428/paired-final/apartment-crops.json",
+          "--check-stairs",
+          "--check-curtains",
+          "--check-cabinet"
+        ],
+        "completed": true,
+        "transportOnly": "One borrowed browser; canonical algorithms, inputs and criteria unchanged",
+        "exitCode": 0
+      },
+      {
+        "tool": "/home/devcontainers/wt/codex-2428/tools/unreal-engine/tests/brick-joints.cjs",
+        "sha256": "2ba7f00c230c18b90ee01f61bf9d84d39db68293c05165ac5dd6f7b4b698d970",
+        "args": [
+          "/home/devcontainers/.local/state/lunden-codex-20261127/2428/paired-final",
+          "/home/devcontainers/.local/state/lunden-codex-20261127/2428/paired-final/brick-crops.json",
+          "--check",
+          "--brick-check",
+          "--tolerance",
+          "0.10"
+        ],
+        "completed": true,
+        "transportOnly": "One borrowed browser; canonical algorithms, inputs and criteria unchanged",
+        "exitCode": 1
+      }
+    ]
+  },
+  "combined-gate.json": {
+    "numericPassed": false,
+    "wholeAccepted": false,
+    "wholeAcceptancePending": "Twelve whole-original image review including noMoire; native shader/log/exit/outcome separately Root verified",
+    "browserBatches": 1,
+    "browserLaunches": 1,
+    "canonicalEvaluators": 2,
+    "canonicalExitCode": 1,
+    "sourceHead": "a1ff6c9cfbb790f5014965e62219b6921cf57db6",
+    "nativeConfigSHA256": "62153a5a2f9baa6ad9f75df5afb9b0ea0f1c31c7abfb1807f5c57e6ae0691b39",
+    "meterSHA256": "82b76d4a962a210974bd24d6a48007010a1f5fee83c607692ac1ab9dbb330487",
+    "nodeAdapterSHA256": "05ca3dbfcdcb60407129db703843daddbcb8c5c08fe977a389c7283bcfdf8905",
+    "pinsSHA256": "ec3025f58d9ef38c8bdf18e27b565bf5c9f81ab13ad3589c7048c0042f22e51f",
+    "command": [
+      "node",
+      "/home/devcontainers/.local/state/lunden-codex-20261127/2428/measure-final.cjs",
+      "/home/devcontainers/wt/codex-2428",
+      "/home/devcontainers/.local/state/lunden-codex-20261127/2428/paired-final",
+      "/home/devcontainers/.local/state/lunden-codex-20261127/2428/paired-final/apartment-crops.json",
+      "/home/devcontainers/.local/state/lunden-codex-20261127/2428/paired-final/brick-crops.json",
+      "/home/devcontainers/.local/state/lunden-codex-20261127/2428/paired-final/canonical-tool-pins.json"
+    ],
+    "inputs": {
+      "upper-floor-evening": {
+        "web": {
+          "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/web/web-upper-floor-evening.jpg",
+          "sha256": "16ed055836f8a6f6487ed1c6d99bfa45be5ceb9ecb2e53b5240c1692ebd7dbb8"
+        },
+        "native": {
+          "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/native-product/product/regressions/unreal-upper-floor-evening.png",
+          "sha256": "6615f8a21b78048009596404e466490963afe9ceb6dce90da8febd54dfde345f"
+        }
+      },
+      "living-room-evening": {
+        "web": {
+          "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2369/web/web-living-room-evening.jpg",
+          "sha256": "1a6d7cd06c97fbb1729662cece73490a808745d2511124f8dc0a987f0e810c0b"
+        },
+        "native": {
+          "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/native-product/product/regressions/unreal-living-room-evening.png",
+          "sha256": "ef1b132776dc8a36f398c03c092d3eff1503f39219522124212991faeb702da4"
+        }
+      },
+      "living-room-day": {
+        "web": {
+          "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/web/web-living-room-day.jpg",
+          "sha256": "be8023e5a4d1ba5cfb2d4f930273f6792c788658efd47dba6a6c153016af33ac"
+        },
+        "native": {
+          "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/native-product/product/regressions/unreal-living-room-day.png",
+          "sha256": "aa3d9f52fb0c2ecabd18470648179e0ddd61beff721d3590d402265fb961992e"
+        }
+      },
+      "stairs-evening": {
+        "web": {
+          "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2369/web/web-stairs-evening.jpg",
+          "sha256": "48dcb9b61e67c0d499f06d1d253d02251b4930a9bb567f138c6723ddf71574c5"
+        },
+        "native": {
+          "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/native-product/product/regressions/unreal-stairs-evening.png",
+          "sha256": "47e302af9bbdae1a169e64e5a573679858003c918887dabf4b1838545e42596b"
+        }
+      },
+      "courtyard": {
+        "web": {
+          "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/web/web-courtyard.jpg",
+          "sha256": "e5f9cc4237917ff75dcd83edb686ea5e34baf6390e86f345effba1eabfd9e169"
+        },
+        "native": {
+          "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/native-product/product/target/unreal-courtyard.png",
+          "sha256": "265987c2302953a9d8d15aa215268e8e096f6a42a6d79e64dee6b3f9d1a5b68d"
+        }
+      },
+      "entrance-a": {
+        "web": {
+          "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/web/web-entrance-a.jpg",
+          "sha256": "c61c6e2e7784c75ba29afafe8e9bf2e5724f00bc0686aba94d6fa8b7034e7ef0"
+        },
+        "native": {
+          "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/native-product/product/target/unreal-entrance-a.png",
+          "sha256": "c9b42d54df6e6aa390ba4b27776cabb2ff117736d1e751a570564e0a6fd5796e"
+        }
+      }
+    },
+    "apartmentPassed": true,
+    "brickFarNumericalPassed": false,
+    "brickAllSixNumericalPassed": false,
+    "failureCount": 6
+  },
+  "derivedGates": {
+    "apartment": {
+      "passed": true,
+      "unchangedCriterionDataRows": 20,
+      "acceptanceContractSHA256": "b398989d239412dbdd7c2ce45925d8259e51b2a19bc98965a49a06b9ddc2ebeb",
+      "actualCaptureSHA256": "d4e417459f4e4883cf1127e71fc9191a2eccd1a1e06e98bcf268c2d7c5759ad8",
+      "unchangedCriteria": true,
+      "fullFrameLuminance": [
+        {
+          "shot": "living-room-day",
+          "ratio": 0.9556650246305419,
+          "passed": true
+        },
+        {
+          "shot": "living-room-evening",
+          "ratio": 0.9388122375524895,
+          "passed": true
+        },
+        {
+          "shot": "stairs-evening",
+          "ratio": 0.8758807588075881,
+          "passed": true
+        },
+        {
+          "shot": "upper-floor-evening",
+          "ratio": 0.8760233918128654,
+          "passed": true
+        }
+      ],
+      "stairsWarmth": [
+        {
+          "crop": "frame",
+          "rect": [
+            0,
+            0,
+            1,
+            1
+          ],
+          "ratio": 0.928462709284627,
+          "passed": true
+        },
+        {
+          "crop": "hall-door",
+          "rect": [
+            0.12,
+            0.07,
+            0.29,
+            0.24
+          ],
+          "ratio": 1.0235204855842184,
+          "passed": true
+        }
+      ],
+      "materialRows": [
+        {
+          "shot": "living-room-day",
+          "family": "rug",
+          "role": "primary",
+          "rect": [
+            0.385,
+            0.9,
+            0.45,
+            0.985
+          ],
+          "luminanceRatio": 0.821397756686799,
+          "luminancePassed": true,
+          "hueRatios": {
+            "R/G": 0.9783654039611449,
+            "B/G": 1.0230456828394974
+          },
+          "existingGuessedHueGuardPassed": null,
+          "passed": true
+        },
+        {
+          "shot": "living-room-day",
+          "family": "curtain",
+          "role": "primary",
+          "rect": [
+            0.445,
+            0.24,
+            0.473,
+            0.666
+          ],
+          "luminanceRatio": 0.8715614486443698,
+          "luminancePassed": true,
+          "hueRatios": {
+            "R/G": 1.0055528473779423,
+            "B/G": 0.972583580802759
+          },
+          "existingGuessedHueGuardPassed": true,
+          "passed": true
+        },
+        {
+          "shot": "living-room-day",
+          "family": "coffee-table",
+          "role": "primary",
+          "rect": [
+            0.177,
+            0.808,
+            0.211,
+            0.832
+          ],
+          "luminanceRatio": 1.0583190394511148,
+          "luminancePassed": true,
+          "hueRatios": {
+            "R/G": 1.01036254616306,
+            "B/G": 0.9542617158032655
+          },
+          "existingGuessedHueGuardPassed": null,
+          "passed": true
+        },
+        {
+          "shot": "living-room-day",
+          "family": "cabinet-front",
+          "role": "primary",
+          "rect": [
+            0.765,
+            0.3,
+            0.809,
+            0.409
+          ],
+          "luminanceRatio": 1.0030534351145037,
+          "luminancePassed": true,
+          "hueRatios": {
+            "R/G": 1.0063240744977808,
+            "B/G": 0.9709639953542393
+          },
+          "existingGuessedHueGuardPassed": true,
+          "passed": true
+        },
+        {
+          "shot": "living-room-day",
+          "family": "sofa",
+          "role": "primary",
+          "rect": [
+            0.221,
+            0.72,
+            0.348,
+            0.744
+          ],
+          "luminanceRatio": 1.0327004219409284,
+          "luminancePassed": true,
+          "hueRatios": {
+            "R/G": 1.0139555290087945,
+            "B/G": 0.9530497699586811
+          },
+          "existingGuessedHueGuardPassed": null,
+          "passed": true
+        },
+        {
+          "shot": "living-room-evening",
+          "family": "rug",
+          "role": "primary",
+          "rect": [
+            0.385,
+            0.9,
+            0.45,
+            0.985
+          ],
+          "luminanceRatio": 0.9283582089552238,
+          "luminancePassed": true,
+          "hueRatios": {
+            "R/G": 0.9432783278327834,
+            "B/G": 1.0817883123871654
+          },
+          "existingGuessedHueGuardPassed": null,
+          "passed": true
+        },
+        {
+          "shot": "living-room-evening",
+          "family": "curtain",
+          "role": "primary",
+          "rect": [
+            0.445,
+            0.24,
+            0.473,
+            0.666
+          ],
+          "luminanceRatio": 0.8515057113187955,
+          "luminancePassed": true,
+          "hueRatios": {
+            "R/G": 1.0099365551947035,
+            "B/G": 0.9157517038269468
+          },
+          "existingGuessedHueGuardPassed": true,
+          "passed": true
+        },
+        {
+          "shot": "living-room-evening",
+          "family": "coffee-table",
+          "role": "primary",
+          "rect": [
+            0.177,
+            0.808,
+            0.211,
+            0.832
+          ],
+          "luminanceRatio": 0.8212877792378449,
+          "luminancePassed": true,
+          "hueRatios": {
+            "R/G": 1.020459891790167,
+            "B/G": 0.6795186023127201
+          },
+          "existingGuessedHueGuardPassed": null,
+          "passed": true
+        },
+        {
+          "shot": "living-room-evening",
+          "family": "cabinet-front",
+          "role": "primary",
+          "rect": [
+            0.765,
+            0.3,
+            0.809,
+            0.409
+          ],
+          "luminanceRatio": 0.8275426405559065,
+          "luminancePassed": true,
+          "hueRatios": {
+            "R/G": 1.0972334562444812,
+            "B/G": 0.9348341135762264
+          },
+          "existingGuessedHueGuardPassed": true,
+          "passed": true
+        },
+        {
+          "shot": "living-room-evening",
+          "family": "sofa",
+          "role": "primary",
+          "rect": [
+            0.221,
+            0.72,
+            0.348,
+            0.744
+          ],
+          "luminanceRatio": 1.0161160354552778,
+          "luminancePassed": true,
+          "hueRatios": {
+            "R/G": 0.9647867173640368,
+            "B/G": 1.0206889816645914
+          },
+          "existingGuessedHueGuardPassed": null,
+          "passed": true
+        },
+        {
+          "shot": "living-room-evening",
+          "family": "spot-1",
+          "role": "existing-cabinet-spot",
+          "rect": [
+            0.6996185,
+            0.3153762,
+            0.7037851,
+            0.3277218
+          ],
+          "luminanceRatio": 0.9868421052631579,
+          "luminancePassed": true,
+          "hueRatios": {
+            "R/G": 1.018592456964642,
+            "B/G": 1.1650841039483788
+          },
+          "existingGuessedHueGuardPassed": null,
+          "passed": true
+        },
+        {
+          "shot": "living-room-evening",
+          "family": "spot-2",
+          "role": "existing-cabinet-spot",
+          "rect": [
+            0.7388803,
+            0.294855,
+            0.743047,
+            0.3072007
+          ],
+          "luminanceRatio": 1.057624460995688,
+          "luminancePassed": true,
+          "hueRatios": {
+            "R/G": 1.0034187670299728,
+            "B/G": 1.2084489854517613
+          },
+          "existingGuessedHueGuardPassed": null,
+          "passed": true
+        },
+        {
+          "shot": "living-room-evening",
+          "family": "spot-3",
+          "role": "existing-cabinet-spot",
+          "rect": [
+            0.7928169,
+            0.2666638,
+            0.7969836,
+            0.2790094
+          ],
+          "luminanceRatio": 1.141735918744229,
+          "luminancePassed": true,
+          "hueRatios": {
+            "R/G": 1.0126771116350883,
+            "B/G": 1.1766534255857468
+          },
+          "existingGuessedHueGuardPassed": null,
+          "passed": true
+        },
+        {
+          "shot": "upper-floor-evening",
+          "family": "curtain",
+          "role": "primary",
+          "rect": [
+            0.352,
+            0.283,
+            0.374,
+            0.583
+          ],
+          "luminanceRatio": 0.8675496688741722,
+          "luminancePassed": true,
+          "hueRatios": {
+            "R/G": 1.0333759046402724,
+            "B/G": 0.9511755485893418
+          },
+          "existingGuessedHueGuardPassed": true,
+          "passed": true
+        }
+      ]
+    },
+    "brick": {
+      "farNumericalPassed": false,
+      "allSixNumericalPassed": false,
+      "farMortarSharePassed": false,
+      "farMortarLPassed": true,
+      "farBrickLPassed": false,
+      "wholeImageMoireReview": "REQUIRED: full1440 originals courtyard HusL and HusA; no numerical claim of absence",
+      "brightnessCause": "Not inferred from crop ratios. Known separate2424 reflection issue must not excuse an unmeasured or failed2428 criterion.",
+      "contractSHA256": "060ded446fac756fcd1d25839fdb77d6a723bb3e76c4b4c1183785adb620c5cf",
+      "nativeConfigSHA256": "62153a5a2f9baa6ad9f75df5afb9b0ea0f1c31c7abfb1807f5c57e6ae0691b39",
+      "rows": [
+        {
+          "shot": "entrance-a",
+          "crop": "wall-near",
+          "role": "near",
+          "rect": [
+            0.1,
+            0.15,
+            0.32,
+            0.7
+          ],
+          "ratios": {
+            "mortarShare": 0.9639494215765403,
+            "mortarL": 1.1083922109253832,
+            "brickL": 1.0222608695652173
+          },
+          "checks": {
+            "mortarShare": true,
+            "mortarL": false,
+            "brickL": true
+          },
+          "passed": false
+        },
+        {
+          "shot": "entrance-a",
+          "crop": "wall-far",
+          "role": "far",
+          "rect": [
+            0.5,
+            0.03,
+            0.525,
+            0.28
+          ],
+          "ratios": {
+            "mortarShare": 1.1239768897448243,
+            "mortarL": 1.0188133140376265,
+            "brickL": 1.1711362032462949
+          },
+          "checks": {
+            "mortarShare": false,
+            "mortarL": true,
+            "brickL": false
+          },
+          "passed": false
+        },
+        {
+          "shot": "courtyard",
+          "crop": "husA-near",
+          "role": "near",
+          "rect": [
+            0.0,
+            0.32,
+            0.03,
+            0.62
+          ],
+          "ratios": {
+            "mortarShare": 0.8992697053638881,
+            "mortarL": 1.0750969743987588,
+            "brickL": 1.0190332326283986
+          },
+          "checks": {
+            "mortarShare": false,
+            "mortarL": true,
+            "brickL": true
+          },
+          "passed": false
+        },
+        {
+          "shot": "courtyard",
+          "crop": "husA-mid",
+          "role": "far",
+          "rect": [
+            0.25,
+            0.32,
+            0.27,
+            0.46
+          ],
+          "ratios": {
+            "mortarShare": 1.0799792261750194,
+            "mortarL": 1.0388673935983117,
+            "brickL": 1.191625266146203
+          },
+          "checks": {
+            "mortarShare": true,
+            "mortarL": true,
+            "brickL": false
+          },
+          "passed": false
+        },
+        {
+          "shot": "courtyard",
+          "crop": "husL-far",
+          "role": "far",
+          "rect": [
+            0.885,
+            0.245,
+            0.99,
+            0.275
+          ],
+          "ratios": {
+            "mortarShare": 1.024195624195624,
+            "mortarL": 0.9923806561965479,
+            "brickL": 1.138228377319049
+          },
+          "checks": {
+            "mortarShare": true,
+            "mortarL": true,
+            "brickL": false
+          },
+          "passed": false
+        },
+        {
+          "shot": "courtyard",
+          "crop": "husL-mid2",
+          "role": "far",
+          "rect": [
+            0.81,
+            0.13,
+            0.83,
+            0.24
+          ],
+          "ratios": {
+            "mortarShare": 0.9679769894534996,
+            "mortarL": 1.0326919802485952,
+            "brickL": 1.119017790027562
+          },
+          "checks": {
+            "mortarShare": true,
+            "mortarL": true,
+            "brickL": false
+          },
+          "passed": false
+        }
+      ]
+    }
+  },
+  "publicationNotes": "Canonical source tables preserve all raw statistics once; derived gates preserve all decisions/ratios/criteria but omit repeated per-side statistics already in canonical tables. Original private JSON fingerprints in provenance.json."
+}

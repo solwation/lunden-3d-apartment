@@ -1,0 +1,175 @@
+{
+  "classification": "NEGATIVE diagnostic evidence only; candidate source/asset NOT promoted",
+  "publicBase": "a3f6456e6b766ee5115897fff354a85cecdeebea",
+  "candidateSourcePrivateCommit": "392e945b691580fa1b4e3c9c9cd6d6af2e5f27e3",
+  "actualNativeSourcePrivateCommit": "a1ff6c9cfbb790f5014965e62219b6921cf57db6",
+  "candidateFourFiles": [
+    {
+      "path": "docs/development/unreal.md",
+      "candidateAndActualSHA256": "9ba6f21d087e828b43f9f6765aeea759871349147aefea6237a5fd20e79ade20",
+      "bytes": 347839,
+      "matchesActualNativeSource": true,
+      "patchReconstructionExact": true
+    },
+    {
+      "path": "tools/unreal-engine/python/build_materials.py",
+      "candidateAndActualSHA256": "39a91f5562d5b1f6479a1e4b0f4cb10d32849e6247ee687909ebf3269180c1f1",
+      "bytes": 64053,
+      "matchesActualNativeSource": true,
+      "patchReconstructionExact": true
+    },
+    {
+      "path": "tools/unreal-engine/tests/brick-joints.cjs",
+      "candidateAndActualSHA256": "2ba7f00c230c18b90ee01f61bf9d84d39db68293c05165ac5dd6f7b4b698d970",
+      "bytes": 11211,
+      "matchesActualNativeSource": true,
+      "patchReconstructionExact": true
+    },
+    {
+      "path": "tools/unreal-engine/tests/test_brick_filter.py",
+      "candidateAndActualSHA256": "a7706f23e3b2da2f2230b56d0afb7675ee8c6b8d247ae63a97e4c536ceb9cdc6",
+      "bytes": 6676,
+      "matchesActualNativeSource": true,
+      "patchReconstructionExact": true
+    }
+  ],
+  "candidatePatchSHA256": "a8e73a24bc40bf59a6bdcfe2aa3a626b78de6d61fc46c69b84af9d7fdcd5bb8d",
+  "candidateAsset": {
+    "privateCommit": "6a5960547b43bcff051389a397ff555e16f49ab4",
+    "state": "PRIVATE_UNACCEPTED_NOT_PROMOTED",
+    "path": "unreal/Lunden/Content/Lunden/Materials/M_LundenTiled.uasset",
+    "actualSHA256": "4cb8ad346925298320b86efa85d83999f8c162b754cc1ae45be937ef64dc37b3",
+    "uassetCopiedOrPublished": false
+  },
+  "privateOriginals": {
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2428/paired-final/unreal-courtyard.png": {
+      "sha256": "265987c2302953a9d8d15aa215268e8e096f6a42a6d79e64dee6b3f9d1a5b68d",
+      "bytes": 2244875
+    },
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2428/paired-final/unreal-entrance-a.png": {
+      "sha256": "c9b42d54df6e6aa390ba4b27776cabb2ff117736d1e751a570564e0a6fd5796e",
+      "bytes": 1624447
+    },
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2428/paired-final/unreal-living-room-day.png": {
+      "sha256": "aa3d9f52fb0c2ecabd18470648179e0ddd61beff721d3590d402265fb961992e",
+      "bytes": 315909
+    },
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2428/paired-final/unreal-living-room-evening.png": {
+      "sha256": "ef1b132776dc8a36f398c03c092d3eff1503f39219522124212991faeb702da4",
+      "bytes": 315909
+    },
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2428/paired-final/unreal-stairs-evening.png": {
+      "sha256": "47e302af9bbdae1a169e64e5a573679858003c918887dabf4b1838545e42596b",
+      "bytes": 112860
+    },
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2428/paired-final/unreal-upper-floor-evening.png": {
+      "sha256": "6615f8a21b78048009596404e466490963afe9ceb6dce90da8febd54dfde345f",
+      "bytes": 225665
+    },
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2428/paired-final/web-courtyard.jpg": {
+      "sha256": "e5f9cc4237917ff75dcd83edb686ea5e34baf6390e86f345effba1eabfd9e169",
+      "bytes": 464143
+    },
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2428/paired-final/web-entrance-a.jpg": {
+      "sha256": "c61c6e2e7784c75ba29afafe8e9bf2e5724f00bc0686aba94d6fa8b7034e7ef0",
+      "bytes": 359301
+    },
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2428/paired-final/web-living-room-day.jpg": {
+      "sha256": "be8023e5a4d1ba5cfb2d4f930273f6792c788658efd47dba6a6c153016af33ac",
+      "bytes": 67118
+    },
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2428/paired-final/web-living-room-evening.jpg": {
+      "sha256": "1a6d7cd06c97fbb1729662cece73490a808745d2511124f8dc0a987f0e810c0b",
+      "bytes": 58390
+    },
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2428/paired-final/web-stairs-evening.jpg": {
+      "sha256": "48dcb9b61e67c0d499f06d1d253d02251b4930a9bb567f138c6723ddf71574c5",
+      "bytes": 26312
+    },
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2428/paired-final/web-upper-floor-evening.jpg": {
+      "sha256": "16ed055836f8a6f6487ed1c6d99bfa45be5ceb9ecb2e53b5240c1692ebd7dbb8",
+      "bytes": 31254
+    },
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2428/whole-image-review.json": {
+      "sha256": "65fbd11cff64de7764b3e607cd53280e409c0a2bfc3c1d0f38823d28140d17a3",
+      "bytes": 31691
+    },
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2428/locked-acceptance.json": {
+      "sha256": "060ded446fac756fcd1d25839fdb77d6a723bb3e76c4b4c1183785adb620c5cf",
+      "bytes": 2362
+    },
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2428/native-product/product/verification.json": {
+      "sha256": "5293d5791e1045d0767a70183df9630e11041c309678db4eb0e9db078a2eaccc",
+      "bytes": 47233
+    },
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2428/native-product/outer-status.json": {
+      "sha256": "08b85ec68431bcea223324c622d7a5dc77d312c998a626ccb8375ea9acbd8fba",
+      "bytes": 327
+    },
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2428/paired-final/crop-stats.json": {
+      "sha256": "8de012d5ea217dc8f85a249506a2fccf63632ae6ab5f7bfe6912820d37406c5b",
+      "bytes": 7490
+    },
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2428/paired-final/brick-joints.json": {
+      "sha256": "dce84a28dc6f9477dc53b9d5524ecee1d9a4b8b794f86ccbca6aee2c4c20ee0c",
+      "bytes": 5394
+    },
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2428/paired-final/canonical-batch.json": {
+      "sha256": "9784d631f37af1be40d299d750e5d2bb3dd905b036801d28fcfee8d3817f83a1",
+      "bytes": 1305
+    },
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2428/paired-final/combined-gate.json": {
+      "sha256": "7771a485d3e9d124d9cf5468b9a91ffe9fcda6c0f179a992c8888e88e2cd47f2",
+      "bytes": 4380
+    },
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2428/paired-final/apartment-gate.json": {
+      "sha256": "7447731b8cc059f83425774410f33e11d52e55b67dd0346d6cfb7450d6954872",
+      "bytes": 13350
+    },
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2428/paired-final/brick-gate.json": {
+      "sha256": "fcf47f2c86be8ca8a5f1b413f90455a7edb82d4a98666d54ab2df018a78d3b34",
+      "bytes": 16933
+    },
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2428/native-product/outcome.json": {
+      "sha256": "bd96f12929229686e344845f77b807fbd8a9510690b77ee99dd149e55cc1db82",
+      "bytes": 51092
+    },
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2428/native-product/product/target/capture.json": {
+      "sha256": "c488d37ce99f0b473f7bc3a650f9d25ec07f436cb116baa80a2faaf725187c02",
+      "bytes": 205228
+    },
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2428/native-product/product/regressions/capture.json": {
+      "sha256": "d4e417459f4e4883cf1127e71fc9191a2eccd1a1e06e98bcf268c2d7c5759ad8",
+      "bytes": 427971
+    },
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2428/native-product/product/canonical/sync-capture-steps.json": {
+      "sha256": "c7f2a152ee1721b73935fdeca49def8cd8529dd9d6c1e3b8b8f6e73a0d98e2f9",
+      "bytes": 66785
+    },
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2428/native-product/config.json": {
+      "sha256": "62153a5a2f9baa6ad9f75df5afb9b0ea0f1c31c7abfb1807f5c57e6ae0691b39",
+      "bytes": 753061
+    },
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2428/web-proof.json": {
+      "sha256": "a300de6db43d5e7cf66f7a5788e717e5041a48fc52116a2ee2a7865ab1258458",
+      "bytes": 442
+    },
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2428/web/web-capture.json": {
+      "sha256": "1f2361d3710a16883687a55e39a44783d6d56ab857140216b7a096ab2c77c272",
+      "bytes": 3710
+    },
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2428/web/node-outcome.json": {
+      "sha256": "631490d3b7fa263d8a69e7ee9d2e2a66504d05d1f66112e56e345d0e27a20eac",
+      "bytes": 415
+    },
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2428/open-review-issues.json": {
+      "sha256": "a7f8f8bab0756bd87415f3c81948180c5c1beff1c6dc41a234227b45599e8aae",
+      "bytes": 32617
+    }
+  },
+  "sixOriginalPairsUnmodified": true,
+  "noHistoricalImprovementTrendClaim": true,
+  "old2393WebSourceEqualityToCurrent718": "NOT_PROVEN; fresh current two target references used",
+  "newIssueMappings": "Exterior paving/fence raster and window bright/scalloped highlights pending Root registration; no invented issue IDs or OPEN claim for closed2425",
+  "rootSolePublisher": true
+}
