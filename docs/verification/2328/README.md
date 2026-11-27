@@ -96,7 +96,8 @@ På källrevision `7a137273801528d9d02723733664e174ab62c02a` kördes samma sexto
 verkliga `L_Lunden`, med systemets llvmpipe LLVM 20.1.2 och Linux-lågprofilen.
 `test_door_groups_capture` avslutades med `succeededWithWarnings: 1`, `failed: 0`, `notRun: 0`;
 wrapper och motor avslutades med 0. Hela processen tog 994,04 s; det faktiska Automation-provet
-219,70 s. Den uttryckliga latentbudgeten var 900 s. Samtliga sex blads gångjärn/öppningsvinklar,
+219,70 s. Rapportens enda varning var en 3 s-timeout i motorns HTTP-kontroll till Google;
+ingen assertion undertrycktes. Den uttryckliga latentbudgeten var 900 s. Samtliga sex blads gångjärn/öppningsvinklar,
 E-händelser och båda portknapparnas lägen kontrollerades av den oförändrade fixturens assertioner.
 
 Motorns uppstart väntade först 600 s på minst 10 FPS, gav sedan upp väntan vid cirka 4 FPS och

@@ -413,7 +413,8 @@
         "succeededWithWarnings": 1,
         "failed": 0,
         "notRun": 0,
-        "testSeconds": 219.70115661621094
+        "testSeconds": 219.70115661621094,
+        "warning": "LogHttp HTTP request timed out after3seconds URL=https://www.google.com/generate_204"
       },
       "preTestWarmup": {
         "desiredFps": 10,
