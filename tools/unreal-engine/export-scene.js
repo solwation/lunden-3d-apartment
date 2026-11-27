@@ -27,6 +27,7 @@ import { bakeLitterDensity, litterRoads, leafShare } from '../../src/leaflitter.
 import { samples as roadSamples } from '../../src/roads.js';
 import { gravelData } from '../../src/gravelsurface.js';
 import { livingWallLight } from './export-living-wall.js';
+import { livingWallCeilingAO } from './export-living-wall-ao.js';
 import { stairLampProfiles } from './export-stair-light.js';
 import { stairRise, stairRiser, N_TREADS } from '../../src/stairs.js';
 import { hedgeTexture } from './hedge-texture.js';
@@ -1078,6 +1079,7 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     coreDoors: extra.coreDoors ?? [], garage: extra.garage ?? null });
   if (lightsInfo.stairLight) measurements.stair.lightBounds = lightsInfo.stairLight.bounds;
   if (wanted.includes('l1007')) measurements.site.livingWallLight = livingWallLight(world);
+  if (wanted.includes('l1007')) measurements.site.livingWallCeilingAO = livingWallCeilingAO(world, measurements.site.livingWallLight.wall);
   if (wanted.includes('l1007')) measurements.site.windowDaylight = windowDaylight(world);
   measurements.site.parkedVehicles = {
     vehicles: [...parked.vehicles.values()].filter(v => wanted.includes(v.zone)),

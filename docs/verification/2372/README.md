@@ -69,3 +69,42 @@ Den extra kontrollen från trappan gav 1,39 gånger webbens helbild, över proje
 | Trappkameran i Unreal | Webbreferens |
 |---|---|
 | ![Trappan och den synliga delen av vardagsrummet i Unreal](windows-pendant-trial/unreal-stairs-evening.png) | ![Trappan och vardagsrummet på webben](../2369/web-stairs-evening.jpg) |
+
+## Avgränsad Linux-diagnos och källändring den 27 november
+
+Den tidigare lokala Windows-implementationen ovan finns inte i dagens källträd. #2394 har levererat det generella
+fönsterfältet. Den nya kontrollen återanvänder de ursprungliga två publicerade webbreferenserna och oförändrade
+`pendant-lighting-crops.json`. Sekundära #2322- och #2369-referenser hålls uttryckligen åtskilda.
+
+Root körde tre faktiska 640 × 360-bilder från den komponerade världen vid `ea2ea98c`: normalt kvällsläge,
+enbart verkliga Silvia släckt genom lampans metod och enbart den riktiga WindowPP-komponentens materialvikt noll.
+Alla tre tillstånden och återställningen slutfördes. Den gemensamma motorprocessen slutade senare med kod 255
+i det efterföljande #2322-provet; detta är **inte** en godkänd helkörning. Root granskar processutfall och skyddet
+för de 247 författade paketen separat. Profilens faktiska värden är FXAA 1, AA-quality 0, ShadowQuality 3,
+LightFunctionQuality 2 och SeparateTranslucency 1; det är en Linux-diagnos, inte Windows fullprofil.
+
+| Ursprungligt vänsterfält | Unreal/webb, normalt läge |
+|---|---:|
+| Vänster vägg | 0,974 |
+| Övre vänster | 1,037 |
+| Övre höger | 1,206 |
+| Nedre vänster | 0,846 |
+| Nedre höger | 0,892 |
+
+Medelvärdena passerar, men formen misslyckas: högerkolumnens nedre/övre kontrast är 1,035 mot webbens 1,399,
+relativt 0,740 under gränsen 0,8. Silvias vänsterväggsbidrag är 0,0344 i Unreal mot 0,0690 på webben, medan
+bakgrunden med Silvia släckt är 0,1688 mot 0,1397. WindowPP-växlingen ändrar vänsterväggen med 0,0734.
+Den växlingen tar också bort passets ersättning av den ursprungliga ljuskuben och motsvarar därför inte en fysisk
+fönsterbrytare. Inga nya ljusvärden har anpassats till dessa mätningar.
+
+Källgranskningen hittade webbens utelämnade `wall-ao`-band vid taket. Fyra riktiga källtrianglar täcker de 25
+fasta strålproven i de fem utsnitten exakt en gång. Source `buildWallAO` ger övre delytorna tydligare mörkning
+än de nedre, med oförändrad styrka 0,25 och radie 0,20 m. Den nya exportören kopierar färdigbyggda trianglar,
+distansattribut, uniformer och blandningsregler; produktionsvägen rekonstruerar inga väggar från planen.
+Den nya Generated-posten multiplicerar bildfärgen efter tonemapping, före lampornas befintliga displayfläckar,
+med källans egen geometri och framförliggande objekt som djupkontroll. Väggens material, lampor och fönsterfält
+ändras inte. Ändringen avser enbart denna målade väggs takband; övrig käll-AO följs i
+[det separata #2489](https://github.com/solwation/lunden-3d-apartment/issues/2489).
+
+Källfixture, strikt schema, 25 strålar och rena djup-/kant-/falloffprov passerar. Ingen efterbild med den nya
+AO-posten finns ännu. Native-kompilering, faktisk bindning och bildgränserna återstår; ärendet är fortsatt öppet.

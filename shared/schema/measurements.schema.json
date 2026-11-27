@@ -107,6 +107,27 @@
     "site": {
       "type": "object", "required": ["geo", "planNorthDeg", "source"],
       "properties": {
+        "livingWallCeilingAO": {
+          "type": "object", "additionalProperties": false,
+          "description": "#2372: only the actual painted east-wall ceiling-band triangles from built wall-ao; native display-space multiplication before ShadePools, no PBR or lamp fit.",
+          "required": ["version", "target", "coordinates", "wall", "bandBottom", "coefficients", "depth", "triangles", "source", "coverage", "blendSpace", "runtimeCoverage"],
+          "properties": {
+            "version": { "const": 1 }, "target": { "const": "L1007 living-room painted east-wall ceiling band" },
+            "coordinates": { "const": { "units": "metres", "axes": "x east, y up, z south" } },
+            "wall": { "type": "array", "minItems": 5, "maxItems": 5, "items": { "type": "number" } },
+            "bandBottom": { "type": "number" },
+            "coefficients": { "type": "object", "required": ["floor", "ceil", "corner"], "additionalProperties": false,
+              "properties": { "floor": { "$ref": "#/$defs/wallAOCoefficient" }, "ceil": { "$ref": "#/$defs/wallAOCoefficient" }, "corner": { "$ref": "#/$defs/wallAOCoefficient" } } },
+            "depth": { "const": { "depthTest": true, "depthWrite": false, "frontSide": true, "polygonOffset": true, "polygonOffsetFactor": -2, "polygonOffsetUnits": -2, "renderOrder": 1, "toneMapped": false, "blend": "DstColor * source + Zero * destination" } },
+            "triangles": { "type": "array", "minItems": 1, "items": { "type": "object", "required": ["positions", "aDist"], "additionalProperties": false,
+              "properties": {
+                "positions": { "type": "array", "minItems": 3, "maxItems": 3, "items": { "$ref": "#/$defs/vec3" } },
+                "aDist": { "type": "array", "minItems": 3, "maxItems": 3, "items": { "type": "array", "minItems": 4, "maxItems": 4, "items": { "type": "number", "minimum": 0 } } }
+              } } },
+            "source": { "type": "string" }, "coverage": { "type": "string" },
+            "blendSpace": { "const": "display-srgb-multiply" }, "runtimeCoverage": { "const": "static-built-geometry" }
+          }
+        },
         "windowDaylight": {
           "type": "object", "description": "#2394: L1007's actual window/well sources and 32-ray visibility from src/windowlight.js. Transmission and doors are explicitly an export snapshot, not live parity.",
           "required": ["version", "region", "runtimeCoverage", "coordinates", "config", "box", "bands", "sources", "segments", "snapshot", "limitations", "provenance"],
@@ -304,6 +325,7 @@
     }
   },
   "$defs": {
+    "wallAOCoefficient": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "type": "number", "minimum": 0 } },
     "displayPoolDepth": { "type": "object", "required": ["write", "test", "polygonOffset", "factor", "units", "renderOrder"], "properties": { "write": { "const": false }, "test": { "const": true }, "polygonOffset": { "const": true }, "factor": { "type": "number" }, "units": { "type": "number" }, "renderOrder": { "type": "number" } } },
     "parasolPose": { "type": "object", "required": ["position", "scale", "rotationX"], "properties": { "position": { "$ref": "#/$defs/vec3" }, "scale": { "$ref": "#/$defs/vec3" }, "rotationX": { "type": "number" } } },
     "uvQuad": { "type": "object", "required": ["0,0", "1,0", "1,1", "0,1"], "additionalProperties": false, "properties": { "0,0": { "$ref": "#/$defs/vec3" }, "1,0": { "$ref": "#/$defs/vec3" }, "1,1": { "$ref": "#/$defs/vec3" }, "0,1": { "$ref": "#/$defs/vec3" } } },

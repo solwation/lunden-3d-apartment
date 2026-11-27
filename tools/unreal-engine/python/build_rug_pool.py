@@ -248,7 +248,12 @@ def controller(lamp_tag):
 
 def main():
     project = Path(u.Paths.convert_relative_path_to_full(u.Paths.project_dir()))
-    furnishing = json.loads((project / "Import/measurements.json").read_text(encoding="utf-8"))["furnishing"]
+    measurements = json.loads((project / "Import/measurements.json").read_text(encoding="utf-8"))
+    furnishing = measurements["furnishing"]
+    import build_wall_ao
+    wall_ao_data = measurements["site"].get("livingWallCeilingAO")
+    if wall_ao_data or EAL.does_directory_exist(build_wall_ao.DIR):
+        build_wall_ao.main(wall_ao_data)
     if furnishing.get("displayPools"):
         import build_display_pools
         import build_furnishing_profile

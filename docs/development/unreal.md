@@ -1577,6 +1577,26 @@ the export and the pictures section of `notices.mjs`.
   `test_display_pool_data.py` guards invalid geometry/masks and cross-storey exception leakage. Run the actual
   `display-pools.mjs` source fixture/export checks, then `test_rug_floor_pool.py` after a full sync.
 
+  #2372 adds the optional `site.livingWallCeilingAO` snapshot: the **actual built** `wall-ao` triangles and
+  their four `aDist` attributes, original uniform pairs and depth/blend flags. It covers only the painted
+  east wall's ceiling band, selected by the existing `site.livingWallLight.wall` bounds; other wall, floor
+  and ceiling AO remains unported under #2489. It copies the source's 1 mm offset and corner trim, not a fitted light field.
+  `build_rug_pool.py` invokes `build_wall_ao.py` before the existing display-field builders. The Generated
+  `LivingWallAO` material/Blueprint and apartment interaction actor retain the original wall's PBR unchanged.
+  Its post-process runs after tonemapping at priority 10, before ShadePools priority 20. The source fragment
+  decodes its scalar then `colorspace_fragment` encodes it again, so the resulting source DstColor blend is
+  exactly `sceneDisplayRGB * product(1-strength*exp(-distance/radius))`. No exposure, lamp gain or window
+  irradiance is changed. Camera-ray/triangle projection preserves source front faces and depth-tested foreground
+  occlusion; the actual source offset is used without another depth bias. The source's raster polygon-offset flags
+  remain provenance; the post-process uses the already offset real plane and analytic scene depth instead of
+  inventing a native raster bias. Native foreground/edge/distance stability still needs rendered verification.
+  Shared triangle edges multiply once,
+  and overlapping triangles are rejected rather than silently approximated. Source stamps include both new Python
+  files through the existing `builderInputs` rule. Older exports without the optional field retire an existing
+  owned actor. Run `wall-ao.mjs` and `test_wall_ao.py` for source geometry/schema and depth/falloff checks;
+  native compilation, actual composed actor binding and the unchanged #2372 crop/shape gates are still required
+  before accepting a build. These source tests do not establish rendered parity.
+
   The legacy rug-only path copied the complete original master/MIC chain and added raw source emission before
   exposure/tonemapping. Its bounded API/depth results remain in the
   [historical verification](../verification/2322/README.md#mattans-pendelfält-källcheckpoint-2026-11-27), including
