@@ -1,0 +1,255 @@
+{
+  "viewport": {
+    "width": 640,
+    "height": 360
+  },
+  "shots": [
+    {
+      "name": "start-night",
+      "sourceReference": {
+        "date": [
+          2026,
+          11,
+          16
+        ],
+        "hour": 18.25,
+        "overcast": 0,
+        "under": 0,
+        "dim": 0,
+        "dayShare": 0,
+        "sunDirWeb": [
+          -0.40300385020116136,
+          -0.32540525077236565,
+          0.855394247989086
+        ],
+        "sunIntensity": 0.127550380125071,
+        "skyStrength": 0
+      },
+      "actualExposure": 1,
+      "actualUniforms": {
+        "uSun": [
+          -0.40300385020116136,
+          -0.32540525077236565,
+          0.855394247989086
+        ],
+        "uZenith": [
+          0.001214107934117647,
+          0.0021246888847058823,
+          0.004776953478513362
+        ],
+        "uHorizon": [
+          0.005181516700061659,
+          0.009134058699157796,
+          0.023153366173251363
+        ],
+        "uGlow": [
+          1,
+          0.2541520943200296,
+          0.04518620437910499
+        ],
+        "uScatter": [
+          0,
+          0,
+          0
+        ],
+        "uNight": 1,
+        "uGlowAmt": 0,
+        "uClouds": {
+          "isTexture": true,
+          "uuid": "cbad760b-0239-4069-8253-73ff74dda6d8",
+          "name": "",
+          "source": {
+            "isSource": true,
+            "uuid": "099dcb5e-2664-4271-97fd-705c491c4800",
+            "data": "ref: <Node>",
+            "dataReady": true,
+            "version": 1
+          },
+          "mipmaps": [],
+          "mapping": 300,
+          "channel": 0,
+          "wrapS": 1000,
+          "wrapT": 1001,
+          "magFilter": 1006,
+          "minFilter": 1006,
+          "anisotropy": 1,
+          "format": 1023,
+          "internalFormat": null,
+          "type": 1009,
+          "offset": {
+            "x": 0,
+            "y": 0
+          },
+          "repeat": {
+            "x": 1,
+            "y": 1
+          },
+          "center": {
+            "x": 0,
+            "y": 0
+          },
+          "rotation": 0,
+          "matrixAutoUpdate": true,
+          "matrix": {
+            "elements": [
+              1,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "generateMipmaps": false,
+          "premultiplyAlpha": false,
+          "flipY": false,
+          "unpackAlignment": 4,
+          "colorSpace": "",
+          "userData": {},
+          "version": 1,
+          "onUpdate": null,
+          "isRenderTargetTexture": false,
+          "pmremVersion": 0,
+          "isCanvasTexture": true,
+          "_listeners": {
+            "dispose": [
+              null
+            ]
+          }
+        },
+        "uCloudCol": [
+          0.09300000000000001,
+          0.094,
+          0.096
+        ],
+        "uSkyCl": [
+          1,
+          0.92,
+          0.16
+        ]
+      },
+      "profile": {
+        "quality": 4,
+        "contextLost": false,
+        "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "draws": 530,
+        "verticalFov": 72,
+        "aspect": 1.7777777777777777
+      },
+      "facade": {
+        "wallLight": {
+          "doorLampWash": 0.26,
+          "doorLampPools": 0.45,
+          "loggiaLampWash": 0.26,
+          "loggiaLampPools": 0.45
+        },
+        "husLEmission": 0.6,
+        "schedule": {
+          "A": {
+            "on": 91,
+            "total": 252
+          },
+          "B": {
+            "on": 56,
+            "total": 197
+          },
+          "C": {
+            "on": 47,
+            "total": 200
+          }
+        }
+      },
+      "eye": [
+        2.875,
+        1.62,
+        -12
+      ],
+      "yaw": 180,
+      "pitch": 8,
+      "day": [
+        2026,
+        11,
+        16,
+        18.25,
+        true
+      ],
+      "daylight": 0,
+      "overcast": 0,
+      "weather": "clear",
+      "sky": {
+        "procedural": [
+          1,
+          0.92,
+          0.16
+        ],
+        "deck": [
+          0,
+          0,
+          1200,
+          0
+        ],
+        "zenith": [
+          0.001214107934117647,
+          0.0021246888847058823,
+          0.004776953478513362
+        ],
+        "horizon": [
+          0.005181516700061659,
+          0.009134058699157796,
+          0.023153366173251363
+        ]
+      },
+      "pool": [
+        {
+          "position": [
+            5.2212,
+            1.3800000000000001,
+            4.5811
+          ],
+          "level": 0,
+          "share": 1
+        }
+      ],
+      "dark": true,
+      "smallLampsOn": [
+        "golvlampan",
+        "spotsen",
+        "långlampan",
+        "rottinglampan",
+        "Hue Go-lampan",
+        "lampan",
+        "nattlampan",
+        "nattlampan",
+        "garderobsspegeln",
+        "läslampan",
+        "läslampan",
+        "läslampan",
+        "läslampan",
+        "enhörningslampan",
+        "dödsstjärnan",
+        "sminkspegeln",
+        "bänkbelysningen",
+        "spegeln i toaletten",
+        "spegelns nattlampa"
+      ],
+      "forced": false,
+      "moon": {
+        "illum": 0.42571029351799206,
+        "elong": 1.421664741423662,
+        "dir": [
+          0.7192068650214697,
+          0.2932388525798878,
+          0.6298828943888065
+        ]
+      },
+      "sun": [
+        -0.40300385020116136,
+        -0.32540525077236565,
+        0.855394247989086
+      ]
+    }
+  ]
+}

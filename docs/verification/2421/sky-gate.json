@@ -1,0 +1,76 @@
+{
+  "classification": "Existing2366 skyROI/Y acceptance; R/B tolerance is explicit NEW LOCAL GUESS, not originalissue requirement. Frame diagnostic only. ROI including moon unchanged.",
+  "contractSHA256": "c884278d37f96a8df4563eca5315e3b46fa4717971338fafbf54efd150c80897",
+  "configSHA256": "abee35483fc0e5e5ac6c9ca88898306ccbf22fc3b80c5affd55e11a54daa2232",
+  "canonicalToolSHA256": "0a76bf7e7c43ad2e212f2d884806957030ec6dc08ce4c4d9901641f5f80bd1c6",
+  "nativeCaptureMetadataSHA256": "3631521fed5279f221c1a69930bd3eca5a74532ebf0135aeaeea96723696111e",
+  "browserBatches": 1,
+  "inputs": {
+    "start-night": {
+      "web": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2421/web/web-start-night.jpg",
+        "sha256": "da0ad0c16e5e568118710fac9d7e3b2b2ed8b4cb64a0df09f56a3d9beea9dca1"
+      },
+      "native": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2421/native-product-v2/product/target/unreal-start-night.png",
+        "sha256": "c56f7a7f671a03ecad4588716f462ca1500054587856d8d9a473165d8e11bf91"
+      }
+    }
+  },
+  "rows": [
+    {
+      "shot": "start-night",
+      "region": "sky",
+      "target": true,
+      "passed": false,
+      "luminanceRatio": 0.7468354430379748,
+      "warmthRatio": 0.890499194847021,
+      "web": {
+        "srgb": [
+          23.2,
+          26.7,
+          37.3
+        ],
+        "luminance": 0.0237,
+        "warmth": 0.621
+      },
+      "native": {
+        "srgb": [
+          18.1,
+          22,
+          32.8
+        ],
+        "luminance": 0.0177,
+        "warmth": 0.553
+      }
+    },
+    {
+      "shot": "start-night",
+      "region": "frame",
+      "target": false,
+      "passed": null,
+      "luminanceRatio": 0.7547169811320755,
+      "warmthRatio": 1.2278617710583153,
+      "web": {
+        "srgb": [
+          8.7,
+          7.1,
+          9.4
+        ],
+        "luminance": 0.0053,
+        "warmth": 0.926
+      },
+      "native": {
+        "srgb": [
+          9.3,
+          7.4,
+          8.2
+        ],
+        "luminance": 0.004,
+        "warmth": 1.137
+      }
+    }
+  ],
+  "numericPassed": false,
+  "wholeImageReviewRequired": true
+}

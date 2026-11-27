@@ -1,0 +1,339 @@
+{
+  "issue": 2421,
+  "classification": "Read-only actual V2 whole-original review. Useful sky-source checkpoint, not full original issue acceptance or permission to close.",
+  "sourceHead": "24f37d92d5d76756985300bcd1a468591f8d7a41",
+  "allFiveNativeAndFiveLockedWebOriginalsViewed": true,
+  "originalImageManifest": [
+    {
+      "view": "start-night",
+      "native": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2421/native-product-v2/product/target/unreal-start-night.png",
+        "sha256": "c56f7a7f671a03ecad4588716f462ca1500054587856d8d9a473165d8e11bf91"
+      },
+      "web": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2421/web/web-start-night.jpg",
+        "sha256": "da0ad0c16e5e568118710fac9d7e3b2b2ed8b4cb64a0df09f56a3d9beea9dca1"
+      },
+      "bothWholeOriginalsViewed": true
+    },
+    {
+      "view": "living-room-day",
+      "native": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2421/native-product-v2/product/regressions/unreal-living-room-day.png",
+        "sha256": "104c3749395c2f50353ac3b74df58aad780e0854be7eb0d7f716fb9dab472f8a"
+      },
+      "web": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/web/web-living-room-day.jpg",
+        "sha256": "be8023e5a4d1ba5cfb2d4f930273f6792c788658efd47dba6a6c153016af33ac"
+      },
+      "bothWholeOriginalsViewed": true
+    },
+    {
+      "view": "living-room-evening",
+      "native": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2421/native-product-v2/product/regressions/unreal-living-room-evening.png",
+        "sha256": "cfc8c8bca3d280c46fc5caa82c12bc45aed855cdf2f819741a9e2296f5ea0a67"
+      },
+      "web": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2369/web/web-living-room-evening.jpg",
+        "sha256": "1a6d7cd06c97fbb1729662cece73490a808745d2511124f8dc0a987f0e810c0b"
+      },
+      "bothWholeOriginalsViewed": true
+    },
+    {
+      "view": "stairs-evening",
+      "native": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2421/native-product-v2/product/regressions/unreal-stairs-evening.png",
+        "sha256": "7c8ea101e21fbec66a1129eb15d9c1bb6cf8fe372f53d579087a102c0c12c740"
+      },
+      "web": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2369/web/web-stairs-evening.jpg",
+        "sha256": "48dcb9b61e67c0d499f06d1d253d02251b4930a9bb567f138c6723ddf71574c5"
+      },
+      "bothWholeOriginalsViewed": true
+    },
+    {
+      "view": "upper-floor-evening",
+      "native": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2421/native-product-v2/product/regressions/unreal-upper-floor-evening.png",
+        "sha256": "551ade679207ee03389d9686d8492fe96e32eb1f0eb3fda6362b555bb3f509c4"
+      },
+      "web": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/web/web-upper-floor-evening.jpg",
+        "sha256": "16ed055836f8a6f6487ed1c6d99bfa45be5ceb9ecb2e53b5240c1692ebd7dbb8"
+      },
+      "bothWholeOriginalsViewed": true
+    }
+  ],
+  "targetMetadata": {
+    "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2421/native-product-v2/product/target/capture.json",
+    "sha256": "3631521fed5279f221c1a69930bd3eca5a74532ebf0135aeaeea96723696111e",
+    "actualCamera": {
+      "xyz": [
+        287.5,
+        -1200.0,
+        162.0
+      ],
+      "yaw": 89.99999999999999,
+      "pitch": 8.000000000000002,
+      "roll": -0.0,
+      "horizontalFov": 104.50486755371094,
+      "width": 640,
+      "height": 360,
+      "separateTranslucencyShowFlag": true,
+      "privateBlendableAttached": false
+    },
+    "actualSourceReference": {
+      "date": [
+        2026,
+        11,
+        16
+      ],
+      "hour": 18.25,
+      "overcast": 0,
+      "under": 0,
+      "dim": 0,
+      "dayShare": 0,
+      "sunDirWeb": [
+        -0.40300385020116136,
+        -0.32540525077236565,
+        0.855394247989086
+      ],
+      "sunIntensity": 0.127550380125071,
+      "skyStrength": 0
+    },
+    "scheduleLimit": "Source A/B/C on-counts retained separately; native GPU window schedule has no queried lit-pixel/controller counter here. Tagged mesh counts are geometry, not lit counts."
+  },
+  "numericEvidence": {
+    "skyGatePath": "/home/devcontainers/.local/state/lunden-codex-20261127/2421/paired-final/sky-gate.json",
+    "skyGateSHA256": "0c2ce4ade7a464a5ce157a04a69f08f0b9dbcf095c74b69d9825f580b3cc8b87",
+    "skyYratio": 0.7468354430379748,
+    "skyYPassed": false,
+    "skyRelativeRB": 0.890499194847021,
+    "skyLocalGuessedRBPassed": true,
+    "colourToleranceClassification": "Explicit local guess \u00b115%, not an original numeric issue requirement",
+    "lockedSkyROIIncludesMoonUnchanged": true,
+    "wholeFrameDiagnosticOnly": {
+      "shot": "start-night",
+      "region": "frame",
+      "target": false,
+      "passed": null,
+      "luminanceRatio": 0.7547169811320755,
+      "warmthRatio": 1.2278617710583153,
+      "web": {
+        "srgb": [
+          8.7,
+          7.1,
+          9.4
+        ],
+        "luminance": 0.0053,
+        "warmth": 0.926
+      },
+      "native": {
+        "srgb": [
+          9.3,
+          7.4,
+          8.2
+        ],
+        "luminance": 0.004,
+        "warmth": 1.137
+      }
+    },
+    "apartmentGatePath": "/home/devcontainers/.local/state/lunden-codex-20261127/2421/paired-final/acceptance-gate.json",
+    "apartmentGateSHA256": "f1caa82b416ccd97da755e034aec786914b7b6ce0ff37cdb610e7745d6feee17",
+    "all22ApartmentCanonicalRowsAndExistingFrameWarmth14MaterialGuardsPassed": true,
+    "noMeterExecutedByThisReview": true
+  },
+  "fiveOriginalPoints": [
+    {
+      "point": 1,
+      "scope": "Night sky saturated blue",
+      "observation": "Native is still darker and somewhat bluer than the actual source. Current nativeR/B.553 versus web.621 passes the newly guessed colour bound(.890499relative), but locked skyY.746835 fails the original retained.8\u20131.25 range. Matching crescent location/phase is visible; no ROI edit to omit it.",
+      "resolved": false
+    },
+    {
+      "point": 2,
+      "scope": "Pale light upper storey of HusL",
+      "observation": "Native upper facade remains visibly pale gray/green against darker source cladding; warm/yellow window tones also differ. A sky-only source change has not made the whole upper facade match.",
+      "resolved": false
+    },
+    {
+      "point": 3,
+      "scope": "Foreground court gray instead of blue",
+      "observation": "Source court visibly carries blue near the left and front line markings; native remains near-black/gray-green.",
+      "resolved": false
+    },
+    {
+      "point": 4,
+      "scope": "Yellow facade pools instead of weak brown-pink",
+      "observation": "Native entrance pools remain brighter/more yellow and compact; source pools are softer muted brown-pink.",
+      "resolved": false
+    },
+    {
+      "point": 5,
+      "scope": "Neighbour lit left window dark",
+      "observation": "Far-left neighbour window is bright in the source and dark in native. No actual GPU lit-window count was queried, so geometry/controller counts are not a schedule-correctness claim.",
+      "resolved": false
+    }
+  ],
+  "apartmentViewFindings": [
+    {
+      "view": "stairs-evening",
+      "finding": "Existing warm door/rail/stair composition preserved. Prior shaft/tread low contrast2480 and white mirror highlight2490 remain."
+    },
+    {
+      "view": "living-room-day",
+      "finding": "Existing curtain/sofa/table/cabinet profile preserved; non-target floor raster, Silvia emission, glazing/facade and yellow sofa field remain prior mapped gaps."
+    },
+    {
+      "view": "living-room-evening",
+      "finding": "All current material/hue/spot guards pass, with no new visible own regression. Existing dark Silvia, outdoor glass tint, high-wall light field and timber dots remain."
+    },
+    {
+      "view": "upper-floor-evening",
+      "finding": "Plum cloth and existing profiles retained; Tilly wood, dome/halo, floor raster and distant facade/glazing differences remain previously mapped."
+    }
+  ],
+  "apartmentPreexistingMappings": [
+    {
+      "views": [
+        "stairs-evening"
+      ],
+      "difference": "shaft/tread darkness contrast too weak",
+      "issue": 2480,
+      "currentStateVerifiedReadOnly": "OPEN"
+    },
+    {
+      "views": [
+        "living-room-day",
+        "living-room-evening"
+      ],
+      "difference": "Silvia reflected copper outside dark",
+      "issue": 2482,
+      "currentStateVerifiedReadOnly": "OPEN"
+    },
+    {
+      "views": [
+        "living-room-evening",
+        "upper-floor-evening"
+      ],
+      "difference": "emissive lamp interior/dome brightness",
+      "issue": 2460,
+      "currentStateVerifiedReadOnly": "OPEN"
+    },
+    {
+      "views": [
+        "upper-floor-evening"
+      ],
+      "difference": "camera-facing lamp halo missing; ceiling field not isolated wholly to halo",
+      "issue": 2481,
+      "currentStateVerifiedReadOnly": "OPEN"
+    },
+    {
+      "views": [
+        "living-room-evening"
+      ],
+      "difference": "high wall above cabinet field",
+      "issue": 2484,
+      "currentStateVerifiedReadOnly": "OPEN"
+    },
+    {
+      "views": [
+        "upper-floor-evening"
+      ],
+      "difference": "Tilly wood brighter/different olive tone",
+      "issue": 2486,
+      "currentStateVerifiedReadOnly": "OPEN"
+    },
+    {
+      "views": [
+        "living-room-day",
+        "living-room-evening",
+        "upper-floor-evening"
+      ],
+      "difference": "distant glass/tint/behind-glass mismatch",
+      "issue": 2459,
+      "currentStateVerifiedReadOnly": "OPEN"
+    },
+    {
+      "views": [
+        "living-room-day"
+      ],
+      "difference": "yellow sofa-back source field",
+      "issue": 2447,
+      "currentStateVerifiedReadOnly": "OPEN"
+    },
+    {
+      "views": [
+        "living-room-day",
+        "living-room-evening",
+        "upper-floor-evening"
+      ],
+      "difference": "remaining non-target wall/floor/ceiling AO source omissions",
+      "issue": 2489,
+      "currentStateVerifiedReadOnly": "OPEN"
+    },
+    {
+      "views": [
+        "living-room-day",
+        "living-room-evening",
+        "upper-floor-evening"
+      ],
+      "difference": "repeated dark dot raster on timber floor",
+      "issue": 2487,
+      "currentStateVerifiedReadOnly": "OPEN"
+    },
+    {
+      "views": [
+        "living-room-evening"
+      ],
+      "difference": "outside through glass dark green/brown",
+      "issue": 2488,
+      "currentStateVerifiedReadOnly": "OPEN"
+    },
+    {
+      "views": [
+        "living-room-day",
+        "upper-floor-evening"
+      ],
+      "difference": "distant brick facade brightness/mortar detail",
+      "issue": 2428,
+      "currentStateVerifiedReadOnly": "OPEN"
+    },
+    {
+      "views": [
+        "stairs-evening"
+      ],
+      "difference": "SKOGSGRANSEN decorative mirror retains hard white highlight/dome-like appearance versus flatter copper web mirror",
+      "issue": 2490,
+      "stateVerifiedViaFreshIssueRead": "open",
+      "cause": "not established; preexisting in published2369 originals",
+      "currentStateVerifiedReadOnly": "OPEN"
+    }
+  ],
+  "mappingProvenance": {
+    "previousReview": "/home/devcontainers/.local/state/lunden-codex-20261127/2409/whole-image-review.json",
+    "sha256": "f7964d718f07a0a18c011848c6e78ca0e7d2eb20483da7d6241273a3addbe8da",
+    "classification": "Same existing observed features; states previously freshly checked in2409 whole-image-mapping-state.json, not re-queried by this bounded image review"
+  },
+  "newUnmappedApartmentRegressionObserved": false,
+  "executionTruth": {
+    "actualNativeExit": 0,
+    "actualRunnerExit": 0,
+    "actualOuterExit": 0,
+    "durationSeconds": 374.5,
+    "shaderCompilationCleanReportedByRoot": true,
+    "actualFull20CanonicalCompleted": true,
+    "all247ReadonlyGeneratedAfterBuildSourceExportGuardsPassed": true,
+    "freshFunctionalAutomationNotClaimed": true,
+    "firstShaderFallbackRunRejectedAndPreserved": true,
+    "original2421WholeAcceptancePassed": false
+  },
+  "intentionalProfileLimits": [
+    "CPU Vulkan SM5 low profile with FXAA method1, conventional shadows, Lumen/Nanite disabled; narrow edge raster/grain differs from webUltra. No AAquality0 assertion from an invalid getter.",
+    "Static capture/controller readbacks are not full gameplay/PIE/Tick/season collision tests. Source A/B/C lit-window counters were retained; native tagged mesh counts do not prove GPU lit-window parity.",
+    "No changed exposure, fittedRGB/gain, new criteria or recapture was introduced by this review."
+  ],
+  "publicationRecommendation": "Publish source/assets and actual images as an honest Refs checkpoint if Root approves technical integration. Keep2421OPEN, not full acceptance or integration-ready; currentYFAIL and four remaining original scene differences must remain explicit.",
+  "2496ClaimMarker": "Already inactive at time of review; no foreign/active marker removed."
+}

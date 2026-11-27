@@ -1,0 +1,23 @@
+{
+  "completed": true,
+  "sourceHead": "24f37d92d5d76756985300bcd1a468591f8d7a41",
+  "classification": "Actual controlled Lighting build/full20/five images; no fresh canonical Automation claim",
+  "savedLevelSunPost": {
+    "path": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.BP_LundenSky_C_0.Sun",
+    "values": {
+      "cast_volumetric_shadow": true,
+      "cast_shadows_on_clouds": false,
+      "cast_shadows_on_atmosphere": false,
+      "cast_cloud_shadows": false,
+      "volumetric_scattering_intensity": 1.0
+    },
+    "matchesActualPre": true,
+    "classification": "Actual saved Lighting-sublevel actor in final composed map; no explicit disk package reload claimed"
+  },
+  "canonicalStepsExecutedHere": 20,
+  "capturedImages": 5,
+  "all247ExactReadonly": true,
+  "generatedExactAfterBuild": true,
+  "sourceExportExact": true,
+  "noLateWorldReload": true
+}

@@ -1,0 +1,35 @@
+{
+  "sourceHead": "24f37d92d5d76756985300bcd1a468591f8d7a41",
+  "assetCommit": "99a81a22023f3c749ab8f192b7b09b2d146aa72d",
+  "checks": [
+    {
+      "command": [
+        "python3",
+        "tools/unreal-engine/check-lighting.py",
+        "/mnt/d/LundenLinux/exports/issue2404-garage-v4/measurements.json",
+        "--sky-asset",
+        "/home/devcontainers/lunden-linux/unreal/Lunden/Content/Lunden/Lighting/BP_LundenSky.uasset"
+      ],
+      "exitCode": 0,
+      "stdout": "BP_LundenSky Lunden.SpecHash matches current lighting inputs: 279ad5d3ecc842f20c6a9a90f07af8ad7d6bcde379e2a3c5b909d8fba090a3ee\n",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "python3",
+        "tools/unreal-engine/tests/lighting-freshness.py",
+        "/mnt/d/LundenLinux/exports/issue2404-garage-v4/measurements.json",
+        "--sky-asset",
+        "/home/devcontainers/lunden-linux/unreal/Lunden/Content/Lunden/Lighting/BP_LundenSky.uasset"
+      ],
+      "exitCode": 0,
+      "stdout": "Lighting regressions OK: unrelated changes, cloud, night palette, window colours, parasol rule, lamp position, tag and Blueprint owner\n",
+      "stderr": ""
+    },
+    {
+      "command": "node --experimental-default-type=module --test tools/unreal-engine/tests/night-sky.test.mjs",
+      "exitCode": 0,
+      "stdout": "TAP version 13\n# Night source OK: actual START DayCycle uniforms, 5 overcast states, 6615 Neutral roundtrips; daytime shader untouched. Native material/capture pending.\n# Subtest: tools/unreal-engine/tests/night-sky.test.mjs\nok 1 - tools/unreal-engine/tests/night-sky.test.mjs\n  ---\n  duration_ms: 157.065956\n  type: 'test'\n  ...\n1..1\n# tests 1\n# suites 0\n# pass 1\n# fail 0\n# cancelled 0\n# skipped 0\n# todo 0\n# duration_ms 164.67843\n"
+    }
+  ]
+}

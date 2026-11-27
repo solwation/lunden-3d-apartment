@@ -1,0 +1,52 @@
+{
+  "issue": 2421,
+  "lockedAt": "2026-11-27T21:49:52.387956+00:00",
+  "source": "Existing2366 sky rectangle andYacceptance; newcolourguard explicitlocalguess, issuehasnonumericcolourbound",
+  "rectangles": {
+    "sky": [
+      0.02,
+      0.02,
+      0.2,
+      0.3
+    ],
+    "frame": [
+      0,
+      0,
+      1,
+      1
+    ]
+  },
+  "Yratio": [
+    0.8,
+    1.25
+  ],
+  "relativeMeanSRGB_RB": [
+    0.85,
+    1.15
+  ],
+  "colourToleranceClassification": "localguess \u00b115%; do not call originalissue numeric requirement",
+  "target": {
+    "date": [
+      2026,
+      11,
+      16
+    ],
+    "hour": 18.25,
+    "weather": "clear",
+    "eye": [
+      2.875,
+      1.62,
+      -12
+    ],
+    "yaw": 180,
+    "pitch": 8,
+    "verticalFov": 72,
+    "viewport": [
+      640,
+      360
+    ]
+  },
+  "beforeCurrentCandidateNativeViewed": true,
+  "wholeImageAllFiveOriginalDifferencesRequired": true,
+  "apartment22ContractsUnchanged": true
+}
