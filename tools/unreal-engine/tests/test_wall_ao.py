@@ -64,6 +64,32 @@ class WallAO(unittest.TestCase):
             with self.assertRaises(ValueError):
                 wall_ao.validate(bad)
 
+    def test_actual_five_curtain_rays_occlude_source_ao_behind_cloth(self):
+        # Same camera and source GLB hits as the failed 863307a7 native capture.
+        # Opaque depth alone receives AO; nearest actual depth-writing cloth must reject it.
+        camera = [2.5, 1.62, 8.2]
+        rays = [
+            ([5.551199913, 2.763893270, 12.146803035], [5.500103204, 2.744737140, 12.080708171]),
+            ([5.551199913, 2.774373178, 12.179529810], [5.476365055, 2.746060594, 12.081926389]),
+            ([5.551199913, 2.790458105, 12.229760001], [5.449789840, 2.751556609, 12.095826379]),
+            ([5.551199913, 2.225384087, 12.217665171], [5.451773637, 2.205657066, 12.086745698]),
+            ([5.551199913, 2.000932135, 12.117452230], [5.523250940, 1.997442799, 12.081568392]),
+        ]
+        data = source_quad()
+        # Retain the real source target's south end for these rays.
+        data['wall'][3] = 12.2337
+        for triangle in data['triangles']:
+            for point in triangle['positions']:
+                if point[2] == 12:
+                    point[2] = 12.2327
+        for wall, cloth in rays:
+            self.assertLess(wall_ao.factor(data, wall, camera), 1)
+            self.assertEqual(wall_ao.factor(data, wall, camera, foreground=cloth), 1)
+        # A surface behind the receiver must never suppress the source wall's AO.
+        self.assertEqual(wall_ao.factor(data, rays[0][0], camera, foreground=[6, 3, 13]),
+                         wall_ao.factor(data, rays[0][0], camera))
+        self.assertIn('t*SceneDepth.r<=ClothDepth.r', wall_ao.code(data))
+
 
 if __name__ == '__main__':
     unittest.main()

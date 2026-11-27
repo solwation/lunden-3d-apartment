@@ -88,10 +88,12 @@ def _overlap_area(first, second):
     return abs(sum(a[0]*b[1]-a[1]*b[0] for a, b in zip(polygon, polygon[1:]+polygon[:1])))/2
 
 
-def factor(data, point, camera):
+def factor(data, point, camera, foreground=None):
     """Source display multiplier at a visible web-world point; includes front/depth clipping."""
     validate(data)
     ray = _minus(point, camera)
+    # Optional nearest source-depth-writing transparent foreground point on this ray.
+    max_t = 1.0 if foreground is None else min(1.0, _dot(_minus(foreground, camera), ray)/_dot(ray, ray))
     for triangle in data['triangles']:
         a, b, c = triangle['positions']
         e, f = _minus(b, a), _minus(c, a)
@@ -100,7 +102,7 @@ def factor(data, point, camera):
         if den >= -1e-12:
             continue
         t = _dot(_minus(a, camera), n)/den
-        if not 0 < t <= 1:
+        if not 0 < t <= max_t:
             continue
         q = [o+r*t-v for o, r, v in zip(camera, ray, a)]
         ee, ef, ff = _dot(e, e), _dot(e, f), _dot(f, f)
@@ -119,7 +121,7 @@ def factor(data, point, camera):
 
 
 def code(data):
-    """Custom inputs Scene,WPos,Cam in native cm; the result remains display encoded."""
+    """Scene/WPos/Cam plus linear scene/custom depths; output stays display encoded."""
     validate(data)
     def number(value):
         s = format(float(value), '.17g')
@@ -135,7 +137,8 @@ def code(data):
         ee, ef, ff = _dot(e, e), _dot(e, f), _dot(f, f)
         determinant = ee*ff-ef*ef
         out.extend(['{', 'float den=dot(ray,'+vec(n)+');', 'if(den < -1e-12) {',
-                    'float t=dot('+vec(a)+'-camera,'+vec(n)+')/den;', 'if(t>0.0 && t<=1.0) {',
+                    'float t=dot('+vec(a)+'-camera,'+vec(n)+')/den;',
+                    'if(t>0.0 && t<=1.0 && t*SceneDepth.r<=ClothDepth.r) {',
                     'float3 q=camera+ray*t-'+vec(a)+';',
                     'float u=(dot(q,'+vec(e)+')*'+number(ff)+'-dot(q,'+vec(f)+')*'+number(ef)+')/'+number(determinant)+';',
                     'float v=(dot(q,'+vec(f)+')*'+number(ee)+'-dot(q,'+vec(e)+')*'+number(ef)+')/'+number(determinant)+';',

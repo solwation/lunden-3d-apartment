@@ -11,6 +11,7 @@ import unreal as u
 
 import collection_ids
 import wall_ao
+import wall_ao_depth
 
 DIR = '/Game/Lunden/Generated/Interaction/LivingWallAO'
 MATERIAL = DIR+'/M_LivingWallCeilingAO'
@@ -18,7 +19,7 @@ BLUEPRINT = DIR+'/BP_LivingWallCeilingAO'
 LEVEL = '/Game/Lunden/Generated/Interaction/Level_l1007_interaction'
 TAG = 'lunden:living-wall-ceiling-ao'
 STAMP = 'Lunden.LivingWallCeilingAO'
-INPUTS = ('Scene', 'WPos', 'Cam')
+INPUTS = ('Scene', 'WPos', 'Cam', 'SceneDepth', 'ClothDepth')
 PROPERTIES = {'material_domain': u.MaterialDomain.MD_POST_PROCESS,
               'blendable_location': u.BlendableLocation.BL_SCENE_COLOR_AFTER_TONEMAPPING,
               'blendable_priority': 10, 'disable_pre_exposure_scale': True, 'is_blendable': True}
@@ -52,11 +53,11 @@ def graph_matches(mat, data):
         return False
     names = list(mel.get_material_expression_input_names(node))
     sources = list(mel.get_inputs_for_material_expression(mat, node))
-    if names != list(INPUTS) or len(sources) != 3 or any(s is None for s in sources) \
-            or len(set(s.get_path_name() for s in sources)) != 3 \
+    if names != list(INPUTS) or len(sources) != len(INPUTS) or any(s is None for s in sources) \
+            or len(set(s.get_path_name() for s in sources)) != len(INPUTS) \
             or {s.get_path_name() for s in mel.get_material_expressions(mat)} != {s.get_path_name() for s in [node, *sources]}:
         return False
-    scene, position, camera = sources
+    scene, position, camera, scene_depth, cloth_depth = sources
     if not isinstance(scene, u.MaterialExpressionSceneTexture) \
             or scene.get_editor_property('scene_texture_id') != u.SceneTextureId.PPI_POST_PROCESS_INPUT0 \
             or scene.get_editor_property('filtered') \
@@ -64,7 +65,10 @@ def graph_matches(mat, data):
             or position.get_editor_property('world_position_shader_offset') != u.WorldPositionIncludedOffsets.WPT_DEFAULT \
             or not isinstance(camera, u.MaterialExpressionCameraPositionWS):
         return False
-    for source, expected in zip(sources, ('Color', 'XYZ', '')):
+    for source, enum in ((scene_depth, u.SceneTextureId.PPI_SCENE_DEPTH), (cloth_depth, u.SceneTextureId.PPI_CUSTOM_DEPTH)):
+        if not isinstance(source, u.MaterialExpressionSceneTexture) or source.get_editor_property('scene_texture_id') != enum or source.get_editor_property('filtered'):
+            return False
+    for source, expected in zip(sources, ('Color', 'XYZ', '', 'Color', 'Color')):
         output = mel.get_input_node_output_name_for_material_expression(node, source)
         if isinstance(output, tuple):
             output = output[-1] if output and output[0] is not False else None
@@ -91,14 +95,18 @@ def _material(data, stamp):
         pins.append(pin)
     custom.set_editor_property('inputs', pins)
     for index, (name, cls, output) in enumerate(zip(INPUTS,
-            (u.MaterialExpressionSceneTexture, u.MaterialExpressionWorldPosition, u.MaterialExpressionCameraPositionWS),
-            ('Color', 'XYZ', ''))):
+            (u.MaterialExpressionSceneTexture, u.MaterialExpressionWorldPosition, u.MaterialExpressionCameraPositionWS,
+             u.MaterialExpressionSceneTexture, u.MaterialExpressionSceneTexture),
+            ('Color', 'XYZ', '', 'Color', 'Color'))):
         node = mel.create_material_expression(mat, cls, -400, index*160)
         if name == 'Scene':
             node.set_editor_property('scene_texture_id', u.SceneTextureId.PPI_POST_PROCESS_INPUT0)
             node.set_editor_property('filtered', False)
         if name == 'WPos':
             node.set_editor_property('world_position_shader_offset', u.WorldPositionIncludedOffsets.WPT_DEFAULT)
+        if name in ('SceneDepth', 'ClothDepth'):
+            node.set_editor_property('scene_texture_id', u.SceneTextureId.PPI_SCENE_DEPTH if name == 'SceneDepth' else u.SceneTextureId.PPI_CUSTOM_DEPTH)
+            node.set_editor_property('filtered', False)
         if not mel.connect_material_expressions(node, output, custom, name):
             raise RuntimeError('Could not connect wall AO '+name)
     if not mel.connect_material_property(custom, '', u.MaterialProperty.MP_EMISSIVE_COLOR):
@@ -136,7 +144,7 @@ def main(data):
         world = u.EditorLoadingAndSavingUtils.load_map(LEVEL)
         if not world:
             raise RuntimeError('Missing Generated level while retiring stale wall AO')
-        actors = u.GameplayStatics.get_all_actors_with_tag(world, TAG)
+        actors = list(u.GameplayStatics.get_all_actors_with_tag(world, TAG))+list(u.GameplayStatics.get_all_actors_with_tag(world, wall_ao_depth.TAG))
         subsystem = u.get_editor_subsystem(u.EditorActorSubsystem)
         for actor in actors:
             if not subsystem.destroy_actor(actor):
@@ -146,7 +154,7 @@ def main(data):
         return
     wall_ao.validate(data)
     stamp = hashlib.sha256(json.dumps(data, sort_keys=True).encode()+b''.join(
-        Path(p).read_bytes().replace(b'\r\n', b'\n') for p in (__file__, wall_ao.__file__))).hexdigest()
+        Path(p).read_bytes().replace(b'\r\n', b'\n') for p in (__file__, wall_ao.__file__, wall_ao_depth.__file__))).hexdigest()
     mat = _material(data, stamp)
     import build_lighting
     import player_parts as pp
@@ -181,6 +189,9 @@ def main(data):
     components = actor.get_components_by_class(u.PostProcessComponent)
     if len(components) != 1 or not _bound(components[0], mat):
         raise RuntimeError('Actual level wall AO component differs from source template')
+    project = Path(u.Paths.convert_relative_path_to_full(u.Paths.project_dir()))
+    measurements = json.loads((project/'Import/measurements.json').read_text())
+    changed = wall_ao_depth.build(world, measurements['furnishing']['curtains']) or changed
     if changed and not u.EditorLoadingAndSavingUtils.save_map(world, LEVEL):
         raise RuntimeError('Could not save Generated wall AO actor')
     u.log(f'LUNDEN_WALL_AO_OK {len(data["triangles"])} source triangles, changed={changed}')

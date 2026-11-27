@@ -108,3 +108,35 @@ med källans egen geometri och framförliggande objekt som djupkontroll. Väggen
 
 Källfixture, strikt schema, 25 strålar och rena djup-/kant-/falloffprov passerar. Ingen efterbild med den nya
 AO-posten finns ännu. Native-kompilering, faktisk bindning och bildgränserna återstår; ärendet är fortsatt öppet.
+
+### Source correction for transparent foreground depth
+
+The first actual source-AO batch (`863307a7`, export sourceHash
+`3909ca34155babcd6795e3112d917a3d2c5de5c6f5f17f732424a1354f832eeb`)
+passed all five mean-luminance and both vertical-contrast gates. Whole-image
+verification nevertheless found a new regression: an edge of the left curtain
+was darkened despite its actual geometry being in front of the AO plane.
+Opaque SceneDepth omitted the already composited translucent cloth. This batch
+is diagnostic evidence, not finished visual acceptance.
+
+The follow-up retains the original display-space AO formula and adds nearest
+CustomDepth rejection. Persistent Generated Blueprint/SCS proxies use the actual
+exported curtain meshes, two-sided opaque depth material and exact attachment to
+the existing panel components. They draw only custom depth: no ordinary colour
+or depth pass, collision, shadows, reflections or indirect-light contribution.
+The original cloth PBR, textures and materials are untouched. BeginPlay/Tick copy
+actual source actor/component game visibility; build and capture also synchronize
+temporary editor visibility. The full composed-world capture validates saved and
+reloaded proxies, their geometry, attachment, inherited flags and source IDs.
+An inventory rejects other custom-depth users instead of silently sharing an
+ambiguous foreground buffer.
+
+The exact 5.8.4 source defaults `r.CustomDepth` to 1; actual readback must be
+positive and remains unchanged. That engine has no `r.SceneCaptureCustomDepth`
+CVar or CustomDepth show flag; no unsupported override is introduced. The actual
+postprocess graph reads `PPI_CUSTOM_DEPTH`, comparing `t*SceneDepth` with the
+nearest cloth depth without an added offset or tolerance. Five actual source-GLB
+foreground rays have pure regression coverage. Final native acceptance must also
+check these five pixels and the source-geometry curtain mask against actual
+AO-on/off images, plus the unchanged luminance/gradient contract. That corrected
+native result is still pending at this source checkpoint.
