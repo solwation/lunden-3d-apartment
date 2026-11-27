@@ -1,0 +1,51 @@
+{
+  "imageCommit": "4ee3fb1850b7767e6b6d41040edaa03ee0d77923",
+  "images": [
+    {
+      "path": "docs/verification/2372/linux-final/unreal-living-room-evening.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/4ee3fb1850b7767e6b6d41040edaa03ee0d77923/docs/verification/2372/linux-final/unreal-living-room-evening.png",
+      "status": 200,
+      "bytes": 315909,
+      "sha256": "3b6fe68d11f9508f12bad450c3e927675c5e51967718c92ad12a403ddc6f03e9",
+      "byteExact": true,
+      "passed": true
+    },
+    {
+      "path": "docs/verification/2372/linux-final/unreal-living-room-without-pendant.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/4ee3fb1850b7767e6b6d41040edaa03ee0d77923/docs/verification/2372/linux-final/unreal-living-room-without-pendant.png",
+      "status": 200,
+      "bytes": 315909,
+      "sha256": "f587900ba96f2d98cb13076c88465d0b8f45fcfe0796d1461fb7724408f3dcc1",
+      "byteExact": true,
+      "passed": true
+    },
+    {
+      "path": "docs/verification/2372/linux-final/unreal-living-room-ao-off.png",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/4ee3fb1850b7767e6b6d41040edaa03ee0d77923/docs/verification/2372/linux-final/unreal-living-room-ao-off.png",
+      "status": 200,
+      "bytes": 315909,
+      "sha256": "8ba64778b90649158a3db5691a46d110b9738057c09b072d0e548dbc0c42cf91",
+      "byteExact": true,
+      "passed": true
+    },
+    {
+      "path": "docs/verification/2372/web-living-room-evening.jpg",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/4ee3fb1850b7767e6b6d41040edaa03ee0d77923/docs/verification/2372/web-living-room-evening.jpg",
+      "status": 200,
+      "bytes": 221590,
+      "sha256": "d1d069f7d0802130339423b83725daa43221a8616129251cf979de2ccaa264b2",
+      "byteExact": true,
+      "passed": true
+    },
+    {
+      "path": "docs/verification/2372/web-living-room-without-pendant.jpg",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/4ee3fb1850b7767e6b6d41040edaa03ee0d77923/docs/verification/2372/web-living-room-without-pendant.jpg",
+      "status": 200,
+      "bytes": 205356,
+      "sha256": "9790e05dc42e277eaaef6d4720fe3563b0c02c901878b873284ccf8eb2feb1d1",
+      "byteExact": true,
+      "passed": true
+    }
+  ],
+  "passed": true
+}

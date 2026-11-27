@@ -61,14 +61,14 @@ Båda kolumnerna blev ljusare nedåt och passerade formkravet i `crop-stats.cjs 
 
 | Tänd Silvia | Släckt Silvia |
 |---|---|
-| ![Vardagsrummet i Unreal med Silvia tänd](windows-pendant-trial/unreal-living-room-evening.png) | ![Samma kamera med Silvia släckt](windows-pendant-trial/unreal-living-room-without-pendant.png) |
+| ![Vardagsrummet i Unreal med Silvia tänd](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/4ee3fb1850b7767e6b6d41040edaa03ee0d77923/docs/verification/2372/windows-pendant-trial/unreal-living-room-evening.png) | ![Samma kamera med Silvia släckt](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/4ee3fb1850b7767e6b6d41040edaa03ee0d77923/docs/verification/2372/windows-pendant-trial/unreal-living-room-without-pendant.png) |
 | ![Vardagsrummet på webben med Silvia tänd](web-living-room-evening.jpg) | ![Samma webbkamera med Silvia släckt](web-living-room-without-pendant.jpg) |
 
 Den extra kontrollen från trappan gav 1,39 gånger webbens helbild, över projektgränsen 1,25. I en separat körning från samma kamera, med den tidigare pendelstyrkan och fönsterfältet avstängt, blev kvoten 1,20. Strålar genom L1007-exporten visar att den högra tredjedelen av trappbilden innehåller vardagsrummets tak, vägg och sekretär. Bilderna dokumenterar en uppmätt provinställning under fortsatt kalibrering.
 
 | Trappkameran i Unreal | Webbreferens |
 |---|---|
-| ![Trappan och den synliga delen av vardagsrummet i Unreal](windows-pendant-trial/unreal-stairs-evening.png) | ![Trappan och vardagsrummet på webben](../2369/web-stairs-evening.jpg) |
+| ![Trappan och den synliga delen av vardagsrummet i Unreal](https://raw.githubusercontent.com/solwation/lunden-3d-apartment/4ee3fb1850b7767e6b6d41040edaa03ee0d77923/docs/verification/2372/windows-pendant-trial/unreal-stairs-evening.png) | ![Trappan och vardagsrummet på webben](../2369/web-stairs-evening.jpg) |
 
 ## Avgränsad Linux-diagnos och källändring den 27 november
 
@@ -156,3 +156,7 @@ Både hela bilderna och utsnitten har granskats. Den inledande förgrundsregress
 Kvarvarande skillnader följs i separata ärenden, bland annat #2481, #2482, #2484 och #2489.
 Profilen är avgränsad till Linuxdiagnos; det är inget nytt fullkvalitetsprov för Windows eller paketerat spel.
 Ändringen avser bara originalets Unreal-version och ska inte föras till det publika webbprojektet.
+
+Resultatbilderna är publicerade och inbäddade i [slutkommentaren](https://github.com/solwation/lunden-3d-apartment/issues/2372#issuecomment-7223295238).
+De tre ersatta Windows-provbilderna ovan har flyttats ur dagens träd enligt bildpolicyn; deras länkar
+är låsta till den redan publicerade bildrevisionen. Text, mätdata och historik finns kvar.
