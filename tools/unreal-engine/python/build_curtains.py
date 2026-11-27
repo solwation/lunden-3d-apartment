@@ -12,12 +12,14 @@ TAG = "lunden:curtain-light"
 APPLY = "UpdateCurtainLight"
 
 
-# Native emissive units for the calibrated Lunden exposure. Estimated from RGB crops of the
-# actual 0–64x linear-emission sweep (#2322), without changing the printed sRGB image or its UV.
-# The violet bedroom print retains a much weaker reflected contribution under its room lamps.
-DAY_GAIN = (15.0, 12.5, 8.0)
-LAMP_GAIN = (11.5, 13.5, 15.0)
-VIOLET_LAMP_GAIN = (55.0, 27.0, 66.0)
+# Native emissive-unit profile guesses, not source RGB or a gamma correction.
+# Initial update from the locked day/evening/upper #2322 batch at lighting2788460c,
+# using the neutral curve's inverse to estimate channel response. The source print,
+# sRGB flag and UVs stay intact. The shared conversion on four other fabrics is
+# unmeasured; source-transcribed window irradiance on translucent cloth is absent.
+DAY_GAIN = (15.6, 13.7, 10.6)
+LAMP_GAIN = (13.4, 16.7, 22.2)
+VIOLET_LAMP_GAIN = (66.5, 45.0, 104.0)
 
 
 def native_colours(row):

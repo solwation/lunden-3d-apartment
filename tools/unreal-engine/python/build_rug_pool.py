@@ -1,7 +1,7 @@
-"""#2322: add the source Silvia field to a Generated copy of the rug's original material.
+"""#2322: source display-space floor/ceiling fields, with legacy rug support.
 
-The web uses a depth-biased quad. A coplanar UE overlay disappeared at one real camera;
-the receiver now draws its original PBR surface plus the source emission in one pass.
+Current displayPools exports use build_display_pools and the untouched imported rug.
+Older rugFloorPool exports retain the previously verified Generated PBR-copy path.
 No extra geometry, height bias, imported material edit or authored Lighting edit.
 """
 import base64
@@ -35,7 +35,8 @@ def mask_texture(spec):
     name = "T_RugPoolMask"
     path = DIR + "/" + name
     texture = EAL.load_asset(path) if EAL.does_asset_exist(path) else None
-    if texture and EAL.get_metadata_tag(texture, HASH) == stamp:
+    if texture and EAL.get_metadata_tag(texture, HASH) == stamp and not texture.get_editor_property("srgb") \
+            and all(texture.get_editor_property(axis) == u.TextureAddress.TA_CLAMP for axis in ("address_x", "address_y")):
         return texture
     file = Path(u.Paths.convert_relative_path_to_full(u.Paths.project_intermediate_dir())) / (name + ".png")
     file.write_bytes(png)
@@ -247,7 +248,14 @@ def controller(lamp_tag):
 
 def main():
     project = Path(u.Paths.convert_relative_path_to_full(u.Paths.project_dir()))
-    spec = json.loads((project / "Import/measurements.json").read_text(encoding="utf-8"))["furnishing"].get("rugFloorPool")
+    furnishing = json.loads((project / "Import/measurements.json").read_text(encoding="utf-8"))["furnishing"]
+    if furnishing.get("displayPools"):
+        import build_display_pools
+        import build_furnishing_profile
+        build_display_pools.main(furnishing["displayPools"])
+        build_furnishing_profile.main()
+        return
+    spec = furnishing.get("rugFloorPool")
     if not spec:
         u.log("LUNDEN_RUG_POOL: no rug floor field in this export")
         return

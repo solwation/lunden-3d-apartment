@@ -16,11 +16,13 @@ LEVEL = "/Game/Lunden/Generated/Interaction/Level_l1007_interaction"
 TAG = "lunden:cabinet-washes"
 FADE = "LampFade"
 PLANE = "/Engine/BasicShapes/Plane.Plane"
-# Native linear-light fits from matched UE and desktop captures at 14:00 and 22:00 (#2322).
-VENEER_FACTOR = (1.12, .94, .32)
+# Native profile guesses; source walnut colour, textures and UVs are not altered.
+# Initial revision from the locked #2322 lighting2788460c batch. The former blue
+# factor .32 left the real day crop at 1/255 versus the source's 19.6/255.
+VENEER_FACTOR = (1.27, 1.28, 1.52)
 WASH_RADIANCE = (4.9, 3.3, 2.35)
 WASH_PROFILE = .55
-POINT_GAIN = 3.55
+POINT_GAIN = 1.25
 
 
 def asset(name, cls, factory):
