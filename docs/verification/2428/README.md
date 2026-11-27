@@ -81,11 +81,11 @@ Exterior lawn/foliage colour and contrast differ (#2437; these current images do
 historical lighter/bleacher direction). Railing sampling remains #2483. The beige right-hand patio screen's
 raster and missing frame are the exact OPEN #2443 feature, confirmed by the subsequent
 [exterior mapping review](exterior-mapping-review.json); that follow-up supersedes the earlier provisional
-combined paving/fence wording in the whole-image review. Interior dots on courtyard paving and bright
-scalloped window upper edges are two distinct new issue registrations pending Root. They are not #2487
+combined paving/fence wording in the whole-image review. Interior dots on courtyard paving are now tracked in OPEN [#2497](https://github.com/solwation/lunden-3d-apartment/issues/2497);
+bright/scalloped window upper edges are OPEN [#2498](https://github.com/solwation/lunden-3d-apartment/issues/2498). They are not #2487
 (timber only), #2442 (wrong portico tiles) or CLOSED #2425 (a different corrected soldier-course texture).
 Sky/cloud and fine-shadow sampling differences are recorded without inventing a new filter cause. These
-pending mappings do not turn whole acceptance true.
+mapped differences do not turn whole acceptance true.
 
 ## Raw originals
 

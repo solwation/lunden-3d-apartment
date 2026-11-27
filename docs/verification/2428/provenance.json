@@ -170,6 +170,11 @@
   "sixOriginalPairsUnmodified": true,
   "noHistoricalImprovementTrendClaim": true,
   "old2393WebSourceEqualityToCurrent718": "NOT_PROVEN; fresh current two target references used",
-  "newIssueMappings": "Exterior paving/fence raster and window bright/scalloped highlights pending Root registration; no invented issue IDs or OPEN claim for closed2425",
-  "rootSolePublisher": true
+  "newIssueMappings": "Fresh read-only confirmation: OPEN2497 courtyard-paving dots; OPEN2498 bright waving/scalloped distant window upper edges. Exact patio-screen raster/missing frame remains2443 per exterior-mapping-review.json. No reuse of CLOSED2425.",
+  "rootSolePublisher": true,
+  "publicationMappingUpdate": {
+    "updatedAtUtc": "2026-11-27T22:58:11.179794+00:00",
+    "imagesAndCandidatePatchUnchanged": true,
+    "wholeReviewMappingOnlyAmendment": true
+  }
 }

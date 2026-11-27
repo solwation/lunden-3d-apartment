@@ -1002,8 +1002,8 @@
     }
   ],
   "unresolvedExteriorMappingNotes": [
-    "Native exterior paving/fence have regular fine dark dot/raster absent on web. Do not map this to2487 (timber floors) or2443 (patio screen) without exact feature evidence; may be intentional lowprofile shadow/raster difference or need scoped followup. No cause isolated and no new brickfilter regression established.",
-    "Native distant window surrounds show brighter/scalloped top highlights versus web flat rectangular frames. Closed2425 is not reused as an OPEN mapping; brightness may overlap2424, actual geometry/normal appearance not isolated.",
+    "Courtyard paving interior dark dots: OPEN2497. Beige right-hand patio screen raster/missing frame: exact OPEN2443 per exterior-mapping-review.json. Neither is timber-floor2487; no new brickfilter cause established.",
+    "Bright/scalloped distant window upper edges: OPEN2498. CLOSED2425 is a distinct corrected soldier-course texture, not current coverage; current light/geometry cause remains unisolated.",
     "Sky/cloud shapes and fine foliage/shadow raster differ between current sourceRenderers; no new cloud implementation regression or new brickfilter cause inferred."
   ],
   "recommendation": {
@@ -1042,5 +1042,16 @@
     "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/open-review-issues.json",
     "sha256": "a7f8f8bab0756bd87415f3c81948180c5c1beff1c6dc41a234227b45599e8aae"
   },
-  "publicationOwner": "Root; no push, issue changes, new issues, engine launches or asset writes by this review."
+  "publicationOwner": "Root; no push, issue changes, new issues, engine launches or asset writes by this review.",
+  "publicationMappingUpdate": {
+    "updatedAtUtc": "2026-11-27T22:58:11.179794+00:00",
+    "historicalPrivateReviewUnchanged": true,
+    "originalPrivateReviewSHA256": "65fbd11cff64de7764b3e607cd53280e409c0a2bfc3c1d0f38823d28140d17a3",
+    "scope": "Mapping metadata only after Root published77bd7327 and registered2497/2498; images, numerical gates, review decision and candidate source unchanged.",
+    "statesConfirmedReadOnly": {
+      "2497": "OPEN",
+      "2498": "OPEN"
+    },
+    "supersedesProvisionalPavingFenceWording": "Exact beige patio screen belongs2443 per exterior-mapping-review.json; courtyard paving interior dots2497 and waving/scalloped window upper edges2498 are separate; CLOSED2425 is not reused."
+  }
 }
