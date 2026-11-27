@@ -1,0 +1,8 @@
+{
+  "nativeExitCode": 0,
+  "runnerExitCode": 0,
+  "nativeSeconds": 381.57,
+  "outerExecExitCode": 143,
+  "all247ExactReadonly": true,
+  "limits": "Recurring#2473: actual native+inner runner0; outer143, not an overallcleanexit0. Actual functionalfulltest separateNullRHI green, renderedclockgap#2491."
+}

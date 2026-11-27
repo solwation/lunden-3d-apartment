@@ -1,0 +1,94 @@
+{
+  "testedRevision": "a693d6dc5d2e75e9c41b320c412f03aaf6317c3c",
+  "observerSHA256": "1879769efc515e3a02465a15016456a3f67481512ffc8473cf15b27f8b280e97",
+  "canonicalTestSHA256": "923a0031c952c0960382b9ff0f4d965e0803069d21e2cdad06ae58e83b69d2a2",
+  "canonicalSourceAndCheckerSHA256": {
+    "tools/unreal-engine/python/build_lighting.py": "9f041be4879f45671e5a316e9e7a3cfeb0cfd90cbe630db991a86f9cf4d9dd4f",
+    "tools/unreal-engine/tests/test_lighting.py": "923a0031c952c0960382b9ff0f4d965e0803069d21e2cdad06ae58e83b69d2a2",
+    "tools/unreal-engine/tests/save_isolation.py": "9802dc89eb191048e8e8404e1dc4fb07dcfdb93af6db7843604cbce660b450c3",
+    "tools/unreal-engine/check-sun.mjs": "70ecc6f41692ab8e74be3e8cc5d016436433a347e569ece9364d8b9bbd0f7c51",
+    "src/daycycle.js": "ce91207b7d7d7e4a9f0f77477ac68246c62cf7caa42000f03ddf265bf15fd29e",
+    "src/moon.js": "fb289cd59ce9db1580f585f62bb64b33a6dae59fa2c147d487e0a74a11b3879b",
+    "src/cloudshadow.js": "803910ae6674fe6a5318a3f338b470df0fc3123094fb31662b9cba79ace9f838",
+    "src/config.js": "a36e730774ee48527ae9b1ac7e2f444ca0fe6e8cbf02e15d1da56cfcdc3f94e0",
+    "tools/unreal-engine/coordinates.mjs": "d59d8b3a3af1ff3688e3723fcfd13cd9cc634f69a5297fff2bd65608e2c889d0"
+  },
+  "allSevenAuthoredLightingPackages": {
+    "unreal/Lunden/Content/Lunden/Lighting/BP_LundenLamp.uasset": {
+      "sha256": "2be0f68ec15419c2f863df7f07541f351b3fc3f273739c49b6150f43a3f3af95",
+      "modeOctal": "0o444",
+      "matchesTestedCommitLfsOid": true
+    },
+    "unreal/Lunden/Content/Lunden/Lighting/BP_LundenSky.uasset": {
+      "sha256": "f7dd169c22dadd8b028838434a6b402a6901a02893c108a414a4e879e1591d3c",
+      "modeOctal": "0o444",
+      "matchesTestedCommitLfsOid": true
+    },
+    "unreal/Lunden/Content/Lunden/Lighting/MPC_LundenWeather.uasset": {
+      "sha256": "9f7c9a94954b4329b5e639e0fa58ae16208c77e13bc997558aad59718e95db98",
+      "modeOctal": "0o444",
+      "matchesTestedCommitLfsOid": true
+    },
+    "unreal/Lunden/Content/Lunden/Lighting/M_LundenNeutralTonemap.uasset": {
+      "sha256": "4df8f1206844ef214968752223220f87589b41fcd2f41e403576548b1a4a7c9a",
+      "modeOctal": "0o444",
+      "matchesTestedCommitLfsOid": true
+    },
+    "unreal/Lunden/Content/Lunden/Lighting/M_LundenPrecipitation.uasset": {
+      "sha256": "bf81ff0ba470f29159275b55d7f6a07850deddc091c88c74aef3d5ae2666fe87",
+      "modeOctal": "0o444",
+      "matchesTestedCommitLfsOid": true
+    },
+    "unreal/Lunden/Content/Lunden/Lighting/M_LundenWindowDaylight.uasset": {
+      "sha256": "0b961aecebea84c155bd31925d077fabf67c80a3fdfa09c1dfc4825a90d03e13",
+      "modeOctal": "0o444",
+      "matchesTestedCommitLfsOid": true
+    },
+    "unreal/Lunden/Content/Lunden/Lighting/T_LundenHemisphere.uasset": {
+      "sha256": "6e87500cc947eac2ccddcf062c49d274c112c226aa929d84be9d7d5b478ddf11",
+      "modeOctal": "0o444",
+      "matchesTestedCommitLfsOid": true
+    }
+  },
+  "additionalGeneratedLightingSnapshot": {
+    "unreal/Lunden/Content/Lunden/Generated/Lighting/Level_lighting.umap": "4677c9e595deb1769e4397ebbce661ec2ee7d2ecf2fcd50b95db4d6b9c943894",
+    "unreal/Lunden/Content/Lunden/Generated/Lighting/StairLightFunctions/M_furn_dani_l1_x366_z689.uasset": "7369d14535f3874feb25ba960cd9a099fc90f8bd450e8838fce29b57fd92e17e",
+    "unreal/Lunden/Content/Lunden/Generated/Lighting/StairLightFunctions/M_furn_floorlamp_l0_x39_z882.uasset": "6012d2a1a112ceda2b318efa45ab60e44d5c73dfdf34c30a4d01acef3af5816f",
+    "unreal/Lunden/Content/Lunden/Generated/Lighting/StairLightFunctions/M_furn_malm_l1_x505_z979.uasset": "fd224c9403e5b4c71559241e14d53e7389ee03fa56bef7c5f174efe8f20bfe1d",
+    "unreal/Lunden/Content/Lunden/Generated/Lighting/StairLightFunctions/M_furn_malm_l1_x70_z283.uasset": "39c0c01ffeeb40927140f3194ad5a7a9155c784ddabb2842eb3ad14e19b7f614",
+    "unreal/Lunden/Content/Lunden/Generated/Lighting/StairLightFunctions/M_furn_mirror_l1_x440_z546.uasset": "6a228e4156bf86c1c111765d2654f9bcc73c226af93cf0320cd1f454cc82b229",
+    "unreal/Lunden/Content/Lunden/Generated/Lighting/StairLightFunctions/M_furn_symfonisk_l0_x455_z1230.uasset": "b9728c637828fb15bd25a48e5448b96f9da004e7b3a27d663bc9648de775c66e",
+    "unreal/Lunden/Content/Lunden/Generated/Lighting/StairLightFunctions/M_furn_tubelamp_l0_x539_z796.uasset": "74b75c16a0b9fd13f943fa3ae3489a8bdf565a202c052bb694c385490b7330fb",
+    "unreal/Lunden/Content/Lunden/Generated/Lighting/StairLightFunctions/M_furn_worklamp_l1_x530_z146.uasset": "40e1a34bbb210776187c0b39938da25d43a0aa5da3da6ba41ea4efa70bf27815",
+    "unreal/Lunden/Content/Lunden/Generated/Lighting/StairLightFunctions/M_furn_worklamp_l1_x530_z364.uasset": "de36d5a3881612ecdd04bc2ff6a0fc12847fd68e9aa2830efc2dd5b04450f2ce",
+    "unreal/Lunden/Content/Lunden/Generated/Lighting/StairLightFunctions/M_furn_xmastree_l0_x82_z846.uasset": "704d767002ad5e00b842b80f5fc5b8455a2dbc231996d1d2fd7b1e5db1aa7fee",
+    "unreal/Lunden/Content/Lunden/Generated/Lighting/StairLightFunctions/M_int_koksflakten_l0_x537_z371.uasset": "52d2d55a5465765616eaf40d1adc4e6f816c06e08e7e586e7a473a70f8412913",
+    "unreal/Lunden/Content/Lunden/Generated/Lighting/StairLightFunctions/M_lamp_spegeln-i-toaletten_l0_x23_z555.uasset": "8b206f4387b7a4da8d0b27d0eb941096232da3c52bfd8a791ffbf01c4aa07a93",
+    "unreal/Lunden/Content/Lunden/Generated/Lighting/StairLightFunctions/M_light_bankbelysningen_l0_x524_z168.uasset": "b0701ea35debc1962e32438dc671878a3bc951325399465a5a753eaa2856d39f",
+    "unreal/Lunden/Content/Lunden/Generated/Lighting/StairLightFunctions/M_room_badrum_l0_x117_z631.uasset": "4082c865bafd5dc2c33675c3431d231ac7bd65336f0b4de7337eb1e1258cf053",
+    "unreal/Lunden/Content/Lunden/Generated/Lighting/StairLightFunctions/M_room_hall_l0_x117_z175.uasset": "f3b7c9ed9338546dcba0c84dbbb448df81338a4920e145a310ff373fa76e5ddf",
+    "unreal/Lunden/Content/Lunden/Generated/Lighting/StairLightFunctions/M_room_hall_l0_x288_z634.uasset": "ca3e65a1899e2953eb1920c31509e6d120185847f99d40d87317125c52452e2d",
+    "unreal/Lunden/Content/Lunden/Generated/Lighting/StairLightFunctions/M_room_hall_l1_x342_z648.uasset": "db8313362fb960b99188425c7957354292ea0c9508b1595f21cff9ce6aac0629",
+    "unreal/Lunden/Content/Lunden/Generated/Lighting/StairLightFunctions/M_room_klk_l0_x396_z587.uasset": "c756d01a58795ba0e937e82a383d8030e2a75679da870f2748218c1150a4d8da",
+    "unreal/Lunden/Content/Lunden/Generated/Lighting/StairLightFunctions/M_room_klk_l1_x472_z488.uasset": "40299085e566bf7debdad9387e3dd132a7eaf8c93f892ca2b0fb0b252ed05a69",
+    "unreal/Lunden/Content/Lunden/Generated/Lighting/StairLightFunctions/M_room_kok-matplats_l0_x350_z141.uasset": "02492235931e86d0300ac775bfee1b4c4cb19f66b5a4289015932e6f15d290e5",
+    "unreal/Lunden/Content/Lunden/Generated/Lighting/StairLightFunctions/M_room_kok-matplats_l0_x392_z287.uasset": "743b940e5135016e4868e2e29e4cddca88fb9a277743d3bb50b62fc515641424",
+    "unreal/Lunden/Content/Lunden/Generated/Lighting/StairLightFunctions/M_room_sovrum-1_l1_x355_z290.uasset": "999b2f20130db4d1a0df1bdf2d2a693b39f7e7a0b55cde207b8a3d56bcf3d902",
+    "unreal/Lunden/Content/Lunden/Generated/Lighting/StairLightFunctions/M_room_sovrum-2_l1_x370_z960.uasset": "9d5707484aceac41bfc6c6a7f22dad320c0327e5209ed31f45499919c31bbb8a",
+    "unreal/Lunden/Content/Lunden/Generated/Lighting/StairLightFunctions/M_room_sovrum-3_l1_x143_z272.uasset": "67d972932517a4ef0a3589e1b7c151766e3d06c61b9ef3c311ba4975aa490e10",
+    "unreal/Lunden/Content/Lunden/Generated/Lighting/StairLightFunctions/M_room_sovrum-4_l1_x143_z1001.uasset": "6c33b1b03160b2fff03759640dbaecf68661bd919647b736dbfacb26fddfc912",
+    "unreal/Lunden/Content/Lunden/Generated/Lighting/StairLightFunctions/M_room_tvatt_l0_x115_z398.uasset": "8f59b1fe2ca1ebfea900510b82d9a9106a8a58c7eecb741bced077e2eb1cf094",
+    "unreal/Lunden/Content/Lunden/Generated/Lighting/StairLightFunctions/M_room_vardagsrum_l0_x364_z1056.uasset": "38e554008143a87f87e61a2d2eb86601d68cb90a20ae97e57a6bb4d989ae4ff7",
+    "unreal/Lunden/Content/Lunden/Generated/Lighting/StairLightFunctions/M_room_wc-dusch_l1_x85_z631.uasset": "7835ab1f673572510f51d57957c11975a2a6678675d426cd0877930269e85b06"
+  },
+  "measurementsSHA256": "5629cdadf41c8a231eebc4c374a91ec9bf73ee3418f13c278404ef0a5b60c822",
+  "reuseCriterion": "Exact source/test/checker and seven authored Lighting bytes remain identical. Changes limited to curtain/cabinet material-profile constants do not alter this tested clock/lamp/sky/weather/dusk source or authored Lighting. Final canonical cached sync/PBR/four actual rendered views are separate gates.",
+  "assertions": "Original 2.0 wall-second wait and minimum advance>=5 unchanged; additive observer-only byte reversal proven",
+  "acceptance": "Actual complete standalone NullRHI AutomationSuccess with unchanged canonical assertions and check-sun0. Reuse functional evidence honestly labeled instrumented; no extra rerun merely to remove logs.",
+  "limits": [
+    "No uninstrumented-run claim",
+    "No rendered clock success claim; earlier Vulkan stall cause unresolved",
+    "primaryActorTick.can_ever_tick readError preserved",
+    "Any future mismatch in dependencies or Lighting bytes requires reassessment instead of blind reuse"
+  ]
+}

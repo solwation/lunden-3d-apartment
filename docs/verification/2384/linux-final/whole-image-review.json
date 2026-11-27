@@ -1,0 +1,195 @@
+{
+  "issue": 2384,
+  "source": "aca244698c7b8e3e02dc957aa58b91898433a0e2",
+  "captureDirectory": "/home/devcontainers/.local/state/lunden-codex-20261127/2384/native-final/captures",
+  "allFourNativeAndFourLockedWebOriginalsViewed": true,
+  "originalImageManifest": [
+    {
+      "view": "stairs-evening",
+      "native": "/home/devcontainers/.local/state/lunden-codex-20261127/2384/native-final/captures/unreal-stairs-evening.png",
+      "nativeSHA256": "a6e74743690a9536208f1ac28539144058e303384c16fd352be333d6fd8349da",
+      "lockedWeb": "/home/devcontainers/.local/state/lunden-codex-20261127/2369/web/web-stairs-evening.jpg",
+      "webSHA256": "48dcb9b61e67c0d499f06d1d253d02251b4930a9bb567f138c6723ddf71574c5",
+      "reviewedBothOriginals": true
+    },
+    {
+      "view": "living-room-day",
+      "native": "/home/devcontainers/.local/state/lunden-codex-20261127/2384/native-final/captures/unreal-living-room-day.png",
+      "nativeSHA256": "ea5fdfc942f7304c61b189445dcb8850401de7477f711f1e6f6ce27bc75b8395",
+      "lockedWeb": "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/web/web-living-room-day.jpg",
+      "webSHA256": "be8023e5a4d1ba5cfb2d4f930273f6792c788658efd47dba6a6c153016af33ac",
+      "reviewedBothOriginals": true
+    },
+    {
+      "view": "living-room-evening",
+      "native": "/home/devcontainers/.local/state/lunden-codex-20261127/2384/native-final/captures/unreal-living-room-evening.png",
+      "nativeSHA256": "11563f07fe94e0bf8d7109994043654ce4a43917d814d6f7530422a41dadb446",
+      "lockedWeb": "/home/devcontainers/.local/state/lunden-codex-20261127/2369/web/web-living-room-evening.jpg",
+      "webSHA256": "1a6d7cd06c97fbb1729662cece73490a808745d2511124f8dc0a987f0e810c0b",
+      "reviewedBothOriginals": true
+    },
+    {
+      "view": "upper-floor-evening",
+      "native": "/home/devcontainers/.local/state/lunden-codex-20261127/2384/native-final/captures/unreal-upper-floor-evening.png",
+      "nativeSHA256": "9550480e8b8a6c0c1ad920d22635055b4f9a7e0456c1cbf614e18f0d713f4e23",
+      "lockedWeb": "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/web/web-upper-floor-evening.jpg",
+      "webSHA256": "16ed055836f8a6f6487ed1c6d99bfa45be5ceb9ecb2e53b5240c1692ebd7dbb8",
+      "reviewedBothOriginals": true
+    }
+  ],
+  "classification": "Independent full-original visual review; no resizing, edits, new captures or repeated measurement",
+  "numericGate": "Root owns the sole frozen22-row meter in paired-final; this reviewer did not recompute it",
+  "visualGate": "PASS: no new unmapped own regression identified in these four whole images",
+  "viewFindings": [
+    {
+      "view": "stairs-evening",
+      "scopeFinding": "Overall warm lamp colour is closer to the warm web control; same pose, stairs/rails/door and secretary are preserved",
+      "remaining": "Shaft/tread contrast remains flatter and mirror highlight remains white; existing2480/2490, low-profile aliasing documented"
+    },
+    {
+      "view": "living-room-day",
+      "scopeFinding": "Printed cloth, sofa, table, cabinet geometry and daylight composition preserved; no newly introduced daylight colour regression visible",
+      "remaining": "Yellow source-like sofa-back field2447, low-profile floor raster2487, copperSilvia2482, glazing2459, facade2428 and non-targetAO2489 remain"
+    },
+    {
+      "view": "living-room-evening",
+      "scopeFinding": "Cabinet front no longer has the earlier dominant dark/orange failure; lighting remains warm and the existing printed cloth/rug/sofa/table are preserved. Exact14family/hue gates remain Roots independent meter",
+      "remaining": "Opposite high bare wall2484, copperSilvia2482, lamp emission/halo2460/2481, dark green-brown outside2488/2459, timber raster2487 and non-targetAO2489 remain"
+    },
+    {
+      "view": "upper-floor-evening",
+      "scopeFinding": "Upper cloth reads dark plum instead of the earlier red-brown regression; no visible new blue cast on furniture or other materials",
+      "remaining": "Tilly wood2486, dome/halo2460/2481, glazing/facade2459/2428, floor raster2487 and generalAO2489 remain"
+    }
+  ],
+  "previousOwnRegressions": [
+    {
+      "surface": "cabinet-front evening",
+      "previousReview": "4a4bc36c visual/numericFAIL recorded in whole-image-review-second.json",
+      "currentVisual": "Resolved visually by current explicit native profile correction; no silent mapping to another issue",
+      "numericDecision": "Root frozen22rowmeter"
+    },
+    {
+      "surface": "upper printed cloth evening",
+      "previousReview": "4a4bc36c red-brown/blue-hueFAIL recorded in whole-image-review-second.json",
+      "currentVisual": "Dark-plum appearance restored; no new own visible mismatch identified",
+      "numericDecision": "Root frozen22rowmeter"
+    }
+  ],
+  "preexistingOpenMappings": [
+    {
+      "views": [
+        "stairs-evening"
+      ],
+      "difference": "shaft/tread darkness contrast too weak",
+      "issue": 2480
+    },
+    {
+      "views": [
+        "living-room-day",
+        "living-room-evening"
+      ],
+      "difference": "Silvia reflected copper outside dark",
+      "issue": 2482
+    },
+    {
+      "views": [
+        "living-room-evening",
+        "upper-floor-evening"
+      ],
+      "difference": "emissive lamp interior/dome brightness",
+      "issue": 2460
+    },
+    {
+      "views": [
+        "upper-floor-evening"
+      ],
+      "difference": "camera-facing lamp halo missing; ceiling field not isolated wholly to halo",
+      "issue": 2481
+    },
+    {
+      "views": [
+        "living-room-evening"
+      ],
+      "difference": "high wall above cabinet field",
+      "issue": 2484
+    },
+    {
+      "views": [
+        "upper-floor-evening"
+      ],
+      "difference": "Tilly wood brighter/different olive tone",
+      "issue": 2486
+    },
+    {
+      "views": [
+        "living-room-day",
+        "living-room-evening",
+        "upper-floor-evening"
+      ],
+      "difference": "distant glass/tint/behind-glass mismatch",
+      "issue": 2459
+    },
+    {
+      "views": [
+        "living-room-day"
+      ],
+      "difference": "yellow sofa-back source field",
+      "issue": 2447
+    },
+    {
+      "views": [
+        "living-room-day",
+        "living-room-evening",
+        "upper-floor-evening"
+      ],
+      "difference": "remaining non-target wall/floor/ceiling AO source omissions",
+      "issue": 2489
+    },
+    {
+      "views": [
+        "living-room-day",
+        "living-room-evening",
+        "upper-floor-evening"
+      ],
+      "difference": "repeated dark dot raster on timber floor",
+      "issue": 2487
+    },
+    {
+      "views": [
+        "living-room-evening"
+      ],
+      "difference": "outside through glass dark green/brown",
+      "issue": 2488
+    },
+    {
+      "views": [
+        "living-room-day",
+        "upper-floor-evening"
+      ],
+      "difference": "distant brick facade brightness/mortar detail",
+      "issue": 2428
+    },
+    {
+      "views": [
+        "stairs-evening"
+      ],
+      "difference": "SKOGSGRANSEN decorative mirror retains hard white highlight/dome-like appearance versus flatter copper web mirror",
+      "issue": 2490,
+      "stateVerifiedViaFreshIssueRead": "open",
+      "cause": "not established; preexisting in published2369 originals"
+    }
+  ],
+  "newUnmappedDifferences": [],
+  "profileLimits": "UE5.8.4 CPU Vulkan SM5, conventional1024shadows3cascades, FXAA1/PostProcessAAQuality0, SeparateTranslucency, Lumen/Naniteoff; visible alias/grain and intentional low-profile rendering are not full Windows acceptance",
+  "executionReportedSeparatelyByRoot": {
+    "actualNativeExit": 0,
+    "runnerExit": 0,
+    "canonicalStages": 22,
+    "all247AuthoredByteModeReadonly": true,
+    "outerExec": 143,
+    "outerExecIssue": 2473
+  },
+  "functionalLightingEvidence": "Root-approved standalone observer NullRHI pass with byte-identical canonical assertions, exact testedLighting/source hashes; no rendered-clock pass claim, open2491",
+  "publicationOwner": "Root only; visual review does not create/close/claim any issue"
+}

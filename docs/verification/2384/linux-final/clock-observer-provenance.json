@@ -1,0 +1,10 @@
+{
+  "source": "/home/devcontainers/lunden-linux/tools/unreal-engine/tests/test_lighting.py",
+  "sourceSHA256": "923a0031c952c0960382b9ff0f4d965e0803069d21e2cdad06ae58e83b69d2a2",
+  "diagnostic": "/home/devcontainers/.local/state/lunden-codex-20261127/2384/test_lighting_clock_observe.py",
+  "diagnosticSHA256": "1879769efc515e3a02465a15016456a3f67481512ffc8473cf15b27f8b280e97",
+  "additiveObserverOnlyByteReversalExact": true,
+  "wallTime2sUnchanged": true,
+  "advancedMinimum5Unchanged": true,
+  "canonicalPassClaim": false
+}

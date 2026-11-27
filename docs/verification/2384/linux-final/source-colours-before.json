@@ -1,0 +1,613 @@
+{
+  "phase": "pre",
+  "reconstructed": false,
+  "completed": true,
+  "measurementsSHA256": "5629cdadf41c8a231eebc4c374a91ec9bf73ee3418f13c278404ef0a5b60c822",
+  "world": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting",
+  "rows": [
+    {
+      "id": "furn_besta_l0_x42_z1055",
+      "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_besta_l0_x42_z1055",
+      "source": "#ffd59a",
+      "runtimeRGB": [
+        255,
+        255,
+        255
+      ],
+      "lightFunction": null,
+      "disabledBrightness": 1.0,
+      "intensity": 2.240000009536743,
+      "attenuationRadius": 300.0,
+      "useTemperature": false
+    },
+    {
+      "id": "furn_dani_l1_x366_z689",
+      "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_dani_l1_x366_z689",
+      "source": "#ffbf78",
+      "runtimeRGB": [
+        255,
+        255,
+        255
+      ],
+      "lightFunction": "/Game/Lunden/Generated/Lighting/StairLightFunctions/M_furn_dani_l1_x366_z689.M_furn_dani_l1_x366_z689",
+      "disabledBrightness": 1.0,
+      "intensity": 1.5399999618530273,
+      "attenuationRadius": 320.0,
+      "useTemperature": false
+    },
+    {
+      "id": "furn_floorlamp_l0_x39_z882",
+      "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_floorlamp_l0_x39_z882",
+      "source": "#ffd59a",
+      "runtimeRGB": [
+        255,
+        213,
+        154
+      ],
+      "lightFunction": "/Game/Lunden/Generated/Lighting/StairLightFunctions/M_furn_floorlamp_l0_x39_z882.M_furn_floorlamp_l0_x39_z882",
+      "disabledBrightness": 1.0,
+      "intensity": 4.480000019073486,
+      "attenuationRadius": 500.0,
+      "useTemperature": false
+    },
+    {
+      "id": "furn_huego_l1_x314_z30",
+      "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_huego_l1_x314_z30",
+      "source": "#ffc98a",
+      "runtimeRGB": [
+        255,
+        255,
+        255
+      ],
+      "lightFunction": null,
+      "disabledBrightness": 1.0,
+      "intensity": 1.9600000381469727,
+      "attenuationRadius": 300.0,
+      "useTemperature": false
+    },
+    {
+      "id": "furn_malm_l1_x505_z979",
+      "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_malm_l1_x505_z979",
+      "source": "#cfe0ff",
+      "runtimeRGB": [
+        255,
+        255,
+        255
+      ],
+      "lightFunction": "/Game/Lunden/Generated/Lighting/StairLightFunctions/M_furn_malm_l1_x505_z979.M_furn_malm_l1_x505_z979",
+      "disabledBrightness": 1.0,
+      "intensity": 1.9600000381469727,
+      "attenuationRadius": 300.0,
+      "useTemperature": false
+    },
+    {
+      "id": "furn_malm_l1_x70_z283",
+      "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_malm_l1_x70_z283",
+      "source": "#ffb8e2",
+      "runtimeRGB": [
+        255,
+        255,
+        255
+      ],
+      "lightFunction": "/Game/Lunden/Generated/Lighting/StairLightFunctions/M_furn_malm_l1_x70_z283.M_furn_malm_l1_x70_z283",
+      "disabledBrightness": 1.0,
+      "intensity": 1.9600000381469727,
+      "attenuationRadius": 300.0,
+      "useTemperature": false
+    },
+    {
+      "id": "furn_mirror_l1_x258_z1145",
+      "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_mirror_l1_x258_z1145",
+      "source": "#ffe6c4",
+      "runtimeRGB": [
+        255,
+        255,
+        255
+      ],
+      "lightFunction": null,
+      "disabledBrightness": 1.0,
+      "intensity": 1.399999976158142,
+      "attenuationRadius": 250.0,
+      "useTemperature": false
+    },
+    {
+      "id": "furn_mirror_l1_x440_z546",
+      "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_mirror_l1_x440_z546",
+      "source": "#fff1de",
+      "runtimeRGB": [
+        255,
+        255,
+        255
+      ],
+      "lightFunction": "/Game/Lunden/Generated/Lighting/StairLightFunctions/M_furn_mirror_l1_x440_z546.M_furn_mirror_l1_x440_z546",
+      "disabledBrightness": 1.0,
+      "intensity": 1.1200000047683716,
+      "attenuationRadius": 250.0,
+      "useTemperature": false
+    },
+    {
+      "id": "furn_symfonisk_l0_x455_z1230",
+      "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_symfonisk_l0_x455_z1230",
+      "source": "#ffd59a",
+      "runtimeRGB": [
+        255,
+        213,
+        154
+      ],
+      "lightFunction": "/Game/Lunden/Generated/Lighting/StairLightFunctions/M_furn_symfonisk_l0_x455_z1230.M_furn_symfonisk_l0_x455_z1230",
+      "disabledBrightness": 1.0,
+      "intensity": 4.480000019073486,
+      "attenuationRadius": 500.0,
+      "useTemperature": false
+    },
+    {
+      "id": "furn_tubelamp_l0_x539_z796",
+      "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_tubelamp_l0_x539_z796",
+      "source": "#ffc77a",
+      "runtimeRGB": [
+        255,
+        255,
+        255
+      ],
+      "lightFunction": "/Game/Lunden/Generated/Lighting/StairLightFunctions/M_furn_tubelamp_l0_x539_z796.M_furn_tubelamp_l0_x539_z796",
+      "disabledBrightness": 1.0,
+      "intensity": 2.240000009536743,
+      "attenuationRadius": 350.0,
+      "useTemperature": false
+    },
+    {
+      "id": "furn_walllamp_l1_x28_z94",
+      "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_walllamp_l1_x28_z94",
+      "source": "#ffd59a",
+      "runtimeRGB": [
+        255,
+        255,
+        255
+      ],
+      "lightFunction": null,
+      "disabledBrightness": 1.0,
+      "intensity": 2.5199999809265137,
+      "attenuationRadius": 350.0,
+      "useTemperature": false
+    },
+    {
+      "id": "furn_walllamp_l1_x28_z94_2",
+      "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_walllamp_l1_x28_z94_2",
+      "source": "#ffd59a",
+      "runtimeRGB": [
+        255,
+        255,
+        255
+      ],
+      "lightFunction": null,
+      "disabledBrightness": 1.0,
+      "intensity": 2.5199999809265137,
+      "attenuationRadius": 350.0,
+      "useTemperature": false
+    },
+    {
+      "id": "furn_walllamp_l1_x547_z1176",
+      "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_walllamp_l1_x547_z1176",
+      "source": "#ffd59a",
+      "runtimeRGB": [
+        255,
+        255,
+        255
+      ],
+      "lightFunction": null,
+      "disabledBrightness": 1.0,
+      "intensity": 2.5199999809265137,
+      "attenuationRadius": 350.0,
+      "useTemperature": false
+    },
+    {
+      "id": "furn_walllamp_l1_x547_z1176_2",
+      "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_walllamp_l1_x547_z1176_2",
+      "source": "#ffd59a",
+      "runtimeRGB": [
+        255,
+        255,
+        255
+      ],
+      "lightFunction": null,
+      "disabledBrightness": 1.0,
+      "intensity": 2.5199999809265137,
+      "attenuationRadius": 350.0,
+      "useTemperature": false
+    },
+    {
+      "id": "furn_worklamp_l1_x530_z146",
+      "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_worklamp_l1_x530_z146",
+      "source": "#ffd59a",
+      "runtimeRGB": [
+        255,
+        213,
+        154
+      ],
+      "lightFunction": "/Game/Lunden/Generated/Lighting/StairLightFunctions/M_furn_worklamp_l1_x530_z146.M_furn_worklamp_l1_x530_z146",
+      "disabledBrightness": 1.0,
+      "intensity": 4.480000019073486,
+      "attenuationRadius": 500.0,
+      "useTemperature": false
+    },
+    {
+      "id": "furn_worklamp_l1_x530_z364",
+      "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_worklamp_l1_x530_z364",
+      "source": "#ffd59a",
+      "runtimeRGB": [
+        255,
+        213,
+        154
+      ],
+      "lightFunction": "/Game/Lunden/Generated/Lighting/StairLightFunctions/M_furn_worklamp_l1_x530_z364.M_furn_worklamp_l1_x530_z364",
+      "disabledBrightness": 1.0,
+      "intensity": 4.480000019073486,
+      "attenuationRadius": 500.0,
+      "useTemperature": false
+    },
+    {
+      "id": "furn_xmastree_l0_x82_z846",
+      "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_xmastree_l0_x82_z846",
+      "source": "#ffc98a",
+      "runtimeRGB": [
+        255,
+        255,
+        255
+      ],
+      "lightFunction": "/Game/Lunden/Generated/Lighting/StairLightFunctions/M_furn_xmastree_l0_x82_z846.M_furn_xmastree_l0_x82_z846",
+      "disabledBrightness": 1.0,
+      "intensity": 2.5199999809265137,
+      "attenuationRadius": 400.0,
+      "useTemperature": false
+    },
+    {
+      "id": "int_koksflakten_l0_x537_z371",
+      "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_int_koksflakten_l0_x537_z371",
+      "source": "#ffd59a",
+      "runtimeRGB": [
+        255,
+        255,
+        255
+      ],
+      "lightFunction": "/Game/Lunden/Generated/Lighting/StairLightFunctions/M_int_koksflakten_l0_x537_z371.M_int_koksflakten_l0_x537_z371",
+      "disabledBrightness": 1.0,
+      "intensity": 0.699999988079071,
+      "attenuationRadius": 250.0,
+      "useTemperature": false
+    },
+    {
+      "id": "lamp_ljusslingan_l0_x47_z1522",
+      "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_ljusslingan_l0_x47_z1522",
+      "source": "#ffcf8a",
+      "runtimeRGB": [
+        255,
+        255,
+        255
+      ],
+      "lightFunction": null,
+      "disabledBrightness": 1.0,
+      "intensity": 3.9200000762939453,
+      "attenuationRadius": 400.0,
+      "useTemperature": false
+    },
+    {
+      "id": "lamp_ljusslingan_l0_x528_z1522",
+      "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_ljusslingan_l0_x528_z1522",
+      "source": "#ffcf8a",
+      "runtimeRGB": [
+        255,
+        255,
+        255
+      ],
+      "lightFunction": null,
+      "disabledBrightness": 1.0,
+      "intensity": 3.9200000762939453,
+      "attenuationRadius": 400.0,
+      "useTemperature": false
+    },
+    {
+      "id": "lamp_spegeln-i-toaletten_l0_x23_z555",
+      "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_spegeln-i-toaletten_l0_x23_z555",
+      "source": "#fff1de",
+      "runtimeRGB": [
+        255,
+        255,
+        255
+      ],
+      "lightFunction": "/Game/Lunden/Generated/Lighting/StairLightFunctions/M_lamp_spegeln-i-toaletten_l0_x23_z555.M_lamp_spegeln-i-toaletten_l0_x23_z555",
+      "disabledBrightness": 1.0,
+      "intensity": 2.5199999809265137,
+      "attenuationRadius": 300.0,
+      "useTemperature": false
+    },
+    {
+      "id": "lamp_spegelns-nattlampa_l0_x202_z112",
+      "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_spegelns-nattlampa_l0_x202_z112",
+      "source": "#ffdcb0",
+      "runtimeRGB": [
+        255,
+        255,
+        255
+      ],
+      "lightFunction": null,
+      "disabledBrightness": 1.0,
+      "intensity": 1.9600000381469727,
+      "attenuationRadius": 350.0,
+      "useTemperature": false
+    },
+    {
+      "id": "light_bankbelysningen_l0_x524_z168",
+      "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_light_bankbelysningen_l0_x524_z168",
+      "source": "#ffd59a",
+      "runtimeRGB": [
+        255,
+        255,
+        255
+      ],
+      "lightFunction": "/Game/Lunden/Generated/Lighting/StairLightFunctions/M_light_bankbelysningen_l0_x524_z168.M_light_bankbelysningen_l0_x524_z168",
+      "disabledBrightness": 1.0,
+      "intensity": 0.8960000276565552,
+      "attenuationRadius": 250.0,
+      "useTemperature": false
+    },
+    {
+      "id": "room_badrum_l0_x117_z631",
+      "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_badrum_l0_x117_z631",
+      "source": "#fff0dc",
+      "runtimeRGB": [
+        255,
+        255,
+        255
+      ],
+      "lightFunction": "/Game/Lunden/Generated/Lighting/StairLightFunctions/M_room_badrum_l0_x117_z631.M_room_badrum_l0_x117_z631",
+      "disabledBrightness": 1.0,
+      "intensity": 5.599999904632568,
+      "attenuationRadius": 400.0,
+      "useTemperature": false
+    },
+    {
+      "id": "room_hall_l0_x117_z175",
+      "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_hall_l0_x117_z175",
+      "source": "#ffe2b8",
+      "runtimeRGB": [
+        255,
+        255,
+        255
+      ],
+      "lightFunction": "/Game/Lunden/Generated/Lighting/StairLightFunctions/M_room_hall_l0_x117_z175.M_room_hall_l0_x117_z175",
+      "disabledBrightness": 1.0,
+      "intensity": 6.71999979019165,
+      "attenuationRadius": 600.0,
+      "useTemperature": false
+    },
+    {
+      "id": "room_hall_l0_x288_z634",
+      "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_hall_l0_x288_z634",
+      "source": "#ffe2b8",
+      "runtimeRGB": [
+        255,
+        255,
+        255
+      ],
+      "lightFunction": "/Game/Lunden/Generated/Lighting/StairLightFunctions/M_room_hall_l0_x288_z634.M_room_hall_l0_x288_z634",
+      "disabledBrightness": 1.0,
+      "intensity": 6.71999979019165,
+      "attenuationRadius": 600.0,
+      "useTemperature": false
+    },
+    {
+      "id": "room_hall_l1_x342_z648",
+      "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_hall_l1_x342_z648",
+      "source": "#ffe2b8",
+      "runtimeRGB": [
+        255,
+        255,
+        255
+      ],
+      "lightFunction": "/Game/Lunden/Generated/Lighting/StairLightFunctions/M_room_hall_l1_x342_z648.M_room_hall_l1_x342_z648",
+      "disabledBrightness": 1.0,
+      "intensity": 6.71999979019165,
+      "attenuationRadius": 600.0,
+      "useTemperature": false
+    },
+    {
+      "id": "room_klk_l0_x396_z587",
+      "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_klk_l0_x396_z587",
+      "source": "#ffe2b8",
+      "runtimeRGB": [
+        255,
+        255,
+        255
+      ],
+      "lightFunction": "/Game/Lunden/Generated/Lighting/StairLightFunctions/M_room_klk_l0_x396_z587.M_room_klk_l0_x396_z587",
+      "disabledBrightness": 1.0,
+      "intensity": 6.71999979019165,
+      "attenuationRadius": 600.0,
+      "useTemperature": false
+    },
+    {
+      "id": "room_klk_l1_x472_z488",
+      "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_klk_l1_x472_z488",
+      "source": "#ffe2b8",
+      "runtimeRGB": [
+        255,
+        255,
+        255
+      ],
+      "lightFunction": "/Game/Lunden/Generated/Lighting/StairLightFunctions/M_room_klk_l1_x472_z488.M_room_klk_l1_x472_z488",
+      "disabledBrightness": 1.0,
+      "intensity": 6.71999979019165,
+      "attenuationRadius": 600.0,
+      "useTemperature": false
+    },
+    {
+      "id": "room_kok-matplats_l0_x350_z141",
+      "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_kok-matplats_l0_x350_z141",
+      "source": "#ffd9a8",
+      "runtimeRGB": [
+        255,
+        217,
+        168
+      ],
+      "lightFunction": "/Game/Lunden/Generated/Lighting/StairLightFunctions/M_room_kok-matplats_l0_x350_z141.M_room_kok-matplats_l0_x350_z141",
+      "disabledBrightness": 1.0,
+      "intensity": 6.159999847412109,
+      "attenuationRadius": 500.0,
+      "useTemperature": false
+    },
+    {
+      "id": "room_kok-matplats_l0_x392_z287",
+      "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_kok-matplats_l0_x392_z287",
+      "source": "#ffe2b8",
+      "runtimeRGB": [
+        255,
+        255,
+        255
+      ],
+      "lightFunction": "/Game/Lunden/Generated/Lighting/StairLightFunctions/M_room_kok-matplats_l0_x392_z287.M_room_kok-matplats_l0_x392_z287",
+      "disabledBrightness": 1.0,
+      "intensity": 6.71999979019165,
+      "attenuationRadius": 600.0,
+      "useTemperature": false
+    },
+    {
+      "id": "room_sovrum-1_l1_x355_z290",
+      "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_sovrum-1_l1_x355_z290",
+      "source": "#ffd9a8",
+      "runtimeRGB": [
+        255,
+        217,
+        168
+      ],
+      "lightFunction": "/Game/Lunden/Generated/Lighting/StairLightFunctions/M_room_sovrum-1_l1_x355_z290.M_room_sovrum-1_l1_x355_z290",
+      "disabledBrightness": 1.0,
+      "intensity": 6.159999847412109,
+      "attenuationRadius": 500.0,
+      "useTemperature": false
+    },
+    {
+      "id": "room_sovrum-2_l1_x370_z960",
+      "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_sovrum-2_l1_x370_z960",
+      "source": "#ffd9a8",
+      "runtimeRGB": [
+        255,
+        217,
+        168
+      ],
+      "lightFunction": "/Game/Lunden/Generated/Lighting/StairLightFunctions/M_room_sovrum-2_l1_x370_z960.M_room_sovrum-2_l1_x370_z960",
+      "disabledBrightness": 1.0,
+      "intensity": 6.159999847412109,
+      "attenuationRadius": 500.0,
+      "useTemperature": false
+    },
+    {
+      "id": "room_sovrum-3_l1_x143_z272",
+      "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_sovrum-3_l1_x143_z272",
+      "source": "#ffe2b8",
+      "runtimeRGB": [
+        255,
+        255,
+        255
+      ],
+      "lightFunction": "/Game/Lunden/Generated/Lighting/StairLightFunctions/M_room_sovrum-3_l1_x143_z272.M_room_sovrum-3_l1_x143_z272",
+      "disabledBrightness": 1.0,
+      "intensity": 6.71999979019165,
+      "attenuationRadius": 600.0,
+      "useTemperature": false
+    },
+    {
+      "id": "room_sovrum-4_l1_x143_z1001",
+      "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_sovrum-4_l1_x143_z1001",
+      "source": "#ffe2b8",
+      "runtimeRGB": [
+        255,
+        255,
+        255
+      ],
+      "lightFunction": "/Game/Lunden/Generated/Lighting/StairLightFunctions/M_room_sovrum-4_l1_x143_z1001.M_room_sovrum-4_l1_x143_z1001",
+      "disabledBrightness": 1.0,
+      "intensity": 6.71999979019165,
+      "attenuationRadius": 600.0,
+      "useTemperature": false
+    },
+    {
+      "id": "room_tvatt_l0_x115_z398",
+      "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_tvatt_l0_x115_z398",
+      "source": "#ffe2b8",
+      "runtimeRGB": [
+        255,
+        255,
+        255
+      ],
+      "lightFunction": "/Game/Lunden/Generated/Lighting/StairLightFunctions/M_room_tvatt_l0_x115_z398.M_room_tvatt_l0_x115_z398",
+      "disabledBrightness": 1.0,
+      "intensity": 6.71999979019165,
+      "attenuationRadius": 600.0,
+      "useTemperature": false
+    },
+    {
+      "id": "room_vardagsrum_l0_x364_z1056",
+      "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_vardagsrum_l0_x364_z1056",
+      "source": "#ffd9a8",
+      "runtimeRGB": [
+        255,
+        217,
+        168
+      ],
+      "lightFunction": "/Game/Lunden/Generated/Lighting/StairLightFunctions/M_room_vardagsrum_l0_x364_z1056.M_room_vardagsrum_l0_x364_z1056",
+      "disabledBrightness": 1.0,
+      "intensity": 6.159999847412109,
+      "attenuationRadius": 500.0,
+      "useTemperature": false
+    },
+    {
+      "id": "room_wc-dusch_l1_x85_z631",
+      "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_wc-dusch_l1_x85_z631",
+      "source": "#fff0dc",
+      "runtimeRGB": [
+        255,
+        255,
+        255
+      ],
+      "lightFunction": "/Game/Lunden/Generated/Lighting/StairLightFunctions/M_room_wc-dusch_l1_x85_z631.M_room_wc-dusch_l1_x85_z631",
+      "disabledBrightness": 1.0,
+      "intensity": 5.599999904632568,
+      "attenuationRadius": 400.0,
+      "useTemperature": false
+    }
+  ],
+  "mismatches": [
+    "furn_besta_l0_x42_z1055",
+    "furn_dani_l1_x366_z689",
+    "furn_huego_l1_x314_z30",
+    "furn_malm_l1_x505_z979",
+    "furn_malm_l1_x70_z283",
+    "furn_mirror_l1_x258_z1145",
+    "furn_mirror_l1_x440_z546",
+    "furn_tubelamp_l0_x539_z796",
+    "furn_walllamp_l1_x28_z94",
+    "furn_walllamp_l1_x28_z94_2",
+    "furn_walllamp_l1_x547_z1176",
+    "furn_walllamp_l1_x547_z1176_2",
+    "furn_xmastree_l0_x82_z846",
+    "int_koksflakten_l0_x537_z371",
+    "lamp_ljusslingan_l0_x47_z1522",
+    "lamp_ljusslingan_l0_x528_z1522",
+    "lamp_spegeln-i-toaletten_l0_x23_z555",
+    "lamp_spegelns-nattlampa_l0_x202_z112",
+    "light_bankbelysningen_l0_x524_z168",
+    "room_badrum_l0_x117_z631",
+    "room_hall_l0_x117_z175",
+    "room_hall_l0_x288_z634",
+    "room_hall_l1_x342_z648",
+    "room_klk_l0_x396_z587",
+    "room_klk_l1_x472_z488",
+    "room_kok-matplats_l0_x392_z287",
+    "room_sovrum-3_l1_x143_z272",
+    "room_sovrum-4_l1_x143_z1001",
+    "room_tvatt_l0_x115_z398",
+    "room_wc-dusch_l1_x85_z631"
+  ],
+  "lampCount": 38,
+  "stairBindingCount": 28
+}

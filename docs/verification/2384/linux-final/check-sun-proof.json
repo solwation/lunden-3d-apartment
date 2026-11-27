@@ -1,0 +1,25 @@
+{
+  "command": [
+    "node",
+    "--import",
+    "data:text/javascript,import%7Bregister%7Dfrom%27node%3Amodule%27%3Bregister%28%22data%3Atext/javascript%2Cexport%2520async%2520function%2520resolve%2528s%252Cc%252Cnext%2529%257Bconst%2520r%253D%2522file%253A///home/devcontainers/kvarteret-lunden/node_modules/three/%2522%253Bif%2528s%253D%253D%253D%2527three%2527%2529return%257Burl%253Ar%252B%2527build/three.module.js%2527%252CshortCircuit%253Atrue%257D%253Bif%2528s.startsWith%2528%2527three/addons/%2527%2529%2529return%257Burl%253Ar%252B%2527examples/jsm/%2527%252Bs.slice%252813%2529%252CshortCircuit%253Atrue%257D%253Breturn%2520next%2528s%252Cc%2529%253B%257D%22%29%3B",
+    "tools/unreal-engine/check-sun.mjs",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2384/null-clock-first/lighting-result.json"
+  ],
+  "cwd": "/home/devcontainers/lunden-linux",
+  "exitCode": 0,
+  "inputSHA256": {
+    "/home/devcontainers/lunden-linux/tools/unreal-engine/check-sun.mjs": "70ecc6f41692ab8e74be3e8cc5d016436433a347e569ece9364d8b9bbd0f7c51",
+    "/home/devcontainers/lunden-linux/tools/unreal-engine/coordinates.mjs": "d59d8b3a3af1ff3688e3723fcfd13cd9cc634f69a5297fff2bd65608e2c889d0",
+    "/home/devcontainers/lunden-linux/src/daycycle.js": "ce91207b7d7d7e4a9f0f77477ac68246c62cf7caa42000f03ddf265bf15fd29e",
+    "/home/devcontainers/lunden-linux/src/moon.js": "fb289cd59ce9db1580f585f62bb64b33a6dae59fa2c147d487e0a74a11b3879b",
+    "/home/devcontainers/lunden-linux/src/cloudshadow.js": "803910ae6674fe6a5318a3f338b470df0fc3123094fb31662b9cba79ace9f838",
+    "/home/devcontainers/lunden-linux/src/config.js": "a36e730774ee48527ae9b1ac7e2f444ca0fe6e8cbf02e15d1da56cfcdc3f94e0",
+    "/home/devcontainers/kvarteret-lunden/node_modules/three/package.json": "2caf5d31ca4368c7e39e7e598dd95774fe1bdaae7cfbc5b073c8dcb5ec7e25da",
+    "/home/devcontainers/kvarteret-lunden/node_modules/three/build/three.module.js": "ce1fa418de16a19495a9f72495580e3015d7745c296d3ce0485897f902ddedfb",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2384/null-clock-first/lighting-result.json": "04b146f7303338fb06c5cf1d2ef65b688d32b21d216d761570e887b4e89fbdf0"
+  },
+  "dependency": "Existing installed Three module resolved by additive Node loader; no installation or source mutation",
+  "canonicalCheckerUnmodified": true,
+  "runs": 1
+}

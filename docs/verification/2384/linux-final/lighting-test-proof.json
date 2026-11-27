@@ -1,0 +1,97 @@
+{
+  "sourceRevision": "a693d6dc5d2e75e9c41b320c412f03aaf6317c3c",
+  "sourceProductPythonSHA256": "923a0031c952c0960382b9ff0f4d965e0803069d21e2cdad06ae58e83b69d2a2",
+  "instrumentedOnlyAdditionsByteReversalExact": true,
+  "wait2sUnchanged": true,
+  "minimumAdvance5Unchanged": true,
+  "automation": {
+    "succeeded": 1,
+    "failed": 0,
+    "testStates": [
+      {
+        "fullTestPath": "Editor.Python.Lunden.test_lighting",
+        "state": "Success",
+        "duration": 5.326400279998779
+      }
+    ]
+  },
+  "counts": {
+    "sun": 10,
+    "dusk": 8,
+    "sourceColours": 38,
+    "weather": 4,
+    "cloudDrift": 3
+  },
+  "clock": {
+    "wallSeconds": 2.004579056010698,
+    "simulationSeconds": 2.012596626766026,
+    "actualAdvanceGameMinutes": 20.12596626765408,
+    "expectedFromActualSimDelta": 20.12596626766026,
+    "recordedClock": {
+      "pc": "2026-11-27T18:07:12",
+      "unreal": [
+        2026,
+        11,
+        27,
+        18.21021913042913
+      ],
+      "minutesOff": 5.413,
+      "advancedGameMinutesIn2s": 20.13
+    },
+    "pauseBeforeAfter": [
+      false,
+      false
+    ],
+    "tickEnabledBeforeAfter": [
+      true,
+      true
+    ],
+    "reflectionLimitation": "primaryActorTick.can_ever_tick is not exposed; actual readError preserved, no fabricated value"
+  },
+  "proofCopies": [
+    {
+      "source": "/home/devcontainers/lunden-linux/unreal/Lunden/Saved/lighting-result.json",
+      "copy": "/home/devcontainers/.local/state/lunden-codex-20261127/2384/null-clock-first/lighting-result.json",
+      "sha256": "04b146f7303338fb06c5cf1d2ef65b688d32b21d216d761570e887b4e89fbdf0"
+    },
+    {
+      "source": "/mnt/d/LundenLinux/runs/20261127T170413569644-162403/automation/index.json",
+      "copy": "/home/devcontainers/.local/state/lunden-codex-20261127/2384/null-clock-first/automation-index.json",
+      "sha256": "4a2e8b52d3dae9427c8ea0c10a91fa1bd6d2f290c43b346b1c7286d8a29161dc"
+    },
+    {
+      "source": "/mnt/d/LundenLinux/runs/20261127T170413569644-162403/result.json",
+      "copy": "/home/devcontainers/.local/state/lunden-codex-20261127/2384/null-clock-first/native-result.json",
+      "sha256": "6ffb3609a9c0180de12470170635fead9eb35b40a0cafe1c7d5dceeb06d27c92"
+    },
+    {
+      "source": "/home/devcontainers/.local/state/lunden-codex-20261127/2384/test_lighting_clock_observe.py",
+      "copy": "/home/devcontainers/.local/state/lunden-codex-20261127/2384/null-clock-first/test_lighting_clock_observe.py",
+      "sha256": "1879769efc515e3a02465a15016456a3f67481512ffc8473cf15b27f8b280e97"
+    },
+    {
+      "source": "/home/devcontainers/lunden-linux/tools/unreal-engine/tests/test_lighting.py",
+      "copy": "/home/devcontainers/.local/state/lunden-codex-20261127/2384/null-clock-first/test_lighting-canonical-source.py",
+      "sha256": "923a0031c952c0960382b9ff0f4d965e0803069d21e2cdad06ae58e83b69d2a2"
+    },
+    {
+      "source": "/home/devcontainers/.local/state/lunden-codex-20261127/2384/clock-observe-provenance.json",
+      "copy": "/home/devcontainers/.local/state/lunden-codex-20261127/2384/null-clock-first/clock-observe-provenance.json",
+      "sha256": "c38fe2eadea52ec2cf09f4e264f8fd27d87d8b1924973d2d819855a5a1e877dc"
+    }
+  ],
+  "savedResultMtimeUTC": "2026-11-27T17:07:16.652239+00:00",
+  "limits": [
+    "Standalone diagnostic NullRHI with additive observer and identical assertions; not uninstrumented canonical execution",
+    "Real PIE/BeginPlay/automaticTick evidence, not manual ReceiveTick",
+    "Does not establish Vulkan/profile visual acceptance or resolve earlier combined-RHI zero-clock cause",
+    "All247 authored guards recorded separately by Root"
+  ],
+  "checkSun": {
+    "exitCode": 0,
+    "runs": 1,
+    "directionsPassed": 20,
+    "skyCloudDuskValuesPassed": 104,
+    "proof": "check-sun-proof.json"
+  }
+}

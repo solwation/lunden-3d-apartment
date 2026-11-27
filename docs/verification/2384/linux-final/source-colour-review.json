@@ -1,0 +1,15 @@
+{
+  "proofs": {
+    "colours-pre.json": "ff5848f1eef6a6ffd75a9d22042fb3ec1680606a99fe1cf3195524bf913f09da",
+    "colours-post.json": "593baadf0d214771931e3052fb96140284c5e7a587c32b52b825a8f79052ae82"
+  },
+  "actualSource": "4a4bc36ca4cc5661792c6a89827ce29b1bf58051",
+  "completedPre": true,
+  "completedPost": true,
+  "exactSourceCount": 38,
+  "originalWhiteMismatchCount": 30,
+  "originalSerializedAgreementCount": 38,
+  "preservedStairBindingCount": 28,
+  "nonColourFieldChanges": [],
+  "automationAndImages": "PENDING; no acceptance claim"
+}

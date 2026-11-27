@@ -1,0 +1,70 @@
+{
+  "issue": 2384,
+  "lockedAtUtc": "2026-11-27T16:09:16.025194+00:00",
+  "scope": "Source-color fix and preservation of delivered2369/2322 criteria; no native2384 images inspected before locking",
+  "sourceContracts": {
+    "stairs": {
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2369/locked-capture-contract.json",
+      "sha256": "d3c89d4b9a50404ed629c5c54ce863ad1eca9b804249748a1b39abef1514abe8"
+    },
+    "furnishing": {
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/corrected-reference-contract.json",
+      "sha256": "1f559812415bdc9a6bbfcd5030957bae510b208833318c45021d3a89545d47b6"
+    },
+    "furnishingFourteenGateBaseline": {
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/after-paired-v5/fourteen-crop-gate.json",
+      "sha256": "ce0b1a520c2b1b6f84489ca2f3489ff9ed134655945f00cc992e258e73896172"
+    }
+  },
+  "stairsColour": {
+    "shot": "stairs-evening",
+    "date": [
+      2026,
+      6,
+      21
+    ],
+    "hour": 22,
+    "weather": "clear",
+    "lamps": "all",
+    "metric": "canonical crop-stats mean sRGB R/B; (native warmth)/(web warmth)",
+    "rangeInclusive": [
+      0.9,
+      1.1
+    ],
+    "rects": {
+      "frame": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "hall-door": [
+        0.12,
+        0.07,
+        0.29,
+        0.24
+      ]
+    }
+  },
+  "regressions": {
+    "fullFrameLuminance": {
+      "shots": [
+        "stairs-evening",
+        "living-room-day",
+        "living-room-evening",
+        "upper-floor-evening"
+      ],
+      "ratioInclusive": [
+        0.8,
+        1.25
+      ]
+    },
+    "furnishingFourteen": "eleven unchanged material rects +three existing cabinet spots; corrected settled night authority per immutable2322 contract, all original hue/Y guards and actual whole-image review preserved"
+  },
+  "nativeEvidence": [
+    "observational PRE all38 vs old serialized+export",
+    "POST actual save/reload/reconstruct/TurnOn/TurnOff all38 and28visibilitybindings",
+    "full latent PIE test_lighting +result marker +check-sun"
+  ],
+  "wholeImageReview": "All four original native+web views; map visible remaining differences honestly, no new unmapped regressions accepted"
+}
