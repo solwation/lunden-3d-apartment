@@ -14,6 +14,7 @@ runner = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(runner)
 
 
+@unittest.skipUnless(sys.platform == "linux", "Linux-only runner and process supervision")
 class LinuxRunnerTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
