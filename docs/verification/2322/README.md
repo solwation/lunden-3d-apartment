@@ -89,3 +89,33 @@ node tools/unreal-engine/tests/crop-stats.cjs <bildkatalog> tools/unreal-engine/
 ```
 
 Efter en Windows-import kontrollerar `run-python.ps1 tools/unreal-engine/tests/test_cabinet_washes.py` även koordinaterna, de fyra ursprungliga träytorna och lampans styrning i den sparade världen.
+
+## Mattans pendelfält: källcheckpoint 2026-11-27
+
+Den återupptagna delen av #2322 överför det additiva golvfält som `src/shadepools.js` redan ritar från Silvia-pendeln.
+Mattans basfärg, sRGB-bild, UV, råhet och lampans intensitet ändras inte. Exporten sparar originalets 128 × 128
+linjära mask, verkliga quad, UV-hörn, färg vid full tändning och polygonOffset-värden samt den exporterade mattans
+verkliga mottagaryta. Mottagaren är originalmattan, 300 × 200 cm med ovansidan 1,4 cm över golvet. Källfältet är
+240 × 240 cm, centrerat under pendeln (364, 1056 cm), på höjden 1,2 cm. Färgen vid full tändning är linjär RGB
+(0,2000000, 0,1387744, 0,0783145); detta är källans färg × peak, ingen ny native kalibrering.
+
+Den nya buildern skriver endast under `Generated`: additivt material, linjär mask, styrenhet och en yta i den
+befintliga genererade interaktionsnivån. Ytan ligger exakt på mattans uppmätta ovansida och behåller djupkontroll;
+ingen liten påhittad höjning används. Världs-UV håller fältet kvar under pendeln. Geometrin klipper till mattan och
+shadern klipper utanför originalquaden, så maskens kantpixel inte kan smetas ut över resten av mattan.
+Fade följer källampans `K` × den befintliga strömmatningen. Ordinarie full import och bildverktygens settle-steg
+anropar buildern respektive styrenheten.
+
+Den faktiska exportkontrollen av lägenhet + uteplats och `rug-floor-pool.mjs` kontrollerar källans quad/UV/färg,
+maskens riktiga PNG-texlar mot radialgradienten, orörd originaltextil och fältets avgränsning. Prov i fältets centrum,
+utanför mattan och innanför mattan men utanför fältet täcker både tändning, delvis fade och strömavbrott.
+`check-export.mjs` validerar 3 filer, 2 819 unika noder och 316 källfiler. Endast källkontraktet är därmed verifierat.
+Enbart `--zones l1007` stoppades i en befintlig kontroll för uteplatsglas; det separata exportfelet följs i #2468.
+
+Native builder, Blueprint och `test_rug_floor_pool.py` behöver fortfarande köras i den sammansatta `L_Lunden`.
+Den koplanära strategin måste därefter prövas med när-/fjärrkamera och bordets/soffans ocklusion för att upptäcka
+djupflimmer. Webbens output-blandning och Unreals scene-linear-blandning är olika; källtestet bevisar därför inte
+slutlig native luminans eller kulör. Bilder på samma dag-/kvällskameror, med dokumenterad exponering och samma
+renderprofil, återstår för matta och samtliga övriga #2322-mätfält. Surrounding golv-/takfält ingår inte i denna
+mattslice. Flyttade möbler och alternativa mattmaterial hör till den öppna portningen #2339. #2322 hålls öppet;
+inga nya native resultatbilder eller färgpass påstås här.

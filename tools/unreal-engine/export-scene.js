@@ -7,6 +7,7 @@
 // Determinism: the caller fixes Date and seeds Math.random before any module loads; this module builds and collects
 // synchronously (nothing loaded later can slip in), walks the scene in its child order, and writes no time stamps.
 import { curtainProfiles, curtainRows } from './export-curtains.js';
+import { rugPoolProfile, rugPoolRow } from './export-rug-pool.js';
 import * as THREE from 'three';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 import * as C from '../../src/config.js';
@@ -470,7 +471,8 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     // #2285: the room switches (their room decides which lamps they switch, src/lights.js Switch / Room)
     const switches = L.switches.map((s) => ({ object: s.object, room: s.room.name, level: s.room.level }));
     const floorRooms = new Map(L.floorLamps.filter(f => f.room.lamps[0]).map(f => [f.spec, L.lampRoom(f.room.lamps[0])]));
-    lightsInfo = { lamps, group, switches, stairLight, floorRooms, exportedFloorRooms: new Map(), error: null };
+    const rugPool = wanted.includes('l1007') ? rugPoolProfile(L) : null;
+    lightsInfo = { lamps, group, switches, stairLight, floorRooms, rugPool, exportedFloorRooms: new Map(), error: null };
   } catch (e) { lightsInfo.error = String(e?.message ?? e); }
   // #2279: the garage under the courtyard and the four stairwells/lifts (Hus L's and Hus A/B/C's), which main.js builds
   // next to the world. Loaded after the world and the lights so their modules cannot shift the seeded random sequence
@@ -1083,6 +1085,10 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
   if (vegetation) measurements.vegetation = vegetation;
   for (const { root } of Object.values(roots)) root.updateMatrixWorld(true); // (the mesh centres below)
   measurements.furnishing = furnishingData(byZone, textures, worldMatrix);
+  if (wanted.includes('l1007')) {
+    if (!lightsInfo.rugPool) throw Error('Missing living-room rug floor pool: ' + lightsInfo.error);
+    measurements.furnishing.rugFloorPool = rugPoolRow(lightsInfo.rugPool, byZone.get('l1007'), roots.l1007.root, measurements.lights);
+  }
   if (beerGlasses.length) measurements.furnishing.patioBeers = patioBeerRows(beerGlasses, beerParts, beerWindow);
   const snowmanAtom = loose.snowman && atoms.find((a) => a.object === loose.snowman && a.id);
   if (snowmanAtom) measurements.furnishing.snowman = snowmanRow(snowmanAtom, worldMatrix, snowmanWindow);

@@ -46,6 +46,8 @@ def settle_furnishing_lights(world):
         curtain.call_method("UpdateCurtainLight")
     for cabinet in u.GameplayStatics.get_all_actors_with_tag(world, "lunden:cabinet-washes"):
         cabinet.call_method("UpdateWashes")
+    for rug in u.GameplayStatics.get_all_actors_with_tag(world, "lunden:rug-floor-pool"):
+        rug.call_method("UpdateRugPool")
 
 
 class MapLight:

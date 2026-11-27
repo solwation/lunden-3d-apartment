@@ -227,6 +227,13 @@
       "required": ["items", "textures"],
       "properties": {
         "items": { "type": "array", "items": { "type": "object", "required": ["id", "kind", "zone", "web", "unreal"] } },
+        "rugFloorPool": { "type": "object", "required": ["lamp", "corners", "colour", "opacity", "maskPng", "mask", "depth", "receivers", "source", "scope"],
+          "description": "#2322: the source pendant's linear additive floor quad (corners keyed by source UV, Unreal cm), full-on vertex colour and actual original rug top receiver. Native overlay is coplanar with that receiver; no rug recolour or intensity fit.",
+          "properties": { "lamp": { "type": "string" }, "corners": { "$ref": "#/$defs/uvQuad" }, "colour": { "$ref": "#/$defs/vec3" }, "opacity": { "type": "number" }, "maskPng": { "type": "string", "minLength": 1 },
+            "mask": { "type": "object", "required": ["width", "height", "colorSpace", "flipY"], "properties": { "width": { "type": "integer" }, "height": { "type": "integer" }, "colorSpace": { "const": "linear" }, "flipY": { "const": true } } },
+            "depth": { "type": "object", "required": ["write", "test", "polygonOffset", "factor", "units", "renderOrder"] },
+            "receivers": { "type": "array", "minItems": 1, "items": { "type": "object", "required": ["id", "mesh", "key", "corners"], "properties": { "id": { "type": "string" }, "mesh": { "type": "string" }, "key": { "type": "string" }, "corners": { "$ref": "#/$defs/uvQuad" } } } }
+          } },
         "curtains": { "type": "array", "items": { "type": "object", "required": ["id", "level", "room", "nodes", "key", "lamps", "daylight", "lamp"], "properties": {
           "id": { "type": "string" }, "level": { "type": "integer" }, "room": { "type": "string" }, "key": { "type": "string" },
           "nodes": { "type": "array", "minItems": 1, "items": { "type": "string" } }, "lamps": { "type": "array", "minItems": 1, "items": { "type": "string" } },
@@ -248,6 +255,7 @@
     }
   },
   "$defs": {
+    "uvQuad": { "type": "object", "required": ["0,0", "1,0", "1,1", "0,1"], "additionalProperties": false, "properties": { "0,0": { "$ref": "#/$defs/vec3" }, "1,0": { "$ref": "#/$defs/vec3" }, "1,1": { "$ref": "#/$defs/vec3" }, "0,1": { "$ref": "#/$defs/vec3" } } },
     "vec3": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 },
     "point": { "type": "object", "required": ["web", "unreal"], "properties": { "web": { "$ref": "#/$defs/vec3" }, "unreal": { "$ref": "#/$defs/vec3" } } },
     "rotation": { "type": "object", "required": ["webRotationY", "unrealYaw"], "additionalProperties": false,

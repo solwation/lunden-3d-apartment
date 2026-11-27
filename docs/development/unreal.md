@@ -1567,6 +1567,29 @@ the export and the pictures section of `notices.mjs`.
   cabinet front 2.14/0.11 and sofa 1.14/1.04. The upper-floor curtain at 22:00 is 0.62. The web renders with
   `THREE.NeutralToneMapping`. Correcting every furnishing with a single brighter tint would amplify the daytime
   error on the table and cabinet.
+- **Living-room pendant on the rug (#2322, native visual acceptance pending).** The optional
+  `furnishing.rugFloorPool` records the actual `ShadePools.commit` floor quad, its source UV corners in Unreal cm,
+  full-on linear vertex colour (already multiplied by `shade.pool.floor[1]`), opacity and original 128 × 128
+  linear canvas mask. This is a separate additive surface, not a tint or gain on the rug's sRGB textile.
+  The source floor quad is 12 mm above the floor; the original rug top is 14 mm. The web uses
+  `polygonOffsetFactor=-1`, `polygonOffsetUnits=-4` and render order 2 to layer the pool across the rug.
+  The export retains these values as provenance and separately records the actual exported rug mesh's top corners
+  and unchanged material key. After cabinet/curtain construction, full `sync-import.ps1` runs `build_rug_pool.py`.
+  It writes only `Generated/Interaction/RugPool` and the generated apartment interaction level: one additive,
+  unlit plane exactly coplanar with the measured rug top, depth testing on, no depth write, collision or shadow.
+  Geometry clips to the rug; world-position UVs keep the pool anchored to the pendant rather than stretching it
+  across the receiver. The shader discards fragments outside the source quad, so clamped edge texels cannot smear
+  light beyond the pool. The mask stays linear (`sRGB=false`), preserving its original soft falloff. The controller
+  reads the existing source lamp's `K` times `MPC_LundenWeather.PowerAvailable`; capture helpers explicitly settle
+  it in editor worlds that do not tick. It never changes the source lamp's intensity or the imported rug material.
+  The coplanar strategy needs real near/far and table/sofa occlusion captures on the composed `L_Lunden` before
+  visual acceptance; source geometry/math tests cannot establish stable native depth. The source blends its
+  unlit contribution after output conversion while UE's additive material contributes in scene-linear space,
+  so unchanged source coefficients are not evidence of matched final luminance. No colour/exposure fit is made
+  in this slice. Surrounding floor and ceiling pools, moved/alternative rug materials and final matched day/evening
+  crops remain outside this slice under the still-open #2322 and the existing rearrangement/material port #2339.
+  Run `node tools/unreal-engine/tests/rug-floor-pool.mjs <export-dir>` for the real source contract, then
+  `run-python.ps1 tools/unreal-engine/tests/test_rug_floor_pool.py` after sync for composed-world receiver/fade checks.
 - **Signs and labels (#2400).** The same route carries every unlit web material (`MeshBasicMaterial`) that has a colour
   map, whatever node it is on: the flats' number signs and name plates (Hus A, B and C paint one `flat-door-atlas` each,
   Hus L a fourth), the garage's sign plates, exit pictograms, floor markings and wall plans, and the stairwells' floor
