@@ -63,6 +63,18 @@ def automation_passed(report):
             and result.get("failed") == 0 and result.get("notRun") == 0)
 
 
+def log_errors(content):
+    # UE can exit 0 after a material fails and renders its default fallback.
+    # Compiler diagnostics are lowercase `error:` under warning log categories;
+    # cache-miss/recompile warnings alone do not mean compilation failed.
+    failure = re.compile(
+        r"LogPython: Error:|Traceback \(most recent call last\)"
+        r"|Log(?:ShaderCompilers?|Material):\s*(?:Warning|Error):\s*Failed to compile Material\b"
+        r"|^\s*[^\r\n]*\.(?:ush|usf|hlsl|glsl)(?::\d+(?::\d+)?|\(\d+(?:,\d+)?\)):\s*(?:fatal\s+)?error:",
+        re.IGNORECASE)
+    return [line.strip() for line in content.splitlines() if failure.search(line)]
+
+
 def write_result(run, result):
     temporary = run / "result.json.tmp"
     temporary.write_text(json.dumps(result, indent=2) + "\n")
@@ -280,7 +292,7 @@ def main(argv=None):
     start = time.monotonic()
     result = {"engine": actual, "profile": "linux-low" if args.render else "nullrhi",
               "exitCode": None, "timedOut": False, "passed": False, "completed": False,
-              "log": str(log), "command": command,
+              "log": str(log), "logErrors": [], "command": command,
               "engineIniSha256": hashlib.sha256(ini.read_bytes()).hexdigest(),
               "vulkanIcd": env.get("VK_DRIVER_FILES") if args.render else None,
               "revision": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip()}
@@ -293,7 +305,8 @@ def main(argv=None):
             with editor_slot(args.owner):
                 code = run_process(command, env, args.timeout, cancelled=cancelled)
             content = log.read_text(errors="replace") if log.is_file() else ""
-            ok = code == 0 and bool(content) and not re.search(r"LogPython: Error:|Traceback \(most recent call last\)", content)
+            result["logErrors"] = log_errors(content)
+            ok = code == 0 and bool(content) and not result["logErrors"]
             if args.mode == "tests":
                 ok = ok and automation_passed(run / "automation/index.json")
         except subprocess.TimeoutExpired:

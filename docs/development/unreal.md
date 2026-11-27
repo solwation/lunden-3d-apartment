@@ -386,7 +386,11 @@ includes the selected ICD, source revision and effective INI hash.
 
 Per-run logs, the effective INI, Automation report and `result.json` are under
 `dataDir/runs/`; caches use `dataDir/DerivedDataCache` and `dataDir/Zen`. A zero exit without a log or with
-a Python traceback fails. Automation additionally needs a report with at least one
+a Python traceback fails. Shader source `error:` diagnostics and material compile failures
+also fail, even when Unreal logs them as warnings and exits 0 after selecting a fallback
+material (#2496). `result.json` retains that actual native `exitCode: 0`, records the
+matching `logErrors`, and sets `passed: false`; the runner itself returns 1. Ordinary
+shader-cache misses/recompile warnings are allowed. Automation additionally needs a report with at least one
 pass, no failures and no unrun tests. Timeouts terminate this invocation's process
 tree, including detached shader workers: the Linux runner acts as their child
 subreaper. It lets the editor shut down normally, gives orphaned workers a short

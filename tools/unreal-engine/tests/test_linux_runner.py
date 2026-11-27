@@ -103,7 +103,7 @@ class LinuxRunnerTests(unittest.TestCase):
                 except ProcessLookupError:
                     pass
 
-    def supervisor(self, editor_code, *, timeout=5):
+    def supervisor(self, editor_code, *, timeout=5, mode=None, render=False):
         self.editor.write_text("#!" + sys.executable + "\n" + editor_code)
         self.editor.chmod(0o755)
         program = self.root / "supervisor.py"
@@ -116,8 +116,41 @@ class LinuxRunnerTests(unittest.TestCase):
             "r.STOP_GRACE_SECONDS=.1\n"
             f"with patch.object(r.Path,'home',return_value=Path({str(self.root)!r})), "
             "patch.object(r.os,'uname',return_value=SimpleNamespace(release='linux')):\n"
-            f" sys.exit(r.main({self.arguments + ['--timeout', str(timeout), 'python', str(self.script)]!r}))\n")
+            f" sys.exit(r.main({self.arguments + ['--timeout', str(timeout)] + (['--render'] if render else []) + (mode or ['python', str(self.script)])!r}))\n")
         return subprocess.Popen([sys.executable, str(program)], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+    def test_real_zero_exit_shader_failure_is_rejected_in_both_modes(self):
+        # Actual UE5.8.4 diagnostics from #2421, 20261127T215602997730-2566723.
+        fallback = ("[2026.11.27-22.01.21:628][  0]LogShaderCompilers: Warning: Failed to compile Material "
+                    "/Game/Lunden/Lighting/M_LundenPrecipitation.M_LundenPrecipitation for platform "
+                    "SF_VULKAN_SM5, Default Material will be used in game.")
+        compiler = "\t/Engine/Generated/Material.ush:3828:15: error: redefinition of 'offset' with a different type: 'float' vs 'float2'"
+        cases = ((fallback + "\n" + compiler, True), (compiler, False), (fallback, False))
+        for index, (diagnostic, render) in enumerate(cases):
+            with self.subTest(diagnostic=diagnostic, render=render):
+                mode = ["tests"] if index == 2 else ["python", str(self.script)]
+                editor = ("import json,sys\nfrom pathlib import Path\n"
+                          f"text={diagnostic!r}\nprint(text,flush=True)\n"
+                          "Path(next(a.split('=',1)[1] for a in sys.argv if a.startswith('-abslog='))).write_text(text)\n"
+                          "report=next((a.split('=',1)[1] for a in sys.argv if a.startswith('-ReportExportPath=')),None)\n"
+                          "if report:\n p=Path(report);p.mkdir();(p/'index.json').write_text(json.dumps({'succeeded':1,'failed':0,'notRun':0}))\n")
+                p = self.supervisor(editor, mode=mode, render=render)
+                stdout, stderr = p.communicate(timeout=10)
+                self.assertEqual(p.returncode, 1, (stdout, stderr))
+                result = json.loads(max((self.root / "data/runs").glob("*/result.json")).read_text())
+                self.assertEqual(result["exitCode"], 0)  # Preserve the actual native exit.
+                self.assertFalse(result["passed"])
+                self.assertTrue(result["completed"])
+                self.assertTrue(result["logErrors"])
+                self.assertFalse(list((self.root / ".local/state/lunden-editor-slots").glob("slot-*")))
+
+    def test_shader_cache_warnings_do_not_reject_success(self):
+        log = ("LogShaderCompilers: Warning: Shader cache unavailable; compiling locally.\n"
+               "LogMaterial: Warning: Missing cached shadermap, compiling.\n"
+               "LogShaderCompilers: Warning: Shader compiler error: cache miss, retrying cache lookup.\n"
+               "LogShaderCompilers: Display: Finished compiling Material, 0 errors.\n")
+        self.assertEqual(self.invoke(["python", str(self.script)], log=log), 0)
+        self.assertEqual(self.invoke(["tests"], log=log, report={"succeeded": 1, "failed": 0, "notRun": 0}), 0)
 
     def test_adopted_worker_cannot_forward_cleanup_term_to_supervisor(self):
         # The old cleanup reproducibly died with -SIGTERM before result.json.
