@@ -1,0 +1,86 @@
+{
+  "passed": true,
+  "imageCommit": "f2710f0346350e7d27bddeaa88183a8cd37a4b76",
+  "images": [
+    {
+      "shot": "living-room-day",
+      "kind": "native",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/f2710f0346350e7d27bddeaa88183a8cd37a4b76/docs/verification/2384/linux-final/unreal-living-room-day.png",
+      "expectedSHA256": "ea5fdfc942f7304c61b189445dcb8850401de7477f711f1e6f6ce27bc75b8395",
+      "status": 200,
+      "actualSHA256": "ea5fdfc942f7304c61b189445dcb8850401de7477f711f1e6f6ce27bc75b8395",
+      "bytes": 315909,
+      "passed": true
+    },
+    {
+      "shot": "living-room-day",
+      "kind": "web",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/5133ef2626e196d7b07e25e5bc88fb34d7afecee/docs/verification/2322/linux-final/web-living-room-day.jpg",
+      "expectedSHA256": "be8023e5a4d1ba5cfb2d4f930273f6792c788658efd47dba6a6c153016af33ac",
+      "status": 200,
+      "actualSHA256": "be8023e5a4d1ba5cfb2d4f930273f6792c788658efd47dba6a6c153016af33ac",
+      "bytes": 67118,
+      "passed": true
+    },
+    {
+      "shot": "living-room-evening",
+      "kind": "native",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/f2710f0346350e7d27bddeaa88183a8cd37a4b76/docs/verification/2384/linux-final/unreal-living-room-evening.png",
+      "expectedSHA256": "11563f07fe94e0bf8d7109994043654ce4a43917d814d6f7530422a41dadb446",
+      "status": 200,
+      "actualSHA256": "11563f07fe94e0bf8d7109994043654ce4a43917d814d6f7530422a41dadb446",
+      "bytes": 315909,
+      "passed": true
+    },
+    {
+      "shot": "living-room-evening",
+      "kind": "web",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/5133ef2626e196d7b07e25e5bc88fb34d7afecee/docs/verification/2322/linux-final/web-living-room-evening.jpg",
+      "expectedSHA256": "1a6d7cd06c97fbb1729662cece73490a808745d2511124f8dc0a987f0e810c0b",
+      "status": 200,
+      "actualSHA256": "1a6d7cd06c97fbb1729662cece73490a808745d2511124f8dc0a987f0e810c0b",
+      "bytes": 58390,
+      "passed": true
+    },
+    {
+      "shot": "stairs-evening",
+      "kind": "native",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/f2710f0346350e7d27bddeaa88183a8cd37a4b76/docs/verification/2384/linux-final/unreal-stairs-evening.png",
+      "expectedSHA256": "a6e74743690a9536208f1ac28539144058e303384c16fd352be333d6fd8349da",
+      "status": 200,
+      "actualSHA256": "a6e74743690a9536208f1ac28539144058e303384c16fd352be333d6fd8349da",
+      "bytes": 157982,
+      "passed": true
+    },
+    {
+      "shot": "stairs-evening",
+      "kind": "web",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/00892a7/docs/verification/2369/web-stairs-evening.jpg",
+      "expectedSHA256": "48dcb9b61e67c0d499f06d1d253d02251b4930a9bb567f138c6723ddf71574c5",
+      "status": 200,
+      "actualSHA256": "48dcb9b61e67c0d499f06d1d253d02251b4930a9bb567f138c6723ddf71574c5",
+      "bytes": 26312,
+      "passed": true
+    },
+    {
+      "shot": "upper-floor-evening",
+      "kind": "native",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/f2710f0346350e7d27bddeaa88183a8cd37a4b76/docs/verification/2384/linux-final/unreal-upper-floor-evening.png",
+      "expectedSHA256": "9550480e8b8a6c0c1ad920d22635055b4f9a7e0456c1cbf614e18f0d713f4e23",
+      "status": 200,
+      "actualSHA256": "9550480e8b8a6c0c1ad920d22635055b4f9a7e0456c1cbf614e18f0d713f4e23",
+      "bytes": 225665,
+      "passed": true
+    },
+    {
+      "shot": "upper-floor-evening",
+      "kind": "web",
+      "url": "https://raw.githubusercontent.com/solwation/lunden-3d-apartment/5133ef2626e196d7b07e25e5bc88fb34d7afecee/docs/verification/2322/linux-final/web-upper-floor-evening.jpg",
+      "expectedSHA256": "16ed055836f8a6f6487ed1c6d99bfa45be5ceb9ecb2e53b5240c1692ebd7dbb8",
+      "status": 200,
+      "actualSHA256": "16ed055836f8a6f6487ed1c6d99bfa45be5ceb9ecb2e53b5240c1692ebd7dbb8",
+      "bytes": 31254,
+      "passed": true
+    }
+  ]
+}

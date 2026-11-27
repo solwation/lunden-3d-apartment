@@ -28,3 +28,6 @@ All four complete native images and all four locked web originals were viewed, n
 ![Living room, day](unreal-living-room-day.png)
 ![Living room, evening](unreal-living-room-evening.png)
 ![Upper floor, evening](unreal-upper-floor-evening.png)
+
+
+Images were committed in `f2710f0346350e7d27bddeaa88183a8cd37a4b76`, all eight raw URLs verified HTTPS200 with exact SHA256, and [embedded in the issue before closure](https://github.com/solwation/lunden-3d-apartment/issues/2384#issuecomment-7224445458). `image-url-proof.json` preserves those reads. No retired or before strategy images were added to this issue; earlier failure records remain private/textual evidence.
