@@ -554,11 +554,13 @@ def build_mpc(spec):
                "SnowSpeed": s["speed"] * 100, "SnowSway": s["sway"] * 100, "SnowSize": s["size"] * 100,
                "DriftPerMs": s["driftPerMs"], "DriftMax": s["driftMax"] * 100,
                # #2307: DuskLight (what the small lamps follow) -1 = the sky has not run yet (the lamps wait); the clouds; the moon disc
-               "DuskLight": -1.0, "Daylight": -1.0, "Hour": 14.0, "Month": 6.0, "PowerAvailable": 1.0,
+               "DuskLight": -1.0, "Daylight": -1.0, "Hour": 14.0, "PowerAvailable": 1.0,
                "WindowSkyStrength": 0.0, "WindowSunStrength": 0.0, "WindowAmbientFill": 0.0,
                "CloudOffsetX": 0.0, "CloudOffsetY": 0.0, "SkyThreshold": spec["sky"]["clouds"]["clearThr"], "Overcast": 0.0,
                "Night": 0.0, "CloudCover": 0.0, "CloudCoverage": 0.0,
-               "MoonRadius": spec["sky"]["light"]["moonRadius"], "Earthshine": spec["sky"]["light"]["moonEarthshine"]}
+               "MoonRadius": spec["sky"]["light"]["moonRadius"], "Earthshine": spec["sky"]["light"]["moonEarthshine"],
+               # Append: preserve all existing scalar packed indices as well as their GUIDs.
+               "Month": 6.0}
     vectors = {"SunDir": u.LinearColor(0, 0, 1, 0), "MoonDir": u.LinearColor(0, 0, -1, 0), "MoonPh": u.LinearColor(0, 1, 1, 0)}
     for i, box in enumerate(spec["boxes"]):
         vectors[f"Box{i}Min"] = u.LinearColor(*box["min"], 1)
