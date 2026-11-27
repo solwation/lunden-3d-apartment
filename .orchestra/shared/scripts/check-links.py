@@ -6,7 +6,8 @@ Standard library only. Run from anywhere inside the repository:
     python3 scripts/check-links.py
 
 Exit status 0 when every relative link and anchor resolves, 1 otherwise.
-Ignored: http(s)/mailto/other-scheme links, links in fenced code blocks and inline code.
+Ignored: http(s)/mailto/other-scheme links, links in fenced code blocks and inline code
+(also a code span that wraps onto the next line of its paragraph).
 A link whose text wraps onto the next line of a paragraph is checked; its reported line
 is the one where the link target starts. Paragraphs end at a blank line, heading, fence
 or list item.
@@ -19,7 +20,7 @@ from urllib.parse import unquote
 
 FENCE = re.compile(r"^ {0,3}(`{3,}|~{3,})(.*)$")
 HEADING = re.compile(r"^\s{0,3}#{1,6}[ \t]+(.*?)[ \t#]*$")
-INLINE_CODE = re.compile(r"(`+)(.+?)\1")
+INLINE_CODE = re.compile(r"(`+)(.+?)\1", re.DOTALL)
 LINK = re.compile(r"!?\[(?:[^\]\\]|\\.)*\]\(\s*<?([^)\s>]+)>?(?:\s+(?:\"[^\"]*\"|'[^']*'))?\s*\)")
 REFDEF = re.compile(r"^\s{0,3}\[[^\]]+\]:\s*<?(\S+?)>?(?:\s+.*)?$")
 LIST_ITEM = re.compile(r"^\s{0,3}(?:[-*+]|\d{1,9}[.)])[ \t]")
