@@ -3104,8 +3104,8 @@ canvas textures do not travel. `tools/unreal-engine/material-map.json` therefore
     parent chain's blend and two-sided overrides. The copy is `M_LundenGltfSurfaceForward`, generated under
     `Generated/ImportMaterials/` like the baked-light master: M_Default with Surface ForwardShading translucency.
 
-  Interchange's masters, and `M_LundenGlass` too, light a translucent surface from the translucency volume
-  (`TLM_SURFACE`). In the patio view of 21 June at 14:00 the volume lit the beer (`std_d88a1c_r20_m0_a88_e6a3a05`,
+  Interchange's masters light a translucent surface from the translucency volume (`TLM_SURFACE`).
+  `M_LundenGlass` used it too before the glazing correction below (#2388). In the patio view of 21 June at 14:00 the volume lit the beer (`std_d88a1c_r20_m0_a88_e6a3a05`,
   88 %) at about 0.3 of the same colour drawn opaque. It also gave the 24 % pint glass (`phys_f5fafb_r4_m0_a24_ds`) a
   blue sky veil. The beer was grey-brown (sRGB 108, 87, 73 against the web's 176, 131, 55). The patio beer is now drawn
   opaque and its glasses use the forward copy, both in `l1007-uteplats` only. The same glass key on the Bestå's crystal
@@ -3113,6 +3113,20 @@ canvas textures do not travel. `tools/unreal-engine/material-map.json` therefore
   `emissiveIntensity` and the display gain (#2460). For the beer that moves the colour by 1–2 levels.
   `tests/test_materials.py` (check 11) checks the entries against the export. It fails when a translucent emissive key
   stays on Interchange's translucent instance. [Verification](../verification/2440/README.md).
+
+The clear window/door glazing master `M_LundenGlass` now uses Surface ForwardShading (#2388). Its existing
+`MI_LundenWindowGlass` keeps the web's `#a9cce3`, opacity 0.1 and roughness 0.02, and the native specular choice 0.5.
+The material map, imported mesh bindings, exposure and other material graphs are unchanged. A glass-only hash input
+invalidates this one master; the builder and `--check` also inspect the actual translucent blend and lighting mode,
+so a current metadata stamp cannot hide the old volume setting. Rebuild/save only this master under its LFS lock;
+there is no geometry or material-map change requiring reimport.
+
+The no-save mode comparison on the current Linux CPU profile brought the locked patio door and living-room window
+regions within ±15% of the web in luminance and mean pixel HSV saturation. The upper-window region still failed
+saturation (1.332 of the web, luminance 1.011), so this candidate alone is **not full #2388 acceptance**. This is a
+surface-lighting change, with no RGB/exposure fit and no claim to implement the web's room-probe reflection or the
+broader transparent-material work in #2459. Saved/reloaded product and furnishing/wall regressions require actual
+native verification; source checks are not that evidence.
 
 `scope` lists the zones and node kinds whose keys count as building and ground surfaces. Before an import, after the
 export, run the coverage check (no Unreal needed):

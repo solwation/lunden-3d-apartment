@@ -278,6 +278,9 @@ def collection_reads(spec):
 
 def spec_hash(path, spec):
     parts = [path, spec, TILED_GRID + TILED_FINISH] + ([GRASS_HLSL] if spec.get("graph") == "grass" else [])  # other hashes unchanged
+    if spec.get("graph") == "glass":
+        # #2388: invalidate only the glazing master, leaving the material map/import fingerprint intact.
+        parts.append({"glassLightingMode": "TLM_SURFACE_PER_PIXEL_LIGHTING"})
     if spec.get("litter"):  # #2433: the litter / gravel code generators (the numbers are in spec["ground"])
         parts.append(Path(ground_litter.__file__).read_text(encoding="utf-8").replace("\r\n", "\n"))
     if spec.get("graph") == "river":
@@ -579,7 +582,8 @@ def grass_graph(m, spec):
 
 def glass_graph(m, spec):
     m.set_editor_property("blend_mode", unreal.BlendMode.BLEND_TRANSLUCENT)
-    m.set_editor_property("translucency_lighting_mode", unreal.TranslucencyLightingMode.TLM_SURFACE)
+    # #2388: the web glazing is a surface; keep its tint/alpha/PBR and use per-pixel surface lighting.
+    m.set_editor_property("translucency_lighting_mode", unreal.TranslucencyLightingMode.TLM_SURFACE_PER_PIXEL_LIGHTING)
     mel.connect_material_property(vector_param(m, "BaseColor", "#a9cce3", -400, 0), "", unreal.MaterialProperty.MP_BASE_COLOR)
     mel.connect_material_property(scalar_param(m, "Opacity", 0.1, -400, 150), "", unreal.MaterialProperty.MP_OPACITY)
     mel.connect_material_property(scalar_param(m, "Roughness", 0.02, -400, 250), "", unreal.MaterialProperty.MP_ROUGHNESS)
@@ -592,6 +596,14 @@ GLTF_FORWARD = "gltf-surface-forward"  # #2440: Interchange's master with Forwar
 GLTF_LABEL = "gltf-unlit-label"  # #2435: Interchange's unlit master x display gain x power, also generated at import time
 POWER_CUT = "PowerCut"  # #2435: the share of an unlit label's colour a power cut leaves (the instance's scalar parameter)
 VC_OUTPUTS = {"BaseColor": unreal.MaterialProperty.MP_BASE_COLOR, "EmissiveColor": unreal.MaterialProperty.MP_EMISSIVE_COLOR}
+
+
+def glass_ok(material):
+    """Reject the old volume-lit master even if an asset retains a current metadata stamp."""
+    return (isinstance(material, unreal.Material)
+            and material.get_editor_property("blend_mode") == unreal.BlendMode.BLEND_TRANSLUCENT
+            and material.get_editor_property("translucency_lighting_mode")
+            == unreal.TranslucencyLightingMode.TLM_SURFACE_PER_PIXEL_LIGHTING)
 
 
 def build_gltf_vertex_color(path, spec, existing):
@@ -868,6 +880,8 @@ def check(table):
                             for error in collection_ids.unresolved(asset))
         if spec.get("graph") == BAKED and not baked_light_ok(asset, spec):
             problems.append(f"{path}: not unlit, wrong face setting, or emissive not multiplied by the vertex colour")
+        if spec.get("graph") == "glass" and not glass_ok(asset):
+            problems.append(f"{path}: glazing is not translucent Surface ForwardShading")
         if spec.get("graph") == GLTF_FORWARD and not gltf_forward_ok(asset):
             problems.append(f"{path}: translucency lighting is not Surface ForwardShading")
         if spec.get("graph") == GLTF_LABEL and not unlit_label_ok(asset):
@@ -916,6 +930,7 @@ def build_entries(materials, force=False):
                 and (spec.get("graph") != BAKED or baked_light_ok(existing, spec))
                 and (spec.get("graph") != GLTF_LABEL or unlit_label_ok(existing))
                 and (spec.get("graph") != GLTF_FORWARD or gltf_forward_ok(existing))
+                and (spec.get("graph") != "glass" or glass_ok(existing))
                 and not (isinstance(existing, unreal.Material) and collection_ids.unresolved(existing))):
             unreal.log(f"LUNDEN_MATERIAL {path}: kept (spec {want})")
             kept += 1
