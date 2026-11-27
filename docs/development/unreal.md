@@ -2560,6 +2560,21 @@ What is exported:
   (1 at startup). A power change scales both point lights and bulb glow while preserving the dusk state.
   Other automatic lamps use cloud-adjusted daylight. The static canopy represents the export date. Reacting to later
   changes of sun, season or manual folding in the Windows game requires runtime interaction.
+- **Parasol fold contract (#2403, source portion).** `src/patio.js` exposes read-only `parasolProfiles` handles to the
+  actual canopy meshes. `export-parasols.js` records each exported patio furniture ID and its direct canopy part ID
+  in `measurements.furnishing.parasols`; no new GLB nodes, importer tags or native controllers are added. Each row
+  gives the existing local position (web metres), full-open radius, tilt (radians), exported open fraction, and both
+  endpoint poses. The unit cone's apex is local zero and its base is y=-1; the canopy's scale and X rotation produce
+  the fold. The fixed source UV1 uses the open-radius cloth metres while folding; the GLB retains the same existing
+  UV0, and this contract does not port material-library choices.
+  The rule reads the same `PARASOL_FOLD` constants as the unchanged web behavior: smoothstep `f*f*(3-2*f)`, radius
+  0.09 to the actual open radius, height 1.15 to 0.38, tilt times smoothstep, the configured months, sun y strictly
+  above 0.02 and overcast at most 0.6. Manual choice lasts until the automatic state changes; first arrival snaps to
+  target, later animation is 2.5/s manually or 0.5/s automatically. Run
+  `node tools/unreal-engine/tests/parasol-export.mjs [EXPORT_DIR]` for actual web boundary/animation checks and,
+  with an export, canopy ID/parent, local pose, original cone positions and UV0 checks. Partial exports without the
+  patio omit these rows. **Still pending in #2403:** importer tag, Blueprint integration under the Lighting locks,
+  PIE and actual matching dusk/overcast images. Source/export checks do not establish native runtime acceptance.
 - **Fruit bowl and basketball (#2310).** `main.js` builds them next to the world, so `export-scene.js` constructs the
   same classes with main.js's arguments (`new FruitBowl(scene, camera)` from `src/fruit.js`; `new Basketball(scene,
   camera, { world })` from `src/basket.js`, without the bullet marks and the outdoor hoop, which only matter in play)

@@ -1,0 +1,101 @@
+{
+  "scope": "Source/export portion only. Native importer tag, Blueprint/PIE and dusk/overcast images remain open in #2403. No game behavior change.",
+  "sourceCommit": "34ecd5d4c1b4b818d0e58b5bf5c9a946dec91238",
+  "sourceDirty": true,
+  "sourceHash": "f6b2b6a63b3aaa27c2a59300b866d3f7842109f800e8f58ab3accfd1071f8ac2",
+  "sources": [
+    {
+      "path": "src/patio.js",
+      "sha256": "021da4ada519ffa2980a7749e2f26279cbfd72ae78d5fa3f1e2f74054ddcb991"
+    },
+    {
+      "path": "tools/unreal-engine/export-parasols.js",
+      "sha256": "36be652e5c6dc1b435d063c90ab848dd2e3ac0943a22ec93848d96f7401a1d7f"
+    },
+    {
+      "path": "tools/unreal-engine/export-scene.js",
+      "sha256": "6698d3da5b9fd6839c90bb2b8d1f5bfbcec2e3a80700243c54e66eb9b9aea699"
+    }
+  ],
+  "schemaSha256": "7aec1a99615556c0d1239ba321b0aa8600f01697b1ddff4dc65f510ced7ff9fa",
+  "files": {
+    "export-manifest.json": "67e8c9984629bb1de1174c175a44af6ea94cd7e60ea2f6f41ad51440b5a32b5a",
+    "measurements.json": "444bedee1a9739ad7cc796ab03d8847c989bb892abcfb6365e27a385ffdc6736",
+    "l1007-uteplats.glb": "163ce0bc28191a075ec67161e77f2ccac3699d5f01666e7624899762d0fc3941"
+  },
+  "glbNodes": 167,
+  "glbTriangles": 86222,
+  "parasols": [
+    {
+      "id": "furn_parasol_l0_x450_z1555",
+      "mesh": "furn_parasol_l0_x450_z1555__5",
+      "zone": "l1007-uteplats",
+      "radius": 1.5,
+      "tilt": 0.20943951023931956,
+      "position": [
+        0,
+        2.45,
+        0
+      ],
+      "exportedOpen": 1,
+      "folded": {
+        "position": [
+          0,
+          2.45,
+          0
+        ],
+        "scale": [
+          0.09,
+          1.15,
+          0.09
+        ],
+        "rotationX": 0
+      },
+      "opened": {
+        "position": [
+          0,
+          2.45,
+          0
+        ],
+        "scale": [
+          1.5,
+          0.38,
+          1.5
+        ],
+        "rotationX": 0.20943951023931956
+      },
+      "rule": {
+        "months": [
+          4,
+          5,
+          6,
+          7,
+          8,
+          9
+        ],
+        "radius": 0.09,
+        "height": 1.15,
+        "openHeight": 0.38,
+        "sunThreshold": 0.02,
+        "maxOvercast": 0.6,
+        "automaticSpeed": 0.5,
+        "manualSpeed": 2.5,
+        "sunComparison": ">",
+        "overcastComparison": "<=",
+        "easing": "f*f*(3-2*f)",
+        "manual": "holds until automatic state changes",
+        "first": "snap to target"
+      },
+      "geometry": "unit cone; apex at local origin, base y=-1; pose is local to the furniture root",
+      "uv": "source cloth metre UV1 stays fixed while folding; GLB keeps its existing UV0 (no material-choice port)",
+      "source": "src/patio.js parasol, setParasol, updateParasols; src/config.js PATIO.parasol",
+      "scope": "export contract only; Unreal import tag, runtime controller and native acceptance remain #2403"
+    }
+  ],
+  "checks": {
+    "sourceAndActualGlb": "node tools/unreal-engine/tests/parasol-export.mjs EXPORT_DIR: exit0;108 boundary cases, manual/automatic animation, UV invariance, negative missing-binding schema and actual GLB node/parent/positions/UV0/pose pass",
+    "freshness": "node tools/unreal-engine/check-export.mjs --dir EXPORT_DIR: exit0;2 files,167 unique nodes,317 sources",
+    "geometryUnchanged": "Patio GLB SHA256 equals pre-existing issue2394-production full-export patio GLB byte-for-byte",
+    "outerShell": "Canonical browsertest invocation returned143 while owned Node continued to write all outputs; not claimed as an exit0 shell run. Existing #2473. No duplicate browser launched."
+  }
+}

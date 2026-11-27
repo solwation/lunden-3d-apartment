@@ -8,12 +8,13 @@
 // synchronously (nothing loaded later can slip in), walks the scene in its child order, and writes no time stamps.
 import { curtainProfiles, curtainRows } from './export-curtains.js';
 import { rugPoolProfile, rugPoolRow } from './export-rug-pool.js';
+import { parasolRows } from './export-parasols.js';
 import * as THREE from 'three';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 import * as C from '../../src/config.js';
 import { christmasCoverage } from '../../src/christmas.js';
 import { FurnitureGroups } from '../../src/furnituregroups.js';
-import { beersOut, cushionsOut, snowmanOut, Patio } from '../../src/patio.js';
+import { beersOut, cushionsOut, snowmanOut, Patio, parasolProfiles } from '../../src/patio.js';
 import { buildWorld } from '../../src/world.js';
 import { buildStringLights, updateStringLights, updateParasols } from '../../src/patio.js';
 import { groundY, renderedTerrainY, treeFeet, aoTrees } from '../../src/surroundings.js';
@@ -898,6 +899,7 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
   // component unless told otherwise, so the node says so (absent = casts); import_world.py turns cast_shadow off.
   const noShadow = new WeakSet();
   // #2432: a crown lobe's or vine's season seeds (src/seasons.js r1…r4) by node id, for measurements.json vegetation.seeds
+  const parasols = parasolProfiles(), parasolNodes = new Map(parasols.map(p => [p.canopy, null]));
   const lobeSeeds = new Map();
   const noteSeed = (id, mesh, i) => { const sd = crownSeeds(mesh)?.[i]; if (sd) lobeSeeds.set(id, [sd.r1, sd.r2, sd.r3, sd.r4].map((v) => r4(v ?? 0))); };
   const subtree = (o, atomId, counter, keys, furnish) => { // o's visible exported content, local transforms kept
@@ -928,6 +930,7 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
       const season = seasons.get(c); // #2387: a seasonal part inside an all-year piece (the sofa's cushions)
       if (season) s.userData.seasonal = season;
       if (beerParts.has(c)) beerParts.set(c, s.name);
+      if (parasolNodes.has(c)) parasolNodes.set(c, s.name);
       n.add(s);
     }
     return n;
@@ -1087,6 +1090,8 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
   if (vegetation) measurements.vegetation = vegetation;
   for (const { root } of Object.values(roots)) root.updateMatrixWorld(true); // (the mesh centres below)
   measurements.furnishing = furnishingData(byZone, textures, worldMatrix);
+  const exportedParasols = parasolRows(parasols, parasolNodes, [...byZone.values()].flat());
+  if (exportedParasols.length) measurements.furnishing.parasols = exportedParasols;
   if (wanted.includes('l1007')) {
     if (!lightsInfo.rugPool) throw Error('Missing living-room rug floor pool: ' + lightsInfo.error);
     measurements.furnishing.rugFloorPool = rugPoolRow(lightsInfo.rugPool, byZone.get('l1007'), roots.l1007.root, measurements.lights);

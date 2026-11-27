@@ -292,6 +292,16 @@ export function slattable(item = {}) {
 }
 
 // --- parasol ----------------------------------------------------------------
+// The existing fold geometry and automatic rule, also read by the Unreal export (#2403).
+export const PARASOL_FOLD = Object.freeze({ radius: 0.09, height: 1.15, openHeight: 0.38,
+  sunThreshold: 0.02, maxOvercast: 0.6, automaticSpeed: 0.5, manualSpeed: 2.5 });
+
+/** Read-only handles to the actual movable canopies; no pose or manual state is changed. */
+export function parasolProfiles() {
+  return seasonal.parasols.map(p => ({ object: p.interact.pickable, canopy: p.canopy,
+    radius: p.radius, tilt: p.tilt, open: p.open }));
+}
+
 /** Parasol on a cross base. The canopy is an open cone hanging from the top of the pole:
  * flat and wide when up, narrow and long when folded. */
 export function parasol(item = {}) {
@@ -341,7 +351,7 @@ export function parasol(item = {}) {
 function setParasol(p, f) {
   p.open = f;
   const e = f * f * (3 - 2 * f); // smoothstep
-  const r = THREE.MathUtils.lerp(0.09, p.radius, e), h = THREE.MathUtils.lerp(1.15, 0.38, e);
+  const r = THREE.MathUtils.lerp(PARASOL_FOLD.radius, p.radius, e), h = THREE.MathUtils.lerp(PARASOL_FOLD.height, PARASOL_FOLD.openHeight, e);
   p.canopy.scale.set(r, h, r);
   p.canopy.rotation.x = p.tilt * e; // open, the canopy leans its local +z side down (towards the sun, #398); folded it hangs straight
 }
@@ -660,15 +670,15 @@ export function updateStringLights(sl, daylight, dt, supply) {
 
 /** Set the canopy pose from the same day and manual state used by the patio in play. */
 export function updateParasols(day, dt, first) {
-  const sunUp = day.sunDir.y > 0.02;
-  const auto = P.parasol.months.includes(day.month) && sunUp && !(day.overcast > 0.6) ? 1 : 0; // folded under rain clouds too (#248)
+  const sunUp = day.sunDir.y > PARASOL_FOLD.sunThreshold;
+  const auto = P.parasol.months.includes(day.month) && sunUp && !(day.overcast > PARASOL_FOLD.maxOvercast) ? 1 : 0; // folded under rain clouds too (#248)
   for (const p of seasonal.parasols) {
     // A choice made by hand (E) holds until the automatic state itself changes (sunset/sunrise,
     // a new season): then the automatic one takes over again.
     if (p.manual !== null && auto !== p.manualAuto) p.manual = null;
     p.auto = auto;
     const target = p.manual ?? auto;
-    const speed = p.manual !== null ? 2.5 : 0.5; // by hand: a quick flick; by itself: slowly
+    const speed = p.manual !== null ? PARASOL_FOLD.manualSpeed : PARASOL_FOLD.automaticSpeed; // by hand: a quick flick; by itself: slowly
     if (first) setParasol(p, target); // no unfolding on arrival
     else if (p.open !== target) setParasol(p, THREE.MathUtils.clamp(p.open + Math.sign(target - p.open) * dt * speed, 0, 1));
   }
