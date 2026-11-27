@@ -607,12 +607,9 @@ if (depth >= 1e6) {
   float3 dw = float3(v.x, v.z, v.y), sw = float3(SunDir.x, SunDir.z, SunDir.y), mw = float3(MoonDir.x, MoonDir.z, MoonDir.y);
   WebClouds clouds;
   col = clouds.daylight(col, dw, sw, Cam*0.01, float2(CloudOffsetX,CloudOffsetY), SkyThreshold, Overcast);
-  // #2366: at START the clear night sky measured 0.0139 linear luminance at the game exposure
-  // and 0.0257 at +1.76 EV; the web measured 0.0237. Log interpolation gives +1.53 EV (guess).
-  // Lift the atmospheric background before drawing the exposure-independent stars and moon.
-  // Fade in between civil and astronomical twilight (sin 6 and 18 degrees below the horizon).
-  float darkSky = smoothstep(0.104528, 0.309017, -sw.y) * (1.0 - saturate(CloudCover));
-  col *= exp2(1.53 * darkSky);
+  // #2421: the exported web night gradient and procedural clouds, including the
+  // raw-output sky shader's bypass of Neutral. Daylight stays on #2371's path.
+  col = clouds.night(col, dw, sw, Cam*0.01, float2(CloudOffsetX,CloudOffsetY), SkyThreshold, Overcast, EAI);
   float clear = 1.0 - 0.85 * CloudCover, sR = sin(MoonRadius);
   float m = max(dot(dw, mw), 0.0);
   if (m > cos(MoonRadius * 1.6)) {
