@@ -61,3 +61,33 @@ verify the actual imported component transform before applying source local
 scales/rotation. Test first arrival, transitions, month wrap and both sides of
 the exact thresholds in PIE, then save matching dusk and overcast image pairs.
 Only that completed native acceptance can close #2403.
+
+## Native controller source checkpoint
+
+The remaining source now adds `parasol_control.py` to the shared lighting builder.
+The existing imported exact canopy-ID tag is the binding; there is no re-export,
+material substitution or extra full-world import. Only the patio string driver
+runs the fold function. It reads the sky's actual SunDir/Overcast and the new Month
+weather scalar, whose addition preserves existing collection parameter GUIDs.
+The source smoothstep, endpoints, season/sun/cloud comparisons, first-arrival snap,
+automatic/manual speeds and manual hold/release rule come from the exported row.
+The original mesh and UVs remain in place under the original furniture root.
+
+Before creating the Lighting level, a read-only imported-patio check requires the
+actual local cone mesh, parent, location, scale and tilt to match the exported pose.
+Unexpected baking or axis conversion fails the build instead of applying a guessed
+world transform. **The actual imported readback is still pending at this checkpoint.**
+The existing lamp colour/event and stair-mask logic is unchanged; the new Tick call
+returns immediately for all lamps except `patio:string-driver`.
+
+`test_parasol.py` is a new canonical PIE test, not a claimed execution result. It
+checks all 108 threshold/month combinations against the actual canopy transform,
+intermediate/manual movement and override release, unchanged mesh/parent, then a
+real Tick transition driven by the Sky's weather collection. Native compilation,
+saved assets, actual PIE success and the dusk/overcast raw image pairs remain
+required. No private capture or altered clock assertion substitutes for that test.
+
+Source-only checks pass: the existing actual-web/export108-case suite, endpoint and
+invalid-contract guards, Python syntax, exact5.8.4 header checks for the new reflected
+APIs and `git diff --check`. Root remains integration/publication and native-run owner.
+This checkpoint does not close #2403.

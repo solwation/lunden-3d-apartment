@@ -50,6 +50,7 @@ import collection_ids  # noqa: E402
 import neutral_tonemap  # #2396: the web's NeutralToneMapping in place of Unreal's tonemapper
 import window_light
 import build_window_light
+import parasol_control
 
 DIR = "/Game/Lunden/Lighting"
 SKY = DIR + "/BP_LundenSky"
@@ -204,8 +205,11 @@ def spec_of(m):
         raise RuntimeError("Re-export L1007 window daylight and source runtime colours before building shared lighting (#2394)")
     window_light.validate(daylight)
     boxes, soffit = indoor_boxes(m)
+    parasols = (m.get("furnishing") or {}).get("parasols", [])
+    parasol_control.validate(parasols)
     return {"sky": sky, "boxes": boxes, "soffit": soffit, "lamps": lamp_rows(m), "sunLux": SUN_LUX,
-            "windowDaylight": daylight,
+            "windowDaylight": daylight, "parasols": parasols,
+            "parasolController": hashlib.sha256(Path(parasol_control.__file__).read_bytes().replace(b"\r\n", b"\n")).hexdigest(),
             "windowShader": hashlib.sha256(Path(window_light.__file__).read_bytes().replace(b"\r\n", b"\n")).hexdigest(),
             "windowBuilder": hashlib.sha256(Path(build_window_light.__file__).read_bytes().replace(b"\r\n", b"\n")).hexdigest(),
             "exposureBias": EXPOSURE_BIAS, "hemiShare": HEMI_SHARE, "hemiNightSky": HEMI_NIGHT_SKY, "skyLuminance": SKY_LUMINANCE, "skyOvercast": SKY_OVERCAST, "wet": WET_RATE, "skyScale": SKY_SCALE, "fogGrey": FOG_GREY, "ambientRef": AMBIENT_REF, "fog": FOG,
@@ -550,7 +554,7 @@ def build_mpc(spec):
                "SnowSpeed": s["speed"] * 100, "SnowSway": s["sway"] * 100, "SnowSize": s["size"] * 100,
                "DriftPerMs": s["driftPerMs"], "DriftMax": s["driftMax"] * 100,
                # #2307: DuskLight (what the small lamps follow) -1 = the sky has not run yet (the lamps wait); the clouds; the moon disc
-               "DuskLight": -1.0, "Daylight": -1.0, "Hour": 14.0, "PowerAvailable": 1.0,
+               "DuskLight": -1.0, "Daylight": -1.0, "Hour": 14.0, "Month": 6.0, "PowerAvailable": 1.0,
                "WindowSkyStrength": 0.0, "WindowSunStrength": 0.0, "WindowAmbientFill": 0.0,
                "CloudOffsetX": 0.0, "CloudOffsetY": 0.0, "SkyThreshold": spec["sky"]["clouds"]["clearThr"], "Overcast": 0.0,
                "Night": 0.0, "CloudCover": 0.0, "CloudCoverage": 0.0,
@@ -937,6 +941,7 @@ def build_lamp(spec, mpc):
                    "BulbIdle": ("real", 0.0),
                    "BulbBoost": ("real", 0.0), "BulbColour": ("vector", u.Vector(0, 0, 0))})
     patio_string_function(bp)
+    parasol_control.build(bp, spec["parasols"], mpc, LAMP)
     G = Graph(bp)
 
     def show(chain):
@@ -1010,7 +1015,13 @@ moving = (kNew - K) * (kNew - K) > 0.0000000001
     connect(G.get("Auto"), "Auto", b_auto, "Condition")
     patio = G.place(G.g.add_branch_node())
     connect(G.get("PatioDusk"), "PatioDusk", patio, "Condition")
-    connect(tick, "then", patio, "execute")
+    if spec["parasols"]:
+        parasol = G.call(LAMP + ".BP_LundenLamp_C:UpdatePatioParasol")
+        connect(tick, "DeltaSeconds", parasol, "Elapsed")
+        connect(tick, "then", parasol, "execute")
+        connect(parasol, "then", patio, "execute")
+    else:
+        connect(tick, "then", patio, "execute")
     connect(patio, "else", daylight, "execute")
     grid = G.call("KismetMaterialLibrary:GetScalarParameterValue", ParameterName="PowerAvailable")
     constant(grid, "Collection", mpc.get_path_name())
@@ -1261,7 +1272,7 @@ def build_sky(spec, mpc, precip, clouds, tonemap, window_material):
                         ("CloudOffsetY", (G.get("CloudOffsetY"), "CloudOffsetY")),
                         ("SkyThreshold", env["skyThr"]), ("Overcast", env["ocl"]), ("Rain", env["Rain"]), ("Snow", env["Snow"]), ("Wet", env["Wet"]), ("WindX", env["windX"]),
                         ("WindY", env["windY"]), ("Streak", env["streak"]), ("DuskLight", env["duskLight"]),
-                        ("Daylight", env["day"]), ("Hour", env["Hour"]), ("Night", env["night"]), ("CloudCover", env["cover"]), ("CloudCoverage", env["coverage"]),
+                        ("Daylight", env["day"]), ("Hour", env["Hour"]), ("Month", env["Month"]), ("Night", env["night"]), ("CloudCover", env["cover"]), ("CloudCoverage", env["coverage"]),
                         ("WindowSkyStrength", env["windowSky"]), ("WindowSunStrength", env["windowSun"]), ("WindowAmbientFill", env["fill"])):
         setp = G.call("KismetMaterialLibrary:SetScalarParameterValue", ParameterName=name)
         constant(setp, "Collection", mpc.get_path_name())
@@ -1404,6 +1415,7 @@ def build_level(spec, sky_bp, lamp_bp):
     # #2381: build (and save) every stair mask before the map and its lamps exist; saving a material while the spawned
     # lamps were alive left their component handles dead ("ObjectInstance is null")
     masks = {row["id"]: stair_lamp.build(row, spec["stairBounds"]) for row in spec["lamps"] if row["stairVisibility"]}
+    parasol_control.validate_import(spec["parasols"])
     levels = u.EditorLoadingAndSavingUtils
     world = levels.new_blank_map(False)
     actors = u.get_editor_subsystem(u.EditorActorSubsystem)
