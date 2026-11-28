@@ -1,0 +1,92 @@
+{
+  "numericPassed": false,
+  "wholeAccepted": false,
+  "wholeAcceptancePending": "Twelve whole-original image review including noMoire; native shader/log/exit/outcome separately Root verified",
+  "browserBatches": 1,
+  "browserLaunches": 1,
+  "canonicalEvaluators": 2,
+  "canonicalExitCode": 1,
+  "renderingRoute": "Original source Canvas textures, published stock M_LundenTiled, original engine; no same-filter sky-trial causal contract",
+  "sourceTextureBindingSHA256": "29e6da2dbf64594c5558c3ab94c1032997d83673e1cff5131f788aff00d8525a",
+  "stockMasterSHA256": "f440606d08e04d9068f0de65664b58b4cb3b8ef23935855243287c96d0a907c2",
+  "sourceHead": "c4fb2986edccda814d97fa1d950e990074f28d0e",
+  "nativeConfigSHA256": "9a89e6b16b7f204b2613881f638de50ba5f9d7891b2c95fc623448a536656f5c",
+  "meterSHA256": "3650fa49ab70f3a157d5d9df8ac622b96689d74d09903c1dac60ae181e2aaf5f",
+  "nodeAdapterSHA256": "05ca3dbfcdcb60407129db703843daddbcb8c5c08fe977a389c7283bcfdf8905",
+  "pinsSHA256": "27a3e2b1d897e02e1a36916add6c05e1cc5303d99b1c8d288647dabe48adef7c",
+  "command": [
+    "node",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2428/measure-source-map.cjs",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2428/source-map-measure-tools",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2428/source-map-paired-final",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2428/source-map-paired-final/apartment-crops.json",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2428/source-map-paired-final/brick-crops.json",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2428/source-map-paired-final/canonical-tool-pins.json"
+  ],
+  "inputs": {
+    "living-room-day": {
+      "web": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/web/web-living-room-day.jpg",
+        "sha256": "be8023e5a4d1ba5cfb2d4f930273f6792c788658efd47dba6a6c153016af33ac"
+      },
+      "native": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/source-map-native-v1/product/regressions/unreal-living-room-day.png",
+        "sha256": "f07d153eed580e5b8481a3c4c9d6ddec005626842e09c30b1b3e22c46fa4ccc5"
+      }
+    },
+    "living-room-evening": {
+      "web": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2369/web/web-living-room-evening.jpg",
+        "sha256": "1a6d7cd06c97fbb1729662cece73490a808745d2511124f8dc0a987f0e810c0b"
+      },
+      "native": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/source-map-native-v1/product/regressions/unreal-living-room-evening.png",
+        "sha256": "1e391a2767678fc25f935b4013ede97df38b9c66f8348eeebb16dc006984b800"
+      }
+    },
+    "stairs-evening": {
+      "web": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2369/web/web-stairs-evening.jpg",
+        "sha256": "48dcb9b61e67c0d499f06d1d253d02251b4930a9bb567f138c6723ddf71574c5"
+      },
+      "native": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/source-map-native-v1/product/regressions/unreal-stairs-evening.png",
+        "sha256": "5cc29f3dfe67fdeb00d3b0396c8ab9e7805800ca85511194decc9718ea3c346f"
+      }
+    },
+    "upper-floor-evening": {
+      "web": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/web/web-upper-floor-evening.jpg",
+        "sha256": "16ed055836f8a6f6487ed1c6d99bfa45be5ceb9ecb2e53b5240c1692ebd7dbb8"
+      },
+      "native": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/source-map-native-v1/product/regressions/unreal-upper-floor-evening.png",
+        "sha256": "d9d8f6d8fed008112c900329409b6d77016fb55f6b4662b288244b0c1b6f8f2c"
+      }
+    },
+    "courtyard": {
+      "web": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/web/web-courtyard.jpg",
+        "sha256": "e5f9cc4237917ff75dcd83edb686ea5e34baf6390e86f345effba1eabfd9e169"
+      },
+      "native": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/source-map-native-v1/product/target/unreal-courtyard.png",
+        "sha256": "d3651511c5ec8ec164499cacf81c20c401087a4fd070201937072548c625211c"
+      }
+    },
+    "entrance-a": {
+      "web": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/web/web-entrance-a.jpg",
+        "sha256": "c61c6e2e7784c75ba29afafe8e9bf2e5724f00bc0686aba94d6fa8b7034e7ef0"
+      },
+      "native": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/source-map-native-v1/product/target/unreal-entrance-a.png",
+        "sha256": "5b79740e150079183be6ebab1a459d087bad2fceb10a2922f3493e2082866b1b"
+      }
+    }
+  },
+  "apartmentPassed": true,
+  "brickFarNumericalPassed": false,
+  "brickAllSixNumericalPassed": false,
+  "failureCount": 6
+}

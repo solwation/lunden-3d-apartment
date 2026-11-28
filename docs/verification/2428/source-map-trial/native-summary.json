@@ -1,0 +1,226 @@
+{
+  "source": "c4fb2986edccda814d97fa1d950e990074f28d0e",
+  "actualOuterExit": 0,
+  "runnerExit": 0,
+  "nativeResult": {
+    "engine": "5.8.4",
+    "profile": "linux-low",
+    "exitCode": 0,
+    "timedOut": false,
+    "passed": true,
+    "completed": true,
+    "log": "/mnt/d/LundenLinux/runs/20261127T235010711664-1002768/editor.log",
+    "logErrors": [],
+    "command": [
+      "/mnt/d/UnrealEngine/5.8.4/Engine/Binaries/Linux/UnrealEditor-Cmd",
+      "/home/devcontainers/lunden-linux/unreal/Lunden/Lunden.uproject",
+      "-DefEngineIni=/mnt/d/LundenLinux/runs/20261127T235010711664-1002768/LowEngine.ini",
+      "-LocalDataCachePath=/mnt/d/LundenLinux/DerivedDataCache",
+      "-ZenDataPath=/mnt/d/LundenLinux/Zen",
+      "-unattended",
+      "-nosplash",
+      "-nosound",
+      "-nop4",
+      "-stdout",
+      "-FullStdOutLogOutput",
+      "-NoCrashDialog",
+      "-abslog=/mnt/d/LundenLinux/runs/20261127T235010711664-1002768/editor.log",
+      "-vulkan",
+      "-sm5",
+      "-AllowCommandletRendering",
+      "-RenderOffscreen",
+      "-ResX=640",
+      "-ResY=360",
+      "-windowed",
+      "-AllowCPUDevices",
+      "-run=pythonscript",
+      "-script=/home/devcontainers/.local/state/lunden-codex-20261127/2428/build-capture-source-map.py"
+    ],
+    "engineIniSha256": "e26c244f9d51fddd3e6577d5696a073521b417a73167c5dd6dc69c79a2db180e",
+    "vulkanIcd": "/usr/share/vulkan/icd.d/lvp_icd.json",
+    "revision": "c4fb2986edccda814d97fa1d950e990074f28d0e",
+    "signal": null,
+    "error": null,
+    "seconds": 823.67
+  },
+  "all247Readonly": true,
+  "protectedAuthoredExact": true,
+  "dependenciesExact": true,
+  "capturedImages": 6,
+  "sourceBrickBindingsPassed": true,
+  "generatedExactDuringCapture": true,
+  "canonicalActualSteps": [
+    {
+      "step": "lighting-check-first",
+      "passed": true,
+      "result": null,
+      "seconds": 1.532
+    },
+    {
+      "step": "preflight-existing",
+      "passed": true,
+      "result": {
+        "seasons": "canonical --check passed",
+        "vegetation": "canonical materials(check=True) passed",
+        "interaction": {
+          "/Game/Lunden/Interaction/BP_LundenInteractionListener": true,
+          "/Game/Lunden/Blueprints/PilotDoors/BP_LundenSwingDoor": true
+        },
+        "lighting": "canonical --check required before actual skip invocation"
+      },
+      "seconds": 13.809
+    },
+    {
+      "step": "export",
+      "passed": true,
+      "result": {
+        "command": [
+          "/home/devcontainers/.nvm/versions/node/v22.20.0/bin/node",
+          "/home/devcontainers/lunden-linux/tools/unreal-engine/check-export.mjs",
+          "--dir",
+          "/home/devcontainers/lunden-linux/unreal/Lunden/Import"
+        ],
+        "exitCode": 0,
+        "stdout": "Unreal export is current: 11 files, 9402 nodes (9402 ids, each in one zone), 322 sources (exported from c4fb2986, HEAD c4fb2986)\n",
+        "stderr": ""
+      },
+      "seconds": 5.361
+    },
+    {
+      "step": "seasons",
+      "passed": true,
+      "result": null,
+      "seconds": 0.438
+    },
+    {
+      "step": "import",
+      "passed": true,
+      "result": null,
+      "seconds": 187.504
+    },
+    {
+      "step": "build_l1007",
+      "passed": true,
+      "result": null,
+      "seconds": 0.461
+    },
+    {
+      "step": "build_exterior",
+      "passed": true,
+      "result": null,
+      "seconds": 233.193
+    },
+    {
+      "step": "build_site",
+      "passed": true,
+      "result": null,
+      "seconds": 62.131
+    },
+    {
+      "step": "build_lighting",
+      "passed": true,
+      "result": null,
+      "seconds": 0.488
+    },
+    {
+      "step": "build_facade",
+      "passed": true,
+      "result": null,
+      "seconds": 0.581
+    },
+    {
+      "step": "build_vegetation",
+      "passed": true,
+      "result": null,
+      "seconds": 2.91
+    },
+    {
+      "step": "build_interaction",
+      "passed": true,
+      "result": null,
+      "seconds": 15.006
+    },
+    {
+      "step": "build_curtains",
+      "passed": true,
+      "result": null,
+      "seconds": 1.509
+    },
+    {
+      "step": "build_cabinet_washes",
+      "passed": true,
+      "result": null,
+      "seconds": 1.651
+    },
+    {
+      "step": "build_rug_pool",
+      "passed": true,
+      "result": null,
+      "seconds": 4.155
+    },
+    {
+      "step": "compose-check",
+      "passed": true,
+      "result": null,
+      "seconds": 3.872
+    },
+    {
+      "step": "import-check",
+      "passed": true,
+      "result": null,
+      "seconds": 10.098
+    },
+    {
+      "step": "nanite-usage-check",
+      "passed": true,
+      "result": {
+        "zones": [
+          "fixture",
+          "fond",
+          "gard",
+          "hus-l",
+          "kvarteret",
+          "l1007",
+          "l1007-entre",
+          "l1007-uteplats",
+          "omgivning",
+          "vegetation"
+        ],
+        "checkOnly": true
+      },
+      "seconds": 1.13
+    },
+    {
+      "step": "sync-stamp",
+      "passed": true,
+      "result": {
+        "command": [
+          "/home/devcontainers/.nvm/versions/node/v22.20.0/bin/node",
+          "/home/devcontainers/lunden-linux/tools/unreal-engine/check-import.mjs",
+          "--write-sync-stamp",
+          "--steps",
+          "export,seasons,import,build_l1007,build_exterior,build_site,build_lighting,build_facade,build_vegetation,build_interaction,build_curtains,build_cabinet_washes,build_rug_pool,compose-check,import-check"
+        ],
+        "exitCode": 0,
+        "stdout": "sync stamp written: complete sync of c4fb2986 (export, seasons, import, build_l1007, build_exterior, build_site, build_lighting, build_facade, build_vegetation, build_interaction, build_curtains, build_cabinet_washes, build_rug_pool, compose-check, import-check)\n",
+        "stderr": ""
+      },
+      "seconds": 0.428
+    },
+    {
+      "step": "release-gate",
+      "passed": true,
+      "result": {
+        "command": [
+          "/home/devcontainers/.nvm/versions/node/v22.20.0/bin/node",
+          "/home/devcontainers/lunden-linux/tools/unreal-engine/check-import.mjs"
+        ],
+        "exitCode": 0,
+        "stdout": "  Unreal export is current: 11 files, 9402 nodes (9402 ids, each in one zone), 322 sources (exported from c4fb2986, HEAD c4fb2986)\nUnreal import is current: 10 zones (fixture, fond, gard, hus-l, kvarteret, l1007-entre, l1007-uteplats, l1007, omgivning, vegetation) match the export of c4fb2986; last sync-import complete\n",
+        "stderr": ""
+      },
+      "seconds": 4.397
+    }
+  ],
+  "wholeAccepted": false
+}

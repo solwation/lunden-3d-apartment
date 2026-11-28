@@ -1,0 +1,682 @@
+{
+  "passed": true,
+  "fullFrameLuminance": [
+    {
+      "shot": "living-room-day",
+      "ratio": 0.9556650246305419,
+      "passed": true,
+      "web": {
+        "srgb": [
+          185.7,
+          176.6,
+          159.4
+        ],
+        "luminance": 0.5075,
+        "warmth": 1.165
+      },
+      "native": {
+        "srgb": [
+          182.3,
+          173.5,
+          155.6
+        ],
+        "luminance": 0.485,
+        "warmth": 1.172
+      }
+    },
+    {
+      "shot": "living-room-evening",
+      "ratio": 0.9388122375524895,
+      "passed": true,
+      "web": {
+        "srgb": [
+          115.2,
+          99.6,
+          76.5
+        ],
+        "luminance": 0.1667,
+        "warmth": 1.505
+      },
+      "native": {
+        "srgb": [
+          111.3,
+          97.1,
+          74.5
+        ],
+        "luminance": 0.1565,
+        "warmth": 1.494
+      }
+    },
+    {
+      "shot": "stairs-evening",
+      "ratio": 0.8758807588075881,
+      "passed": true,
+      "web": {
+        "srgb": [
+          119.3,
+          106.8,
+          90.8
+        ],
+        "luminance": 0.1845,
+        "warmth": 1.314
+      },
+      "native": {
+        "srgb": [
+          112.3,
+          104.4,
+          92
+        ],
+        "luminance": 0.1616,
+        "warmth": 1.22
+      }
+    },
+    {
+      "shot": "upper-floor-evening",
+      "ratio": 0.8760233918128654,
+      "passed": true,
+      "web": {
+        "srgb": [
+          110,
+          97.7,
+          82.6
+        ],
+        "luminance": 0.171,
+        "warmth": 1.332
+      },
+      "native": {
+        "srgb": [
+          107,
+          96.2,
+          82.2
+        ],
+        "luminance": 0.1498,
+        "warmth": 1.302
+      }
+    }
+  ],
+  "stairsWarmth": [
+    {
+      "crop": "frame",
+      "rect": [
+        0,
+        0,
+        1,
+        1
+      ],
+      "ratio": 0.928462709284627,
+      "passed": true,
+      "web": {
+        "srgb": [
+          119.3,
+          106.8,
+          90.8
+        ],
+        "luminance": 0.1845,
+        "warmth": 1.314
+      },
+      "native": {
+        "srgb": [
+          112.3,
+          104.4,
+          92
+        ],
+        "luminance": 0.1616,
+        "warmth": 1.22
+      }
+    },
+    {
+      "crop": "hall-door",
+      "rect": [
+        0.12,
+        0.07,
+        0.29,
+        0.24
+      ],
+      "ratio": 1.0235204855842184,
+      "passed": true,
+      "web": {
+        "srgb": [
+          239.2,
+          215.7,
+          181.4
+        ],
+        "luminance": 0.7085,
+        "warmth": 1.318
+      },
+      "native": {
+        "srgb": [
+          223,
+          200.5,
+          165.3
+        ],
+        "luminance": 0.6099,
+        "warmth": 1.349
+      }
+    }
+  ],
+  "materialRows": [
+    {
+      "shot": "living-room-day",
+      "family": "rug",
+      "role": "primary",
+      "rect": [
+        0.385,
+        0.9,
+        0.45,
+        0.985
+      ],
+      "luminanceRatio": 0.821397756686799,
+      "luminancePassed": true,
+      "hueRatios": {
+        "R/G": 0.9783654039611449,
+        "B/G": 1.0230456828394974
+      },
+      "existingGuessedHueGuardPassed": null,
+      "passed": true,
+      "web": {
+        "srgb": [
+          146.4,
+          146.8,
+          128.7
+        ],
+        "luminance": 0.3477,
+        "warmth": 1.138
+      },
+      "native": {
+        "srgb": [
+          132.5,
+          135.8,
+          121.8
+        ],
+        "luminance": 0.2856,
+        "warmth": 1.088
+      }
+    },
+    {
+      "shot": "living-room-day",
+      "family": "curtain",
+      "role": "primary",
+      "rect": [
+        0.445,
+        0.24,
+        0.473,
+        0.666
+      ],
+      "luminanceRatio": 0.8715614486443698,
+      "luminancePassed": true,
+      "hueRatios": {
+        "R/G": 1.0055528473779423,
+        "B/G": 0.972583580802759
+      },
+      "existingGuessedHueGuardPassed": true,
+      "passed": true,
+      "web": {
+        "srgb": [
+          184.1,
+          181.3,
+          160.6
+        ],
+        "luminance": 0.5053,
+        "warmth": 1.146
+      },
+      "native": {
+        "srgb": [
+          179.2,
+          175.5,
+          151.2
+        ],
+        "luminance": 0.4404,
+        "warmth": 1.185
+      }
+    },
+    {
+      "shot": "living-room-day",
+      "family": "coffee-table",
+      "role": "primary",
+      "rect": [
+        0.177,
+        0.808,
+        0.211,
+        0.832
+      ],
+      "luminanceRatio": 1.0583190394511148,
+      "luminancePassed": true,
+      "hueRatios": {
+        "R/G": 1.01036254616306,
+        "B/G": 0.9542617158032655
+      },
+      "existingGuessedHueGuardPassed": null,
+      "passed": true,
+      "web": {
+        "srgb": [
+          147.7,
+          108.7,
+          61.1
+        ],
+        "luminance": 0.1749,
+        "warmth": 2.418
+      },
+      "native": {
+        "srgb": [
+          152.8,
+          111.3,
+          59.7
+        ],
+        "luminance": 0.1851,
+        "warmth": 2.56
+      }
+    },
+    {
+      "shot": "living-room-day",
+      "family": "cabinet-front",
+      "role": "primary",
+      "rect": [
+        0.765,
+        0.3,
+        0.809,
+        0.409
+      ],
+      "luminanceRatio": 1.0030534351145037,
+      "luminancePassed": true,
+      "hueRatios": {
+        "R/G": 1.0063240744977808,
+        "B/G": 0.9709639953542393
+      },
+      "existingGuessedHueGuardPassed": true,
+      "passed": true,
+      "web": {
+        "srgb": [
+          106.6,
+          61.6,
+          19.6
+        ],
+        "luminance": 0.0655,
+        "warmth": 5.445
+      },
+      "native": {
+        "srgb": [
+          107.1,
+          61.5,
+          19
+        ],
+        "luminance": 0.0657,
+        "warmth": 5.636
+      }
+    },
+    {
+      "shot": "living-room-day",
+      "family": "sofa",
+      "role": "primary",
+      "rect": [
+        0.221,
+        0.72,
+        0.348,
+        0.744
+      ],
+      "luminanceRatio": 1.0327004219409284,
+      "luminancePassed": true,
+      "hueRatios": {
+        "R/G": 1.0139555290087945,
+        "B/G": 0.9530497699586811
+      },
+      "existingGuessedHueGuardPassed": null,
+      "passed": true,
+      "web": {
+        "srgb": [
+          177.8,
+          186.1,
+          154.6
+        ],
+        "luminance": 0.474,
+        "warmth": 1.15
+      },
+      "native": {
+        "srgb": [
+          182.8,
+          188.7,
+          149.4
+        ],
+        "luminance": 0.4895,
+        "warmth": 1.224
+      }
+    },
+    {
+      "shot": "living-room-evening",
+      "family": "rug",
+      "role": "primary",
+      "rect": [
+        0.385,
+        0.9,
+        0.45,
+        0.985
+      ],
+      "luminanceRatio": 0.9291044776119403,
+      "luminancePassed": true,
+      "hueRatios": {
+        "R/G": 0.9432783278327834,
+        "B/G": 1.0835000027548665
+      },
+      "existingGuessedHueGuardPassed": null,
+      "passed": true,
+      "web": {
+        "srgb": [
+          110,
+          93.2,
+          59.9
+        ],
+        "luminance": 0.134,
+        "warmth": 1.838
+      },
+      "native": {
+        "srgb": [
+          101.2,
+          90.9,
+          63.3
+        ],
+        "luminance": 0.1245,
+        "warmth": 1.599
+      }
+    },
+    {
+      "shot": "living-room-evening",
+      "family": "curtain",
+      "role": "primary",
+      "rect": [
+        0.445,
+        0.24,
+        0.473,
+        0.666
+      ],
+      "luminanceRatio": 0.8515057113187955,
+      "luminancePassed": true,
+      "hueRatios": {
+        "R/G": 1.0112346741602496,
+        "B/G": 0.9169287625722259
+      },
+      "existingGuessedHueGuardPassed": true,
+      "passed": true,
+      "web": {
+        "srgb": [
+          90.2,
+          78.5,
+          53.7
+        ],
+        "luminance": 0.0963,
+        "warmth": 1.68
+      },
+      "native": {
+        "srgb": [
+          90.4,
+          77.8,
+          48.8
+        ],
+        "luminance": 0.082,
+        "warmth": 1.854
+      }
+    },
+    {
+      "shot": "living-room-evening",
+      "family": "coffee-table",
+      "role": "primary",
+      "rect": [
+        0.177,
+        0.808,
+        0.211,
+        0.832
+      ],
+      "luminanceRatio": 0.8212877792378449,
+      "luminancePassed": true,
+      "hueRatios": {
+        "R/G": 1.021477299458951,
+        "B/G": 0.6795186023127201
+      },
+      "existingGuessedHueGuardPassed": null,
+      "passed": true,
+      "web": {
+        "srgb": [
+          109,
+          69.2,
+          20.4
+        ],
+        "luminance": 0.0761,
+        "warmth": 5.333
+      },
+      "native": {
+        "srgb": [
+          100.4,
+          62.4,
+          12.5
+        ],
+        "luminance": 0.0625,
+        "warmth": 8.049
+      }
+    },
+    {
+      "shot": "living-room-evening",
+      "family": "cabinet-front",
+      "role": "primary",
+      "rect": [
+        0.765,
+        0.3,
+        0.809,
+        0.409
+      ],
+      "luminanceRatio": 0.8275426405559065,
+      "luminancePassed": true,
+      "hueRatios": {
+        "R/G": 1.0972334562444812,
+        "B/G": 0.9348341135762264
+      },
+      "existingGuessedHueGuardPassed": true,
+      "passed": true,
+      "web": {
+        "srgb": [
+          149.3,
+          98.7,
+          42.5
+        ],
+        "luminance": 0.1583,
+        "warmth": 3.512
+      },
+      "native": {
+        "srgb": [
+          143.9,
+          86.7,
+          34.9
+        ],
+        "luminance": 0.131,
+        "warmth": 4.126
+      }
+    },
+    {
+      "shot": "living-room-evening",
+      "family": "sofa",
+      "role": "primary",
+      "rect": [
+        0.221,
+        0.72,
+        0.348,
+        0.744
+      ],
+      "luminanceRatio": 1.0161160354552778,
+      "luminancePassed": true,
+      "hueRatios": {
+        "R/G": 0.9647867173640368,
+        "B/G": 1.0206889816645914
+      },
+      "existingGuessedHueGuardPassed": null,
+      "passed": true,
+      "web": {
+        "srgb": [
+          106.7,
+          98.6,
+          61.5
+        ],
+        "luminance": 0.1241,
+        "warmth": 1.735
+      },
+      "native": {
+        "srgb": [
+          104.3,
+          99.9,
+          63.6
+        ],
+        "luminance": 0.1261,
+        "warmth": 1.639
+      }
+    },
+    {
+      "shot": "living-room-evening",
+      "family": "spot-1",
+      "role": "existing-cabinet-spot",
+      "rect": [
+        0.6996185,
+        0.3153762,
+        0.7037851,
+        0.3277218
+      ],
+      "luminanceRatio": 0.9868421052631579,
+      "luminancePassed": true,
+      "hueRatios": {
+        "R/G": 1.018592456964642,
+        "B/G": 1.1650841039483788
+      },
+      "existingGuessedHueGuardPassed": null,
+      "passed": true,
+      "web": {
+        "srgb": [
+          176.3,
+          124.8,
+          68.3
+        ],
+        "luminance": 0.2432,
+        "warmth": 2.58
+      },
+      "native": {
+        "srgb": [
+          176.7,
+          122.8,
+          78.3
+        ],
+        "luminance": 0.24,
+        "warmth": 2.255
+      }
+    },
+    {
+      "shot": "living-room-evening",
+      "family": "spot-2",
+      "role": "existing-cabinet-spot",
+      "rect": [
+        0.7388803,
+        0.294855,
+        0.743047,
+        0.3072007
+      ],
+      "luminanceRatio": 1.057624460995688,
+      "luminancePassed": true,
+      "hueRatios": {
+        "R/G": 1.0034187670299728,
+        "B/G": 1.2084489854517613
+      },
+      "existingGuessedHueGuardPassed": null,
+      "passed": true,
+      "web": {
+        "srgb": [
+          183.5,
+          124.7,
+          65.3
+        ],
+        "luminance": 0.2551,
+        "warmth": 2.809
+      },
+      "native": {
+        "srgb": [
+          189,
+          128,
+          81
+        ],
+        "luminance": 0.2698,
+        "warmth": 2.333
+      }
+    },
+    {
+      "shot": "living-room-evening",
+      "family": "spot-3",
+      "role": "existing-cabinet-spot",
+      "rect": [
+        0.7928169,
+        0.2666638,
+        0.7969836,
+        0.2790094
+      ],
+      "luminanceRatio": 1.141735918744229,
+      "luminancePassed": true,
+      "hueRatios": {
+        "R/G": 1.0126771116350883,
+        "B/G": 1.1766534255857468
+      },
+      "existingGuessedHueGuardPassed": null,
+      "passed": true,
+      "web": {
+        "srgb": [
+          167.5,
+          118.3,
+          64.5
+        ],
+        "luminance": 0.2166,
+        "warmth": 2.597
+      },
+      "native": {
+        "srgb": [
+          178.8,
+          124.7,
+          80
+        ],
+        "luminance": 0.2473,
+        "warmth": 2.235
+      }
+    },
+    {
+      "shot": "upper-floor-evening",
+      "family": "curtain",
+      "role": "primary",
+      "rect": [
+        0.352,
+        0.283,
+        0.374,
+        0.583
+      ],
+      "luminanceRatio": 0.8675496688741722,
+      "luminancePassed": true,
+      "hueRatios": {
+        "R/G": 1.0333759046402724,
+        "B/G": 0.9511755485893418
+      },
+      "existingGuessedHueGuardPassed": true,
+      "passed": true,
+      "web": {
+        "srgb": [
+          40.5,
+          22.9,
+          27.5
+        ],
+        "luminance": 0.0151,
+        "warmth": 1.471
+      },
+      "native": {
+        "srgb": [
+          42.4,
+          23.2,
+          26.5
+        ],
+        "luminance": 0.0131,
+        "warmth": 1.598
+      }
+    }
+  ],
+  "unchangedCriterionDataRows": 20,
+  "acceptanceContractSHA256": "b398989d239412dbdd7c2ce45925d8259e51b2a19bc98965a49a06b9ddc2ebeb",
+  "actualCaptureSHA256": "c61a5d82b573c86b7a3639ff81d73702d587a5d4525eccb0fad4c27c6832bbb4",
+  "unchangedCriteria": true,
+  "failedRows": []
+}

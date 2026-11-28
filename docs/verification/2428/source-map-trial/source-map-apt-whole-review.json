@@ -1,0 +1,173 @@
+{
+  "issue": 2428,
+  "reviewedAtUtc": "2026-11-28T00:07:12.958769+00:00",
+  "scope": "Bounded visual review of four apartment pairs, all eight original images opened. No pixel measurement, tests, browser, render, engine, source or asset mutation. Exterior originals reviewed separately by Root.",
+  "sourceHead": "c4fb2986edccda814d97fa1d950e990074f28d0e",
+  "renderingRoute": "Original source Canvas textures, published stock M_LundenTiled, original engine; no same-filter sky-trial causal contract",
+  "stockMasterSHA256": "f440606d08e04d9068f0de65664b58b4cb3b8ef23935855243287c96d0a907c2",
+  "comparison": "Current source-map Native against original2322/2369 sourceweb. No private2424 skytrial or old tent-filter Native used as acceptance baseline.",
+  "inputs": [
+    {
+      "shot": "living-room-day",
+      "side": "web",
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/source-map-paired-final/web-living-room-day.jpg",
+      "sha256": "be8023e5a4d1ba5cfb2d4f930273f6792c788658efd47dba6a6c153016af33ac",
+      "actualOriginalViewed": true,
+      "sourceOriginal": "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/web/web-living-room-day.jpg"
+    },
+    {
+      "shot": "living-room-day",
+      "side": "unreal",
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/source-map-paired-final/unreal-living-room-day.png",
+      "sha256": "f07d153eed580e5b8481a3c4c9d6ddec005626842e09c30b1b3e22c46fa4ccc5",
+      "actualOriginalViewed": true,
+      "sourceOriginal": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/source-map-native-v1/product/regressions/unreal-living-room-day.png"
+    },
+    {
+      "shot": "living-room-evening",
+      "side": "web",
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/source-map-paired-final/web-living-room-evening.jpg",
+      "sha256": "1a6d7cd06c97fbb1729662cece73490a808745d2511124f8dc0a987f0e810c0b",
+      "actualOriginalViewed": true,
+      "sourceOriginal": "/home/devcontainers/.local/state/lunden-codex-20261127/2369/web/web-living-room-evening.jpg"
+    },
+    {
+      "shot": "living-room-evening",
+      "side": "unreal",
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/source-map-paired-final/unreal-living-room-evening.png",
+      "sha256": "1e391a2767678fc25f935b4013ede97df38b9c66f8348eeebb16dc006984b800",
+      "actualOriginalViewed": true,
+      "sourceOriginal": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/source-map-native-v1/product/regressions/unreal-living-room-evening.png"
+    },
+    {
+      "shot": "stairs-evening",
+      "side": "web",
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/source-map-paired-final/web-stairs-evening.jpg",
+      "sha256": "48dcb9b61e67c0d499f06d1d253d02251b4930a9bb567f138c6723ddf71574c5",
+      "actualOriginalViewed": true,
+      "sourceOriginal": "/home/devcontainers/.local/state/lunden-codex-20261127/2369/web/web-stairs-evening.jpg"
+    },
+    {
+      "shot": "stairs-evening",
+      "side": "unreal",
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/source-map-paired-final/unreal-stairs-evening.png",
+      "sha256": "5cc29f3dfe67fdeb00d3b0396c8ab9e7805800ca85511194decc9718ea3c346f",
+      "actualOriginalViewed": true,
+      "sourceOriginal": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/source-map-native-v1/product/regressions/unreal-stairs-evening.png"
+    },
+    {
+      "shot": "upper-floor-evening",
+      "side": "web",
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/source-map-paired-final/web-upper-floor-evening.jpg",
+      "sha256": "16ed055836f8a6f6487ed1c6d99bfa45be5ceb9ecb2e53b5240c1692ebd7dbb8",
+      "actualOriginalViewed": true,
+      "sourceOriginal": "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/web/web-upper-floor-evening.jpg"
+    },
+    {
+      "shot": "upper-floor-evening",
+      "side": "unreal",
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/source-map-paired-final/unreal-upper-floor-evening.png",
+      "sha256": "d9d8f6d8fed008112c900329409b6d77016fb55f6b4662b288244b0c1b6f8f2c",
+      "actualOriginalViewed": true,
+      "sourceOriginal": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/source-map-native-v1/product/regressions/unreal-upper-floor-evening.png"
+    }
+  ],
+  "existingRootMeasurement": {
+    "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/source-map-paired-final/apartment-gate.json",
+    "sha256": "f28b0a0f69c429e93196735515fca41f3dddaae6a956de563597a082342851db",
+    "passed": true,
+    "failedRows": [],
+    "unchangedCriterionDataRows": 20,
+    "executedByThisReview": false,
+    "acceptanceContract": "/home/devcontainers/.local/state/lunden-codex-20261127/2384/acceptance-contract.json",
+    "acceptanceContractSHA256": "b398989d239412dbdd7c2ce45925d8259e51b2a19bc98965a49a06b9ddc2ebeb",
+    "sourceContracts": {
+      "stairs": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2369/locked-capture-contract.json",
+        "sha256": "d3c89d4b9a50404ed629c5c54ce863ad1eca9b804249748a1b39abef1514abe8"
+      },
+      "furnishing": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/corrected-reference-contract.json",
+        "sha256": "1f559812415bdc9a6bbfcd5030957bae510b208833318c45021d3a89545d47b6"
+      },
+      "furnishingFourteenGateBaseline": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/after-paired-v5/fourteen-crop-gate.json",
+        "sha256": "ce0b1a520c2b1b6f84489ca2f3489ff9ed134655945f00cc992e258e73896172"
+      }
+    }
+  },
+  "views": [
+    {
+      "view": "living-room-day",
+      "observations": "Sofa, patterned curtains, coffee table and cabinet remain recognizable and coherent against sourceweb. Dayrug retains the source concentric arc motif and reads modestly darker rather than washed out. Silvia copper shade remains too dark; timber-floor dots, weaker wall/ceiling AO bands, sofa-back yellow field and glazing/outside differences remain visible. Thin coloured bottom-edge noise remains.",
+      "mappedOpenIssues": [
+        2482,
+        2487,
+        2489,
+        2447,
+        2459,
+        2470,
+        2428
+      ],
+      "dayRug": {
+        "reference": "original2322 sourceweb",
+        "existingRootLuminanceRatio": 0.821397756686799,
+        "existingRootPassed": true,
+        "newSkytrialRegressionClaim": false
+      }
+    },
+    {
+      "view": "living-room-evening",
+      "observations": "Warm ceiling pool and cabinet spot cones remain present. Silvia shade is dark rustbrown rather than bright copper. Exterior through glass is much darker/greenbrown than sourceweb, the high cabinet-wall field and room AO differ, and the timber dot raster remains.",
+      "mappedOpenIssues": [
+        2482,
+        2460,
+        2488,
+        2459,
+        2484,
+        2489,
+        2487,
+        2470
+      ]
+    },
+    {
+      "view": "stairs-evening",
+      "observations": "Warm lighting is retained, but the central shaft and treads have visibly weaker dark contrast than sourceweb. Copper mirror has the already documented bright white dome-like highlight. Thin bottom-edge coloured noise is present.",
+      "mappedOpenIssues": [
+        2480,
+        2490,
+        2470
+      ]
+    },
+    {
+      "view": "upper-floor-evening",
+      "observations": "Plum curtain, furniture layout and posters remain recognizable. Ceiling lamp has a darker rim/interior and lacks the source camera-facing halo. Visible wood tone, wall/ceiling AO bands, timber dot raster and exterior/window contrast remain different.",
+      "mappedOpenIssues": [
+        2460,
+        2481,
+        2486,
+        2489,
+        2487,
+        2459,
+        2428,
+        2470
+      ]
+    }
+  ],
+  "issueMappingBasis": {
+    "priorWholeReview": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/whole-image-review.json",
+    "priorWholeReviewSHA256": "65fbd11cff64de7764b3e607cd53280e409c0a2bfc3c1d0f38823d28140d17a3",
+    "openIssueSnapshot": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/open-review-issues.json",
+    "openIssueSnapshotSHA256": "a7f8f8bab0756bd87415f3c81948180c5c1beff1c6dc41a234227b45599e8aae",
+    "freshExternalIssueStateFetchPerformedHere": false,
+    "note": "Existing OPEN scope mappings from prior whole review reused; this review does not infer any new causal regression or reopen closed issues."
+  },
+  "conclusion": {
+    "apartmentExistingNumericalCriteriaPassed": true,
+    "distinctNewUnmappedApartmentGapIdentified": false,
+    "allApartmentVisualDifferencesResolved": false,
+    "newRegressionAttribution": "Not established by this scoped image review.",
+    "whole2428Accepted": false,
+    "whole2428Reason": "Existing combined gate numericPassed false; Root independently reports visible HusL waves in outdoor originals. Apartment numerical preservation is not whole-issue acceptance or Windows validation."
+  }
+}

@@ -1,0 +1,153 @@
+{
+  "old": "/mnt/d/LundenLinux/exports/issue2404-garage-v4",
+  "new": "/mnt/d/LundenLinux/exports/issue2428-source-map-v2",
+  "method": "Exact decoded accessor value bytes+type/count/normalized, ignoring buffer offsets/packing; all node fields and hierarchy exact except normalized preservedbrick materialKeys; semantic texture references resolve to original compressed payload hashes. No pixel decoding, metering or native execution.",
+  "zones": {
+    "fixture.glb": {
+      "changed": false,
+      "oldSHA256": "4636b1948a94ae9ead1697597026fb784135703be441a97ddd400a0c1446e649",
+      "newSHA256": "4636b1948a94ae9ead1697597026fb784135703be441a97ddd400a0c1446e649",
+      "nodes": 14,
+      "meshPrimitives": 5,
+      "passed": true,
+      "errors": []
+    },
+    "fond.glb": {
+      "changed": true,
+      "oldSHA256": "3296dac9ba0e5dd15a7838b56cdf1310ec6c4ed7d93f086684c091abfcaabde3",
+      "newSHA256": "2470732aaec8c646a09817293f0026d57f957953b5dfcb14df6831287f29a3f3",
+      "nodes": 42,
+      "meshPrimitives": 34,
+      "preservedBrickMaterialKeys": [
+        "std_ffffff_r95_m0_vc_tex_ds_tf61cca8b0a"
+      ],
+      "oldImages": 1,
+      "newImages": 2,
+      "allOldImagePayloadsRetained": true,
+      "usedAccessorsComparedOld": 110,
+      "usedAccessorsComparedNew": 110,
+      "passed": true,
+      "errors": [],
+      "oldAllMeshesReferencedAndCompared": true,
+      "newAllMeshesReferencedAndCompared": true
+    },
+    "gard.glb": {
+      "changed": false,
+      "oldSHA256": "559a4bd2a880d6624a5dd5cb451e2ec256b2ae1ed415983c6a759cd3540e995b",
+      "newSHA256": "559a4bd2a880d6624a5dd5cb451e2ec256b2ae1ed415983c6a759cd3540e995b",
+      "nodes": 26,
+      "meshPrimitives": 25,
+      "passed": true,
+      "errors": []
+    },
+    "hus-l.glb": {
+      "changed": true,
+      "oldSHA256": "df489d6ca499c5eccba334d113402f5ef6e5dfa53670f3f727b190192089ac22",
+      "newSHA256": "58718fb1e71013b278ed3418f02ef9466bed63abae4c77f05144f13e099b8f78",
+      "nodes": 1197,
+      "meshPrimitives": 1182,
+      "preservedBrickMaterialKeys": [
+        "std_ffffff_r100_m0_tex_ds_te2f33fd972"
+      ],
+      "oldImages": 12,
+      "newImages": 14,
+      "allOldImagePayloadsRetained": true,
+      "usedAccessorsComparedOld": 4367,
+      "usedAccessorsComparedNew": 4367,
+      "passed": true,
+      "errors": [],
+      "oldAllMeshesReferencedAndCompared": true,
+      "newAllMeshesReferencedAndCompared": true
+    },
+    "kvarteret.glb": {
+      "changed": true,
+      "oldSHA256": "f9ee5c34380769365942fbb30d3ef811724c0733816115afbc3688d736134fb2",
+      "newSHA256": "871a4006370b925c153093d1b281e434487662b59915f5a3ac89e09d32eefdb1",
+      "nodes": 477,
+      "meshPrimitives": 319,
+      "preservedBrickMaterialKeys": [
+        "std_ffffff_r95_m0_tex_ds_tf61cca8b0a",
+        "std_ffffff_r95_m0_tex_t448fdac08a"
+      ],
+      "oldImages": 25,
+      "newImages": 27,
+      "allOldImagePayloadsRetained": true,
+      "usedAccessorsComparedOld": 1075,
+      "usedAccessorsComparedNew": 1075,
+      "passed": true,
+      "errors": [],
+      "oldAllMeshesReferencedAndCompared": true,
+      "newAllMeshesReferencedAndCompared": true
+    },
+    "l1007-entre.glb": {
+      "changed": false,
+      "oldSHA256": "4738e1b53b2c981cdb5e68f27da6eec734c5db294de770929e3dc15cc4b320c3",
+      "newSHA256": "4738e1b53b2c981cdb5e68f27da6eec734c5db294de770929e3dc15cc4b320c3",
+      "nodes": 5,
+      "meshPrimitives": 4,
+      "passed": true,
+      "errors": []
+    },
+    "l1007-uteplats.glb": {
+      "changed": false,
+      "oldSHA256": "163ce0bc28191a075ec67161e77f2ccac3699d5f01666e7624899762d0fc3941",
+      "newSHA256": "163ce0bc28191a075ec67161e77f2ccac3699d5f01666e7624899762d0fc3941",
+      "nodes": 167,
+      "meshPrimitives": 66,
+      "passed": true,
+      "errors": []
+    },
+    "l1007.glb": {
+      "changed": false,
+      "oldSHA256": "9b08d5770fdc54efcb6392be62711a8d3db56c9cf5f5ddc83c6db588251b6899",
+      "newSHA256": "9b08d5770fdc54efcb6392be62711a8d3db56c9cf5f5ddc83c6db588251b6899",
+      "nodes": 2652,
+      "meshPrimitives": 2016,
+      "passed": true,
+      "errors": []
+    },
+    "omgivning.glb": {
+      "changed": true,
+      "oldSHA256": "92e00d3d4948282a469f186937e7bb6032969518bec387286b72fd954e7c615c",
+      "newSHA256": "a65999a3ba791e5a11eb917f30cd7694076585c729e0c63f04c3c1d02eb42959",
+      "nodes": 658,
+      "meshPrimitives": 130,
+      "preservedBrickMaterialKeys": [
+        "std_ffffff_r95_m0_tex_tf61cca8b0a"
+      ],
+      "oldImages": 1,
+      "newImages": 2,
+      "allOldImagePayloadsRetained": true,
+      "usedAccessorsComparedOld": 333,
+      "usedAccessorsComparedNew": 333,
+      "passed": true,
+      "errors": [],
+      "oldAllMeshesReferencedAndCompared": true,
+      "newAllMeshesReferencedAndCompared": true
+    },
+    "vegetation.glb": {
+      "changed": false,
+      "oldSHA256": "e01b8c3c721b54531468165e986a0223b5cb875080fb16e6003579c8a2c48433",
+      "newSHA256": "e01b8c3c721b54531468165e986a0223b5cb875080fb16e6003579c8a2c48433",
+      "nodes": 4164,
+      "meshPrimitives": 7,
+      "passed": true,
+      "errors": []
+    }
+  },
+  "errors": [],
+  "passed": true,
+  "changedZones": [
+    "fond.glb",
+    "hus-l.glb",
+    "kvarteret.glb",
+    "omgivning.glb"
+  ],
+  "allowedDifferences": [
+    "declared brickMap material name content-ID suffix",
+    "declared brickMap baseColorTexture and HusL metallicRoughnessTexture",
+    "declared brickMap extras.texture only when exactly equal to material content-ID suffix",
+    "node extras.materialKeys normalized only for declared brickMap keys",
+    "GLB buffer offsets/accessor indices/image indices and serialization order"
+  ]
+}

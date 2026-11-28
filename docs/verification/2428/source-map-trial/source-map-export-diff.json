@@ -1,0 +1,56 @@
+{
+  "before": "/mnt/d/LundenLinux/exports/issue2404-garage-v4",
+  "after": "/mnt/d/LundenLinux/exports/issue2428-source-map-v2",
+  "changedGLBs": [
+    "fond.glb",
+    "hus-l.glb",
+    "kvarteret.glb",
+    "omgivning.glb"
+  ],
+  "unchangedGLBs": [
+    "fixture.glb",
+    "gard.glb",
+    "l1007-entre.glb",
+    "l1007-uteplats.glb",
+    "l1007.glb",
+    "vegetation.glb"
+  ],
+  "unchangedCount": 6,
+  "newSource": "c4fb2986edccda814d97fa1d950e990074f28d0e",
+  "newSourceDirty": false,
+  "newExporterSourceCount": 322,
+  "oldFiles": {
+    "export-manifest.json": "29bdcf87a7db0b9aa1641707f4228daca579a0f4d15d3ea0486b1b7f77bd1b19",
+    "fixture.glb": "4636b1948a94ae9ead1697597026fb784135703be441a97ddd400a0c1446e649",
+    "fond.glb": "3296dac9ba0e5dd15a7838b56cdf1310ec6c4ed7d93f086684c091abfcaabde3",
+    "gard.glb": "559a4bd2a880d6624a5dd5cb451e2ec256b2ae1ed415983c6a759cd3540e995b",
+    "hus-l.glb": "df489d6ca499c5eccba334d113402f5ef6e5dfa53670f3f727b190192089ac22",
+    "kvarteret.glb": "f9ee5c34380769365942fbb30d3ef811724c0733816115afbc3688d736134fb2",
+    "l1007-entre.glb": "4738e1b53b2c981cdb5e68f27da6eec734c5db294de770929e3dc15cc4b320c3",
+    "l1007-uteplats.glb": "163ce0bc28191a075ec67161e77f2ccac3699d5f01666e7624899762d0fc3941",
+    "l1007.glb": "9b08d5770fdc54efcb6392be62711a8d3db56c9cf5f5ddc83c6db588251b6899",
+    "measurements.json": "cfd94bade4a6e26f2d0837c1d571c7f39c7c5cf4042a08835e0d2d72f959901b",
+    "omgivning.glb": "92e00d3d4948282a469f186937e7bb6032969518bec387286b72fd954e7c615c",
+    "vegetation.glb": "e01b8c3c721b54531468165e986a0223b5cb875080fb16e6003579c8a2c48433"
+  },
+  "newFiles": {
+    "export-manifest.json": "c2c26a4c322daf3d190a8207426972a3242adde8e56ce9ecfa8a7fe337c8ca50",
+    "fixture.glb": "4636b1948a94ae9ead1697597026fb784135703be441a97ddd400a0c1446e649",
+    "fond.glb": "2470732aaec8c646a09817293f0026d57f957953b5dfcb14df6831287f29a3f3",
+    "gard.glb": "559a4bd2a880d6624a5dd5cb451e2ec256b2ae1ed415983c6a759cd3540e995b",
+    "hus-l.glb": "58718fb1e71013b278ed3418f02ef9466bed63abae4c77f05144f13e099b8f78",
+    "kvarteret.glb": "871a4006370b925c153093d1b281e434487662b59915f5a3ac89e09d32eefdb1",
+    "l1007-entre.glb": "4738e1b53b2c981cdb5e68f27da6eec734c5db294de770929e3dc15cc4b320c3",
+    "l1007-uteplats.glb": "163ce0bc28191a075ec67161e77f2ccac3699d5f01666e7624899762d0fc3941",
+    "l1007.glb": "9b08d5770fdc54efcb6392be62711a8d3db56c9cf5f5ddc83c6db588251b6899",
+    "measurements.json": "c32ff5967780bdb020d1db8f80bdc9423870296140f100de5717e926645047bd",
+    "omgivning.glb": "a65999a3ba791e5a11eb917f30cd7694076585c729e0c63f04c3c1d02eb42959",
+    "vegetation.glb": "e01b8c3c721b54531468165e986a0223b5cb875080fb16e6003579c8a2c48433"
+  },
+  "expectedFourZones": true,
+  "fondActualSharedCanvasProof": {
+    "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2428/source-map-fond-diff.json",
+    "sha256": "6fe33de0d1e0bf2756901538fe09b851cf70e2dc736d2876b61c57a19baaa9d4"
+  },
+  "actualExportOuterExit": 0
+}
