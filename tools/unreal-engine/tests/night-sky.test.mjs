@@ -57,4 +57,4 @@ assert(python.stdout.includes('1-smoothstep(-0.17,-0.04,sun.y)'));
 const builder = readFileSync('tools/unreal-engine/python/build_lighting.py', 'utf8');
 assert(builder.includes('col = clouds.night(col, dw, sw, Cam*0.01'));
 assert(!builder.includes('exp2(1.53'));
-console.log(`Night source OK: actual START DayCycle uniforms, 5 overcast states, ${roundtrips} Neutral roundtrips; daytime shader untouched. Native material/capture pending.`);
+console.log(`Night source OK: actual START DayCycle uniforms, 5 overcast states, ${roundtrips} Neutral roundtrips; native material/capture pending.`);

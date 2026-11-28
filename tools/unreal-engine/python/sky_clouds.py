@@ -20,7 +20,7 @@ struct WebClouds {
     float3 night(float3 color, float3 view, float3 sun, float3 eye, float2 offset, float threshold, float overcast, float inverseExposure) {
         return color;
     }
-    float3 daylight(float3 color, float3 view, float3 sun, float3 eye, float2 offset, float threshold, float overcast) {
+    float3 daylight(float3 color, float3 view, float3 sun, float3 eye, float2 offset, float threshold, float overcast, float inverseExposure) {
         return color;
     }
 };
@@ -66,21 +66,53 @@ struct WebClouds {{
         cloud = lerp(cloud*float3(0.9,0.95,1.04),cloud,thick)*(1+0.1*(1-thick)*(1-shade));
         return lerp(base, cloud, 0.85*sampleCloud.x);
     }}
-    float3 daylight(float3 nativeSky, float3 d, float3 sun, float3 eye, float2 offset, float threshold, float oc) {{
-        // Retain the atmospheric sun disc/halo, twilight, high-altitude sky and #2366's entire night branch.
-        float weight = smoothstep(0,0.35,sun.y) * (1-smoothstep({num(c['top'])},{num(c['top']+c['fade'])},eye.z))
-                     * (1-smoothstep(0.99,0.9993,dot(d,sun))) * smoothstep(0,{num(sk['horizon'][1])},d.y);
+    float3 daylight(float3 nativeSky, float3 d, float3 sun, float3 eye, float2 offset, float threshold, float oc, float inverseExposure) {{
+        // #2434: SKY_DUSK.sun ends at 0.16 and its last halo at 0.17. Keep the
+        // existing twilight/night, high-flight and atmospheric sun-disc paths.
+        // November16 14:00 has sun.y=0.177840..., so the source gradient applies
+        // fully, including its horizon. These are source transition boundaries,
+        // not new colour/exposure fitting controls.
+        float weight = smoothstep(0.16,0.17,sun.y) * (1-smoothstep({num(c['top'])},{num(c['top']+c['fade'])},eye.z))
+                     * (1-smoothstep(0.99,0.9993,dot(d,sun)));
         if (weight <= 0) return nativeSky;
-        float3 zenith = lerp({vec(palette['dayZenith'])}, {vec(palette['overcast'])}, oc*0.85);
-        float3 horizon = lerp({vec(palette['dayHorizon'])}, {vec(palette['overcast'])}, oc*0.7);
+        float day = smoothstep(-0.08,0.18,sun.y), night = 1-day;
+        float glowAmt = (1-smoothstep(0,0.35,abs(sun.y)))*smoothstep(-0.15,0.05,sun.y);
+        // Actual THREE.Color(0xff8a3c), checked against DayCycle.uGlow.
+        float3 glow = float3(1,0.2541520943200296,0.04518620437910499);
+        float3 zenith = lerp({vec(palette['nightZenith'])},{vec(palette['dayZenith'])},day);
+        float3 horizon = lerp({vec(palette['nightHorizon'])},{vec(palette['dayHorizon'])},day);
+        horizon = lerp(horizon,{vec(palette['duskHorizon'])},glowAmt*0.6);
+        zenith = lerp(zenith,{vec(palette['overcast'])}*(0.15+0.85*day),oc*0.85);
+        horizon = lerp(horizon,{vec(palette['overcast'])}*(0.2+0.8*day),oc*0.7);
         float3 base = lerp(horizon,zenith,pow(max(0,d.y),0.55));
-        float3 target = sky(base,shape(d,sun,eye.xy,offset,threshold,oc),oc);
-        // #2313's actual sky luminance (scene-linear) sets the scale. Use a neutral 0.5 noise sample for
-        // the expected sky in this direction/weather, then apply the web's spatial luminance and chroma.
-        float thick = smoothstep(threshold-{num(sk["soft"])},threshold+0.3,0.5);
-        float3 neutral = sky(base,float3(cover(0.5,thick,d.y,threshold,oc),thick,0),oc);
-        float3 luma = float3(0.2126,0.7152,0.0722);
-        return lerp(nativeSky,target * dot(nativeSky,luma)/max(0.0001,dot(neutral,luma)),weight);
+        float s = max(dot(d,sun),0);
+        // HAZE.scatter: the same linear low-sun halo that skyFragmentShader adds.
+        float3 scatter = float3(1,0.86,0.66)*(0.12*day*(1-oc)*smoothstep(-0.05,0.1,sun.y));
+        base += (glow*glowAmt+scatter)*pow(s,6)*(1-max(d.y,0));
+        float3 sampleCloud = shape(d,sun,eye.xy,offset,threshold,oc);
+        float thick = sampleCloud.y, shade = sampleCloud.z;
+        float3 cloud = lerp(float3(0.95,0.95,0.95),float3(0.16,0.18,0.24),night)+glow*glowAmt*0.35;
+        cloud = lerp(cloud,lerp(float3(0.5,0.53,0.57),float3(0.08,0.09,0.11),night),oc*0.8);
+        cloud *= 1-{num(sk['shade'])}*thick*(0.6+0.4*oc)-{num(sk['selfShade'])}*shade*(1-0.75*oc);
+        cloud = lerp(cloud*float3(0.9,0.95,1.04),cloud,thick)*(1+0.1*(1-thick)*(1-shade));
+        float3 target = lerp(base,cloud,sampleCloud.x*0.85);
+        target = lerp(horizon,target,smoothstep(-0.02,0.02,d.y));
+        // Source sky has colorspace_fragment but NO tonemapping_fragment. Invert
+        // the COMPLETE installed Neutral curve, including compression/desaturation,
+        // then cancel exposure exactly as the existing night branch does. Inverse
+        // domain failures preserve the old sky; no clipped/fitted approximation.
+        float peak = max(target.r,max(target.g,target.b));
+        if (any(target < 0) || peak >= 1) return nativeSky;
+        float3 preBlack = target;
+        if (peak >= 0.76) {{
+            float inputPeak = 0.0576/(1-peak)+0.52;
+            float g = 1-1/(0.15*(inputPeak-peak)+1);
+            preBlack = (target-peak*g)/(1-g)*(inputPeak/peak);
+        }}
+        if (any(preBlack < 0) || any(!isfinite(preBlack))) return nativeSky;
+        float x = min(preBlack.r,min(preBlack.g,preBlack.b));
+        float blackOffset = x < 0.04 ? sqrt(x/6.25)-x : 0.04;
+        return lerp(nativeSky,(preBlack+blackOffset)*inverseExposure,weight);
     }}
     float3 night(float3 nativeSky, float3 d, float3 sun, float3 eye, float2 offset, float threshold, float oc, float inverseExposure) {{
         // SKY_DUSK.sun's rising envelope: full source night below -0.17, native twilight

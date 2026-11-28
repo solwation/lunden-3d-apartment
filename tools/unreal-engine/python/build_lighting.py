@@ -606,7 +606,7 @@ if (Wet > 0.001 && depth < 1e6) {
 if (depth >= 1e6) {
   float3 dw = float3(v.x, v.z, v.y), sw = float3(SunDir.x, SunDir.z, SunDir.y), mw = float3(MoonDir.x, MoonDir.z, MoonDir.y);
   WebClouds clouds;
-  col = clouds.daylight(col, dw, sw, Cam*0.01, float2(CloudOffsetX,CloudOffsetY), SkyThreshold, Overcast);
+  col = clouds.daylight(col, dw, sw, Cam*0.01, float2(CloudOffsetX,CloudOffsetY), SkyThreshold, Overcast, EAI);
   // #2421: the exported web night gradient and procedural clouds, including the
   // raw-output sky shader's bypass of Neutral. Daylight stays on #2371's path.
   col = clouds.night(col, dw, sw, Cam*0.01, float2(CloudOffsetX,CloudOffsetY), SkyThreshold, Overcast, EAI);

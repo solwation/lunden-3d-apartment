@@ -120,24 +120,42 @@ with tempfile.TemporaryDirectory() as temp:
     native = run(folder, "native", hlsl, dxc_compute, samples)
     reference = run(folder,"web",glsl,[opt.glslang,"-V","-S","comp","-o"],samples)
     xyz = lambda vals: "float3(" + ",".join(map(str, vals)) + ")"
-    camera = hlsl_header + """
+    neutral_ast = ast.parse((HERE.parent / "python/neutral_tonemap.py").read_text())
+    neutral_body = next(a.value.value for a in neutral_ast.body if isinstance(a, ast.Assign)
+                        and isinstance(a.targets[0], ast.Name) and a.targets[0].id == "NEUTRAL_HLSL")
+    assert web["sun"][1] >= 0.35, "this source camera reference uses full day with zero dusk/glow"
+    # #2434 replaces the old arbitrary nativeSky-luminance preservation check.
+    # The actual Neutral output must now recover source colour. The existing
+    # GLSL/HLSL comparison above proves the shared cloud.sky expression itself.
+    camera = hlsl_header + "struct Curve { float3 apply(float3 Exposed) {" + neutral_body + "} };" + """
     uint i=id.x,b=i*5;
     WebClouds clouds;
     float3 d=float3(a[b],a[b+1],a[b+2]), sun=SUN, eye=EYE, nativeSky=float3(.2,.4,.7);
-    float3 colour=clouds.daylight(nativeSky,d,sun,eye,0,a[b+4],a[b+3]);
-    float3 luma=float3(.2126,.7152,.0722);
-    o[i*2]=float4(colour,dot(colour,luma)/dot(nativeSky,luma));
-    float3 night=clouds.daylight(nativeSky,d,-sun,eye,0,a[b+4],a[b+3]);
-    float3 high=clouds.daylight(nativeSky,d,sun,eye+float3(0,0,10000),0,a[b+4],a[b+3]);
+    float oc=a[b+3];
+    float3 colour=clouds.daylight(nativeSky,d,sun,eye,0,a[b+4],oc,1);
+    float3 horizon=lerp(HORIZON,OVERCAST,oc*0.7),zenith=lerp(ZENITH,OVERCAST,oc*0.85);
+    float3 base=lerp(horizon,zenith,pow(max(0,d.y),0.55));
+    base+=float3(1,0.86,0.66)*(0.12*(1-oc))*pow(max(dot(d,sun),0),6)*(1-max(0,d.y));
+    float3 expected=clouds.sky(base,clouds.shape(d,sun,eye.xy,0,a[b+4],oc),oc);
+    expected=lerp(horizon,expected,smoothstep(-0.02,0.02,d.y));
+    // Below compression, positive source RGB is always in Neutral's inverse
+    // domain. Pure day-sky.test.mjs additionally exhausts compression/rejection.
+    float eligible=(max(expected.r,max(expected.g,expected.b))<0.76 && dot(d,sun)<=0.99)?1:0;
+    Curve curve;
+    o[i*2]=float4(abs(curve.apply(colour)-expected),eligible);
+    float3 night=clouds.daylight(nativeSky,d,-sun,eye,0,a[b+4],oc,1);
+    float3 high=clouds.daylight(nativeSky,d,sun,eye+float3(0,0,10000),0,a[b+4],oc,1);
     o[i*2+1]=float4(abs(night-nativeSky),length(high-nativeSky));
 }""".replace("SUN",xyz(web["sun"])).replace("EYE",xyz(web["eye"]))
+    for key,name in (("dayHorizon","HORIZON"),("dayZenith","ZENITH"),("overcast","OVERCAST")):
+        camera=camera.replace(name,xyz(spec["palette"][key]))
     for oc,thr in ((0,web["threshold"][0]),(1,web["threshold"][-1])):
         rows = [(*ray,oc,thr) for ray in web["rays"]]
         colours = run(folder,"camera",camera, dxc_compute, rows)
-        gains = sorted(row[3] for row in colours)
-        avg = sum(gains)/len(gains)
-        print(f"START crop overcast={oc} gain mean={avg:.6f}, range={min(gains):.6f}..{max(gains):.6f}")
-        assert 0.8 <= avg <= 1.25 and all(max(row[4:]) < 1e-6 for row in colours)
+        matched = [row for row in colours if row[3]>0.5]
+        worst=max(max(row[:3]) for row in matched)
+        print(f"START source sky overcast={oc}: {len(matched)} inverse-domain rays, max RGB delta={worst:.7f}")
+        assert worst<0.001 and all(max(row[4:]) < 1e-6 for row in colours)
 
     # Count real sparse clear-sky coverage in the full view as well as in #2313's fixed luminance crop.
     rows = [(*ray,0,web["threshold"][0],*web["eye"][:2],0,0) for ray in web["frame"]]
