@@ -1,4 +1,5 @@
 [
+  {"id": 1772, "date": "2026-11-28", "text": "Portikens golv och grannlägenheternas kakel får nu rätt material i Unreal-versionen.", "issues": [2442]},
   {"id": 1771, "date": "2026-11-28", "text": "Hus A, B och C kastar nu solskuggor i Unreal-versionen, även från loggiaräckena.", "issues": [2438]},
   {"id": 1770, "date": "2026-11-28", "text": "Unreal-versionen har nu hagelljud och åskväder med synkroniserade blixtar och fördröjt åskljud.", "issues": [2439]},
   {"id": 1769, "date": "2026-11-28", "text": "Unreal-versionen finns nu som Linux-beta med signerad nedladdning och eget startprogram.", "issues": [2422]},
