@@ -29,6 +29,12 @@ def exercise(measurements, sky):
         data["spawn"] = {}
         copy.write_text(json.dumps(data))
         check(copy, sky, stale=False)
+        # #2439: the real exported source flash intensity is a saved Lighting input.
+        flash = data["site"]["sourceAmbient"]["flashLight"]
+        data["site"]["sourceAmbient"]["flashLight"] = flash + 0.01
+        copy.write_text(json.dumps(data))
+        check(copy, sky, stale=True)
+        data["site"]["sourceAmbient"]["flashLight"] = flash
         # An exported cloud parameter (#2371) and an actual lamp position independently require a rebuild.
         clouds = data["site"]["sky"]["clouds"]
         height = clouds["height"]

@@ -305,6 +305,29 @@ def sun_and_weather(game, sky):
         log(f"weather {event}: {got}")
         if got != (rain, snow, rain, snow):
             raise RuntimeError(f"{event}: Rain/Snow/MPC {got}, expected {(rain, snow, rain, snow)}")
+    # #2439: mutually exclusive sky states, and the envelope/MPC without an audio device.
+    result["skyWeather"] = []
+    for event, hail, storm in (("ToggleHail", True, False), ("ToggleStorm", False, True),
+                               ("ToggleStorm", False, False), ("ToggleHail", True, False),
+                               ("ToggleSnow", False, False)):
+        sky.call_method(event)
+        actual = (sky.get_editor_property("Hail"), sky.get_editor_property("Storm"))
+        if actual != (hail, storm):
+            raise RuntimeError(f"{event}: Hail/Storm {actual}, expected {(hail, storm)}")
+        result["skyWeather"].append({"event": event, "hail": actual[0], "storm": actual[1],
+                                  "rain": sky.get_editor_property("Rain"), "snow": sky.get_editor_property("Snow")})
+    sky.call_method("ToggleSnow")
+    result["flash"] = []
+    for age, fraction in ((0.0, 1.0), (0.07, 0.25), (0.14, 0.8), (0.22, 0.8), (1.50001, 0.0)):
+        sky.set_editor_property("FlashT", age, u.PropertyAccessChangeNotifyMode.NEVER)
+        sky.set_editor_property("FlashK", 0.675, u.PropertyAccessChangeNotifyMode.NEVER)
+        sky.call_method("UpdateSky")
+        actual = sky.get_editor_property("Flash")
+        stored = u.MaterialLibrary.get_scalar_parameter_value(game, mpc, "Flash")
+        expected = 0.675 * fraction
+        result["flash"].append({"age": age, "flash": actual, "mpc": stored, "expected": expected})
+        if max(abs(actual - expected), abs(stored - expected)) > 1e-6:
+            raise RuntimeError(f"Sky flash envelope/MPC differs from weather.js: {result['flash'][-1]}")
 
 
 # 4. The clock in PIE (then 2./3.) ---------------------------------------------------------------------------------------------

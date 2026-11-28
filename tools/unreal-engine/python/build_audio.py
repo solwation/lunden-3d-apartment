@@ -699,7 +699,7 @@ def build_component(P, trees, sounds, wind, bed, reverbs, sashes):
     g.step(cast)
     pp.link(actor, pp.inp(cast, "Object"))
     sky = pp.cast_out(cast)
-    for name in ("WindSpeed", "Wet", "Rain", "Month", "Hour"):
+    for name in ("WindSpeed", "Wet", "Rain", "Month", "Hour", "Hail", "Storm"):
         g.set(name, g.get(name, SKY + "." + SKY.rsplit("/", 1)[1] + "_C", target=sky))
 
     # PlayStep(): the profile under the feet and its MetaSound (src/main.js footsteps -> sfx.step)

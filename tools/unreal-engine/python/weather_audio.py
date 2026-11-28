@@ -10,12 +10,12 @@ BPC_LundenAudio gets the web's strike clock (src/weather.js update/strike): whil
 (distance / speed of sound) and plays MS_LundenThunder, and the next strike is drawn from WEATHER.flash.every.
 Hail is the rain loop louder and brighter (build_audio.py UpdateBeds, audio-params.json `hail`).
 
-`Storm` and `Hail` are component variables: BP_LundenSky (#2283) has no storm or hail yet, so ReadSky cannot read them
-and a test or a later sky sets them.
+`Storm` and `Hail` are read from BP_LundenSky (#2439). This component retains the one strike clock; FlashSky
+publishes its actual near draw before the delayed sound starts, including under -nosound.
 """
 
 SOUND = "/Game/Lunden/Audio/MS_LundenThunder"
-FUNCTIONS = ("Strike", "UpdateThunder")
+FUNCTIONS = ("Strike", "UpdateThunder", "FlashSky")
 
 
 def thunder(P, MetaSound, LOWPASS, HIGHPASS, bandwidth, lowpass_q):
@@ -84,7 +84,7 @@ def variables(bp, pp, sound_type):
     import unreal as u
 
     fields = {
-        # the weather the sky does not give yet (#2402): a test or a later BP_LundenSky sets them
+        # #2439: live sky weather (tests can still opt out with UseSky=False)
         "Storm": pp.BOOL, "Hail": pp.BOOL,
         # the strike clock (weather.js) and the last thunder, for tests
         "ThunderSound": sound_type, "ThunderVolume": pp.REAL, "StormRain": pp.REAL, "SoundSpeed": pp.REAL,
@@ -110,6 +110,7 @@ def graphs(bp, pp, me):
     g.set("ThunderInside", g.get("Indoors"))
     g.set("NextStrike", g.op("RandomFloatInRange", Min=g.get("StrikeEveryMin"), Max=g.get("StrikeEveryMax")))
     g.set("ThunderCount", g.op("Add_IntInt", A=g.get("ThunderCount"), B=1))
+    g.run(me + ":FlashSky")
     # created, given its parameters, then played (no sound under -nosound or without an audio device)
     g.set("LastThunder", g.pure("GameplayStatics:CreateSound2D", Sound=g.get("ThunderSound"),
                                 VolumeMultiplier=g.get("ThunderVolume"), bAutoDestroy=True))
@@ -119,6 +120,24 @@ def graphs(bp, pp, me):
                          ("Inside", g.op("SelectFloat", A=1.0, B=0.0, bPickA=g.get("ThunderInside")))):
         g.run("AudioComponent:SetFloatParameter", target=g.get("LastThunder"), InName=param, InFloat=value)
     g.run("AudioComponent:Play", target=g.get("LastThunder"), StartTime=0.0)
+
+    # Separate optional function: no sky/UseSky=False must NOT suppress the existing thunder path.
+    g, _ = pp.function(bp, "FlashSky")
+    g.branch(g.get("UseSky"))
+    sky_class = "/Game/Lunden/Lighting/BP_LundenSky.BP_LundenSky_C"
+    actor = g.pure("GameplayStatics:GetActorOfClass", ActorClass=sky_class)
+    g.branch(g.pure("KismetSystemLibrary:IsValid", Object=actor))
+    import unreal as u
+    cast = g.g.create_node_from_name("Utilities|Casting|CastToActor", u.Vector2D(0, 0), [])
+    if not cast or not g.g.retarget_node_class(cast, u.Actor.static_class(), u.load_class(None, sky_class)):
+        raise RuntimeError("Could not make FlashSky cast to BP_LundenSky")
+    g.step(cast)
+    pp.link(actor, pp.inp(cast, "Object"))
+    sky = pp.cast_out(cast)
+    g.set("FlashK", g.op("Add_DoubleDouble", A=0.35,
+                        B=g.op("Multiply_DoubleDouble", A=0.65, B=g.get("ThunderNear"))), owner=sky_class, target=sky)
+    g.set("FlashT", 0.0, owner=sky_class, target=sky)
+    g.run(sky_class + ":UpdateSky", target=sky)
 
     # UpdateThunder(Dt): weather.js update: `if (storm && rain > minRain) { next -= dt; if (next <= 0) strike() }`
     g, p = pp.function(bp, "UpdateThunder", [("Dt", pp.REAL)])

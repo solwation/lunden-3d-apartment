@@ -105,6 +105,11 @@ def box(x, y, top, sx, sy, height):
 for c in CONTROL:
     x, y, z = c["unreal"]
     box(x, y, z, 160, 160, 20)
+# #2439: actual sky for the final ReadSky/Strike link; all pre-existing independent audio cases keep UseSky=False.
+SKY_CLASS = "/Game/Lunden/Lighting/BP_LundenSky.BP_LundenSky_C"
+sky_fixture = actors.spawn_actor_from_class(u.load_class(None, SKY_CLASS), u.Vector(0, 0, 0))
+sky_fixture.set_editor_property("UseClock", False)
+sky_fixture.set_editor_property("TimeScale", 0.0)
 actors.spawn_actor_from_class(u.PlayerStart, u.Vector(CONTROL[0]["unreal"][0], CONTROL[0]["unreal"][1], 120))
 saved_slot = save_isolation.isolate()
 levels.editor_request_begin_play()
@@ -445,6 +450,34 @@ def audio_test():
         put(comp, "Rain", 0.0)
         result["thunder"] = thunder_rows
         u.log(f"LUNDEN_AUDIO_TEST thunder {json.dumps(thunder_rows)}")
+        # Actual sky-driven hail, then the SAME strike's light immediately and thunder after distance/speed.
+        sky = u.GameplayStatics.get_actor_of_class(game, u.load_class(None, SKY_CLASS))
+        if not sky:
+            raise RuntimeError("Missing actual sky fixture for hail/storm integration")
+        put(comp, "UseSky", True)
+        sky.call_method("ToggleHail")
+        call(comp, "ReadSky")
+        linked = {name: comp.get_editor_property(name) for name in ("Hail", "Storm", "Rain")}
+        if linked != {"Hail": True, "Storm": False, "Rain": 1.0}:
+            problems.append(f"sky hail did not reach audio: {linked}")
+        sky.call_method("ToggleStorm")
+        call(comp, "ReadSky")
+        if comp.get_editor_property("Hail") or not comp.get_editor_property("Storm"):
+            problems.append("sky storm did not replace hail in audio")
+        call(comp, "Strike")
+        near = comp.get_editor_property("ThunderNear")
+        flash = sky.get_editor_property("Flash")
+        age = sky.get_editor_property("FlashT")
+        linked.update(near=near, flash=flash, age=age, delay=comp.get_editor_property("ThunderDelay"))
+        if not close(flash, 0.35 + 0.65 * near) or age != 0.0:
+            problems.append(f"strike did not flash the sky before delayed sound: {linked}")
+        if not close(linked["delay"], comp.get_editor_property("StrikeDist") / speed):
+            problems.append("linked strike lost source sound delay")
+        result["skyWeather"] = linked
+        sky.call_method("ToggleStorm")
+        put(comp, "UseSky", False)
+        put(comp, "Storm", False)
+        put(comp, "Rain", 0.0)
         if problems:
             raise RuntimeError("Hail/thunder: " + "; ".join(problems))
         (Path(u.Paths.project_saved_dir()) / "audio-result.json").write_text(json.dumps(result, indent=2) + "\n")

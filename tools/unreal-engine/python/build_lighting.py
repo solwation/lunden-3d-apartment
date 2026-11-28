@@ -215,6 +215,7 @@ def spec_of(m):
     parasol_control.validate(parasols)
     return {"sky": sky, "boxes": boxes, "soffit": soffit, "lamps": lamp_rows(m), "sunLux": SUN_LUX,
             "windowDaylight": daylight, "parasols": parasols,
+            "flashLight": float(m["site"]["sourceAmbient"]["flashLight"]),
             "patioTone": hashlib.sha256(Path(patio_tone.__file__).read_bytes().replace(b"\r\n", b"\n")).hexdigest(),
             "parasolController": hashlib.sha256(Path(parasol_control.__file__).read_bytes().replace(b"\r\n", b"\n")).hexdigest(),
             "windowShader": hashlib.sha256(Path(window_light.__file__).read_bytes().replace(b"\r\n", b"\n")).hexdigest(),
@@ -385,7 +386,7 @@ class Expr:
            ast.Div: "Divide_DoubleDouble"}
     CMP = {ast.Gt: "Greater_DoubleDouble", ast.GtE: "GreaterEqual_DoubleDouble", ast.Lt: "Less_DoubleDouble",
            ast.LtE: "LessEqual_DoubleDouble"}
-    FN1 = {"sind": "DegSin", "cosd": "DegCos", "tand": "DegTan", "asind": "DegAsin", "acosd": "DegAcos", "sqrt": "Sqrt", "loge": "Loge"}
+    FN1 = {"sind": "DegSin", "cosd": "DegCos", "tand": "DegTan", "asind": "DegAsin", "acosd": "DegAcos", "sqrt": "Sqrt", "loge": "Loge", "exp": "Exp"}
     PY = {ast.Add: float.__add__, ast.Sub: float.__sub__, ast.Mult: float.__mul__, ast.Div: float.__truediv__}
 
     def __init__(self, graph, env):
@@ -445,7 +446,7 @@ class Expr:
                 if isinstance(args[0], float):
                     return {"sind": lambda x: math.sin(math.radians(x)), "cosd": lambda x: math.cos(math.radians(x)),
                             "tand": lambda x: math.tan(math.radians(x)), "asind": lambda x: math.degrees(math.asin(x)),
-                            "acosd": lambda x: math.degrees(math.acos(x)), "sqrt": math.sqrt, "loge": math.log}[f](args[0])
+                            "acosd": lambda x: math.degrees(math.acos(x)), "sqrt": math.sqrt, "loge": math.log, "exp": math.exp}[f](args[0])
                 return self.k(self.FN1[f], A=args[0]), "ReturnValue"
             if f == "atan2d":
                 return self.k("DegAtan2", Y=args[0], X=args[1]), "ReturnValue"
@@ -506,11 +507,16 @@ mha = wrap(gmst + Longitude - ra + 180, 0, 360) - 180
 dl = wrap(lm - ls, 0, 360)
 illum = (1 - cosd(bm) * cosd(dl)) / 2
 """
+# #2439: src/weather.js Weather.update, driven by the SAME audio Strike's near draw.
+# A tick integrates real seconds, independent of accelerated calendar TimeScale.
+FLASH = """
+flash = select(FlashT > 1.5, 0, select(FlashT < 0.07, FlashK, select(FlashT < 0.14, 0.25 * FlashK, select(FlashT < 0.22, 0.8 * FlashK, FlashK * exp((0 - (FlashT - 0.22)) * 9) * 0.8))))
+"""
 LIGHT = """
 day = smooth(-0.08, 0.18, sunsinEl)
 oc = max(Rain, Snow * SnowOvercast)                      # weather.js: day.overcast, snow clouds are lighter
 clear = day * (1 - oc)
-ambient = ((AmbientOvercast + (AmbientClear - AmbientOvercast) * clear) * day + NightAmbient * 0.5) * (1 - 0.25 * oc)
+ambient = ((AmbientOvercast + (AmbientClear - AmbientOvercast) * clear) * day + NightAmbient * 0.5) * (1 - 0.25 * oc) + FlashLight * 0.4 * flash
 sunRel = SunOvercast + (SunClear - SunOvercast) * clear
 cut = 1 - SunCut * oc
 useMoon = sunsinEl < -0.02
@@ -519,9 +525,9 @@ moonLux = SunLux / SunClear * Moonlight * (MoonFloor + (1 - MoonFloor) * pow(ill
 sunOut = select(useMoon, 0, sunLux)
 moonOut = select(useMoon, moonLux, 0)
 fog = FogClear + (FogOvercast - FogClear) * oc
-skyI = SkyScale * (1 - 0.3 * oc)
+skyI = SkyScale * (1 - 0.3 * oc) + SkyScale * FlashLight * flash / RawHemiClear
 skyLum = SkyLuminance + (SkyOvercast - SkyLuminance) * oc
-hemi = ((HemiOvercast + (HemiClear - HemiOvercast) * clear) * day + NightAmbient) * (1 - 0.3 * oc)
+hemi = ((HemiOvercast + (HemiClear - HemiOvercast) * clear) * day + NightAmbient) * (1 - 0.3 * oc) + FlashLight * flash
 expo = (1 + (ExpRatio - 1) * clear) / ExpRatio
 fill = (ambient + HemiShare * hemi * (1 + (HemiNight - 1) * (1 - day))) * expo
 windowSky = (RawHemiOvercast + (RawHemiClear - RawHemiOvercast) * clear) * day * (1 - 0.3 * oc)
@@ -555,7 +561,7 @@ coverage = CloudLo + (CloudHi - CloudLo) * cover
 def build_mpc(spec):
     mpc = ASSETS.load_asset(MPC) if ASSETS.does_asset_exist(MPC) else create(MPC, u.MaterialParameterCollection, u.MaterialParameterCollectionFactoryNew())
     r, s = spec["sky"]["rain"], spec["sky"]["snow"]
-    scalars = {"Rain": 0.0, "Snow": 0.0, "Wet": 0.0, "WindX": 0.0, "WindY": 0.0, "Streak": 0.6, "Soffit": spec["soffit"],
+    scalars = {"Rain": 0.0, "Snow": 0.0, "Flash": 0.0, "Wet": 0.0, "WindX": 0.0, "WindY": 0.0, "Streak": 0.6, "Soffit": spec["soffit"],
                "RainSpeed": r["speed"] * 100, "RainLength": r["len"] * 100, "RainRadius": r["radius"] * 100,
                "RainHeight": r["height"] * 100, "SlantPerMs": r["slantPerMs"], "SlantMax": r["slantMax"],
                "SnowSpeed": s["speed"] * 100, "SnowSway": s["sway"] * 100, "SnowSize": s["size"] * 100,
@@ -641,6 +647,7 @@ if (depth >= 1e6) {
   // above is the fallback and must not add the moon a second time afterwards.
   col = clouds.night(col, dw, sw, Cam*0.01, float2(CloudOffsetX,CloudOffsetY), SkyThreshold, Overcast, EAI,
                      mw, MoonPh.xyz, MoonRadius, Earthshine);
+  col += float3(0.75, 0.78, 0.95) * Flash * EAI * smoothstep(-0.02, 0.02, dw.y);
 }
 float hv = length(v.xy);
 float amt = max(Rain, Snow);
@@ -730,7 +737,7 @@ def build_precip_material(spec, mpc):
     names = ["Scene", "WPos", "Cam", "N", "Time", "Light", "Rain", "Snow", "Wet", "Wind", "Soffit", "Radius", "Height",
              "Speed", "Length", "SlantPerMs", "SlantMax", "SnowSpeed", "Sway", "Size", "DriftPerMs", "DriftMax",
              "B0n", "B0x", "B1n", "B1x", "B2n", "B2x", "B3n", "B3x",
-             "EAI", "SunDir", "MoonDir", "MoonPh", "Night", "CloudCover", "MoonRadius", "Earthshine", *SKY_CLOUD_PARAMETERS]
+             "EAI", "SunDir", "MoonDir", "MoonPh", "Night", "CloudCover", "MoonRadius", "Earthshine", "Flash", *SKY_CLOUD_PARAMETERS]
     inputs = []
     for name in names:
         ci = u.CustomInput()
@@ -765,7 +772,7 @@ def build_precip_material(spec, mpc):
     MEL.connect_material_expressions(param("Streak"), "", light, "A")
     MEL.connect_material_expressions(expr(u.MaterialExpressionEyeAdaptationInverse), "", light, "B")
     wire(light, "Light")
-    for name, source in (("Rain", "Rain"), ("Snow", "Snow"), ("Wet", "Wet"), ("Soffit", "Soffit"), ("Radius", "RainRadius"),
+    for name, source in (("Rain", "Rain"), ("Snow", "Snow"), ("Flash", "Flash"), ("Wet", "Wet"), ("Soffit", "Soffit"), ("Radius", "RainRadius"),
                          ("Height", "RainHeight"), ("Speed", "RainSpeed"), ("Length", "RainLength"), ("SlantPerMs", "SlantPerMs"),
                          ("SlantMax", "SlantMax"), ("SnowSpeed", "SnowSpeed"), ("Sway", "SnowSway"), ("Size", "SnowSize"),
                          ("DriftPerMs", "DriftPerMs"), ("DriftMax", "DriftMax")):
@@ -1158,6 +1165,8 @@ def build_sky(spec, mpc, precip, clouds, tonemap, window_material):
         "Latitude": ("real", sky_data["lat"]), "Longitude": ("real", sky_data["lon"]), "PlanNorth": ("real", sky_data["planNorthDeg"]),
         "UseClock": ("bool", True), "TimeScale": ("real", 1.0),
         "Year": ("int", 2026), "Month": ("int", 6), "Day": ("int", 21), "Hour": ("real", 14.0),
+        "Hail": ("bool", False), "Storm": ("bool", False),
+        "FlashT": ("real", 9.0), "FlashK": ("real", 0.0), "Flash": ("real", 0.0),
         "Rain": ("real", 0.0), "Snow": ("real", 0.0), "Wet": ("real", 0.0), "WindSpeed": ("real", 0.0), "WindFromDeg": ("real", 245.0),
         "SunLux": ("real", spec["sunLux"]), "SunOvercast": ("real", light["sunOvercast"]), "SunClear": ("real", light["sunClear"]),
         "Moonlight": ("real", light["moonlight"]), "MoonFloor": ("real", light["moonFloor"]), "MoonExp": ("real", light["moonExp"]),
@@ -1198,11 +1207,14 @@ def build_sky(spec, mpc, precip, clouds, tonemap, window_material):
                  "ClearThr": float(clouds["clearThr"]), "ThrA": float(clouds["thr"][0]), "ThrB": float(clouds["thr"][1]),
                  "Ramp": float(clouds["ramp"]), "CloudLo": float(CLOUD_RANGE[0]), "CloudHi": float(CLOUD_RANGE[1]),
                  "ExpRatio": float(light["exposureClear"] / light["exposureOvercast"]),
-                 "RawHemiClear": float(light["hemiClear"]), "RawHemiOvercast": float(light["hemiOvercast"])})
+                 "RawHemiClear": float(light["hemiClear"]), "RawHemiOvercast": float(light["hemiOvercast"]),
+                 "FlashT": (G.get("FlashT"), "FlashT"), "FlashK": (G.get("FlashK"), "FlashK"),
+                 "FlashLight": float(spec["flashLight"])})
     E.run(SUN)
     E.run(SKYDIR.format(p="sun", dec="dec", ha="ha"))
     E.run(MOON)
     E.run(SKYDIR.format(p="moon", dec="mdec", ha="mha"))
+    E.run(FLASH)
     E.run(LIGHT)
     env = E.run(EXTRA)
     # #2398: the same linear source colours and sun-height blend as daycycle.js.
@@ -1286,7 +1298,7 @@ def build_sky(spec, mpc, precip, clouds, tonemap, window_material):
     chain.then(density)
     for name, value in (("CloudOffsetX", (G.get("CloudOffsetX"), "CloudOffsetX")),
                         ("CloudOffsetY", (G.get("CloudOffsetY"), "CloudOffsetY")),
-                        ("SkyThreshold", env["skyThr"]), ("Overcast", env["ocl"]), ("Rain", env["Rain"]), ("Snow", env["Snow"]), ("Wet", env["Wet"]), ("WindX", env["windX"]),
+                        ("Flash", env["flash"]), ("SkyThreshold", env["skyThr"]), ("Overcast", env["ocl"]), ("Rain", env["Rain"]), ("Snow", env["Snow"]), ("Wet", env["Wet"]), ("WindX", env["windX"]),
                         ("WindY", env["windY"]), ("Streak", env["streak"]), ("DuskLight", env["duskLight"]),
                         ("Daylight", env["day"]), ("Hour", env["Hour"]), ("Month", env["Month"]), ("Night", env["night"]), ("CloudCover", env["cover"]), ("CloudCoverage", env["coverage"]),
                         ("WindowSkyStrength", env["windowSky"]), ("WindowSunStrength", env["windowSun"]), ("WindowAmbientFill", env["fill"])):
@@ -1304,25 +1316,43 @@ def build_sky(spec, mpc, precip, clouds, tonemap, window_material):
         constant(setv, "Collection", mpc.get_path_name())
         connect(colour, "ReturnValue", setv, "ParameterValue")
         chain.then(setv)
-    for name, key in (("CloudCover", "cover"), ("DuskLight", "duskLight")):
+    for name, key in (("CloudCover", "cover"), ("DuskLight", "duskLight"), ("Flash", "flash")):
         s = G.place(G.g.add_set_member_variable_node(name))
         E.feed(s, name, env[key])
         chain.then(s)
     BP.compile_blueprint(bp)
     update = bp.generated_class().get_path_name() + ":UpdateSky"
 
-    # ToggleRain / ToggleSnow: on at full strength (and the other off), or off; wet follows the rain in Tick
-    for name, own, other in (("ToggleRain", "Rain", "Snow"), ("ToggleSnow", "Snow", "Rain")):
+    # #2439: explicit sky states, matching the existing manual rain/snow controls.
+    # Date-driven real/simulated weather is a separate after-R1 feature (#2331).
+    # Storm is rain, hail uses the rain amount for the EXISTING hail audio mix.
+    for name, own in (("ToggleRain", "Rain"), ("ToggleSnow", "Snow"),
+                      ("ToggleHail", "Hail"), ("ToggleStorm", "Storm")):
         start = G.custom(name)
-        E2 = Expr(G, {own: (G.get(own), own)})
-        flip = E2.run(f"v = select({own} > 0.001, 0, 1)")["v"]
         c = Chain(start)
-        s = G.place(G.g.add_set_member_variable_node(own))
-        E2.feed(s, own, flip)
-        c.then(s)
-        s2 = G.place(G.g.add_set_member_variable_node(other))
-        constant(s2, other, "0.0")
-        c.then(s2)
+        toggle = (E.k("Not_PreBool", A=(G.get(own), own)) if own in ("Hail", "Storm") else
+                  E.k("LessEqual_DoubleDouble", A=(G.get(own), own), B=0.001))
+        value = (toggle, "ReturnValue")
+        # Store the toggle once; later resets must not re-evaluate its getter.
+        if own in ("Hail", "Storm"):
+            setter = G.place(G.g.add_set_member_variable_node(own))
+            E.feed(setter, own, value)
+            c.then(setter)
+            value = (G.get(own), own)
+        for field in ("Hail", "Storm"):
+            if field != own:
+                setter = G.place(G.g.add_set_member_variable_node(field))
+                constant(setter, field, "false")
+                c.then(setter)
+        rain_on = value if own != "Snow" else False
+        snow_on = value if own == "Snow" else False
+        for field, enabled in (("Rain", rain_on), ("Snow", snow_on)):
+            setter = G.place(G.g.add_set_member_variable_node(field))
+            if isinstance(enabled, tuple):
+                E.feed(setter, field, (E.k("SelectFloat", A=1.0, B=0.0, bPickA=enabled), "ReturnValue"))
+            else:
+                constant(setter, field, "0.0")
+            c.then(setter)
         c.then(G.call(update))
 
     # BeginPlay: the PC's local date and time (UseClock), else the instance's Year/Month/Day/Hour (a test override)
@@ -1355,6 +1385,7 @@ def build_sky(spec, mpc, precip, clouds, tonemap, window_material):
     tick = G.event("Tick", "ReceiveTick")
     env4 = {n: (G.get(n), n) for n in ("Hour", "TimeScale", "Rain", "Wet", "WetSoak", "WetDry")}
     env4["dt"] = (tick, "DeltaSeconds")
+    env4["FlashT"] = (G.get("FlashT"), "FlashT")
     for key in ("WindSpeed", "WindFromDeg", "PlanNorth", "CloudDirectionX", "CloudDirectionY", "CloudOffsetX", "CloudOffsetY"):
         env4[key] = (G.get(key), key)
     drift_min, drift_max = clouds.get("drift", (0, 0))
@@ -1367,6 +1398,7 @@ directionY = select(WindSpeed > 0.001, cosd(WindFromDeg - PlanNorth), CloudDirec
 speed = clamp(WindSpeed * WindScale, DriftMin, DriftMax)
 offsetX = wrap(CloudOffsetX - dt * speed * directionX, 0, Tile)
 offsetY = wrap(CloudOffsetY - dt * speed * directionY, 0, Tile)
+flashAge = FlashT + dt
 h = Hour + dt * TimeScale / 3600
 wet = clamp(Wet + dt * select(Rain > 0.05, WetSoak * Rain, 0 - WetDry), 0, 1)
 """)
@@ -1376,6 +1408,9 @@ wet = clamp(Wet + dt * select(Rain > 0.05, WetSoak * Rain, 0 - WetDry), 0, 1)
         setter = G.place(G.g.add_set_member_variable_node(name))
         E4.feed(setter, name, v[key])
         c.then(setter)
+    age = G.place(G.g.add_set_member_variable_node("FlashT"))
+    E4.feed(age, "FlashT", v["flashAge"])
+    c.then(age)
     s = G.place(G.g.add_set_member_variable_node("Wet"))
     E4.feed(s, "Wet", v["wet"])
     c.then(s)
