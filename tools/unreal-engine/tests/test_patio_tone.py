@@ -29,13 +29,36 @@ class PatioTone(unittest.TestCase):
 #include <cstring>
 #include <iostream>
 using std::round;
-struct V { float r,g,b,a; };
+struct V {
+ float r,g,b,a;
+ V(float x=0,float y=0,float z=0,float w=1):r(x),g(y),b(z),a(w){}
+};
+using float3=V;
+using uint=unsigned int;
 V operator*(V v,float x) { return {v.r*x,v.g*x,v.b*x,v.a*x}; }
 bool isfinite(V v) { return std::isfinite(v.r)&&std::isfinite(v.g)&&std::isfinite(v.b); }
 bool all(bool b) { return b; }
 std::array<unsigned short,3> f32tof16(V v) {
  std::array<unsigned short,3> bits;float values[]={v.r,v.g,v.b};
  for(int i=0;i<3;i++){ _Float16 half=(_Float16)values[i];std::memcpy(&bits[i],&half,2); }return bits;
+}
+// Exact 5.8.4 PackUnpack.ush254-268. Scalar half conversion is IEEE;
+// the independent observed GPU tuple below catches wrong masks/rounding.
+uint f32tof16(float x) { _Float16 h=(_Float16)x;unsigned short bits;std::memcpy(&bits,&h,2);return bits; }
+float f16tof32(uint x) { unsigned short bits=(unsigned short)x;_Float16 h;std::memcpy(&h,&bits,2);return (float)h; }
+uint PackR11G11B10F(float3 rgb)
+{
+ uint r = (f32tof16(rgb.r) << 17) & 0xFFE00000;
+ uint g = (f32tof16(rgb.g) << 6) & 0x001FFC00;
+ uint b = (f32tof16(rgb.b) >> 5) & 0x000003FF;
+ return r | g | b;
+}
+float3 UnpackR11G11B10F(uint rgb)
+{
+ float r = f16tof32((rgb >> 17) & 0x7FF0);
+ float g = f16tof32((rgb >> 6) & 0x7FF0);
+ float b = f16tof32((rgb << 5) & 0x7FE0);
+ return float3(r, g, b);
 }
 struct { float PreExposure; } View;
 V selectSource(V Scene,V Neutral,V SceneDepth,V CustomDepth,V CustomStencil,V Expected) {
@@ -73,6 +96,31 @@ while(std::cin>>s0>>s1>>s2>>e0>>e1>>e2>>n>>sd>>cd>>st>>ex) {
                         changed=struct.unpack('<e',struct.pack('<H',bits+1))[0]
                         mixed=[f32(changed*f32(1/pre)),*clean[1:]]
                         add(mixed,100,100,tone.STENCIL,pre,(neutral,)*3)
+            # Actual original-view GPU readback: all15 frontmost samples had
+            # this tuple and zero half-only matches. Keep it as measured rather
+            # than deriving the answer using the selector's pack implementation.
+            expected=tuple(map(f32,[1.460000038,.910982132,.371062040]))
+            pre=f32(.1707550436258316)
+            measured=list(map(f32,[1.4526474476,.9036152959,.3660213947]))
+            actual_stored=[f32(v*pre)for v in measured]
+            self.assertEqual(actual_stored,[.248046875,.154296875,.0625])
+            half_clean=[f32(half(f32(v*pre))*f32(1/pre))for v in expected]
+            for neutral in [.001,.2,.9,4]:
+                neutral=f32(neutral)
+                for clean in [measured,half_clean]:
+                    add(clean,100,100,tone.STENCIL,pre,expected)
+                    # Strong foreground transparency and fog still reject on
+                    # either path. Depth and stencil alone are insufficient.
+                    glass=[f32(v*.5)for v in clean]
+                    fog=[f32(.8*v+.2*other)for v,other in zip(clean,[.4,.5,.8])]
+                    add(glass,100,100,tone.STENCIL,pre,(neutral,)*3)
+                    add(fog,100,100,tone.STENCIL,pre,(neutral,)*3)
+                    add(clean,99,100,tone.STENCIL,pre,(neutral,)*3)
+            # Known ambiguity: an RGBA16F composite with these exact retained
+            # words is indistinguishable from source R11 without a format input.
+            # Explicit acceptance documents the bounded union, not perfect
+            # detection of every possible foreground composite.
+            add(measured,100,100,tone.STENCIL,pre,expected)
             result=subprocess.run([str(folder/'selector')],input=''.join(' '.join(map(str,c[0]))+'\n' for c in cases),
                                   text=True,capture_output=True,check=True)
             for row,case in zip(result.stdout.splitlines(),cases,strict=True):

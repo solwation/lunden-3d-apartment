@@ -14,11 +14,22 @@ MASTER = '/InterchangeAssets/gltf/M_Unlit.M_Unlit'
 
 EXPECTED_PARAMETER = 'PatioBulbLinear'
 SELECT_HLSL = f'''
-// Scene is de-pre-exposed, never Exposed/Neutral output. Reconstruct and compare
-// the actual RGBA16F scene storage; no fit tolerance. A transparent/fog mixture
-// must not inherit the bulb's tone-map exemption just from opaque depth.
+// Scene is de-pre-exposed, never Exposed/Neutral output. The base scene is
+// RGBA16F, but stock separate-translucency composition can allocate R11G11B10
+// before BOTH ReplacingTonemapper Input0 and the diagnostic pre-tone Input2.
+// Compare exact stored half words against either source-backed representation.
+// Pack/Unpack are Engine/Common.ush -> PackUnpack.ush254-268: half rounding,
+// then truncation of low mantissa bits. No fitted tolerance or RGB gain.
+// The material cannot observe which input format was selected. This union can
+// also admit an RGBA16F composite exactly equal to the expected R11 value; it is
+// storage equivalence, not proof of the absence of transparent/fog composition.
+float3 scenePre = Scene.rgb * View.PreExposure;
+float3 expectedPre = Expected.rgb * View.PreExposure;
+float3 expectedPacked = UnpackR11G11B10F(PackR11G11B10F(expectedPre));
+bool rgba16Equivalent = all(f32tof16(scenePre) == f32tof16(expectedPre));
+bool packedEquivalent = all(f32tof16(scenePre) == f32tof16(expectedPacked));
 bool pristine = View.PreExposure > 0.0 && all(isfinite(Scene.rgb)) && all(isfinite(Expected.rgb))
-    && all(f32tof16(Scene.rgb * View.PreExposure) == f32tof16(Expected.rgb * View.PreExposure));
+    && (rgba16Equivalent || packedEquivalent);
 bool sourceBulb = round(CustomStencil.r) == {STENCIL}.0
     && CustomDepth.r > 0.0 && CustomDepth.r <= SceneDepth.r && pristine;
 return sourceBulb ? Expected.rgb : Neutral.rgb;
