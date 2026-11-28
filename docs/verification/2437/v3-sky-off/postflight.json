@@ -1,0 +1,27 @@
+{
+  "all248ExactReadonly": true,
+  "sourceExportGeneratedExact": true,
+  "stateRestored": true,
+  "actualNativeRunnerOuter": [
+    0,
+    0,
+    0
+  ],
+  "seconds": 197.679,
+  "assetsSaved": false,
+  "actualSkyLightIntensity": 0.0,
+  "ambientEffectiveFill": 1.0585000118671672,
+  "decodedPixelComparisonAgainstV2": {
+    "entrance-a": {
+      "changedPixels": 0,
+      "totalPixels": 230400,
+      "maxChannelDelta": 0
+    },
+    "courtyard": {
+      "changedPixels": 0,
+      "totalPixels": 230400,
+      "maxChannelDelta": 0
+    }
+  },
+  "interpretation": "SkyLight=0 has no decoded pixel effect in these captures; no evidence here that SkyLight causes residual grass/crown failure. Ambient cubemap was left unchanged. This is not a product fix."
+}

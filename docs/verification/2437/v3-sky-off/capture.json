@@ -1,0 +1,3464 @@
+{
+  "completed": true,
+  "restored": true,
+  "sourceHead": "e958d4253e7506c041e707e5f7100c8455be7010",
+  "shots": [
+    {
+      "name": "entrance-a",
+      "sourceCamera": {
+        "eyeWeb": [
+          6.5,
+          1.62,
+          27.0
+        ],
+        "yaw": 115,
+        "pitch": 5,
+        "verticalFov": 72,
+        "width": 1440,
+        "height": 810,
+        "date": [
+          2026,
+          6,
+          21
+        ],
+        "hour": 14,
+        "lampsOn": false,
+        "quality": 4
+      },
+      "sourceReferenceSize": [
+        1440,
+        810
+      ],
+      "actualRuntime": {
+        "SkyLightIntensity": 0.0,
+        "Ambient": {
+          "cube": "/Game/Lunden/Lighting/T_LundenHemisphere.T_LundenHemisphere",
+          "intensity": 4.565000057220459,
+          "blendWeight": 0.23187294602394104,
+          "effectiveFill": 1.0585000118671672,
+          "tint": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "clock": {
+          "UseClock": false,
+          "TimeScale": 0.0,
+          "Year": 2026,
+          "Month": 6,
+          "Day": 21,
+          "Hour": 14.0,
+          "Rain": 0.0,
+          "Snow": 0.0,
+          "Wet": 0.0,
+          "Hail": false,
+          "Storm": false,
+          "FlashT": 9.0,
+          "FlashK": 0.0,
+          "Flash": 0.0
+        },
+        "MPC": {
+          "CloudOffsetX": 0.0,
+          "CloudOffsetY": 0.0,
+          "Flash": 0.0,
+          "WindowAmbientFill": 1.058500051498413,
+          "Daylight": 1.0,
+          "Hour": 14.0,
+          "Night": 0.0,
+          "Rain": 0.0,
+          "Snow": 0.0
+        },
+        "lamps": {
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_floorlamp_l0_x39_z882": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_besta_l0_x42_z1055": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_xmastree_l0_x82_z846": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_tubelamp_l0_x539_z796": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_dani_l1_x366_z689": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_huego_l1_x314_z30": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_symfonisk_l0_x455_z1230": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_worklamp_l1_x530_z146": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_worklamp_l1_x530_z364": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_mirror_l1_x440_z546": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_walllamp_l1_x28_z94": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_walllamp_l1_x28_z94_2": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_walllamp_l1_x547_z1176": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_walllamp_l1_x547_z1176_2": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_malm_l1_x70_z283": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_malm_l1_x505_z979": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_mirror_l1_x258_z1145": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_int_koksflakten_l0_x537_z371": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_light_bankbelysningen_l0_x524_z168": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_spegeln-i-toaletten_l0_x23_z555": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_spegelns-nattlampa_l0_x202_z112": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_hall_l0_x117_z175": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_hall_l0_x288_z634": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_tvatt_l0_x115_z398": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_badrum_l0_x117_z631": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_kok-matplats_l0_x392_z287": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_kok-matplats_l0_x350_z141": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_klk_l0_x396_z587": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_vardagsrum_l0_x364_z1056": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_sovrum-3_l1_x143_z272": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_sovrum-1_l1_x355_z290": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_klk_l1_x472_z488": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_hall_l1_x342_z648": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_sovrum-4_l1_x143_z1001": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_sovrum-2_l1_x370_z960": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_wc-dusch_l1_x85_z631": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_ljusslingan_l0_x47_z1522": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_ljusslingan_l0_x528_z1522": false
+        },
+        "patio": {
+          "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_ljusslingan_l0_x47_z1522",
+          "functions": [
+            "ApplyPatioBulbs",
+            "UpdatePatioParasol(2.0)"
+          ],
+          "K": 0.0,
+          "Supply": 1.0,
+          "BulbIdle": 0.06,
+          "BulbBoost": 1.4,
+          "BulbColour": [
+            1.0,
+            0.6239603757858276,
+            0.2541520893573761
+          ],
+          "BaseColorFactor": [
+            0.05999999865889549,
+            0.037437621504068375,
+            0.01524912565946579,
+            1.0
+          ],
+          "ParasolOpen": 1.0,
+          "StringMaterial": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+          "StringMaster": "/InterchangeAssets/gltf/M_Unlit.M_Unlit",
+          "StringMasterShadingModel": "<MaterialShadingModel.MSM_UNLIT: 0>",
+          "actualSharedBulbs": 82,
+          "pools": [
+            {
+              "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_ljusslingan_l0_x47_z1522",
+              "tags": [
+                "lamp:lamp_ljusslingan_l0_x47_z1522",
+                "kind:lamp",
+                "level:0",
+                "auto:dusk",
+                "patio:string-driver"
+              ],
+              "K": 0.0,
+              "Supply": 1.0,
+              "Candela": 8.198879897295502,
+              "Auto": true,
+              "PatioDusk": true,
+              "light_color_sRGB_bytes": [
+                255,
+                207,
+                138,
+                255
+              ],
+              "get_light_color_linear": [
+                1.0,
+                0.6239603757858276,
+                0.2541520893573761,
+                1.0
+              ],
+              "intensity": 0.0,
+              "attenuation_radius": 400.0,
+              "visible": false,
+              "positionNative": [
+                46.95,
+                1522.3,
+                158.0
+              ]
+            },
+            {
+              "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_ljusslingan_l0_x528_z1522",
+              "tags": [
+                "lamp:lamp_ljusslingan_l0_x528_z1522",
+                "kind:lamp",
+                "level:0",
+                "auto:dusk"
+              ],
+              "K": 0.0,
+              "Supply": 1.0,
+              "Candela": 8.198879897295502,
+              "Auto": true,
+              "PatioDusk": true,
+              "light_color_sRGB_bytes": [
+                255,
+                207,
+                138,
+                255
+              ],
+              "get_light_color_linear": [
+                1.0,
+                0.6239603757858276,
+                0.2541520893573761,
+                1.0
+              ],
+              "intensity": 0.0,
+              "attenuation_radius": 400.0,
+              "visible": false,
+              "positionNative": [
+                527.87,
+                1522.3,
+                158.0
+              ]
+            }
+          ],
+          "MPC": {
+            "DuskLight": 1.0,
+            "PowerAvailable": 1.0
+          }
+        },
+        "gameBias": -1.96503746509552
+      },
+      "camera": {
+        "xyz": [
+          650.0,
+          2700.0,
+          162.0
+        ],
+        "yaw": 155.0,
+        "pitch": 5.000000000000001,
+        "roll": 3.9908798545555505e-16,
+        "horizontalFov": 104.50486755371094,
+        "width": 640,
+        "height": 360,
+        "separateTranslucencyShowFlag": true,
+        "privateBlendableAttached": false
+      },
+      "image": "unreal-entrance-a.png",
+      "imageSHA256": "382b4c44ceb5f1b7bab5eb91e71029c8055452f29aa018c10b714178510a90e5"
+    },
+    {
+      "name": "courtyard",
+      "sourceCamera": {
+        "eyeWeb": [
+          12.5,
+          5.62,
+          26.0
+        ],
+        "yaw": 80,
+        "pitch": -14,
+        "verticalFov": 72,
+        "width": 1440,
+        "height": 810,
+        "date": [
+          2026,
+          6,
+          21
+        ],
+        "hour": 14,
+        "lampsOn": false,
+        "quality": 4
+      },
+      "sourceReferenceSize": [
+        1440,
+        810
+      ],
+      "actualRuntime": {
+        "SkyLightIntensity": 0.0,
+        "Ambient": {
+          "cube": "/Game/Lunden/Lighting/T_LundenHemisphere.T_LundenHemisphere",
+          "intensity": 4.565000057220459,
+          "blendWeight": 0.23187294602394104,
+          "effectiveFill": 1.0585000118671672,
+          "tint": [
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "clock": {
+          "UseClock": false,
+          "TimeScale": 0.0,
+          "Year": 2026,
+          "Month": 6,
+          "Day": 21,
+          "Hour": 14.0,
+          "Rain": 0.0,
+          "Snow": 0.0,
+          "Wet": 0.0,
+          "Hail": false,
+          "Storm": false,
+          "FlashT": 9.0,
+          "FlashK": 0.0,
+          "Flash": 0.0
+        },
+        "MPC": {
+          "CloudOffsetX": 0.0,
+          "CloudOffsetY": 0.0,
+          "Flash": 0.0,
+          "WindowAmbientFill": 1.058500051498413,
+          "Daylight": 1.0,
+          "Hour": 14.0,
+          "Night": 0.0,
+          "Rain": 0.0,
+          "Snow": 0.0
+        },
+        "lamps": {
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_floorlamp_l0_x39_z882": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_besta_l0_x42_z1055": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_xmastree_l0_x82_z846": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_tubelamp_l0_x539_z796": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_dani_l1_x366_z689": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_huego_l1_x314_z30": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_symfonisk_l0_x455_z1230": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_worklamp_l1_x530_z146": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_worklamp_l1_x530_z364": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_mirror_l1_x440_z546": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_walllamp_l1_x28_z94": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_walllamp_l1_x28_z94_2": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_walllamp_l1_x547_z1176": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_walllamp_l1_x547_z1176_2": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_malm_l1_x70_z283": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_malm_l1_x505_z979": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_mirror_l1_x258_z1145": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_int_koksflakten_l0_x537_z371": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_light_bankbelysningen_l0_x524_z168": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_spegeln-i-toaletten_l0_x23_z555": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_spegelns-nattlampa_l0_x202_z112": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_hall_l0_x117_z175": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_hall_l0_x288_z634": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_tvatt_l0_x115_z398": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_badrum_l0_x117_z631": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_kok-matplats_l0_x392_z287": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_kok-matplats_l0_x350_z141": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_klk_l0_x396_z587": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_vardagsrum_l0_x364_z1056": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_sovrum-3_l1_x143_z272": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_sovrum-1_l1_x355_z290": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_klk_l1_x472_z488": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_hall_l1_x342_z648": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_sovrum-4_l1_x143_z1001": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_sovrum-2_l1_x370_z960": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_wc-dusch_l1_x85_z631": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_ljusslingan_l0_x47_z1522": false,
+          "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_ljusslingan_l0_x528_z1522": false
+        },
+        "patio": {
+          "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_ljusslingan_l0_x47_z1522",
+          "functions": [
+            "ApplyPatioBulbs",
+            "UpdatePatioParasol(2.0)"
+          ],
+          "K": 0.0,
+          "Supply": 1.0,
+          "BulbIdle": 0.06,
+          "BulbBoost": 1.4,
+          "BulbColour": [
+            1.0,
+            0.6239603757858276,
+            0.2541520893573761
+          ],
+          "BaseColorFactor": [
+            0.05999999865889549,
+            0.037437621504068375,
+            0.01524912565946579,
+            1.0
+          ],
+          "ParasolOpen": 1.0,
+          "StringMaterial": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+          "StringMaster": "/InterchangeAssets/gltf/M_Unlit.M_Unlit",
+          "StringMasterShadingModel": "<MaterialShadingModel.MSM_UNLIT: 0>",
+          "actualSharedBulbs": 82,
+          "pools": [
+            {
+              "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_ljusslingan_l0_x47_z1522",
+              "tags": [
+                "lamp:lamp_ljusslingan_l0_x47_z1522",
+                "kind:lamp",
+                "level:0",
+                "auto:dusk",
+                "patio:string-driver"
+              ],
+              "K": 0.0,
+              "Supply": 1.0,
+              "Candela": 8.198879897295502,
+              "Auto": true,
+              "PatioDusk": true,
+              "light_color_sRGB_bytes": [
+                255,
+                207,
+                138,
+                255
+              ],
+              "get_light_color_linear": [
+                1.0,
+                0.6239603757858276,
+                0.2541520893573761,
+                1.0
+              ],
+              "intensity": 0.0,
+              "attenuation_radius": 400.0,
+              "visible": false,
+              "positionNative": [
+                46.95,
+                1522.3,
+                158.0
+              ]
+            },
+            {
+              "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_ljusslingan_l0_x528_z1522",
+              "tags": [
+                "lamp:lamp_ljusslingan_l0_x528_z1522",
+                "kind:lamp",
+                "level:0",
+                "auto:dusk"
+              ],
+              "K": 0.0,
+              "Supply": 1.0,
+              "Candela": 8.198879897295502,
+              "Auto": true,
+              "PatioDusk": true,
+              "light_color_sRGB_bytes": [
+                255,
+                207,
+                138,
+                255
+              ],
+              "get_light_color_linear": [
+                1.0,
+                0.6239603757858276,
+                0.2541520893573761,
+                1.0
+              ],
+              "intensity": 0.0,
+              "attenuation_radius": 400.0,
+              "visible": false,
+              "positionNative": [
+                527.87,
+                1522.3,
+                158.0
+              ]
+            }
+          ],
+          "MPC": {
+            "DuskLight": 1.0,
+            "PowerAvailable": 1.0
+          }
+        },
+        "gameBias": -1.96503746509552
+      },
+      "camera": {
+        "xyz": [
+          1250.0,
+          2600.0,
+          562.0
+        ],
+        "yaw": -170.0,
+        "pitch": -13.999999999999998,
+        "roll": 2.0487018772555777e-16,
+        "horizontalFov": 104.50486755371094,
+        "width": 640,
+        "height": 360,
+        "separateTranslucencyShowFlag": true,
+        "privateBlendableAttached": false
+      },
+      "image": "unreal-courtyard.png",
+      "imageSHA256": "60b37424025e1802f3160f2a890f59bf07f5281f73dcc63c39d5bd6886940372"
+    }
+  ],
+  "classification": "Observational diagnosticSkyIBLOff2views; actual v2 green build/check reused, no productfix/globalpolicy or new20/releasegate/PBR",
+  "diagnosticSkyIBLOff": true,
+  "productFix": false,
+  "buildersExecutedHere": 0,
+  "checksExecutedHere": 0,
+  "assetsSavedHere": false,
+  "sourceAmbientPolicyActivatedHere": false,
+  "reusedBuildProof": {
+    "captureSHA256": "a2fbaac28f591c6f362eb8d6ef94c137c27f51f519afd0ec1f6ad399b31c3c3d",
+    "postflightSHA256": "b8d2e8a6e119189dcbe32b047ff3c381a94a249794b6e7df0b004a6ed07f34c5",
+    "actualNativeRunnerOuter": [
+      0,
+      0,
+      0
+    ],
+    "normalMaterialsAndVegetationChecks": true
+  },
+  "referenceReuseSHA256": "207658f2532100777fcb6a2bdaadd9c6e5e9c3472910e0bcc83be288dd4e45dc",
+  "diagnosticMethod": "Actual SkyLightComponent.SetIntensity(0), ambient cubemap/WindowDaylight/direct-light unchanged; no r.SkyLightingQuality assumption",
+  "entryState": {
+    "SkyLightIntensity": 1.0,
+    "clock": {
+      "UseClock": true,
+      "TimeScale": 1.0,
+      "Year": 2026,
+      "Month": 6,
+      "Day": 21,
+      "Hour": 14.0,
+      "Rain": 0.0,
+      "Snow": 0.0,
+      "Wet": 0.0,
+      "Hail": false,
+      "Storm": false,
+      "FlashT": 9.0,
+      "FlashK": 0.0,
+      "Flash": 0.0
+    },
+    "weatherMPC": {
+      "CloudOffsetX": 0.0,
+      "CloudOffsetY": 0.0,
+      "Flash": 0.0
+    },
+    "calendarMonth": 6.0,
+    "lamps": {
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_floorlamp_l0_x39_z882": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_besta_l0_x42_z1055": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_xmastree_l0_x82_z846": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_tubelamp_l0_x539_z796": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_dani_l1_x366_z689": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_huego_l1_x314_z30": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_symfonisk_l0_x455_z1230": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_worklamp_l1_x530_z146": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_worklamp_l1_x530_z364": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_mirror_l1_x440_z546": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_walllamp_l1_x28_z94": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_walllamp_l1_x28_z94_2": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_walllamp_l1_x547_z1176": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_walllamp_l1_x547_z1176_2": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_malm_l1_x70_z283": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_malm_l1_x505_z979": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_mirror_l1_x258_z1145": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_int_koksflakten_l0_x537_z371": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_light_bankbelysningen_l0_x524_z168": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_spegeln-i-toaletten_l0_x23_z555": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_spegelns-nattlampa_l0_x202_z112": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_hall_l0_x117_z175": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_hall_l0_x288_z634": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_tvatt_l0_x115_z398": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_badrum_l0_x117_z631": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_kok-matplats_l0_x392_z287": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_kok-matplats_l0_x350_z141": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_klk_l0_x396_z587": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_vardagsrum_l0_x364_z1056": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_sovrum-3_l1_x143_z272": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_sovrum-1_l1_x355_z290": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_klk_l1_x472_z488": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_hall_l1_x342_z648": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_sovrum-4_l1_x143_z1001": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_sovrum-2_l1_x370_z960": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_wc-dusch_l1_x85_z631": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_ljusslingan_l0_x47_z1522": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_ljusslingan_l0_x528_z1522": false
+    },
+    "CVars": {
+      "r.DeferUpdateRenderStates": 1,
+      "r.SeparateTranslucency": 1,
+      "r.CustomDepth": 3,
+      "r.Shadow.Virtual.Enable": 0,
+      "r.ShadowQuality": 0,
+      "r.Shadow.MaxResolution": 2048,
+      "r.Shadow.MaxCSMResolution": 2048,
+      "r.Shadow.CSM.MaxCascades": 10,
+      "r.Shadow.DistanceScale": 1
+    }
+  },
+  "actualCVars": {
+    "r.DeferUpdateRenderStates": 0,
+    "r.SeparateTranslucency": 1,
+    "r.CustomDepth": 3,
+    "r.Shadow.Virtual.Enable": 0,
+    "r.ShadowQuality": 3,
+    "r.Shadow.MaxResolution": 1024,
+    "r.Shadow.MaxCSMResolution": 1024,
+    "r.Shadow.CSM.MaxCascades": 3,
+    "r.Shadow.DistanceScale": 1
+  },
+  "naniteDisabledInMemory": 3551,
+  "seasonVisibility": {
+    "mode": "render-only-season-visibility",
+    "rule": "Actual BPC_LundenSeasons.TagValue/InSeason/InHours; no Python calendar/window formula",
+    "date": [
+      2026,
+      6,
+      21
+    ],
+    "hour": 14.0,
+    "nativeIntegerHour": 14,
+    "componentClass": "/Game/Lunden/Seasons/BPC_LundenSeasons.BPC_LundenSeasons_C",
+    "componentSpecHash": "33ab2c0759b6a54cd465f6a3ec7e72cdede9e366e96a59b0dfd80b812c3d3e9c",
+    "loadedLevels": [
+      "/Game/Lunden/Generated/Interaction/Level_l1007_interaction",
+      "/Game/Lunden/Generated/L1007World/Level_l1007_collision",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats",
+      "/Game/Lunden/Generated/l1007-entre/Level_l1007-entre",
+      "/Game/Lunden/Generated/Interaction/Level_hus-l_interaction",
+      "/Game/Lunden/Generated/Interaction/Level_kvarteret_interaction",
+      "/Game/Lunden/Generated/ExteriorWorld/Level_exterior_collision",
+      "/Game/Lunden/Generated/gard/Level_gard",
+      "/Game/Lunden/Generated/omgivning/Level_omgivning",
+      "/Game/Lunden/Generated/SiteWorld/Level_site_collision",
+      "/Game/Lunden/Generated/Lighting/Level_lighting",
+      "/Game/Lunden/Generated/FacadeLighting/Level_facade_lighting",
+      "/Game/Lunden/Generated/VegetationWorld/Level_vegetation_foliage",
+      "/Game/Lunden/Generated/Interaction/Level_lift_buttons",
+      "/Game/Lunden/Avatar/Looks/Level_LundenMirror",
+      "/Game/Lunden/Generated/fond/Level_fond"
+    ],
+    "calendar": "/Game/Lunden/Seasons/MPC_LundenVegetation",
+    "observedMonth": 6.0,
+    "clockDriven": false,
+    "seasonalActors": 219,
+    "hiddenActors": 184,
+    "editorLampPolicy": "original editor-hidden OR current native-rule game-hidden",
+    "editorLamps": 2,
+    "collisionApplied": false,
+    "physicsOrCollisionApiInvoked": false,
+    "limitation": "Visibility/MPC only in static editor captures. Existing collision is not synchronized; no gameplay, PIE, interaction or Chaos acceptance. ApplySeason/ApplySeasonAt/ApplyClock are not called. Do not save these transient world changes.",
+    "sourceFileSha256": {
+      "/home/devcontainers/.local/state/lunden-codex-20261127/2394/season-visibility-only.py": "fa844d50bc9ac15225058ac1a1b0c95afdbaa87d8f44cdf1e78603fbbc486a88",
+      "/home/devcontainers/wt/codex-2434-native/tools/unreal-engine/tests/capture_world.py": "380545105f0ff30e6cca3095ff44c7bbf138491f731ecd6dd6a7564606f9d553",
+      "/home/devcontainers/wt/codex-2434-native/tools/unreal-engine/python/build_seasons.py": "33ab2c0759b6a54cd465f6a3ec7e72cdede9e366e96a59b0dfd80b812c3d3e9c"
+    },
+    "actors": [
+      {
+        "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_floorlamp_l0_x39_z882",
+        "dateWindowReadable": true,
+        "window": [
+          107,
+          1130
+        ],
+        "hourWindow": null,
+        "nativeInSeason": true,
+        "nativeInHours": false,
+        "gameHidden": false
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_xmastree_l0_x82_z846",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_snowman_l0_x140_z1840",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          229
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_veronasofa_l0_x462_z1309__1",
+        "dateWindowReadable": true,
+        "window": [
+          401,
+          930
+        ],
+        "hourWindow": null,
+        "nativeInSeason": true,
+        "nativeInHours": false,
+        "gameHidden": false
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_slattable_l0_x420_z1425__13",
+        "dateWindowReadable": true,
+        "window": [
+          601,
+          831
+        ],
+        "hourWindow": [
+          12,
+          23
+        ],
+        "nativeInSeason": true,
+        "nativeInHours": true,
+        "gameHidden": false
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_snowman_l0_x140_z1840__1",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          229
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_snowman_l0_x140_z1840__2",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          229
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_snowman_l0_x140_z1840__3",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          229
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_snowman_l0_x140_z1840__4",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          229
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_snowman_l0_x140_z1840__5",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          229
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_snowman_l0_x140_z1840__6",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          229
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_snowman_l0_x140_z1840__7",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          229
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_snowman_l0_x140_z1840__8",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          229
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_snowman_l0_x140_z1840__9",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          229
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_snowman_l0_x140_z1840__10",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          229
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_snowman_l0_x140_z1840__11",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          229
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_snowman_l0_x140_z1840__14",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          229
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_snowman_l0_x140_z1840__15",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          229
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_snowman_l0_x140_z1840__16",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          229
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_slattable_l0_x420_z1425__7",
+        "dateWindowReadable": true,
+        "window": [
+          601,
+          831
+        ],
+        "hourWindow": [
+          12,
+          23
+        ],
+        "nativeInSeason": true,
+        "nativeInHours": true,
+        "gameHidden": false
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_slattable_l0_x420_z1425__12",
+        "dateWindowReadable": true,
+        "window": [
+          601,
+          831
+        ],
+        "hourWindow": [
+          12,
+          23
+        ],
+        "nativeInSeason": true,
+        "nativeInHours": true,
+        "gameHidden": false
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_snowman_l0_x140_z1840__12",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          229
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_snowman_l0_x140_z1840__13",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          229
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_slattable_l0_x420_z1425__3",
+        "dateWindowReadable": true,
+        "window": [
+          601,
+          831
+        ],
+        "hourWindow": [
+          12,
+          23
+        ],
+        "nativeInSeason": true,
+        "nativeInHours": true,
+        "gameHidden": false
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_slattable_l0_x420_z1425__4",
+        "dateWindowReadable": true,
+        "window": [
+          601,
+          831
+        ],
+        "hourWindow": [
+          12,
+          23
+        ],
+        "nativeInSeason": true,
+        "nativeInHours": true,
+        "gameHidden": false
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_slattable_l0_x420_z1425__5",
+        "dateWindowReadable": true,
+        "window": [
+          601,
+          831
+        ],
+        "hourWindow": [
+          12,
+          23
+        ],
+        "nativeInSeason": true,
+        "nativeInHours": true,
+        "gameHidden": false
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_slattable_l0_x420_z1425__6",
+        "dateWindowReadable": true,
+        "window": [
+          601,
+          831
+        ],
+        "hourWindow": [
+          12,
+          23
+        ],
+        "nativeInSeason": true,
+        "nativeInHours": true,
+        "gameHidden": false
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_slattable_l0_x420_z1425__8",
+        "dateWindowReadable": true,
+        "window": [
+          601,
+          831
+        ],
+        "hourWindow": [
+          12,
+          23
+        ],
+        "nativeInSeason": true,
+        "nativeInHours": true,
+        "gameHidden": false
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_slattable_l0_x420_z1425__9",
+        "dateWindowReadable": true,
+        "window": [
+          601,
+          831
+        ],
+        "hourWindow": [
+          12,
+          23
+        ],
+        "nativeInSeason": true,
+        "nativeInHours": true,
+        "gameHidden": false
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_slattable_l0_x420_z1425__10",
+        "dateWindowReadable": true,
+        "window": [
+          601,
+          831
+        ],
+        "hourWindow": [
+          12,
+          23
+        ],
+        "nativeInSeason": true,
+        "nativeInHours": true,
+        "gameHidden": false
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_slattable_l0_x420_z1425__11",
+        "dateWindowReadable": true,
+        "window": [
+          601,
+          831
+        ],
+        "hourWindow": [
+          12,
+          23
+        ],
+        "nativeInSeason": true,
+        "nativeInHours": true,
+        "gameHidden": false
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_armchair_l0_x79_z839",
+        "dateWindowReadable": true,
+        "window": [
+          107,
+          1130
+        ],
+        "hourWindow": null,
+        "nativeInSeason": true,
+        "nativeInHours": false,
+        "gameHidden": false
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_ottoman_l0_x133_z893",
+        "dateWindowReadable": true,
+        "window": [
+          107,
+          1130
+        ],
+        "hourWindow": null,
+        "nativeInSeason": true,
+        "nativeInHours": false,
+        "gameHidden": false
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_floorlamp_l0_x39_z882",
+        "dateWindowReadable": true,
+        "window": [
+          107,
+          1130
+        ],
+        "hourWindow": null,
+        "nativeInSeason": true,
+        "nativeInHours": false,
+        "gameHidden": false
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_randerstable_l0_x152_z812",
+        "dateWindowReadable": true,
+        "window": [
+          107,
+          1130
+        ],
+        "hourWindow": null,
+        "nativeInSeason": true,
+        "nativeInHours": false,
+        "gameHidden": false
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_armchair_l0_x79_z839__1",
+        "dateWindowReadable": true,
+        "window": [
+          107,
+          1130
+        ],
+        "hourWindow": null,
+        "nativeInSeason": true,
+        "nativeInHours": false,
+        "gameHidden": false
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_armchair_l0_x79_z839__2",
+        "dateWindowReadable": true,
+        "window": [
+          107,
+          1130
+        ],
+        "hourWindow": null,
+        "nativeInSeason": true,
+        "nativeInHours": false,
+        "gameHidden": false
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_armchair_l0_x79_z839__3",
+        "dateWindowReadable": true,
+        "window": [
+          107,
+          1130
+        ],
+        "hourWindow": null,
+        "nativeInSeason": true,
+        "nativeInHours": false,
+        "gameHidden": false
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_armchair_l0_x79_z839__4",
+        "dateWindowReadable": true,
+        "window": [
+          107,
+          1130
+        ],
+        "hourWindow": null,
+        "nativeInSeason": true,
+        "nativeInHours": false,
+        "gameHidden": false
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_armchair_l0_x79_z839__5",
+        "dateWindowReadable": true,
+        "window": [
+          107,
+          1130
+        ],
+        "hourWindow": null,
+        "nativeInSeason": true,
+        "nativeInHours": false,
+        "gameHidden": false
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_ottoman_l0_x133_z893__1",
+        "dateWindowReadable": true,
+        "window": [
+          107,
+          1130
+        ],
+        "hourWindow": null,
+        "nativeInSeason": true,
+        "nativeInHours": false,
+        "gameHidden": false
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_ottoman_l0_x133_z893__2",
+        "dateWindowReadable": true,
+        "window": [
+          107,
+          1130
+        ],
+        "hourWindow": null,
+        "nativeInSeason": true,
+        "nativeInHours": false,
+        "gameHidden": false
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_ottoman_l0_x133_z893__3",
+        "dateWindowReadable": true,
+        "window": [
+          107,
+          1130
+        ],
+        "hourWindow": null,
+        "nativeInSeason": true,
+        "nativeInHours": false,
+        "gameHidden": false
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_floorlamp_l0_x39_z882__2",
+        "dateWindowReadable": true,
+        "window": [
+          107,
+          1130
+        ],
+        "hourWindow": null,
+        "nativeInSeason": true,
+        "nativeInHours": false,
+        "gameHidden": false
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_floorlamp_l0_x39_z882__4",
+        "dateWindowReadable": true,
+        "window": [
+          107,
+          1130
+        ],
+        "hourWindow": null,
+        "nativeInSeason": true,
+        "nativeInHours": false,
+        "gameHidden": false
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_floorlamp_l0_x39_z882__6",
+        "dateWindowReadable": true,
+        "window": [
+          107,
+          1130
+        ],
+        "hourWindow": null,
+        "nativeInSeason": true,
+        "nativeInHours": false,
+        "gameHidden": false
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_floorlamp_l0_x39_z882__7",
+        "dateWindowReadable": true,
+        "window": [
+          107,
+          1130
+        ],
+        "hourWindow": null,
+        "nativeInSeason": true,
+        "nativeInHours": false,
+        "gameHidden": false
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_floorlamp_l0_x39_z882__8",
+        "dateWindowReadable": true,
+        "window": [
+          107,
+          1130
+        ],
+        "hourWindow": null,
+        "nativeInSeason": true,
+        "nativeInHours": false,
+        "gameHidden": false
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_randerstable_l0_x152_z812__1",
+        "dateWindowReadable": true,
+        "window": [
+          107,
+          1130
+        ],
+        "hourWindow": null,
+        "nativeInSeason": true,
+        "nativeInHours": false,
+        "gameHidden": false
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_randerstable_l0_x152_z812__2",
+        "dateWindowReadable": true,
+        "window": [
+          107,
+          1130
+        ],
+        "hourWindow": null,
+        "nativeInSeason": true,
+        "nativeInHours": false,
+        "gameHidden": false
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__1",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__2",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__3",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__4",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__5",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__6",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__7",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__8",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__9",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__10",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__11",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__12",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__13",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__14",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__15",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__16",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__17",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__18",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__19",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__20",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__21",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__22",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__23",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__24",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__25",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__26",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__27",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__28",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__29",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__30",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__31",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__32",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__33",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__34",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__35",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__36",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__37",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__38",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__39",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__40",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__41",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__42",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__43",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__44",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__45",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__46",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__47",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__48",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__49",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__50",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__51",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__52",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__53",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__54",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__55",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__56",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__57",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__58",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__59",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__60",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__61",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__62",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__63",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__64",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__65",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__66",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__67",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__68",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__69",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__70",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__71",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__72",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__73",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__74",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__75",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__76",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__77",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__78",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__79",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__80",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__81",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__82",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__83",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__84",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__85",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__86",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__87",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__88",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__89",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__90",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__91",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__92",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__93",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__94",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__95",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__96",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__97",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__98",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__99",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__100",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__101",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__102",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__103",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__104",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__105",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__106",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__107",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__108",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__109",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__110",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__111",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__112",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__113",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__114",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__115",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__116",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__117",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__118",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__119",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__120",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__121",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__122",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__123",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__124",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__125",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__126",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__127",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__128",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__129",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__130",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__131",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__132",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__133",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__134",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__135",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__136",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__137",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__138",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__139",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__140",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__141",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__142",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__143",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__144",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__145",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__146",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__147",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__148",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__149",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__150",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__151",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__152",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__153",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__154",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__155",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__156",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__157",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__158",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__159",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__160",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__161",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__162",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__163",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__164",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_xmastree_l0_x82_z846__165",
+        "dateWindowReadable": true,
+        "window": [
+          1201,
+          106
+        ],
+        "hourWindow": null,
+        "nativeInSeason": false,
+        "nativeInHours": false,
+        "gameHidden": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_floorlamp_l0_x39_z882__1",
+        "dateWindowReadable": true,
+        "window": [
+          107,
+          1130
+        ],
+        "hourWindow": null,
+        "nativeInSeason": true,
+        "nativeInHours": false,
+        "gameHidden": false
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_floorlamp_l0_x39_z882__3",
+        "dateWindowReadable": true,
+        "window": [
+          107,
+          1130
+        ],
+        "hourWindow": null,
+        "nativeInSeason": true,
+        "nativeInHours": false,
+        "gameHidden": false
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_floorlamp_l0_x39_z882__5",
+        "dateWindowReadable": true,
+        "window": [
+          107,
+          1130
+        ],
+        "hourWindow": null,
+        "nativeInSeason": true,
+        "nativeInHours": false,
+        "gameHidden": false
+      }
+    ]
+  },
+  "patioAfterRestore": {
+    "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_ljusslingan_l0_x47_z1522",
+    "functions": [
+      "ApplyPatioBulbs",
+      "UpdatePatioParasol(2.0)"
+    ],
+    "K": 0.0,
+    "Supply": 1.0,
+    "BulbIdle": 0.06,
+    "BulbBoost": 1.4,
+    "BulbColour": [
+      1.0,
+      0.6239603757858276,
+      0.2541520893573761
+    ],
+    "BaseColorFactor": [
+      0.05999999865889549,
+      0.037437621504068375,
+      0.01524912565946579,
+      1.0
+    ],
+    "ParasolOpen": 1.0,
+    "StringMaterial": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+    "StringMaster": "/InterchangeAssets/gltf/M_Unlit.M_Unlit",
+    "StringMasterShadingModel": "<MaterialShadingModel.MSM_UNLIT: 0>",
+    "actualSharedBulbs": 82,
+    "pools": [
+      {
+        "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_ljusslingan_l0_x47_z1522",
+        "tags": [
+          "lamp:lamp_ljusslingan_l0_x47_z1522",
+          "kind:lamp",
+          "level:0",
+          "auto:dusk",
+          "patio:string-driver"
+        ],
+        "K": 0.0,
+        "Supply": 1.0,
+        "Candela": 8.198879897295502,
+        "Auto": true,
+        "PatioDusk": true,
+        "light_color_sRGB_bytes": [
+          255,
+          207,
+          138,
+          255
+        ],
+        "get_light_color_linear": [
+          1.0,
+          0.6239603757858276,
+          0.2541520893573761,
+          1.0
+        ],
+        "intensity": 0.0,
+        "attenuation_radius": 400.0,
+        "visible": false,
+        "positionNative": [
+          46.95,
+          1522.3,
+          158.0
+        ]
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_ljusslingan_l0_x528_z1522",
+        "tags": [
+          "lamp:lamp_ljusslingan_l0_x528_z1522",
+          "kind:lamp",
+          "level:0",
+          "auto:dusk"
+        ],
+        "K": 0.0,
+        "Supply": 1.0,
+        "Candela": 8.198879897295502,
+        "Auto": true,
+        "PatioDusk": true,
+        "light_color_sRGB_bytes": [
+          255,
+          207,
+          138,
+          255
+        ],
+        "get_light_color_linear": [
+          1.0,
+          0.6239603757858276,
+          0.2541520893573761,
+          1.0
+        ],
+        "intensity": 0.0,
+        "attenuation_radius": 400.0,
+        "visible": false,
+        "positionNative": [
+          527.87,
+          1522.3,
+          158.0
+        ]
+      }
+    ],
+    "MPC": {
+      "DuskLight": 1.0,
+      "PowerAvailable": 1.0
+    }
+  },
+  "afterRestore": {
+    "SkyLightIntensity": 1.0,
+    "clock": {
+      "UseClock": true,
+      "TimeScale": 1.0,
+      "Year": 2026,
+      "Month": 6,
+      "Day": 21,
+      "Hour": 14.0,
+      "Rain": 0.0,
+      "Snow": 0.0,
+      "Wet": 0.0,
+      "Hail": false,
+      "Storm": false,
+      "FlashT": 9.0,
+      "FlashK": 0.0,
+      "Flash": 0.0
+    },
+    "weatherMPC": {
+      "CloudOffsetX": 0.0,
+      "CloudOffsetY": 0.0,
+      "Flash": 0.0
+    },
+    "calendarMonth": 6.0,
+    "lamps": {
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_floorlamp_l0_x39_z882": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_besta_l0_x42_z1055": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_xmastree_l0_x82_z846": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_tubelamp_l0_x539_z796": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_dani_l1_x366_z689": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_huego_l1_x314_z30": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_symfonisk_l0_x455_z1230": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_worklamp_l1_x530_z146": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_worklamp_l1_x530_z364": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_mirror_l1_x440_z546": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_walllamp_l1_x28_z94": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_walllamp_l1_x28_z94_2": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_walllamp_l1_x547_z1176": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_walllamp_l1_x547_z1176_2": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_malm_l1_x70_z283": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_malm_l1_x505_z979": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_mirror_l1_x258_z1145": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_int_koksflakten_l0_x537_z371": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_light_bankbelysningen_l0_x524_z168": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_spegeln-i-toaletten_l0_x23_z555": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_spegelns-nattlampa_l0_x202_z112": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_hall_l0_x117_z175": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_hall_l0_x288_z634": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_tvatt_l0_x115_z398": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_badrum_l0_x117_z631": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_kok-matplats_l0_x392_z287": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_kok-matplats_l0_x350_z141": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_klk_l0_x396_z587": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_vardagsrum_l0_x364_z1056": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_sovrum-3_l1_x143_z272": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_sovrum-1_l1_x355_z290": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_klk_l1_x472_z488": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_hall_l1_x342_z648": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_sovrum-4_l1_x143_z1001": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_sovrum-2_l1_x370_z960": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_room_wc-dusch_l1_x85_z631": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_ljusslingan_l0_x47_z1522": false,
+      "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_ljusslingan_l0_x528_z1522": false
+    },
+    "CVars": {
+      "r.DeferUpdateRenderStates": 1,
+      "r.SeparateTranslucency": 1,
+      "r.CustomDepth": 3,
+      "r.Shadow.Virtual.Enable": 0,
+      "r.ShadowQuality": 0,
+      "r.Shadow.MaxResolution": 2048,
+      "r.Shadow.MaxCSMResolution": 2048,
+      "r.Shadow.CSM.MaxCascades": 10,
+      "r.Shadow.DistanceScale": 1
+    }
+  },
+  "capturedImages": 2,
+  "all248ExactReadonly": true,
+  "protected248ExactReadonly": true,
+  "generatedExact": true,
+  "sourceExportExact": true,
+  "freshCanonicalExecutedHere": false,
+  "releaseGateExecutedHere": false
+}

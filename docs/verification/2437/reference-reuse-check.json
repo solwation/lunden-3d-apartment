@@ -1,0 +1,207 @@
+{
+  "current": "b7fb61259125d9c0162c5911c85250d585ba4507",
+  "references": {
+    "2392": {
+      "source": "c67c0c8e8ccda279b02d4a26741ef716229d3b8a",
+      "files": {
+        "src/grass.js": {
+          "same": true,
+          "oldSHA256": "fe1e672ee1b94345006e070ccf8ef65befe8001cb4e53f11c12bb910d526d0d1",
+          "newSHA256": "fe1e672ee1b94345006e070ccf8ef65befe8001cb4e53f11c12bb910d526d0d1"
+        },
+        "src/grassdetail.js": {
+          "same": true,
+          "oldSHA256": "b8b6b908e08ad6018516947a3a7c00be232bc372a6ec4e77bbaf33fae52c6f51",
+          "newSHA256": "b8b6b908e08ad6018516947a3a7c00be232bc372a6ec4e77bbaf33fae52c6f51"
+        },
+        "src/config.js": {
+          "same": false,
+          "oldSHA256": "11094d0ed1547172841beea7305a6b7d469781c4ace32e29e584c5fcf8cca54f",
+          "newSHA256": "a36e730774ee48527ae9b1ac7e2f444ca0fe6e8cbf02e15d1da56cfcdc3f94e0"
+        },
+        "src/daycycle.js": {
+          "same": false,
+          "oldSHA256": "6bd7cc89aa954a1083856deeb269f1a6b44a47ebaee2811b9c889946dedb0ca4",
+          "newSHA256": "a1bab8007b2fafc6defebf3d09bb9188bd2183c07b6c9cbdb841db0210d6e51b"
+        },
+        "src/sunbounce.js": {
+          "same": true,
+          "oldSHA256": "fb79a5dd10889874a41a970592f9dc0b5acee7c3269c425df4d06c6dd7ae110c",
+          "newSHA256": "fb79a5dd10889874a41a970592f9dc0b5acee7c3269c425df4d06c6dd7ae110c"
+        },
+        "src/main.js": {
+          "same": false,
+          "oldSHA256": "d95017c8d5e9d3b768a49a49a140a1d06513503d4e7ae33d165f71e640c9777a",
+          "newSHA256": "ac7902c916b7447deda82b417a0591cc60051fed7ef6eb6ae147e43f7739117a"
+        },
+        "index.html": {
+          "same": true,
+          "oldSHA256": "33ffed61b38619912f61770ad54a3e2f5ea99b3d8e162cb36dd535d28b77d8be",
+          "newSHA256": "33ffed61b38619912f61770ad54a3e2f5ea99b3d8e162cb36dd535d28b77d8be"
+        }
+      },
+      "changedSourceFiles": [
+        "src/config.js",
+        "src/courtyard.js",
+        "src/daycycle.js",
+        "src/ghosts.js",
+        "src/leaflitter.js",
+        "src/main.js",
+        "src/patio.js",
+        "src/seasons.js",
+        "src/surroundings.js"
+      ],
+      "configBlocks": {
+        "GRASS": {
+          "same": true,
+          "sha256": "77bf15f0e79859e2e26a3ba91c1db97b97c12f6a0405cfde85adb4ff47b36003"
+        },
+        "LIGHTING": {
+          "same": true,
+          "sha256": "c400a3578342dba264a02f6ab5c3aee772479dfdc80eba3bac606edb12f2d1d2"
+        },
+        "DAY": {
+          "same": true,
+          "sha256": "369e3471796e9058d6f5c48998c7b25dfef956b4b407180075b2e29b50b07f16"
+        }
+      }
+    },
+    "2325": {
+      "source": "469e63275b0f76454bec5fc85e3b16d5a1551660",
+      "files": {
+        "src/grass.js": {
+          "same": true,
+          "oldSHA256": "fe1e672ee1b94345006e070ccf8ef65befe8001cb4e53f11c12bb910d526d0d1",
+          "newSHA256": "fe1e672ee1b94345006e070ccf8ef65befe8001cb4e53f11c12bb910d526d0d1"
+        },
+        "src/grassdetail.js": {
+          "same": true,
+          "oldSHA256": "b8b6b908e08ad6018516947a3a7c00be232bc372a6ec4e77bbaf33fae52c6f51",
+          "newSHA256": "b8b6b908e08ad6018516947a3a7c00be232bc372a6ec4e77bbaf33fae52c6f51"
+        },
+        "src/config.js": {
+          "same": false,
+          "oldSHA256": "11094d0ed1547172841beea7305a6b7d469781c4ace32e29e584c5fcf8cca54f",
+          "newSHA256": "a36e730774ee48527ae9b1ac7e2f444ca0fe6e8cbf02e15d1da56cfcdc3f94e0"
+        },
+        "src/daycycle.js": {
+          "same": false,
+          "oldSHA256": "6bd7cc89aa954a1083856deeb269f1a6b44a47ebaee2811b9c889946dedb0ca4",
+          "newSHA256": "a1bab8007b2fafc6defebf3d09bb9188bd2183c07b6c9cbdb841db0210d6e51b"
+        },
+        "src/sunbounce.js": {
+          "same": true,
+          "oldSHA256": "fb79a5dd10889874a41a970592f9dc0b5acee7c3269c425df4d06c6dd7ae110c",
+          "newSHA256": "fb79a5dd10889874a41a970592f9dc0b5acee7c3269c425df4d06c6dd7ae110c"
+        },
+        "src/main.js": {
+          "same": false,
+          "oldSHA256": "d95017c8d5e9d3b768a49a49a140a1d06513503d4e7ae33d165f71e640c9777a",
+          "newSHA256": "ac7902c916b7447deda82b417a0591cc60051fed7ef6eb6ae147e43f7739117a"
+        },
+        "index.html": {
+          "same": false,
+          "oldSHA256": "818810116fd0b101c57d73a2441050c8364509c304a4705f48df6aff753c3fd3",
+          "newSHA256": "33ffed61b38619912f61770ad54a3e2f5ea99b3d8e162cb36dd535d28b77d8be"
+        }
+      },
+      "changedSourceFiles": [
+        "index.html",
+        "src/config.js",
+        "src/courtyard.js",
+        "src/daycycle.js",
+        "src/furniture.js",
+        "src/garage.js",
+        "src/ghosts.js",
+        "src/leaflitter.js",
+        "src/main.js",
+        "src/patio.js",
+        "src/remote-pose.js",
+        "src/rest.js",
+        "src/seasons.js",
+        "src/surroundings.js"
+      ],
+      "configBlocks": {
+        "GRASS": {
+          "same": true,
+          "sha256": "77bf15f0e79859e2e26a3ba91c1db97b97c12f6a0405cfde85adb4ff47b36003"
+        },
+        "LIGHTING": {
+          "same": true,
+          "sha256": "c400a3578342dba264a02f6ab5c3aee772479dfdc80eba3bac606edb12f2d1d2"
+        },
+        "DAY": {
+          "same": true,
+          "sha256": "369e3471796e9058d6f5c48998c7b25dfef956b4b407180075b2e29b50b07f16"
+        }
+      }
+    }
+  },
+  "cameraContract": "docs/verification/2325/views.json",
+  "native2426": "docs/verification/2426/unreal-capture.json",
+  "images": {
+    "/home/devcontainers/wt/codex-2437-grass/docs/verification/2392/web-entrance-a.jpg": {
+      "sha256": "c583a609f4885a7978b264746262d58bc296d1a494e9869379aca0f7b4b5b9da",
+      "bytes": 359306
+    },
+    "/home/devcontainers/wt/codex-2437-grass/docs/verification/2325/web-courtyard.jpg": {
+      "sha256": "f41386910e1c2e3557e636b3343d552ae5f7cbe9460b43bfde7cfdb835f15b44",
+      "bytes": 464241
+    },
+    "/home/devcontainers/wt/codex-2437-grass/docs/verification/2325/views.json": {
+      "sha256": "4767c24befcf55c07f0363abc176c550f9df5ca938d0e7ac2aeeb9a8990ba9d5",
+      "bytes": 1490
+    },
+    "/home/devcontainers/wt/codex-2437-grass/docs/verification/2325/web-capture.json": {
+      "sha256": "fc6de1e6a7348646095ea3cb857b77736796824205e4972d879a7b3f20d8c786",
+      "bytes": 3641
+    },
+    "/home/devcontainers/wt/codex-2437-grass/docs/verification/2426/unreal-capture.json": {
+      "sha256": "37eac234932d7d204450ee2085308d7aa2d56ee25430a444778c9cb07eb351ad",
+      "bytes": 3083
+    }
+  },
+  "cameras": {
+    "courtyard": {
+      "eyeWeb": [
+        12.5,
+        5.62,
+        26.0
+      ],
+      "yaw": 80,
+      "pitch": -14,
+      "verticalFov": 72,
+      "width": 1440,
+      "height": 810,
+      "date": [
+        2026,
+        6,
+        21
+      ],
+      "hour": 14,
+      "lampsOn": false,
+      "quality": 4
+    },
+    "entrance-a": {
+      "eyeWeb": [
+        6.5,
+        1.62,
+        27.0
+      ],
+      "yaw": 115,
+      "pitch": 5,
+      "verticalFov": 72,
+      "width": 1440,
+      "height": 810,
+      "date": [
+        2026,
+        6,
+        21
+      ],
+      "hour": 14,
+      "lampsOn": false,
+      "quality": 4
+    }
+  },
+  "boundedConclusion": "Grass, grassdetail, GRASS/LIGHTING/DAY config and solar/daylight functions are unchanged. daycycle adds read-only export getters and factors identical HEMI constants. Remaining outdoor diffs are metadata/getter extraction, identical bollard values and same patio helper formulas. Old source commits and cameras support reuse for static grass/crown original crops. These old captures do not contain a full current-style runtime/exposure/source SHA snapshot; do not claim byte-identical whole images or dynamic-actor state. No new browser run performed."
+}

@@ -1,0 +1,96 @@
+{
+  "contractSHA256": "81f524dcff60f2d96769a2f86e8f149124968bf8024b10786ee1c951723cbde4",
+  "contract": {
+    "issue": 2437,
+    "lockedAtUTC": "2026-11-28T08:23:40.009678+00:00",
+    "nativeImagesViewed": false,
+    "nativeImagesMeasured": false,
+    "lawnROI": [
+      0.62,
+      0.9,
+      0.7,
+      0.98
+    ],
+    "lawnROISource": "docs/verification/2426/crops.json:entrance-a.lawn",
+    "lawnAcceptance": "Each channel mean native/web inclusive [0.9,1.1], original issue \u00b110%; full precision means",
+    "method": "Historical crop-stats.cjs Math.round starts/extents; normalized independent crops, mean decoded sRGB8; Pillow decode (not browser Canvas); no resize",
+    "webLawn": {
+      "file": "/home/devcontainers/wt/codex-2437-grass/docs/verification/2392/web-entrance-a.jpg",
+      "sha256": "c583a609f4885a7978b264746262d58bc296d1a494e9869379aca0f7b4b5b9da",
+      "size": [
+        1440,
+        810
+      ]
+    },
+    "webCourtyard": {
+      "file": "/home/devcontainers/wt/codex-2437-grass/docs/verification/2325/web-courtyard.jpg",
+      "sha256": "f41386910e1c2e3557e636b3343d552ae5f7cbe9460b43bfde7cfdb835f15b44",
+      "size": [
+        1440,
+        810
+      ]
+    },
+    "crownAcceptance": "Original \u00b115% HSL saturation retained, UNASSESSED: no historical courtyard crown ROI found",
+    "historicalCrownMethod": "tools/unreal-engine/tests/leaf-stats.cjs; sky B>R+12 and B>=G excluded; white max>.93 and delta<.08 excluded; mean per-pixel HSL saturation",
+    "historicalCrownResults": "2432/leaf-stats.txt describes other facade-a/b views; ROI names preserved without actual coordinates. Those cameras differ from2325 courtyard; no direct substitution.",
+    "wholeImageReviewRequired": true
+  },
+  "lawn": {
+    "web": {
+      "file": "/home/devcontainers/wt/codex-2437-grass/docs/verification/2392/web-entrance-a.jpg",
+      "sha256": "c583a609f4885a7978b264746262d58bc296d1a494e9869379aca0f7b4b5b9da",
+      "size": [
+        1440,
+        810
+      ],
+      "pixelRectXYWH": [
+        893,
+        729,
+        115,
+        65
+      ],
+      "pixels": 7475,
+      "srgb": [
+        112.41030100334449,
+        173.31678929765886,
+        64.57177257525083
+      ],
+      "decoder": "Pillow RGB; same normalized rectangle without image resampling"
+    },
+    "native": {
+      "file": "/home/devcontainers/.local/state/lunden-codex-20261127/2437/native/run-v1/unreal-entrance-a.png",
+      "sha256": "0b0e8370c2beb7cfdf9e22030ea710ee3de58d652253b4dd474a8b8d90687597",
+      "size": [
+        640,
+        360
+      ],
+      "pixelRectXYWH": [
+        397,
+        324,
+        51,
+        29
+      ],
+      "pixels": 1479,
+      "srgb": [
+        127.06085192697769,
+        189.32724814063556,
+        83.85395537525355
+      ],
+      "decoder": "Pillow RGB; same normalized rectangle without image resampling"
+    },
+    "perChannelNativeOverWeb": [
+      1.1303310354377336,
+      1.092376848820341,
+      1.2986162843451694
+    ],
+    "passed": false
+  },
+  "courtyard": {
+    "file": "/home/devcontainers/.local/state/lunden-codex-20261127/2437/native/run-v1/unreal-courtyard.png",
+    "sha256": "1124a96b987bfed5507c6289a8f4c8dccdcd0597b79e50ec4d573c2cf1cfc88f",
+    "status": "UNASSESSED",
+    "reason": "Historical courtyard crown ROI coordinates not preserved; no substitute ROI chosen"
+  },
+  "wholeIssuePassed": false,
+  "reason": "Crown saturation acceptance remains unassessed; whole-image review also required"
+}

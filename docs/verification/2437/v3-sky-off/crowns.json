@@ -1,0 +1,281 @@
+{
+  "contractSHA256": "09f0acec2d8d6fd820aaf4cd77776fd4e40cdce9e85052a5baef4f3a9c30673c",
+  "contract": {
+    "issue": 2437,
+    "lockedAtUTC": "2026-11-28T08:26:26.920297+00:00",
+    "nativeImagesViewed": false,
+    "nativeImagesMeasured": false,
+    "ROIProvenance": "NEW representative crown interiors chosen only on unchanged web-courtyard; these are not reconstructed historical ROI coordinates.",
+    "acceptance": "Each prelocked crown mean per-pixel HSL saturation native/web inclusive [0.85,1.15], unchanged original \u00b115% requirement.",
+    "methodSource": "tools/unreal-engine/tests/leaf-stats.cjs",
+    "methodSourceSHA256": "731d0b99399b551513bafad650a28d68956ee19629402e74b51c243719f1998e",
+    "method": "Same Math.round rectangle start/extents; exclude B>R+12&&B>=G sky and maxRGB/255>.93&&delta<.08 white; mean per-pixel HSL saturation, full precision. Pillow RGB decode instead of browser Canvas; no resizing.",
+    "webReference": {
+      "file": "/home/devcontainers/wt/codex-2437-grass/docs/verification/2325/web-courtyard.jpg",
+      "sha256": "f41386910e1c2e3557e636b3343d552ae5f7cbe9460b43bfde7cfdb835f15b44",
+      "size": [
+        1440,
+        810
+      ]
+    },
+    "regions": {
+      "leftForegroundCrown": {
+        "rect": [
+          0.49,
+          0.52,
+          0.59,
+          0.6
+        ],
+        "reason": "Dense leaf interior of left foreground crown, above its bare trunk; bounded away from path, sky and facade."
+      },
+      "middleForegroundCrown": {
+        "rect": [
+          0.63,
+          0.45,
+          0.7,
+          0.52
+        ],
+        "reason": "Dense central crown interior above branching trunks; excludes right facade, foreground path and sky."
+      },
+      "rightForegroundCrown": {
+        "rect": [
+          0.8,
+          0.44,
+          0.88,
+          0.53
+        ],
+        "reason": "Dense right foreground leaf interior, below the crown silhouette gaps and above bare branches; avoids visible facade and sky."
+      }
+    },
+    "geometryBoundary": "Same camera/crown locations required. Independent retained shares and whole-frame review expose coverage differences; no ROI retuning or inferred blocker from failure.",
+    "webOnlyStats": {
+      "leftForegroundCrown": {
+        "size": [
+          1440,
+          810
+        ],
+        "pixelRectXYWH": [
+          706,
+          421,
+          144,
+          65
+        ],
+        "totalPixels": 9360,
+        "retainedPixels": 9360,
+        "share": 1.0,
+        "srgb": [
+          69.8681623931624,
+          102.55876068376068,
+          54.683867521367524
+        ],
+        "sat": 0.34170429016545356,
+        "light": 0.30831887883358844,
+        "hue": 101.02413503449628
+      },
+      "middleForegroundCrown": {
+        "size": [
+          1440,
+          810
+        ],
+        "pixelRectXYWH": [
+          907,
+          365,
+          101,
+          57
+        ],
+        "totalPixels": 5757,
+        "retainedPixels": 5757,
+        "share": 1.0,
+        "srgb": [
+          62.66649296508598,
+          98.66284523189161,
+          51.04134097620288
+        ],
+        "sat": 0.3639043206947281,
+        "light": 0.2935348952851956,
+        "hue": 105.24012722314086
+      },
+      "rightForegroundCrown": {
+        "size": [
+          1440,
+          810
+        ],
+        "pixelRectXYWH": [
+          1152,
+          356,
+          115,
+          73
+        ],
+        "totalPixels": 8395,
+        "retainedPixels": 8395,
+        "share": 1.0,
+        "srgb": [
+          61.51673615247171,
+          108.2129839189994,
+          51.48433591423466
+        ],
+        "sat": 0.3974066377148722,
+        "light": 0.31311635076902683,
+        "hue": 109.3837411079209
+      }
+    }
+  },
+  "nativeFile": "/home/devcontainers/.local/state/lunden-codex-20261127/2437/native/run-v3-sky-off/unreal-courtyard.png",
+  "nativeSHA256": "60b37424025e1802f3160f2a890f59bf07f5281f73dcc63c39d5bd6886940372",
+  "regions": {
+    "leftForegroundCrown": {
+      "web": {
+        "size": [
+          1440,
+          810
+        ],
+        "pixelRectXYWH": [
+          706,
+          421,
+          144,
+          65
+        ],
+        "totalPixels": 9360,
+        "retainedPixels": 9360,
+        "share": 1.0,
+        "srgb": [
+          69.8681623931624,
+          102.55876068376068,
+          54.683867521367524
+        ],
+        "sat": 0.34170429016545356,
+        "light": 0.30831887883358844,
+        "hue": 101.02413503449628
+      },
+      "native": {
+        "size": [
+          640,
+          360
+        ],
+        "pixelRectXYWH": [
+          314,
+          187,
+          64,
+          29
+        ],
+        "totalPixels": 1856,
+        "retainedPixels": 1856,
+        "share": 1.0,
+        "srgb": [
+          69.09267241379311,
+          98.2521551724138,
+          56.89978448275862
+        ],
+        "sat": 0.27857739880611565,
+        "light": 0.30416772312373086,
+        "hue": 102.83792901423381
+      },
+      "saturationNativeOverWeb": 0.8152587100127663,
+      "withinOriginal15Percent": false
+    },
+    "middleForegroundCrown": {
+      "web": {
+        "size": [
+          1440,
+          810
+        ],
+        "pixelRectXYWH": [
+          907,
+          365,
+          101,
+          57
+        ],
+        "totalPixels": 5757,
+        "retainedPixels": 5757,
+        "share": 1.0,
+        "srgb": [
+          62.66649296508598,
+          98.66284523189161,
+          51.04134097620288
+        ],
+        "sat": 0.3639043206947281,
+        "light": 0.2935348952851956,
+        "hue": 105.24012722314086
+      },
+      "native": {
+        "size": [
+          640,
+          360
+        ],
+        "pixelRectXYWH": [
+          403,
+          162,
+          45,
+          25
+        ],
+        "totalPixels": 1125,
+        "retainedPixels": 1125,
+        "share": 1.0,
+        "srgb": [
+          74.14844444444445,
+          103.50133333333333,
+          65.70577777777778
+        ],
+        "sat": 0.23028347211650702,
+        "light": 0.331651416122004,
+        "hue": 107.40274020606944
+      },
+      "saturationNativeOverWeb": 0.6328132396913394,
+      "withinOriginal15Percent": false
+    },
+    "rightForegroundCrown": {
+      "web": {
+        "size": [
+          1440,
+          810
+        ],
+        "pixelRectXYWH": [
+          1152,
+          356,
+          115,
+          73
+        ],
+        "totalPixels": 8395,
+        "retainedPixels": 8395,
+        "share": 1.0,
+        "srgb": [
+          61.51673615247171,
+          108.2129839189994,
+          51.48433591423466
+        ],
+        "sat": 0.3974066377148722,
+        "light": 0.31311635076902683,
+        "hue": 109.3837411079209
+      },
+      "native": {
+        "size": [
+          640,
+          360
+        ],
+        "pixelRectXYWH": [
+          512,
+          158,
+          51,
+          32
+        ],
+        "totalPixels": 1632,
+        "retainedPixels": 1632,
+        "share": 1.0,
+        "srgb": [
+          48.86580882352941,
+          88.66360294117646,
+          44.91299019607843
+        ],
+        "sat": 0.3709943563888067,
+        "light": 0.2605608419838525,
+        "hue": 115.71188781013493
+      },
+      "saturationNativeOverWeb": 0.9335383991622818,
+      "withinOriginal15Percent": true
+    }
+  },
+  "numericallyPassed": false,
+  "geometryComparable": "Requires whole-frame review of same fixed crown positions; no automatic geometry pass",
+  "wholeIssuePassed": false,
+  "scope": "Crown supplement only; original lawn and whole-image review are separate requirements"
+}

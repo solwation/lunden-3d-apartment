@@ -1,0 +1,26 @@
+{
+  "command": [
+    "/usr/bin/python3",
+    "/home/devcontainers/wt/codex-2434-native/tools/unreal-engine/run-linux.py",
+    "--engine-root",
+    "/mnt/d/UnrealEngine/5.8.4",
+    "--data-dir",
+    "/mnt/d/LundenLinux",
+    "--render",
+    "--allow-cpu-device",
+    "--timeout",
+    "900",
+    "--owner",
+    "olw-win10-codex-20261127",
+    "python",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2437/native/build-capture-grass.py",
+    "--config",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2437/native/config-v1.json"
+  ],
+  "cwd": "/home/devcontainers/wt/codex-2434-native",
+  "startedAt": "2026-11-28T08:22:04.173598+00:00",
+  "completed": true,
+  "actualChildExitCode": 0,
+  "seconds": 219.986,
+  "log": "/home/devcontainers/.local/state/lunden-codex-20261127/2437/native/outer-v1.log"
+}

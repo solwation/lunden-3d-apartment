@@ -1,0 +1,11 @@
+{
+  "head": "e958d4253e7506c041e707e5f7100c8455be7010",
+  "sourceHead": "f3cfe4e892d74847bb1801b9c105ad8cc59de930",
+  "assetPaths": [
+    "unreal/Lunden/Content/Lunden/Materials/M_LundenGrass.uasset",
+    "unreal/Lunden/Content/Lunden/Materials/Textures/T_LundenGrassDetail.uasset",
+    "unreal/Lunden/Content/Lunden/Vegetation/M_LundenFoliage.uasset"
+  ],
+  "pushed": false,
+  "all248Readonly": true
+}

@@ -1,0 +1,18 @@
+{
+  "all248ExactReadonly": true,
+  "protected245Exact": true,
+  "sourceExportGeneratedExact": true,
+  "completed": true,
+  "restored": true,
+  "actualNativeRunnerOuter": [
+    0,
+    0,
+    0
+  ],
+  "seconds": 236.876,
+  "normalMaterialAndVegetationChecksPassed": true,
+  "originalLawnPassed": false,
+  "originalCrownsPassed": false,
+  "sourceHead": "f3cfe4e892d74847bb1801b9c105ad8cc59de930",
+  "classification": "Private candidate; not promoted because visual acceptance still fails and crown saturation worsened"
+}
