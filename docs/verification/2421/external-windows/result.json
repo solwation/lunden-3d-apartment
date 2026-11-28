@@ -1,0 +1,130 @@
+{
+  "classification": "Actual narrow external-neighbour-window partial; no whole2421/product acceptance claim",
+  "sourceHead": "eb36746a66e6b6fca2918107ae346c4cae4d86ac",
+  "originalSourceCodeCheckpoint": "cda95a4af1760da536d36eb095d5dc16b6743f33",
+  "normalBuildPriorActualResult": "/home/devcontainers/.local/state/lunden-codex-20261127/2421/external-window-native/native-v3/facade-build.json",
+  "capture": {
+    "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2421/external-window-native/native-v3/capture.json",
+    "completed": true,
+    "restored": true,
+    "sourceReference": {
+      "date": [
+        2026,
+        11,
+        16
+      ],
+      "hour": 18.25,
+      "overcast": 0,
+      "under": 0,
+      "dim": 0,
+      "dayShare": 0,
+      "sunDirWeb": [
+        -0.40300385020116136,
+        -0.32540525077236565,
+        0.855394247989086
+      ],
+      "sunIntensity": 0.127550380125071,
+      "skyStrength": 0
+    },
+    "actualRuntime": {
+      "WindowSkyStrength": 0.0,
+      "WindowSunStrength": 0.1275503784418106,
+      "WindowAmbientFill": 0.030002223327755928,
+      "Daylight": 0.0,
+      "SunDirNative": [
+        -0.40300384163856506,
+        0.8553942441940308,
+        -0.3254052400588989
+      ],
+      "SunDirWeb": [
+        -0.40300384163856506,
+        -0.3254052400588989,
+        0.8553942441940308
+      ],
+      "actualAmbient": {
+        "cube": "/Game/Lunden/Lighting/T_LundenHemisphere.T_LundenHemisphere",
+        "intensity": 4.565000057220459,
+        "blendWeight": 0.006572228856384754,
+        "effectiveFill": 0.030002225105462355,
+        "tint": [
+          1.0,
+          1.0,
+          1.0
+        ]
+      },
+      "expectedNativeFill": 0.030002224092416888
+    },
+    "camera": {
+      "xyz": [
+        287.5,
+        -1200.0,
+        162.0
+      ],
+      "yaw": 89.99999999999999,
+      "pitch": 8.000000000000002,
+      "roll": -0.0,
+      "horizontalFov": 104.50486755371094,
+      "width": 640,
+      "height": 360,
+      "separateTranslucencyShowFlag": true,
+      "privateBlendableAttached": false
+    },
+    "image": "/home/devcontainers/.local/state/lunden-codex-20261127/2421/external-window-native/native-v3/unreal-start-night.png",
+    "imageSHA256": "87222b32d4fca5e6932ad9407ae7a62531357e7cc7f6503bb5758159f209a152"
+  },
+  "actualBindings": {
+    "windows": 735,
+    "external": 86,
+    "LocalPowerForExternal": 0,
+    "LocalPowerForABC": 1,
+    "leftRoutine": "28.17,1.70,7.95",
+    "leftPositionNative": [
+      2817.0,
+      795.0,
+      170.0
+    ],
+    "material": "/Game/Lunden/Generated/FacadeLighting/M_Facade_window.M_Facade_window"
+  },
+  "postflight": {
+    "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2443/postflight-root-review.json",
+    "sha256": "e092fa610634c29f2af17ab987141902a5c858d94a726bc0bb551fba0535aedc",
+    "passed": true,
+    "authored250ROExact": true,
+    "Generated5231Exact": true,
+    "Import12Exact": true,
+    "dependencies688Exact": true
+  },
+  "processOutcomes": {
+    "engine": "5.8.4",
+    "profile": "linux-low",
+    "nativeExit": 0,
+    "runnerExit": 0,
+    "toolExit": 0,
+    "nativeSeconds": 274.2,
+    "outerSeconds": 274.3,
+    "timedOut": false,
+    "logErrors": [],
+    "images": 3,
+    "worldLoads": 1,
+    "buildersAndSavesDuringCapture": 0
+  },
+  "pixelAcceptance": "Root-owned; GPU lit-window count not queried by this check",
+  "priorEvidence": "Accepted skyY0.962025 and APT22 reused historically, not rerun here",
+  "remainingAcceptance": "Upper facade/grey foreground/yellow lamp-pool differences remain open; new left-window image requires Root review",
+  "noNewClaims": [
+    "new full20",
+    "fresh globalsyncstamp",
+    "new releasegate",
+    "Shipping",
+    "WindowsGPUparity"
+  ],
+  "rootVisualReview": {
+    "leftExternalWindowVisiblyLitAtLeftEdge": true,
+    "wholeNightImageViewedAlongsideSource": true,
+    "whole2421Acceptance": false
+  },
+  "rawSHA256": {
+    "unreal-start-night.png": "87222b32d4fca5e6932ad9407ae7a62531357e7cc7f6503bb5758159f209a152",
+    "web-start-night.jpg": "da0ad0c16e5e568118710fac9d7e3b2b2ed8b4cb64a0df09f56a3d9beea9dca1"
+  }
+}

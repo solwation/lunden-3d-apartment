@@ -6,7 +6,7 @@ float3 active = Home ? max(evening,Morning ? morning : 0) : 0;
 float level = max(active.x,max(active.y,active.z));
 float night = saturate(Night);
 float k = Hall ? .85*night : level*(.25+.75*night);
-if (PowerAvailable <= .5 || k <= 0) return 0;
+if ((LocalPower > .5 && PowerAvailable <= .5) || k <= 0) return 0;
 bool tv = !Hall && Rate>0 && (Hour >= $tvFrom || Hour < $tvUntil-24) && level>.5;
 float3 rgb = Hall ? float3(1,.84,.6) : tv ? $tvColour : float3(LampR,LampG,LampB);
 if (tv) {

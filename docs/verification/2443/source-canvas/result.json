@@ -1,0 +1,610 @@
+{
+  "sourceHead": "eb36746a66e6b6fca2918107ae346c4cae4d86ac",
+  "publicationSourcePreparedHead": "3edcee5d",
+  "sourceCodeBytesExactAfterDocsOnlyRebase": true,
+  "rootVisualReview": {
+    "screenWallFrameAndStandingBoardsBothViews": true,
+    "screenWallStippleAbsentBothViews": true,
+    "wholeImagesViewed": true,
+    "acceptanceScope": "#2443 frame/board pattern only; no whole-scene lighting/season parity claim"
+  },
+  "execution": {
+    "engine": "5.8.4",
+    "profile": "linux-low",
+    "nativeExit": 0,
+    "runnerExit": 0,
+    "toolExit": 0,
+    "nativeSeconds": 274.2,
+    "outerSeconds": 274.3,
+    "timedOut": false,
+    "logErrors": [],
+    "images": 3,
+    "worldLoads": 1,
+    "buildersAndSavesDuringCapture": 0
+  },
+  "normalBuilds": {
+    "screenWallBuildAndCheck": "product-v2 normal two-entry build/check passed on eb36746a before separate Facade RHI crash",
+    "facadeNullRHIBuildAndCheck": {
+      "nativeExit": 0,
+      "runnerExit": 0,
+      "toolExit": 0,
+      "outerSeconds": 109.12
+    }
+  },
+  "postflight": {
+    "scope": "Offline file/binding/capture postflight only; process outcomes and visual/product acceptance remain Root-owned",
+    "productAccepted": false,
+    "configSHA256": "e6c3a4991ea4a6b698ab01f41af6fbffefa0b8f4cc19074de7b81188e9d4735a",
+    "sourceHead": "eb36746a66e6b6fca2918107ae346c4cae4d86ac",
+    "processOutcomesObservedHere": false,
+    "checks": {
+      "actualCaptureBatchCompleted": true,
+      "facadeCompletedRestored": true,
+      "screenCompletedRestored": true,
+      "all735SourceWindowsBound": true,
+      "external86AndPowerScopes": true,
+      "leftWindowActualPositionScope": true,
+      "threeScreenMeshEffectiveChains": true,
+      "all250AuthoredExactReadonly": true,
+      "all5231GeneratedExact": true,
+      "all12ImportExact": true,
+      "all688DependenciesExact": true,
+      "sourceHeadExact": true,
+      "PNG_start-night": true,
+      "PNG_courtyard-january": true,
+      "PNG_patio-christmas": true
+    },
+    "images": [
+      {
+        "name": "start-night",
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2421/external-window-native/native-v3/unreal-start-night.png",
+        "sha256": "87222b32d4fca5e6932ad9407ae7a62531357e7cc7f6503bb5758159f209a152",
+        "dimensions": [
+          640,
+          360
+        ],
+        "camera": {
+          "xyz": [
+            287.5,
+            -1200.0,
+            162.0
+          ],
+          "yaw": 89.99999999999999,
+          "pitch": 8.000000000000002,
+          "roll": -0.0,
+          "horizontalFov": 104.50486755371094,
+          "width": 640,
+          "height": 360,
+          "separateTranslucencyShowFlag": true,
+          "privateBlendableAttached": false
+        }
+      },
+      {
+        "name": "courtyard-january",
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2443/capture-only-v4/screen-capture/unreal-courtyard-january.png",
+        "sha256": "97382c5c0fdcdae2fa5d58d673cadfea26f5c0232ce0485d14040ca787168676",
+        "dimensions": [
+          640,
+          360
+        ],
+        "camera": {
+          "xyz": [
+            1250.0,
+            2600.0,
+            562.0
+          ],
+          "yaw": -170.0,
+          "pitch": -13.999999999999998,
+          "roll": 2.0487018772555777e-16,
+          "horizontalFov": 104.50486755371094,
+          "width": 640,
+          "height": 360,
+          "separateTranslucencyShowFlag": true,
+          "privateBlendableAttached": false
+        }
+      },
+      {
+        "name": "patio-christmas",
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2443/capture-only-v4/screen-capture/unreal-patio-christmas.png",
+        "sha256": "1a9863eee53373fd3646221bc061b4b94bd4b413442b52847c7f53c041f18cf5",
+        "dimensions": [
+          640,
+          360
+        ],
+        "camera": {
+          "xyz": [
+            230.0,
+            1610.0,
+            162.0
+          ],
+          "yaw": -82.0,
+          "pitch": 12.000000000000004,
+          "roll": 2.4387076237861243e-15,
+          "horizontalFov": 104.50486755371094,
+          "width": 640,
+          "height": 360,
+          "separateTranslucencyShowFlag": true,
+          "privateBlendableAttached": false
+        }
+      }
+    ],
+    "inputsSHA256": {
+      "/home/devcontainers/.local/state/lunden-codex-20261127/2443/capture-only-v4/batch.json": "28e730fbbb6f24cefc3552baa576d10993ae22a71d9c75a793c58db013cf189c",
+      "/home/devcontainers/.local/state/lunden-codex-20261127/2421/external-window-native/native-v3/capture.json": "b7f2c9f133b2a2e275ad5001eb2d964cc865f0dc31f19abb92ef46db30f3ba80",
+      "/home/devcontainers/.local/state/lunden-codex-20261127/2443/capture-only-v4/screen-capture/capture.json": "4b6daf59b4326c0fce5400fa6534befdc479a62b5aa340aee4ed108d56b11b69",
+      "/home/devcontainers/.local/state/lunden-codex-20261127/2421/external-window-native/native-v3/window-bindings.json": "8ee66d98ec21820946b8139876f76dcc9835ed45aed1cb2d29be9cd55fa71bee"
+    },
+    "changedDependencies": [],
+    "postflightPassed": true,
+    "wholeNativeRunPassed": null,
+    "lightingScope": "Only normal FacadeLighting rebuilt in prior actual NullRHI; no fresh20/globalstamp/release/Windows claim",
+    "sourceWindowLitPixelReadback": false,
+    "sourceWindowLeftRoutine": "28.17,1.70,7.95",
+    "notes": "All actual component data/material chains and restoration checked. A lit-pixel count and whole-image/product acceptance are not inferred from component presence."
+  },
+  "effectiveScreenWallBefore": [
+    {
+      "actor": "/Game/Lunden/Generated/Interaction/Level_hus-l_interaction.Level_hus-l_interaction:PersistentLevel.mesh_l0_xm1509_z1425_y563",
+      "component": "/Game/Lunden/Generated/Interaction/Level_hus-l_interaction.Level_hus-l_interaction:PersistentLevel.mesh_l0_xm1509_z1425_y563.StaticMeshComponent0",
+      "mesh": "/Game/Lunden/Generated/hus-l/StaticMeshes/mesh_l0_xm1509_z1425_y563.mesh_l0_xm1509_z1425_y563",
+      "slot": 0,
+      "chain": [
+        "/Game/Lunden/Materials/MI_LundenScreenWall.MI_LundenScreenWall",
+        "/Game/Lunden/Generated/ScreenWallMaterials/M_LundenScreenWall.M_LundenScreenWall"
+      ],
+      "textures": {
+        "Colour": {
+          "node": "/Game/Lunden/Generated/ScreenWallMaterials/M_LundenScreenWall.M_LundenScreenWall:MaterialExpressionTextureSample_0",
+          "texture": "/Game/Lunden/Generated/ScreenWallMaterials/T_ScreenWallColour.T_ScreenWallColour",
+          "samplerSource": "<SamplerSourceMode.SSM_FROM_TEXTURE_ASSET: 0>",
+          "samplerType": "<MaterialSamplerType.SAMPLERTYPE_COLOR: 0>",
+          "properties": {
+            "srgb": {
+              "known": true,
+              "value": "True"
+            },
+            "address_x": {
+              "known": true,
+              "value": "<TextureAddress.TA_WRAP: 0>"
+            },
+            "address_y": {
+              "known": true,
+              "value": "<TextureAddress.TA_CLAMP: 1>"
+            },
+            "mip_gen_settings": {
+              "known": true,
+              "value": "<TextureMipGenSettings.TMGS_FROM_TEXTURE_GROUP: 0>"
+            },
+            "compression_settings": {
+              "known": true,
+              "value": "<TextureCompressionSettings.TC_DEFAULT: 0>"
+            },
+            "filter": {
+              "known": true,
+              "value": "<TextureFilter.TF_DEFAULT: 3>"
+            },
+            "lod_group": {
+              "known": true,
+              "value": "<TextureGroup.TEXTUREGROUP_WORLD: 0>"
+            }
+          }
+        },
+        "Surface": {
+          "node": "/Game/Lunden/Generated/ScreenWallMaterials/M_LundenScreenWall.M_LundenScreenWall:MaterialExpressionTextureSample_1",
+          "texture": "/Game/Lunden/Generated/ScreenWallMaterials/T_ScreenWallSurface.T_ScreenWallSurface",
+          "samplerSource": "<SamplerSourceMode.SSM_FROM_TEXTURE_ASSET: 0>",
+          "samplerType": "<MaterialSamplerType.SAMPLERTYPE_MASKS: 4>",
+          "properties": {
+            "srgb": {
+              "known": true,
+              "value": "False"
+            },
+            "address_x": {
+              "known": true,
+              "value": "<TextureAddress.TA_WRAP: 0>"
+            },
+            "address_y": {
+              "known": true,
+              "value": "<TextureAddress.TA_CLAMP: 1>"
+            },
+            "mip_gen_settings": {
+              "known": true,
+              "value": "<TextureMipGenSettings.TMGS_FROM_TEXTURE_GROUP: 0>"
+            },
+            "compression_settings": {
+              "known": true,
+              "value": "<TextureCompressionSettings.TC_MASKS: 2>"
+            },
+            "filter": {
+              "known": true,
+              "value": "<TextureFilter.TF_DEFAULT: 3>"
+            },
+            "lod_group": {
+              "known": true,
+              "value": "<TextureGroup.TEXTUREGROUP_WORLD: 0>"
+            }
+          }
+        }
+      },
+      "masterProperties": {
+        "shading_model": {
+          "known": true,
+          "value": "<MaterialShadingModel.MSM_DEFAULT_LIT: 1>"
+        },
+        "blend_mode": {
+          "known": true,
+          "value": "<BlendMode.BLEND_OPAQUE: 0>"
+        },
+        "two_sided": {
+          "known": true,
+          "value": "False"
+        }
+      },
+      "metallicInputNode": {
+        "known": true,
+        "value": null
+      }
+    },
+    {
+      "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.mesh_l0_x4_z1522_y90",
+      "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.mesh_l0_x4_z1522_y90.StaticMeshComponent0",
+      "mesh": "/Game/Lunden/Generated/l1007-uteplats/StaticMeshes/mesh_l0_x4_z1522_y90.mesh_l0_x4_z1522_y90",
+      "slot": 0,
+      "chain": [
+        "/Game/Lunden/Materials/MI_LundenScreenWall.MI_LundenScreenWall",
+        "/Game/Lunden/Generated/ScreenWallMaterials/M_LundenScreenWall.M_LundenScreenWall"
+      ],
+      "textures": {
+        "Colour": {
+          "node": "/Game/Lunden/Generated/ScreenWallMaterials/M_LundenScreenWall.M_LundenScreenWall:MaterialExpressionTextureSample_0",
+          "texture": "/Game/Lunden/Generated/ScreenWallMaterials/T_ScreenWallColour.T_ScreenWallColour",
+          "samplerSource": "<SamplerSourceMode.SSM_FROM_TEXTURE_ASSET: 0>",
+          "samplerType": "<MaterialSamplerType.SAMPLERTYPE_COLOR: 0>",
+          "properties": {
+            "srgb": {
+              "known": true,
+              "value": "True"
+            },
+            "address_x": {
+              "known": true,
+              "value": "<TextureAddress.TA_WRAP: 0>"
+            },
+            "address_y": {
+              "known": true,
+              "value": "<TextureAddress.TA_CLAMP: 1>"
+            },
+            "mip_gen_settings": {
+              "known": true,
+              "value": "<TextureMipGenSettings.TMGS_FROM_TEXTURE_GROUP: 0>"
+            },
+            "compression_settings": {
+              "known": true,
+              "value": "<TextureCompressionSettings.TC_DEFAULT: 0>"
+            },
+            "filter": {
+              "known": true,
+              "value": "<TextureFilter.TF_DEFAULT: 3>"
+            },
+            "lod_group": {
+              "known": true,
+              "value": "<TextureGroup.TEXTUREGROUP_WORLD: 0>"
+            }
+          }
+        },
+        "Surface": {
+          "node": "/Game/Lunden/Generated/ScreenWallMaterials/M_LundenScreenWall.M_LundenScreenWall:MaterialExpressionTextureSample_1",
+          "texture": "/Game/Lunden/Generated/ScreenWallMaterials/T_ScreenWallSurface.T_ScreenWallSurface",
+          "samplerSource": "<SamplerSourceMode.SSM_FROM_TEXTURE_ASSET: 0>",
+          "samplerType": "<MaterialSamplerType.SAMPLERTYPE_MASKS: 4>",
+          "properties": {
+            "srgb": {
+              "known": true,
+              "value": "False"
+            },
+            "address_x": {
+              "known": true,
+              "value": "<TextureAddress.TA_WRAP: 0>"
+            },
+            "address_y": {
+              "known": true,
+              "value": "<TextureAddress.TA_CLAMP: 1>"
+            },
+            "mip_gen_settings": {
+              "known": true,
+              "value": "<TextureMipGenSettings.TMGS_FROM_TEXTURE_GROUP: 0>"
+            },
+            "compression_settings": {
+              "known": true,
+              "value": "<TextureCompressionSettings.TC_MASKS: 2>"
+            },
+            "filter": {
+              "known": true,
+              "value": "<TextureFilter.TF_DEFAULT: 3>"
+            },
+            "lod_group": {
+              "known": true,
+              "value": "<TextureGroup.TEXTUREGROUP_WORLD: 0>"
+            }
+          }
+        }
+      },
+      "masterProperties": {
+        "shading_model": {
+          "known": true,
+          "value": "<MaterialShadingModel.MSM_DEFAULT_LIT: 1>"
+        },
+        "blend_mode": {
+          "known": true,
+          "value": "<BlendMode.BLEND_OPAQUE: 0>"
+        },
+        "two_sided": {
+          "known": true,
+          "value": "False"
+        }
+      },
+      "metallicInputNode": {
+        "known": true,
+        "value": null
+      }
+    },
+    {
+      "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.mesh_l0_x571_z1522_y90",
+      "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.mesh_l0_x571_z1522_y90.StaticMeshComponent0",
+      "mesh": "/Game/Lunden/Generated/l1007-uteplats/StaticMeshes/mesh_l0_x571_z1522_y90.mesh_l0_x571_z1522_y90",
+      "slot": 0,
+      "chain": [
+        "/Game/Lunden/Materials/MI_LundenScreenWall.MI_LundenScreenWall",
+        "/Game/Lunden/Generated/ScreenWallMaterials/M_LundenScreenWall.M_LundenScreenWall"
+      ],
+      "textures": {
+        "Colour": {
+          "node": "/Game/Lunden/Generated/ScreenWallMaterials/M_LundenScreenWall.M_LundenScreenWall:MaterialExpressionTextureSample_0",
+          "texture": "/Game/Lunden/Generated/ScreenWallMaterials/T_ScreenWallColour.T_ScreenWallColour",
+          "samplerSource": "<SamplerSourceMode.SSM_FROM_TEXTURE_ASSET: 0>",
+          "samplerType": "<MaterialSamplerType.SAMPLERTYPE_COLOR: 0>",
+          "properties": {
+            "srgb": {
+              "known": true,
+              "value": "True"
+            },
+            "address_x": {
+              "known": true,
+              "value": "<TextureAddress.TA_WRAP: 0>"
+            },
+            "address_y": {
+              "known": true,
+              "value": "<TextureAddress.TA_CLAMP: 1>"
+            },
+            "mip_gen_settings": {
+              "known": true,
+              "value": "<TextureMipGenSettings.TMGS_FROM_TEXTURE_GROUP: 0>"
+            },
+            "compression_settings": {
+              "known": true,
+              "value": "<TextureCompressionSettings.TC_DEFAULT: 0>"
+            },
+            "filter": {
+              "known": true,
+              "value": "<TextureFilter.TF_DEFAULT: 3>"
+            },
+            "lod_group": {
+              "known": true,
+              "value": "<TextureGroup.TEXTUREGROUP_WORLD: 0>"
+            }
+          }
+        },
+        "Surface": {
+          "node": "/Game/Lunden/Generated/ScreenWallMaterials/M_LundenScreenWall.M_LundenScreenWall:MaterialExpressionTextureSample_1",
+          "texture": "/Game/Lunden/Generated/ScreenWallMaterials/T_ScreenWallSurface.T_ScreenWallSurface",
+          "samplerSource": "<SamplerSourceMode.SSM_FROM_TEXTURE_ASSET: 0>",
+          "samplerType": "<MaterialSamplerType.SAMPLERTYPE_MASKS: 4>",
+          "properties": {
+            "srgb": {
+              "known": true,
+              "value": "False"
+            },
+            "address_x": {
+              "known": true,
+              "value": "<TextureAddress.TA_WRAP: 0>"
+            },
+            "address_y": {
+              "known": true,
+              "value": "<TextureAddress.TA_CLAMP: 1>"
+            },
+            "mip_gen_settings": {
+              "known": true,
+              "value": "<TextureMipGenSettings.TMGS_FROM_TEXTURE_GROUP: 0>"
+            },
+            "compression_settings": {
+              "known": true,
+              "value": "<TextureCompressionSettings.TC_MASKS: 2>"
+            },
+            "filter": {
+              "known": true,
+              "value": "<TextureFilter.TF_DEFAULT: 3>"
+            },
+            "lod_group": {
+              "known": true,
+              "value": "<TextureGroup.TEXTUREGROUP_WORLD: 0>"
+            }
+          }
+        }
+      },
+      "masterProperties": {
+        "shading_model": {
+          "known": true,
+          "value": "<MaterialShadingModel.MSM_DEFAULT_LIT: 1>"
+        },
+        "blend_mode": {
+          "known": true,
+          "value": "<BlendMode.BLEND_OPAQUE: 0>"
+        },
+        "two_sided": {
+          "known": true,
+          "value": "False"
+        }
+      },
+      "metallicInputNode": {
+        "known": true,
+        "value": null
+      }
+    }
+  ],
+  "effectiveChainsExactAfterEachCapture": true,
+  "shots": [
+    {
+      "name": "courtyard-january",
+      "image": "unreal-courtyard-january.png",
+      "imageSHA256": "97382c5c0fdcdae2fa5d58d673cadfea26f5c0232ce0485d14040ca787168676",
+      "camera": {
+        "xyz": [
+          1250.0,
+          2600.0,
+          562.0
+        ],
+        "yaw": -170.0,
+        "pitch": -13.999999999999998,
+        "roll": 2.0487018772555777e-16,
+        "horizontalFov": 104.50486755371094,
+        "width": 640,
+        "height": 360,
+        "separateTranslucencyShowFlag": true,
+        "privateBlendableAttached": false
+      },
+      "date": [
+        2026,
+        1,
+        15
+      ],
+      "hour": 14,
+      "lampsOn": false,
+      "sourceReference": {
+        "date": [
+          2026,
+          1,
+          15
+        ],
+        "hour": 14,
+        "overcast": 0,
+        "under": 0,
+        "dim": 0,
+        "dayShare": 0.9979134748705829,
+        "sunDirWeb": [
+          0.5455442881525265,
+          0.17308151126902796,
+          0.8200147682334646
+        ],
+        "sunIntensity": 2.9983307798964662,
+        "skyStrength": 1.497911298077025
+      },
+      "seasonVisibilitySummary": {
+        "mode": "render-only-season-visibility",
+        "rule": "Actual BPC_LundenSeasons.TagValue/InSeason/InHours; no Python calendar/window formula",
+        "date": [
+          2026,
+          1,
+          15
+        ],
+        "hour": 14.0,
+        "nativeIntegerHour": 14,
+        "componentSpecHash": "33ab2c0759b6a54cd465f6a3ec7e72cdede9e366e96a59b0dfd80b812c3d3e9c",
+        "observedMonth": 1.0
+      },
+      "fullPrivateCaptureSHA256": "4b6daf59b4326c0fce5400fa6534befdc479a62b5aa340aee4ed108d56b11b69"
+    },
+    {
+      "name": "patio-christmas",
+      "image": "unreal-patio-christmas.png",
+      "imageSHA256": "1a9863eee53373fd3646221bc061b4b94bd4b413442b52847c7f53c041f18cf5",
+      "camera": {
+        "xyz": [
+          230.0,
+          1610.0,
+          162.0
+        ],
+        "yaw": -82.0,
+        "pitch": 12.000000000000004,
+        "roll": 2.4387076237861243e-15,
+        "horizontalFov": 104.50486755371094,
+        "width": 640,
+        "height": 360,
+        "separateTranslucencyShowFlag": true,
+        "privateBlendableAttached": false
+      },
+      "date": [
+        2026,
+        12,
+        24
+      ],
+      "hour": 14,
+      "lampsOn": false,
+      "sourceReference": {
+        "date": [
+          2026,
+          12,
+          24
+        ],
+        "hour": 14,
+        "overcast": 0,
+        "under": 0,
+        "dim": 0,
+        "dayShare": 0.8966879377385932,
+        "sunDirWeb": [
+          0.5282331811850682,
+          0.12818656768664047,
+          0.8393675655872233
+        ],
+        "sunIntensity": 2.9173503501908744,
+        "skyStrength": 1.3913512466342408
+      },
+      "seasonVisibilitySummary": {
+        "mode": "render-only-season-visibility",
+        "rule": "Actual BPC_LundenSeasons.TagValue/InSeason/InHours; no Python calendar/window formula",
+        "date": [
+          2026,
+          12,
+          24
+        ],
+        "hour": 14.0,
+        "nativeIntegerHour": 14,
+        "componentSpecHash": "33ab2c0759b6a54cd465f6a3ec7e72cdede9e366e96a59b0dfd80b812c3d3e9c",
+        "observedMonth": 12.0
+      },
+      "fullPrivateCaptureSHA256": "4b6daf59b4326c0fce5400fa6534befdc479a62b5aa340aee4ed108d56b11b69"
+    }
+  ],
+  "sourceReferences": {
+    "actualSourceJPEGsViewed": true,
+    "browserProcessExit": 1,
+    "reason": "Two canonical images completed; final 718-file guard failed only for changelog metadata changed by Root during capture. Reused only as pattern/camera references, not a passing source-process or exact718 claim.",
+    "reviewSHA256": "87cabce043ff18eba7109e3d8ee7eb2df15179932b5e399c63ba8bf0c0944bbb"
+  },
+  "failuresPreserved": {
+    "productV1": {
+      "nativeExit": 255,
+      "runnerExit": 1,
+      "toolExit": 1,
+      "outerSeconds": 112.84,
+      "cause": "Root used Coordinates instead of the actual UVs material input; corrected before final normal build"
+    },
+    "productV2": {
+      "nativeExit": -11,
+      "runnerExit": 1,
+      "toolExit": 1,
+      "outerSeconds": 184.974,
+      "cause": "Existing RHI glow-mesh rebuild crash, #2504; separated normal NullRHI build succeeded"
+    }
+  },
+  "limits": [
+    "Linux CPU-Vulkan 640x360, AO0, raster fallback; no Windows/cook/Shipping/release test",
+    "Season/lighting differences visible outside screen walls are not accepted as parity: Native snow amount0, source January reference has snow; source Christmas tree has a small lamp while Native lamp states are off",
+    "Source bump relief remains unported; source colour/roughness canvas is used without RGB/gain fitting"
+  ],
+  "authoredMIsha256": "1d0f00f35c1b2dbc6eea071e41de53929c594f2678c1576fd4b15d4b11fa140c",
+  "rawSHA256": {
+    "web-screenwall-patio.jpg": "fd4747865f1cf651903be94e5a14b5e7dc429dcd37d9e258b1cb2f7d32660c2f",
+    "unreal-patio-christmas.png": "1a9863eee53373fd3646221bc061b4b94bd4b413442b52847c7f53c041f18cf5",
+    "web-screenwall-courtyard.jpg": "b9b63e008fd9232e3f047a55776e56b45fe63bea43c25bfc02eeb8d6dd108b9f",
+    "unreal-courtyard-january.png": "97382c5c0fdcdae2fa5d58d673cadfea26f5c0232ce0485d14040ca787168676"
+  }
+}

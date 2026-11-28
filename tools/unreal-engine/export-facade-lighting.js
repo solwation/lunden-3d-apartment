@@ -53,7 +53,7 @@ function scheduledWindows({ object, habits }, routines) {
   const face = new THREE.Vector3(), { width, height } = object.geometry.parameters;
   for (let i = 0; i < object.count; i++) {
     const habit = habits[i];
-    if (!habit.house) continue;
+    // A missing local house means a neighbouring building, independent of Lunden power (#2421).
     object.getMatrixAt(i, transform);
     const e = transform.elements, f = Math.fround;
     const dot = f(f(f(e[12]*f(12.9898)) + f(e[13]*f(78.233))) + f(e[14]*f(37.719)));
@@ -62,7 +62,7 @@ function scheduledWindows({ object, habits }, routines) {
     face.set(0, 0, 1).applyQuaternion(q);
     const { key, hall = false, home, kind, on, off, morning, wake, leave, rgb, tv } = habit;
     routines[key] ??= { home, kind, on, off, morning, wake, leave, rgb, tv };
-    windows.push({ house: habit.house, position: webToUnrealRounded(point.toArray()), normal: [face.x, face.z],
+    windows.push({ house: habit.house ?? 'external', localPower: !!habit.house, position: webToUnrealRounded(point.toArray()), normal: [face.x, face.z],
       width: cm(width * scale.x), height: cm(height * scale.y), glowSeed, hall, routine: key });
   }
   return windows;

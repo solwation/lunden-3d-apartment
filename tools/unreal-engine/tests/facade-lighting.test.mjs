@@ -1,13 +1,15 @@
 // A garage pane and a window light can be closer to a different house than their source building (#2324).
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { COURTYARD, GLASS_PANES, HUS_L, SITE } from '../../../src/config.js';
 import { poolGeometry } from '../../../src/groundglow.js';
 import { paneTints } from '../../../src/glasspanes.js';
 import { roomVertex } from '../../../src/interiormap.js';
-import { windowHabit } from '../../../src/windowschedule.js';
+import { buildWindowLights } from '../../../src/surroundings.js';
+import { windowHabit, windowLevel } from '../../../src/windowschedule.js';
 import { facadeLightingData } from '../export-facade-lighting.js';
 
 test('the shared site glass keeps its builder’s house and omits the garage', () => {
@@ -61,7 +63,7 @@ test('the shared site glass keeps its builder’s house and omits the garage', (
   const data = facadeLightingData(world, ['kvarteret']);
   assert.deepEqual(data.bollardLight, { on: PL.on, off: PL.off, fade: PL.fade, colour: PL.color, peak: PL.peak });
   assert.deepEqual(data.panes.map((p) => p.house), ['C']);
-  assert.deepEqual(data.windows.map((w) => w.house), ['C']);
+  assert.deepEqual(data.windows.map((w) => [w.house,w.localPower]), [['C',true]]);
   assert.deepEqual(data.panes[0].faces, [{ normal: [0, 1], offset: 0 }]);
   assert.equal(data.surfaces.length, 2);
   for (const surface of data.surfaces) {
@@ -72,4 +74,64 @@ test('the shared site glass keeps its builder’s house and omits the garage', (
     assert.equal(new Set(surface.indices).size, 4);
   }
   assert.deepEqual(data.schedule.routines['unit:C'], windowHabit('unit:C'));
+
+  // Real production window geometry/routines, not a replacement schedule. The canvas stub
+  // only constructs the unrelated spill mask; these checks do not claim raster parity.
+  globalThis.document = { createElement: () => ({ getContext: () => ({
+    createRadialGradient: () => ({ addColorStop() {} }), fillRect() {}
+  }) }) };
+  try {
+    const source = buildWindowLights();
+    group.userData.windows = source;
+    group.add(source.object);
+    world.object.updateMatrixWorld(true);
+    const exported = facadeLightingData(world, ['kvarteret']);
+    assert.equal(exported.windows.length, source.habits.length);
+    const external = source.habits.flatMap((h,i) => !h.house ? [i] : []);
+    assert.equal(external.length, 86);
+    const matrix = new THREE.Matrix4(), position = new THREE.Vector3();
+    for (const [i,h] of source.habits.entries()) {
+      const row = exported.windows[i];
+      source.object.getMatrixAt(i,matrix); position.setFromMatrixPosition(matrix);
+      assert.deepEqual(row.position, [position.x,position.z,position.y].map(v => Math.round(v*10000)/100));
+      assert.equal(row.routine,h.key);
+      assert.equal(row.localPower,!!h.house);
+      assert.equal(row.house,h.house ?? 'external');
+      const {key,hall,house,...habit} = h;
+      assert.deepEqual(exported.schedule.routines[h.key],habit);
+    }
+    const i = source.habits.findIndex(h => h.key === '28.17,1.70,7.95');
+    const h = source.habits[i], row = exported.windows[i];
+    assert.equal(windowLevel(h,18.25),1);
+    assert.deepEqual(row.position,[2817,795,170]);
+    const camera = new THREE.PerspectiveCamera(72,640/360,.1,1000);
+    camera.rotation.order='YXZ'; camera.position.set(2.875,1.62,-12);
+    camera.rotation.set(8*Math.PI/180,Math.PI,0); camera.updateMatrixWorld();
+    const pixel = new THREE.Vector3(28.17,1.7,7.95).project(camera);
+    assert.ok(Math.abs((pixel.x+1)*320-2.966)<.01 && Math.abs((1-pixel.y)*180-213.806)<.01);
+    // Evaluate the actual HLSL early-out expression against source scene colour,
+    // including a power cut. No shader curve is reconstructed by this test.
+    const shader = readFileSync(new URL('../facade/window.hlsl', import.meta.url),'utf8');
+    const [,gate] = shader.match(/if \(([^\n]+)\) return 0;/);
+    const dark = new Function('LocalPower','PowerAvailable','k',`return ${gate};`);
+    for (const hour of [14,18.25,22.25,.25,6.25]) for (const night of [0,1]) for (const power of [true,false]) {
+      source.update(hour,night,power);
+      for (const [j,habit] of source.habits.entries()) {
+        const k = habit.hall ? .85*night : windowLevel(habit,hour)*(.25+.75*night);
+        const colour = new THREE.Color(); source.object.getColorAt(j,colour);
+        assert.equal(dark(exported.windows[j].localPower,power,k),colour.r===0 && colour.g===0 && colour.b===0,
+          `${habit.key} at ${hour}, night ${night}, power ${power}`);
+      }
+    }
+    source.update(18.25,1,true);
+    const lit = new THREE.Color(); source.object.getColorAt(i,lit);
+    source.update(18.25,1,false);
+    const powerOff = new THREE.Color(); source.object.getColorAt(i,powerOff);
+    assert.deepEqual(powerOff.toArray(),lit.toArray());
+    assert.ok(powerOff.r>0);
+    for (const [j,habit] of source.habits.entries()) if (habit.house) {
+      source.object.getColorAt(j,powerOff); assert.deepEqual(powerOff.toArray(),[0,0,0]);
+    }
+  } finally { delete globalThis.document; }
+
 });

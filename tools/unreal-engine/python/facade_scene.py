@@ -8,7 +8,7 @@ SHADERS = Path(__file__).resolve().parents[1] / "facade"
 COMMON = "Cx Cy Cz Nx Ny".split()
 FIELDS = {
     "room": COMMON + "HalfW HalfH Depth FloorZ Ceiling Left Right Kind Cover Seed DuskLit WallR WallG WallB FloorR FloorG FloorB FabricR FabricG FabricB".split(),
-    "window": COMMON + "Width Height Hall Home OnHour OffHour Morning Wake Leave LampR LampG LampB Rate Phase PhaseMillis GlowSeed".split(),
+    "window": COMMON + "Width Height Hall Home OnHour OffHour Morning Wake Leave LampR LampG LampB Rate Phase PhaseMillis GlowSeed LocalPower".split(),
     "lens": ["Direct"], "wash": ["Peak", "ColourR", "ColourG", "ColourB"],  # #2397: each surface's own linear colour
     "band": "On LitR LitG LitB OffR OffG OffB".split(),  # #2430: the courtyard bollards' bands
 }
@@ -56,7 +56,7 @@ def planes(spec):
     def plane(kind, row, normal, offset, size, values):
         x, y, z = row["position"]
         nx, ny = normal
-        if (row["house"] not in {"A", "B", "C", "L"} or not isclose(hypot(nx, ny), 1, abs_tol=1e-4)
+        if (row["house"] not in ({"A", "B", "C", "external"} if kind == "window" else {"A", "B", "C", "L"}) or not isclose(hypot(nx, ny), 1, abs_tol=1e-4)
                 or min(size) <= 0 or len(values) != len(FIELDS[kind]) or not all(map(isfinite, values))):
             raise ValueError(f"Invalid {kind} at {row['position']}")
         # Clear the coplanar imported glass/lens by one mm. Rooms start at their measured front surface.
@@ -77,7 +77,7 @@ def planes(spec):
         size = [w["width"], w["height"]]
         params = [h[k] for k in ("home", "on", "off", "morning", "wake", "leave")]
         yield plane("window", w, w["normal"], 0, size, w["position"] + w["normal"] + size + [w["hall"]] + params
-                    + h["rgb"] + [tv["rate"], tv["phase"], round(tv["phase"]*1000), w["glowSeed"]])
+                    + h["rgb"] + [tv["rate"], tv["phase"], round(tv["phase"]*1000), w["glowSeed"], w["localPower"]])
     for l in spec["fixtures"]:
         yield plane("lens", l, l["normal"], 0, [l["width"], l["height"]], [l["house"] == "L"])
 
@@ -85,8 +85,12 @@ def planes(spec):
 def validate(spec):
     for key in ("panes", "windows", "fixtures"):
         want = set("ABC" if key == "windows" else "ABCL")
-        if {r["house"] for r in spec[key]} != want:
+        got = {r["house"] for r in spec[key]}
+        if (got - {"external"} if key == "windows" else got) != want:
             raise ValueError(f"Export both hus-l and kvarteret for native facade {key}")
+    for w in spec["windows"]:
+        if type(w.get("localPower")) is not bool or w["localPower"] != (w["house"] != "external"):
+            raise ValueError("Re-export facade windows with their source power scope (#2421)")
     if not all(p.get("faces") for p in spec["panes"]):
         raise ValueError("Re-export facade surfaces and pane faces with the current desktop exporter")
     surfaces = spec.get("surfaces", [])

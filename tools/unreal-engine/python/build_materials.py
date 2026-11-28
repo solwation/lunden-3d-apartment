@@ -6,6 +6,8 @@ Every entry under `materials` becomes one asset in /Game/Lunden/Materials/:
   - "graph": "tiled"     the procedural master M_LundenTiled: tiles, slabs, planks, boards, bricks and fine aggregate
                          drawn in UV metres by one Custom HLSL node (the export keeps the web's metre UVs, but its
                          canvas textures do not travel, so the pattern is rebuilt here from the web's sizes and colours);
+  - "graph": "screen-wall" (#2443): the original screen-wall colour and scalar roughness maps on normalized UV0,
+                         preserving the cream rail/end-post mask and horizontal-repeat/vertical-clamp wrapping;
   - "graph": "glass"     the translucent glazing master M_LundenGlass;
   - "graph": "grass"     the lawn master M_LundenGrass (#2308): src/grass.js's detail map rebuilt procedurally in UV
                          metres (a grey ground with short random blade strokes, tinted by the lawn's colour);
@@ -60,6 +62,7 @@ import backdrop_material  # noqa: E402
 import ground_litter  # noqa: E402
 import river_material  # noqa: E402
 import collection_ids  # noqa: E402
+import screen_wall  # noqa: E402
 
 eal = unreal.EditorAssetLibrary
 mel = unreal.MaterialEditingLibrary
@@ -278,6 +281,8 @@ def collection_reads(spec):
 
 def spec_hash(path, spec):
     parts = [path, spec, TILED_GRID + TILED_FINISH] + ([GRASS_HLSL] if spec.get("graph") == "grass" else [])  # other hashes unchanged
+    if spec.get("graph") == screen_wall.GRAPH:
+        parts.extend([screen_wall.hashes(), Path(screen_wall.__file__).read_text(encoding="utf-8")])
     if spec.get("graph") == "glass":
         # #2388: invalidate only the glazing master, leaving the material map/import fingerprint intact.
         parts.append({"glassLightingMode": "TLM_SURFACE_PER_PIXEL_LIGHTING"})
@@ -774,7 +779,7 @@ def uses_vertex_color(m, prop):
 
 
 GRAPHS = {"river": river_material.build, "constant": constant_graph, "surface": surface_graph, "tiled": tiled_graph, "glass": glass_graph,
-          "grass": grass_graph, "gravel": gravel_graph, BAKED: baked_light_graph}
+          "grass": grass_graph, "gravel": gravel_graph, BAKED: baked_light_graph, screen_wall.GRAPH: screen_wall.build}
 
 
 # ---------------------------------------------------------------- assets
@@ -873,6 +878,8 @@ def check(table):
             problems.append(f"{path}: incorrect seasonal {spec['graph']} code, or disconnected Month/Autumn/litter inputs (#2433)")
         if spec.get("graph") == backdrop_material.GRAPH and not backdrop_material.check(asset, spec, uses_vertex_color):
             problems.append(f"{path}: incorrect backdrop texture, vertex-colour wiring, or face settings")
+        if spec.get("graph") == screen_wall.GRAPH and not screen_wall.check(asset):
+            problems.append(f"{path}: incorrect screen-wall texture, roughness or UV wrapping")
         if spec.get("graph") == "river":
             problems.extend(f"{path}: {error}" for error in river_material.check(asset, spec))
         if isinstance(asset, unreal.Material):
@@ -927,6 +934,7 @@ def build_entries(materials, force=False):
         if (existing is not None and not force and eal.get_metadata_tag(existing, "Lunden.SpecHash") == want
                 and (spec.get("graph") not in GROUND_CODE or seasonal_ground(existing, spec))
                 and (spec.get("graph") != backdrop_material.GRAPH or backdrop_material.check(existing, spec, uses_vertex_color))
+                and (spec.get("graph") != screen_wall.GRAPH or screen_wall.check(existing))
                 and (spec.get("graph") != BAKED or baked_light_ok(existing, spec))
                 and (spec.get("graph") != GLTF_LABEL or unlit_label_ok(existing))
                 and (spec.get("graph") != GLTF_FORWARD or gltf_forward_ok(existing))

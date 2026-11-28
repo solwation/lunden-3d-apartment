@@ -3147,6 +3147,15 @@ canvas textures do not travel. `tools/unreal-engine/material-map.json` therefore
   `MI_LundenRoofSeam` were prepared for the exterior and ground zones and are wired since #2318 (see below).
   Each entry names its web `source` and an `assumption`; `build_materials.py` writes both into the asset metadata
   (`Lunden.Source`, `Lunden.Assumption`), so plan-material's *guess* markers stay with the material.
+- **Screen walls (#2443).** `MI_LundenScreenWall` uses the generated `ScreenWallMaterials/M_LundenScreenWall`
+  master, with the actual colour canvas and scalar roughness map from `src/screenwall.js` and
+  `src/screenwallsurface.js`. Run `tools/browsertest.sh node tools/unreal-engine/export-screenwall-textures.mjs`
+  after changing those sources (`--check` compares the checked-in PNGs). The source already gives the panels
+  normalized UV0 and sends the end posts and top faces into the cream rail at v=.995. Preserve these UVs,
+  horizontal repeat and vertical clamp; the generic metre-tiled material loses that frame and aliases the boards.
+  Only this instance and its generated master/textures need rebuilding with `build_materials.build_entries`;
+  existing mesh bindings and geometry stay valid. The maps include the original roughness, but the web's
+  sub-millimetre bump-normal relief is not ported here. Peab-derived visual dimensions remain *guess*.
 - `rules`: key → material. The tile key `std_ffffff_r100_m0_tex` is shared by the hall and wet-room floors, the wall
   tiles, the splashback, the patio paving and the screen walls, so its rules add a `mesh` selector (the StaticMesh
   name is the id of the first export node that uses it). The last rule for that key has no selector and catches any
@@ -3357,11 +3366,11 @@ The facade wash and ground pools use `wallLight.on/off` hysteresis and `fade` se
 that hysteresis. `fixtures` gives the emitting face and orientation of each street entrance, gallery, patio and loggia
 wall lamp. Native radiance is a *guess* until the paired camera exposures are checked.
 
-A/B/C also carry the actual `windows` light quads from `buildWindowLights`, including the exact routine shared by the
+A/B/C and the external neighbouring buildings carry the actual `windows` light quads from `buildWindowLights`, including the exact routine shared by the
 panes of a detailed opening. The quad’s `routine` indexes `schedule.routines` by the web seed key. Use its local-hour
 intervals, fade and TV settings as in `src/windowschedule.js`.
 At night fraction `n = 1 − daylight`, hall intensity is `0.85 n` and a residential light scales its scheduled level by
-`0.25 + 0.75 n`. A local power cut extinguishes both. The source data can be inspected independently of the Unreal
+`0.25 + 0.75 n`. Each quad exports `localPower`: true for A/B/C, false with house `external` for neighbouring buildings. A local power cut extinguishes only local quads, matching the source `habit.house` gate. External quads retain their original geometry, routine keys, colours and TV state; no new brightness or schedule is introduced (#2421). The source data can be inspected independently of the Unreal
 material and Blueprint build.
 
 `build_facade.py` generates `/Game/Lunden/Generated/FacadeLighting/Level_facade_lighting` after
