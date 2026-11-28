@@ -99,6 +99,25 @@ def variables(bp, pp, sound_type):
 
 
 def graphs(bp, pp, me):
+    # Declare FlashSky before Strike: pp.function compiles the preceding graph.
+    # Separate optional function: no sky/UseSky=False must NOT suppress the existing thunder path.
+    g, _ = pp.function(bp, "FlashSky")
+    g.branch(g.get("UseSky"))
+    sky_class = "/Game/Lunden/Lighting/BP_LundenSky.BP_LundenSky_C"
+    actor = g.pure("GameplayStatics:GetActorOfClass", ActorClass=sky_class)
+    g.branch(g.pure("KismetSystemLibrary:IsValid", Object=actor))
+    import unreal as u
+    cast = g.g.create_node_from_name("Utilities|Casting|CastToActor", u.Vector2D(0, 0), [])
+    if not cast or not g.g.retarget_node_class(cast, u.Actor.static_class(), u.load_class(None, sky_class)):
+        raise RuntimeError("Could not make FlashSky cast to BP_LundenSky")
+    g.step(cast)
+    pp.link(actor, pp.inp(cast, "Object"))
+    sky = pp.cast_out(cast)
+    g.set("FlashK", g.op("Add_DoubleDouble", A=0.35,
+                        B=g.op("Multiply_DoubleDouble", A=0.65, B=g.get("ThunderNear"))), owner=sky_class, target=sky)
+    g.set("FlashT", 0.0, owner=sky_class, target=sky)
+    g.run(sky_class + ":UpdateSky", target=sky)
+
     # Strike(): weather.js strike: the distance, the nearness, the delay after the light, the next strike's draw
     g, _ = pp.function(bp, "Strike")
     lo, hi = g.get("StrikeDistMin"), g.get("StrikeDistMax")
@@ -120,24 +139,6 @@ def graphs(bp, pp, me):
                          ("Inside", g.op("SelectFloat", A=1.0, B=0.0, bPickA=g.get("ThunderInside")))):
         g.run("AudioComponent:SetFloatParameter", target=g.get("LastThunder"), InName=param, InFloat=value)
     g.run("AudioComponent:Play", target=g.get("LastThunder"), StartTime=0.0)
-
-    # Separate optional function: no sky/UseSky=False must NOT suppress the existing thunder path.
-    g, _ = pp.function(bp, "FlashSky")
-    g.branch(g.get("UseSky"))
-    sky_class = "/Game/Lunden/Lighting/BP_LundenSky.BP_LundenSky_C"
-    actor = g.pure("GameplayStatics:GetActorOfClass", ActorClass=sky_class)
-    g.branch(g.pure("KismetSystemLibrary:IsValid", Object=actor))
-    import unreal as u
-    cast = g.g.create_node_from_name("Utilities|Casting|CastToActor", u.Vector2D(0, 0), [])
-    if not cast or not g.g.retarget_node_class(cast, u.Actor.static_class(), u.load_class(None, sky_class)):
-        raise RuntimeError("Could not make FlashSky cast to BP_LundenSky")
-    g.step(cast)
-    pp.link(actor, pp.inp(cast, "Object"))
-    sky = pp.cast_out(cast)
-    g.set("FlashK", g.op("Add_DoubleDouble", A=0.35,
-                        B=g.op("Multiply_DoubleDouble", A=0.65, B=g.get("ThunderNear"))), owner=sky_class, target=sky)
-    g.set("FlashT", 0.0, owner=sky_class, target=sky)
-    g.run(sky_class + ":UpdateSky", target=sky)
 
     # UpdateThunder(Dt): weather.js update: `if (storm && rain > minRain) { next -= dt; if (next <= 0) strike() }`
     g, p = pp.function(bp, "UpdateThunder", [("Dt", pp.REAL)])
