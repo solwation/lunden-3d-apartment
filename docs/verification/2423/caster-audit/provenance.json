@@ -1,0 +1,45 @@
+{
+  "reviewedSourceHead": "84e35c47e5b358cea4eedc4e37d77fbd0cd42948",
+  "actualExistingExportSourceCommit": "2e8547db2a996fcfc5206aca3777aca5e4be7d20",
+  "actualExistingExportSourceDirty": false,
+  "actualExistingExportManifestSHA256": "b14010007ec38cee8d09b896a87fe64678cd80db5dba24a9d5069ff52fcfd1cd",
+  "relevantCasterReceiverSourceFiles": {
+    "src/world.js": {
+      "sha256": "6ecc618d754666e6f3fb9e60ced3c899ea62f55c6dce2adcf14cbb512f469310",
+      "matchesRealExportSource": true
+    },
+    "src/exterior.js": {
+      "sha256": "7fcd176541e246c8dcc0e9e3601fe7e78107de2e3b21fe5d1ecf6180dad26a27",
+      "matchesRealExportSource": true
+    },
+    "src/surroundings.js": {
+      "sha256": "13b9413806a902510b2d26ce3e879fac79ca5858686a3aaa085850b930a644cf",
+      "matchesRealExportSource": true
+    },
+    "src/foliage.js": {
+      "sha256": "0b6aa67f1b05f4a0bffa27ca4555700937471dc8421594c6a8ff739be488ae8d",
+      "matchesRealExportSource": true
+    },
+    "src/patio.js": {
+      "sha256": "021da4ada519ffa2980a7749e2f26279cbfd72ae78d5fa3f1e2f74054ddcb991",
+      "matchesRealExportSource": true
+    },
+    "tools/unreal-engine/export-scene.js": {
+      "sha256": "6a350355042dac8ebb5624d347f7c21f0b8c5e9b0083eaa4592a0c9089115cf3",
+      "matchesRealExportSource": true
+    }
+  },
+  "glbSHA256": {
+    "l1007": "9b08d5770fdc54efcb6392be62711a8d3db56c9cf5f5ddc83c6db588251b6899",
+    "l1007-uteplats": "163ce0bc28191a075ec67161e77f2ccac3699d5f01666e7624899762d0fc3941",
+    "hus-l": "df489d6ca499c5eccba334d113402f5ef6e5dfa53670f3f727b190192089ac22",
+    "vegetation": "e01b8c3c721b54531468165e986a0223b5cb875080fb16e6003579c8a2c48433"
+  },
+  "nativeImporterSHA256": "17c3d3244ab2194759132b830edae0202ff6915ec3f9d5afd8c56c2d21593331",
+  "materialMapSHA256": "8a04a4c9eb565ffea150ab853e0753a7d9f6e0f2c32425c594299dd9c34627c0",
+  "limits": [
+    "This is the existing actual export, not a fresh export from reviewedSourceHead. Relevant six source files match its real manifest exactly.",
+    "No new renderer, native component state, shadow allocation, image/crop measurement, or product acceptance.",
+    "Winter projection uses the already published baseline Sun direction and a source-derived facade plane. Projected AABBs establish candidate coverage only."
+  ]
+}

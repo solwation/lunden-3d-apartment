@@ -1,0 +1,789 @@
+{
+  "sourceHead": "84e35c47e5b358cea4eedc4e37d77fbd0cd42948",
+  "exportRoot": "/home/devcontainers/wt/codex-2434-native/unreal/Lunden/Import",
+  "sunReference": {
+    "date": [
+      2026,
+      12,
+      24
+    ],
+    "hour": 14,
+    "overcast": 0,
+    "under": 0,
+    "dim": 0,
+    "dayShare": 0.8966879377385932,
+    "sunDirWeb": [
+      0.5282331811850682,
+      0.12818656768664047,
+      0.8393675655872233
+    ],
+    "sunIntensity": 2.9173503501908744,
+    "skyStrength": 1.3913512466342408
+  },
+  "wallPlaneSource": "src/exterior.js eps.006 + exportedL1007D12.699",
+  "planeWebZ": 12.705,
+  "receivers": [
+    {
+      "zone": "hus-l",
+      "id": "mesh_l0_xm1668_z455_y665",
+      "extras": {
+        "id": "mesh_l0_xm1668_z455_y665",
+        "kind": "structure",
+        "zone": "hus-l",
+        "level": 0,
+        "source": "src/exterior.js",
+        "name": null,
+        "webId": null,
+        "materialKeys": [
+          "std_ffffff_r100_m0_tex_ds"
+        ]
+      },
+      "materialKey": "std_ffffff_r100_m0_tex_ds",
+      "material": {
+        "pbrMetallicRoughness": {
+          "metallicFactor": 0,
+          "roughnessFactor": 1
+        },
+        "doubleSided": true,
+        "name": "std_ffffff_r100_m0_tex_ds"
+      },
+      "worldAABBMin": [
+        -44.95500183105469,
+        -9.536743306171047e-08,
+        -3.5999999046325684
+      ],
+      "worldAABBMax": [
+        11.600000381469727,
+        13.300000190734863,
+        12.704999923706055
+      ],
+      "vertices": 4278,
+      "triangles": 1426,
+      "sourceCastsShadow": true,
+      "sourceReceivesShadow": "Not serialized; source builder explicitly required",
+      "wallPlaneVertices": 195,
+      "wallPlaneBounds": [
+        [
+          -7.1525572131747595e-09,
+          -4.7683716530855236e-08,
+          12.704999923706055
+        ],
+        [
+          5.752999782562256,
+          9.699999809265137,
+          12.704999923706055
+        ]
+      ]
+    }
+  ],
+  "nearPatioPlantFenceCandidates": [
+    {
+      "zone": "l1007-uteplats",
+      "id": "furn_planter_l0_x43_z1324__1",
+      "extras": {
+        "id": "furn_planter_l0_x43_z1324__1",
+        "kind": "part",
+        "parent": "furn_planter_l0_x43_z1324"
+      },
+      "materialKey": "std_55595c_r86_m0_tex",
+      "material": {
+        "pbrMetallicRoughness": {
+          "baseColorFactor": [
+            0.09084171117479915,
+            0.09989872823822872,
+            0.10702310296918527,
+            1
+          ],
+          "metallicFactor": 0,
+          "roughnessFactor": 0.86
+        },
+        "name": "std_55595c_r86_m0_tex"
+      },
+      "worldAABBMin": [
+        0.1594668447971344,
+        0.0,
+        12.949999988079071
+      ],
+      "worldAABBMax": [
+        0.7500000119209289,
+        0.6200000047683716,
+        13.550000011920929
+      ],
+      "vertices": 735,
+      "triangles": 1344,
+      "sourceCastsShadow": true,
+      "sourceReceivesShadow": "Not serialized; source builder explicitly required"
+    },
+    {
+      "zone": "l1007-uteplats",
+      "id": "furn_planter_l0_x43_z1324__2",
+      "extras": {
+        "id": "furn_planter_l0_x43_z1324__2",
+        "kind": "part",
+        "parent": "furn_planter_l0_x43_z1324"
+      },
+      "materialKey": "std_3b2c22_r100_m0",
+      "material": {
+        "pbrMetallicRoughness": {
+          "baseColorFactor": [
+            0.04373502925049377,
+            0.025186859622305935,
+            0.015996293361446288,
+            1
+          ],
+          "metallicFactor": 0,
+          "roughnessFactor": 1
+        },
+        "name": "std_3b2c22_r100_m0"
+      },
+      "worldAABBMin": [
+        0.17866091132164003,
+        0.5899999737739563,
+        12.974999994039536
+      ],
+      "worldAABBMax": [
+        0.7250000059604644,
+        0.5899999737739563,
+        13.525000005960464
+      ],
+      "vertices": 50,
+      "triangles": 48,
+      "sourceCastsShadow": true,
+      "sourceReceivesShadow": "Not serialized; source builder explicitly required"
+    },
+    {
+      "zone": "l1007-uteplats",
+      "id": "furn_planter_l0_x43_z1324__3",
+      "extras": {
+        "id": "furn_planter_l0_x43_z1324__3",
+        "kind": "part",
+        "parent": "furn_planter_l0_x43_z1324"
+      },
+      "materialKey": "std_ffffff_r68_m0_vc_ds",
+      "material": {
+        "pbrMetallicRoughness": {
+          "metallicFactor": 0,
+          "roughnessFactor": 0.68
+        },
+        "doubleSided": true,
+        "name": "std_ffffff_r68_m0_vc_ds"
+      },
+      "worldAABBMin": [
+        0.09516884088516236,
+        1.7985938787460327,
+        12.756930112838745
+      ],
+      "worldAABBMax": [
+        1.1480707049369812,
+        2.623432159423828,
+        13.810324728488922
+      ],
+      "vertices": 23040,
+      "triangles": 7680,
+      "sourceCastsShadow": true,
+      "sourceReceivesShadow": "Not serialized; source builder explicitly required"
+    },
+    {
+      "zone": "l1007-uteplats",
+      "id": "furn_planter_l0_x43_z1324__4",
+      "extras": {
+        "id": "furn_planter_l0_x43_z1324__4",
+        "kind": "part",
+        "parent": "furn_planter_l0_x43_z1324"
+      },
+      "materialKey": "std_6b4e32_r95_m0_vc_tex",
+      "material": {
+        "pbrMetallicRoughness": {
+          "baseColorFactor": [
+            0.14702726648767014,
+            0.07618538147321911,
+            0.031896033067374104,
+            1
+          ],
+          "metallicFactor": 0,
+          "roughnessFactor": 0.95
+        },
+        "name": "std_6b4e32_r95_m0_vc_tex"
+      },
+      "worldAABBMin": [
+        0.3527841612696648,
+        0.5900000333786011,
+        13.159763343632221
+      ],
+      "worldAABBMax": [
+        0.5400717973709106,
+        1.8899999856948853,
+        13.34315000474453
+      ],
+      "vertices": 4680,
+      "triangles": 1560,
+      "sourceCastsShadow": true,
+      "sourceReceivesShadow": "Not serialized; source builder explicitly required"
+    },
+    {
+      "zone": "l1007-uteplats",
+      "id": "furn_planter_l0_x530_z1644__1",
+      "extras": {
+        "id": "furn_planter_l0_x530_z1644__1",
+        "kind": "part",
+        "parent": "furn_planter_l0_x530_z1644"
+      },
+      "materialKey": "std_55595c_r80_m0",
+      "material": {
+        "pbrMetallicRoughness": {
+          "baseColorFactor": [
+            0.09084171117479915,
+            0.09989872823822872,
+            0.10702310296918527,
+            1
+          ],
+          "metallicFactor": 0,
+          "roughnessFactor": 0.8
+        },
+        "name": "std_55595c_r80_m0"
+      },
+      "worldAABBMin": [
+        4.999999988079071,
+        -2.384185793236071e-09,
+        16.14999998807907
+      ],
+      "worldAABBMax": [
+        5.600000011920929,
+        0.6200000023841858,
+        16.75000001192093
+      ],
+      "vertices": 172,
+      "triangles": 112,
+      "sourceCastsShadow": true,
+      "sourceReceivesShadow": "Not serialized; source builder explicitly required"
+    },
+    {
+      "zone": "l1007-uteplats",
+      "id": "furn_planter_l0_x530_z1644__2",
+      "extras": {
+        "id": "furn_planter_l0_x530_z1644__2",
+        "kind": "part",
+        "parent": "furn_planter_l0_x530_z1644"
+      },
+      "materialKey": "std_3b2c22_r100_m0",
+      "material": {
+        "pbrMetallicRoughness": {
+          "baseColorFactor": [
+            0.04373502925049377,
+            0.025186859622305935,
+            0.015996293361446288,
+            1
+          ],
+          "metallicFactor": 0,
+          "roughnessFactor": 1
+        },
+        "name": "std_3b2c22_r100_m0"
+      },
+      "worldAABBMin": [
+        5.020999985933304,
+        0.5899999999999999,
+        16.170999985933303
+      ],
+      "worldAABBMax": [
+        5.579000014066696,
+        0.5900000000000001,
+        16.729000014066695
+      ],
+      "vertices": 30,
+      "triangles": 28,
+      "sourceCastsShadow": true,
+      "sourceReceivesShadow": "Not serialized; source builder explicitly required"
+    },
+    {
+      "zone": "l1007-uteplats",
+      "id": "furn_planter_l0_x530_z1644__3",
+      "extras": {
+        "id": "furn_planter_l0_x530_z1644__3",
+        "kind": "part",
+        "parent": "furn_planter_l0_x530_z1644"
+      },
+      "materialKey": "std_7c9c90_r70_m0",
+      "material": {
+        "pbrMetallicRoughness": {
+          "baseColorFactor": [
+            0.20155625378383743,
+            0.33245153633549385,
+            0.2788942634659966,
+            1
+          ],
+          "metallicFactor": 0,
+          "roughnessFactor": 0.7
+        },
+        "name": "std_7c9c90_r70_m0"
+      },
+      "worldAABBMin": [
+        4.733700799942016,
+        0.5876310467720032,
+        15.87309421300888
+      ],
+      "worldAABBMax": [
+        5.875768291950226,
+        1.0796864032745361,
+        17.01290978193283
+      ],
+      "vertices": 864,
+      "triangles": 288,
+      "sourceCastsShadow": true,
+      "sourceReceivesShadow": "Not serialized; source builder explicitly required"
+    },
+    {
+      "zone": "l1007-uteplats",
+      "id": "mesh_l0_x4_z1522_y90",
+      "extras": {
+        "id": "mesh_l0_x4_z1522_y90",
+        "kind": "structure",
+        "zone": "l1007-uteplats",
+        "level": 0,
+        "source": null,
+        "name": null,
+        "webId": null,
+        "materialKeys": [
+          "std_ffffff_r100_m0_tex"
+        ]
+      },
+      "materialKey": "std_ffffff_r100_m0_tex",
+      "material": {
+        "pbrMetallicRoughness": {
+          "metallicFactor": 0,
+          "roughnessFactor": 1
+        },
+        "name": "std_ffffff_r100_m0_tex"
+      },
+      "worldAABBMin": [
+        0.014499999582767487,
+        2.3841858265427618e-08,
+        12.748200416564941
+      ],
+      "worldAABBMax": [
+        0.06450000405311584,
+        1.7999999523162842,
+        17.69770050048828
+      ],
+      "vertices": 72,
+      "triangles": 36,
+      "sourceCastsShadow": true,
+      "sourceReceivesShadow": "Not serialized; source builder explicitly required"
+    },
+    {
+      "zone": "l1007-uteplats",
+      "id": "mesh_l0_x571_z1522_y90",
+      "extras": {
+        "id": "mesh_l0_x571_z1522_y90",
+        "kind": "structure",
+        "zone": "l1007-uteplats",
+        "level": 0,
+        "source": null,
+        "name": null,
+        "webId": null,
+        "materialKeys": [
+          "std_ffffff_r100_m0_tex"
+        ]
+      },
+      "materialKey": "std_ffffff_r100_m0_tex",
+      "material": {
+        "pbrMetallicRoughness": {
+          "metallicFactor": 0,
+          "roughnessFactor": 1
+        },
+        "name": "std_ffffff_r100_m0_tex"
+      },
+      "worldAABBMin": [
+        5.683700084686279,
+        2.3841858265427618e-08,
+        12.748200416564941
+      ],
+      "worldAABBMax": [
+        5.733699798583984,
+        1.7999999523162842,
+        17.69770050048828
+      ],
+      "vertices": 72,
+      "triangles": 36,
+      "sourceCastsShadow": true,
+      "sourceReceivesShadow": "Not serialized; source builder explicitly required"
+    }
+  ],
+  "upperWallProjectionCandidates": [
+    {
+      "zone": "hus-l",
+      "id": "mesh_neighborframes_l0_xm1509_z636_y585",
+      "extras": {
+        "id": "mesh_neighborframes_l0_xm1509_z636_y585",
+        "kind": "structure",
+        "zone": "hus-l",
+        "level": 0,
+        "source": "src/exterior.js",
+        "name": "neighborFrames",
+        "webId": null,
+        "materialKeys": [
+          "std_f5f5f5_r50_m0"
+        ]
+      },
+      "materialKey": "std_f5f5f5_r50_m0",
+      "worldAABBMin": [
+        -41.78099822998047,
+        6.705522803684971e-10,
+        -0.0560000017285347
+      ],
+      "worldAABBMax": [
+        11.605999946594238,
+        11.699999809265137,
+        12.767000198364258
+      ],
+      "vertices": 35604,
+      "triangles": 11868,
+      "sourceCastsShadow": true,
+      "sourceReceivesShadow": "Not serialized; source builder explicitly required",
+      "projectedAABBMin": [
+        -40.554766384978635,
+        -0.007635918701238673,
+        12.705
+      ],
+      "projectedAABBMax": [
+        7.7926167517744585,
+        2.5923639852607776,
+        12.705
+      ]
+    },
+    {
+      "zone": "hus-l",
+      "id": "mesh_neighborseals_l0_xm1519_z635_y590",
+      "extras": {
+        "id": "mesh_neighborseals_l0_xm1519_z635_y590",
+        "kind": "structure",
+        "zone": "hus-l",
+        "level": 0,
+        "source": "src/exterior.js",
+        "name": "neighborSeals",
+        "webId": null,
+        "materialKeys": [
+          "std_202626_r85_m0"
+        ]
+      },
+      "materialKey": "std_202626_r85_m0",
+      "worldAABBMin": [
+        -40.763099670410156,
+        0.1599999964237213,
+        -0.041999999433755875
+      ],
+      "worldAABBMax": [
+        10.391300201416016,
+        11.640000343322754,
+        12.741000175476074
+      ],
+      "vertices": 21024,
+      "triangles": 7008,
+      "sourceCastsShadow": true,
+      "sourceReceivesShadow": "Not serialized; source builder explicitly required",
+      "projectedAABBMin": [
+        -40.468333567589745,
+        0.15450212026124863,
+        12.705
+      ],
+      "projectedAABBMax": [
+        7.446565304785742,
+        2.538778172109191,
+        12.705
+      ]
+    },
+    {
+      "zone": "hus-l",
+      "id": "mesh_l0_xm1518_z634_y666",
+      "extras": {
+        "id": "mesh_l0_xm1518_z634_y666",
+        "kind": "structure",
+        "zone": "hus-l",
+        "level": 0,
+        "source": "src/exterior.js",
+        "name": null,
+        "webId": null,
+        "materialKeys": [
+          "std_d5d8d4_r40_m40"
+        ]
+      },
+      "materialKey": "std_d5d8d4_r40_m40",
+      "worldAABBMin": [
+        -42.07500076293945,
+        0.5649999976158142,
+        -0.07500000298023224
+      ],
+      "worldAABBMax": [
+        11.710000991821289,
+        12.75,
+        12.75
+      ],
+      "vertices": 4428,
+      "triangles": 1476,
+      "sourceCastsShadow": true,
+      "sourceReceivesShadow": "Not serialized; source builder explicitly required",
+      "projectedAABBMin": [
+        -41.81639534720285,
+        0.5581276859106755,
+        12.705
+      ],
+      "projectedAABBMax": [
+        11.598602707301545,
+        9.744807537775534,
+        12.705
+      ]
+    },
+    {
+      "zone": "hus-l",
+      "id": "mesh_l0_xm1480_z635_y665",
+      "extras": {
+        "id": "mesh_l0_xm1480_z635_y665",
+        "kind": "structure",
+        "zone": "hus-l",
+        "level": 0,
+        "source": "src/exterior.js",
+        "name": null,
+        "webId": null,
+        "materialKeys": [
+          "std_2b2d30_r50_m40"
+        ]
+      },
+      "materialKey": "std_2b2d30_r50_m40",
+      "worldAABBMin": [
+        -39.54499816894531,
+        0.02770288474857807,
+        -0.3581693172454834
+      ],
+      "worldAABBMax": [
+        9.9350004196167,
+        13.279999732971191,
+        13.057168960571289
+      ],
+      "vertices": 6612,
+      "triangles": 2204,
+      "sourceCastsShadow": true,
+      "sourceReceivesShadow": "Not serialized; source builder explicitly required",
+      "projectedAABBMin": [
+        -39.376995471753055,
+        -0.014421506694723647,
+        12.705
+      ],
+      "projectedAABBMax": [
+        7.802616503819136,
+        13.250372407986934,
+        12.705
+      ]
+    },
+    {
+      "zone": "vegetation",
+      "id": "mesh_tree-trunks-0-0_l0_x776_z2034_y239",
+      "extras": {
+        "id": "mesh_tree-trunks-0-0_l0_x776_z2034_y239",
+        "kind": "structure",
+        "zone": "vegetation",
+        "level": 0,
+        "source": null,
+        "name": "tree-trunks 0|0",
+        "webId": null,
+        "materialKeys": [
+          "std_8a735f_r100_m0_tex_bark"
+        ]
+      },
+      "materialKey": "std_8a735f_r100_m0_tex_bark",
+      "worldAABBMin": [
+        6.546097044667991,
+        -0.0021069817978305425,
+        18.70680547613145
+      ],
+      "worldAABBMax": [
+        9.110794912696587,
+        4.755351800813319,
+        21.65632284615574
+      ],
+      "vertices": 498,
+      "triangles": 166,
+      "sourceCastsShadow": true,
+      "sourceReceivesShadow": "Not serialized; source builder explicitly required",
+      "projectedAABBMin": [
+        1.7214672669455933,
+        -1.184708292357612,
+        12.704999999999998
+      ],
+      "projectedAABBMax": [
+        4.545181097315531,
+        3.5455012939990342,
+        12.705000000000002
+      ]
+    },
+    {
+      "zone": "vegetation",
+      "id": "mesh_tree-crowns-0-0_l0_x793_z2063_y466",
+      "extras": {
+        "id": "mesh_tree-crowns-0-0_l0_x793_z2063_y466",
+        "kind": "structure",
+        "zone": "vegetation",
+        "level": 0,
+        "source": null,
+        "name": "tree-crowns 0|0",
+        "webId": null,
+        "materialKeys": [
+          "std_ffffff_r92_m0_vc_tex_ds_crown"
+        ]
+      },
+      "materialKey": "std_ffffff_r92_m0_vc_tex_ds_crown",
+      "worldAABBMin": [
+        6.208479518649232,
+        3.0359926724098063,
+        19.00290411704092
+      ],
+      "worldAABBMax": [
+        9.724520291128224,
+        6.233626384941866,
+        22.124341868815694
+      ],
+      "vertices": 180,
+      "triangles": 60,
+      "sourceCastsShadow": true,
+      "sourceReceivesShadow": "Not serialized; source builder explicitly required",
+      "projectedAABBMin": [
+        1.3841423542491125,
+        1.8468850812956619,
+        12.704999999999998
+      ],
+      "projectedAABBMax": [
+        4.719917703124396,
+        5.082993901896105,
+        12.705000000000002
+      ]
+    },
+    {
+      "zone": "vegetation",
+      "id": "mesh_tree-crowns-0-0_l1_x820_z2126_y409",
+      "extras": {
+        "id": "mesh_tree-crowns-0-0_l1_x820_z2126_y409",
+        "kind": "structure",
+        "zone": "vegetation",
+        "level": 1,
+        "source": null,
+        "name": "tree-crowns 0|0",
+        "webId": null,
+        "materialKeys": [
+          "std_ffffff_r92_m0_vc_tex_ds_crown"
+        ]
+      },
+      "materialKey": "std_ffffff_r92_m0_vc_tex_ds_crown",
+      "worldAABBMin": [
+        7.304587833915465,
+        3.257622169614957,
+        20.341080562699347
+      ],
+      "worldAABBMax": [
+        9.230181745088125,
+        4.92020150341434,
+        22.18904703687051
+      ],
+      "vertices": 180,
+      "triangles": 60,
+      "sourceCastsShadow": true,
+      "sourceReceivesShadow": "Not serialized; source builder explicitly required",
+      "projectedAABBMin": [
+        1.5716858404350225,
+        1.9795922904441208,
+        12.704999999999998
+      ],
+      "projectedAABBMax": [
+        4.070130112958774,
+        3.6243693384223494,
+        12.705000000000002
+      ]
+    },
+    {
+      "zone": "vegetation",
+      "id": "mesh_tree-crowns-0-0_l0_x714_z1997_y398",
+      "extras": {
+        "id": "mesh_tree-crowns-0-0_l0_x714_z1997_y398",
+        "kind": "structure",
+        "zone": "vegetation",
+        "level": 0,
+        "source": null,
+        "name": "tree-crowns 0|0",
+        "webId": null,
+        "materialKeys": [
+          "std_ffffff_r92_m0_vc_tex_ds_crown"
+        ]
+      },
+      "materialKey": "std_ffffff_r92_m0_vc_tex_ds_crown",
+      "worldAABBMin": [
+        6.071403445609573,
+        2.969227774351166,
+        18.836674014314386
+      ],
+      "worldAABBMax": [
+        8.33024276509643,
+        4.97004347436787,
+        21.192412834781265
+      ],
+      "vertices": 180,
+      "triangles": 60,
+      "sourceCastsShadow": true,
+      "sourceReceivesShadow": "Not serialized; source builder explicitly required",
+      "projectedAABBMin": [
+        1.1082308184866934,
+        1.9002113907497733,
+        12.704999999999998
+      ],
+      "projectedAABBMax": [
+        4.0365009585730585,
+        3.861664544571781,
+        12.705000000000002
+      ]
+    },
+    {
+      "zone": "vegetation",
+      "id": "mesh_tree-crowns-0-0_l1_x846_z1971_y436",
+      "extras": {
+        "id": "mesh_tree-crowns-0-0_l1_x846_z1971_y436",
+        "kind": "structure",
+        "zone": "vegetation",
+        "level": 1,
+        "source": null,
+        "name": "tree-crowns 0|0",
+        "webId": null,
+        "materialKeys": [
+          "std_ffffff_r92_m0_vc_tex_ds_crown"
+        ]
+      },
+      "materialKey": "std_ffffff_r92_m0_vc_tex_ds_crown",
+      "worldAABBMin": [
+        7.4685347279150545,
+        3.4892100378922404,
+        18.517105129389257
+      ],
+      "worldAABBMax": [
+        9.519295489915342,
+        5.230298783804387,
+        20.88001508180878
+      ],
+      "vertices": 180,
+      "triangles": 60,
+      "sourceCastsShadow": true,
+      "sourceReceivesShadow": "Not serialized; source builder explicitly required",
+      "projectedAABBMin": [
+        2.724351652564989,
+        2.4496538329329365,
+        12.704999999999998
+      ],
+      "projectedAABBMax": [
+        5.2819651858286205,
+        4.121318249639985,
+        12.705000000000002
+      ]
+    }
+  ],
+  "limit": "Projected AABB candidate bound only, not pixel/ray occlusion identity. Current real GLB hashes pinned; not fresh84e export. No colour/crop/threshold used.",
+  "glbSHA256": {
+    "l1007": "9b08d5770fdc54efcb6392be62711a8d3db56c9cf5f5ddc83c6db588251b6899",
+    "l1007-uteplats": "163ce0bc28191a075ec67161e77f2ccac3699d5f01666e7624899762d0fc3941",
+    "hus-l": "df489d6ca499c5eccba334d113402f5ef6e5dfa53670f3f727b190192089ac22",
+    "vegetation": "e01b8c3c721b54531468165e986a0223b5cb875080fb16e6003579c8a2c48433"
+  }
+}
