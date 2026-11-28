@@ -1,0 +1,19 @@
+{
+  "baseline": "/home/devcontainers/wt/codex-2434-native/unreal/Lunden/Import",
+  "sourceConfig": "/home/devcontainers/.local/state/lunden-codex-20261127/2437/native/config-v2.json",
+  "all12HashesMatch": true,
+  "files": {
+    "export-manifest.json": "b14010007ec38cee8d09b896a87fe64678cd80db5dba24a9d5069ff52fcfd1cd",
+    "gard.glb": "559a4bd2a880d6624a5dd5cb451e2ec256b2ae1ed415983c6a759cd3540e995b",
+    "l1007-entre.glb": "4738e1b53b2c981cdb5e68f27da6eec734c5db294de770929e3dc15cc4b320c3",
+    "l1007.glb": "9b08d5770fdc54efcb6392be62711a8d3db56c9cf5f5ddc83c6db588251b6899",
+    "fixture.glb": "4636b1948a94ae9ead1697597026fb784135703be441a97ddd400a0c1446e649",
+    "vegetation.glb": "e01b8c3c721b54531468165e986a0223b5cb875080fb16e6003579c8a2c48433",
+    "fond.glb": "3296dac9ba0e5dd15a7838b56cdf1310ec6c4ed7d93f086684c091abfcaabde3",
+    "omgivning.glb": "92e00d3d4948282a469f186937e7bb6032969518bec387286b72fd954e7c615c",
+    "hus-l.glb": "df489d6ca499c5eccba334d113402f5ef6e5dfa53670f3f727b190192089ac22",
+    "kvarteret.glb": "f9ee5c34380769365942fbb30d3ef811724c0733816115afbc3688d736134fb2",
+    "measurements.json": "5e22a09c5b9787c6387daac3614370ba460dd08367cc9690cb704f6fc42eacd6",
+    "l1007-uteplats.glb": "163ce0bc28191a075ec67161e77f2ccac3699d5f01666e7624899762d0fc3941"
+  }
+}

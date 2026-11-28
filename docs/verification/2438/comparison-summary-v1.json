@@ -1,0 +1,83 @@
+{
+  "allChangesOnlyArchitectureMarkers": true,
+  "zones": {
+    "fixture.glb": {
+      "byteIdentical": true,
+      "overrides": 0,
+      "sourceOff": 0,
+      "effectiveNativeOff": 0,
+      "remainingJSONDifferences": []
+    },
+    "fond.glb": {
+      "byteIdentical": true,
+      "overrides": 0,
+      "sourceOff": 24,
+      "effectiveNativeOff": 24,
+      "remainingJSONDifferences": []
+    },
+    "gard.glb": {
+      "byteIdentical": true,
+      "overrides": 0,
+      "sourceOff": 20,
+      "effectiveNativeOff": 20,
+      "remainingJSONDifferences": []
+    },
+    "hus-l.glb": {
+      "byteIdentical": true,
+      "overrides": 0,
+      "sourceOff": 143,
+      "effectiveNativeOff": 143,
+      "remainingJSONDifferences": []
+    },
+    "kvarteret.glb": {
+      "byteIdentical": false,
+      "overrides": 4,
+      "sourceOff": 434,
+      "effectiveNativeOff": 430,
+      "remainingJSONDifferences": []
+    },
+    "l1007-entre.glb": {
+      "byteIdentical": true,
+      "overrides": 0,
+      "sourceOff": 4,
+      "effectiveNativeOff": 4,
+      "remainingJSONDifferences": []
+    },
+    "l1007-uteplats.glb": {
+      "byteIdentical": true,
+      "overrides": 0,
+      "sourceOff": 93,
+      "effectiveNativeOff": 93,
+      "remainingJSONDifferences": []
+    },
+    "l1007.glb": {
+      "byteIdentical": true,
+      "overrides": 0,
+      "sourceOff": 446,
+      "effectiveNativeOff": 446,
+      "remainingJSONDifferences": []
+    },
+    "omgivning.glb": {
+      "byteIdentical": true,
+      "overrides": 0,
+      "sourceOff": 245,
+      "effectiveNativeOff": 245,
+      "remainingJSONDifferences": []
+    },
+    "vegetation.glb": {
+      "byteIdentical": true,
+      "overrides": 0,
+      "sourceOff": 1,
+      "effectiveNativeOff": 1,
+      "remainingJSONDifferences": []
+    }
+  },
+  "measurements": {
+    "beforeSHA256": "5e22a09c5b9787c6387daac3614370ba460dd08367cc9690cb704f6fc42eacd6",
+    "afterSHA256": "12acd742d4e4f2007a39760730e941eaf1e4dc66c4784d041501598fb4ea401d",
+    "byteIdentical": false,
+    "differences": [
+      "/sourceCommit"
+    ]
+  }
+}

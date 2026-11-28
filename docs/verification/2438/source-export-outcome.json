@@ -1,0 +1,29 @@
+{
+  "sourceCommit": "31c6a8ecc1de46a882f5d645156666073506c245",
+  "workingTreeClean": true,
+  "exportCompleted": true,
+  "exportWrapperExit": 0,
+  "normalCheckExport": "PASS 11 files/9402 nodes/323 sources",
+  "shadowFlags": "PASS source flags retained",
+  "nativeVerified": false,
+  "sourceGeometryExact": true,
+  "changedGLB": [
+    "kvarteret.glb"
+  ],
+  "unchangedGLBCount": 9,
+  "measurementsDifferenceOnly": [
+    "/sourceCommit"
+  ],
+  "browserProcessesEnded": true,
+  "proofs": {
+    "export-v1.log": "f814f3e8ae4fcd05fccdc2092df87fb20722777cfe1ef73b9633d416cbe52700",
+    "check-export-v1.log": "8b20aa1ee509b878f35c496f1d416a8411b85cb62ef1222ffd8136b4905c9ef8",
+    "shadow-flags-v1.log": "c449c37b5fa1306513694010274a66d26e21f06149cc12e274524f21c63f459c",
+    "export-comparison.json": "2204b5fcb9b8ca15e68c716039fc88df47402674d0aab65e50781d9b59b33f1d",
+    "comparison-summary-v1.json": "9b04252384bd4a0ba064353708145d35c21de1659df9e62a3ff90359e5359fb8",
+    "baseline-freeze-proof.json": "841146ac576e2b645101bfdd3b36c8683d4a5016f1529c4789081e7f65976db9",
+    "native-handoff.md": "902f9881886834f523e6da2d73d7bd68a49086c60f2e46c008fda78d288f96fc",
+    "selection-reason.json": "faeb8ecb55fd51603e86c2eeeb9379af6a0fe697b1f631e01bed32b81d2cfabc",
+    "native-control-plan.json": "4af7fdcbbd57eb1903069a854c65fcb83f5d08e7d6ea71f7eae674ff940575ef"
+  }
+}

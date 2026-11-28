@@ -1,0 +1,177 @@
+{
+  "baseline": "/home/devcontainers/wt/codex-2434-native/unreal/Lunden/Import",
+  "new": "/mnt/d/LundenLinux/exports/issue2438-architecture-shadows-v1",
+  "baselineFrozenHashesPassed": true,
+  "zones": {
+    "fixture.glb": {
+      "beforeSHA256": "4636b1948a94ae9ead1697597026fb784135703be441a97ddd400a0c1446e649",
+      "afterSHA256": "4636b1948a94ae9ead1697597026fb784135703be441a97ddd400a0c1446e649",
+      "byteIdentical": true,
+      "binaryChunkExact": true,
+      "jsonAfterRemovingOnlyNewMarkerExact": true,
+      "remainingJSONDifferences": [],
+      "meshCount": 11,
+      "sourceOff": 0,
+      "effectiveNativeOff": 0,
+      "overrides": []
+    },
+    "fond.glb": {
+      "beforeSHA256": "3296dac9ba0e5dd15a7838b56cdf1310ec6c4ed7d93f086684c091abfcaabde3",
+      "afterSHA256": "3296dac9ba0e5dd15a7838b56cdf1310ec6c4ed7d93f086684c091abfcaabde3",
+      "byteIdentical": true,
+      "binaryChunkExact": true,
+      "jsonAfterRemovingOnlyNewMarkerExact": true,
+      "remainingJSONDifferences": [],
+      "meshCount": 41,
+      "sourceOff": 24,
+      "effectiveNativeOff": 24,
+      "overrides": []
+    },
+    "gard.glb": {
+      "beforeSHA256": "559a4bd2a880d6624a5dd5cb451e2ec256b2ae1ed415983c6a759cd3540e995b",
+      "afterSHA256": "559a4bd2a880d6624a5dd5cb451e2ec256b2ae1ed415983c6a759cd3540e995b",
+      "byteIdentical": true,
+      "binaryChunkExact": true,
+      "jsonAfterRemovingOnlyNewMarkerExact": true,
+      "remainingJSONDifferences": [],
+      "meshCount": 24,
+      "sourceOff": 20,
+      "effectiveNativeOff": 20,
+      "overrides": []
+    },
+    "hus-l.glb": {
+      "beforeSHA256": "df489d6ca499c5eccba334d113402f5ef6e5dfa53670f3f727b190192089ac22",
+      "afterSHA256": "df489d6ca499c5eccba334d113402f5ef6e5dfa53670f3f727b190192089ac22",
+      "byteIdentical": true,
+      "binaryChunkExact": true,
+      "jsonAfterRemovingOnlyNewMarkerExact": true,
+      "remainingJSONDifferences": [],
+      "meshCount": 1195,
+      "sourceOff": 143,
+      "effectiveNativeOff": 143,
+      "overrides": []
+    },
+    "kvarteret.glb": {
+      "beforeSHA256": "f9ee5c34380769365942fbb30d3ef811724c0733816115afbc3688d736134fb2",
+      "afterSHA256": "4e93a9981f2a5ad6206e698b3982fdfb4cdf6de8ab6f34135f2c92930d27f95b",
+      "byteIdentical": false,
+      "binaryChunkExact": true,
+      "jsonAfterRemovingOnlyNewMarkerExact": true,
+      "remainingJSONDifferences": [],
+      "meshCount": 442,
+      "sourceOff": 434,
+      "effectiveNativeOff": 430,
+      "overrides": [
+        {
+          "id": "mesh_l0_xm3059_z3497_y600",
+          "kind": "structure",
+          "source": "src/surroundings.js",
+          "sourceCasts": false,
+          "nativeCasts": true
+        },
+        {
+          "id": "mesh_l0_xm3059_z3497_y600_2",
+          "kind": "structure",
+          "source": "src/surroundings.js",
+          "sourceCasts": false,
+          "nativeCasts": true
+        },
+        {
+          "id": "mesh_loggiarails_l0_xm3059_z3498_y653",
+          "kind": "structure",
+          "source": "src/surroundings.js",
+          "sourceCasts": false,
+          "nativeCasts": true
+        },
+        {
+          "id": "mesh_l1_xm3059_z3497_y1307",
+          "kind": "structure",
+          "source": "src/surroundings.js",
+          "sourceCasts": false,
+          "nativeCasts": true
+        }
+      ]
+    },
+    "l1007-entre.glb": {
+      "beforeSHA256": "4738e1b53b2c981cdb5e68f27da6eec734c5db294de770929e3dc15cc4b320c3",
+      "afterSHA256": "4738e1b53b2c981cdb5e68f27da6eec734c5db294de770929e3dc15cc4b320c3",
+      "byteIdentical": true,
+      "binaryChunkExact": true,
+      "jsonAfterRemovingOnlyNewMarkerExact": true,
+      "remainingJSONDifferences": [],
+      "meshCount": 4,
+      "sourceOff": 4,
+      "effectiveNativeOff": 4,
+      "overrides": []
+    },
+    "l1007-uteplats.glb": {
+      "beforeSHA256": "163ce0bc28191a075ec67161e77f2ccac3699d5f01666e7624899762d0fc3941",
+      "afterSHA256": "163ce0bc28191a075ec67161e77f2ccac3699d5f01666e7624899762d0fc3941",
+      "byteIdentical": true,
+      "binaryChunkExact": true,
+      "jsonAfterRemovingOnlyNewMarkerExact": true,
+      "remainingJSONDifferences": [],
+      "meshCount": 147,
+      "sourceOff": 93,
+      "effectiveNativeOff": 93,
+      "overrides": []
+    },
+    "l1007.glb": {
+      "beforeSHA256": "9b08d5770fdc54efcb6392be62711a8d3db56c9cf5f5ddc83c6db588251b6899",
+      "afterSHA256": "9b08d5770fdc54efcb6392be62711a8d3db56c9cf5f5ddc83c6db588251b6899",
+      "byteIdentical": true,
+      "binaryChunkExact": true,
+      "jsonAfterRemovingOnlyNewMarkerExact": true,
+      "remainingJSONDifferences": [],
+      "meshCount": 2134,
+      "sourceOff": 446,
+      "effectiveNativeOff": 446,
+      "overrides": []
+    },
+    "omgivning.glb": {
+      "beforeSHA256": "92e00d3d4948282a469f186937e7bb6032969518bec387286b72fd954e7c615c",
+      "afterSHA256": "92e00d3d4948282a469f186937e7bb6032969518bec387286b72fd954e7c615c",
+      "byteIdentical": true,
+      "binaryChunkExact": true,
+      "jsonAfterRemovingOnlyNewMarkerExact": true,
+      "remainingJSONDifferences": [],
+      "meshCount": 610,
+      "sourceOff": 245,
+      "effectiveNativeOff": 245,
+      "overrides": []
+    },
+    "vegetation.glb": {
+      "beforeSHA256": "e01b8c3c721b54531468165e986a0223b5cb875080fb16e6003579c8a2c48433",
+      "afterSHA256": "e01b8c3c721b54531468165e986a0223b5cb875080fb16e6003579c8a2c48433",
+      "byteIdentical": true,
+      "binaryChunkExact": true,
+      "jsonAfterRemovingOnlyNewMarkerExact": true,
+      "remainingJSONDifferences": [],
+      "meshCount": 4163,
+      "sourceOff": 1,
+      "effectiveNativeOff": 1,
+      "overrides": []
+    }
+  },
+  "allChangesOnlyArchitectureMarkers": true,
+  "measurements": {
+    "beforeSHA256": "5e22a09c5b9787c6387daac3614370ba460dd08367cc9690cb704f6fc42eacd6",
+    "afterSHA256": "12acd742d4e4f2007a39760730e941eaf1e4dc66c4784d041501598fb4ea401d",
+    "byteIdentical": false,
+    "differences": [
+      "/sourceCommit"
+    ]
+  },
+  "sourceManifests": {
+    "/home/devcontainers/wt/codex-2434-native/unreal/Lunden/Import/export-manifest.json": {
+      "sha256": "b14010007ec38cee8d09b896a87fe64678cd80db5dba24a9d5069ff52fcfd1cd",
+      "sourceCommit": "2e8547db2a996fcfc5206aca3777aca5e4be7d20",
+      "sourceHash": "97dab0bbfa3e7235257b8ca77a428e7437ca59e0f5d0f727a5da680b2285e20a"
+    },
+    "/mnt/d/LundenLinux/exports/issue2438-architecture-shadows-v1/export-manifest.json": {
+      "sha256": "246cd4ce38d34a70ae42a32651963c91cedf0e8f353e86192e3d66eb0791bb2a",
+      "sourceCommit": "31c6a8ecc1de46a882f5d645156666073506c245",
+      "sourceHash": "3bc36c946fb9b63d9d4b3a4df082bd3a666e75ef34f604c98d9d48666a448684"
+    }
+  }
+}

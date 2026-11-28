@@ -1,0 +1,155 @@
+{
+  "issue": 2438,
+  "createdAtUTC": "2026-11-28T08:53:59.327179+00:00",
+  "sourceCommit": "31c6a8ecc1de46a882f5d645156666073506c245",
+  "sourceExport": "/mnt/d/LundenLinux/exports/issue2438-architecture-shadows-v1",
+  "overrideNodes": [
+    {
+      "id": "mesh_l0_xm3059_z3497_y600",
+      "kind": "structure",
+      "source": "src/surroundings.js",
+      "sourceCasts": false,
+      "nativeCasts": true
+    },
+    {
+      "id": "mesh_l0_xm3059_z3497_y600_2",
+      "kind": "structure",
+      "source": "src/surroundings.js",
+      "sourceCasts": false,
+      "nativeCasts": true
+    },
+    {
+      "id": "mesh_loggiarails_l0_xm3059_z3498_y653",
+      "kind": "structure",
+      "source": "src/surroundings.js",
+      "sourceCasts": false,
+      "nativeCasts": true
+    },
+    {
+      "id": "mesh_l1_xm3059_z3497_y1307",
+      "kind": "structure",
+      "source": "src/surroundings.js",
+      "sourceCasts": false,
+      "nativeCasts": true
+    }
+  ],
+  "negativeSourceOff": [
+    "mesh_loggialampglass_l0_xm2954_z3500_y645",
+    "mesh_siteneighborglass_l0_xm3059_z3497_y565"
+  ],
+  "views": [
+    {
+      "id": "entrance-a",
+      "eyeWeb": [
+        6.5,
+        1.62,
+        27
+      ],
+      "yawWeb": 115,
+      "pitch": 5,
+      "nativePosition": [
+        650.0,
+        2700,
+        162.0
+      ],
+      "nativeYaw": 155,
+      "verticalFov": 72,
+      "nativeSize": [
+        640,
+        360
+      ],
+      "sourceSize": [
+        1440,
+        810
+      ],
+      "date": [
+        2026,
+        6,
+        21
+      ],
+      "hour": 14,
+      "weather": "clear",
+      "lamps": "off",
+      "webFile": "/home/devcontainers/wt/codex-2438-shadows/docs/verification/2392/web-entrance-a.jpg",
+      "webSHA256": "c583a609f4885a7978b264746262d58bc296d1a494e9869379aca0f7b4b5b9da",
+      "webSource": "c67c0c8e",
+      "scope": "primary: reintroduced A body/loggia shade on walk/lawn"
+    },
+    {
+      "id": "courtyard",
+      "eyeWeb": [
+        12.5,
+        5.62,
+        26
+      ],
+      "yawWeb": 80,
+      "pitch": -14,
+      "nativePosition": [
+        1250.0,
+        2600,
+        562.0
+      ],
+      "nativeYaw": -170,
+      "verticalFov": 72,
+      "nativeSize": [
+        640,
+        360
+      ],
+      "sourceSize": [
+        1440,
+        810
+      ],
+      "date": [
+        2026,
+        6,
+        21
+      ],
+      "hour": 14,
+      "weather": "clear",
+      "lamps": "off",
+      "webFile": "/home/devcontainers/wt/codex-2438-shadows/docs/verification/2325/web-courtyard.jpg",
+      "webSHA256": "f41386910e1c2e3557e636b3343d552ae5f7cbe9460b43bfde7cfdb835f15b44",
+      "webSource": "469e6327",
+      "scope": "primary: A/B/C building row and existing L shadows, whole-frame"
+    },
+    {
+      "id": "facade-c-day",
+      "eyeWeb": [
+        -63,
+        1.62,
+        41.35
+      ],
+      "yawWeb": 0,
+      "pitch": 20,
+      "nativePosition": [
+        -6300,
+        4135.0,
+        162.0
+      ],
+      "nativeYaw": -90,
+      "verticalFov": 72,
+      "nativeSize": [
+        640,
+        360
+      ],
+      "sourceSize": [
+        1440,
+        810
+      ],
+      "date": [
+        2026,
+        11,
+        16
+      ],
+      "hour": 14,
+      "weather": "clear",
+      "lamps": "off",
+      "webFile": "/home/devcontainers/wt/codex-2438-shadows/docs/verification/2324/web-facade-c-day.jpg",
+      "webSHA256": "1f9e1956abaad78038d54055eab03d1a2b20bee51c37e915673816b74dcfc36d",
+      "webSource": "e72c5f55",
+      "scope": "optional explicit C detail if wide coverage insufficient"
+    }
+  ],
+  "acceptanceScope": "Architecture-cast decision2 only; intentional web shadow differences. No automatic pass of grass/crown/lighting criteria; whole-image review and saved final interaction-level readback required.",
+  "nativeImagesViewed": false
+}

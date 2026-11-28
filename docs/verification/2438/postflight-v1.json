@@ -1,0 +1,32 @@
+{
+  "sourceHead": "9e63f8a960543230d5ba0adf86974a17ff43020d",
+  "all247PublicAuthoredExactReadonly": true,
+  "sourceAndNewExportExact": true,
+  "generatedExactAfterImportInteraction": true,
+  "changedGeneratedFiles": 468,
+  "onlyKvarteretAndItsInteractionMapChanged": true,
+  "other9ZoneDataAndOtherDerivedOutputsExact": true,
+  "stateRestored": true,
+  "actualNativeRunnerOuter": [
+    0,
+    0,
+    0
+  ],
+  "seconds": 258.488,
+  "normalImportAndCheck": true,
+  "normalExistingInteractionClassCheck": true,
+  "scopedNormalInteractionCopy": true,
+  "savedShadowCounts": {
+    "markedSourceFalse": 4,
+    "unmarkedSourceFalse": 430,
+    "sourceTrueOrDefault": 42
+  },
+  "composedShadowCounts": {
+    "markedSourceFalse": 4,
+    "unmarkedSourceFalse": 573,
+    "sourceTrueOrDefault": 1094
+  },
+  "actualImages": 3,
+  "authoredAssetsSaved": 0,
+  "fresh20OrGlobalStampOrReleaseGateOrShipping": false
+}
