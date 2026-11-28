@@ -1,0 +1,15 @@
+{
+  "actualOuterExitCode": 0,
+  "gameExitCode": 0,
+  "actualWindowSize": [
+    2560,
+    1440
+  ],
+  "requestedSize": [
+    640,
+    360
+  ],
+  "observed": "Real packaged Linux Shipping window rendered START pilot brick facade/windows/doors/railings and Swedish welcome menu; Root reviewed rawimage. No obvious default-grid/magenta shaderfallback in this view.",
+  "limits": "CPU Vulkan SM5 requested with explicitllvmpipeICD; Shipping lacks detailedRHIlogs, so no claimedLumen/ordinaryGPU/Windows/fullsceneparity or performanceacceptance. Existing lightingissues remain separate. WSLgDPIexpanded actualwindow to2560x1440; not a640x360pixelproof.",
+  "imageSHA256": "082599795fd761fa1a96f188ead71a043ff5c6b60648e4d9525edc132ba82dec"
+}

@@ -1,0 +1,2 @@
+Project file not found: ../../../Lunden/Lunden.uproject
+Resizing viewport due to setres change, 640 x 360, MonitorIndex=-1

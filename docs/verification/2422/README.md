@@ -79,3 +79,35 @@ the game. BinarySHA and public-keySHA are in official-linux-launcher-build.json.
 No private key was read. The first actual game cook is still running; at the
 10minute review it had5465/5807 packages complete,20GiB RAM available,
 15 active build processes and no error lines. It continues rather than restarting.
+
+
+## Actual Shipping archive and first client window
+
+The real full cook completed all5807 packages and6496 shader jobs. UAT then
+staged, packaged and archived successfully (1376.07seconds BuildCookRun;
+AutomationTool exit0, outer0, release result passed/no shaderlogerrors).
+The native C++SDK was not needed for this actual content-only route.
+
+Staging initially retried one readonly engine input, TessellationTable.bin,
+with permissiondenied on DrvFS. Root temporarily added ownerwrite only to
+this exact supplier file (555→755), without changing bytes; the ongoing copy
+recovered and the same build finished without any recook. Its original555 mode
+and originalSHA were restored immediately after UAT. The transaction, actual
+retries and completion are preserved; no failure log was rewritten.
+Afterward all247 authored packages remained exact/readonly and source84e35c47
+was clean. The archive's runtime hash equals the installed Epic Shipping ELF.
+
+The actual packaged client started under WSLg with a fresh private UserDir,
+explicit software VulkanICD and SM5 requested. It rendered the START pilot and
+Swedish welcome menu, remained alive over60seconds, then accepted WM_DELETE
+and exited0; the external smoke exited0. Root reviewed the raw own-windowPNG.
+Only that exact process's drawable was captured. This is a real Shipping image,
+not an editor frame, fixture or mocked ELF. Actual window2560×1440 despite
+requested640×360; a WSLgDPI expansion is observed, not a claimed low-resolution
+pass. EightFPS shown in this software-rendered frame is not hardwareperformance
+acceptance. Full GPU/Lumen/Windows parity is untested; existing lighting issues
+remain recorded separately.
+
+The actual manifest generator accepted the finished archive and official-key
+launcher, producing a Linux-bound draft with13 mappings/12 content-addressed
+payloads (825494703 bytes). It has not yet been signed, uploaded or promoted.

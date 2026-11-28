@@ -1,0 +1,8 @@
+{
+  "restored": [
+    "/mnt/d/UnrealEngine/5.8.4/Engine/Content/Renderer/TessellationTable.bin"
+  ],
+  "allBytesExact": true,
+  "actualUATExitCode": 0,
+  "note": "Observed retries recovered after temporaryownerwrite; no recook or hiddenlog suppression"
+}

@@ -1,0 +1,31 @@
+{
+  "platform": "linux-x64",
+  "commit": "84e35c47e5b358cea4eedc4e37d77fbd0cd42948",
+  "command": [
+    "/mnt/d/UnrealEngine/5.8.4/Engine/Build/BatchFiles/RunUAT.sh",
+    "BuildCookRun",
+    "-project=/home/devcontainers/wt/codex-2434-native/unreal/Lunden/Lunden.uproject",
+    "-platform=Linux",
+    "-clientconfig=Shipping",
+    "-nocompileuat",
+    "-nocompile",
+    "-skipbuild",
+    "-cook",
+    "-stage",
+    "-pak",
+    "-iostore",
+    "-package",
+    "-nodebuginfo",
+    "-nobootstrapexe",
+    "-archive",
+    "-stagingdirectory=/mnt/d/LundenLinux/Builds/issue2422-linux-shipping-v2/stage",
+    "-archivedirectory=/mnt/d/LundenLinux/Builds/issue2422-linux-shipping-v2/archive",
+    "-unattended",
+    "-nop4",
+    "-utf8output"
+  ],
+  "passed": true,
+  "uatExitCode": 0,
+  "logErrors": [],
+  "archive": "/mnt/d/LundenLinux/Builds/issue2422-linux-shipping-v2/archive/Linux"
+}

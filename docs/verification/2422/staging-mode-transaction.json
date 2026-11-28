@@ -1,0 +1,12 @@
+{
+  "at": "2026-11-28T07:00:37.950535+00:00",
+  "reason": "UAT File.Copy on DrvFS denied creating source-readonly-mode target; temporarily owner-writable only actual8 NonUFS engine inputs, byte-preserving; restore when UATdone",
+  "files": [
+    {
+      "path": "/mnt/d/UnrealEngine/5.8.4/Engine/Content/Renderer/TessellationTable.bin",
+      "oldMode": 365,
+      "temporaryMode": 493,
+      "sha256": "edc4f3b628a139c5e185bbaeca661c95c1f427368d3b92892c5cff36c56dd941"
+    }
+  ]
+}

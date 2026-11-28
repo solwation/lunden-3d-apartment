@@ -1,0 +1,19 @@
+{
+  "platform": "linux-x64",
+  "appVersion": "0.3.0",
+  "contentVersion": 20,
+  "commit": "84e35c47e5b358cea4eedc4e37d77fbd0cd42948",
+  "engineVersion": "5.8.4",
+  "releaseScriptBlob": "e0cdfaf7d04e7e4e7aa787edfe1a263061891389",
+  "runtime": {
+    "path": "Engine/Binaries/Linux/UnrealGame-Linux-Shipping",
+    "sha256": "ae5b2fff8fabced405515b5f905532525e1ceecfa2176c37bb13877c7c530f38"
+  },
+  "import": {
+    "gate": "passed",
+    "exportCommit": "2e8547db2a996fcfc5206aca3777aca5e4be7d20",
+    "sourceHash": "97dab0bbfa3e7235257b8ca77a428e7437ca59e0f5d0f727a5da680b2285e20a",
+    "exportManifestSha256": "b14010007ec38cee8d09b896a87fe64678cd80db5dba24a9d5069ff52fcfd1cd"
+  },
+  "builtUtc": "2026-11-28T07:01:05.805349+00:00"
+}
