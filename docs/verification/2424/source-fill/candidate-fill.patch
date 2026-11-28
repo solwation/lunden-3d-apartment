@@ -1,0 +1,102 @@
+diff --git a/tools/unreal-engine/python/build_lighting.py b/tools/unreal-engine/python/build_lighting.py
+index 1d7c3a8d..176cea75 100644
+--- a/tools/unreal-engine/python/build_lighting.py
++++ b/tools/unreal-engine/python/build_lighting.py
+@@ -1107,6 +1107,8 @@ def build_sky(spec, mpc, precip, clouds, tonemap, window_material):
+                             "Atmosphere": u.SkyAtmosphereComponent, "SkyLight": u.SkyLightComponent,
+                             "Fog": u.ExponentialHeightFogComponent, "Clouds": u.VolumetricCloudComponent,
+                             "Weather": u.PostProcessComponent, "Ambient": u.PostProcessComponent, "Exposure": u.PostProcessComponent})
++    if spec.get('sourceAmbientRuntime'):
++        build_source_ambient.prepare_fill(bp, components)
+     for name in ("Sun", "SunAtmosphere", "Moon"):
+         c = comps[name]
+         c.set_editor_property("mobility", u.ComponentMobility.MOVABLE)
+@@ -1336,8 +1338,12 @@ def build_sky(spec, mpc, precip, clouds, tonemap, window_material):
+         E.feed(s, name, env[key])
+         chain.then(s)
+     if spec.get('sourceAmbientRuntime'):
++        # The SAME live SunLux/SunClear variables as LIGHT's sunLux expression.
++        # This branch remains unreachable until the global hard coverage guard opens.
++        E.run('sourceDirectUnits = SunLux / SunClear')
+         build_source_ambient.sky_parameters(G, E, chain, mpc,
+-            spec['sourceAmbientRuntime']['contract'], constant, connect, active=False)
++            spec['sourceAmbientRuntime']['contract'], constant, connect,
++            active=True, direct_units=E.env['sourceDirectUnits'])
+     BP.compile_blueprint(bp)
+     if spec.get('sourceAmbientRuntime'):
+         build_source_ambient.context_function(bp)
+diff --git a/tools/unreal-engine/python/build_source_ambient.py b/tools/unreal-engine/python/build_source_ambient.py
+index bbf66051..9147f2ec 100644
+--- a/tools/unreal-engine/python/build_source_ambient.py
++++ b/tools/unreal-engine/python/build_source_ambient.py
+@@ -219,6 +219,27 @@ def context_function(bp):
+     graph.run(bp.generated_class().get_path_name()+':UpdateSky')
+
+
++def source_direct_units(sun_lux, sun_clear):
++    """Same unit conversion as build_lighting.LIGHT: SunLux / SunClear, no new calibration."""
++    import math
++    if any(isinstance(v, bool) or not isinstance(v, (int, float)) or not math.isfinite(v) or v <= 0 for v in (sun_lux, sun_clear)):
++        raise ValueError('sourceAmbient: positive finite SunLux/SunClear required')
++    return sun_lux / sun_clear
++
++
++def prepare_fill(bp, components):
++    """Prepare only the opt-in source's real, shadowless DirectionalLight; never save."""
++    import unreal as u
++    fill = components(bp, {'SourceFill': u.DirectionalLightComponent})['SourceFill']
++    fill.set_editor_property('mobility', u.ComponentMobility.MOVABLE)
++    for name in ('atmosphere_sun_light', 'cast_shadows', 'cast_volumetric_shadow',
++                 'cast_shadows_on_clouds', 'cast_shadows_on_atmosphere'):
++        fill.set_editor_property(name, False)
++    fill.set_editor_property('volumetric_scattering_intensity', 0.0)
++    fill.set_editor_property('intensity', 0.0)
++    return fill
++
++
+ def sky_parameters(g, e, chain, mpc, contract, constant, connect, *, active=False, direct_units=None):
+     """Feed exact source MPC values, independently of old native fill/cube guesses."""
+     source.validate(contract)
+@@ -270,11 +291,15 @@ sourceWindowSky = (RawSourceHemiOvercast+(RawSourceHemiClear-RawSourceHemiOverca
+     chain.then(node)
+
+     if active:
+-        if direct_units is None or direct_units <= 0:
++        if direct_units is None:
+             raise ValueError('sourceAmbient: same source-direct/native Sun unit conversion required')
++        if not isinstance(direct_units, tuple):
++            direct_units = source_direct_units(direct_units, 1.0)
++        elif len(direct_units) != 2:
++            raise ValueError('sourceAmbient: expected actual Blueprint expression pin')
+         # Actual source shadowless DirectionalLight, not an ambient fill proxy.
+         # Use the existing Sun/source intensity conversion, with no new gain.
+-        e.env['SourceDirectUnits'] = float(direct_units)
++        e.env['SourceDirectUnits'] = direct_units
+         e.run('sourceFillLux = sourceFillI*SourceDirectUnits')
+         power = g.call('LightComponent:SetIntensity')
+         connect(g.get('SourceFill'),'SourceFill',power,'self')
+diff --git a/tools/unreal-engine/tests/test_source_ambient.py b/tools/unreal-engine/tests/test_source_ambient.py
+index 8defa798..e2eb17ac 100644
+--- a/tools/unreal-engine/tests/test_source_ambient.py
++++ b/tools/unreal-engine/tests/test_source_ambient.py
+@@ -122,6 +122,20 @@ class SourceAmbient(unittest.TestCase):
+             rotation=next(n for n in c.nodes if n['kind']=='SceneComponent:K2_SetWorldRotation')['NewRotation']['X']
+             self.assertEqual([rotation[k] for k in ('X','Y','Z')],[-1,0,0])
+
++    def test_fill_units_follow_existing_sun_equation_without_new_gain(self):
++        import ast
++        path=Path(builder.__file__).with_name('build_lighting.py')
++        light=next(ast.literal_eval(n.value) for n in ast.parse(path.read_text()).body
++                   if isinstance(n,ast.Assign) and any(getattr(t,'id',None)=='LIGHT' for t in n.targets))
++        line=next(line for line in light.splitlines() if line.startswith('sunLux = '))
++        for lux, clear in ((20.,3.),(7.,.8),(31.,4.2)):
++            # Full existing native Sun equation with its source factors equal1.
++            env=dict(SunLux=lux,SunClear=clear,sunRel=1.,sunsinEl=1.,cut=1.,smooth=lambda *a:1.)
++            exec(line,{'__builtins__':{}},env)
++            self.assertAlmostEqual(builder.source_direct_units(lux,clear),env['sunLux'])
++        for lux,clear in ((0,3),(20,0),(float('nan'),3),(20,-1),(True,3)):
++            with self.assertRaises(ValueError):builder.source_direct_units(lux,clear)
++
+     def test_runtime_spec_off_never_requires_or_fabricates_context(self):
+         with patch.object(builder, 'guard', return_value=False):
+             self.assertIsNone(builder.runtime_spec('/unused', {}))

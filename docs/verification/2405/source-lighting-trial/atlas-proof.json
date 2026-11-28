@@ -1,0 +1,44 @@
+{
+  "nativeRGBA16FTexelsExact": true,
+  "sourceRawHalfSHA256": "ef3f36f8ebbf47c8a6711b9c07eaccca8066e2ee22d232f84c7e32dc7916a96d",
+  "sourceEXRSHA256": "2308fee2ccd28644a1aa99d39709dc9af44fc5e7a7727658be41a44e332b1006",
+  "method": "Exact integer Texture2D.Load half bits at384x512 texels, separateRGB/Alpha-as-R passes; bypass sampler interpolation, no8bit/tone/gamma proof",
+  "nativeTexturePath": "/Game/Lunden/Generated/Private2405CarAtlas_20261128V1/T_SourceCarAtlas.T_SourceCarAtlas",
+  "mismatches": [],
+  "sourceDimensions": [
+    384,
+    512
+  ],
+  "expectedHalfComponents": 786432,
+  "saveRequested": true,
+  "nativeAtlasSaved": true,
+  "nativeProperties": {
+    "compression_settings": "<TextureCompressionSettings.TC_HDR: 6>",
+    "srgb": "False",
+    "mip_gen_settings": "<TextureMipGenSettings.TMGS_NO_MIPMAPS: 13>",
+    "filter": "<TextureFilter.TF_BILINEAR: 1>",
+    "address_x": "<TextureAddress.TA_CLAMP: 1>",
+    "address_y": "<TextureAddress.TA_CLAMP: 1>"
+  },
+  "nativeDimensions": [
+    384,
+    512
+  ],
+  "compilerErrors": [],
+  "passes": [
+    {
+      "mode": 0.0,
+      "actualReadPixels": 196608,
+      "rawReturnType": "Array"
+    },
+    {
+      "mode": 1.0,
+      "actualReadPixels": 196608,
+      "rawReturnType": "Array"
+    }
+  ],
+  "halfComponentMismatchCount": 0,
+  "actualHalfComponents": 786432,
+  "mismatchCount": 0,
+  "nativeSampledHalfSHA256": "ef3f36f8ebbf47c8a6711b9c07eaccca8066e2ee22d232f84c7e32dc7916a96d"
+}

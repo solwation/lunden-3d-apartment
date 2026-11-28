@@ -1,0 +1,224 @@
+{
+  "classification": "Original prospectively locked diagnostic ROIs; no numeric acceptance threshold",
+  "contractSHA256": "990f43f709412b5992683939232909ec881070f2c8571de1279fde9a50ea3325",
+  "imagesSHA256": {
+    "original-before": "fcd8c330bded98c37b7170c353493045a8e05750538dce761931ec2497a3cbb3",
+    "ao-zero": "e737209b31baff38d1ce82d80d759f8d12e898c8c58e1196a5c94f5b101ce54b",
+    "source-ambient-fill": "c74ca1cb01d8a67951217b34640a20ce6b15664d8165998f90abdfad56fde7c1",
+    "original-after": "3881df1c7ec3ab478d4ef2915e01415291a6708e2e9c04934494f1720abf81be"
+  },
+  "rows": {
+    "nearest-white-car-glass": {
+      "original-before": {
+        "meanRGB": [
+          97.47181818181818,
+          116.62363636363636,
+          133.17363636363638
+        ],
+        "linearLuminance": 0.17171483708132568,
+        "saturation": 0.2722758430047289
+      },
+      "ao-zero": {
+        "meanRGB": [
+          10.425454545454546,
+          38.93,
+          50.55909090909091
+        ],
+        "linearLuminance": 0.017490150839577463,
+        "saturation": 0.7938502673796791
+      },
+      "source-ambient-fill": {
+        "meanRGB": [
+          11.0,
+          40.38636363636363,
+          52.95545454545454
+        ],
+        "linearLuminance": 0.018717525262545442,
+        "saturation": 0.7922750362844703
+      },
+      "original-after": {
+        "meanRGB": [
+          97.47181818181818,
+          116.62363636363636,
+          133.17363636363638
+        ],
+        "linearLuminance": 0.17171483708132568,
+        "saturation": 0.2722758430047289
+      },
+      "reference": {
+        "meanRGB": [
+          17.754545454545454,
+          52.74727272727273,
+          72.03727272727272
+        ],
+        "linearLuminance": 0.031188074341153775,
+        "saturation": 0.7534771254786229
+      },
+      "luminanceRatios": {
+        "original-before": 5.505785166567397,
+        "ao-zero": 0.5607961122658537,
+        "source-ambient-fill": 0.6001500784499222,
+        "original-after": 5.505785166567397
+      }
+    },
+    "black-car-rear-glass": {
+      "original-before": {
+        "meanRGB": [
+          83.23928571428571,
+          94.28571428571429,
+          103.67142857142858
+        ],
+        "linearLuminance": 0.11946082106608422,
+        "saturation": 0.18909420907470786
+      },
+      "ao-zero": {
+        "meanRGB": [
+          56.31071428571428,
+          68.91428571428571,
+          74.27142857142857
+        ],
+        "linearLuminance": 0.07550270191794109,
+        "saturation": 0.34121087223035673
+      },
+      "source-ambient-fill": {
+        "meanRGB": [
+          57.275,
+          70.18571428571428,
+          76.06428571428572
+        ],
+        "linearLuminance": 0.0771358587731855,
+        "saturation": 0.3404409795633082
+      },
+      "original-after": {
+        "meanRGB": [
+          83.23928571428571,
+          94.28571428571429,
+          103.67142857142858
+        ],
+        "linearLuminance": 0.11946082106608422,
+        "saturation": 0.18909420907470786
+      },
+      "reference": {
+        "meanRGB": [
+          28.164285714285715,
+          49.25,
+          59.65
+        ],
+        "linearLuminance": 0.034361028215687026,
+        "saturation": 0.5369271183860408
+      },
+      "luminanceRatios": {
+        "original-before": 3.476636971286736,
+        "ao-zero": 2.197335348756282,
+        "source-ambient-fill": 2.2448646847526597,
+        "original-after": 3.476636971286736
+      }
+    },
+    "white-suv-side-glass": {
+      "original-before": {
+        "meanRGB": [
+          45.74747474747475,
+          45.77777777777778,
+          44.803030303030305
+        ],
+        "linearLuminance": 0.027440692150466798,
+        "saturation": 0.05897845679492829
+      },
+      "ao-zero": {
+        "meanRGB": [
+          44.03030303030303,
+          43.843434343434346,
+          42.57575757575758
+        ],
+        "linearLuminance": 0.02528634886003846,
+        "saturation": 0.06515976461638855
+      },
+      "source-ambient-fill": {
+        "meanRGB": [
+          51.85353535353536,
+          51.98989898989899,
+          51.717171717171716
+        ],
+        "linearLuminance": 0.034705941378530794,
+        "saturation": 0.037811488520774594
+      },
+      "original-after": {
+        "meanRGB": [
+          45.74747474747475,
+          45.77777777777778,
+          44.803030303030305
+        ],
+        "linearLuminance": 0.027440692150466798,
+        "saturation": 0.05897845679492829
+      },
+      "reference": {
+        "meanRGB": [
+          11.676767676767676,
+          16.843434343434343,
+          19.383838383838384
+        ],
+        "linearLuminance": 0.0053652451351243816,
+        "saturation": 0.35526244935826506
+      },
+      "luminanceRatios": {
+        "original-before": 5.114527194819523,
+        "ao-zero": 4.712990408303543,
+        "source-ambient-fill": 6.468659027585366,
+        "original-after": 5.114527194819523
+      }
+    },
+    "black-car-body": {
+      "original-before": {
+        "meanRGB": [
+          43.3,
+          43.26,
+          42.535
+        ],
+        "linearLuminance": 0.026301753940643942,
+        "saturation": 0.05060446438052209
+      },
+      "ao-zero": {
+        "meanRGB": [
+          43.3,
+          43.26,
+          42.535
+        ],
+        "linearLuminance": 0.026301753940643942,
+        "saturation": 0.05060446438052209
+      },
+      "source-ambient-fill": {
+        "meanRGB": [
+          43.895,
+          43.913333333333334,
+          43.24166666666667
+        ],
+        "linearLuminance": 0.02725057353074411,
+        "saturation": 0.04896836125483811
+      },
+      "original-after": {
+        "meanRGB": [
+          43.3,
+          43.26,
+          42.535
+        ],
+        "linearLuminance": 0.026301753940643942,
+        "saturation": 0.05060446438052209
+      },
+      "reference": {
+        "meanRGB": [
+          6.161666666666667,
+          12.833333333333334,
+          13.163333333333334
+        ],
+        "linearLuminance": 0.004672604425696521,
+        "saturation": 0.6379998495651614
+      },
+      "luminanceRatios": {
+        "original-before": 5.628928011966961,
+        "ao-zero": 5.628928011966961,
+        "source-ambient-fill": 5.831988126553642,
+        "original-after": 5.628928011966961
+      }
+    }
+  }
+}

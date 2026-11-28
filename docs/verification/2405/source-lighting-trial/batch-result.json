@@ -1,0 +1,19 @@
+{
+  "completed": true,
+  "passed": true,
+  "entries": [
+    {
+      "entry": "source-glass",
+      "completed": true,
+      "result": "/home/devcontainers/.local/state/lunden-codex-20261127/2405/source-glass-v1/native-v1/capture.json"
+    },
+    {
+      "entry": "car-atlas",
+      "completed": true,
+      "result": "/home/devcontainers/.local/state/lunden-codex-20261127/2405/car-atlas-upload-v1/native-v1/atlas-proof.json"
+    }
+  ],
+  "startedAt": "2026-11-28T13:10:13.481606+00:00",
+  "scope": "Four unsaved car-glass images then one isolated atlas import; no car paint attachment or global activation",
+  "endedAt": "2026-11-28T13:12:51.939066+00:00"
+}

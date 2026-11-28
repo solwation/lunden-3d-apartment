@@ -1,0 +1,351 @@
+{
+  "completed": true,
+  "passed": true,
+  "configSHA256": "ee80bf12ddd71c831745c8c11fda4bdba32fb9a659fe8828c1e5e092038f8120",
+  "scope": "CPU Blueprint/MPC propagation only; no saved assets, GPU/render/global activation proof",
+  "states": [
+    {
+      "input": {
+        "day": 1.0,
+        "overcast": 0.0,
+        "dim": 0.0,
+        "under": 0.0,
+        "flash": 0.0,
+        "garage_lit": 0.0
+      },
+      "actualScalars": {
+        "SourceAmbientEnabled": 1.0,
+        "SourceHemiIntensity": 1.5499999523162842,
+        "SourceAmbientIntensity": 0.2750000059604645,
+        "SourceFillIntensity": 0.3499999940395355,
+        "SourceDayShare": 1.0,
+        "SourceWindowSkyStrength": 1.5
+      },
+      "expectedScalars": {
+        "SourceAmbientIntensity": 0.275,
+        "SourceHemiIntensity": 1.55,
+        "SourceFillIntensity": 0.35,
+        "SourceDayShare": 1.0,
+        "SourceWindowSkyStrength": 1.5
+      },
+      "actualVectors": {
+        "SourceAmbientColor": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "SourceHemiSky": [
+          0.8227857351303101,
+          0.8962693810462952,
+          1.0
+        ],
+        "SourceHemiGround": [
+          0.672443151473999,
+          0.6444796919822693,
+          0.5906188488006592
+        ],
+        "SourceFillColor": [
+          0.9046611785888672,
+          0.9215818643569946,
+          1.0
+        ],
+        "SourceFillDirection": [
+          0.7155417799949646,
+          -0.4472135901451111,
+          0.5366563200950623
+        ]
+      },
+      "expectedVectors": {
+        "SourceAmbientColor": [
+          1,
+          1,
+          1
+        ],
+        "SourceHemiSky": [
+          0.8227857543924378,
+          0.8962693533719568,
+          1.0
+        ],
+        "SourceHemiGround": [
+          0.6724431569510133,
+          0.6444796819634361,
+          0.5906188409113381
+        ],
+        "SourceFillColor": [
+          0.9046611743890203,
+          0.9215818562755338,
+          1
+        ],
+        "SourceFillDirection": [
+          0.7155417527999327,
+          -0.4472135954999579,
+          0.5366563145999496
+        ]
+      },
+      "actualContext": {
+        "SourceDim": 0.0,
+        "SourceUnder": 0.0,
+        "SourceGarageLit": 0.0
+      },
+      "fill": {
+        "intensity": 2.3333332538604736,
+        "color": [
+          0.9046611785888672,
+          0.9215818643569946,
+          1.0
+        ],
+        "forward": [
+          -0.715541752799933,
+          0.44721359549995743,
+          -0.5366563145999494
+        ],
+        "flags": {
+          "atmosphere_sun_light": false,
+          "cast_shadows": false,
+          "cast_volumetric_shadow": false,
+          "cast_shadows_on_clouds": false,
+          "cast_shadows_on_atmosphere": false
+        },
+        "volumetricScattering": 0.0
+      },
+      "directUnits": {
+        "SunLux": 20.0,
+        "SunClear": 3,
+        "ratio": 6.666666666666667
+      },
+      "passed": true
+    },
+    {
+      "input": {
+        "day": 0.25,
+        "overcast": 0.7,
+        "dim": 0.3,
+        "under": 0.5,
+        "flash": 0.2,
+        "garage_lit": 0.4
+      },
+      "actualScalars": {
+        "SourceAmbientEnabled": 1.0,
+        "SourceHemiIntensity": 0.6164538860321045,
+        "SourceAmbientIntensity": 1.8389900922775269,
+        "SourceFillIntensity": 0.07694531232118607,
+        "SourceDayShare": 0.125,
+        "SourceWindowSkyStrength": 0.1956484317779541
+      },
+      "expectedScalars": {
+        "SourceAmbientIntensity": 1.8389900390625002,
+        "SourceHemiIntensity": 0.6164539062500001,
+        "SourceFillIntensity": 0.0769453125,
+        "SourceDayShare": 0.125,
+        "SourceWindowSkyStrength": 0.1956484375
+      },
+      "actualVectors": {
+        "SourceAmbientColor": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "SourceHemiSky": [
+          0.3159668743610382,
+          0.3778764009475708,
+          0.5436793565750122
+        ],
+        "SourceHemiGround": [
+          0.672443151473999,
+          0.6444796919822693,
+          0.5906188488006592
+        ],
+        "SourceFillColor": [
+          0.9046611785888672,
+          0.9215818643569946,
+          1.0
+        ],
+        "SourceFillDirection": [
+          0.7155417799949646,
+          -0.4472135901451111,
+          0.5366563200950623
+        ]
+      },
+      "expectedVectors": {
+        "SourceAmbientColor": [
+          1,
+          1,
+          1
+        ],
+        "SourceHemiSky": [
+          0.31596688846386206,
+          0.3778763906277878,
+          0.5436793583045442
+        ],
+        "SourceHemiGround": [
+          0.6724431569510133,
+          0.6444796819634361,
+          0.5906188409113381
+        ],
+        "SourceFillColor": [
+          0.9046611743890203,
+          0.9215818562755338,
+          1
+        ],
+        "SourceFillDirection": [
+          0.7155417527999327,
+          -0.4472135954999579,
+          0.5366563145999496
+        ]
+      },
+      "actualContext": {
+        "SourceDim": 0.3,
+        "SourceUnder": 0.5,
+        "SourceGarageLit": 0.4
+      },
+      "fill": {
+        "intensity": 0.5129687786102295,
+        "color": [
+          0.9046611785888672,
+          0.9215818643569946,
+          1.0
+        ],
+        "forward": [
+          -0.715541752799933,
+          0.44721359549995743,
+          -0.5366563145999494
+        ],
+        "flags": {
+          "atmosphere_sun_light": false,
+          "cast_shadows": false,
+          "cast_volumetric_shadow": false,
+          "cast_shadows_on_clouds": false,
+          "cast_shadows_on_atmosphere": false
+        },
+        "volumetricScattering": 0.0
+      },
+      "directUnits": {
+        "SunLux": 20.0,
+        "SunClear": 3,
+        "ratio": 6.666666666666667
+      },
+      "passed": true
+    },
+    {
+      "input": {
+        "day": 0.25,
+        "overcast": 0.7,
+        "dim": 0.3,
+        "under": 0.5,
+        "flash": 0.0,
+        "garage_lit": 0.4
+      },
+      "actualScalars": {
+        "SourceAmbientEnabled": 1.0,
+        "SourceHemiIntensity": 0.17645390331745148,
+        "SourceAmbientIntensity": 1.6629900932312012,
+        "SourceFillIntensity": 0.07694531232118607,
+        "SourceDayShare": 0.125,
+        "SourceWindowSkyStrength": 0.1956484317779541
+      },
+      "expectedScalars": {
+        "SourceAmbientIntensity": 1.6629900390625,
+        "SourceHemiIntensity": 0.17645390625,
+        "SourceFillIntensity": 0.0769453125,
+        "SourceDayShare": 0.125,
+        "SourceWindowSkyStrength": 0.1956484375
+      },
+      "actualVectors": {
+        "SourceAmbientColor": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "SourceHemiSky": [
+          0.3159668743610382,
+          0.3778764009475708,
+          0.5436793565750122
+        ],
+        "SourceHemiGround": [
+          0.672443151473999,
+          0.6444796919822693,
+          0.5906188488006592
+        ],
+        "SourceFillColor": [
+          0.9046611785888672,
+          0.9215818643569946,
+          1.0
+        ],
+        "SourceFillDirection": [
+          0.7155417799949646,
+          -0.4472135901451111,
+          0.5366563200950623
+        ]
+      },
+      "expectedVectors": {
+        "SourceAmbientColor": [
+          1,
+          1,
+          1
+        ],
+        "SourceHemiSky": [
+          0.31596688846386206,
+          0.3778763906277878,
+          0.5436793583045442
+        ],
+        "SourceHemiGround": [
+          0.6724431569510133,
+          0.6444796819634361,
+          0.5906188409113381
+        ],
+        "SourceFillColor": [
+          0.9046611743890203,
+          0.9215818562755338,
+          1
+        ],
+        "SourceFillDirection": [
+          0.7155417527999327,
+          -0.4472135954999579,
+          0.5366563145999496
+        ]
+      },
+      "actualContext": {
+        "SourceDim": 0.3,
+        "SourceUnder": 0.5,
+        "SourceGarageLit": 0.4
+      },
+      "fill": {
+        "intensity": 0.5129687786102295,
+        "color": [
+          0.9046611785888672,
+          0.9215818643569946,
+          1.0
+        ],
+        "forward": [
+          -0.715541752799933,
+          0.44721359549995743,
+          -0.5366563145999494
+        ],
+        "flags": {
+          "atmosphere_sun_light": false,
+          "cast_shadows": false,
+          "cast_volumetric_shadow": false,
+          "cast_shadows_on_clouds": false,
+          "cast_shadows_on_atmosphere": false
+        },
+        "volumetricScattering": 0.0
+      },
+      "directUnits": {
+        "SunLux": 20.0,
+        "SunClear": 3,
+        "ratio": 6.666666666666667
+      },
+      "passed": true
+    }
+  ],
+  "worldPath": "/Temp/Untitled_0.Untitled",
+  "assertionsPassed": true,
+  "sourcePolicyEnabled": false,
+  "exerciseFill": true,
+  "scratchPaths": [
+    "/Game/Lunden/Generated/SourceAmbientContextSmoke/FillTrial20261128V2/BP_Context",
+    "/Game/Lunden/Generated/SourceAmbientContextSmoke/FillTrial20261128V2/MPC_Context"
+  ],
+  "scratchActorDestroyed": true,
+  "diskAndSourceGuardsPassed": true
+}

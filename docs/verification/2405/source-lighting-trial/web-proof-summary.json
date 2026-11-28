@@ -1,0 +1,24 @@
+{
+  "classification": "Selected actual web-export proof fields; original whole proof SHA/path retained. Not a replacement for original private proof.",
+  "originalPrivatePath": "/home/devcontainers/.local/state/lunden-codex-20261127/2405/car-environment-v2/atlas-web-v2/proof.json",
+  "originalSHA256": "90dc3e2682c21add44b7ef333c4492273355a0cc623fb49337c89d00ea162fbf",
+  "actualFields": {
+    "completed": true,
+    "classification": "Actual-source car-cubemap PMREM export and canonical current reference; no Native/material parity claim",
+    "sourceHead": "9b9abd58b4820334bdedb635889acad51f4ba15f",
+    "sourceHash": "7521f0221644f26469aa35f8fcd29c47efb1c1f5e58ec959000444cee04276ec",
+    "all718BeforeAfterExact": true,
+    "actualAtlasDimensions": [
+      384,
+      512
+    ],
+    "rawHalfSHA256": "ef3f36f8ebbf47c8a6711b9c07eaccca8066e2ee22d232f84c7e32dc7916a96d",
+    "rawHalfBytes": 1572864,
+    "webRawSHA256": "5eb6ebfad89c539efc32cd24bb6d93d5387b749a1f2c7f8125fc87112f5d596c",
+    "paintBindingCount": 10,
+    "glassBindingCount": 11,
+    "glassEnvironmentNull": true,
+    "browserClosed": true,
+    "ownedServerClosed": true
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "command": [
+    "python3",
+    "tools/unreal-engine/run-linux.py",
+    "--engine-root",
+    "/mnt/d/UnrealEngine/5.8.4",
+    "--data-dir",
+    "/mnt/d/LundenLinux",
+    "--render",
+    "--allow-cpu-device",
+    "--timeout",
+    "1200",
+    "--owner",
+    "olw-win10-codex-20261127",
+    "python",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2405/batch-source-glass-car-atlas-v1.py"
+  ],
+  "cwd": "/home/devcontainers/wt/codex-2434-native",
+  "startedAt": "2026-11-28T13:08:26.107221+00:00",
+  "completed": true,
+  "actualChildExitCode": 0,
+  "seconds": 269.753,
+  "log": "/home/devcontainers/.local/state/lunden-codex-20261127/2405/batch-source-glass-car-atlas-v1-outer.log"
+}

@@ -1,0 +1,41 @@
+{
+  "recordedAt": "2026-11-28T13:10:36.218711+00:00",
+  "classification": "Diagnostic fixed interior regions selected from current web and already published Native original; no acceptance thresholds added. Source candidate not yet output/viewed.",
+  "pixelConvention": "x,y,width,height at640x360; no mask/threshold tuning",
+  "reference": {
+    "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2405/car-environment-v2/atlas-web-v2/web-parked-street.jpg",
+    "sha256": "5eb6ebfad89c539efc32cd24bb6d93d5387b749a1f2c7f8125fc87112f5d596c"
+  },
+  "original": {
+    "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2405/ao-isolation-v2/native/unreal-parked-street-original-before.png",
+    "sha256": "db128dbca7ee5bea3f5ff2383147ac7aa9cc00129a8a5810d47af4222eb0ec4b"
+  },
+  "regions": {
+    "nearest-white-car-glass": [
+      500,
+      175,
+      110,
+      10
+    ],
+    "black-car-rear-glass": [
+      366,
+      174,
+      40,
+      7
+    ],
+    "white-suv-side-glass": [
+      300,
+      150,
+      22,
+      9
+    ],
+    "black-car-body": [
+      365,
+      204,
+      40,
+      15
+    ]
+  },
+  "thresholds": null,
+  "limits": "Read-only pixel diagnostics; no crop artifacts, image edits, new renderer run or numerical acceptance claim."
+}

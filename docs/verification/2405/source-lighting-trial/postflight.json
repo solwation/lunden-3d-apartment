@@ -1,0 +1,95 @@
+{
+  "completed": true,
+  "passed": true,
+  "checks": {
+    "configSHAExpected": true,
+    "nativeActual0": true,
+    "runnerActual0": true,
+    "batchCompleted": true,
+    "sourceHeadsExact": true,
+    "all250ExactReadonly": true,
+    "all5227PriorGeneratedExact": true,
+    "onlyAllowedNewAtlas": true,
+    "all12ImportExact": true,
+    "all636DependenciesExact": true,
+    "batchPinsExact": true,
+    "captureCompletedRestored": true,
+    "all68BindingsRestored": true,
+    "runtimeEqualAcross4Frames": true,
+    "entryRuntimeRestored": true,
+    "actorRosterExact": true,
+    "fourPNGsVerifiedSHAAndDimensions": true,
+    "restoredOriginalRGBExact": true,
+    "atlas786432HalfComponentsExact": true
+  },
+  "actualNativeResult": "/mnt/d/LundenLinux/runs/20261128T130826153319-1453806/result.json",
+  "actualNativeResultSHA256": "6771366d186d1ac147fcc2ab0b2d89341960b630f8f5f79da46f0bcd93527bc0",
+  "actualNativeExit": 0,
+  "actualRunnerExit": 0,
+  "actualToolExit": 0,
+  "toolExitEvidence": "Root observed session97563/chunk8bd98a exit0; not inferred from runner",
+  "nativeSeconds": 269.69,
+  "outerSeconds": 269.753,
+  "configSHA256": "73ec30c3a3cf4528b8ea6b75aecbb7c9af76fcf31c6ec3078311aa2cf85d5e67",
+  "batchConfigSHA256": "29ec0c64a1bc79519d7a2998219d1da1fd764e8ab6b0396c6146baa5345a97fb",
+  "batchResultSHA256": "f36014a4c41c626fcffbf2667a9ba11732f04ba1c87cb9a4c8fa3755f4089a91",
+  "outerResultSHA256": "5c66d684e8de411f1edc603c5307b1d830bf23ccbc9b81adfe24bc1aca4110d4",
+  "captureSHA256": "4019560a667a9c93ee0aa35c4ed47f7f1e434265cfaea75e236e6b62125f28e4",
+  "atlasProofSHA256": "c8ba1e4899476d8ba389f45aff7dc044bdf82a66e565befc11eec7e0049ded97",
+  "generatedChangedOrMissing": [],
+  "generatedAdded": {
+    "Private2405CarAtlas_20261128V1/T_SourceCarAtlas.uasset": "0d53336517cc4ad40bda37bb30e62109b249972ba9212d9b72596d97ed646b30"
+  },
+  "images": [
+    {
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2405/source-glass-v1/native-v1/unreal-parked-street-original-before.png",
+      "sha256": "fcd8c330bded98c37b7170c353493045a8e05750538dce761931ec2497a3cbb3",
+      "recordedSHA256Matches": true,
+      "dimensions": [
+        640,
+        360
+      ],
+      "PNGVerifiedAndLoaded": true
+    },
+    {
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2405/source-glass-v1/native-v1/unreal-parked-street-ao-zero.png",
+      "sha256": "e737209b31baff38d1ce82d80d759f8d12e898c8c58e1196a5c94f5b101ce54b",
+      "recordedSHA256Matches": true,
+      "dimensions": [
+        640,
+        360
+      ],
+      "PNGVerifiedAndLoaded": true
+    },
+    {
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2405/source-glass-v1/native-v1/unreal-parked-street-source-ambient-fill.png",
+      "sha256": "c74ca1cb01d8a67951217b34640a20ce6b15664d8165998f90abdfad56fde7c1",
+      "recordedSHA256Matches": true,
+      "dimensions": [
+        640,
+        360
+      ],
+      "PNGVerifiedAndLoaded": true
+    },
+    {
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2405/source-glass-v1/native-v1/unreal-parked-street-original-after.png",
+      "sha256": "3881df1c7ec3ab478d4ef2915e01415291a6708e2e9c04934494f1720abf81be",
+      "recordedSHA256Matches": true,
+      "dimensions": [
+        640,
+        360
+      ],
+      "PNGVerifiedAndLoaded": true
+    }
+  ],
+  "originalBeforeAfterRGBChangedPixels": 0,
+  "counts": {
+    "authored": 250,
+    "priorGenerated": 5227,
+    "currentGenerated": 5228,
+    "Import": 12,
+    "dependencies": 636,
+    "batchPins": 7
+  },
+  "limits": "Private unsaved source-glass/Fill diagnostic plus isolated saved atlas upload only; no product colour acceptance, global activation or Windows proof"
+}

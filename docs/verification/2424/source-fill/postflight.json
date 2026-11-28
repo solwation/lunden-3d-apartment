@@ -1,0 +1,32 @@
+{
+  "completed": true,
+  "passed": true,
+  "checks": {
+    "native0": true,
+    "outer0": true,
+    "productPassed": true,
+    "threeStates": true,
+    "authored250ExactReadonly": true,
+    "generatedExact": true,
+    "importExact": true,
+    "dependenciesExact": true,
+    "sourceHeadsExact": true
+  },
+  "actualNativeExit": 0,
+  "actualRunnerExit": 0,
+  "actualToolExit": 0,
+  "nativeSeconds": 97.96,
+  "outerSeconds": 98.023,
+  "configSHA256": "ee80bf12ddd71c831745c8c11fda4bdba32fb9a659fe8828c1e5e092038f8120",
+  "productSHA256": "02aa885eb907b12313e8da77448126ee38b36653fedbed8c25c53904c632027f",
+  "nativeResult": "/mnt/d/LundenLinux/runs/20261128T125703258851-1217269/result.json",
+  "nativeResultSHA256": "097523f8b2dd68616d04d1496b4d43526fb32a84755c015c80064c1e043d0211",
+  "outerSHA256": "ca9138a6c4a2664c244cf9c2e4f3954fd549aad3edd6c5c3afff0b9abb1ce745",
+  "counts": {
+    "authored": 250,
+    "generated": 5227,
+    "exportFiles": 12,
+    "dependenciesSHA256": 188
+  },
+  "scope": "CPU BP/MPC + component readback only; global OFF; no rendered/GPU evidence"
+}

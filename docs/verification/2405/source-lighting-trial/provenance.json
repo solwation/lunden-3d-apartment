@@ -1,0 +1,125 @@
+{
+  "scope": "Exact copies of actual raw images/results/helpers; no raw atlas/base64, assets or SDK copied",
+  "files": [
+    {
+      "publishedPath": "capture.json",
+      "originalPrivatePath": "/home/devcontainers/.local/state/lunden-codex-20261127/2405/source-glass-v1/native-v1/capture.json",
+      "sha256": "4019560a667a9c93ee0aa35c4ed47f7f1e434265cfaea75e236e6b62125f28e4",
+      "bytes": 3241047
+    },
+    {
+      "publishedPath": "atlas-proof.json",
+      "originalPrivatePath": "/home/devcontainers/.local/state/lunden-codex-20261127/2405/car-atlas-upload-v1/native-v1/atlas-proof.json",
+      "sha256": "c8ba1e4899476d8ba389f45aff7dc044bdf82a66e565befc11eec7e0049ded97",
+      "bytes": 1453
+    },
+    {
+      "publishedPath": "batch-result.json",
+      "originalPrivatePath": "/home/devcontainers/.local/state/lunden-codex-20261127/2405/batch-source-glass-car-atlas-v1-result.json",
+      "sha256": "f36014a4c41c626fcffbf2667a9ba11732f04ba1c87cb9a4c8fa3755f4089a91",
+      "bytes": 659
+    },
+    {
+      "publishedPath": "native-result.json",
+      "originalPrivatePath": "/mnt/d/LundenLinux/runs/20261128T130826153319-1453806/result.json",
+      "sha256": "6771366d186d1ac147fcc2ab0b2d89341960b630f8f5f79da46f0bcd93527bc0",
+      "bytes": 1349
+    },
+    {
+      "publishedPath": "outer-result.json",
+      "originalPrivatePath": "/home/devcontainers/.local/state/lunden-codex-20261127/2405/batch-source-glass-car-atlas-v1-outer.json",
+      "sha256": "5c66d684e8de411f1edc603c5307b1d830bf23ccbc9b81adfe24bc1aca4110d4",
+      "bytes": 698
+    },
+    {
+      "publishedPath": "postflight.json",
+      "originalPrivatePath": "/home/devcontainers/.local/state/lunden-codex-20261127/2405/batch-source-glass-car-atlas-v1-postflight.json",
+      "sha256": "33d3a9d929028aea6abede009e5e5f11de3b445fac3076be5073610c9dbce3b1",
+      "bytes": 3706
+    },
+    {
+      "publishedPath": "diagnostic-rois.json",
+      "originalPrivatePath": "/home/devcontainers/.local/state/lunden-codex-20261127/2405/source-glass-v1/diagnostic-rois-v1.json",
+      "sha256": "990f43f709412b5992683939232909ec881070f2c8571de1279fde9a50ea3325",
+      "bytes": 1272
+    },
+    {
+      "publishedPath": "diagnostic-result.json",
+      "originalPrivatePath": "/home/devcontainers/.local/state/lunden-codex-20261127/2405/source-glass-v1/diagnostic-result-v1.json",
+      "sha256": "ea27d1b099fbc0831be5f136b08e65070166f889ebe06873dcff1c0fa9bd3f01",
+      "bytes": 6273
+    },
+    {
+      "publishedPath": "prepare.py",
+      "originalPrivatePath": "/home/devcontainers/.local/state/lunden-codex-20261127/2405/source-glass-v1/prepare.py",
+      "sha256": "d8a3cf44432b080e1326b88af6023941656bda34c7df1a73078061928e844481",
+      "bytes": 11107
+    },
+    {
+      "publishedPath": "capture.py",
+      "originalPrivatePath": "/home/devcontainers/.local/state/lunden-codex-20261127/2405/source-glass-v1/capture.py",
+      "sha256": "01953cccb246ed66607357381c9fc729968f10e30e6d2465a84ae89559702bc0",
+      "bytes": 17570
+    },
+    {
+      "publishedPath": "scene-fill-v1.py",
+      "originalPrivatePath": "/home/devcontainers/.local/state/lunden-codex-20261127/2424/scene-fill-v1.py",
+      "sha256": "1b2c7f45445f5611f5f9ee0b4d1abbe3dca382352303fca7c2d7f78be9a0b19b",
+      "bytes": 9323
+    },
+    {
+      "publishedPath": "atlas-upload.py",
+      "originalPrivatePath": "/home/devcontainers/.local/state/lunden-codex-20261127/2405/car-atlas-upload-v1/car-atlas-upload.py",
+      "sha256": "e235c68c8a3c2ee85215e198f01b33f4ae653e36128f01a2bf691f215820f4d3",
+      "bytes": 10936
+    },
+    {
+      "publishedPath": "export-car-atlas.mjs",
+      "originalPrivatePath": "/home/devcontainers/.local/state/lunden-codex-20261127/2405/car-environment-v2/export-car-atlas.mjs",
+      "sha256": "26b5f72b1662ffcb1baa32e2dc6ad969dafcb989af910bfaab0801f18b60cded",
+      "bytes": 7567
+    },
+    {
+      "publishedPath": "observer.js",
+      "originalPrivatePath": "/home/devcontainers/.local/state/lunden-codex-20261127/2405/car-environment-v2/observer.js",
+      "sha256": "6b4c1681b391df6e3e465ca5e7277f72fed18ccadc8717d92ca723cdf6c74123",
+      "bytes": 6306
+    },
+    {
+      "publishedPath": "web-parked-street.jpg",
+      "originalPrivatePath": "/home/devcontainers/.local/state/lunden-codex-20261127/2405/car-environment-v2/atlas-web-v2/web-parked-street.jpg",
+      "sha256": "5eb6ebfad89c539efc32cd24bb6d93d5387b749a1f2c7f8125fc87112f5d596c",
+      "bytes": 60984
+    },
+    {
+      "publishedPath": "web-capture.json",
+      "originalPrivatePath": "/home/devcontainers/.local/state/lunden-codex-20261127/2405/car-environment-v2/atlas-web-v2/web-capture.json",
+      "sha256": "00e33eee8e74a77b536fc991a8202943b173d3e5d555ab60e103315a19492c84",
+      "bytes": 1450
+    },
+    {
+      "publishedPath": "unreal-parked-street-ao-zero.png",
+      "originalPrivatePath": "/home/devcontainers/.local/state/lunden-codex-20261127/2405/source-glass-v1/native-v1/unreal-parked-street-ao-zero.png",
+      "sha256": "e737209b31baff38d1ce82d80d759f8d12e898c8c58e1196a5c94f5b101ce54b",
+      "bytes": 315909
+    },
+    {
+      "publishedPath": "unreal-parked-street-original-before.png",
+      "originalPrivatePath": "/home/devcontainers/.local/state/lunden-codex-20261127/2405/source-glass-v1/native-v1/unreal-parked-street-original-before.png",
+      "sha256": "fcd8c330bded98c37b7170c353493045a8e05750538dce761931ec2497a3cbb3",
+      "bytes": 315909
+    },
+    {
+      "publishedPath": "unreal-parked-street-source-ambient-fill.png",
+      "originalPrivatePath": "/home/devcontainers/.local/state/lunden-codex-20261127/2405/source-glass-v1/native-v1/unreal-parked-street-source-ambient-fill.png",
+      "sha256": "c74ca1cb01d8a67951217b34640a20ce6b15664d8165998f90abdfad56fde7c1",
+      "bytes": 315909
+    },
+    {
+      "publishedPath": "unreal-parked-street-original-after.png",
+      "originalPrivatePath": "/home/devcontainers/.local/state/lunden-codex-20261127/2405/source-glass-v1/native-v1/unreal-parked-street-original-after.png",
+      "sha256": "3881df1c7ec3ab478d4ef2915e01415291a6708e2e9c04934494f1720abf81be",
+      "bytes": 315909
+    }
+  ]
+}
