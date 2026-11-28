@@ -1,0 +1,106 @@
+{
+  "issue": 2422,
+  "phase": "Preserved source integrated; actual cook still pending Root-owned warm-world sync",
+  "root": "/home/devcontainers/wt/codex-2422-next",
+  "head": "12f5d1963af29c5a4ad331a8b708dddde1b6e63a",
+  "publicBase": "8afc03f17287d6886f7218878035dfde7df63a5c",
+  "preservedSource": "e78af5a8a1af59d30ec85d6b23633eebfed34a45",
+  "singleCommitOnPublicParent": "23f58e800e51b51c44ddbc9d091eb57c6069bfcf",
+  "clean": true,
+  "unchangedCheckpointFiles": [
+    ".github/workflows/launcher-tests.yml",
+    ".github/workflows/sign-manifest.yml",
+    "shared/schema/release-manifest.schema.json",
+    "tools/unreal-engine/make-linux-manifest.mjs",
+    "tools/unreal-engine/make-manifest.mjs",
+    "tools/unreal-engine/manifests.md",
+    "tools/unreal-engine/promote-release.mjs",
+    "tools/unreal-engine/publish-linux-launcher.py",
+    "tools/unreal-engine/release-linux.py",
+    "tools/unreal-engine/sign-manifest.mjs",
+    "tools/unreal-engine/tests/linux-manifest.test.mjs",
+    "tools/unreal-engine/tests/promote-release.test.mjs",
+    "tools/unreal-engine/tests/test_linux_release.py",
+    "tools/unreal-engine/verify-published.mjs",
+    "unreal/Launcher.Tests/LinuxReleaseTests.cs",
+    "unreal/Launcher/GameProcess.cs",
+    "unreal/Launcher/Lunden.Launcher.csproj",
+    "unreal/Launcher/Program.cs",
+    "unreal/Launcher/ReleaseManifest.cs",
+    "unreal/Launcher/ReleasePlatform.cs",
+    "unreal/Launcher/StockRuntime.cs",
+    "unreal/Launcher/UpdateStore.cs",
+    "unreal/Lunden/Config/Linux/LinuxEngine.ini",
+    "unreal/Lunden/Lunden.uproject"
+  ],
+  "changedSinceCheckpoint": [
+    "docs/development/unreal.md"
+  ],
+  "reuseEvidence": [
+    "source-checkpoint-tests.json",
+    "clean-launcher-e78-proof.json",
+    "launcher-cli-proof-v2.json"
+  ],
+  "testsRerun": false,
+  "sourceSyntaxChecked": true,
+  "engineVersion": {
+    "MajorVersion": 5,
+    "MinorVersion": 8,
+    "PatchVersion": 4,
+    "Changelist": 58902052,
+    "CompatibleChangelist": 55116800,
+    "IsLicenseeVersion": 0,
+    "IsPromotedBuild": 1,
+    "BranchName": "++UE5+Release-5.8"
+  },
+  "shippingRuntime": {
+    "path": "/mnt/d/UnrealEngine/5.8.4/Engine/Binaries/Linux/UnrealGame-Linux-Shipping",
+    "bytes": 304914000,
+    "sha256": "ae5b2fff8fabced405515b5f905532525e1ceecfa2176c37bb13877c7c530f38",
+    "elfX8664": true,
+    "executable": true
+  },
+  "shippingReceipt": {
+    "path": "/mnt/d/UnrealEngine/5.8.4/Engine/Binaries/Linux/UnrealGame-Linux-Shipping.target",
+    "sha256": "41a0113c795da9aeb64ae9c1c033102eaf6300291bb5d29f5cb99af1b1e19ba7",
+    "receiptRows": 973,
+    "missing": [],
+    "unresolved": []
+  },
+  "installedPlatformConfiguration": "BaseEngine.ini3997-4003 declares Linux/x64/Game/Shipping and existing UnrealGame-Linux-Shipping.target",
+  "uat": {
+    "shellExists": true,
+    "precompiledAutomationTool": true,
+    "bundledDotnet10": true
+  },
+  "sdk": {
+    "inTreeExtrasPresent": false,
+    "exactCppToolchainVersion": "v26_clang-20.1.8-rockylinux8",
+    "versionSource": "Engine/Config/Linux/Linux_SDK.json from exact5.8.4 ZIP",
+    "contentOnlyPath": "-nocompileuat -nocompile -skipbuild; stage installed Shipping receipt, no C++ compilation requested",
+    "limitation": "No UAT/UBT execution performed; SDK validation during genuine cook remains an actual tool gate, not pre-declared PASS or a guessed blocker",
+    "installActionNow": "None proven necessary for the precompiled content-only route. If actual UAT requires native compilation, use exact SDK above; do not install an arbitrary compiler or bypass SDK validation."
+  },
+  "sourceProofs": {
+    "BuildCookRun.Automation.cs": "8b2cbaa85eaed36bf405fb8c3edba7778ba8a84cb1a2d50d97c7eebb6e3679b8",
+    "UEBuildLinux.cs": "21454b6227e7917774fb9e78ec66d4b7fc33a6f3dcaadb9571fdd9b9b7ca00e9",
+    "InstalledPlatformInfo.cs": "8fdb7d0ecc0718684636125eb500f8d12191c70157fd9be1ab498ba46ae509cc",
+    "LinuxPlatform.Automation.cs": "d06e234590c1996d192fc39598ab23d23c5428650e4829216f68130ee1c657b5",
+    "LinuxPlatformSDK.Versions.cs": "2ba55e5c25103dc6d13281020b9352d1802cadc913c73571bca0cf301b2b4f32",
+    "Platform.cs": "8149a0e149db32947f94da001a508ce99fe9a8bda38a6f1481af8d2e6e7c6743",
+    "LinuxExports.cs": "11c47260f400472b5c1b0307a48c0a739bc0595c0e231639c8783a3411f5f517",
+    "LinuxPlatformSDK.cs": "a9586ce3add94219def0d551afc416370b8b4d17d7a6dc27e5f50e0890c4b5bc"
+  },
+  "remaining": [
+    "Root integrates this source onto post2421 public main in its warm project",
+    "Root verifies all247 actual LFS assets and performs genuine complete import/builder freshness gate; no stamp relabel",
+    "Root invokes release-linux.py --plan and then reserves sole engine for actualShipping cook",
+    "Root checks runtime hash/IoStore/archive and actualLinux Vulkan pilot startup before any release claim",
+    "Signed Linux package/update acceptance and Windows regression remain outstanding"
+  ],
+  "noEngineBrowserCookExportAssetOrWarmNativeWrites": true,
+  "nextCookPlan": {
+    "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2422/resumed-cook-prep/next-cook-plan.md",
+    "sha256": "27562a8780f14c590e0f49e6a0ebb69ed2a1ef493cd28981579504c4996ba60d"
+  }
+}

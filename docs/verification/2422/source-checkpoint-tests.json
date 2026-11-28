@@ -1,0 +1,59 @@
+{
+  "classification": "SOURCE checkpoint tests only; NO UE/Shipping/editor/browser/export/assets/signing/publishing",
+  "base": "23f58e800e51b51c44ddbc9d091eb57c6069bfcf",
+  "fullLauncherSuite": {
+    "observedPass": 58,
+    "skip": 6,
+    "total": 64,
+    "command": "LUNDEN_LINUX_SIGNED_MANIFEST_DIR=<fixture> dotnet test unreal/Launcher.Tests/Lunden.Launcher.Tests.csproj --no-restore --nologo --verbosity minimal",
+    "originalOutputToolChunk": "a4712b"
+  },
+  "nodeReleaseProtocolSuite": {
+    "observedPass": 33,
+    "skip": 1,
+    "command": "node --test linux-manifest.test.mjs make-manifest.test.mjs sign-manifest.test.mjs verify-published.test.mjs",
+    "originalOutputToolChunk": "12be98"
+  },
+  "subsequentScopedChecks": [
+    "python release prerequisite tests:3PASS",
+    "promotion protocol including Linux preservation:10PASS",
+    "latest Linux Node fixture/signature:3PASS (node-linux-v2.log)",
+    "latest Linux C# fixture/update/mode/rollback: see linux-launcher-targeted-v2.log",
+    "actual self-contained ELF CLI help+signedLinux dry-run: exit0/0 (launcher-cli-proof-v2.json)"
+  ],
+  "knownFailedSmoke": "First CLI fixture used manifest.sig instead of required manifest.json.sig; strict rejectionexit1 preserved in launcher-cli-proof-failed-fixture-name.json. Canonical fixture name corrected; no protocol bypass.",
+  "remaining": [
+    "Actual Shipping BuildCookRun not executed",
+    "No actual Linux-desktop game startup/pilot image/GPU/Lumen/VSM/performance validation",
+    "No official signed Linux distribution or real hosted update acceptance",
+    "No current Windows desktop release/build/signing regression run",
+    "Linux launcher self-update requires manual replacement when minLauncher increases; no Windows trust bypass"
+  ],
+  "sourceSHA256": {
+    ".github/workflows/launcher-tests.yml": "4cb8664be3a9e7e6df18852b547df65a1719c0715c83d8d3e1deea22735bf226",
+    ".github/workflows/sign-manifest.yml": "b2a231b328b8268afa478499942f4abe769a3303b99160390b5dce8b4f71ba23",
+    "docs/development/unreal.md": "0949cb71fb4d9ccf0a3215a83a3e00a8752e51f4d5fbb170138bd45273a451a6",
+    "shared/schema/release-manifest.schema.json": "a8bcb57aea2b31d14dd6d44a4cc7442b11a1ffdd0b4819c1bf42c3eda88df443",
+    "tools/unreal-engine/make-linux-manifest.mjs": "2609d2531562d2c1e19f587aae6756e0ca18dc7a23915b60fe68e65a8aad06ff",
+    "tools/unreal-engine/make-manifest.mjs": "a559e2a2508f4ae19c9907ae65df916bc9e8acff365328fc6e6d7caca32d4b75",
+    "tools/unreal-engine/manifests.md": "6ad26866eddf7fc87b8d4a062d7ef24add4d98bb3c96c8f2094408301989e526",
+    "tools/unreal-engine/promote-release.mjs": "27852e822336e69470a1c4906ef4d14248bf4bbbe0ebde3043aec52d636eed51",
+    "tools/unreal-engine/publish-linux-launcher.py": "e8622424522415767d2aa754005bd6fdc2c5d169b56b16e6ce355af2e14589fb",
+    "tools/unreal-engine/release-linux.py": "d81a8666bcbba9f3516af1e46645a41e8c9d5b8c83ca13d049cad0d863775ce1",
+    "tools/unreal-engine/sign-manifest.mjs": "d111e94e8d94990404b5fb70e684c9bd969fc330ee9014adbcccd3ad94e6b860",
+    "tools/unreal-engine/tests/linux-manifest.test.mjs": "197be8dd361290b69ae16744f95c5810caaaf48828ed26626387b946f1601dc1",
+    "tools/unreal-engine/tests/promote-release.test.mjs": "887706a87314f061d585227d43201d4e4ab96ed2d668ef1baeda4a9c9ec52b78",
+    "tools/unreal-engine/tests/test_linux_release.py": "03f56d44544a8a95c019cebd7bf7ab6c3d619b35a969ad98ed08da6048b85d92",
+    "tools/unreal-engine/verify-published.mjs": "96405493f217bb086b009076e60a1437fe730af3b0d84e65dfcdcc78c8861938",
+    "unreal/Launcher.Tests/LinuxReleaseTests.cs": "0dd0457e344b476a194761a9da74567c8761959878d7c14241ca7aee70c129e4",
+    "unreal/Launcher/GameProcess.cs": "fd1d102f9af1e3c0f4dbe940d3049a56cb96867fbfd70219aea592de6d85ec68",
+    "unreal/Launcher/Lunden.Launcher.csproj": "cb05a0b6b69f0afe4177b27e2f69e454280cadbcc0e94ce1006793f69626e4ce",
+    "unreal/Launcher/Program.cs": "a18a6de51e10f2762321fe66ba2df256025e99a9c27526fbb0c6017b87a52287",
+    "unreal/Launcher/ReleaseManifest.cs": "55c1a43f30f37fc4f16b328e03ed2803b0e4c4c8e6052767c4339a1ebf8a8ef4",
+    "unreal/Launcher/ReleasePlatform.cs": "eb73f67db2d657397e43f3734bb149f6be2fa201fbfea8d0ca0480d1fea901f7",
+    "unreal/Launcher/StockRuntime.cs": "98e7ba0b118c3d1d6081220b5e1263f07c4b34506bd5de8448f8532df6066cf3",
+    "unreal/Launcher/UpdateStore.cs": "c369ff1ce45f773054211470237096db5fbe03c10ed74d268b466f7bb29607bc",
+    "unreal/Lunden/Config/Linux/LinuxEngine.ini": "b9cf966c210752946536b92c7da821230cdeb3ec2b3636368cb5e7dd71638446",
+    "unreal/Lunden/Lunden.uproject": "cd30f6fb937c9e207d5865137c8fb1a6a04e4c1586bf3906a6a82a6b57a35c89"
+  }
+}

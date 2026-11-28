@@ -1,0 +1,33 @@
+{
+  "before": "2ccd812855456895cdb26005322da76afe184188",
+  "after": "d78eb3abcab4c40e8cc091bfa1ae56c21e8b70b9",
+  "all247Preserved": true,
+  "clean": true,
+  "sourceFiles": [
+    ".github/workflows/launcher-tests.yml",
+    ".github/workflows/sign-manifest.yml",
+    "docs/development/unreal.md",
+    "shared/schema/release-manifest.schema.json",
+    "tools/unreal-engine/make-linux-manifest.mjs",
+    "tools/unreal-engine/make-manifest.mjs",
+    "tools/unreal-engine/manifests.md",
+    "tools/unreal-engine/promote-release.mjs",
+    "tools/unreal-engine/publish-linux-launcher.py",
+    "tools/unreal-engine/release-linux.py",
+    "tools/unreal-engine/sign-manifest.mjs",
+    "tools/unreal-engine/tests/linux-manifest.test.mjs",
+    "tools/unreal-engine/tests/promote-release.test.mjs",
+    "tools/unreal-engine/tests/test_linux_release.py",
+    "tools/unreal-engine/verify-published.mjs",
+    "unreal/Launcher.Tests/LinuxReleaseTests.cs",
+    "unreal/Launcher/GameProcess.cs",
+    "unreal/Launcher/Lunden.Launcher.csproj",
+    "unreal/Launcher/Program.cs",
+    "unreal/Launcher/ReleaseManifest.cs",
+    "unreal/Launcher/ReleasePlatform.cs",
+    "unreal/Launcher/StockRuntime.cs",
+    "unreal/Launcher/UpdateStore.cs",
+    "unreal/Lunden/Config/Linux/LinuxEngine.ini",
+    "unreal/Lunden/Lunden.uproject"
+  ]
+}

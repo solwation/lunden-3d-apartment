@@ -1,0 +1,18 @@
+{
+  "source": "e78af5a8a1af59d30ec85d6b23633eebfed34a45",
+  "actualBuilderCommand": "python3 tools/unreal-engine/publish-linux-launcher.py --public-key <throwaway-public.pem> --version1.0.0 --out <fresh-private>",
+  "actualBuilderExitCode": 0,
+  "builderLog": "/home/devcontainers/.local/state/lunden-codex-20261127/2422/publish-linux-launcher-e78.log",
+  "buildRecord": {
+    "platform": "linux-x64",
+    "commit": "e78af5a8a1af59d30ec85d6b23633eebfed34a45",
+    "version": "1.0.0",
+    "sha256": "f16cc698dece7ff3e90d95f3725b575e488b7d952f722804309383f151a64233",
+    "manifestPublicKeySha256": "c6a57aedde487ccf2d09b8fc0b9d6e2cefbec8912b99775a863dd779fd71f6cc"
+  },
+  "actualLauncherDryRunExitCode": 0,
+  "stdout": "Kontrollerar Lunden 1.2.3, inneh\u00e5ll 4\u2026\nSkulle h\u00e4mta Engine/Binaries/Linux/UnrealGame-Linux-Shipping (20 byte).\nSkulle h\u00e4mta Lunden/Content/Paks/Lunden-Linux.pak (12 byte).\nSkulle h\u00e4mta Lunden/Content/Paks/Lunden-Linux.ucas (12 byte).\nSkulle h\u00e4mta Lunden/Content/Paks/Lunden-Linux.utoc (12 byte).\nSkulle h\u00e4mta Lunden/Content/Paks/global.ucas (6 byte).\nSkulle h\u00e4mta Lunden/Content/Paks/global.utoc (6 byte).\nFiler som kr\u00e4ver h\u00e4mtning: 68 byte.\n",
+  "stderr": "",
+  "passed": true,
+  "limits": "Actual launcher only; noUE/Shipping/game/payload-download/signing/release"
+}

@@ -1,0 +1,12 @@
+  Unreal export is current: 11 files, 9402 nodes (9402 ids, each in one zone), 322 sources (exported from 2e8547db, HEAD d78eb3ab)
+IMPORT GATE: the Unreal import is older than the export of 2e8547db (1 problem):
+  the importer/builder scripts, world-levels.json or material-map.json changed since the last sync-import
+Fix: powershell.exe -NoProfile -ExecutionPolicy Bypass -File tools\unreal-engine\sync-import.ps1   (imports only the changed zones, rebuilds the derived levels, runs compose_world.py --check and the quick tests)
+Traceback (most recent call last):
+  File "/home/devcontainers/wt/codex-2434-native/tools/unreal-engine/release-linux.py", line 124, in <module>
+    main()
+  File "/home/devcontainers/wt/codex-2434-native/tools/unreal-engine/release-linux.py", line 68, in main
+    subprocess.run(["node", str(ROOT / "tools/unreal-engine/check-import.mjs")], cwd=ROOT, check=True)
+  File "/usr/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['node', '/home/devcontainers/wt/codex-2434-native/tools/unreal-engine/check-import.mjs']' returned non-zero exit status 1.

@@ -1,0 +1,31 @@
+{
+  "classification": "ACTUAL self-contained Linux launcher CLI; throwaway public key and signed header/package fixture; NO Unreal/Shipping/game/payload download",
+  "priorFailedFixture": "launcher-cli-proof-failed-fixture-name.json (fixture manifest.sig name differed from standard .json.sig; actual strict rejection preserved)",
+  "binarySHA256": "05beb1f136bd13ea358207188051350f6c9c5ee994830f1e9bb329abef03bd49",
+  "outputFiles": [
+    "Lunden"
+  ],
+  "results": [
+    {
+      "args": [
+        "--help"
+      ],
+      "exitCode": 0,
+      "stdout": "Lunden [--channel stable|test] [--manifest FIL/URL] [--dry-run] [--offline]\nLunden [--install | --uninstall | --dry-run-install] [--quiet] [--channel stable|test]\n",
+      "stderr": ""
+    },
+    {
+      "args": [
+        "--channel",
+        "test",
+        "--manifest",
+        "/home/devcontainers/.local/state/lunden-codex-20261127/2422/cli-fixture-v2/manifest.json",
+        "--dry-run"
+      ],
+      "exitCode": 0,
+      "stdout": "Kontrollerar Lunden 1.2.3, inneh\u00e5ll 4\u2026\nSkulle h\u00e4mta Engine/Binaries/Linux/UnrealGame-Linux-Shipping (20 byte).\nSkulle h\u00e4mta Lunden/Content/Paks/Lunden-Linux.pak (12 byte).\nSkulle h\u00e4mta Lunden/Content/Paks/Lunden-Linux.ucas (12 byte).\nSkulle h\u00e4mta Lunden/Content/Paks/Lunden-Linux.utoc (12 byte).\nSkulle h\u00e4mta Lunden/Content/Paks/global.ucas (6 byte).\nSkulle h\u00e4mta Lunden/Content/Paks/global.utoc (6 byte).\nFiler som kr\u00e4ver h\u00e4mtning: 68 byte.\n",
+      "stderr": ""
+    }
+  ],
+  "passed": true
+}
