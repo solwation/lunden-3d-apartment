@@ -3465,7 +3465,9 @@ The material map and importer version stay unchanged: only a changed `kvarteret.
 the actual export proves every other zone byte-identical. `node tools/unreal-engine/tests/garage-lighting.mjs` checks
 the real source setter and exact restoration; supplying an export directory also checks the actual GLB attributes,
 unlit extensions, maps and cut-outs. `python3 tools/unreal-engine/tests/garage-materials.py` checks that missing/stale
-or invalid source cut-offs fail before import. Source checks alone do not establish native rendering parity.
+or invalid source cut-offs fail before import. It also checks that the commandlet entry point runs once and that
+reading an importer helper by module name does not start a second import (#2505). Source checks alone do not
+establish native rendering parity.
 
 **The split.** A merged mesh (the web bakes one mesh per material for all of Hus L, all of Hus A/B/C or the whole
 terrain) that crosses a split zone's box is clipped at the box sides (vertical planes; attributes interpolated) and
