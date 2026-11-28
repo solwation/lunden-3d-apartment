@@ -1,0 +1,23 @@
+[
+  {
+    "newCapture": "patio-original-before",
+    "previousCommittedImage": "docs/verification/2388/opacity/unreal-patio-original-before.png",
+    "encodedBytesExact": false,
+    "newSHA256": "3038d274926ecb33464489186d12c925d1a50478b3e742f76e385e060816f4a4",
+    "previousSHA256": "13ba8a82fffcc72ceadb4f4ea57a75b8b5d5352cdc3dbc75f2b2517beb7d6136"
+  },
+  {
+    "newCapture": "patio-copy-opacity-zero",
+    "previousCommittedImage": "docs/verification/2388/opacity/unreal-patio-opacity-zero.png",
+    "encodedBytesExact": false,
+    "newSHA256": "235d701997ad4ccc60b26afd6f5fe8acbaeecc5216764bfc539446010fa8cfd8",
+    "previousSHA256": "880d0308e4a9a95bdc35bd8010c4e43b100b9e25f4c4fc4042bd6529a05be5ad"
+  },
+  {
+    "newCapture": "patio-original-after",
+    "previousCommittedImage": "docs/verification/2388/opacity/unreal-patio-original-after.png",
+    "encodedBytesExact": false,
+    "newSHA256": "e8e4ecffe79f082d15363de480e7eb889316291fbaff77ff58912c51e394c527",
+    "previousSHA256": "50bcd9192d24f308747800138915a84431b80ecc59f3d1634c2a8a1a704bd6ac"
+  }
+]

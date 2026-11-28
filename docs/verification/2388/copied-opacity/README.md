@@ -1,0 +1,7 @@
+# #2388 — copied-graph positive control, 2026-11-28
+
+Actual Native/runner/tool0/0/0,238.98seconds. Same original patio profile/35slots/250readonly assets; all Generated/export/506dependencies exact and full effective bindings/state restored. Both MIC source Opacity parameters remain0.1; only the unsaved copied master's graph Opacity is Constant0. Actual graph input and empty compiler errors were verified.
+
+Original-before/after differ0decodedRGBpixels. Copied graphOpacity0 changes38704pixels, maxRGB[48,50,55]. Its decoded pixels are EXACTLY the prior transient-MID Opacity0 result; original baseline also exactly matches that prior run. Thus the copied/compiled graph reaches actual rendering. This rules out an inert copied graph as the explanation for AO0's zero response. Actual GPU AO value and native indirect contribution remain separate unknowns; no sourcePMREM/product acceptance is asserted.
+
+image-equivalence.json records actual encoded hashes. Byteidentical images reuse the already committed opacity-result files; any differently encoded actual image is retained here. Three images were inspected and compared by decoded RGB. Original ±15% ROI criteria remain unchanged:2/3pass, upper saturation1.333FAIL. No builder/import/export/save/chmod/global-policy/Shipping ran. Private per-glass source-indirect implementation is being prepared but remains inactive. Original-only diagnostic evidence, no downstream web implementation.

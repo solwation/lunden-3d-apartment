@@ -1,0 +1,19 @@
+{
+  "source": "/home/devcontainers/.local/state/lunden-codex-20261127/2388/forward-ao/probe.py",
+  "sourceSHA256": "e686dfceddc5bb5448265d4a2edf095be17a1c7492d4a6e9bac8ca18122dfbe4",
+  "helper": "/home/devcontainers/.local/state/lunden-codex-20261127/2388/forward-ao/copied-graph-opacity-probe.py",
+  "sha256": "f41581e6d7b74be1a982570756ed5edc0f42b22473af20a9ae7d0da1b8cfdb51",
+  "api": "prepare(world)->(bind,restore,report); bind original/copygraph-opacity-zero; instance_state(mi) unchanged",
+  "guardContract": [
+    "exact originalmaster/MIC parent SurfaceForward DefaultLit graph/noAttributes, SSRalready0",
+    "exact35effectiveoriginalslots",
+    "duplicate same master/MICroute asactualAO0; no master/MIC save",
+    "alllocal/effective/staticparams equal before+aftercompile; MICOpacityparameterstill0.1",
+    "RecompileMaterial errors[]",
+    "copiedmasteractualMP_OPACITYpin==newMaterialExpressionConstant(r=0)",
+    "finallyrestore35effectiveoriginalbindings+originalparams+all250RO/Generated/export/deps bytes viaRootwrapper"
+  ],
+  "newRuntimeAPIs": false,
+  "compiledHLSL": "No supported proven Pythongetter established; retain compilererrors+actualgraphpin separate from GPUcode/AO observation",
+  "noNativeExecuted": true
+}
