@@ -1,0 +1,30 @@
+{
+  "completed": true,
+  "meter": "/home/devcontainers/.local/state/lunden-codex-20261127/2388/forward-ao/opacity-analysis-v1/meter.json",
+  "meterSHA256": "9ac17909d2864eb76ac74516685cbecd0b0069902850ea2b61437d9a473a3994",
+  "conclusions": [
+    "UpperROI clear-vs-clear PASSY1.042913608/S1.059837040; unchangedoriginalS1.333321FAIL. DominantglobalopaqueproblemNOTsupportedforthisROI.",
+    "LowerROI clear-vs-clearS.569402FAIL meansunderlyinginteriordifferenceexistsindependentlythere; noreclassificationas2424dependency.",
+    "NativeglassremoveslessupperS(.0105674)thansourceglass(.0323764), anddarkensY.0215versus.0005source. MissingpermaterialpaintedPMREMremainsconcretesourcetermgap, notyetcausallysolved."
+  ],
+  "actualRendererReadback": {
+    "r.ReflectionMethod": 0,
+    "r.ReflectionEnvironment": 1,
+    "sg.ReflectionQuality": 0,
+    "r.AllowStaticLighting": 0,
+    "r.ForwardShading": 0
+  },
+  "qualitySource": "OfficialBaseScalability.ini ReflectionQuality@0 disablesSSR/Lumenreflections, doesNOTdisablecubemapReflectionEnvironment; cannotinferzeroIBLfromsg.ReflectionQuality0",
+  "compiledResourceLimit": "OpacityMIDsuccessprovesoriginalrenderpathbutNOTcopiedmastergraphrecompilation. PreviousAO0 usescopiedmaster; actualcompiledAO/freshresource unobserved. EngineRecompileMaterialInternal updateschildrenbydesign, somissingrefreshisnotproven.",
+  "oneNextControl": {
+    "intervention": "Sameunsavedcopiedmaster/MICroute asAO0, but connectconstantOpacity0 toMP_OPACITY instead ofAO; original\u2192copyOpacity0\u2192original",
+    "purpose": "PositivecontrolofnewcompiledgraphvsoriginalMIDcontrol; sameknownOpacityintervention andexistingno-glassframe, noproductchange/fit/PMREMactivation",
+    "interpretation": [
+      "IfcopiedOpacity0unchangedwhileMIDOpacity0changes, graph/renderresource routeisinert; AO0cannotinterpretsuppression.",
+      "IfcopiedOpacity0matchesactualMIDOpacity0, copiedgraphresponds; AO0zeroresponseconsistentwithnativeindirectalreadyzero/negligibleorAO-specificruntime/permutationbehavior, notproofwhich."
+    ],
+    "noRunHere": true
+  },
+  "productOpacityRetained": 0.1,
+  "noGlobalSourceAmbientActivation": true
+}

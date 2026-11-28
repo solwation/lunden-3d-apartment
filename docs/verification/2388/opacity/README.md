@@ -1,0 +1,11 @@
+# #2388 — causal opacity control, 2026-11-28
+
+Diagnostic only; original product Opacity0.1 and original ±15% luminance/saturation criteria unchanged. Actual engine/runner0/0; outer tool143 although run-recorded now persisted its runner0 result. The intermittent outer-process observation remains #2503. Engine207.36seconds. No build/import/export/master-copy/recompile/save/chmod/global-policy/PMREM activation.
+
+Same accepted250asset/d968 world and original June21@14 clear/off patio pose/VFOV72/640x360 as the preceding AO isolation. One transient MID inherits the original MIC/master and changes only effective Opacity to0; original/local/effective PBR, static switches, parent chain and35slots are checked per frame. The original before/after images have0changed decodedRGB pixels. Opacity0 changes38704pixels, maximum RGBdelta[48,50,55]. Actual material rendering responds. All250authored read-only/byteexact, wholeGenerated/export/503dependencies exact, state and35effective bindings restored.
+
+The frozen original2388 meter/ROI/cached canonical web/clear-web data were reused without another browser or new thresholds. Its formula reproduced all six historical PNG/ROI results (exact luminance, saturation error below1e-14). Current original glass passes doorY1.011316/S0.859284 and lowerY1.030933/S0.922922; upperY1.013279/S1.333321 fails saturation. Native clear versus matched web clear: doorY1.099743/S0.858636 passes; lowerY0.966230/S0.569402 fails; upperY1.042914/S1.059837 passes. Thus underlying opaque lighting alone does not explain the upper-glass failure; lower clear has its own background discrepancy. No old failure is counted as passed.
+
+AO0 previously changed0pixels through a copied-master/MIC route, whereas this transient-original-MID Opacity0 responds. That proves original material response, not that a newly copied/compiled graph reached the GPU. The next one-shot control uses the same copied route with ConstantOpacity0, retaining original scalar parameters, before drawing an indirect-light conclusion. No arbitrary alpha/gain product fix is proposed.
+
+All raw images reviewed. This is causal evidence, not whole-frame parity or product acceptance. CPU VulkanSM5 only. Original-only evidence; no downstream web change.

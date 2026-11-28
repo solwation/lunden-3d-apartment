@@ -1,0 +1,29 @@
+{
+  "actualNativeAOOutcome": "all3canonicalframesdecodedRGBidentical, graphAOConstant0/35bindings/restoreverified; notindirectsuppressionproof",
+  "sourceFacts": {
+    "translator": "HLSLMaterialTranslator.cpp1645 compiles MP_AmbientOcclusion unconditionally before translucency refractionbranch",
+    "getter": "MaterialTemplate.ush4129\u20134145 reads/saturates input, editoroverride mayapply; noactualoverrideuniformcaptured",
+    "recompile": "MaterialEditingLibrary.cpp984\u20131025 explicitly updatesallchildinstances via FMaterialUpdateContext andPostEditChange, hence missingUpdateMaterialInstance NOTproven"
+  },
+  "stillUnknown": [
+    "ActualGPUAOvalue/currentcompiledpermutation",
+    "NativeIBL/diffusecontribution mayalreadybezero",
+    "No runtimeuniform/compiledshaderreadback toestablish editorAOoverride"
+  ],
+  "chosenNextControl": "One original\u2192transientMIDOpacity0\u2192original canonicalpatio with35effectivebindings/actualOpacity/PBRreadback, no copiedmaster/compiler/assetwrite",
+  "why": "Positive actualglassresponse tests materialrenderpath withoutchangingBRDF/gain/policy; reproducespriorsuccessfulpublicclear-vs-clear diagnosisoncurrentbaseline",
+  "helper": {
+    "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2388/forward-ao/opacity-probe.py",
+    "sha256": "94dbcfa98df95970c554be9d1e189a323de02fd84d5d4bb154a8486d592c8940",
+    "api": "prepare(world)->bind(mode),restore(),report; modesoriginal/opacity-zero"
+  },
+  "provenAPIReference": "S2388/recovery-v2.py143\u2013161 actual priorrun; parameterreadback copiedunchangedfromS2322-final/probe-after-production-v2.py35\u201381",
+  "MaterialCPP": {
+    "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2388/forward-ao/Material.cpp",
+    "SDKzip": "/mnt/d/UnrealDownloads/Linux_Unreal_Engine_5.8.4.zip",
+    "entry": "Engine/Source/Runtime/Engine/Private/Materials/Material.cpp",
+    "actualBytesExact": true,
+    "sha256": "465dd13a01a111aead938021cb57038dd03fab0664d6c835504fd08baa24abca"
+  },
+  "noNativeOrBrowserExecutedHere": true
+}

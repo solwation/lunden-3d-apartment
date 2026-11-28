@@ -1,0 +1,748 @@
+{
+  "classification": "Unchanged original2388ROIs/metrics/bands CPUreuse; noNode/browser/UE/newcapture",
+  "contractSHA256": "e8a737d787a132776c48fb8051ac7eeb9df115a7e5354e428ace1a8b7fd54131",
+  "sourceExecutedCanonicalCache": "/home/devcontainers/.local/state/lunden-codex-20261127/2388/paired-product-v3/glazing-gate.json",
+  "canonicalCacheSHA256": "35e1767eb5c5a3605444907963322c1ddbd9120d34aa94ec963b8df398241b9e",
+  "cachedWebStatsReusedWithoutRedecodingJPEG": true,
+  "method": "PILnativeopaquePNG RGB; JSroundpositive=floor(x+.5), canonicallinearRec709Yrounded4 and meanpixelHSV-S; actualsixoldPNG/ROIcachedcanonicalparityverified",
+  "cpuAgainstPriorExecutedCanonical": [
+    {
+      "shot": "patio-forward",
+      "region": "door-interior",
+      "sameYandS": true
+    },
+    {
+      "shot": "patio-forward",
+      "region": "window-interior",
+      "sameYandS": true
+    },
+    {
+      "shot": "patio-forward",
+      "region": "upper-glass-interior",
+      "sameYandS": true
+    },
+    {
+      "shot": "patio-clear-diagnostic",
+      "region": "door-interior",
+      "sameYandS": true
+    },
+    {
+      "shot": "patio-clear-diagnostic",
+      "region": "window-interior",
+      "sameYandS": true
+    },
+    {
+      "shot": "patio-clear-diagnostic",
+      "region": "upper-glass-interior",
+      "sameYandS": true
+    }
+  ],
+  "currentPostflight": "/home/devcontainers/.local/state/lunden-codex-20261127/2388/forward-ao/native/postflight-opacity-v1.json",
+  "currentRawInputs": {
+    "patio-original-before": "13ba8a82fffcc72ceadb4f4ea57a75b8b5d5352cdc3dbc75f2b2517beb7d6136",
+    "patio-opacity-zero": "880d0308e4a9a95bdc35bd8010c4e43b100b9e25f4c4fc4042bd6529a05be5ad",
+    "patio-original-after": "50bcd9192d24f308747800138915a84431b80ecc59f3d1634c2a8a1a704bd6ac"
+  },
+  "rows": [
+    {
+      "shot": "patio-original-before",
+      "region": "door-interior",
+      "reference": "original-web",
+      "native": {
+        "srgb": [
+          155.7,
+          148.8,
+          137.1
+        ],
+        "luminance": 0.3396,
+        "saturation": 0.15430252789803248,
+        "warmth": 1.135,
+        "pixelRect": [
+          196,
+          237,
+          44,
+          87
+        ]
+      },
+      "web": {
+        "srgb": [
+          152.9,
+          143.8,
+          132.5
+        ],
+        "luminance": 0.3358,
+        "saturation": 0.17957105340328994,
+        "warmth": 1.154
+      },
+      "ratios": {
+        "luminance": 1.01131625967838,
+        "saturation": 0.8592839712951502
+      },
+      "withinOriginalBand": true
+    },
+    {
+      "shot": "patio-original-before",
+      "region": "door-interior",
+      "reference": "clear-web-diagnostic",
+      "native": {
+        "srgb": [
+          155.7,
+          148.8,
+          137.1
+        ],
+        "luminance": 0.3396,
+        "saturation": 0.15430252789803248,
+        "warmth": 1.135,
+        "pixelRect": [
+          196,
+          237,
+          44,
+          87
+        ]
+      },
+      "web": {
+        "srgb": [
+          148,
+          134.8,
+          120.7
+        ],
+        "luminance": 0.3118,
+        "saturation": 0.24652221145680225,
+        "warmth": 1.226
+      },
+      "ratios": {
+        "luminance": 1.0891597177677999,
+        "saturation": 0.6259173442676612
+      },
+      "withinOriginalBand": false
+    },
+    {
+      "shot": "patio-original-before",
+      "region": "window-interior",
+      "reference": "original-web",
+      "native": {
+        "srgb": [
+          154.5,
+          153.9,
+          141.3
+        ],
+        "luminance": 0.4119,
+        "saturation": 0.1499748832281582,
+        "warmth": 1.093,
+        "pixelRect": [
+          332,
+          218,
+          34,
+          73
+        ]
+      },
+      "web": {
+        "srgb": [
+          154.7,
+          151.6,
+          141.3
+        ],
+        "luminance": 0.4463,
+        "saturation": 0.14547484492705778,
+        "warmth": 1.094
+      },
+      "ratios": {
+        "luminance": 0.922921801478826,
+        "saturation": 1.0309334462831479
+      },
+      "withinOriginalBand": true
+    },
+    {
+      "shot": "patio-original-before",
+      "region": "window-interior",
+      "reference": "clear-web-diagnostic",
+      "native": {
+        "srgb": [
+          154.5,
+          153.9,
+          141.3
+        ],
+        "luminance": 0.4119,
+        "saturation": 0.1499748832281582,
+        "warmth": 1.093,
+        "pixelRect": [
+          332,
+          218,
+          34,
+          73
+        ]
+      },
+      "web": {
+        "srgb": [
+          149.6,
+          143,
+          129.4
+        ],
+        "luminance": 0.4353,
+        "saturation": 0.253641198861344,
+        "warmth": 1.156
+      },
+      "ratios": {
+        "luminance": 0.9462439696760854,
+        "saturation": 0.5912875506874723
+      },
+      "withinOriginalBand": false
+    },
+    {
+      "shot": "patio-original-before",
+      "region": "upper-glass-interior",
+      "reference": "original-web",
+      "native": {
+        "srgb": [
+          227.9,
+          219.0,
+          202.0
+        ],
+        "luminance": 0.7173,
+        "saturation": 0.11577099921519418,
+        "warmth": 1.128,
+        "pixelRect": [
+          199,
+          20,
+          72,
+          43
+        ]
+      },
+      "web": {
+        "srgb": [
+          224.4,
+          217.5,
+          205.3
+        ],
+        "luminance": 0.7079,
+        "saturation": 0.08682905554594429,
+        "warmth": 1.093
+      },
+      "ratios": {
+        "luminance": 1.013278711682441,
+        "saturation": 1.3333209544578737
+      },
+      "withinOriginalBand": false
+    },
+    {
+      "shot": "patio-original-before",
+      "region": "upper-glass-interior",
+      "reference": "clear-web-diagnostic",
+      "native": {
+        "srgb": [
+          227.9,
+          219.0,
+          202.0
+        ],
+        "luminance": 0.7173,
+        "saturation": 0.11577099921519418,
+        "warmth": 1.128,
+        "pixelRect": [
+          199,
+          20,
+          72,
+          43
+        ]
+      },
+      "web": {
+        "srgb": [
+          227.8,
+          216.7,
+          201.1
+        ],
+        "luminance": 0.7084,
+        "saturation": 0.11920546821272975,
+        "warmth": 1.133
+      },
+      "ratios": {
+        "luminance": 1.0125635234330888,
+        "saturation": 0.9711886623237238
+      },
+      "withinOriginalBand": true
+    },
+    {
+      "shot": "patio-opacity-zero",
+      "region": "door-interior",
+      "reference": "original-web",
+      "native": {
+        "srgb": [
+          157.2,
+          145.8,
+          131.5
+        ],
+        "luminance": 0.3429,
+        "saturation": 0.21167294211628,
+        "warmth": 1.195,
+        "pixelRect": [
+          196,
+          237,
+          44,
+          87
+        ]
+      },
+      "web": {
+        "srgb": [
+          152.9,
+          143.8,
+          132.5
+        ],
+        "luminance": 0.3358,
+        "saturation": 0.17957105340328994,
+        "warmth": 1.154
+      },
+      "ratios": {
+        "luminance": 1.021143537820131,
+        "saturation": 1.1787698412666432
+      },
+      "withinOriginalBand": false
+    },
+    {
+      "shot": "patio-opacity-zero",
+      "region": "door-interior",
+      "reference": "clear-web-diagnostic",
+      "native": {
+        "srgb": [
+          157.2,
+          145.8,
+          131.5
+        ],
+        "luminance": 0.3429,
+        "saturation": 0.21167294211628,
+        "warmth": 1.195,
+        "pixelRect": [
+          196,
+          237,
+          44,
+          87
+        ]
+      },
+      "web": {
+        "srgb": [
+          148,
+          134.8,
+          120.7
+        ],
+        "luminance": 0.3118,
+        "saturation": 0.24652221145680225,
+        "warmth": 1.226
+      },
+      "ratios": {
+        "luminance": 1.0997434252726106,
+        "saturation": 0.8586363916882643
+      },
+      "withinOriginalBand": true
+    },
+    {
+      "shot": "patio-opacity-zero",
+      "region": "window-interior",
+      "reference": "original-web",
+      "native": {
+        "srgb": [
+          152.1,
+          147.7,
+          134.0
+        ],
+        "luminance": 0.4206,
+        "saturation": 0.14442388234314035,
+        "warmth": 1.135,
+        "pixelRect": [
+          332,
+          218,
+          34,
+          73
+        ]
+      },
+      "web": {
+        "srgb": [
+          154.7,
+          151.6,
+          141.3
+        ],
+        "luminance": 0.4463,
+        "saturation": 0.14547484492705778,
+        "warmth": 1.094
+      },
+      "ratios": {
+        "luminance": 0.9424154156397042,
+        "saturation": 0.9927756404590471
+      },
+      "withinOriginalBand": true
+    },
+    {
+      "shot": "patio-opacity-zero",
+      "region": "window-interior",
+      "reference": "clear-web-diagnostic",
+      "native": {
+        "srgb": [
+          152.1,
+          147.7,
+          134.0
+        ],
+        "luminance": 0.4206,
+        "saturation": 0.14442388234314035,
+        "warmth": 1.135,
+        "pixelRect": [
+          332,
+          218,
+          34,
+          73
+        ]
+      },
+      "web": {
+        "srgb": [
+          149.6,
+          143,
+          129.4
+        ],
+        "luminance": 0.4353,
+        "saturation": 0.253641198861344,
+        "warmth": 1.156
+      },
+      "ratios": {
+        "luminance": 0.9662301860785664,
+        "saturation": 0.5694023013275986
+      },
+      "withinOriginalBand": false
+    },
+    {
+      "shot": "patio-opacity-zero",
+      "region": "upper-glass-interior",
+      "reference": "original-web",
+      "native": {
+        "srgb": [
+          232.2,
+          221.6,
+          203.3
+        ],
+        "luminance": 0.7388,
+        "saturation": 0.12633837059017955,
+        "warmth": 1.142,
+        "pixelRect": [
+          199,
+          20,
+          72,
+          43
+        ]
+      },
+      "web": {
+        "srgb": [
+          224.4,
+          217.5,
+          205.3
+        ],
+        "luminance": 0.7079,
+        "saturation": 0.08682905554594429,
+        "warmth": 1.093
+      },
+      "ratios": {
+        "luminance": 1.043650233083769,
+        "saturation": 1.4550241252287892
+      },
+      "withinOriginalBand": false
+    },
+    {
+      "shot": "patio-opacity-zero",
+      "region": "upper-glass-interior",
+      "reference": "clear-web-diagnostic",
+      "native": {
+        "srgb": [
+          232.2,
+          221.6,
+          203.3
+        ],
+        "luminance": 0.7388,
+        "saturation": 0.12633837059017955,
+        "warmth": 1.142,
+        "pixelRect": [
+          199,
+          20,
+          72,
+          43
+        ]
+      },
+      "web": {
+        "srgb": [
+          227.8,
+          216.7,
+          201.1
+        ],
+        "luminance": 0.7084,
+        "saturation": 0.11920546821272975,
+        "warmth": 1.133
+      },
+      "ratios": {
+        "luminance": 1.0429136081309993,
+        "saturation": 1.0598370400653154
+      },
+      "withinOriginalBand": true
+    },
+    {
+      "shot": "patio-original-after",
+      "region": "door-interior",
+      "reference": "original-web",
+      "native": {
+        "srgb": [
+          155.7,
+          148.8,
+          137.1
+        ],
+        "luminance": 0.3396,
+        "saturation": 0.15430252789803248,
+        "warmth": 1.135,
+        "pixelRect": [
+          196,
+          237,
+          44,
+          87
+        ]
+      },
+      "web": {
+        "srgb": [
+          152.9,
+          143.8,
+          132.5
+        ],
+        "luminance": 0.3358,
+        "saturation": 0.17957105340328994,
+        "warmth": 1.154
+      },
+      "ratios": {
+        "luminance": 1.01131625967838,
+        "saturation": 0.8592839712951502
+      },
+      "withinOriginalBand": true
+    },
+    {
+      "shot": "patio-original-after",
+      "region": "door-interior",
+      "reference": "clear-web-diagnostic",
+      "native": {
+        "srgb": [
+          155.7,
+          148.8,
+          137.1
+        ],
+        "luminance": 0.3396,
+        "saturation": 0.15430252789803248,
+        "warmth": 1.135,
+        "pixelRect": [
+          196,
+          237,
+          44,
+          87
+        ]
+      },
+      "web": {
+        "srgb": [
+          148,
+          134.8,
+          120.7
+        ],
+        "luminance": 0.3118,
+        "saturation": 0.24652221145680225,
+        "warmth": 1.226
+      },
+      "ratios": {
+        "luminance": 1.0891597177677999,
+        "saturation": 0.6259173442676612
+      },
+      "withinOriginalBand": false
+    },
+    {
+      "shot": "patio-original-after",
+      "region": "window-interior",
+      "reference": "original-web",
+      "native": {
+        "srgb": [
+          154.5,
+          153.9,
+          141.3
+        ],
+        "luminance": 0.4119,
+        "saturation": 0.1499748832281582,
+        "warmth": 1.093,
+        "pixelRect": [
+          332,
+          218,
+          34,
+          73
+        ]
+      },
+      "web": {
+        "srgb": [
+          154.7,
+          151.6,
+          141.3
+        ],
+        "luminance": 0.4463,
+        "saturation": 0.14547484492705778,
+        "warmth": 1.094
+      },
+      "ratios": {
+        "luminance": 0.922921801478826,
+        "saturation": 1.0309334462831479
+      },
+      "withinOriginalBand": true
+    },
+    {
+      "shot": "patio-original-after",
+      "region": "window-interior",
+      "reference": "clear-web-diagnostic",
+      "native": {
+        "srgb": [
+          154.5,
+          153.9,
+          141.3
+        ],
+        "luminance": 0.4119,
+        "saturation": 0.1499748832281582,
+        "warmth": 1.093,
+        "pixelRect": [
+          332,
+          218,
+          34,
+          73
+        ]
+      },
+      "web": {
+        "srgb": [
+          149.6,
+          143,
+          129.4
+        ],
+        "luminance": 0.4353,
+        "saturation": 0.253641198861344,
+        "warmth": 1.156
+      },
+      "ratios": {
+        "luminance": 0.9462439696760854,
+        "saturation": 0.5912875506874723
+      },
+      "withinOriginalBand": false
+    },
+    {
+      "shot": "patio-original-after",
+      "region": "upper-glass-interior",
+      "reference": "original-web",
+      "native": {
+        "srgb": [
+          227.9,
+          219.0,
+          202.0
+        ],
+        "luminance": 0.7173,
+        "saturation": 0.11577099921519418,
+        "warmth": 1.128,
+        "pixelRect": [
+          199,
+          20,
+          72,
+          43
+        ]
+      },
+      "web": {
+        "srgb": [
+          224.4,
+          217.5,
+          205.3
+        ],
+        "luminance": 0.7079,
+        "saturation": 0.08682905554594429,
+        "warmth": 1.093
+      },
+      "ratios": {
+        "luminance": 1.013278711682441,
+        "saturation": 1.3333209544578737
+      },
+      "withinOriginalBand": false
+    },
+    {
+      "shot": "patio-original-after",
+      "region": "upper-glass-interior",
+      "reference": "clear-web-diagnostic",
+      "native": {
+        "srgb": [
+          227.9,
+          219.0,
+          202.0
+        ],
+        "luminance": 0.7173,
+        "saturation": 0.11577099921519418,
+        "warmth": 1.128,
+        "pixelRect": [
+          199,
+          20,
+          72,
+          43
+        ]
+      },
+      "web": {
+        "srgb": [
+          227.8,
+          216.7,
+          201.1
+        ],
+        "luminance": 0.7084,
+        "saturation": 0.11920546821272975,
+        "warmth": 1.133
+      },
+      "ratios": {
+        "luminance": 1.0125635234330888,
+        "saturation": 0.9711886623237238
+      },
+      "withinOriginalBand": true
+    }
+  ],
+  "glassContribution": [
+    {
+      "region": "door-interior",
+      "nativeGlassMinusClear": {
+        "luminance": -0.0032999999999999696,
+        "saturation": -0.05737041421824751
+      },
+      "sourceGlassMinusClear": {
+        "luminance": 0.023999999999999966,
+        "saturation": -0.06695115805351232
+      },
+      "nativeClearVsSourceClear": {
+        "luminance": 1.0997434252726106,
+        "saturation": 0.8586363916882643
+      }
+    },
+    {
+      "region": "window-interior",
+      "nativeGlassMinusClear": {
+        "luminance": -0.008699999999999986,
+        "saturation": 0.005551000885017837
+      },
+      "sourceGlassMinusClear": {
+        "luminance": 0.010999999999999954,
+        "saturation": -0.10816635393428622
+      },
+      "nativeClearVsSourceClear": {
+        "luminance": 0.9662301860785664,
+        "saturation": 0.5694023013275986
+      }
+    },
+    {
+      "region": "upper-glass-interior",
+      "nativeGlassMinusClear": {
+        "luminance": -0.021499999999999964,
+        "saturation": -0.010567371374985368
+      },
+      "sourceGlassMinusClear": {
+        "luminance": -0.000500000000000056,
+        "saturation": -0.032376412666785453
+      },
+      "nativeClearVsSourceClear": {
+        "luminance": 1.0429136081309993,
+        "saturation": 1.0598370400653154
+      }
+    }
+  ],
+  "limits": [
+    "Originalwebcomparisonsretainacceptance; clearwebonlydiagnostic",
+    "NoGPU/compiledpermutationprooforPMREMactivation",
+    "ROI/method/thresholdunchanged"
+  ]
+}

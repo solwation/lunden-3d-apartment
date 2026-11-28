@@ -1,0 +1,25 @@
+{
+  "nativeExit": 0,
+  "nativePassed": true,
+  "runnerExit": 0,
+  "toolOuterExit": 143,
+  "seconds": 207.36,
+  "all250AuthoredExactReadonly": true,
+  "allGeneratedExportAnd503DependenciesExact": true,
+  "stateAnd35EffectiveBindingsRestored": true,
+  "originalBeforeAfterChangedRGBPixels": 0,
+  "opacityZeroChangedRGBPixels": 38704,
+  "opacityZeroMaximumRGBDelta": [
+    48,
+    50,
+    55
+  ],
+  "opacityZeroMeanAbsoluteRGBDelta": [
+    0.8111371527777778,
+    0.686484375,
+    0.7398177083333334
+  ],
+  "strongSameStateAttribution": true,
+  "observedOpacityResponse": true,
+  "opacityIsolationOnlyNotAlphaProductAcceptance": true
+}
