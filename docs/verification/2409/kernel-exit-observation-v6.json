@@ -1,0 +1,9 @@
+{
+  "pid": 250164,
+  "startTimeTicks": "14941843",
+  "observedZombieExit": true,
+  "exitCode": 0,
+  "method": "Read-only /proc/pid/stat field52 while Z; never inferred from script completion",
+  "kernelWaitStatus": 0,
+  "observedAt": "2026-11-28T05:34:22.196680+00:00"
+}

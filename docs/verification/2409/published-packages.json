@@ -1,48 +1,42 @@
 {
-  "classification": "Partial source-tone improvement; whole2409 visual criteria still fail",
-  "actualNativeSource": "2a01339854f7340b69ed585868504ea8b7075bbc",
+  "classification": "Final accepted V6 source point-light conversion",
+  "actualNativeSource": "14184e22da8704ec2bfadd516aa3ed61671975fb",
   "files": [
     {
       "path": "unreal/Lunden/Content/Lunden/Lighting/M_LundenPrecipitation.uasset",
-      "sha256": "0b10e2a57caaf568386a295c349f4fcb7ec95c039fa30ca96c71708dc7d616f8",
+      "sha256": "5b6d722252e9574e77597fc4ff8d5ee84f4a7ba616bcd257258b870d2674ded1",
       "bytes": 57827,
-      "previousSHA256": "5d40ce63290bca55bd7cff3efe81360c927e7bb3b767754d27cef34c01886021"
-    },
-    {
-      "path": "unreal/Lunden/Content/Lunden/Lighting/BP_LundenSky.uasset",
-      "sha256": "af609b495a5a1ab6fcba8f3da31856358c1796581afc5a6a386828aec7d97519",
-      "bytes": 1448199,
-      "previousSHA256": "1fca7141b1db0b7b371deeae2dd1c15aaad3921aa21bf4fcc4b8c665c381be50"
-    },
-    {
-      "path": "unreal/Lunden/Content/Lunden/Lighting/M_LundenWindowDaylight.uasset",
-      "sha256": "97534141012fb303754203283f1fb77e92247ba40c6d06865d6bae24c3138975",
-      "bytes": 29202,
-      "previousSHA256": "e822317848727b9a2462d1700000f6d9ff4ce32868841ba0d42fb95d7e07b0c6"
-    },
-    {
-      "path": "unreal/Lunden/Content/Lunden/Lighting/BP_LundenLamp.uasset",
-      "sha256": "1f28f7e64211b07b98d06980837694d9829e4e671407c6bbc2371e6963d2a86a",
-      "bytes": 802399,
-      "previousSHA256": "3c87c4338a402a50d2bb48d33d053eee5755b8b25c5a370f361a090d9a6f2ea7"
-    },
-    {
-      "path": "unreal/Lunden/Content/Lunden/Lighting/MPC_LundenWeather.uasset",
-      "sha256": "62d582819cc46638023185e18faac4441665d7b245f0ff69236c49d97b5aa63b",
-      "bytes": 9209,
-      "previousSHA256": "8346d9cdda5828c6e35536d24cbfdb2b6760dc6e6e346ce4fe24f8b87d6683c4"
-    },
-    {
-      "path": "unreal/Lunden/Content/Lunden/Lighting/T_LundenHemisphere.uasset",
-      "sha256": "80af5ad3497ab4a89113244014cb64640c427f95c9ae2cee9f0ada62a69ad32b",
-      "bytes": 10640,
-      "previousSHA256": "87f0ef3336c548aa91fbf952a053f19d476ccef342335745140239b606c6a2b2"
+      "previousSHA256": "0b10e2a57caaf568386a295c349f4fcb7ec95c039fa30ca96c71708dc7d616f8"
     },
     {
       "path": "unreal/Lunden/Content/Lunden/Lighting/M_LundenNeutralTonemap.uasset",
-      "sha256": "24dbe358dd090da23c22946ae7180f9ab7fca31a4bf839035b3fe0a52d0c2e4f",
-      "bytes": 17042,
-      "previousSHA256": "b94aaa0c89f6b6dfe189f25bbf3eefef8a419511388334e24a18aa342bc28084"
+      "sha256": "e0da25bff4161016dc60a92d90c1a9a97f85f9084e56f4888935dea564db88a6",
+      "bytes": 17756,
+      "previousSHA256": "24dbe358dd090da23c22946ae7180f9ab7fca31a4bf839035b3fe0a52d0c2e4f"
+    },
+    {
+      "path": "unreal/Lunden/Content/Lunden/Lighting/M_LundenWindowDaylight.uasset",
+      "sha256": "21c318431080afd0d504f992a8e7561c193f2147725a261576aa1b3bec35236f",
+      "bytes": 29202,
+      "previousSHA256": "97534141012fb303754203283f1fb77e92247ba40c6d06865d6bae24c3138975"
+    },
+    {
+      "path": "unreal/Lunden/Content/Lunden/Lighting/BP_LundenLamp.uasset",
+      "sha256": "44683069a4f9a7850f66cfa2cebc72017218a9009126c83363509623e555e8a7",
+      "bytes": 802399,
+      "previousSHA256": "1f28f7e64211b07b98d06980837694d9829e4e671407c6bbc2371e6963d2a86a"
+    },
+    {
+      "path": "unreal/Lunden/Content/Lunden/Lighting/BP_LundenSky.uasset",
+      "sha256": "32036c6381a8cc3ce85e756194285f0221880bc36627735158025a4d2fd935b3",
+      "bytes": 1448199,
+      "previousSHA256": "af609b495a5a1ab6fcba8f3da31856358c1796581afc5a6a386828aec7d97519"
+    },
+    {
+      "path": "unreal/Lunden/Content/Lunden/Lighting/T_LundenHemisphere.uasset",
+      "sha256": "deb04b7b5d4a7d9a7f22438d0daf953943820f030e30371f75bae709ebeb238a",
+      "bytes": 10640,
+      "previousSHA256": "80af5ad3497ab4a89113244014cb64640c427f95c9ae2cee9f0ada62a69ad32b"
     }
   ]
 }

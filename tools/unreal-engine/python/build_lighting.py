@@ -81,6 +81,9 @@ STAMP = LEVEL_DIR / "build-stamp.json"
 # points from src/lights.js, the small lamps' pool lights from LIGHTING.floorLamp and their specs), attenuation radius =
 # the web's range. CANDELA_PER_WEB is set by mean luminance and colour of matching wall/ceiling crops of the 22:00 pairs
 # (docs/verification/2307/), *guess* (the web's lamps are four pool lights plus a shader wash, not 36 point lights).
+# #2409 exception: the two exact literal patio string points preserve source-linear
+# candela after the existing base exposure, via patio_tone.lamp_candela; all room
+# calibration remains unchanged. No measured crop ratio sets that conversion.
 # #2313 locked the exposure about 1.8 EV darker (EXPOSURE_BIAS) and took the web's night level out of the fill, so the lamps
 # carry the evening rooms again: 2.8, the middle of the 2.66 ... 2.98 that keeps the 22:00 living room and upper floor
 # within 0.8 ... 1.25 x the web's mean luminance (two-exposure trial, docs/verification/2313/), *guess*.
@@ -194,7 +197,7 @@ def lamp_rows(m):
             patio_tone.validate_source(l["patioBulbs"])
         rows.append({"id": l["id"], "kind": l["kind"], "level": l["level"], "room": l.get("room"), "name": l.get("name"),
                      "stairVisibility": l.get("stairVisibility"), "seasonTags": season_tags({}, l), "patioBulbs": l.get("patioBulbs"), "patioDusk": l.get("patioDusk"),
-                     "xyz": l["position"]["unreal"], "candela": CANDELA_PER_WEB * (l.get("intensity") or 0.0),
+                     "xyz": l["position"]["unreal"], "candela": patio_tone.lamp_candela(l, EXPOSURE_BIAS, CANDELA_PER_WEB),
                      "radius": 100.0 * (l.get("distance") or LAMP_RANGE), "colour": l.get("color") or LAMP_COLOUR,
                      # the ceiling lamps (the room switches) are by hand only; a small lamp follows the dusk unless `auto: false`
                      "auto": l["kind"] == "lamp" and l.get("auto", True)})

@@ -1,15 +1,15 @@
 {
   "passed": true,
-  "captureSource": "f4df951c7db0c5e6be6702744c469515b98f0160",
+  "captureSource": "14184e22da8704ec2bfadd516aa3ed61671975fb",
   "acceptanceContractSHA256": "b398989d239412dbdd7c2ce45925d8259e51b2a19bc98965a49a06b9ddc2ebeb",
   "correctedWholeReferenceContractSHA256": "1f559812415bdc9a6bbfcd5030957bae510b208833318c45021d3a89545d47b6",
-  "nativeCaptureMetadataSHA256": "a1c4f476d69a0245baa4b204e54e0b3125da74389748d138dd74177541fb224f",
+  "nativeCaptureMetadataSHA256": "3daee32960d299683bafd3b4d0b16386f181a03b2b0c1960445a3558fd6cce21",
   "canonicalToolSHA256": "0a76bf7e7c43ad2e212f2d884806957030ec6dc08ce4c4d9901641f5f80bd1c6",
   "canonicalCommand": [
     "node",
-    "/home/devcontainers/lunden-3d-apartment/tools/unreal-engine/tests/crop-stats.cjs",
-    "/home/devcontainers/.local/state/lunden-codex-20261127/2409/paired-baseline",
-    "/home/devcontainers/.local/state/lunden-codex-20261127/2409/paired-baseline/crops.json",
+    "/home/devcontainers/wt/codex-2409-integration/tools/unreal-engine/tests/crop-stats.cjs",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2409/resume-native/paired-v6",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2409/resume-native/paired-v6/crops.json",
     "--check-stairs",
     "--check-curtains",
     "--check-cabinet"
@@ -23,8 +23,8 @@
         "sha256": "be8023e5a4d1ba5cfb2d4f930273f6792c788658efd47dba6a6c153016af33ac"
       },
       "native": {
-        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2409/native-baseline/product/regressions/unreal-living-room-day.png",
-        "sha256": "91278f4972e8d61c358ea59eb024d3ae5c3b9e01e095e425ef078d4f68aa0775"
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2409/resume-native/native-v6/product/regressions/unreal-living-room-day.png",
+        "sha256": "11fc6676d99cb2346f9228e7da9641858cdb5fca4435c3d60ac07b8d0ebe0595"
       }
     },
     "living-room-evening": {
@@ -33,8 +33,8 @@
         "sha256": "1a6d7cd06c97fbb1729662cece73490a808745d2511124f8dc0a987f0e810c0b"
       },
       "native": {
-        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2409/native-baseline/product/regressions/unreal-living-room-evening.png",
-        "sha256": "2ba6a2e7b8e90f530148f3cc92ae13f7ab1285b3ed6e1c4c0a4416732274ff31"
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2409/resume-native/native-v6/product/regressions/unreal-living-room-evening.png",
+        "sha256": "76b63ab3b6a83ad12af13cbe5a992acd9dc255e56f6a4e7d5f4abecc837c813c"
       }
     },
     "stairs-evening": {
@@ -43,8 +43,8 @@
         "sha256": "48dcb9b61e67c0d499f06d1d253d02251b4930a9bb567f138c6723ddf71574c5"
       },
       "native": {
-        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2409/native-baseline/product/regressions/unreal-stairs-evening.png",
-        "sha256": "789090a36c49a7e71a87edd60719a3675ead96d4bd91e5204d97da1efeae0293"
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2409/resume-native/native-v6/product/regressions/unreal-stairs-evening.png",
+        "sha256": "3140a3dc7fcbc1357b115add7c9199a4d601229a759beaf77781c5b5c9da80d0"
       }
     },
     "upper-floor-evening": {
@@ -53,8 +53,8 @@
         "sha256": "16ed055836f8a6f6487ed1c6d99bfa45be5ceb9ecb2e53b5240c1692ebd7dbb8"
       },
       "native": {
-        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2409/native-baseline/product/regressions/unreal-upper-floor-evening.png",
-        "sha256": "a722cf7f6fe625b48b20e5f193644e8c410a8ad20df9faea5821e65192ce3d5a"
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2409/resume-native/native-v6/product/regressions/unreal-upper-floor-evening.png",
+        "sha256": "d204f3f88c8527f0cce7896c0997888e0adfda787a8fbd7c5dd35385ca868c51"
       }
     }
   },
@@ -84,7 +84,7 @@
     },
     {
       "shot": "living-room-evening",
-      "ratio": 0.94001199760048,
+      "ratio": 0.9424115176964607,
       "passed": true,
       "web": {
         "srgb": [
@@ -97,12 +97,12 @@
       },
       "native": {
         "srgb": [
-          111.3,
-          97.2,
-          74.5
+          111.7,
+          97.4,
+          74.6
         ],
-        "luminance": 0.1567,
-        "warmth": 1.494
+        "luminance": 0.1571,
+        "warmth": 1.497
       }
     },
     {
@@ -443,7 +443,7 @@
       "luminancePassed": true,
       "hueRatios": {
         "R/G": 1.0099365551947035,
-        "B/G": 0.9157517038269468
+        "B/G": 0.9138751634502525
       },
       "existingGuessedHueGuardPassed": true,
       "web": {
@@ -459,10 +459,10 @@
         "srgb": [
           90.4,
           77.9,
-          48.8
+          48.7
         ],
         "luminance": 0.082,
-        "warmth": 1.854
+        "warmth": 1.855
       }
     },
     {

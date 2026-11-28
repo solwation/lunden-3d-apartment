@@ -2,10 +2,10 @@
   "reviewer": "Root",
   "allFiveNativeOriginalsViewed": true,
   "patioWebOriginalViewed": true,
-  "apartmentWebReferences": "Unchanged raw references already reviewed for #2434; hashes checked by the single canonical five-view evaluator",
-  "apartment": "No new fallback/pink material or broad tint regression observed; existing mirror, brick, pendant and local-light differences remain",
-  "patio": "Bulbs visibly brighter and less yellow, fence still darker/yellower than web with different board detail. Original bulb-row and fence-pool gates FAIL. No whole-issue acceptance.",
-  "gpu": "All five checks pass, 172 selected/178 mask pixels, six occluded pixels rejected. Four physical fixtures tested; not universal glass/fog proof.",
-  "formatLimit": "Stock material has no actual input-format query; exact16F-or-R11 union retains documented representation ambiguity",
-  "processLimit": "Actual native0/351.48s/no errors; outer143 and unknown runner retained under #2473. No all-process success claim."
+  "apartmentWebReferences": "Unchanged raw references already reviewed; exact hashes verified by single canonical evaluator",
+  "apartment": "Room palette and material families retained; 22 unchanged acceptance checks pass. Existing mirror, brick, pendant and local-light differences remain.",
+  "patio": "Source bulb colour, localized warm pools and scene shape reviewed in whole frame; original bulb-row and fence-pool gates now pass. Pre-existing paving darkness and fence-board detail differences remain, paving report-only in unchanged original contract.",
+  "gpu": "Actual V5 five-check proof reused with exact selector HLSL and unchanged controller AST; no fresh GPU run claimed.",
+  "formatLimit": "Stock material cannot query input format; exact16F-or-R11 union retains documented representation ambiguity.",
+  "processLimit": "Actual native kernel exit0; incomplete runner/unknown status and outer143 retained under #2473. No all-process success claim."
 }

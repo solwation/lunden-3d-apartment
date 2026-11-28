@@ -1,10 +1,10 @@
-# #2409 source bulb tone exception — verified behavior, partial visual result
+# #2409 source bulb tone and point energy — accepted V6 evidence
 
-This implementation now has actual Linux GPU/controller and apartment evidence,
-but the complete original #2409 visual criteria still FAIL. See the
-[partial-delivery report](README.md) for actual results, process limitations and
-remaining work. No intensity, candela conversion, RGB, roughness, crop or acceptance
-tolerance was changed.
+V6 passes the original bulb-row/fence-pool luminance and warmth criteria and all22
+apartment checks. Root reviewed all five original views. See the [final report](README.md)
+for source14184, actual native exit0, incomplete/unknown runner and outer143 under#2473.
+The source energy helper changes only two patio point IDs; source RGB, global2.8,
+roughness, exposure settings, crops and acceptance tolerances remain unchanged.
 
 The real source bulb is opaque `MeshBasicMaterial`, `toneMapped:false`. The export
 now preserves that boolean from the actual material. Old/missing/true contracts
@@ -54,8 +54,11 @@ These are exactly the engine's R11 packed/unpacked source values. Its isolated
 RGBA16F clean fixture and physical glass/fog/opaque-negative checks passed and
 restored, but the original frame failed. The corrected two-representation selector
 now has actual V5 GPU verification:172 original pixels selected, all four physical
-fixtures and restoration pass. All22 apartment rows pass, while the original
-bulb-row and fence-pool visual gates still FAIL. The old run remains preserved.
+fixtures and restoration pass. All22 apartment rows passed in V5, while its original bulb-row and fence-pool
+visual gates still FAILED. V6 reuses the byte-exact selector HLSL and AST-identical
+identity/MID/controller proof; it does not claim a fresh GPU/controller execution.
+Its new five images pass both original patio fields and all22 apartment rows.
+The failed V5 result remains preserved.
 
 Exact Linux 5.8.4 source chain: `PostProcessing.cpp:459` chooses postprocess
 SceneColorFormat from alpha propagation, independently of base scene format;
@@ -76,7 +79,7 @@ predicate: it already needs 0<t<=1, so t*SceneDepth<=SceneDepth<=bulbDepth; a cl
 cloth remains the closest CustomDepth. Nonopaque/non-mainpass users are rejected.
 
 Offline verification: `python3 tools/unreal-engine/tests/test_patio_tone.py` passes
-three behavioural tests, including 733 actual selector-HLSL cases compiled as CPU
+four behavioural tests, including 733 actual selector-HLSL cases compiled as CPU
 C++ with IEEE float32/float16 transport. Cases include several pre-exposures,
 opaque self-pixels, wrong stencil/occlusion, fog mixtures and a one-half-storage-step
 change. Additional regressions retain the measured original-view R11 tuple,
@@ -85,13 +88,44 @@ and the explicitly documented format ambiguity. The actual reservation collector
 with positive and negative IDs/MIDs/opaque/mask/foreign-user fixtures. Missing or
 changed source tone contracts fail. Python/Node syntax and diff checks pass.
 These offline checks do not substitute for the separate actual GPU and rendered
-results in the partial-delivery report.
+results in the final report.
 
-The two pool lights retain their existing source colour, intensity conversion and
-range. Canonical checks now also require inverse-square falloff, source range and
-zero area-light radius/length. Both engines use the same squared quartic cutoff.
-The older 2.8 candela-per-web-unit assumption is retained; its unit/exposure chain
-has not been independently validated here. The fence-pool outcome must still be
-measured in the original view; a bulb correction cannot be called full #2409.
+The two exact literal patio point IDs now derive candela as
+`sourceIntensity / 2**EXPOSURE_BIAS`: source1.4 becomes8.1988798973 cd with the
+existing bias−2.55. This is a unit/exposure derivation, not a crop-ratio fit.
+Every other light retains `CANDELA_PER_WEB=2.8`; missing patio contracts or unknown
+patio IDs fail rather than silently extending this conversion. No new gain or
+exposure setting was introduced. Colour, inverse-square mode, range and point
+source radius/length remain unchanged.
+
+At the locked June21 23:30 view, actual source exposure is1 and actual Native
+EyeAdaptation is0.1707550436 (the float implementation of2**−2.55). Source
+`PointLight.js:23` defines candela; `WebGLLights.js:358` uploads colour×intensity
+without a legacy PI factor. `lights_pars_begin.glsl.js:56–69` applies inverse
+metre² attenuation and the squared quartic range cutoff. UE5.8.4
+`PointLightComponent.cpp:135` converts candela by10000 for centimetre²;
+`CapsuleLightIntegrate.ush:27–28` applies the inverse squared distance. Thus the
+fixed base exposure must be removed from the two literal point intensities to
+preserve their exposed source energy at this measured night. The old room
+calibration was for pooled room lights plus shader washes and is retained there.
+
+This does not assert complete BRDF or all-distance identity: UE's capsule path
+uses a1cm² distance bias (`DeferredLightingCommon.ush:309`), while Three clamps
+inverse-square distance at0.01m². The CPU energy check includes both actual
+regularizers and the common range window rather than fitting their difference.
+It executes the actual builder row function and checks exact two-ID scope,
+unchanged room conversion, measured-night normalization, and conditional algebra
+for other exposure factors. It is not evidence of runtime transition exposures.
+
+The sling's on/off thresholds are daylight0.3/0.4 (`config.js:6835`,
+`patio.js:663–667`), so it can be active before inDay reaches0. Source exposure
+blends linearly with clear; Native's source graph maps that factor to EV using
+`expoW=ln(expo*ExpRatio)/ln(ExpRatio)`. The intended algebra matches the clear
+factor, but actual dawn/dusk readback has not been verified here; the measured
+night is the basis of this evidence. Actual V6 now passes the unchanged five-frame
+patio/pool and apartment gates: bulb Y0.888563/R-B1.140513 and pool
+Y0.995956/R-B0.975456, APT22/22. These results come from the rendered images,
+not from the unit algebra or reused GPU-selector checks alone. The final report
+keeps native0 distinct from the incomplete/unknown runner and outer143.
 
 Original-only Unreal change. No public web/downstream transfer applies.

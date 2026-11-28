@@ -5,6 +5,7 @@ this selected source colour bypasses BOTH Neutral and tone-mapping exposure, the
 uses the same OETF. No gains, inverse-curve fit, or guessed colour constants.
 """
 import json
+import math
 import struct
 from pathlib import Path
 
@@ -35,6 +36,34 @@ bool sourceBulb = round(CustomStencil.r) == {STENCIL}.0
 return sourceBulb ? Expected.rgb : Neutral.rgb;
 '''
 
+
+
+# These are the source's two literal, shadowless inverse-square point lights,
+# not the room light-pool + shader-wash approximation calibrated with factor2.8.
+SOURCE_POINT_IDS = frozenset({'lamp_ljusslingan_l0_x47_z1522',
+                              'lamp_ljusslingan_l0_x528_z1522'})
+
+
+def lamp_candela(source, base_exposure_bias, legacy_factor):
+    """Preserve exposed source point energy using the existing base exposure.
+
+    Three intensity is candela; UE's10000 converts metre² to centimetre², not
+    an artistic gain. At the measured patio night, source exposure is1 and
+    Native exposure is2**base_bias. Remove only that fixed base factor for these
+    two exact source points; this does not validate every dawn/dusk exposure. Other lamp
+    calibration stays unchanged. UE's near-field regularizer/BRDF still differ.
+    """
+    intensity = source.get('intensity') or 0.0
+    rule = source.get('patioDusk')
+    if not rule:
+        if source['id'] in SOURCE_POINT_IDS:
+            raise ValueError('Source patio point lost its actual dusk contract')
+        return legacy_factor * intensity
+    if source['id'] not in SOURCE_POINT_IDS or source.get('kind') != 'lamp':
+        raise ValueError('Unknown literal patio point identity; no general exposure conversion')
+    if not math.isfinite(intensity) or intensity < 0 or not math.isfinite(base_exposure_bias):
+        raise ValueError('Invalid source point intensity/base exposure')
+    return intensity / (2.0 ** base_exposure_bias)
 
 
 def validate_source(data):

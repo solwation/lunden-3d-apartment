@@ -1,8 +1,8 @@
 {
-  "passed": false,
+  "passed": true,
   "browserBatches": 1,
   "canonicalExitCode": 0,
   "apartmentPassed": true,
-  "patioNumericPassed": false,
+  "patioNumericPassed": true,
   "wholeImageReviewRequired": true
 }

@@ -2,7 +2,7 @@
   "classification": "Unchanged issue2409 acceptance; paving report only; source-tone candidate; unchanged complete pool acceptance",
   "contractSHA256": "67241e35bbeb5c835f5922dfe4a0fa2db82c8828abb10a533a303d93ee266387",
   "canonicalToolSHA256": "0a76bf7e7c43ad2e212f2d884806957030ec6dc08ce4c4d9901641f5f80bd1c6",
-  "nativeCaptureMetadataSHA256": "d6242b777d7e52d8059080485b3d5deee0552f1e3f0055c2d60431a386e92a48",
+  "nativeCaptureMetadataSHA256": "2d1727024387ec149bc7e9f34ed7beff5d3413b70a21631f47e9d6bc5fef53c8",
   "browserBatches": 1,
   "inputs": {
     "patio-parasol-dusk": {
@@ -11,8 +11,8 @@
         "sha256": "0b797aea107fbeb4fa022044f0c3aaa633da9f05c6461630cca21374f79e6033"
       },
       "native": {
-        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2409/resume-native/native-v5/product/target/unreal-patio-parasol-dusk.png",
-        "sha256": "b4500755d613d68c95752654e63d53fbe014905de10d969a72de2951d5a259b2"
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2409/resume-native/native-v6/product/target/unreal-patio-parasol-dusk.png",
+        "sha256": "22a4b56e20b413671598136e4cac7859d6dc2cc4067654f025467633ef407451"
       }
     }
   },
@@ -21,9 +21,9 @@
       "shot": "patio-parasol-dusk",
       "region": "bulb-row",
       "target": true,
-      "passed": false,
-      "luminanceRatio": 0.6260997067448681,
-      "warmthRatio": 1.2547732696897376,
+      "passed": true,
+      "luminanceRatio": 0.8885630498533725,
+      "warmthRatio": 1.1405131264916468,
       "web": {
         "srgb": [
           94.6,
@@ -35,21 +35,21 @@
       },
       "native": {
         "srgb": [
-          73.6,
-          55.8,
-          17.5
+          90.4,
+          68.6,
+          23.6
         ],
-        "luminance": 0.0854,
-        "warmth": 4.206
+        "luminance": 0.1212,
+        "warmth": 3.823
       }
     },
     {
       "shot": "patio-parasol-dusk",
       "region": "fence-pool",
       "target": true,
-      "passed": false,
-      "luminanceRatio": 0.4792719919110212,
-      "warmthRatio": 1.6215081543678347,
+      "passed": true,
+      "luminanceRatio": 0.9959555106167847,
+      "warmthRatio": 0.9754561601808495,
       "web": {
         "srgb": [
           102.4,
@@ -61,12 +61,12 @@
       },
       "native": {
         "srgb": [
-          71.8,
-          51.8,
-          7.1
+          101.2,
+          74.3,
+          16.7
         ],
-        "luminance": 0.0474,
-        "warmth": 10.042
+        "luminance": 0.0985,
+        "warmth": 6.041
       }
     },
     {
@@ -74,8 +74,8 @@
       "region": "paving",
       "target": false,
       "passed": null,
-      "luminanceRatio": 0.46964490263459335,
-      "warmthRatio": 1.2567049808429118,
+      "luminanceRatio": 0.5177548682703321,
+      "warmthRatio": 1.2562792677735206,
       "web": {
         "srgb": [
           101.6,
@@ -87,15 +87,15 @@
       },
       "native": {
         "srgb": [
-          69.9,
-          51.6,
-          23.7
+          74.1,
+          54.8,
+          25.1
         ],
-        "luminance": 0.041,
-        "warmth": 2.952
+        "luminance": 0.0452,
+        "warmth": 2.951
       }
     }
   ],
-  "numericPassed": false,
+  "numericPassed": true,
   "wholeImageReviewRequired": true
 }

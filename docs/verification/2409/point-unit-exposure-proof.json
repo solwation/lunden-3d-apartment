@@ -1,0 +1,34 @@
+{
+  "classification": "PRIVATE source-derived literal patio point normalization, not visual acceptance",
+  "sourceIntensity": 1.4,
+  "existingExposureBias": -2.55,
+  "derivedBaseExposure": 0.17075503209429946,
+  "nativeCandela": 8.198879897295502,
+  "legacyRoomFactorUnchanged": 2.8,
+  "sourceFiles": {
+    "node_modules/three/src/lights/PointLight.js": "5b46439808967d15310c46d355abfedb98124fb5d2ff016cfa09211018f02c4f",
+    "node_modules/three/src/renderers/webgl/WebGLLights.js": "96b9b68a9b9108c6f98a01e9d1ec5174453c9d66f2158425924c333a3ceac58c",
+    "node_modules/three/src/renderers/shaders/ShaderChunk/lights_pars_begin.glsl.js": "cebde39ab2b24d5a2c059ad869743464ab2470624a492f57d2a07b1ea88cfa78",
+    "src/lights.js": "d6d849368edc24a528d95430e9ceb6f869375867a277b4ebcd2c032cbb572611",
+    "src/daycycle.js": "a1bab8007b2fafc6defebf3d09bb9188bd2183c07b6c9cbdb841db0210d6e51b",
+    "src/config.js": "a36e730774ee48527ae9b1ac7e2f444ca0fe6e8cbf02e15d1da56cfcdc3f94e0"
+  },
+  "engineFiles": {
+    "/mnt/d/UnrealEngine/5.8.4/Engine/Shaders/Private/CapsuleLightIntegrate.ush": "ab9b14123ead4faec6604000a05abbcb3ea1ab832b9cdea2dab6772a2ca5a591",
+    "/mnt/d/UnrealEngine/5.8.4/Engine/Shaders/Private/DeferredLightingCommon.ush": "d3bcd5cf9c36cab57c281f6cad447816891836e3c05a67c8808cbb9ad83e2c46"
+  },
+  "limits": [
+    "Actual exposure readback is locked June21@23.5 only; sling also activates during daylight0.3/0.4 transition.",
+    "UE uses1cm\u00b2 regularizer, Three uses max(d_m\u00b2,.01); not identical near-field BRDF.",
+    "No measured pixel ratio is an input."
+  ],
+  "unchangedAgainstV5Source": {
+    "SELECT_HLSL": true,
+    "depth_users": true,
+    "EXPOSURE_BIAS": true,
+    "CANDELA_PER_WEB": true,
+    "patio_string_function": true,
+    "build_lamp": true
+  },
+  "checkpoint": "695a74b0f092f7b83b4d31c63da737fcb06ed7b5"
+}

@@ -1269,15 +1269,19 @@ sky's brightness and the locked exposure.
   material. Actual UE compilation, 20 canonical steps and source/package guards passed. Night/cloud code
   preservation and prior evidence were reused; no new night/Moon capture was run. In particular, #2421's
   remaining night-luminance failure is not resolved here, and Windows full-profile testing is not claimed.
-- **Patio bulb source tone path (#2409, partial).** The opaque source bulbs keep their
+- **Patio bulb source tone and point energy (#2409).** The opaque source bulbs keep their
   `toneMapped:false` colour through the final Neutral pass, identified by their actual
   exported IDs/shared MID and visible CustomDepth stencil239. The exact16F-or-R11
   storage check accounts for the stock postprocess intermediate change. It retains a
   documented format ambiguity; it is not universal transparent-composition parity.
-  [Actual Linux evidence](../verification/2409/README.md) passes the controller test,
-  five GPU checks and22 apartment rows. The original patio bulb-row/pool image gates
-  still FAIL (Y0.626/0.479); #2409 remains open. Native exit0 is recorded separately
-  from the supervising outer143 under #2473. No intensity/exposure/ROI was fitted.
+  Only the two literal source patio point IDs use `sourceIntensity / 2**EXPOSURE_BIAS`;
+  the existing bias−2.55 and global candela factor2.8 are unchanged. This source-unit
+  correction preserves colour, range and materials. [Actual Linux V6 evidence](../verification/2409/README.md)
+  passes the original bulb/pool Y and warmth gates (Y0.888563/0.995956) and all22 apartment rows.
+  The V5 GPU5/5 and canonical controller evidence are reused with byte-exact shader and
+  AST-identical controller/identity proofs; no fresh GPU/controller/full20 run is claimed.
+  Actual native exit0 is independently observed; the original runner is incomplete/unknown
+  and outer143 remains under #2473. No crop, acceptance or fitted RGB gain changed.
 - **Clear night sky (#2366).** The two stored START exposure trials put the web's sky luminance between
   the game exposure and +1.76 EV. The sky material applies a fitted +1.53 EV (*guess*) to the atmospheric
   background at astronomical night. The correction fades out with cloud cover and between astronomical and

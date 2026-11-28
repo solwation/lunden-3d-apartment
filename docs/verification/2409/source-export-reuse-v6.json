@@ -1,0 +1,9 @@
+{
+  "oldNativeHead": "2a01339854f7340b69ed585868504ea8b7075bbc",
+  "newNativeHead": "14184e22da8704ec2bfadd516aa3ed61671975fb",
+  "all247BytesAndModesExactAfterLocksAndAdvance": true,
+  "all322RealExportSourcesStillExact": true,
+  "actualExportSourceCommitRetained": "2e8547db2a996fcfc5206aca3777aca5e4be7d20",
+  "actualExportManifestSHA256": "b14010007ec38cee8d09b896a87fe64678cd80db5dba24a9d5069ff52fcfd1cd",
+  "all8OwnLocksHeld": true
+}

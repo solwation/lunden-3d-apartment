@@ -1,0 +1,21 @@
+{
+  "actualProofSource": "2a01339854f7340b69ed585868504ea8b7075bbc",
+  "actualGPUFile": "/home/devcontainers/.local/state/lunden-codex-20261127/2409/resume-native/native-v5/product/gpu-observation.json",
+  "actualGPUFileSHA256": "2a7a745076810cc450c7e4d6a66471ec18c6db22e21086b876f94bf501107333",
+  "actualGPUChecksPassed": true,
+  "currentNativeHead": "14184e22da8704ec2bfadd516aa3ed61671975fb",
+  "selectorHLSLByteExact": true,
+  "selectorSHA256": "ae7126a80ee84c5b174a3ea104460110d19701c70e67614482238dc32591478e",
+  "patioFunctions": {
+    "validate_source": "AST-identical",
+    "source_ids": "AST-identical",
+    "depth_users": "AST-identical"
+  },
+  "controllerFunctions": {
+    "build_lamp": "AST-identical",
+    "patio_string_function": "AST-identical"
+  },
+  "scope": "Previous actual GPU/controller reused for identical shader/identity/MID/controller code; only two literal point energy values change. No fresh GPU/controller execution claimed.",
+  "unchangedExposureBias": -2.55,
+  "unchangedLegacyCandelaFactor": 2.8
+}
