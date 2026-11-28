@@ -63,3 +63,25 @@ rejects this class of false success.
 
 This is original-only Unreal implementation; public downstream and web-to-Unreal
 transfer do not apply. No export sources, new geometry or personal content changed.
+
+## Follow-up source candidate: complete night composition
+
+The next source correction preserves the web shader order: raw moon, halo and
+stars are composed before cloud occlusion; only then is the complete sky passed
+through the analytic inverse of Neutral. Previously the native night branch
+inverted the dim gradient/clouds first, then added an un-inverted moon and stars
+above the clouds. This is a source-order/curve defect, not a measured explanation
+of the prior 0.746835 result. The daytime method remains byte-identical.
+
+The inverse now includes Neutral compression/desaturation for bright lunar
+pixels. Targets outside its finite, nonnegative inverse domain keep the existing
+native path, without clipping or fitted values. The retained twilight blend and
+high-altitude limitations still apply. No lamp/window/fog/PBR/exposure adjustment
+is part of this candidate; all five issue acceptance points remain open.
+
+Pure checks pass: the actual installed Three170 curve round-trips 143 composed
+celestial fixtures plus the prior 6,615 dim-sky fixtures; source-order assertions
+and the existing daytime check pass (4,364 roundtrips/116 explicit domain
+rejections). These checks do not execute HLSL, compile a material or demonstrate
+native pixel acceptance. Root must perform the next controlled material build
+and same-view comparison before this candidate can be accepted.
