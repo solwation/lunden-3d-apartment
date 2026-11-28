@@ -1133,7 +1133,10 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     measurements.furnishing.rugFloorPool = rugPoolRow(lightsInfo.rugPool, byZone.get('l1007'), roots.l1007.root, measurements.lights);
     measurements.furnishing.displayPools = displayPoolRows(lightsInfo.displayPools, lightsInfo.exportedPoolLamps, measurements.furnishing.rugFloorPool);
   }
-  if (beerGlasses.length) measurements.furnishing.patioBeers = patioBeerRows(beerGlasses, beerParts, beerWindow);
+  // #2468: the pints are gathered from every built piece, but only an exported slat table (`l1007-uteplats`) names them;
+  // a partial export without that zone leaves the rows out, while a table exported with only some pints still fails.
+  const exportedBeers = beerGlasses.filter((g) => beerParts.get(g));
+  if (exportedBeers.length) measurements.furnishing.patioBeers = patioBeerRows(beerGlasses, beerParts, beerWindow);
   const snowmanAtom = loose.snowman && atoms.find((a) => a.object === loose.snowman && a.id);
   if (snowmanAtom) measurements.furnishing.snowman = snowmanRow(snowmanAtom, worldMatrix, snowmanWindow);
   if (curtains.size) measurements.furnishing.curtains = curtainRows(curtains, furnishCache, measurements.furnishing, measurements.lights, lightsInfo.exportedFloorRooms);

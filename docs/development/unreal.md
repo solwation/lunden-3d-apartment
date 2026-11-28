@@ -854,6 +854,8 @@ The web shows the Christmas tree only from `XMAS_TREE.season.from` to `.to`, inc
   `beersOut` into the date window 1 Jun – 31 Aug plus `hours: [12, 23]` (half-open; `season:patioBeers`,
   `seasonHourFrom:12`, `seasonHourTo:23`), and every node of the group carries it, since a part's `parent` names the
   table. `measurements.json` `furnishing.patioBeers` holds each glass's base and mesh centres for `test_furnishing`.
+  A partial export without `l1007-uteplats` (such as `--zones l1007`) leaves `furnishing.patioBeers` out (#2468); a
+  table exported with fewer than its whole pints still fails the export.
   *Not ported:* the rising bubbles, a web animation whose instance matrices are unset at export.
 - **Snowman (#2445).** The web stands a snowman on the lawn just beyond the patio hedge's gap (`PATIO.snowman`,
   1.4, 18.4, facing the house) in `src/patio.js` `snowmanOut`'s months (December to February), whatever the weather:
