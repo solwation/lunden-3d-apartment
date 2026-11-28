@@ -1,0 +1,126 @@
+{
+  "classification": "Four predeclared env-only Standard IBL GPU cases; not scene/product/exposure parity",
+  "cases": [
+    {
+      "id": "white-up",
+      "normalWeb": [
+        0,
+        1,
+        0
+      ],
+      "viewWeb": [
+        0,
+        1,
+        0
+      ],
+      "paletteKey": "std_d2d2cf_r20_m12",
+      "baseColorLinear": [
+        0.6444796919822693,
+        0.6444796919822693,
+        0.6239603757858276
+      ]
+    },
+    {
+      "id": "white-east",
+      "normalWeb": [
+        1,
+        0,
+        0
+      ],
+      "viewWeb": [
+        1,
+        0,
+        0
+      ],
+      "paletteKey": "std_d2d2cf_r20_m12",
+      "baseColorLinear": [
+        0.6444796919822693,
+        0.6444796919822693,
+        0.6239603757858276
+      ]
+    },
+    {
+      "id": "white-front-grazing",
+      "normalWeb": [
+        0,
+        0,
+        1
+      ],
+      "viewWeb": [
+        0.6,
+        0,
+        0.8
+      ],
+      "paletteKey": "std_d2d2cf_r20_m12",
+      "baseColorLinear": [
+        0.6444796919822693,
+        0.6444796919822693,
+        0.6239603757858276
+      ]
+    },
+    {
+      "id": "black-east",
+      "normalWeb": [
+        1,
+        0,
+        0
+      ],
+      "viewWeb": [
+        1,
+        0,
+        0
+      ],
+      "paletteKey": "std_0c0c0e_r20_m12",
+      "baseColorLinear": [
+        0.0036765073891729116,
+        0.0036765073891729116,
+        0.0043914420530200005
+      ]
+    }
+  ],
+  "roughness": 0.2,
+  "metalness": 0.12,
+  "envIntensity": 0.55,
+  "normalDerivatives": 0,
+  "maxHalfULP": 2,
+  "comparisonPolicy": "Report every RGB half-ULP distance; maximum2 for shader/bilinear arithmetic. Fixed before either GPU result. No fitted gain/tolerance changes.",
+  "palette": {
+    "std_d2d2cf_r20_m12": {
+      "baseColorLinear": [
+        0.6444796919822693,
+        0.6444796919822693,
+        0.6239603757858276
+      ],
+      "originalGLBFactor": [
+        0.6444796819634361,
+        0.6444796819634361,
+        0.623960391667596
+      ],
+      "nativeActualFactorText": "(R=0.644480,G=0.644480,B=0.623960,A=1.000000)",
+      "nativeActualMaterial": "/Game/Lunden/Generated/omgivning/Materials/std_d2d2cf_r20_m12.std_d2d2cf_r20_m12"
+    },
+    "std_0c0c0e_r20_m12": {
+      "baseColorLinear": [
+        0.0036765073891729116,
+        0.0036765073891729116,
+        0.0043914420530200005
+      ],
+      "originalGLBFactor": [
+        0.0036765073221525194,
+        0.0036765073221525194,
+        0.004391442035325718
+      ],
+      "nativeActualFactorText": "(R=0.003677,G=0.003677,B=0.004391,A=1.000000)",
+      "nativeActualMaterial": "/Game/Lunden/Generated/omgivning/Materials/std_0c0c0e_r20_m12.std_0c0c0e_r20_m12"
+    }
+  },
+  "provenance": {
+    "targetsSHA256": "7a7720ca148d714129ddf676bba13d563cd609f653bfafe9afb48a3c52737ef1",
+    "actualNativeCaptureSHA256": "7424fa495dece817423e6405d4d00a813e2489e3963d47b89fbb4dafc8dd2f08"
+  },
+  "sourceRawAtlasSHA256": "ef3f36f8ebbf47c8a6711b9c07eaccca8066e2ee22d232f84c7e32dc7916a96d",
+  "savedAtlasPhysicalSHA256": "0d53336517cc4ad40bda37bb30e62109b249972ba9212d9b72596d97ed646b30",
+  "atlasPath": "/Game/Lunden/Generated/Private2405CarAtlas_20261128V1/T_SourceCarAtlas",
+  "publicationProjection": true,
+  "originalArtifactSHA256": "2cc7f64a6247e12ccfe930e5bb69f058f54e5e015c78821e7b8268ea7b141328"
+}

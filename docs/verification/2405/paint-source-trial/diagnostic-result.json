@@ -1,0 +1,183 @@
+{
+  "classification": "Reuse the same prospectivelylocked diagnosticregions; no acceptance threshold",
+  "contractSHA256": "990f43f709412b5992683939232909ec881070f2c8571de1279fde9a50ea3325",
+  "imagesSHA256": {
+    "original-before": "7b4f8d2592a005a229f4957563c0095f037e1c6531122cd236540d8046eca48e",
+    "source-ambient-environment-fill": "79a040717f248fd0165a012ff39b164450dfae446ad722f6e0e3eb52df493a63",
+    "original-after": "a1acfc612d324cf286ec0dec53c024be97415aaa3d185d36ceda9e548f7871de"
+  },
+  "rows": {
+    "nearest-white-car-glass": {
+      "original-before": {
+        "meanRGB": [
+          97.47181818181818,
+          116.62363636363636,
+          133.17363636363638
+        ],
+        "linearLuminance": 0.17171483708132568,
+        "saturation": 0.2722758430047289
+      },
+      "source-ambient-environment-fill": {
+        "meanRGB": [
+          97.47181818181818,
+          116.62363636363636,
+          133.17363636363638
+        ],
+        "linearLuminance": 0.17171483708132568,
+        "saturation": 0.2722758430047289
+      },
+      "original-after": {
+        "meanRGB": [
+          97.47181818181818,
+          116.62363636363636,
+          133.17363636363638
+        ],
+        "linearLuminance": 0.17171483708132568,
+        "saturation": 0.2722758430047289
+      },
+      "reference": {
+        "meanRGB": [
+          17.754545454545454,
+          52.74727272727273,
+          72.03727272727272
+        ],
+        "linearLuminance": 0.031188074341153775,
+        "saturation": 0.7534771254786229
+      },
+      "luminanceRatios": {
+        "original-before": 5.505785166567397,
+        "source-ambient-environment-fill": 5.505785166567397,
+        "original-after": 5.505785166567397
+      }
+    },
+    "black-car-rear-glass": {
+      "original-before": {
+        "meanRGB": [
+          83.23928571428571,
+          94.28571428571429,
+          103.67142857142858
+        ],
+        "linearLuminance": 0.11946082106608422,
+        "saturation": 0.18909420907470786
+      },
+      "source-ambient-environment-fill": {
+        "meanRGB": [
+          38.582142857142856,
+          47.38214285714286,
+          55.285714285714285
+        ],
+        "linearLuminance": 0.04984634744740508,
+        "saturation": 0.4077949395778316
+      },
+      "original-after": {
+        "meanRGB": [
+          83.23928571428571,
+          94.28571428571429,
+          103.67142857142858
+        ],
+        "linearLuminance": 0.11946082106608422,
+        "saturation": 0.18909420907470786
+      },
+      "reference": {
+        "meanRGB": [
+          28.164285714285715,
+          49.25,
+          59.65
+        ],
+        "linearLuminance": 0.034361028215687026,
+        "saturation": 0.5369271183860408
+      },
+      "luminanceRatios": {
+        "original-before": 3.476636971286736,
+        "source-ambient-environment-fill": 1.45066518773872,
+        "original-after": 3.476636971286736
+      }
+    },
+    "white-suv-side-glass": {
+      "original-before": {
+        "meanRGB": [
+          45.74747474747475,
+          45.77777777777778,
+          44.803030303030305
+        ],
+        "linearLuminance": 0.027440692150466798,
+        "saturation": 0.05897845679492829
+      },
+      "source-ambient-environment-fill": {
+        "meanRGB": [
+          45.74747474747475,
+          45.77777777777778,
+          44.803030303030305
+        ],
+        "linearLuminance": 0.027440692150466798,
+        "saturation": 0.05897845679492829
+      },
+      "original-after": {
+        "meanRGB": [
+          45.74747474747475,
+          45.77777777777778,
+          44.803030303030305
+        ],
+        "linearLuminance": 0.027440692150466798,
+        "saturation": 0.05897845679492829
+      },
+      "reference": {
+        "meanRGB": [
+          11.676767676767676,
+          16.843434343434343,
+          19.383838383838384
+        ],
+        "linearLuminance": 0.0053652451351243816,
+        "saturation": 0.35526244935826506
+      },
+      "luminanceRatios": {
+        "original-before": 5.114527194819523,
+        "source-ambient-environment-fill": 5.114527194819523,
+        "original-after": 5.114527194819523
+      }
+    },
+    "black-car-body": {
+      "original-before": {
+        "meanRGB": [
+          43.3,
+          43.26,
+          42.535
+        ],
+        "linearLuminance": 0.026301753940643942,
+        "saturation": 0.05060446438052209
+      },
+      "source-ambient-environment-fill": {
+        "meanRGB": [
+          12.135,
+          11.1,
+          10.41
+        ],
+        "linearLuminance": 0.009309049630874427,
+        "saturation": 0.6609254574964223
+      },
+      "original-after": {
+        "meanRGB": [
+          43.3,
+          43.26,
+          42.535
+        ],
+        "linearLuminance": 0.026301753940643942,
+        "saturation": 0.05060446438052209
+      },
+      "reference": {
+        "meanRGB": [
+          6.161666666666667,
+          12.833333333333334,
+          13.163333333333334
+        ],
+        "linearLuminance": 0.004672604425696521,
+        "saturation": 0.6379998495651614
+      },
+      "luminanceRatios": {
+        "original-before": 5.628928011966961,
+        "source-ambient-environment-fill": 1.9922614419659066,
+        "original-after": 5.628928011966961
+      }
+    }
+  }
+}

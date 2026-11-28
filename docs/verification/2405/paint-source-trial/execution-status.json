@@ -1,0 +1,66 @@
+{
+  "productAccepted": false,
+  "globalPolicyEnabled": false,
+  "runs": [
+    {
+      "version": "paint-v1",
+      "nativeExit": 255,
+      "runnerExit": 1,
+      "toolExit": 1,
+      "nativeSeconds": 239.17,
+      "outerSeconds": 239.227,
+      "executionPassed": false,
+      "productAccepted": false,
+      "phase": "Cached component wrapper became null after GPU probe; before first image",
+      "capturedImages": 0,
+      "MF_GPU_Passed": true,
+      "postflightGuardsPassed": true,
+      "originalPostflightSHA256": "ce44834dcef536ef04fd23273339e2ab8b92ed45c7b0f1c721ae1e0b5c6b1f89"
+    },
+    {
+      "version": "paint-v2",
+      "nativeExit": 255,
+      "runnerExit": 1,
+      "toolExit": 1,
+      "nativeSeconds": 225.41,
+      "outerSeconds": 225.472,
+      "executionPassed": false,
+      "productAccepted": false,
+      "phase": "Extra SCS-template requirement failed before GPU probe/images",
+      "capturedImages": 0,
+      "MF_GPU_Passed": null,
+      "postflightGuardsPassed": true,
+      "originalPostflightSHA256": "f759f05904e648e5ae4a1ad793935c3826cce70bce8ee09bcbbc952a40cedc38"
+    },
+    {
+      "version": "paint-v3",
+      "nativeExit": 0,
+      "runnerExit": 0,
+      "toolExit": 0,
+      "nativeSeconds": 253.96,
+      "outerSeconds": 254.024,
+      "executionPassed": true,
+      "productAccepted": false,
+      "phase": "Three images completed; all guards restored",
+      "capturedImages": 3,
+      "MF_GPU_Passed": true,
+      "postflightGuardsPassed": true,
+      "originalPostflightSHA256": "645c414916e8660c8d513baafb38dd4311d6a6102115d181f299974697e67b79"
+    },
+    {
+      "version": "energy-v1",
+      "nativeExit": 0,
+      "runnerExit": 0,
+      "toolExit": null,
+      "toolStatus": "UNKNOWN; original tool status unavailable after context truncation",
+      "nativeSeconds": 125.43,
+      "outerSeconds": 125.488,
+      "executionPassedNativeAndRunner": true,
+      "productAccepted": false,
+      "wholeSceneLoaded": false,
+      "assetsSaved": false,
+      "comparedChannels": 12,
+      "actualMaxHalfULP": 1
+    }
+  ]
+}

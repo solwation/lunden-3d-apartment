@@ -1,0 +1,164 @@
+{
+  "completed": true,
+  "scope": "Actual source factory MeshStandardMaterial env-only GPU; no scene/direct/exposure parity",
+  "revision": "170",
+  "factoryPMREMRawSHA256": "ef3f36f8ebbf47c8a6711b9c07eaccca8066e2ee22d232f84c7e32dc7916a96d",
+  "actualAtlasDimensions": [
+    384,
+    512
+  ],
+  "actualToneMapping": 0,
+  "actualExposure": 1,
+  "actualOutputColorSpace": "srgb-linear",
+  "sceneLights": 0,
+  "sceneEnvironmentNull": true,
+  "sourceOwnEnvIntensity": 0.55,
+  "rows": [
+    {
+      "id": "white-up",
+      "halfRGBA": [
+        12428,
+        12749,
+        12832,
+        15360
+      ],
+      "linearRGBA": [
+        0.14208984375,
+        0.1812744140625,
+        0.19140625,
+        1
+      ],
+      "actualBaseColor": [
+        0.6444796919822693,
+        0.6444796919822693,
+        0.6239603757858276
+      ],
+      "actualNormal": [
+        0,
+        1,
+        0
+      ],
+      "actualView": [
+        0,
+        1,
+        0
+      ]
+    },
+    {
+      "id": "white-east",
+      "halfRGBA": [
+        12161,
+        12494,
+        12532,
+        15360
+      ],
+      "linearRGBA": [
+        0.11724853515625,
+        0.150146484375,
+        0.15478515625,
+        1
+      ],
+      "actualBaseColor": [
+        0.6444796919822693,
+        0.6444796919822693,
+        0.6239603757858276
+      ],
+      "actualNormal": [
+        1,
+        0,
+        0
+      ],
+      "actualView": [
+        1,
+        0,
+        0
+      ]
+    },
+    {
+      "id": "white-front-grazing",
+      "halfRGBA": [
+        12193,
+        12509,
+        12545,
+        15360
+      ],
+      "linearRGBA": [
+        0.11920166015625,
+        0.1519775390625,
+        0.1563720703125,
+        1
+      ],
+      "actualBaseColor": [
+        0.6444796919822693,
+        0.6444796919822693,
+        0.6239603757858276
+      ],
+      "actualNormal": [
+        0,
+        0,
+        1
+      ],
+      "actualView": [
+        0.6,
+        0,
+        0.8
+      ]
+    },
+    {
+      "id": "black-east",
+      "halfRGBA": [
+        8331,
+        8586,
+        8654,
+        15360
+      ],
+      "linearRGBA": [
+        0.00887298583984375,
+        0.0108184814453125,
+        0.0113372802734375,
+        1
+      ],
+      "actualBaseColor": [
+        0.0036765073891729116,
+        0.0036765073891729116,
+        0.0043914420530200005
+      ],
+      "actualNormal": [
+        1,
+        0,
+        0
+      ],
+      "actualView": [
+        1,
+        0,
+        0
+      ]
+    }
+  ],
+  "contextLost": false,
+  "glErrorAfter": 0,
+  "sourceHead": "9b9abd58b4820334bdedb635889acad51f4ba15f",
+  "casesSHA256": "2cc7f64a6247e12ccfe930e5bb69f058f54e5e015c78821e7b8268ea7b141328",
+  "browserClosed": true,
+  "ownedServerClosed": true,
+  "publicationProjection": true,
+  "originalArtifactSHA256": "d04a2766275b055844a18927dfa14c01b6dd9941bc25e8e53776b6279062edd9",
+  "dependencyCount": 15,
+  "dependencyContentSHAs": [
+    "2caf5d31ca4368c7e39e7e598dd95774fe1bdaae7cfbc5b073c8dcb5ec7e25da",
+    "2cc7f64a6247e12ccfe930e5bb69f058f54e5e015c78821e7b8268ea7b141328",
+    "3394c7f589f5e811c5d14483e45c4db59ec832c600866495ca2532f51d95abdc",
+    "4bbbc18b304cddcfde25d04e2a5552a556eb6d8d17404eefc60b3160c94b619b",
+    "54d08921231f924e70b37ebf35f9a5e94fa73383aaa955faaa6826c97681c07c",
+    "62a43a20753fb401c3f6f5a3563537c552ae9e81303079d4af3ac48faf80b877",
+    "75b2b3639fbe1cbfea09376463f4ce8d958f491879271571eb24a15a97fff700",
+    "8228e12d6904efecff76ef21f217836bcf57100ab8c53326b74a8a6f273b04a8",
+    "8610f2598b998c8443c89c24f712ca8c36197f5d7152811c7176f9e0e255553c",
+    "8f60bbd44d7cfa639b603923e88fe17a1b3084f57e92218fdf8c5c495c15fded",
+    "9b8b7d86fa70e2064977aea207c0cfcd44bc6975a86e36ce38ebc009fc22a2ee",
+    "a36e730774ee48527ae9b1ac7e2f444ca0fe6e8cbf02e15d1da56cfcdc3f94e0",
+    "adfae57da34b196d4d6d79a6ec69ebaa121efdfa11fc88a3ed2c5928dc908c8d",
+    "c8ba1e4899476d8ba389f45aff7dc044bdf82a66e565befc11eec7e0049ded97",
+    "d4dd83d7f83d7d81c4b4511d820a0ebcd3ae027c3b19c13537d7d9663acea00d"
+  ]
+}

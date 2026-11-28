@@ -1,0 +1,87 @@
+{
+  "sourceNativeHead": "9b9abd58b4820334bdedb635889acad51f4ba15f",
+  "privateSourceFillHead": "35eacc6d47aa07525b58c83e538c0750152f17c7",
+  "sourceFillCanonicalPromoted": false,
+  "paintRunId": "20261128T134443202876-2213649",
+  "energyRunId": "20261128T141346861603-2812597",
+  "paintConfigSHA256": "a59dc38deef46cf48df101a1cd9a02d7cd3812b5d5c43c9daf3ceb1bdc10af06",
+  "energyConfigSHA256": "baa59676e75bda326cc9db8dabb01b499a35d713fe8344776106bc6a4826dea7",
+  "paintCaptureSHA256": "7424fa495dece817423e6405d4d00a813e2489e3963d47b89fbb4dafc8dd2f08",
+  "paintCamera": {
+    "sourceView": {
+      "id": "parked-street",
+      "x": -39,
+      "z": -8.4,
+      "feetY": 0,
+      "yawDeg": 44,
+      "pitchDeg": -6,
+      "lighting": "day"
+    },
+    "date": [
+      2026,
+      6,
+      21
+    ],
+    "hour": 14,
+    "lampsOn": false,
+    "webEye": [
+      -39,
+      1.62,
+      -8.4
+    ],
+    "nativeXYZ": [
+      -3900,
+      -840,
+      162
+    ],
+    "nativeYaw": -134,
+    "nativePitch": -6,
+    "verticalFov": 72,
+    "width": 640,
+    "height": 360
+  },
+  "renderProfile": "CPU Vulkan Linux low640x360; no Windows delivery",
+  "originalArtifacts": {
+    "unreal-parked-street-original-before.png": {
+      "originalArtifactSHA256": "7b4f8d2592a005a229f4957563c0095f037e1c6531122cd236540d8046eca48e",
+      "copy": "byte-exact"
+    },
+    "unreal-parked-street-source-ambient-environment-fill.png": {
+      "originalArtifactSHA256": "79a040717f248fd0165a012ff39b164450dfae446ad722f6e0e3eb52df493a63",
+      "copy": "byte-exact"
+    },
+    "unreal-parked-street-original-after.png": {
+      "originalArtifactSHA256": "a1acfc612d324cf286ec0dec53c024be97415aaa3d185d36ceda9e548f7871de",
+      "copy": "byte-exact"
+    },
+    "diagnostic-result.json": {
+      "originalArtifactSHA256": "0df3986a59c72b3c00375ac226e787bb0b6c0ba24aa726fb1271cfcad290b9e5",
+      "copy": "byte-exact"
+    },
+    "mf-gpu-values.json": {
+      "originalArtifactSHA256": "01119388ddc9a027ab50a2fb843b73c1f373eef27f6b79cc69b699121d4146ed",
+      "copy": "byte-exact"
+    },
+    "paint-postflight.json": {
+      "originalArtifactSHA256": "645c414916e8660c8d513baafb38dd4311d6a6102115d181f299974697e67b79",
+      "copy": "compact projection; original retained privately"
+    },
+    "energy-cases.json": {
+      "originalArtifactSHA256": "2cc7f64a6247e12ccfe930e5bb69f058f54e5e015c78821e7b8268ea7b141328",
+      "copy": "projection; only workstation pointers removed"
+    },
+    "energy-source-result.json": {
+      "originalArtifactSHA256": "d04a2766275b055844a18927dfa14c01b6dd9941bc25e8e53776b6279062edd9",
+      "copy": "projection; dependency paths replaced by exact content hashes"
+    },
+    "energy-native-result.json": {
+      "originalArtifactSHA256": "9828f95979e7bf8c8de6c92cf0affa42d7f6dbeed9adfcd54c6849ceb40dad59",
+      "copy": "byte-exact"
+    },
+    "energy-postflight.json": {
+      "originalArtifactSHA256": "0cb7cdb55f8ade8977e0270df6530cebe3f54e4d06f69a3b87ea5c3608f73f07",
+      "copy": "compact projection; original retained privately"
+    }
+  },
+  "limits": "Projected JSON copies are clearly marked; full unmodified reports/configuration baselines retained privately. Raw PNGs and exact-copy JSONs unchanged."
+}

@@ -1,0 +1,134 @@
+{
+  "completed": true,
+  "scope": "Four env-only constant-N/V GPU values, no scene/direct/exposure/product acceptance",
+  "world": "/Temp/Untitled_0.Untitled",
+  "compilerErrors": [],
+  "normalDerivatives": 0,
+  "casesSHA256": "2cc7f64a6247e12ccfe930e5bb69f058f54e5e015c78821e7b8268ea7b141328",
+  "sourceResultSHA256": "d04a2766275b055844a18927dfa14c01b6dd9941bc25e8e53776b6279062edd9",
+  "hlslSHA256": "3394c7f589f5e811c5d14483e45c4db59ec832c600866495ca2532f51d95abdc",
+  "comparisonMaxHalfULP": 2,
+  "rows": [
+    {
+      "id": "white-up",
+      "nativeLinearRGB": [
+        0.14208984375,
+        0.18115234375,
+        0.19140625
+      ],
+      "nativeHalfRGB": [
+        12428,
+        12748,
+        12832
+      ],
+      "sourceLinearRGB": [
+        0.14208984375,
+        0.1812744140625,
+        0.19140625
+      ],
+      "sourceHalfRGB": [
+        12428,
+        12749,
+        12832
+      ],
+      "halfULPDistances": [
+        0,
+        1,
+        0
+      ],
+      "withinPredeclared2ULP": true
+    },
+    {
+      "id": "white-east",
+      "nativeLinearRGB": [
+        0.1171875,
+        0.1500244140625,
+        0.15478515625
+      ],
+      "nativeHalfRGB": [
+        12160,
+        12493,
+        12532
+      ],
+      "sourceLinearRGB": [
+        0.11724853515625,
+        0.150146484375,
+        0.15478515625
+      ],
+      "sourceHalfRGB": [
+        12161,
+        12494,
+        12532
+      ],
+      "halfULPDistances": [
+        1,
+        1,
+        0
+      ],
+      "withinPredeclared2ULP": true
+    },
+    {
+      "id": "white-front-grazing",
+      "nativeLinearRGB": [
+        0.11920166015625,
+        0.15185546875,
+        0.1563720703125
+      ],
+      "nativeHalfRGB": [
+        12193,
+        12508,
+        12545
+      ],
+      "sourceLinearRGB": [
+        0.11920166015625,
+        0.1519775390625,
+        0.1563720703125
+      ],
+      "sourceHalfRGB": [
+        12193,
+        12509,
+        12545
+      ],
+      "halfULPDistances": [
+        0,
+        1,
+        0
+      ],
+      "withinPredeclared2ULP": true
+    },
+    {
+      "id": "black-east",
+      "nativeLinearRGB": [
+        0.0088653564453125,
+        0.01081085205078125,
+        0.0113372802734375
+      ],
+      "nativeHalfRGB": [
+        8330,
+        8585,
+        8654
+      ],
+      "sourceLinearRGB": [
+        0.00887298583984375,
+        0.0108184814453125,
+        0.0113372802734375
+      ],
+      "sourceHalfRGB": [
+        8331,
+        8586,
+        8654
+      ],
+      "halfULPDistances": [
+        1,
+        1,
+        0
+      ],
+      "withinPredeclared2ULP": true
+    }
+  ],
+  "comparisonPassed": true,
+  "rawReturnType": "Array",
+  "assetsSaved": false,
+  "wholeSceneLoaded": false,
+  "sourceAndDiskGuardsPassed": true
+}
