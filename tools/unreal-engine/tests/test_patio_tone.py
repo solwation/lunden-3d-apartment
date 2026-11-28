@@ -5,6 +5,7 @@ bulb/pool/apartment gates remain required before product acceptance.
 """
 import ast
 import json
+import math
 from pathlib import Path
 import struct
 import subprocess
@@ -125,6 +126,43 @@ while(std::cin>>s0>>s1>>s2>>e0>>e1>>e2>>n>>sd>>cd>>st>>ex) {
                                   text=True,capture_output=True,check=True)
             for row,case in zip(result.stdout.splitlines(),cases,strict=True):
                 self.assertEqual(tuple(map(float,row.split())),tuple(case[1]))
+
+    def test_literal_point_energy_units_and_two_id_scope(self):
+        # Use the actual builder constants/call site, without importing Unreal.
+        tree=ast.parse((PYTHON/'build_lighting.py').read_text())
+        constants={}
+        for node in tree.body:
+            if isinstance(node,ast.Assign):
+                for target in node.targets:
+                    if isinstance(target,ast.Name)and target.id in {'EXPOSURE_BIAS','CANDELA_PER_WEB'}:
+                        constants[target.id]=ast.literal_eval(node.value)
+        rows=next(n for n in tree.body if isinstance(n,ast.FunctionDef)and n.name=='lamp_rows')
+        env={**constants,'patio_tone':tone,'season_tags':lambda *args:[],'LAMP_RANGE':5.,'LAMP_COLOUR':'#ffd59a'}
+        exec(compile(ast.Module(body=[rows],type_ignores=[]),'actual-lamp-rows','exec'),env)
+        base=2**constants['EXPOSURE_BIAS']
+        source=[{'id':key,'kind':'lamp','level':0,'position':{'unreal':[0,0,0]},
+                 'intensity':1.4,'patioDusk':{'on':.1,'off':.2,'fade':1.}}for key in sorted(tone.SOURCE_POINT_IDS)]
+        source.append({'id':'ordinary-room-lamp','kind':'lamp','level':0,'position':{'unreal':[0,0,0]},'intensity':1.4})
+        actual=env['lamp_rows']({'lights':source})
+        self.assertEqual(actual[-1]['candela'],1.4*constants['CANDELA_PER_WEB'])
+        for row in actual[:2]:
+            self.assertAlmostEqual(row['candela']*base,1.4,places=14)
+            # Factors beyond1 test the conditional unit identity, not actual
+            # runtime dawn/dusk exposure blending or controller activation.
+            for source_exposure in [.5,1,1.5,2]:
+                for distance in [.1,.4,1.,2.,3.99,4.,5.]:
+                    radius=4.
+                    window=max(0.,1-(distance/radius)**4)**2
+                    # Actual engine unit formulas, including UE's1cm² distance
+                    # bias versus Three's0.01m² floor. Never fit this difference.
+                    web=1.4/max(distance**2,.01)*window*source_exposure
+                    native=row['candela']*10000/((distance*100)**2+1)*window*base*source_exposure
+                    physical_bias_ratio=distance**2/(distance**2+.0001)
+                    self.assertAlmostEqual(native,web*physical_bias_ratio,places=12)
+        wrong={**source[0],'id':'another-auto-lamp'}
+        with self.assertRaises(ValueError):tone.lamp_candela(wrong,constants['EXPOSURE_BIAS'],constants['CANDELA_PER_WEB'])
+        missing={**source[0]};missing.pop('patioDusk')
+        with self.assertRaises(ValueError):tone.lamp_candela(missing,constants['EXPOSURE_BIAS'],constants['CANDELA_PER_WEB'])
 
     def test_source_contract_rejects_missing_or_tone_mapped(self):
         self.assertEqual(tone.validate_source({'toneMapped':False}),{'toneMapped':False})

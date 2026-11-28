@@ -75,7 +75,7 @@ predicate: it already needs 0<t<=1, so t*SceneDepth<=SceneDepth<=bulbDepth; a cl
 cloth remains the closest CustomDepth. Nonopaque/non-mainpass users are rejected.
 
 Offline verification: `python3 tools/unreal-engine/tests/test_patio_tone.py` passes
-three behavioural tests, including 733 actual selector-HLSL cases compiled as CPU
+four behavioural tests, including 733 actual selector-HLSL cases compiled as CPU
 C++ with IEEE float32/float16 transport. Cases include several pre-exposures,
 opaque self-pixels, wrong stencil/occlusion, fog mixtures and a one-half-storage-step
 change. Additional regressions retain the measured original-view R11 tuple,
@@ -85,11 +85,40 @@ with positive and negative IDs/MIDs/opaque/mask/foreign-user fixtures. Missing o
 changed source tone contracts fail. Python/Node syntax and diff checks pass.
 This is not a GPU shader compilation or actual rendered colour gate.
 
-The two pool lights retain their existing source colour, intensity conversion and
-range. Canonical checks now also require inverse-square falloff, source range and
-zero area-light radius/length. Both engines use the same squared quartic cutoff.
-The older 2.8 candela-per-web-unit assumption is retained; its unit/exposure chain
-has not been independently validated here. The fence-pool outcome must still be
-measured in the original view; a bulb correction cannot be called full #2409.
+The two exact literal patio point IDs now derive candela as
+`sourceIntensity / 2**EXPOSURE_BIAS`: source1.4 becomes8.1988798973 cd with the
+existing bias−2.55. This is a unit/exposure derivation, not a crop-ratio fit.
+Every other light retains `CANDELA_PER_WEB=2.8`; missing patio contracts or unknown
+patio IDs fail rather than silently extending this conversion. No new gain or
+exposure setting was introduced. Colour, inverse-square mode, range and point
+source radius/length remain unchanged.
+
+At the locked June21 23:30 view, actual source exposure is1 and actual Native
+EyeAdaptation is0.1707550436 (the float implementation of2**−2.55). Source
+`PointLight.js:23` defines candela; `WebGLLights.js:358` uploads colour×intensity
+without a legacy PI factor. `lights_pars_begin.glsl.js:56–69` applies inverse
+metre² attenuation and the squared quartic range cutoff. UE5.8.4
+`PointLightComponent.cpp:135` converts candela by10000 for centimetre²;
+`CapsuleLightIntegrate.ush:27–28` applies the inverse squared distance. Thus the
+fixed base exposure must be removed from the two literal point intensities to
+preserve their exposed source energy at this measured night. The old room
+calibration was for pooled room lights plus shader washes and is retained there.
+
+This does not assert complete BRDF or all-distance identity: UE's capsule path
+uses a1cm² distance bias (`DeferredLightingCommon.ush:309`), while Three clamps
+inverse-square distance at0.01m². The CPU energy check includes both actual
+regularizers and the common range window rather than fitting their difference.
+It executes the actual builder row function and checks exact two-ID scope,
+unchanged room conversion, measured-night normalization, and conditional algebra
+for other exposure factors. It is not evidence of runtime transition exposures.
+
+The sling's on/off thresholds are daylight0.3/0.4 (`config.js:6835`,
+`patio.js:663–667`), so it can be active before inDay reaches0. Source exposure
+blends linearly with clear; Native's source graph maps that factor to EV using
+`expoW=ln(expo*ExpRatio)/ln(ExpRatio)`. The intended algebra matches the clear
+factor, but actual dawn/dusk readback has not been verified here; the measured
+night is the basis of this checkpoint. The original five-frame patio/pool and
+apartment gates remain mandatory. Neither brightness nor R/B acceptance is
+claimed from this unit correction or the earlier GPU-selector checks.
 
 Original-only Unreal change. No public web/downstream transfer applies.
