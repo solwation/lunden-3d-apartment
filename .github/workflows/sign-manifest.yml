@@ -21,6 +21,8 @@ on:
         options:
           - lunden-manifest-test.json
           - lunden-manifest.json
+          - lunden-manifest-linux-x64-test.json
+          - lunden-manifest-linux-x64.json
 
 permissions:
   contents: read
@@ -82,10 +84,11 @@ jobs:
       - name: Sign the exact manifest bytes and verify the signature
         env:
           CHANNEL: ${{ steps.fetch.outputs.channel }}
+          PLATFORM: ${{ steps.fetch.outputs.platform }}
           MANIFEST_ASSET: ${{ steps.fetch.outputs.asset }}
           LUNDEN_MANIFEST_PRIVATE_KEY: ${{ secrets.LUNDEN_MANIFEST_PRIVATE_KEY }}
           LUNDEN_MANIFEST_PUBLIC_KEY: ${{ vars.LUNDEN_MANIFEST_PUBLIC_KEY }}
-        run: node tools/unreal-engine/sign-manifest.mjs sign --channel "$CHANNEL" --manifest "$RUNNER_TEMP/manifest/$MANIFEST_ASSET"
+        run: node tools/unreal-engine/sign-manifest.mjs sign --channel "$CHANNEL" --platform "$PLATFORM" --manifest "$RUNNER_TEMP/manifest/$MANIFEST_ASSET"
       - name: Recheck the release and upload only the verified signature
         env:
           GH_TOKEN: ${{ github.token }}

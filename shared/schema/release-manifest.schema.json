@@ -1,10 +1,11 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "Lunden Windows release manifest v1",
+  "title": "Lunden platform-bound release manifest v1 (missing platform means legacy Windows)",
   "type": "object",
   "required": ["formatVersion", "channel", "published", "app", "content", "launcher"],
   "properties": {
     "formatVersion": { "const": 1 },
+    "platform": { "enum": ["win-x64", "linux-x64"] },
     "channel": { "enum": ["test", "stable"] },
     "published": { "type": "string", "format": "date-time" },
     "app": {
@@ -61,7 +62,8 @@
         "url": { "$ref": "#/$defs/url" },
         "size": { "$ref": "#/$defs/size" },
         "sha256": { "$ref": "#/$defs/sha256" },
-        "authenticode": { "type": "boolean" }
+        "authenticode": { "type": "boolean" },
+        "executable": { "type": "boolean" }
       }
     }
   }

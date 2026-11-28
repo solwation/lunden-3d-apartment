@@ -1,4 +1,4 @@
-name: Windows launcher tests
+name: Launcher tests
 
 on:
   push:
@@ -8,6 +8,11 @@ on:
       - 'unreal/Launcher.Tests/**'
       - 'tools/unreal-engine/wire/players.json'
       - 'tools/unreal-engine/make-manifest.mjs'
+      - 'tools/unreal-engine/make-linux-manifest.mjs'
+      - 'tools/unreal-engine/publish-linux-launcher.py'
+      - 'tools/unreal-engine/release-linux.py'
+      - 'tools/unreal-engine/tests/linux-manifest.test.mjs'
+      - 'tools/unreal-engine/tests/test_linux_release.py'
       - 'tools/unreal-engine/tests/make-manifest.test.mjs'
       - 'tools/unreal-engine/verify-published.mjs'
       - 'tools/unreal-engine/sign-manifest.mjs'
@@ -33,6 +38,29 @@ permissions:
   contents: read
 
 jobs:
+  linux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: '24.x'
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '10.0.x'
+      - name: Linux manifests and existing Windows release protocol
+        env:
+          LUNDEN_LINUX_SIGNED_MANIFEST_DIR: ${{ runner.temp }}/linux-manifest
+        run: node --test tools/unreal-engine/tests/linux-manifest.test.mjs tools/unreal-engine/tests/make-manifest.test.mjs tools/unreal-engine/tests/sign-manifest.test.mjs tools/unreal-engine/tests/verify-published.test.mjs tools/unreal-engine/tests/promote-release.test.mjs
+      - name: Linux update activation, recovery and Windows compatibility
+        env:
+          LUNDEN_LINUX_SIGNED_MANIFEST_DIR: ${{ runner.temp }}/linux-manifest
+        run: dotnet test unreal/Launcher.Tests/Lunden.Launcher.Tests.csproj --configuration Release --logger "console;verbosity=normal"
+      - name: Shipping command construction (no Unreal launch)
+        run: python3 -m unittest discover -s tools/unreal-engine/tests -p test_linux_release.py
   test:
     runs-on: windows-latest
     timeout-minutes: 15

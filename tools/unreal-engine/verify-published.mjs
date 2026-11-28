@@ -10,6 +10,7 @@ const schema = JSON.parse(await readFile(new URL('../../shared/schema/release-ma
 const stockInventory = JSON.parse(await readFile(new URL('../../unreal/Launcher/Unreal-5.8.4-win64.json', import.meta.url)));
 const projectExe = 'Lunden/Binaries/Win64/Lunden-Win64-Shipping.exe';
 const stockExe = 'Engine/Binaries/Win64/UnrealGame-Win64-Shipping.exe';
+const linuxEntries = ['Engine/Binaries/Linux/UnrealGame-Linux-Shipping', 'Lunden/Binaries/Linux/Lunden-Linux-Shipping'];
 
 function parseManifest(bytes) {
   const text = new TextDecoder('utf-8', { fatal: true }).decode(bytes);
@@ -68,10 +69,12 @@ function checkStock(app, files) {
     throw Error('Missing project pak in stock Unreal package.');
 }
 
-function releaseObjects(manifest, channel) {
+function releaseObjects(manifest, channel, platform = 'win-x64') {
   const errors = validate(manifest, schema);
   if (errors.length) throw Error(errors[0]);
   if (manifest.channel !== channel) throw Error('Wrong release channel.');
+  if (!['win-x64', 'linux-x64'].includes(platform) || (manifest.platform ?? 'win-x64') !== platform)
+    throw Error('Wrong release platform.');
   const { app, content, launcher } = manifest;
   if (app.contentAbi !== content.requiresAbi) throw Error('Incompatible content ABI.');
   const date = manifest.published;
@@ -87,6 +90,10 @@ function releaseObjects(manifest, channel) {
   if (new Set(content.packages.map(p => p.id)).size !== content.packages.length) throw Error('Duplicate content package ID.');
 
   const files = [...app.files, ...content.packages.flatMap(p => p.files)];
+  if (platform === 'linux-x64' && files.some(f => f.authenticode || /\.(exe|dll)$/i.test(f.path)
+      || f.path.split('/').some(p => ['Windows', 'Win64'].includes(p)))) throw Error('Windows files in Linux package.');
+  if (platform === 'win-x64' && files.some(f => f.executable || f.path.split('/').includes('Linux')))
+    throw Error('Linux files in Windows package.');
   const paths = new Set();
   for (const { path } of files) {
     if (path.split('/').some(s => s.length > 255 || /[^A-Za-z0-9._ -]|[. ]$|^(?:CON|PRN|AUX|NUL|COM[1-9]|LPT[1-9])(?:\.|$)/i.test(s)))
@@ -100,7 +107,10 @@ function releaseObjects(manifest, channel) {
     }
   }
   const appFiles = new Map(app.files.map(f => [f.path, f]));
-  if (!appFiles.has(projectExe)) {
+  if (platform === 'linux-x64') {
+    if (!linuxEntries.some(p => appFiles.get(p)?.executable)) throw Error('Invalid Linux game entry point.');
+    if (!files.some(f => /^Lunden\/Content\/Paks\/.+\.pak$/.test(f.path))) throw Error('Missing Linux project pak.');
+  } else if (!appFiles.has(projectExe)) {
     if (!appFiles.has(stockExe) || paths.has(projectExe.toLowerCase())) throw Error('Invalid game entry point.');
     checkStock(appFiles, files);
   }
@@ -147,11 +157,11 @@ export async function verifyDownload(url, entry, channel, publicOnly) {
   throw Error('Too many redirects for ' + name);
 }
 
-export function validateReleaseManifest(manifest, channel) {
-  releaseObjects(manifest, channel);
+export function validateReleaseManifest(manifest, channel, platform = 'win-x64') {
+  releaseObjects(manifest, channel, platform);
 }
 
-function verifiedRelease(bytes, sig, publicKeyPem, channel) {
+function verifiedRelease(bytes, sig, publicKeyPem, channel, platform = 'win-x64') {
   const pem = typeof publicKeyPem === 'string' ? publicKeyPem : new TextDecoder('utf-8', { fatal: true }).decode(publicKeyPem);
   if (!['stable', 'test'].includes(channel)) throw Error('Specify the expected stable or test channel.');
   if (bytes.byteLength > 4 * 1024 * 1024) throw Error('Manifest exceeds launcher size limit.');
@@ -162,20 +172,20 @@ function verifiedRelease(bytes, sig, publicKeyPem, channel) {
       sig.length !== 64 || !verify('sha256', bytes, { key, dsaEncoding: 'ieee-p1363' }, sig))
     throw Error('Invalid P-256 manifest signature.');
   const manifest = parseManifest(bytes);
-  return { manifest, objects: releaseObjects(manifest, channel) };
+  return { manifest, objects: releaseObjects(manifest, channel, platform) };
 }
 
-export function readVerifiedManifest(bytes, signatureBytes, publicKeyPem, channel) {
-  return verifiedRelease(bytes, signatureBytes, publicKeyPem, channel).manifest;
+export function readVerifiedManifest(bytes, signatureBytes, publicKeyPem, channel, platform = 'win-x64') {
+  return verifiedRelease(bytes, signatureBytes, publicKeyPem, channel, platform).manifest;
 }
 
-export async function verifyPublished({ manifest, signature, publicKey, channel }) {
+export async function verifyPublished({ manifest, signature, publicKey, channel, platform = 'win-x64' }) {
   const [bytes, sig, pem] = await Promise.all([readFile(manifest), readFile(signature), readFile(publicKey, 'utf8')]);
-  return verifyPublishedBytes(bytes, sig, pem, channel);
+  return verifyPublishedBytes(bytes, sig, pem, channel, { platform });
 }
 
-export async function verifyPublishedBytes(bytes, sig, pem, channel, { publicOnly = false } = {}) {
-  const { objects } = verifiedRelease(bytes, sig, pem, channel);
+export async function verifyPublishedBytes(bytes, sig, pem, channel, { publicOnly = false, platform = 'win-x64' } = {}) {
+  const { objects } = verifiedRelease(bytes, sig, pem, channel, platform);
   let total = 0n;
   for (const [url, entry] of objects) {
     await verifyDownload(url, entry, channel, publicOnly);
@@ -187,7 +197,7 @@ export async function verifyPublishedBytes(bytes, sig, pem, channel, { publicOnl
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   try {
     const { values } = parseArgs({ options: {
-      channel: { type: 'string' }, manifest: { type: 'string' },
+      channel: { type: 'string' }, platform: { type: 'string' }, manifest: { type: 'string' },
       signature: { type: 'string' }, 'public-key': { type: 'string' }
     } });
     if (!values.manifest || !values.signature || !values['public-key'])

@@ -15,15 +15,20 @@ const candidate = { id: 37, tag_name: tag, draft: false, prerelease: false, publ
 function fixture(t) {
   const state = { previous: { id: 51, tag_name: 'content-70' }, target: { ...candidate },
     requests: [], candidateAssets: new Map(), previousAssets: new Map(), bodies: new Map(), objects: new Map() };
-  function seedChannel(channel, previous = false, launcherUrl) {
-    const name = channel === 'stable' ? 'lunden-manifest.json' : 'lunden-manifest-test.json';
+  function seedChannel(channel, previous = false, launcherUrl, platform = 'win-x64') {
+    const linux = platform === 'linux-x64';
+    const name = linux ? `lunden-manifest-linux-x64${channel === 'test' ? '-test' : ''}.json`
+      : channel === 'stable' ? 'lunden-manifest.json' : 'lunden-manifest-test.json';
     const data = Buffer.from('fixture-' + channel);
-    const url = 'https://fixture.invalid/' + channel;
+    const url = 'https://fixture.invalid/' + (linux ? 'linux-' : '') + channel;
     state.objects.set(url, data);
     const file = { url, size: data.length, sha256: sha(data) };
-    const manifest = Buffer.from(JSON.stringify({ formatVersion: 1, channel, published: '2026-11-20T12:00:00Z',
-      app: { version: '1.0', minLauncher: '1.0', contentAbi: 'x', files: [{ path: 'Lunden/Binaries/Win64/Lunden-Win64-Shipping.exe', ...file }] },
-      content: { version: 72, requiresAbi: 'x', packages: [] }, launcher: { ...file, version: launcherUrl ? '1.2.3' : '1.0', url: launcherUrl ?? file.url } }));
+    const manifest = Buffer.from(JSON.stringify({ formatVersion: 1, channel, ...(linux ? {platform} : {}), published: '2026-11-20T12:00:00Z',
+      app: { version: '1.0', minLauncher: '1.0', contentAbi: 'x', files: [{ path: linux
+        ? 'Engine/Binaries/Linux/UnrealGame-Linux-Shipping' : 'Lunden/Binaries/Win64/Lunden-Win64-Shipping.exe',
+      ...(linux ? {executable:true} : {}), ...file }] },
+      content: { version: 72, requiresAbi: 'x', packages: linux ? [{id:'base',files:[{path:'Lunden/Content/Paks/Lunden-Linux.pak',...file}]}] : [] },
+      launcher: { ...file, version: launcherUrl ? '1.2.3' : '1.0', url: launcherUrl ?? file.url } }));
     const sig = sign('sha256', manifest, { key: privateKey, dsaEncoding: 'ieee-p1363' });
     const inventory = previous ? state.previousAssets : state.candidateAssets;
     for (const [asset, bytes] of [[name, manifest], [name + '.sig', sig]]) {
@@ -92,6 +97,18 @@ test('first release may publish the test channel alone', async t => {
   seedChannel('test');
   await dispatch();
   assert.equal(writes().length, 1);
+});
+
+test('promotion verifies Linux separately and cannot drop an existing Linux channel', async t => {
+  const { seedChannel, dispatch, writes, state } = fixture(t);
+  seedChannel('stable');
+  seedChannel('stable',true,undefined,'linux-x64');
+  await assert.rejects(dispatch(),/Missing published asset lunden-manifest-linux-x64/);
+  assert.equal(writes().length,0);
+  seedChannel('stable',false,undefined,'linux-x64');
+  await dispatch();
+  assert.equal(writes().length,1);
+  assert(state.requests.some(([,url])=>url==='https://fixture.invalid/linux-stable'));
 });
 
 for (const channel of ['stable', 'test']) {

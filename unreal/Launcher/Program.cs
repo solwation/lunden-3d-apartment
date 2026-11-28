@@ -16,6 +16,7 @@ internal static class Program
         var assembly = typeof(Program).Assembly;
         TaskDialog.Progress? window = null;
         try {
+            string platform = ReleasePlatform.Current;
             var signer = SignerIdentity.Compiled;
             if (SelfUpdate.IsHelper(args)) return SelfUpdate.Finish(args, signer);
             string image = Environment.ProcessPath ?? throw new IOException("Startprogrammets sökväg saknas.");
@@ -36,10 +37,10 @@ internal static class Program
 
             var local = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
             string name = options.Channel == "test" ? "Lunden-Test" : "Lunden";
-            string root = Path.Combine(local, "Programs", name);
+            string root = Path.Combine(local, "Programs", platform == "linux-x64" ? name + "-linux-x64" : name);
             string userData = Path.Combine(local, name);
             using var http = new HttpClient {Timeout = TimeSpan.FromSeconds(20)};
-            var store = new UpdateStore(root, http, (path, file, stock) => StockRuntime.Verify(path, file, stock, signer));
+            var store = new UpdateStore(root, http, (path, file, stock) => StockRuntime.Verify(path, file, stock, signer), platform);
             // #2420: one progress dialog from the update check until the game window appears.
             if (Ui.Windowed && !options.DryRun) window = new TaskDialog.Progress("Startar " + SetupLayout.ProductName);
             var rate = new Ui.Rate();
@@ -63,12 +64,14 @@ internal static class Program
                         window?.Set("Söker efter uppdateringar", "", null);
                         byte[] bytes = await ReadManifestFile(http, options.Source, options.Channel, 4 * 1024 * 1024);
                         byte[] sig = await ReadManifestFile(http, SignatureSource(options.Source), options.Channel, 64);
-                        var release = ReleaseManifest.Read(bytes, sig, key, options.Channel);
+                        var release = ReleaseManifest.Read(bytes, sig, key, options.Channel, platform);
                         if (Version.Parse(release.App.MinLauncher) > Current) {
                             if (Version.Parse(release.Launcher.Version) < Version.Parse(release.App.MinLauncher))
                                 throw new InvalidDataException("Det annonserade startprogrammet är för gammalt.");
                             Console.WriteLine($"Nytt startprogram krävs: {release.Launcher.Version}.");
                             if (options.DryRun) return 0;
+                            if (platform == "linux-x64")
+                                throw new InvalidDataException("Hämta det nya Linux-startprogrammet från den officiella releasen innan spelet uppdateras.");
                             var launcher = new ReleaseFile("Lunden.exe", release.Launcher.Url, release.Launcher.Size,
                                 release.Launcher.Sha256, true);
                             string dir = Path.Combine(root, "staging", "launcher");
@@ -130,7 +133,7 @@ internal static class Program
                     }
                     if (bridge != null) info.ArgumentList.Add(bridge.GameArgument);
                     game?.Dispose();
-                    game = Process.Start(info) ?? throw new IOException("Windows kunde inte starta spelet.");
+                    game = Process.Start(info) ?? throw new IOException("Spelet kunde inte startas.");
                     window?.Set("Startar " + SetupLayout.ProductName, "Spelet öppnas…", null);
                     if (!pending) return true;
                     var exit = game.WaitForExitAsync();
@@ -248,7 +251,7 @@ internal static class Program
                 }
             }
             if (channel is not ("test" or "stable")) throw new ArgumentException("Okänd uppdateringskanal.");
-            return new(source ?? Assets + (channel == "test" ? "lunden-manifest-test.json" : "lunden-manifest.json"), channel, dry, offline);
+            return new(source ?? Assets + ReleasePlatform.ManifestName(ReleasePlatform.Current, channel), channel, dry, offline);
         }
     }
 }

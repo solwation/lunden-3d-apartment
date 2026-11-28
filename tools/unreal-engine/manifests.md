@@ -81,3 +81,54 @@ supports either `Lunden-Windows` or `pakchunkN-Windows` groups and their
 `_sN.ucas` partitions. UAT staging lists and the build completion record stay
 with the producer. Runtime notices are included. GitHub assets must be
 smaller than 2 GiB each and fit the release's 1000-asset limit.
+
+## Linux x86_64 (#2422)
+
+`make-linux-manifest.mjs` adapts a completed `release-linux.py` archive and
+`publish-linux-launcher.py` output to the same v1 P-256 protocol. It does not run
+Unreal, sign, upload or promote. Use actual clean commit IDs and the public key
+that was embedded in the launcher:
+
+```sh
+node tools/unreal-engine/make-linux-manifest.mjs \
+  --archive /mnt/d/LundenBuilds/linux-0.3.0/archive/Linux \
+  --archive-commit "$archiveCommit" \
+  --launcher-dir /mnt/d/LundenBuilds/launcher-linux-0.3.0 \
+  --launcher-commit "$launcherCommit" --launcher-version 0.3.0 \
+  --public-key /secure/public/manifest-public.pem \
+  --app-version 0.3.0 --content-version 20 --min-launcher 0.3.0 \
+  --tag app-v0.3.0 --channel test --published 2026-11-28T12:00:00Z \
+  --out /mnt/d/LundenBuilds/linux-draft-20
+```
+
+Examples do not reserve versions or announce a release. The new output contains
+`lunden-manifest-linux-x64-test.json` and `upload-plan.json`. The launcher mapping
+uses local `Lunden` as source and the immutable URL's `Lunden-linux-x64` as asset
+name. All archive blob mappings remain content addressed. `--previous FILE` is
+accepted only with its verified `.sig`, matching Linux platform/channel and the
+existing ABI/content-only rules. The scanner rejects symlinks, Windows PE/files,
+foreign ELF architectures, missing/incomplete Linux IoStore containers and files
+at least 2 GiB. It does not treat a fixture ELF header as proof that a game runs.
+
+Linux manifests include signed `platform: "linux-x64"` and `executable: true` on
+ELF files. Explicit Linux platform is mandatory; old omitted-platform v1 manifests
+remain Windows-only. No Linux file uses `authenticode`. The same protected signing
+workflow accepts the two Linux manifest asset names and passes the expected
+platform through verification. For a **local throwaway-key test only**:
+
+```sh
+LUNDEN_MANIFEST_PUBLIC_KEY="$(cat test-public.pem)" \
+  node tools/unreal-engine/sign-manifest.mjs sign --platform linux-x64 \
+  --channel test --manifest lunden-manifest-linux-x64-test.json \
+  --private-key-stdin < throwaway-private.pem
+node tools/unreal-engine/verify-published.mjs --platform linux-x64 --channel test \
+  --manifest lunden-manifest-linux-x64-test.json \
+  --signature lunden-manifest-linux-x64-test.json.sig --public-key test-public.pem
+```
+
+The last command actually downloads and hashes manifest payloads; invoke it only
+once the draft references the intended uploaded bytes. Private release keys still
+belong exclusively in the existing protected signing environment. Never copy one
+to the Linux builder or put it on the command line. Release promotion checks both
+Windows and Linux pairs whenever either the candidate or current latest contains
+them. No workflow is automatically dispatched by these changes.

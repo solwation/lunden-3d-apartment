@@ -7,13 +7,14 @@ internal static class GameProcess
 {
     internal static ProcessStartInfo StartInfo(string gameRoot, string entryPoint, string userData)
     {
-        if (entryPoint is not (ReleaseManifest.GameExe or ReleaseManifest.StockGameExe))
+        if (entryPoint is not (ReleaseManifest.GameExe or ReleaseManifest.StockGameExe or ReleaseManifest.LinuxGame or ReleaseManifest.LinuxProjectGame))
             throw new InvalidDataException("Okänd startfil för spelet.");
         string path = Path.Combine(gameRoot, entryPoint);
         var info = new ProcessStartInfo(path) { UseShellExecute = false, WorkingDirectory = gameRoot };
-        if (entryPoint == ReleaseManifest.StockGameExe) {
+        if (entryPoint is ReleaseManifest.StockGameExe or ReleaseManifest.LinuxGame) {
             // The project descriptor is mounted from the pak by Unreal, so it is not a loose file.
-            info.ArgumentList.Add(@"..\..\..\Lunden\Lunden.uproject");
+            info.ArgumentList.Add(entryPoint == ReleaseManifest.LinuxGame
+                ? "../../../Lunden/Lunden.uproject" : @"..\..\..\Lunden\Lunden.uproject");
         }
         info.ArgumentList.Add("-UserDir=" + userData);
         return info;
@@ -21,7 +22,8 @@ internal static class GameProcess
 
     internal static bool IsRunning(string installRoot)
     {
-        foreach (string entry in new[] { ReleaseManifest.GameExe, ReleaseManifest.StockGameExe }) {
+        foreach (string entry in new[] { ReleaseManifest.GameExe, ReleaseManifest.StockGameExe,
+            ReleaseManifest.LinuxGame, ReleaseManifest.LinuxProjectGame }) {
             var games = Process.GetProcessesByName(Path.GetFileNameWithoutExtension(entry));
             try {
                 foreach (var game in games) {
