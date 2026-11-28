@@ -1,0 +1,23 @@
+{
+  "testedSource": "a2548c77",
+  "savedAssetsCommit": "8b5804e5",
+  "sourceFiles": {
+    "tools/unreal-engine/python/build_lighting.py": "7c8322227710d0cda0ed92c85cf8bf86cfc907467f164e45aefd58ec249342d1",
+    "tools/unreal-engine/python/build_audio.py": "8c14eaa43d12490d07a8d277598971b87c088d41df713bac237557fcc6d5921b",
+    "tools/unreal-engine/python/sky_clouds.py": "d2e7f9d44668683b5abbefae130b4f558f47634bbcda1da17606cfa103421d57",
+    "tools/unreal-engine/python/weather_audio.py": "f1bfcdecae1f8b185eddef32068000377e28b3d61ae3e4491e7dc5455d2081c9",
+    "tools/unreal-engine/tests/test_lighting.py": "b4ff8f07114f5ad4a2d56e9ffdb5b66dc818a20c60859a4534dc69338d9ff5ec",
+    "tools/unreal-engine/tests/test_audio.py": "1139363b4a35193c3527d921f8db9832e88fecfe965f556772a73e1bb68b5529"
+  },
+  "allThreeActualOuterExitCodes": 0,
+  "nativeBuildSeconds": 108.03,
+  "nativeTestsSeconds": 180.48,
+  "nativeCaptureSeconds": 216.61,
+  "normalBuildWrites": "Lighting actualsave in failedv2; normalv3 reuses validLighting, rebuildsAudio and checksboth; failedv2 remainsfailed",
+  "actualLfsObjects": 21,
+  "all247FinalReadonly": true,
+  "freshCanonical20": false,
+  "freshGlobalSyncStamp": false,
+  "priorUnchangedCanonical": "2422 actual20/import/geometry retained with originalsource/scope; no currentreleasegate claimed",
+  "imageReview": "Visible storm flash in matching patio originals; source colour domain limitation remains explicit; no magenta/default-grid fallback seen. Editor parasol pose retained identically; automatic folding not exercised by this fixture."
+}

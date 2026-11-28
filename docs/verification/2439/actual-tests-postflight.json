@@ -1,0 +1,14 @@
+{
+  "actualOuterExitCode": 0,
+  "actualNativeExitCode": 0,
+  "actualRunnerExitCode": 0,
+  "tests": [
+    "Editor.Python.Lunden.test_audio",
+    "Editor.Python.Lunden.test_lighting"
+  ],
+  "bothActualSuccess": true,
+  "all247ExactReadonly": true,
+  "generatedExact": true,
+  "sourceExportDependenciesExact": true,
+  "freshGlobalSyncStamp": false
+}

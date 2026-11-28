@@ -1,0 +1,28 @@
+{
+  "scope": "2439 original functional acceptance: hail sound parameters and synchronized flash/thunder",
+  "actualRuns": [
+    {
+      "kind": "build-v1",
+      "seconds": 121.93,
+      "native": 255,
+      "outer": 1,
+      "result": "rejected preflight: own LFS-lock mode side effect, no package write"
+    },
+    {
+      "kind": "build-v2",
+      "seconds": 109.08,
+      "native": 255,
+      "outer": 1,
+      "result": "Lighting saved; Audio revealed new FlashSky function order defect, protected assets exact"
+    },
+    {
+      "kind": "build-v3",
+      "seconds": 108.03,
+      "native": 0,
+      "outer": 0,
+      "result": "normal Lighting/Audio plus both checks PASS"
+    }
+  ],
+  "reviewDecision": "No new full20/import/export, Shipping cook or broad APT/night/sun sweep. Remaining original canonical Lighting+Audio tests once, then one two-image flash batch. Source or harness failures require a concrete correction before another attempt.",
+  "priorUnchangedCanonical": "2422 actual20/import/geometry proof retained with its original source and scope, no fresh global stamp or release gate claimed"
+}

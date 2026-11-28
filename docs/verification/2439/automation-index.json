@@ -1,0 +1,59 @@
+﻿{
+	"devices": [
+		{
+			"deviceName": "olw-win10",
+			"instance": "01A22127253F73FA9D93A113EA4105F4",
+			"instanceName": "olw-win10-3291752",
+			"platform": "LinuxEditor",
+			"oSVersion": "Ubuntu 24.04.5 LTS 6.6.87.1-microsoft-standard-WSL2",
+			"model": "Default",
+			"gPU": "UnknownVendor",
+			"cPUModel": "Intel(R) Core(TM) i7-10700 CPU @ 2.90GHz",
+			"rAMInGB": 32,
+			"renderMode": "SM6",
+			"rHI": "",
+			"appInstanceLog": ""
+		}
+	],
+	"reportCreatedOn": "2026.11.28-07.58.40",
+	"succeeded": 2,
+	"succeededWithWarnings": 0,
+	"failed": 0,
+	"notRun": 0,
+	"inProcess": 0,
+	"totalDuration": 27.625930786132812,
+	"comparisonExported": false,
+	"comparisonExportDirectory": "",
+	"tests": [
+		{
+			"testDisplayName": "test_audio",
+			"fullTestPath": "Editor.Python.Lunden.test_audio",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"01A22127253F73FA9D93A113EA4105F4"
+			],
+			"duration": 23.024234771728516,
+			"dateTime": "2026.11.28-07.58.13",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		},
+		{
+			"testDisplayName": "test_lighting",
+			"fullTestPath": "Editor.Python.Lunden.test_lighting",
+			"tags": [],
+			"state": "Success",
+			"deviceInstance": [
+				"01A22127253F73FA9D93A113EA4105F4"
+			],
+			"duration": 4.6016969680786133,
+			"dateTime": "2026.11.28-07.58.36",
+			"entries": [],
+			"warnings": 0,
+			"errors": 0,
+			"artifacts": []
+		}
+	]
+}
