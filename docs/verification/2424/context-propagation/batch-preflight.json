@@ -1,0 +1,10 @@
+{
+  "reviewed": true,
+  "contextConfigSHA256": "0573fe4517551a4f06c1a6f2a5b4273743dd3935a2d56b99033604cc8914bd3d",
+  "carConfigSHA256": "45e82ea26d92a884ad4101b06f5ef7bdecfdd49b7214337de378fa8ec8f32099",
+  "batchSHA256": "767bf2be3d5e4bfb994c9f3377b96641c20ac6e4f39503b04e7840052c9ca55a",
+  "sameAuthored250Generated5227Import12Baseline": true,
+  "carDependencies": 558,
+  "contextDependencies": 189,
+  "actualMode": "render RHI for car; context uses CPU BP/MPC only; two scoped entries, no NullRHI claim"
+}

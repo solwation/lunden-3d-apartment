@@ -1,0 +1,8 @@
+{
+  "validation": "Read-only source/API review and AST parse only; no runtime preflight or Unreal execution",
+  "files": {
+    "smoke.py": "d6b6b78d10a78581da8c4db965f7277ed8521a5bf09bd2f5985f726bca5cb668",
+    "prepare.py": "0cd6c884c7cc2e25fbfb4371c5175d8fabe995533d16f2023ec4682f0fd0593f",
+    "README.md": "bc185356799798bf060dc966763c0ddd8380504e824cac1cf56b00b00b32b3a8"
+  }
+}

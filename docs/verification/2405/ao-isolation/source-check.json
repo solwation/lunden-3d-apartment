@@ -1,0 +1,39 @@
+{
+  "phase": "READY for Root review/freeze only, not executed",
+  "sourceHead": "9b9abd58b4820334bdedb635889acad51f4ba15f",
+  "checks": {
+    "actualFactoryRoomProbeCollection": "Node0 actual4materialfactory+actualRoomProbe.collect+setLevel4: no roomProbe registration; glass envnull staysnull,opaque1,r.05,m.55. Minimalcanvasstub, noBrowser/WebGLpixelproof",
+    "currentGLBSourceIdentity": "Actualcurrent2GLB contains68sourceglassnodes using11sharedmeshes:45omgivning/23kvarteret, allOPAQUE std33495c_r5_m55; nohandmadeactorIDs. Runtime requiresactualsame68bindings/counts/11meshes andeachuniqueglassslot.",
+    "PythonAST": "bothPASS"
+  },
+  "dependenciesSHA256": {
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2405/ao-isolation-v1/probe.py": "69d97e25e198c31db997947431b7e0684f4da01d4a4e3e4ddf8a325e9f722504",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2405/ao-isolation-v1/capture.py": "b042ffd5f2f6458b587848fc3ac4aa645be17f708e760e583ff09d042a88c7b5",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2405/ao-isolation-v1/current-targets.json": "a424fac830680f88347d730007e49d2a1bb228ab2d321d0a95528181cac18166",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2405/ao-isolation-v1/source-check.mjs": "8c73270f51a2dae0a2594762c0e80ffc053fa4e2e6fb0c7cb91e19b3b590503f",
+    "/home/devcontainers/wt/codex-2424-basic/src/carfinish.js": "54d08921231f924e70b37ebf35f9a5e94fa73383aaa955faaa6826c97681c07c",
+    "/home/devcontainers/wt/codex-2424-basic/src/garage.js": "6db6dadd429b7890e11bfa3e4caecb09998c6b0ca679e881d65db45505f01904",
+    "/home/devcontainers/wt/codex-2424-basic/src/streetlife.js": "befc856b0407430ff57d070cce88c2f3c99b4f0565b044239692635340d7c63c",
+    "/home/devcontainers/wt/codex-2424-basic/src/eastlot.js": "50f07a6e5f271b401b52db089a743cb95450155f2aaf7f58c0bb8c6f7726ce53",
+    "/home/devcontainers/wt/codex-2424-basic/src/frost.js": "d1055025f9a680719fb28751bb945bbcab28b2e3efbe6952a632ffc33f1c657a",
+    "/home/devcontainers/wt/codex-2424-basic/src/snowground.js": "032ee59ba6e22ead9ab6409f41b755331bfa7e856e20941339c1b798fe3fbdee",
+    "/home/devcontainers/wt/codex-2424-basic/src/wetsurface.js": "068c04ace4bfd934c711a96235d02a86f3f268f05edd1f158603228d93478ee8",
+    "/home/devcontainers/wt/codex-2424-basic/src/roomprobe.js": "7eb2297eca18b6a86662cadcf8b1dad86b7c829181f49dcbd6856b35cd3a838e",
+    "/home/devcontainers/wt/codex-2424-basic/src/main.js": "ac7902c916b7447deda82b417a0591cc60051fed7ef6eb6ae147e43f7739117a",
+    "/home/devcontainers/wt/codex-2424-basic/src/config.js": "a36e730774ee48527ae9b1ac7e2f444ca0fe6e8cbf02e15d1da56cfcdc3f94e0",
+    "/home/devcontainers/wt/codex-2424-basic/tools/unreal-engine/tests/parked-views.json": "deaf1f0cf82effb1b9f30d366e7c496e7d3fccbec52b6f34544999da24b49c4e"
+  },
+  "runtimePremises": [
+    "actualeffectiveOPAQUE DefaultLit surface/noattributes oncopiedchain",
+    "r.AllowStaticLighting0,r.SSR.Quality0,r.ReflectionMethod0 (noforcing)",
+    "actualSkyLightocclusionTintblack",
+    "actualRoughnessFactor.05,MetallicFactor.55,BaseColorFactor sourceRGBA withinfloat1e-6",
+    "allcopiedlocal/effective/static/textureparamsidentical; copiedAOConstant0; compilererrors[]"
+  ],
+  "limits": [
+    "AOeditorrouting not independentlyreadbackhere; zeroresponsewouldremaininconclusive ratherthanfalseindirectsuppressionproof",
+    "PrivateLinuxSM5causaldata only; noWindowsLumenorPMREM/sourceAmbientparity",
+    "No currentwebcapture exists; historical2374image is retained comparison only",
+    "All250authored/allGenerated/export/head/deps frozen before/after; unsavedpackages discarded. Effectivebindingsrestoremandatory; overridearrayinternalexactnotrequired."
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "sourceView": {
+    "id": "parked-street",
+    "x": -39,
+    "z": -8.4,
+    "feetY": 0,
+    "yawDeg": 44,
+    "pitchDeg": -6,
+    "lighting": "day"
+  },
+  "native": {
+    "xyz": [
+      -3900,
+      -840,
+      162
+    ],
+    "yaw": -134,
+    "pitch": -6
+  },
+  "canonicalModule": "/home/devcontainers/wt/codex-2434-native/tools/unreal-engine/coordinates.mjs",
+  "canonicalModuleSHA256": "d59d8b3a3af1ff3688e3723fcfd13cd9cc634f69a5297fff2bd65608e2c889d0",
+  "targetsSHA256": "a424fac830680f88347d730007e49d2a1bb228ab2d321d0a95528181cac18166",
+  "projectionCheck": {
+    "mappedWebForward": [
+      -0.6946583704589971,
+      -0.7193398003386513,
+      0
+    ],
+    "nativeForward": [
+      -0.694658370458997,
+      -0.7193398003386514
+    ],
+    "error": 1.5700924586837752e-16,
+    "oldV1Forward": [
+      0.6946583704589974,
+      0.7193398003386511
+    ],
+    "oldV1DotCorrect": -1
+  },
+  "classification": "Canonical camera derivation only; actualNativeimage not yet rerun"
+}

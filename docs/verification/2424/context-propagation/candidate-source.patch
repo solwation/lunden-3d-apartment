@@ -1,0 +1,170 @@
+diff --git a/tools/unreal-engine/python/build_lighting.py b/tools/unreal-engine/python/build_lighting.py
+index ee639592..1d7c3a8d 100644
+--- a/tools/unreal-engine/python/build_lighting.py
++++ b/tools/unreal-engine/python/build_lighting.py
+@@ -52,6 +52,7 @@ import neutral_tonemap  # #2396: the web's NeutralToneMapping in place of Unreal
+ import window_light
+ import build_window_light
+ import parasol_control
++import build_source_ambient
+ 
+ DIR = "/Game/Lunden/Lighting"
+ SKY = DIR + "/BP_LundenSky"
+@@ -213,7 +214,7 @@ def spec_of(m):
+     boxes, soffit = indoor_boxes(m)
+     parasols = (m.get("furnishing") or {}).get("parasols", [])
+     parasol_control.validate(parasols)
+-    return {"sky": sky, "boxes": boxes, "soffit": soffit, "lamps": lamp_rows(m), "sunLux": SUN_LUX,
++    result = {"sky": sky, "boxes": boxes, "soffit": soffit, "lamps": lamp_rows(m), "sunLux": SUN_LUX,
+             "windowDaylight": daylight, "parasols": parasols,
+             "flashLight": float(m["site"]["sourceAmbient"]["flashLight"]),
+             "patioTone": hashlib.sha256(Path(patio_tone.__file__).read_bytes().replace(b"\r\n", b"\n")).hexdigest(),
+@@ -227,6 +228,10 @@ def spec_of(m):
+             "stairShader": hashlib.sha256(Path(stair_lamp.__file__).read_bytes().replace(b"\r\n", b"\n")).hexdigest(),
+             "tonemap": hashlib.sha256(Path(neutral_tonemap.__file__).read_bytes().replace(b"\r\n", b"\n")).hexdigest(),
+             "script": hashlib.sha256(Path(__file__).read_bytes().replace(b"\r\n", b"\n")).hexdigest()}
++    runtime = build_source_ambient.runtime_spec(Path(__file__).resolve().parents[3], m)
++    if runtime is not None:
++        result['sourceAmbientRuntime'] = runtime
++    return result
+ 
+ 
+ def spec_hash(spec):
+@@ -593,6 +598,10 @@ def build_mpc(spec):
+             out.append(e)
+         mpc.set_editor_property(prop, out)
+ 
++    if spec.get('sourceAmbientRuntime'):
++        # Append only. OFF performs no writes; live raw uniforms never activate the material policy.
++        scalars.update({name: 0.0 for name in build_source_ambient.source.MPC_SCALARS})
++        vectors.update({name: u.LinearColor(0, 0, 0, 1) for name in build_source_ambient.source.MPC_VECTORS})
+     entries("scalar_parameters", u.CollectionScalarParameter, {k: float(v) for k, v in scalars.items()})
+     entries("vector_parameters", u.CollectionVectorParameter, vectors)
+     return mpc
+@@ -1185,6 +1194,8 @@ def build_sky(spec, mpc, precip, clouds, tonemap, window_material):
+         "SunElevation": ("real", 0.0), "MoonIllumination": ("real", 0.0), "Daylight": ("real", 0.0),
+         "CloudCover": ("real", 0.0), "DuskLight": ("real", 0.0),
+     })
++    if spec.get('sourceAmbientRuntime'):
++        variables(bp, {name: ('real', 0.0) for name in build_source_ambient.CONTEXT_INPUTS})
+     G = Graph(bp)
+ 
+     # UpdateSky: the web's sun and moon for Year/Month/Day/Hour, then lights, fog and the weather collection
+@@ -1324,7 +1335,13 @@ def build_sky(spec, mpc, precip, clouds, tonemap, window_material):
+         s = G.place(G.g.add_set_member_variable_node(name))
+         E.feed(s, name, env[key])
+         chain.then(s)
++    if spec.get('sourceAmbientRuntime'):
++        build_source_ambient.sky_parameters(G, E, chain, mpc,
++            spec['sourceAmbientRuntime']['contract'], constant, connect, active=False)
+     BP.compile_blueprint(bp)
++    if spec.get('sourceAmbientRuntime'):
++        build_source_ambient.context_function(bp)
++        BP.compile_blueprint(bp)
+     update = bp.generated_class().get_path_name() + ":UpdateSky"
+ 
+     # #2439: explicit sky states, matching the existing manual rain/snow controls.
+diff --git a/tools/unreal-engine/python/build_source_ambient.py b/tools/unreal-engine/python/build_source_ambient.py
+index f652acc3..bbf66051 100644
+--- a/tools/unreal-engine/python/build_source_ambient.py
++++ b/tools/unreal-engine/python/build_source_ambient.py
+@@ -192,6 +192,33 @@ def copy_material(original, function, mpc, *, display_gain, source_physical=Fals
+     return material
+ 
+ 
++CONTEXT_INPUTS = ('SourceDim', 'SourceUnder', 'SourceGarageLit')
++
++
++def runtime_spec(root, measurements):
++    """Canonical preparation uses the same hard OFF/coverage guard as material binding."""
++    if not guard(root):
++        return None
++    contract = source.validate(measurements['site']['sourceAmbient'])
++    return {'contract': contract, 'builder': hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
++
++
++def context_function(bp):
++    """Atomic context handoff; callers must supply the actual source room/blind/garage values.
++
++    It does not infer a camera room or replace the player context producer. That
++    real caller binding remains an explicit activation prerequisite.
++    UpdateSky must already exist and is compiled by pp.function before this call.
++    """
++    import player_parts as pp
++    if pp.BP.find_graph(bp, 'SetSourceAmbientContext'):
++        pp.BP.remove_function_graph(bp, 'SetSourceAmbientContext')
++    graph, pins = pp.function(bp, 'SetSourceAmbientContext', inputs=[(name, pp.REAL) for name in CONTEXT_INPUTS])
++    for name in CONTEXT_INPUTS:
++        graph.set(name, pins[name])
++    graph.run(bp.generated_class().get_path_name()+':UpdateSky')
++
++
+ def sky_parameters(g, e, chain, mpc, contract, constant, connect, *, active=False, direct_units=None):
+     """Feed exact source MPC values, independently of old native fill/cube guesses."""
+     source.validate(contract)
+@@ -203,8 +230,11 @@ def sky_parameters(g, e, chain, mpc, contract, constant, connect, *, active=Fals
+                         ('SourceNightAmbient',contract['nightAmbient']),('SourceFlashLight',contract['flashLight']),
+                         ('SourceGarageCarLight',contract['garageCarLight'])):
+         e.env[name] = float(value)
+-    for name in ('SourceDim', 'SourceUnder', 'SourceFlash', 'SourceGarageLit'):
++    for name in CONTEXT_INPUTS:
+         e.env[name] = g.get(name), name
++    # FLASH was evaluated from this UpdateSky's actual FlashT/K above. A stored
++    # Flash getter would observe the previous UpdateSky until its final setter.
++    e.env['SourceFlash'] = e.env['flash']
+     env = e.run('''
+ sourceClear = day * (1-oc) * (1-SourceUnder)
+ sourceInDay = day * (1-SourceDim) * (1-SourceUnder)
+diff --git a/tools/unreal-engine/tests/test_source_ambient.py b/tools/unreal-engine/tests/test_source_ambient.py
+index bb1b3efc..8defa798 100644
+--- a/tools/unreal-engine/tests/test_source_ambient.py
++++ b/tools/unreal-engine/tests/test_source_ambient.py
+@@ -89,10 +89,12 @@ class SourceAmbient(unittest.TestCase):
+                       {'day':.25,'overcast':.7,'dim':.3,'under':.5,'flash':.2,'garage_lit':.4}):
+             runtime = dict(zip(('SourceDim','SourceUnder','SourceFlash','SourceGarageLit'),(state['dim'],state['under'],state['flash'],state['garage_lit'])))
+             class Graph:
+-                def get(self, name): return runtime[name] if name in runtime else name
++                def get(self, name):
++                    if name=='SourceFlash':raise AssertionError('Stale/undeclared SourceFlash getter')
++                    return runtime[name] if name in runtime else name
+                 def call(self, kind, **args): return {'kind':kind, **args}
+             class Expr:
+-                def __init__(self): self.env={'day':state['day'],'oc':state['overcast']}
++                def __init__(self): self.env={'day':state['day'],'oc':state['overcast'],'flash':state['flash']}
+                 def run(self, text):
+                     self.env.update({k:v[0] if isinstance(v,tuple) else v for k,v in self.env.items()})
+                     exec(text,{'__builtins__':{}},self.env)
+@@ -120,6 +122,33 @@ class SourceAmbient(unittest.TestCase):
+             rotation=next(n for n in c.nodes if n['kind']=='SceneComponent:K2_SetWorldRotation')['NewRotation']['X']
+             self.assertEqual([rotation[k] for k in ('X','Y','Z')],[-1,0,0])
+ 
++    def test_runtime_spec_off_never_requires_or_fabricates_context(self):
++        with patch.object(builder, 'guard', return_value=False):
++            self.assertIsNone(builder.runtime_spec('/unused', {}))
++        # Even complete-looking coverage cannot activate the canonical hook.
++        with patch.object(builder, 'guard', side_effect=RuntimeError('coverage refused')):
++            with self.assertRaisesRegex(RuntimeError, 'coverage refused'):
++                builder.runtime_spec('/unused', {})
++
++    def test_context_handoff_sets_all_inputs_before_same_update(self):
++        from types import SimpleNamespace
++        calls=[]
++        class Graph:
++            def set(self, name, value):calls.append(('set',name,value))
++            def run(self, path):calls.append(('update',path))
++        pins={name:object() for name in builder.CONTEXT_INPUTS}
++        def function(bp, name, inputs):
++            self.assertEqual(name,'SetSourceAmbientContext')
++            self.assertEqual(inputs,[(n,'real') for n in builder.CONTEXT_INPUTS])
++            calls.append(('function',name))
++            return Graph(),pins
++        module=SimpleNamespace(REAL='real',function=function,
++            BP=SimpleNamespace(find_graph=lambda *args:False))
++        bp=SimpleNamespace(generated_class=lambda:SimpleNamespace(get_path_name=lambda:'/ActualSky_C'))
++        with patch.dict(sys.modules,player_parts=module):builder.context_function(bp)
++        self.assertEqual(calls,[('function','SetSourceAmbientContext'),
++            *[('set',n,pins[n]) for n in builder.CONTEXT_INPUTS],('update','/ActualSky_C:UpdateSky')])
++
+     def test_actual_primitive_keys_reject_physical_even_when_export_omits_layers(self):
+         with tempfile.TemporaryDirectory() as temp:
+             data={'materials':[{'name':'std_rug'},{'name':'phys_glass'},{'name':'bas_label','extensions':{'KHR_materials_unlit':{}}},{'name':'unused'}],

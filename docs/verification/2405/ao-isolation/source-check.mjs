@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const root='/home/devcontainers/wt/codex-2424-basic';
+globalThis.document={createElement(type){assert.equal(type,'canvas');return {width:0,height:0,getContext(type){assert.equal(type,'2d');return {createLinearGradient(){return {addColorStop(){}};},fillRect(){},set fillStyle(v){}};}};}};
+const {parkedCarMaterials}=await import(root+'/src/carfinish.js');
+const {RoomProbe}=await import(root+'/src/roomprobe.js');
+const THREE=await import(root+'/node_modules/three/build/three.module.js');
+const materials=parkedCarMaterials();
+assert.equal(materials[2].envMap,null);assert.equal(materials[2].userData.roomProbe,undefined);
+const scene=new THREE.Scene();for(const m of materials)scene.add(new THREE.Mesh(new THREE.BufferGeometry(),m));
+const probe=new RoomProbe({},scene,{});assert.equal(probe.collect(),0);probe.setLevel(4);
+assert.equal(materials[2].envMap,null);assert.equal(probe.mats.size,0);assert.equal(scene.environment,null);
+assert.equal(materials[2].transparent,false);assert.equal(materials[2].opacity,1);assert.equal(materials[2].roughness,.05);assert.equal(materials[2].metalness,.55);
+const main=fs.readFileSync(root+'/src/main.js','utf8');assert(!/scene\.environment\s*=/.test(main));
+console.log('CAR_RUNTIME_COLLECTION_OK actual factory+RoomProbe.collect/setLevel4:0registered; opaque glass envnull staysnull; source-only/noWebGL');

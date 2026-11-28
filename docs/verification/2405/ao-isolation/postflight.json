@@ -1,0 +1,296 @@
+{
+  "recordedAtUTC": "2026-11-28T12:42:25.296251+00:00",
+  "completed": true,
+  "passed": true,
+  "classification": "External file/state/process postflight and raw RGB response only. No product or matched-web colour acceptance.",
+  "batchResult": {
+    "path": "/home/devcontainers/.local/state/lunden-codex-20261127/batch-context-car-v1-result.json",
+    "sha256": "fe4dd768ffdfb416fef4b03bc85b8c5d517817f4916258bbfea53cd5b0a4244a",
+    "completed": true,
+    "passed": true
+  },
+  "execution": {
+    "nativeResult": "/mnt/d/LundenLinux/runs/20261128T122445029669-550641/result.json",
+    "nativeResultSHA256": "6b2379df5410a66b7cca4074fa9f43f4329ef76c8e06d12f1b0ebcbf09c7d6b3",
+    "nativeExitCode": 0,
+    "runnerExitCode": 0,
+    "actualToolExitCode": 0,
+    "toolEvidence": "Root actual functions.write_stdin session93610 completion chunk6e990d",
+    "nativePassed": true,
+    "nativeCompleted": true,
+    "logErrors": [],
+    "nativeSeconds": 237.61,
+    "outerSeconds": 237.667,
+    "renderMode": "--render --allow-cpu-device; render RHI used for car. Context is CPU-only, no NullRHI/GPU/visual proof."
+  },
+  "source": {
+    "nativeHead": "9b9abd58b4820334bdedb635889acad51f4ba15f",
+    "expectedNativeHead": "9b9abd58b4820334bdedb635889acad51f4ba15f",
+    "contextSourceRoot": "/home/devcontainers/wt/codex-2424-live",
+    "contextSourceHead": "79de8a8b1798f94ccb7170a00edb9653439d7424",
+    "expectedContextSourceHead": "79de8a8b1798f94ccb7170a00edb9653439d7424"
+  },
+  "configs": [
+    {
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2424/live-context-smoke-v1/native-v1/config.json",
+      "sha256": "0573fe4517551a4f06c1a6f2a5b4273743dd3935a2d56b99033604cc8914bd3d"
+    },
+    {
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2405/ao-isolation-v2/config-native-v2.json",
+      "sha256": "45e82ea26d92a884ad4101b06f5ef7bdecfdd49b7214337de378fa8ec8f32099"
+    }
+  ],
+  "fileGuards": {
+    "passed": true,
+    "authoredCount": 250,
+    "allAuthoredReadonly0444": true,
+    "generatedCount": 5227,
+    "importCount": 12,
+    "uniqueDependencyCount": 586,
+    "comparisons": {
+      "context": {
+        "authoredChanged": [],
+        "generatedChanged": [],
+        "exportChanged": [],
+        "dependenciesChanged": [],
+        "authoredExact": true,
+        "generatedExact": true,
+        "exportExact": true,
+        "dependenciesExact": true,
+        "dependencyCount": 189
+      },
+      "car": {
+        "authoredChanged": [],
+        "generatedChanged": [],
+        "exportChanged": [],
+        "dependenciesChanged": [],
+        "authoredExact": true,
+        "generatedExact": true,
+        "exportExact": true,
+        "dependenciesExact": true,
+        "dependencyCount": 558
+      }
+    }
+  },
+  "context": {
+    "passed": true,
+    "result": "/home/devcontainers/.local/state/lunden-codex-20261127/2424/live-context-smoke-v1/native-v1/product/result.json",
+    "resultSHA256": "3a46c88fc0d1f3895504129789c40c98d4c049ffad14bf42a511abf2a0b0c1e6",
+    "statesPassed": [
+      true,
+      true,
+      true
+    ],
+    "actualEnabled": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "sourcePolicyEnabled": false,
+    "scratchActorDestroyed": true,
+    "scope": "CPU Blueprint/MPC propagation only; no saved assets, GPU/render/global activation proof"
+  },
+  "car": {
+    "passed": true,
+    "capture": "/home/devcontainers/.local/state/lunden-codex-20261127/2405/ao-isolation-v2/native/capture.json",
+    "captureSHA256": "f0cf51c9498ccaf519c1eb7a1a2f5482146c077c01b792145e2f125dc02ced46",
+    "completed": true,
+    "restored": true,
+    "actualCounts": {
+      "omgivning": 45,
+      "kvarteret": 23
+    },
+    "effective68BindingsRestored": true,
+    "entryStateEqualsAfterRestore": true,
+    "compilerErrors": [
+      []
+    ],
+    "cameraBasis": {
+      "sourceView": {
+        "id": "parked-street",
+        "x": -39,
+        "z": -8.4,
+        "feetY": 0,
+        "yawDeg": 44,
+        "pitchDeg": -6,
+        "lighting": "day"
+      },
+      "date": [
+        2026,
+        6,
+        21
+      ],
+      "hour": 14,
+      "lampsOn": false,
+      "webEye": [
+        -39,
+        1.62,
+        -8.4
+      ],
+      "nativeXYZ": [
+        -3900,
+        -840,
+        162
+      ],
+      "nativeYaw": -134,
+      "nativePitch": -6,
+      "verticalFov": 72,
+      "width": 640,
+      "height": 360,
+      "cameraContract": {
+        "sourceView": {
+          "id": "parked-street",
+          "x": -39,
+          "z": -8.4,
+          "feetY": 0,
+          "yawDeg": 44,
+          "pitchDeg": -6,
+          "lighting": "day"
+        },
+        "native": {
+          "xyz": [
+            -3900,
+            -840,
+            162
+          ],
+          "yaw": -134,
+          "pitch": -6
+        },
+        "canonicalModule": "/home/devcontainers/wt/codex-2434-native/tools/unreal-engine/coordinates.mjs",
+        "canonicalModuleSHA256": "d59d8b3a3af1ff3688e3723fcfd13cd9cc634f69a5297fff2bd65608e2c889d0",
+        "targetsSHA256": "a424fac830680f88347d730007e49d2a1bb228ab2d321d0a95528181cac18166",
+        "projectionCheck": {
+          "mappedWebForward": [
+            -0.6946583704589971,
+            -0.7193398003386513,
+            0
+          ],
+          "nativeForward": [
+            -0.694658370458997,
+            -0.7193398003386514
+          ],
+          "error": 1.5700924586837752e-16,
+          "oldV1Forward": [
+            0.6946583704589974,
+            0.7193398003386511
+          ],
+          "oldV1DotCorrect": -1
+        },
+        "classification": "Canonical camera derivation only; actualNativeimage not yet rerun"
+      },
+      "historicalWebOnly": "docs/verification/2374/parked-street.jpg; no current matched web parity claimed"
+    },
+    "globalPolicyNotModified": true,
+    "images": [
+      {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2405/ao-isolation-v2/native/unreal-parked-street-original-before.png",
+        "sha256": "db128dbca7ee5bea3f5ff2383147ac7aa9cc00129a8a5810d47af4222eb0ec4b",
+        "declaredSHA256Matches": true,
+        "format": "PNG",
+        "dimensions": [
+          640,
+          360
+        ],
+        "effectiveBindingCount": 68,
+        "camera": {
+          "xyz": [
+            -3900.0,
+            -840.0,
+            162.0
+          ],
+          "yaw": -134.0,
+          "pitch": -6.000000000000001,
+          "roll": -0.0,
+          "horizontalFov": 104.50486755371094,
+          "width": 640,
+          "height": 360,
+          "separateTranslucencyShowFlag": true,
+          "privateBlendableAttached": false
+        }
+      },
+      {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2405/ao-isolation-v2/native/unreal-parked-street-ao-zero.png",
+        "sha256": "6934a5cc8bac2100a6883c306eb29fbfc48fbb88526a83722649614e6f069401",
+        "declaredSHA256Matches": true,
+        "format": "PNG",
+        "dimensions": [
+          640,
+          360
+        ],
+        "effectiveBindingCount": 68,
+        "camera": {
+          "xyz": [
+            -3900.0,
+            -840.0,
+            162.0
+          ],
+          "yaw": -134.0,
+          "pitch": -6.000000000000001,
+          "roll": -0.0,
+          "horizontalFov": 104.50486755371094,
+          "width": 640,
+          "height": 360,
+          "separateTranslucencyShowFlag": true,
+          "privateBlendableAttached": false
+        }
+      },
+      {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2405/ao-isolation-v2/native/unreal-parked-street-original-after.png",
+        "sha256": "db128dbca7ee5bea3f5ff2383147ac7aa9cc00129a8a5810d47af4222eb0ec4b",
+        "declaredSHA256Matches": true,
+        "format": "PNG",
+        "dimensions": [
+          640,
+          360
+        ],
+        "effectiveBindingCount": 68,
+        "camera": {
+          "xyz": [
+            -3900.0,
+            -840.0,
+            162.0
+          ],
+          "yaw": -134.0,
+          "pitch": -6.000000000000001,
+          "roll": -0.0,
+          "horizontalFov": 104.50486755371094,
+          "width": 640,
+          "height": 360,
+          "separateTranslucencyShowFlag": true,
+          "privateBlendableAttached": false
+        }
+      }
+    ],
+    "beforeAfterRGB": {
+      "changedRGBPixels": 0,
+      "totalPixels": 230400,
+      "maxAbsoluteChannelDelta": 0,
+      "channelDeltaVariantMinusOriginalMin": 0,
+      "channelDeltaVariantMinusOriginalMax": 0,
+      "changedBoundingBox": null
+    },
+    "aoZeroVersusOriginalRGB": {
+      "changedRGBPixels": 8939,
+      "totalPixels": 230400,
+      "maxAbsoluteChannelDelta": 179,
+      "channelDeltaVariantMinusOriginalMin": -179,
+      "channelDeltaVariantMinusOriginalMax": 44,
+      "changedBoundingBox": [
+        113,
+        130,
+        640,
+        203
+      ]
+    },
+    "rootVisualObservation": "Root viewed all three V2 originals: correct cars visible, AO0 strongly darkens glass.",
+    "assetsSavedHere": false,
+    "productAccepted": false,
+    "freshCanonicalExecutedHere": false,
+    "releaseGateExecutedHere": false
+  },
+  "limits": [
+    "V1 invalid 180-degree camera attempt remains invalid and unchanged.",
+    "CPU context assertions do not establish GPU, shader, visual or global SourceAmbient activation.",
+    "AO0 is a diagnostic isolation, not a product correction or matched current-web parity proof."
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "method": "Read-only AST comparison; no Unreal import or execution",
+  "oldCommit": "cc302812",
+  "newCommit": "79de8a8b1798f94ccb7170a00edb9653439d7424",
+  "oldNormalizedScriptSHA256": "7c8322227710d0cda0ed92c85cf8bf86cfc907467f164e45aefd58ec249342d1",
+  "newNormalizedScriptSHA256": "5ef19664be67f9de2a94407cd1dc794ea2222a361ba2989732c4182e1ac08b47",
+  "offSpecDictionarySameAST": true,
+  "offGuardReturns": false,
+  "newRuntimeKeyPresentWhenOff": false,
+  "spec_hashExpression": "def spec_hash(spec):\n    return hashlib.sha256(json.dumps(spec, sort_keys=True).encode()).hexdigest()",
+  "conclusion": "OFF produces same fields and formulas, but script field changes, hence serialized spec input and wanted Lighting signature change. No actual saved asset stamp checked or claimed here."
+}

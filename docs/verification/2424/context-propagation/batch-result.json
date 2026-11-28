@@ -1,0 +1,19 @@
+{
+  "completed": true,
+  "passed": true,
+  "entries": [
+    {
+      "issue": 2424,
+      "entryCompleted": true,
+      "result": "/home/devcontainers/.local/state/lunden-codex-20261127/2424/live-context-smoke-v1/native-v1/product/result.json"
+    },
+    {
+      "issue": 2405,
+      "entryCompleted": true,
+      "result": "/home/devcontainers/.local/state/lunden-codex-20261127/2405/ao-isolation-v2/native/capture.json"
+    }
+  ],
+  "startedAt": "2026-11-28T12:26:34.222143+00:00",
+  "scope": "CPU-only BP/MPC smoke followed by car images; actual process uses render RHI for car, not NullRHI",
+  "endedAt": "2026-11-28T12:28:38.304513+00:00"
+}

@@ -1,0 +1,43 @@
+{
+  "actualCanonicalModule": "/home/devcontainers/wt/codex-2434-native/tools/unreal-engine/coordinates.mjs",
+  "actualDerivedNative": {
+    "xyz": [
+      -3900,
+      -840,
+      162
+    ],
+    "yaw": -134,
+    "pitch": -6
+  },
+  "directionCheck": {
+    "mappedWebForward": [
+      -0.6946583704589971,
+      -0.7193398003386513,
+      0
+    ],
+    "nativeForward": [
+      -0.694658370458997,
+      -0.7193398003386514
+    ],
+    "error": 1.5700924586837752e-16,
+    "oldV1Forward": [
+      0.6946583704589974,
+      0.7193398003386511
+    ],
+    "oldV1DotCorrect": -1
+  },
+  "actualCurrentGLBStreetCarNode": "parked_street_car_compact_2_3",
+  "actualCurrentGLBCarTranslationWeb": [
+    -46.75,
+    -13.792662620544434
+  ],
+  "eyeWebPlan": [
+    -39,
+    -8.4
+  ],
+  "carFrontHemisphereDotMetres": 9.262759223813369,
+  "historicalOriginalViewed": "/home/devcontainers/wt/codex-2424-basic/docs/verification/2374/parked-street.jpg",
+  "historicalContent": "Parked car row in the foreground/along leftward street; corrected source ray heads towards actual exported car row, v1 faces opposite. No currentNative v2image exists yet.",
+  "ASTCaptureAndUnchangedProbe": "PASS",
+  "scope": "Onlycamera contract/pose derivation changed; originalv1files/output untouched; profile/materialcapture/readback/restoration unchanged"
+}

@@ -1,0 +1,13 @@
+import fs from 'node:fs';import assert from 'node:assert/strict';import crypto from 'node:crypto';import {pathToFileURL} from 'node:url';
+const root='/home/devcontainers/wt/codex-2434-native',out=new URL('./camera.json',import.meta.url),targets=new URL('../ao-isolation-v1/current-targets.json',import.meta.url);
+const path=root+'/tools/unreal-engine/coordinates.mjs',C=await import(pathToFileURL(path));
+const source=JSON.parse(fs.readFileSync(targets)).camera;
+const base=JSON.parse(fs.readFileSync(root+'/unreal/Lunden/Tests/views.json'));
+const actual=JSON.parse(fs.readFileSync(root+'/tools/unreal-engine/tests/parked-views.json')).find(x=>x.id==='parked-street');assert.deepEqual(source,actual);
+const xyz=C.webToUnreal([source.x,source.feetY+base.standingEyeHeightM,source.z]),yaw=C.webYawToUnrealYaw(source.yawDeg),pitch=C.webPitchToUnrealPitch(source.pitchDeg);
+const [x,z]=C.webForward(source.yawDeg),mapped=C.webToUnreal([x,0,z]).map(x=>x/100),native=C.unrealForward(yaw);
+const error=Math.hypot(mapped[0]-native[0],mapped[1]-native[1]);assert(error<1e-12);assert.equal(yaw,-134);assert.deepEqual(xyz,[-3900,-840,162]);
+const old=C.unrealForward(46),dotOld=old[0]*mapped[0]+old[1]*mapped[1];assert(dotOld<-.999999999999);
+const sha=b=>crypto.createHash('sha256').update(b).digest('hex');
+fs.writeFileSync(out,JSON.stringify({sourceView:source,native:{xyz,yaw,pitch},canonicalModule:path,canonicalModuleSHA256:sha(fs.readFileSync(path)),targetsSHA256:sha(fs.readFileSync(targets)),projectionCheck:{mappedWebForward:mapped,nativeForward:native,error,oldV1Forward:old,oldV1DotCorrect:dotOld},classification:'Canonical camera derivation only; actualNativeimage not yet rerun'},null,2)+'\n');
+console.log('CAMERA_OK actualcanonicalhelper yaw44 -> -134 (=226), mappedforwardexact; v1dot=-1');

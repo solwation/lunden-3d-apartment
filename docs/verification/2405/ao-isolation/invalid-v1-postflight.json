@@ -1,0 +1,136 @@
+{
+  "classification": "INVALID causal camera attempt; successful process/fileguards do not validate target/AO response",
+  "config": "/home/devcontainers/.local/state/lunden-codex-20261127/2405/ao-isolation-v1/config-native-v1.json",
+  "configSHA256": "f9bfafe29eb932c751c6219108e9a4c68316d58b4e4441a2ad07f02df5066192",
+  "sourceHead": "9b9abd58b4820334bdedb635889acad51f4ba15f",
+  "headExact": true,
+  "actualNativeRunnerTool": [
+    0,
+    0,
+    0
+  ],
+  "toolStatusSource": "Root actual functions.write_stdin session63607 chunkba2712 completion exit_code0; actual outer child0",
+  "nativeResult": "/mnt/d/LundenLinux/runs/20261128T121656618208-386795/result.json",
+  "nativePassedCompleted": true,
+  "nativeLogErrors": [],
+  "nativeSeconds": 241.24,
+  "outerChildSeconds": 241.3,
+  "all250AuthoredExactReadonly": true,
+  "whole5227GeneratedExact": true,
+  "generatedCount": 5227,
+  "all12ImportFilesExact": true,
+  "importCount": 12,
+  "all552DependenciesExact": true,
+  "dependencyCount": 552,
+  "changedDependencies": [],
+  "actualCaptureCompleted": true,
+  "allThreePNGSHAAndDimensionsExact": true,
+  "images": [
+    {
+      "name": "parked-street-original-before",
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2405/ao-isolation-v1/native/unreal-parked-street-original-before.png",
+      "SHA256": "243053544a9441e8bf826f68a4843419b73374a5d6faea741f64064c8459beb2",
+      "matchesCaptureSHA": true,
+      "format": "PNG",
+      "dimensions": [
+        640,
+        360
+      ],
+      "recordedCamera": {
+        "xyz": [
+          -3900.0,
+          -840.0,
+          162.0
+        ],
+        "yaw": 46.0,
+        "pitch": -6.000000000000001,
+        "roll": -0.0,
+        "horizontalFov": 104.50486755371094,
+        "width": 640,
+        "height": 360,
+        "separateTranslucencyShowFlag": true,
+        "privateBlendableAttached": false
+      },
+      "effectiveBindings": 68,
+      "decodedRGBSHA256": "6b014894eaf7aa9cfb4cf83714344ace8b87c63504f5ee514242159045b14158"
+    },
+    {
+      "name": "parked-street-ao-zero",
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2405/ao-isolation-v1/native/unreal-parked-street-ao-zero.png",
+      "SHA256": "2cb370406fb5403d9e2c49add4b468d86275381708a11651f1e7995632e18202",
+      "matchesCaptureSHA": true,
+      "format": "PNG",
+      "dimensions": [
+        640,
+        360
+      ],
+      "recordedCamera": {
+        "xyz": [
+          -3900.0,
+          -840.0,
+          162.0
+        ],
+        "yaw": 46.0,
+        "pitch": -6.000000000000001,
+        "roll": -0.0,
+        "horizontalFov": 104.50486755371094,
+        "width": 640,
+        "height": 360,
+        "separateTranslucencyShowFlag": true,
+        "privateBlendableAttached": false
+      },
+      "effectiveBindings": 68,
+      "decodedRGBSHA256": "79981c8c34df70cf42bc1453ef1fb3c77e272a67c0c73cfd47ccd54ff4e28eb4"
+    },
+    {
+      "name": "parked-street-original-after",
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2405/ao-isolation-v1/native/unreal-parked-street-original-after.png",
+      "SHA256": "243053544a9441e8bf826f68a4843419b73374a5d6faea741f64064c8459beb2",
+      "matchesCaptureSHA": true,
+      "format": "PNG",
+      "dimensions": [
+        640,
+        360
+      ],
+      "recordedCamera": {
+        "xyz": [
+          -3900.0,
+          -840.0,
+          162.0
+        ],
+        "yaw": 46.0,
+        "pitch": -6.000000000000001,
+        "roll": -0.0,
+        "horizontalFov": 104.50486755371094,
+        "width": 640,
+        "height": 360,
+        "separateTranslucencyShowFlag": true,
+        "privateBlendableAttached": false
+      },
+      "effectiveBindings": 68,
+      "decodedRGBSHA256": "6b014894eaf7aa9cfb4cf83714344ace8b87c63504f5ee514242159045b14158"
+    }
+  ],
+  "stateAnd68EffectiveBindingsRestored": true,
+  "originalBeforeAfterRGBExact": true,
+  "originalBeforeAfterChangedRGBPixels": 0,
+  "shaderCompilerErrors": [],
+  "cameraInvalid": {
+    "sourceYawDegrees": 44,
+    "correctNativeYawDegrees": 226,
+    "actualNativeYawDegrees": [
+      46.0,
+      46.0,
+      46.0
+    ],
+    "errorDegrees": 180,
+    "targetCarsVisible": false,
+    "visibilityEvidence": "Root reviewed all three full originals: no cars visible; no independent target-visible inference from binding counts."
+  },
+  "noAssetsSaved": true,
+  "causalExperimentValid": false,
+  "AOConclusion": "NONE: wrong180degree camera and absent cars invalidate any target AO conclusion, including zero-response or target material acceptance.",
+  "productAccepted": false,
+  "oldFrozenFilesModifiedHere": false,
+  "fileStateImagePostflightPassed": true
+}
