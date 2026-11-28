@@ -17,6 +17,7 @@ import sky_clouds
 import stair_lamp
 import window_light
 import parasol_control
+import patio_tone
 
 PACKAGE = "/Game/Lunden/Lighting/BP_LundenSky"
 ASSET = TOOLS.parents[1] / "unreal/Lunden/Content/Lunden/Lighting/BP_LundenSky.uasset"
@@ -47,7 +48,7 @@ def lighting_signature(measurements):
     ns = dict(__file__=str(builder), Path=Path, hashlib=hashlib, json=json, season_tags=season_tags,
               sky_clouds=sky_clouds, stair_lamp=stair_lamp, neutral_tonemap=neutral_tonemap,
               window_light=window_light, build_window_light=build_window_light,
-              parasol_control=parasol_control)
+              parasol_control=parasol_control, patio_tone=patio_tone)
     exec(compile(tree, str(builder), "exec"), ns)
     return ns["spec_hash"](ns["spec_of"](ns["load_measurements"](measurements)))
 
