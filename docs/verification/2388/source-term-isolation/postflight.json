@@ -1,0 +1,139 @@
+{
+  "classification": "External source-terms file/image/state postflight; not2388productacceptance",
+  "sourceHead": "9b9abd58b4820334bdedb635889acad51f4ba15f",
+  "headExact": true,
+  "configSHA256": "2101f61e58f938b4024b06a4c582afe4099db4c1f4ae55f1d287d97839fbb4f3",
+  "actualNativeRunnerTool": [
+    0,
+    0,
+    null
+  ],
+  "nativeResult": "/mnt/d/LundenLinux/runs/20261128T120223241425-80038/result.json",
+  "actualNativePassedCompleted": true,
+  "nativeSeconds": 291.65,
+  "actualOuterChildCompleted": true,
+  "toolStatusProof": null,
+  "toolStatusLimit": "Actual tool completion not recorded here; never inferred from Native/runner success.",
+  "all250AuthoredExactReadonly": true,
+  "wholeGeneratedExact": true,
+  "generatedCount": 5227,
+  "all12ImportFilesExact": true,
+  "importCount": 12,
+  "all535DependenciesExact": true,
+  "dependencyCount": 535,
+  "changedDependencies": [],
+  "capturedCompleted": true,
+  "capturedFourPNGMetadataExact": true,
+  "images": [
+    {
+      "name": "patio-original-before",
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2388/forward-ao/native/source-terms-v1/unreal-patio-original-before.png",
+      "sha256": "c0a65042b775c482c2916c062fe2cd8c4e8aeb6549c7b257869cf70c675963ad",
+      "matchesCapturedSHA": true,
+      "dimensions": [
+        640,
+        360
+      ],
+      "format": "PNG",
+      "effectiveBindings": 35,
+      "decodedRGBSHA256": "2fbb6b658429ed27f99f46e6b70edbcd5b92389c6819efb4cc68353d18b4ae41"
+    },
+    {
+      "name": "patio-pmrem-only",
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2388/forward-ao/native/source-terms-v1/unreal-patio-pmrem-only.png",
+      "sha256": "10fe13019f45c1f8fb1b8bca333e6375f7120758153e216cc1209340750c98e5",
+      "matchesCapturedSHA": true,
+      "dimensions": [
+        640,
+        360
+      ],
+      "format": "PNG",
+      "effectiveBindings": 35,
+      "decodedRGBSHA256": "649fe52f962afb2e4f0b3d2e4ab09833872e1387165fcee702310f89df308953"
+    },
+    {
+      "name": "patio-ambient-only",
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2388/forward-ao/native/source-terms-v1/unreal-patio-ambient-only.png",
+      "sha256": "7f8dc79fa4af3d11b418761ef720727b562cf651e64a6cb34d019c28bf978168",
+      "matchesCapturedSHA": true,
+      "dimensions": [
+        640,
+        360
+      ],
+      "format": "PNG",
+      "effectiveBindings": 35,
+      "decodedRGBSHA256": "b93b084d424ce6c374ef40630c518291ddb8c92c2b37f1dd6eeab5fa2d944e3a"
+    },
+    {
+      "name": "patio-original-after",
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2388/forward-ao/native/source-terms-v1/unreal-patio-original-after.png",
+      "sha256": "e6fbc2cac82d3908c5f923224bc221b398401212861043e5dfc2aedcf962a611",
+      "matchesCapturedSHA": true,
+      "dimensions": [
+        640,
+        360
+      ],
+      "format": "PNG",
+      "effectiveBindings": 35,
+      "decodedRGBSHA256": "2fbb6b658429ed27f99f46e6b70edbcd5b92389c6819efb4cc68353d18b4ae41"
+    }
+  ],
+  "originalBeforeAfterRGBExact": true,
+  "originalBeforeAfterChangedRGBPixels": 0,
+  "pmremOnlyChangedRGBPixels": 39369,
+  "ambientOnlyChangedRGBPixels": 39360,
+  "stateAnd35EffectiveBindingsRestored": true,
+  "sourceFormulaCompilerErrors": [],
+  "rawMegaLightsCVars": {
+    "r.MegaLights.EnableForProject": 0,
+    "r.MegaLights.Allowed": 1,
+    "r.MegaLights.Volume": 1,
+    "r.MegaLights.TranslucencyVolume": 1
+  },
+  "privateTermSelections": [
+    {
+      "mode": "original",
+      "actualScalars": {
+        "Source2388PMREM": 0.0,
+        "Source2388Ambient": 0.0,
+        "Source2388Proof": 0.0
+      }
+    },
+    {
+      "mode": "pmrem-only",
+      "actualScalars": {
+        "Source2388PMREM": 1.0,
+        "Source2388Ambient": 0.0,
+        "Source2388Proof": 0.0
+      }
+    },
+    {
+      "mode": "ambient-only",
+      "actualScalars": {
+        "Source2388PMREM": 0.0,
+        "Source2388Ambient": 1.0,
+        "Source2388Proof": 0.0
+      }
+    },
+    {
+      "mode": "original",
+      "actualScalars": {
+        "Source2388PMREM": 0.0,
+        "Source2388Ambient": 0.0,
+        "Source2388Proof": 0.0
+      }
+    },
+    {
+      "mode": "original",
+      "actualScalars": {
+        "Source2388PMREM": 0.0,
+        "Source2388Ambient": 0.0,
+        "Source2388Proof": 0.0
+      }
+    }
+  ],
+  "noAssetsSavedHere": true,
+  "productAccepted": false,
+  "fileStateImagePostflightPassed": true,
+  "nativeAndRunnerPassed": true
+}
