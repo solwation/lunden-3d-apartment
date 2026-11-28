@@ -1,0 +1,7 @@
+{
+  "platform": "linux-x64",
+  "commit": "84e35c47e5b358cea4eedc4e37d77fbd0cd42948",
+  "version": "0.3.0",
+  "sha256": "9b2f0b68b8261209a9c06f92ee97674c6e5416d9ebb003863d7f31ca3a1a9c1a",
+  "manifestPublicKeySha256": "2d03f1dc6fb5c7365dab1a5ece1738dfca2a408d6cbbb5b82be22ae09b4271ba"
+}

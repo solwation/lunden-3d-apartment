@@ -1,0 +1,46 @@
+{
+  "zip": "/mnt/d/UnrealDownloads/Linux_Unreal_Engine_5.8.4.zip",
+  "memberPrefix": "Engine/Extras/ThirdPartyNotUE/SDKs/HostLinux/Linux_x64/v26_clang-20.1.8-rockylinux8/",
+  "fileCount": 10868,
+  "uncompressedBytes": 3526429965,
+  "compressedBytes": 1924991215,
+  "groups": {
+    "ToolchainVersion.txt": {
+      "files": 1,
+      "uncompressedBytes": 29,
+      "compressedBytes": 31
+    },
+    "aarch64-unknown-linux-gnueabi": {
+      "files": 5374,
+      "uncompressedBytes": 1244647050,
+      "compressedBytes": 536886463
+    },
+    "x86_64-unknown-linux-gnu": {
+      "files": 5471,
+      "uncompressedBytes": 1556471491,
+      "compressedBytes": 626873202
+    },
+    "build": {
+      "files": 22,
+      "uncompressedBytes": 725311395,
+      "compressedBytes": 761231519
+    }
+  },
+  "installedPrefixExists": false,
+  "versionText": "v26_clang-20.1.8-rockylinux8\n",
+  "linuxSDKConfig": {
+    "path": "Engine/Config/Linux/Linux_SDK.json",
+    "zipContents": {
+      "MainVersion": "v26_clang-20.1.8-rockylinux8",
+      "MinVersion": "v26_clang-20.1.8-rockylinux8",
+      "MaxVersion": "v26_clang-20.1.8-rockylinux8",
+      "AutoSDKPlatform": "Linux_x64"
+    },
+    "sha256": "2aae9f3a9f092886f5426a5482ce2ceec812061a63de49be76fb6cbfa7f26e0d",
+    "installedExists": true,
+    "installedExact": true
+  },
+  "symlinks": 0,
+  "executables": 1357,
+  "limitation": "Inventory only, no extraction or SDK/UAT invocation. Current AutoSDK INVALID is not by itself proven content-only cook fatal."
+}

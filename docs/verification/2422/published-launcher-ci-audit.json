@@ -1,0 +1,58 @@
+{
+  "head": "84e35c47e5b358cea4eedc4e37d77fbd0cd42948",
+  "parentBeforeLinux": "2ccd812855456895cdb26005322da76afe184188",
+  "run": 46116887144,
+  "linuxJob": {
+    "id": 140892617791,
+    "conclusion": "success"
+  },
+  "windowsJob": {
+    "id": 140892617958,
+    "conclusion": "failure"
+  },
+  "logSHA256": "2c4dc3a4541a9f345d148684ba08eb12520fcc9799fd4e2bcd4b3e60eb2bfab9",
+  "logEvidence": [
+    {
+      "line": 83,
+      "text": "test\tRun launcher tests on Windows\t2026-11-28T06:31:03.2101359Z Not enough memory resources are available to process this command."
+    },
+    {
+      "line": 85,
+      "text": "test\tRun launcher tests on Windows\t2026-11-28T06:31:03.2734604Z Not enough memory resources are available to process this command."
+    },
+    {
+      "line": 86,
+      "text": "test\tRun launcher tests on Windows\t2026-11-28T06:31:03.4108869Z [xUnit.net 00:00:02.77]     Lunden.Launcher.Tests.StockRuntimeTests.RemovalAndPruningWaitForEitherGameInTheirOwnInstallation [FAIL]"
+    },
+    {
+      "line": 88,
+      "text": "test\tRun launcher tests on Windows\t2026-11-28T06:31:03.4153344Z [xUnit.net 00:00:02.77]       Expected: typeof(System.IO.IOException)"
+    },
+    {
+      "line": 92,
+      "text": "test\tRun launcher tests on Windows\t2026-11-28T06:31:03.4164390Z [xUnit.net 00:00:02.77]         D:\\a\\lunden-3d-apartment\\lunden-3d-apartment\\unreal\\Launcher.Tests\\StockRuntimeTests.cs(123,0): at Lunden.Launcher.Tests.StockRuntimeTests.RemovalAndPruningWaitForEitherGameInTheirOwnInstallation()"
+    },
+    {
+      "line": 130,
+      "text": "test\tRun launcher tests on Windows\t2026-11-28T06:31:04.4099092Z   Failed Lunden.Launcher.Tests.StockRuntimeTests.RemovalAndPruningWaitForEitherGameInTheirOwnInstallation [122 ms]"
+    },
+    {
+      "line": 133,
+      "text": "test\tRun launcher tests on Windows\t2026-11-28T06:31:04.4103049Z Expected: typeof(System.IO.IOException)"
+    },
+    {
+      "line": 135,
+      "text": "test\tRun launcher tests on Windows\t2026-11-28T06:31:04.4105584Z      at Lunden.Launcher.Tests.StockRuntimeTests.RemovalAndPruningWaitForEitherGameInTheirOwnInstallation() in D:\\a\\lunden-3d-apartment\\lunden-3d-apartment\\unreal\\Launcher.Tests\\StockRuntimeTests.cs:line 123"
+    },
+    {
+      "line": 155,
+      "text": "test\tRun launcher tests on Windows\t2026-11-28T06:31:19.4000087Z Test Run Failed."
+    }
+  ],
+  "unchangedBlobs": {
+    "unreal/Launcher.Tests/StockRuntimeTests.cs": "3ce5dbaac87a61c69a6a5fe24760cf7f0abfc330",
+    "unreal/Launcher/Setup.cs": "8d686f7af29050bbd233ff0d35b4d86912c46321"
+  },
+  "priorDocumentedSameFlakyTest": "https://github.com/solwation/lunden-3d-apartment/issues/2420#issuecomment-7077124033",
+  "finding": "Not a proven #2422 regression. Existing shell-process fixture has no ready/live handshake; current resource messages support environment/startup failure but do not establish exact child state or cause."
+}

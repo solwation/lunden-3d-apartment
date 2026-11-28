@@ -39,3 +39,43 @@ performance, hosted signed distribution/update/rollback, and current Windows
 build. Version0.3.0/content20 in the local trial is provisional test metadata.
 Nothing here publishes an official binary release or claims whole-issue acceptance.
 This Unreal-only implementation has no public web downstream transfer.
+
+
+## Actual sync and first UAT invocation
+
+On the published clean84e35c47, one normal NullRHI invocation actually executed
+all20 canonical steps, including source-bound cached builders, import checks,
+normal fresh sync stamp and the real release gate. Native/runner/outer0,
+148.67seconds, no logged errors; all247 authored files stayed exact/readonly.
+The following real release plan passed. This is not reused execution or a
+manually fabricated current stamp.
+
+The first real UAT call failed before cook (exit1, no game archive):
+`Found no script module records`. The earlier editor-only installation had
+excluded Intermediate; the original EpicZIP contains the43 real ScriptModules
+JSON records. Root restored only these exact distributor bytes. All27 relevant
+Automation DLL targets already existed and were SHA-identical to ZIP. No
+records, SDK versions or successful build results were invented. V2 then
+initialized UAT successfully and entered the actual Cook commandlet. Its
+outcome remains pending; no successful Shipping build is claimed here.
+
+The native compiler SDK is also present in the originalZIP (3.28GiB) but is
+not installed. Linux SDK INVALID messages alone have not been treated as a
+fatal requirement. Any installation decision follows the real cook result.
+OriginalZIP byte provenance is recorded; no separate cryptographic SDK-signature
+verification was performed.
+
+Published Linux CI job140892617791 passed. Windows CI failed one unchanged
+process fixture after reporting memory-resource errors. The same test was
+previously documented unstable in#2420; no Linux-caused product regression is
+proved. This separate test defect is tracked in#2501; no protection or assertion
+was weakened and no blind CI rerun was used to manufacture green status.
+
+
+The clean84e35c47 source also produced a real self-contained0.3.0 Linux ELF
+launcher with the repository's official public manifest key, read from its public
+Actions variable. Its actual --help returned0; this does not download or start
+the game. BinarySHA and public-keySHA are in official-linux-launcher-build.json.
+No private key was read. The first actual game cook is still running; at the
+10minute review it had5465/5807 packages complete,20GiB RAM available,
+15 active build processes and no error lines. It continues rather than restarting.

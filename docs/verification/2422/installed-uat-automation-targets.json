@@ -1,0 +1,224 @@
+{
+  "records": 27,
+  "allTargetsExist": true,
+  "allTargetsExactZip": true,
+  "targets": [
+    {
+      "record": "Engine/Intermediate/ScriptModules/Android.Automation.json",
+      "target": "Engine/Binaries/DotNET/AutomationTool/AutomationScripts/Platforms/Android/net10.0/Android.Automation.dll",
+      "bytes": 138240,
+      "sha256": "244c63b83033e1a9fa6ed0d70c8fa4dece29de9057782b357fb0febe201f740b",
+      "zipSHA256": "244c63b83033e1a9fa6ed0d70c8fa4dece29de9057782b357fb0febe201f740b",
+      "exactZip": true
+    },
+    {
+      "record": "Engine/Intermediate/ScriptModules/Apple.Automation.json",
+      "target": "Engine/Binaries/DotNET/AutomationTool/AutomationScripts/Platforms/Apple/net10.0/Apple.Automation.dll",
+      "bytes": 66048,
+      "sha256": "f12866be1d495838f52d9d60066dadf503dd99215ab2a35a1e094f2481bbb85e",
+      "zipSHA256": "f12866be1d495838f52d9d60066dadf503dd99215ab2a35a1e094f2481bbb85e",
+      "exactZip": true
+    },
+    {
+      "record": "Engine/Intermediate/ScriptModules/AutomatedPerfTesting.Automation.json",
+      "target": "Engine/Binaries/DotNET/AutomationTool/AutomationScripts/AutomatedPerfTesting/net10.0/AutomatedPerfTesting.Automation.dll",
+      "bytes": 70656,
+      "sha256": "e7ce191ae280a6406342ae86493ad242e2231390036b3931fec6aa1e3a0b07e5",
+      "zipSHA256": "e7ce191ae280a6406342ae86493ad242e2231390036b3931fec6aa1e3a0b07e5",
+      "exactZip": true
+    },
+    {
+      "record": "Engine/Intermediate/ScriptModules/AutomationScripts.Automation.json",
+      "target": "Engine/Binaries/DotNET/AutomationTool/AutomationScripts/Scripts/net10.0/AutomationScripts.Automation.dll",
+      "bytes": 804352,
+      "sha256": "01a2730794685e151297043b35c288d8cf3db657a9574fe2cefe13d99510006f",
+      "zipSHA256": "01a2730794685e151297043b35c288d8cf3db657a9574fe2cefe13d99510006f",
+      "exactZip": true
+    },
+    {
+      "record": "Engine/Intermediate/ScriptModules/AutomationUtils.Automation.json",
+      "target": "Engine/Binaries/DotNET/AutomationTool/AutomationUtils/net10.0/AutomationUtils.Automation.dll",
+      "bytes": 510464,
+      "sha256": "441be7fa83bdcf84e192345e4b1f5cec99fe45f40dcf8907200ce77a1cf18d1b",
+      "zipSHA256": "441be7fa83bdcf84e192345e4b1f5cec99fe45f40dcf8907200ce77a1cf18d1b",
+      "exactZip": true
+    },
+    {
+      "record": "Engine/Intermediate/ScriptModules/BuildGraph.Automation.json",
+      "target": "Engine/Binaries/DotNET/AutomationTool/AutomationScripts/BuildGraph/net10.0/BuildGraph.Automation.dll",
+      "bytes": 604672,
+      "sha256": "060030b59094394c49b85b0a907aeaf1148d7a71e4294749be0dbad812ad8b86",
+      "zipSHA256": "060030b59094394c49b85b0a907aeaf1148d7a71e4294749be0dbad812ad8b86",
+      "exactZip": true
+    },
+    {
+      "record": "Engine/Intermediate/ScriptModules/CookedEditor.Automation.json",
+      "target": "Engine/Binaries/DotNET/AutomationTool/AutomationScripts/CookedEditor/net10.0/CookedEditor.Automation.dll",
+      "bytes": 44544,
+      "sha256": "cf387c2f0510d5b8f248cd7462180edcf2020afc28e09fc88b1613773970e2a6",
+      "zipSHA256": "cf387c2f0510d5b8f248cd7462180edcf2020afc28e09fc88b1613773970e2a6",
+      "exactZip": true
+    },
+    {
+      "record": "Engine/Intermediate/ScriptModules/CrowdinLocalization.Automation.json",
+      "target": "Engine/Binaries/DotNET/AutomationTool/AutomationScripts/CrowdinLocalization/net10.0/CrowdinLocalization.Automation.dll",
+      "bytes": 33280,
+      "sha256": "7436f0040edeb4467b038060fce775b4220e66d41c191e880106ac945d9f0c4d",
+      "zipSHA256": "7436f0040edeb4467b038060fce775b4220e66d41c191e880106ac945d9f0c4d",
+      "exactZip": true
+    },
+    {
+      "record": "Engine/Intermediate/ScriptModules/Gauntlet.Automation.json",
+      "target": "Engine/Binaries/DotNET/AutomationTool/AutomationScripts/Gauntlet/net10.0/Gauntlet.Automation.dll",
+      "bytes": 976384,
+      "sha256": "89f65e7c70ebb061856f4259901d1206bfefe42d8a2d171fac5115ba0da618bd",
+      "zipSHA256": "89f65e7c70ebb061856f4259901d1206bfefe42d8a2d171fac5115ba0da618bd",
+      "exactZip": true
+    },
+    {
+      "record": "Engine/Intermediate/ScriptModules/ICVFX.Automation.json",
+      "target": "Engine/Binaries/DotNET/AutomationTool/AutomationScripts/ICVFX/net10.0/ICVFX.Automation.dll",
+      "bytes": 47104,
+      "sha256": "940852a8f7349bfe6b723bfde545a413fd3274065be9daf4b471523f6d29d423",
+      "zipSHA256": "940852a8f7349bfe6b723bfde545a413fd3274065be9daf4b471523f6d29d423",
+      "exactZip": true
+    },
+    {
+      "record": "Engine/Intermediate/ScriptModules/IOS.Automation.json",
+      "target": "Engine/Binaries/DotNET/AutomationTool/AutomationScripts/Platforms/IOS/net10.0/IOS.Automation.dll",
+      "bytes": 78336,
+      "sha256": "6e31f9c679dad4b3e206e640d22fbc12e920cc2778b8263be0ba7e9a2af8d40d",
+      "zipSHA256": "6e31f9c679dad4b3e206e640d22fbc12e920cc2778b8263be0ba7e9a2af8d40d",
+      "exactZip": true
+    },
+    {
+      "record": "Engine/Intermediate/ScriptModules/Insights.Automation.json",
+      "target": "Engine/Binaries/DotNET/AutomationTool/AutomationScripts/Insights/net10.0/Insights.Automation.dll",
+      "bytes": 37888,
+      "sha256": "183fd1e65f42c5b64e274ad9b6d313c2b460df3b8d903a35f656c3cf4cbeb4c1",
+      "zipSHA256": "183fd1e65f42c5b64e274ad9b6d313c2b460df3b8d903a35f656c3cf4cbeb4c1",
+      "exactZip": true
+    },
+    {
+      "record": "Engine/Intermediate/ScriptModules/Linux.Automation.json",
+      "target": "Engine/Binaries/DotNET/AutomationTool/AutomationScripts/Platforms/Linux/net10.0/Linux.Automation.dll",
+      "bytes": 19968,
+      "sha256": "13103ae54c510e1ef4c6bc2efd093102578c79090a89b60ee9ac5035c0854033",
+      "zipSHA256": "13103ae54c510e1ef4c6bc2efd093102578c79090a89b60ee9ac5035c0854033",
+      "exactZip": true
+    },
+    {
+      "record": "Engine/Intermediate/ScriptModules/LiveLinkHub.Automation.json",
+      "target": "Engine/Binaries/DotNET/AutomationTool/AutomationScripts/LiveLinkHub/net10.0/LiveLinkHub.Automation.dll",
+      "bytes": 11264,
+      "sha256": "b699ac521a4643cb82095323b03355ffb65c62d69ba50cf311803c336eec2c02",
+      "zipSHA256": "b699ac521a4643cb82095323b03355ffb65c62d69ba50cf311803c336eec2c02",
+      "exactZip": true
+    },
+    {
+      "record": "Engine/Intermediate/ScriptModules/Localization.Automation.json",
+      "target": "Engine/Binaries/DotNET/AutomationTool/AutomationScripts/Localization/net10.0/Localization.Automation.dll",
+      "bytes": 62976,
+      "sha256": "34571e57fa0fa10bfc01a646efb6fc7c45f4c2a90ddf7eb149164b8df74c25c2",
+      "zipSHA256": "34571e57fa0fa10bfc01a646efb6fc7c45f4c2a90ddf7eb149164b8df74c25c2",
+      "exactZip": true
+    },
+    {
+      "record": "Engine/Intermediate/ScriptModules/LowLevelTests.Automation.json",
+      "target": "Engine/Binaries/DotNET/AutomationTool/AutomationScripts/LowLevelTests/net10.0/LowLevelTests.Automation.dll",
+      "bytes": 53248,
+      "sha256": "f8d2395d84f80caacb16d95f57fa79cd1c3549ab838a86a6294a22fea5ae9c60",
+      "zipSHA256": "f8d2395d84f80caacb16d95f57fa79cd1c3549ab838a86a6294a22fea5ae9c60",
+      "exactZip": true
+    },
+    {
+      "record": "Engine/Intermediate/ScriptModules/Mac.Automation.json",
+      "target": "Engine/Binaries/DotNET/AutomationTool/AutomationScripts/Platforms/Mac/net10.0/Mac.Automation.dll",
+      "bytes": 16896,
+      "sha256": "fe7dcd73416695ab76d6c737b9b5a185d5c8e009b09f0c7895e4cc7be2c05ba4",
+      "zipSHA256": "fe7dcd73416695ab76d6c737b9b5a185d5c8e009b09f0c7895e4cc7be2c05ba4",
+      "exactZip": true
+    },
+    {
+      "record": "Engine/Intermediate/ScriptModules/Microsoft.Automation.json",
+      "target": "Engine/Binaries/DotNET/AutomationTool/AutomationScripts/Platforms/Microsoft/net10.0/Microsoft.Automation.dll",
+      "bytes": 66560,
+      "sha256": "6721e4d8fbb5c7f9de0f883be4e5aac0247b375be07e4a32c4eae5b1bfdc3079",
+      "zipSHA256": "6721e4d8fbb5c7f9de0f883be4e5aac0247b375be07e4a32c4eae5b1bfdc3079",
+      "exactZip": true
+    },
+    {
+      "record": "Engine/Intermediate/ScriptModules/Mutable.Automation.json",
+      "target": "Engine/Binaries/DotNET/AutomationTool/AutomationScripts/Mutable/net10.0/Mutable.Automation.dll",
+      "bytes": 5632,
+      "sha256": "8426cd74b77108d5905b947dc8ab6e725dc19d9f30aaee1575ea4c8d2685fdbb",
+      "zipSHA256": "8426cd74b77108d5905b947dc8ab6e725dc19d9f30aaee1575ea4c8d2685fdbb",
+      "exactZip": true
+    },
+    {
+      "record": "Engine/Intermediate/ScriptModules/OneSkyLocalization.Automation.json",
+      "target": "Engine/Binaries/DotNET/AutomationTool/AutomationScripts/OneSkyLocalization/net10.0/OneSkyLocalization.Automation.dll",
+      "bytes": 16384,
+      "sha256": "e7bb32e20a5607d442a6643a396543c153c2b54ca4fc9c1bd5c28523d796d22d",
+      "zipSHA256": "e7bb32e20a5607d442a6643a396543c153c2b54ca4fc9c1bd5c28523d796d22d",
+      "exactZip": true
+    },
+    {
+      "record": "Engine/Intermediate/ScriptModules/SmartlingLocalization.Automation.json",
+      "target": "Engine/Binaries/DotNET/AutomationTool/AutomationScripts/SmartlingLocalization/net10.0/SmartlingLocalization.Automation.dll",
+      "bytes": 31232,
+      "sha256": "d6586985bc01feba47ace789ddd637f96e1569cad652d3ee3be7baad17c02341",
+      "zipSHA256": "d6586985bc01feba47ace789ddd637f96e1569cad652d3ee3be7baad17c02341",
+      "exactZip": true
+    },
+    {
+      "record": "Engine/Intermediate/ScriptModules/SteamDeck.Automation.json",
+      "target": "Engine/Binaries/DotNET/AutomationTool/AutomationScripts/Platforms/SteamDeck/net10.0/SteamDeck.Automation.dll",
+      "bytes": 15360,
+      "sha256": "547761bfbf81c40ea792279e1f8886a9b5b0468e12a0ea2676f2006ec38f7adb",
+      "zipSHA256": "547761bfbf81c40ea792279e1f8886a9b5b0468e12a0ea2676f2006ec38f7adb",
+      "exactZip": true
+    },
+    {
+      "record": "Engine/Intermediate/ScriptModules/TVOS.Automation.json",
+      "target": "Engine/Binaries/DotNET/AutomationTool/AutomationScripts/Platforms/TVOS/net10.0/TVOS.Automation.dll",
+      "bytes": 9216,
+      "sha256": "3bff77aa45394298a8d28237a596035b5a75e6aba62fa8e9ab17565242168fdb",
+      "zipSHA256": "3bff77aa45394298a8d28237a596035b5a75e6aba62fa8e9ab17565242168fdb",
+      "exactZip": true
+    },
+    {
+      "record": "Engine/Intermediate/ScriptModules/Turnkey.Automation.json",
+      "target": "Engine/Binaries/DotNET/AutomationTool/AutomationScripts/Turnkey/net10.0/Turnkey.Automation.dll",
+      "bytes": 148480,
+      "sha256": "be4a7aa02e9609e195bafbb50acfdd73ebe80f48926d369fd540d160f54041ec",
+      "zipSHA256": "be4a7aa02e9609e195bafbb50acfdd73ebe80f48926d369fd540d160f54041ec",
+      "exactZip": true
+    },
+    {
+      "record": "Engine/Intermediate/ScriptModules/VisionOS.Automation.json",
+      "target": "Engine/Platforms/VisionOS/Binaries/DotNET/AutomationTool/AutomationScripts/net10.0/VisionOS.Automation.dll",
+      "bytes": 10752,
+      "sha256": "89ba8a44c15cf424763fed223d42af1a7d06a2623b856d485ac8b534817ce305",
+      "zipSHA256": "89ba8a44c15cf424763fed223d42af1a7d06a2623b856d485ac8b534817ce305",
+      "exactZip": true
+    },
+    {
+      "record": "Engine/Intermediate/ScriptModules/Win.Automation.json",
+      "target": "Engine/Binaries/DotNET/AutomationTool/AutomationScripts/Platforms/Windows/net10.0/Win.Automation.dll",
+      "bytes": 78336,
+      "sha256": "1015dec9feb9b6c4b1bd79aa322bf1c6b7cf0dd6aaa4e8541561086cd2eb88a5",
+      "zipSHA256": "1015dec9feb9b6c4b1bd79aa322bf1c6b7cf0dd6aaa4e8541561086cd2eb88a5",
+      "exactZip": true
+    },
+    {
+      "record": "Engine/Intermediate/ScriptModules/XLocLocalization.Automation.json",
+      "target": "Engine/Binaries/DotNET/AutomationTool/AutomationScripts/XLocLocalization/net10.0/XLocLocalization.Automation.dll",
+      "bytes": 47616,
+      "sha256": "895f39d4e1f6704816c15aced6bfd6b7a03a92c0c9ee11a529c557c4bddbfdc4",
+      "zipSHA256": "895f39d4e1f6704816c15aced6bfd6b7a03a92c0c9ee11a529c557c4bddbfdc4",
+      "exactZip": true
+    }
+  ],
+  "notExecuted": "No UAT/.NET/editor invocation; installed files read only. Non-Automation Shared/UBT records intentionally not assembly targets of this exact loader filter."
+}

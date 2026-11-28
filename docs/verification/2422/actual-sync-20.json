@@ -1,0 +1,113 @@
+{
+  "source": "84e35c47e5b358cea4eedc4e37d77fbd0cd42948",
+  "actual20Passed": true,
+  "steps": [
+    {
+      "step": "lighting-check-first",
+      "passed": true,
+      "seconds": 0.794
+    },
+    {
+      "step": "preflight-existing",
+      "passed": true,
+      "seconds": 0.968
+    },
+    {
+      "step": "export",
+      "passed": true,
+      "seconds": 1.396
+    },
+    {
+      "step": "seasons",
+      "passed": true,
+      "seconds": 0.456
+    },
+    {
+      "step": "import",
+      "passed": true,
+      "seconds": 10.242
+    },
+    {
+      "step": "build_l1007",
+      "passed": true,
+      "seconds": 0.404
+    },
+    {
+      "step": "build_exterior",
+      "passed": true,
+      "seconds": 0.548
+    },
+    {
+      "step": "build_site",
+      "passed": true,
+      "seconds": 0.532
+    },
+    {
+      "step": "build_lighting",
+      "passed": true,
+      "seconds": 0.533
+    },
+    {
+      "step": "build_facade",
+      "passed": true,
+      "seconds": 0.572
+    },
+    {
+      "step": "build_vegetation",
+      "passed": true,
+      "seconds": 0.528
+    },
+    {
+      "step": "build_interaction",
+      "passed": true,
+      "seconds": 11.895
+    },
+    {
+      "step": "build_curtains",
+      "passed": true,
+      "seconds": 1.384
+    },
+    {
+      "step": "build_cabinet_washes",
+      "passed": true,
+      "seconds": 1.419
+    },
+    {
+      "step": "build_rug_pool",
+      "passed": true,
+      "seconds": 3.63
+    },
+    {
+      "step": "compose-check",
+      "passed": true,
+      "seconds": 3.324
+    },
+    {
+      "step": "import-check",
+      "passed": true,
+      "seconds": 8.614
+    },
+    {
+      "step": "nanite-usage-check",
+      "passed": true,
+      "seconds": 0.978
+    },
+    {
+      "step": "sync-stamp",
+      "passed": true,
+      "seconds": 0.436
+    },
+    {
+      "step": "release-gate",
+      "passed": true,
+      "seconds": 2.519
+    }
+  ],
+  "actualNativeExitCode": 0,
+  "outerExitCode": 0,
+  "seconds": 148.67,
+  "all247ExactReadonly": true,
+  "cleanCheckout": true,
+  "freshStamp": "Written by normal check-import only after every actual canonical step passed",
+  "classification": "Actual cached canonical20 + releasegate. No Shipping/game success claim."
+}

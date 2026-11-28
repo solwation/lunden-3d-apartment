@@ -1,0 +1,2 @@
+Lunden [--channel stable|test] [--manifest FIL/URL] [--dry-run] [--offline]
+Lunden [--install | --uninstall | --dry-run-install] [--quiet] [--channel stable|test]

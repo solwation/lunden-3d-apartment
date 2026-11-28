@@ -1,0 +1,10 @@
+{
+  "at": "2026-11-28T06:48:12.810326+00:00",
+  "elapsedCostReview": "first actual cook ~10minutes",
+  "progress": "LogCook: Display: Cooked packages 5465 Packages Remain 342 Total 5807",
+  "fatalOrErrorLines": [],
+  "availableMiB": 20554,
+  "swapUsedMiB": 362,
+  "workers": "dotnet           1.3 134840    625\nShaderCompileWo 51.3 151820    314\nShaderCompileWo 48.7 135368    314\nShaderCompileWo 51.4 292680    314\nShaderCompileWo 50.2 137620    314\nShaderCompileWo 47.3 243928    314\nShaderCompileWo 49.3 227376    314\nShaderCompileWo 47.7 192244    314\nShaderCompileWo 47.9 216944    314\nShaderCompileWo 47.3 209544    314\nShaderCompileWo 50.4 170776    314\nShaderCompileWo 52.7 235560    314\nShaderCompileWo 49.1 249324    314\nShaderCompileWo 45.4 293204    314\ndotnet           0.2 144288  62420\n",
+  "decision": "Continue this one genuine first cook: progressive completion nearend, active shaderworkers, no error or memory pressure. No restart or broadverification loop."
+}

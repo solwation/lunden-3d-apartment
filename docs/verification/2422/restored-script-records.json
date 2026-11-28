@@ -1,0 +1,222 @@
+{
+  "archive": "/mnt/d/UnrealDownloads/Linux_Unreal_Engine_5.8.4.zip",
+  "method": "Exact43 distributor records restored; no fabricated stamps or compile; existing matching files preserved",
+  "at": "2026-11-28T06:37:43.939662+00:00",
+  "files": [
+    {
+      "path": "Engine/Intermediate/ScriptModules/EpicGames.ProjectStore.json",
+      "sha256": "04df5a695493f914d60ead8c6dda64d7ba3247dde000dcd31d6caf2132ea75b2",
+      "bytes": 17800
+    },
+    {
+      "path": "Engine/Intermediate/ScriptModules/Mutable.Automation.json",
+      "sha256": "a473e7107aa4c4fca318ad9016461b6c08a3b2891b266e669e926658b5ec5af3",
+      "bytes": 17552
+    },
+    {
+      "path": "Engine/Intermediate/ScriptModules/Apple.Automation.json",
+      "sha256": "8e780dba80be6c067a2e63aa45daa47c61e91658b2fe6df238be66182fed927a",
+      "bytes": 18065
+    },
+    {
+      "path": "Engine/Intermediate/ScriptModules/UnrealBuildTool.json",
+      "sha256": "157c16deb8e0e39a34829e5e207e0ec109e1accf08414e9356aa5dad23a1f6fc",
+      "bytes": 32394
+    },
+    {
+      "path": "Engine/Intermediate/ScriptModules/TVOS.Automation.json",
+      "sha256": "042618e01878b1760b95ac4d479c47ba369e8e886d1e430c89b71da9d65e5b6e",
+      "bytes": 18077
+    },
+    {
+      "path": "Engine/Intermediate/ScriptModules/SteamDeck.Automation.json",
+      "sha256": "e2a671dc0a15f0fcffb6d47fa5f6c27f8e0d11e9151b9219182b0793a65e9e21",
+      "bytes": 17954
+    },
+    {
+      "path": "Engine/Intermediate/ScriptModules/EpicGames.Perforce.json",
+      "sha256": "ba34d9b8f7afc1dd95da1cdc12e681ec70a882f94ce2f6c29e4169adbcb6c1a6",
+      "bytes": 20811
+    },
+    {
+      "path": "Engine/Intermediate/ScriptModules/Linux.Automation.json",
+      "sha256": "9ed812514f867d21208f23ef7bf28e2af562d399dc7f2084d88b136ebde3bcce",
+      "bytes": 18099
+    },
+    {
+      "path": "Engine/Intermediate/ScriptModules/SmartlingLocalization.Automation.json",
+      "sha256": "82c68824d57c55a9d87b3503bfee99921863462fb606b4dbcb7e1ba97dfc232b",
+      "bytes": 18172
+    },
+    {
+      "path": "Engine/Intermediate/ScriptModules/CookedEditor.Automation.json",
+      "sha256": "0d2112c5ae7c0e37a910f42239e567dc9fef0f0705e380eda4c86b75256707f0",
+      "bytes": 18529
+    },
+    {
+      "path": "Engine/Intermediate/ScriptModules/Insights.Automation.json",
+      "sha256": "c84b217149aa4c23ae1b06213830b5b94b54d8a64f5654d1523b6edf5cadcf91",
+      "bytes": 18186
+    },
+    {
+      "path": "Engine/Intermediate/ScriptModules/BuildGraph.Automation.json",
+      "sha256": "7b5e79978f32e0c79b8ba2b59a2bacbb5e6266876051a33fd532691ffd37cddf",
+      "bytes": 20848
+    },
+    {
+      "path": "Engine/Intermediate/ScriptModules/IOS.Automation.json",
+      "sha256": "71919602f77d3d6a0ba10e88af50d469e7af25cd3513c5a23cd64ff5492283c1",
+      "bytes": 18381
+    },
+    {
+      "path": "Engine/Intermediate/ScriptModules/ICVFX.Automation.json",
+      "sha256": "563d992c73387a4c8a228bd282cfd86b0ed6ecef1cf9ba8b6918a9bd8eccab0e",
+      "bytes": 19546
+    },
+    {
+      "path": "Engine/Intermediate/ScriptModules/EpicGames.Core.json",
+      "sha256": "954c67f4390b4e82986b28f4024c7c79f4abc7c88b19af8cbd1abd43cfdc155b",
+      "bytes": 21029
+    },
+    {
+      "path": "Engine/Intermediate/ScriptModules/EpicGames.IoHash.json",
+      "sha256": "296f9897807ea0d383a091a450168c99c1c73c13fe9d4a67f57b0a3b287af4c5",
+      "bytes": 17340
+    },
+    {
+      "path": "Engine/Intermediate/ScriptModules/EpicGames.Oodle.json",
+      "sha256": "57ca3ca66985a7cc045cd93c307b7ecaf8bcc274a5496b7f5846a893b4461f96",
+      "bytes": 17174
+    },
+    {
+      "path": "Engine/Intermediate/ScriptModules/EpicGames.BuildGraph.json",
+      "sha256": "523f5e0564bdc91db6e9fbc85e88cc44fb2616801259ccca4f9a84a0e4023481",
+      "bytes": 18398
+    },
+    {
+      "path": "Engine/Intermediate/ScriptModules/CrowdinLocalization.Automation.json",
+      "sha256": "b33e24431f4d7bd6c49af3e8f8cf69a1844c84ff350fcd8d79919157b4c668dd",
+      "bytes": 18152
+    },
+    {
+      "path": "Engine/Intermediate/ScriptModules/Android.Automation.json",
+      "sha256": "9f6a4e7c2e32847cacb33d977721131d87aaf0c36cf7b72231c2b0e1650f2b5d",
+      "bytes": 18194
+    },
+    {
+      "path": "Engine/Intermediate/ScriptModules/EpicGames.UHT.json",
+      "sha256": "f32e1f4d6a5b494b7bc1b611323b966b3f0d8bd8063bfaa1a499abfed51bf1fc",
+      "bytes": 23219
+    },
+    {
+      "path": "Engine/Intermediate/ScriptModules/Microsoft.Automation.json",
+      "sha256": "228b4097c90fe544685794055fad54ba88ce83b99f35a07ff9721699152186e7",
+      "bytes": 18020
+    },
+    {
+      "path": "Engine/Intermediate/ScriptModules/LowLevelTests.Automation.json",
+      "sha256": "48470aa5dae8feb0213264f92e225db6fec5d225fd034a0c46a71869ad7cc196",
+      "bytes": 18770
+    },
+    {
+      "path": "Engine/Intermediate/ScriptModules/Localization.Automation.json",
+      "sha256": "dc8177dfbd584d1d30b0f081a27e54d9abbbf93de349c2a5d55969284905be4a",
+      "bytes": 18483
+    },
+    {
+      "path": "Engine/Intermediate/ScriptModules/Gauntlet.Automation.json",
+      "sha256": "13afd42b6941c2b8977d29d87a893e4cdd61415e3ba306dd48b4bbdd89764190",
+      "bytes": 28450
+    },
+    {
+      "path": "Engine/Intermediate/ScriptModules/AutomatedPerfTesting.Automation.json",
+      "sha256": "fe157f8ea63e7fceb93e4c8b320286e91b7c86a0050272a42f63fd37b60abe48",
+      "bytes": 19029
+    },
+    {
+      "path": "Engine/Intermediate/ScriptModules/LiveLinkHub.Automation.json",
+      "sha256": "deb5b54aa689d19a25715ea22853c1d7d549c002323a0c8ea77ed1da3cdb0888",
+      "bytes": 18073
+    },
+    {
+      "path": "Engine/Intermediate/ScriptModules/XLocLocalization.Automation.json",
+      "sha256": "fed0dfa38c2e6e15f06924a07cb545c03fe12b8aa053423a9c87b13be0b0908f",
+      "bytes": 18197
+    },
+    {
+      "path": "Engine/Intermediate/ScriptModules/VisionOS.Automation.json",
+      "sha256": "2527f26c2fabd5f5307f435c71107ee9b82301abb8900d28f4a58cbfc6eaea4b",
+      "bytes": 18804
+    },
+    {
+      "path": "Engine/Intermediate/ScriptModules/Turnkey.Automation.json",
+      "sha256": "82d5be0da1ffe7a3bc263c98e5316605238a178e17fc953c98a9e33588fe646c",
+      "bytes": 19363
+    },
+    {
+      "path": "Engine/Intermediate/ScriptModules/OneSkyLocalization.Automation.json",
+      "sha256": "854d1994b80192cad67e0742de68ed69d1ad221f69e0ad0b397ceceff105489b",
+      "bytes": 18249
+    },
+    {
+      "path": "Engine/Intermediate/ScriptModules/EpicGames.Analytics.Telemetry.json",
+      "sha256": "d8794b737c747187413814a912bfa54819623f042c542741ae6c5fc43dbac797",
+      "bytes": 17419
+    },
+    {
+      "path": "Engine/Intermediate/ScriptModules/EpicGames.MsBuild.json",
+      "sha256": "223fb94512e1cd66c14c356f4e324815eefe6b147658a0e36a6cf10ec027d413",
+      "bytes": 17355
+    },
+    {
+      "path": "Engine/Intermediate/ScriptModules/AutomationScripts.Automation.json",
+      "sha256": "6285e7d6838cbd2dc9078b9186d574fcaeaff8104d6dee80498ecace0dd4fab8",
+      "bytes": 22180
+    },
+    {
+      "path": "Engine/Intermediate/ScriptModules/EpicGames.UBA.json",
+      "sha256": "806b2d7bfb8117169611cc2c353fe52ef7d5aad2ccab6a63bd67f7f812a9d510",
+      "bytes": 18050
+    },
+    {
+      "path": "Engine/Intermediate/ScriptModules/EpicGames.OIDC.json",
+      "sha256": "4159cf53229d888b3de782126f647720c0d12ee85b766864668089170575d094",
+      "bytes": 17731
+    },
+    {
+      "path": "Engine/Intermediate/ScriptModules/AutomationUtils.Automation.json",
+      "sha256": "116004dd72681044f8fb23185cbc645c4cbb9e59767123c06a09fd72249f2d15",
+      "bytes": 20048
+    },
+    {
+      "path": "Engine/Intermediate/ScriptModules/EpicGames.Build.json",
+      "sha256": "0bb6d476a35877bd3290192692209a843829010c03cd2810312c5770ee7198ca",
+      "bytes": 18603
+    },
+    {
+      "path": "Engine/Intermediate/ScriptModules/EpicGames.Serialization.json",
+      "sha256": "8d29cfe2ed0abd67f0634e8db36900d2564a1fa77ee1dbdf04b7e3d5023c8c66",
+      "bytes": 17981
+    },
+    {
+      "path": "Engine/Intermediate/ScriptModules/Mac.Automation.json",
+      "sha256": "d99d4dba043893faa08e689a4166141389941110089e25abe13b26933eb551b1",
+      "bytes": 18071
+    },
+    {
+      "path": "Engine/Intermediate/ScriptModules/Win.Automation.json",
+      "sha256": "b3f9c99c4f131e9994e7d8524d3020d85b2152a1bd592c90173d44bd9a323684",
+      "bytes": 18707
+    },
+    {
+      "path": "Engine/Intermediate/ScriptModules/EpicGames.LogMatchers.json",
+      "sha256": "534f08ae5cf55ef0721f36edcb7a2e541ddb51f4df5394b390f71e6e7f9856c9",
+      "bytes": 18169
+    },
+    {
+      "path": "Engine/Intermediate/ScriptModules/EpicGames.Horde.json",
+      "sha256": "9e23361eeee1e72f7be64d9aaf416d3644d2f272948cc958c04986fb6a70c9b8",
+      "bytes": 28027
+    }
+  ]
+}

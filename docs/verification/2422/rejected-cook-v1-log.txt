@@ -1,0 +1,15 @@
+
+Running AutomationTool...
+
+Setting up bundled DotNet SDK
+Start UAT Interactively: dotnet AutomationTool.dll BuildCookRun -project=/home/devcontainers/wt/codex-2434-native/unreal/Lunden/Lunden.uproject -platform=Linux -clientconfig=Shipping -nocompileuat -nocompile -skipbuild -cook -stage -pak -iostore -package -nodebuginfo -nobootstrapexe -archive -stagingdirectory=/mnt/d/LundenLinux/Builds/issue2422-linux-shipping-v1/stage -archivedirectory=/mnt/d/LundenLinux/Builds/issue2422-linux-shipping-v1/archive -unattended -nop4 -utf8output
+/mnt/d/UnrealEngine/5.8.4/Engine/Binaries/ThirdParty/DotNet/10.0/linux-x64/dotnet
+Starting AutomationTool...
+Parsing command line: BuildCookRun -project=/home/devcontainers/wt/codex-2434-native/unreal/Lunden/Lunden.uproject -platform=Linux -clientconfig=Shipping -nocompileuat -nocompile -skipbuild -cook -stage -pak -iostore -package -nodebuginfo -nobootstrapexe -archive -stagingdirectory=/mnt/d/LundenLinux/Builds/issue2422-linux-shipping-v1/stage -archivedirectory=/mnt/d/LundenLinux/Builds/issue2422-linux-shipping-v1/archive -unattended -nop4 -utf8output
+Initializing script modules...
+Unhandled exception: System.Exception: Found no script module records.
+   at AutomationToolDriver.Program.MainProc() in /mnt/horde/++UE5/Sync/Engine/Source/Programs/AutomationTool/Program.cs:line 528
+AutomationTool encountered an error before a log file was set, see '/home/devcontainers/.config/Epic/UnrealEngine/Programs/AutomationTool/Saved/Logs/ErrorLog.txt' for more details
+AutomationTool executed for 0h 0m 4s
+AutomationTool exiting with ExitCode=1 (Error_Unknown)
+RunUAT ERROR: AutomationTool was unable to run successfully. Exited with code: 1
