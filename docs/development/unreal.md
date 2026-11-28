@@ -1099,10 +1099,12 @@ sound classes of the three `volumes` rows of `ui-extensions.json`.
   clock. While `Storm` and `Rain` > `thunder.strike.minRain` (0.5), `NextStrike` counts down. A strike draws the
   distance (400–4000 m), sets the nearness and the delay (distance / 343 m/s), and draws the next strike (6–22 s, the
   first one at BeginPlay). It then plays the thunder with `CreateSound2D`, the parameters and `Play`, in
-  `SC_LundenEffects` at the web master. *Pending (#2439):* `BP_LundenSky` has no hail or storm yet (only rain and snow
-  on and off) and no lightning, so `Hail` and `Storm` are component variables that a test sets. Once the sky has them,
-  `ReadSky` reads them with one more pair of names. Our car's cabin (`cabinMix`) is not ported, so the thunder has no
-  `level` input.
+  `SC_LundenEffects` at the web master. **Sky coupling (#2439):** `ReadSky` reads Hail/Storm from
+  `BP_LundenSky`. The same Strike calls FlashSky before the optional sound-device branch,
+  setting FlashT0 and FlashK=`0.35 + 0.65 * ThunderNear`; the sky follows the source envelope
+  in real DeltaSeconds, independently of calendar TimeScale. Hail/Storm sky toggles are
+  mutually exclusive and use the existing rain amount. [Actual tests and flash images](../verification/2439/README.md).
+  Our car's cabin (`cabinMix`) is not ported, so thunder has no `level` input.
 - **Room** (*guess*, a simple form of `ROOM_REVERB`'s convolvers). `ZoneFor` is `indoorRoomClass` from the same surface
   class: a core is `concrete`, an indoor hard floor is `bright`, any other indoor floor is `soft`. Outside that,
   `roomreverb.js`'s courtyard rectangle gives `courtyard`, and the rest is `open`. A change of zone calls
@@ -1133,7 +1135,7 @@ sound classes of the three `volumes` rows of `ui-extensions.json`.
   Blueprint, a pure node runs again for every reader, so the moved distance is stored before `LastPos` moves on. A PIE
   test sets component variables with `PropertyAccessChangeNotifyMode.NEVER`, because the editor's change notification
   rebuilds the actor's components and leaves a stale copy.
-- **Not ported:** the sky's own hail and storm with the lightning (#2439), snow-cover and temperature steps (#2331), other
+- **Not ported:** snow-cover and temperature steps (#2331), other
   players' steps, landing sounds (#2293), music, radios and animals (later), sound occlusion (#2181; the window voices
   are positioned but, like the web's, never occluded) and the playroom zone.
 
@@ -1359,10 +1361,12 @@ sky's brightness and the locked exposure.
   elongation (`MoonPh` = sin e, −cos e, lit fraction, from the same `moonState` terms) with the web's maria pattern and
   earthshine. The clouds hide them as the web mixes its clouds over them, by 0.85 × `CloudCover` (one value for the
   sky: the web hides a star behind each cloud, Unreal dims all stars by the cover; identical in clear weather and under
-  rain or snow, the only weathers Unreal has). The moon light's own atmosphere disk is switched off.
+  rain or snow amounts, also used by the manual hail/storm states). The moon light's own atmosphere disk is switched off.
 - **Weather.** `Rain`, `Snow` (0–1), `Wet`, `WindSpeed` (m/s) and `WindFromDeg` (the direction the wind comes from,
-  as Open-Meteo gives it; #2287 reads `WindSpeed`) are public variables; `ToggleRain` and `ToggleSnow` switch one on
-  at full strength (and the other off) or off. Tick soaks `Wet` in about 10 minutes of rain and dries it in about 30
+  as Open-Meteo gives it; #2287 reads `WindSpeed`) are public variables. `ToggleRain`, `ToggleSnow`,
+  `ToggleHail` and `ToggleStorm` switch mutually exclusive manual weather at full strength or off.
+  Hail uses the existing rain visuals and its source hail sound mix; no separate hail-particle parity is claimed.
+  Storm uses the existing audio strike clock and its synchronized light flash (#2439). Tick soaks `Wet` in about 10 minutes of rain and dries it in about 30
   (*guess*; the web integrates a film in `src/wetground.js`). `UpdateSky` copies the state to `MPC_LundenWeather`.
   `M_LundenPrecipitation`, a post-process material on the sky actor, draws the web's drop and flake numbers on eight
   cylinders round the eye (1.2–14 m, the web's 13 m radius and 9 m height), slanted or drifting with the wind. A
@@ -1370,7 +1374,10 @@ sky's brightness and the locked exposure.
   Hus L (which holds L1007) and Hus A/B/C, taken from the export's measurement rays: so it rains outside and through
   windows, not in the rooms or under the portik. Wet outdoor surfaces darken and catch a faint sky sheen in the same
   pass (a simple form of `src/wetground.js` and `src/wetsurface.js`; no puddles or ripples). Not ported: real weather
-  (Open-Meteo), the seeded shower calendar, hail, thunder and lightning, snow cover, frost, rain sound.
+  (Open-Meteo), the seeded shower calendar, separate hail-particle visuals, snow cover and frost.
+  Rain/hail/thunder sound is implemented by G09; the manual storm flash and source envelope are verified in#2439.
+  Extra sky flash colour outside the complete Neutral inverse's finite domain retains the legacy sky;
+  the actual ambient/SkyLight flash remains active there. This is functional flash support, not complete skyRGB parity.
 - **Lamps.** One `BP_LundenLamp` per `measurements.json` `lights` entry: 21 lamps on furniture and fittings and the 15
   ceiling and pendant light points of the rooms, named `Lamp_<id>` and tagged `lamp:<id>`, `kind:lamp|room`, `level:<n>`,
   `room:<room>`. The exporter now gives the lights without an exported object a stable id

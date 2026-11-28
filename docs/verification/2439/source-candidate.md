@@ -1,4 +1,9 @@
-# Hail/storm source candidate (#2439)
+# Historical hail/storm source candidate (#2439)
+
+This records preparation before the actual Native runs. The later completed
+build/tests/images are in [the delivery record](README.md); pending/unpublished
+statements below describe this earlier checkpoint. The sky-colour domain limit
+remains applicable.
 
 This is an unpublished source checkpoint, not native acceptance or a finished issue.
 No engine, browser, export, authored asset or running Linux cook was changed here.
