@@ -10,9 +10,14 @@ The scene colour reaches a post-process material with Unreal's pre-exposure alre
 tests/neutral_tonemap_probe.py: at bias -2 this gives exposure 0.2475 (x 0.99 at bias 0); also dividing by
 View.PreExposure, as Unreal's own tonemapper does with its raw input, left the picture at bias 0's brightness. The output is display-encoded sRGB, as
 the tonemapper writes it. Not carried: Unreal's bloom, vignette, film grain, colour grading LUT and local exposure, none
-of which the web has. Cost: one full-screen pass with a few ALU per pixel, in place of the tonemapper's own pass.
+of which the web has. #2409 retains a frontmost-opaque patio-bulb exception for the source
+MeshBasicMaterial toneMapped:false: raw de-pre-exposed Scene bypasses exposure and Neutral,
+then uses the same OETF. Its identity/depth/stencil contract is checked by test_patio_strings.
+Cost: one full-screen pass with a few ALU per pixel, in place of the tonemapper's own pass.
 """
 import unreal as u
+
+import patio_tone
 
 MATERIAL = "/Game/Lunden/Lighting/M_LundenNeutralTonemap"
 
@@ -79,12 +84,33 @@ def build(path=MATERIAL, encode=True):
         raise RuntimeError(path + ": could not wire the scene colour")
     neutral = _custom(mat, -500, 0, NEUTRAL_HLSL, ["Exposed"], "three.js r170 NeutralToneMapping")
     mel.connect_material_expressions(expose, "", neutral, "Exposed")
-    last = neutral
+    # Only certified frontmost opaque patio bulbs bypass Neutral AND exposure.
+    selected = _custom(mat, -360, 0, patio_tone.SELECT_HLSL,
+                       ["Scene", "Neutral", "SceneDepth", "CustomDepth", "CustomStencil", "Expected"],
+                       "Source patio bulbs: toneMapped false (no exposure)")
+    mel.connect_material_expressions(scene, "Color", selected, "Scene")
+    mel.connect_material_expressions(neutral, "", selected, "Neutral")
+    for index, (name, enum) in enumerate((("SceneDepth", u.SceneTextureId.PPI_SCENE_DEPTH),
+                                         ("CustomDepth", u.SceneTextureId.PPI_CUSTOM_DEPTH),
+                                         ("CustomStencil", u.SceneTextureId.PPI_CUSTOM_STENCIL))):
+        node = mel.create_material_expression(mat, u.MaterialExpressionSceneTexture, -1100, 320+index*120)
+        node.set_editor_property("scene_texture_id", enum)
+        node.set_editor_property("filtered", False)
+        if not mel.connect_material_expressions(node, "Color", selected, name):
+            raise RuntimeError(path + ": could not wire source bulb visibility "+name)
+    expected = mel.create_material_expression(mat, u.MaterialExpressionCollectionParameter, -1100, 700)
+    expected.set_editor_property("collection", assets.load_asset("/Game/Lunden/Lighting/MPC_LundenWeather"))
+    expected.set_editor_property("parameter_name", patio_tone.EXPECTED_PARAMETER)
+    if not mel.connect_material_expressions(expected, "", selected, "Expected"):
+        raise RuntimeError(path + ": could not bind actual source bulb colour")
+    last = selected
     if encode:
         oetf = _custom(mat, -250, 0, OETF_HLSL, ["Linear"], "three.js r170 sRGBTransferOETF")
-        mel.connect_material_expressions(neutral, "", oetf, "Linear")
+        mel.connect_material_expressions(selected, "", oetf, "Linear")
         last = oetf
     if not mel.connect_material_property(last, "", u.MaterialProperty.MP_EMISSIVE_COLOR):
         raise RuntimeError(path + ": could not wire the output")
-    mel.recompile_material(mat)
+    errors = list(mel.recompile_material(mat))
+    if errors:
+        raise RuntimeError(path + ": tone-map material compilation failed: " + str(errors))
     return mat

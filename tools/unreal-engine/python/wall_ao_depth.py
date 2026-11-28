@@ -115,10 +115,14 @@ def sync_visibility(world):
 
 def inventory(world):
     """No other users may silently change the foreground buffer used by this pass."""
+    import patio_tone
+    certified_bulbs = patio_tone.depth_users(world)
     owned, foreign = [], []
     for actor in u.GameplayStatics.get_all_actors_of_class(world, u.Actor):
         for component in actor.get_components_by_class(u.PrimitiveComponent):
             if component.get_editor_property('render_custom_depth'):
+                if component.get_path_name() in certified_bulbs:
+                    continue
                 (owned if TAG in [str(t) for t in actor.tags] else foreign).append(component.get_path_name())
     if foreign:
         raise RuntimeError('Wall AO CustomDepth conflicts with existing users: '+str(foreign))
