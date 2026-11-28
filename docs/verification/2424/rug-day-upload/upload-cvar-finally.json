@@ -1,0 +1,20 @@
+{
+  "name": "r.DeferUpdateRenderStates",
+  "before": 1,
+  "registeredSDKProof": {
+    "source": "Engine/Source/Runtime/Engine/Private/Materials/ParameterCollection.cpp",
+    "sha256": "3ab2dbb5df0d823ec22fbb97475e4490af23b52c98fc3322e5aa3555c3ba9b77",
+    "name": "r.DeferUpdateRenderStates",
+    "default": 1,
+    "registrationLine": 17,
+    "scalarSetterLine": 969,
+    "vectorSetterLine": 1008,
+    "updateLine": 1081,
+    "uploadLine": 1098,
+    "semantics": "Setters update only changed/new CPU override; 0 disables deferral. Own SourceDayShare0->actual1 guarantees changed CPU value before draw."
+  },
+  "intentionalChangeOnly": "0 before target-world creation and all MPC setters",
+  "during": 0,
+  "after": 1,
+  "restored": true
+}

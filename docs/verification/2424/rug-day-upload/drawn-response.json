@@ -1,0 +1,33 @@
+{
+  "classification": "Unchanged strict day drawn-response gate; no source-colour/full-scene acceptance",
+  "cropContractSHA256": "1f559812415bdc9a6bbfcd5030957bae510b208833318c45021d3a89545d47b6",
+  "id": "living-room-day",
+  "originalSHA256": "11fa1056a82c1b7618f7fc3b75d7e4aa2c1585320169464ebe68886d19163aa8",
+  "sourceAmbientSHA256": "4c234e977334b5171f1a38d35eeae71a4bbcd9f129ac5c6f12e6e0feb6dc72ce",
+  "lockedRect": [
+    0.385,
+    0.9,
+    0.45,
+    0.985
+  ],
+  "pixelRect": [
+    246,
+    324,
+    288,
+    355
+  ],
+  "changedRugPixels": 1302,
+  "rugPixels": 1302,
+  "meanAbsoluteRGBDifference": [
+    126.79493087557604,
+    128.32872503840247,
+    107.27956989247312
+  ],
+  "wholeFrameDifferenceBBox": [
+    0,
+    276,
+    305,
+    360
+  ],
+  "passed": true
+}
