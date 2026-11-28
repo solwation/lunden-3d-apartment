@@ -1,0 +1,11 @@
+{
+  "old": {
+    "root": "/home/devcontainers/wt/codex-2424-source-ambient",
+    "hlslSHA256": "61f95aa63cf236babc6d334c7ef14e006b4c97aef841500e11f1d1be8864fa5e"
+  },
+  "new": {
+    "root": "/home/devcontainers/lunden-3d-apartment",
+    "hlslSHA256": "61f95aa63cf236babc6d334c7ef14e006b4c97aef841500e11f1d1be8864fa5e"
+  },
+  "exactHLSLUnchanged": true
+}

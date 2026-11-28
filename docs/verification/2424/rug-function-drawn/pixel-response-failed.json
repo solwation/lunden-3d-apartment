@@ -1,0 +1,47 @@
+{
+  "classification": "Actual failed strict drawn-response gate; no colour/full-scene acceptance",
+  "actualOriginalCheckerExit": 1,
+  "failedMessage": "No drawn RGB response in locked rug living-room-day",
+  "rows": [
+    {
+      "shot": "living-room-day",
+      "rect": [
+        246,
+        324,
+        288,
+        355
+      ],
+      "changedRugPixels": 0,
+      "rugPixels": 1302,
+      "meanAbsoluteRGBDifference": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "passed": false,
+      "originalSHA256": "e500d7a19b31dfe1a766e1e7ce0c0c423c8954cb29d3a914c5c9c88611b5cd23",
+      "sourceAmbientSHA256": "0fb9a6efbdf323e562c33d509ce452b426b85990479093486d18ed7f892fae77"
+    },
+    {
+      "shot": "living-room-evening",
+      "rect": [
+        246,
+        324,
+        288,
+        355
+      ],
+      "changedRugPixels": 1302,
+      "rugPixels": 1302,
+      "meanAbsoluteRGBDifference": [
+        12.64900153609831,
+        16.93625192012289,
+        21.827188940092167
+      ],
+      "passed": true,
+      "originalSHA256": "894d5958f3bf5e92f9d5553a3b468c5ccb766933f70b8b48bbeac55880436bd0",
+      "sourceAmbientSHA256": "35e8609e9d430818786d51df46deb921920f64a0c8d40c5ace9ef81d210ab1b2"
+    }
+  ],
+  "passed": false,
+  "noNewRendering": true
+}

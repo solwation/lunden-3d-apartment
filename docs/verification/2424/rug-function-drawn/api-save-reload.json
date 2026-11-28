@@ -1,0 +1,1526 @@
+{
+  "completed": true,
+  "passed": true,
+  "sourceKey": "std_ffffff_r100_m0_tex_tf6735630e8",
+  "configSHA256": "ff0a047fafc2517de57a8ebf3ab394d27f9b26ff61240fb59274a67374fcc908",
+  "classification": "One actual rug source layer; API/graph/overrides/save/reload only",
+  "gpuShaderCompilation": "NOT PROVEN: no drawn fixture or renderer compiler result in this API trial",
+  "worldSlotsChanged": false,
+  "sourcePolicyEnabled": false,
+  "actualSourceLayer": {
+    "version": 1,
+    "model": "MeshStandardMaterial",
+    "unlit": false,
+    "physical": false,
+    "textures": {
+      "aoMap": {
+        "present": false
+      },
+      "normalMap": {
+        "present": false
+      },
+      "bumpMap": {
+        "present": false
+      },
+      "clearcoatMap": {
+        "present": false
+      },
+      "clearcoatNormalMap": {
+        "present": false
+      },
+      "sheenColorMap": {
+        "present": false
+      },
+      "transmissionMap": {
+        "present": false
+      }
+    },
+    "aoMapIntensity": 1,
+    "clearcoat": 0,
+    "transmission": 0,
+    "sheenColor": [
+      0,
+      0,
+      0
+    ],
+    "normalFacing": "front-sided",
+    "ownEnvironmentMap": false,
+    "source": "actual THREE material before export-scene Standard flattening; linear-srgb layer colours"
+  },
+  "sourceAmbient": {
+    "version": 1,
+    "space": "linear-srgb",
+    "colors": {
+      "ambient": [
+        1,
+        1,
+        1
+      ],
+      "skyDay": [
+        0.8227857543924378,
+        0.8962693533719567,
+        1
+      ],
+      "skyNight": [
+        0.14702726648767014,
+        0.20507873637973145,
+        0.3915724777393922
+      ],
+      "ground": [
+        0.6724431569510133,
+        0.6444796819634361,
+        0.5906188409113381
+      ],
+      "fill": [
+        0.9046611743890203,
+        0.9215818562755338,
+        1
+      ]
+    },
+    "clear": {
+      "ambient": 0.25,
+      "hemi": 1.5,
+      "fill": 0.35
+    },
+    "overcast": {
+      "ambient": 0.6,
+      "hemi": 2,
+      "fill": 0.9
+    },
+    "nightAmbient": 0.05,
+    "flashLight": 2.2,
+    "garageCarLight": 4,
+    "hemiDirection": [
+      0,
+      1,
+      0
+    ],
+    "fillDirection": [
+      0.7155417527999327,
+      0.5366563145999496,
+      -0.4472135954999579
+    ],
+    "source": "src/main.js hemi/ambient/fill; src/daycycle.js update; three WebGLLights and RE_IndirectDiffuse_Physical"
+  },
+  "sourceMeasurementsSHA256": "011d16615400d4da214f7d8039d985eecd90ab2e767243a8d568861eca74cc29",
+  "originalChain": [
+    "/Game/Lunden/Generated/l1007/Materials/std_ffffff_r100_m0_tex_tf6735630e8.std_ffffff_r100_m0_tex_tf6735630e8",
+    "/InterchangeAssets/gltf/MaterialInstances/MI_Default_Opaque.MI_Default_Opaque",
+    "/InterchangeAssets/gltf/M_Default.M_Default"
+  ],
+  "originalBytes": {
+    "/Game/Lunden/Generated/l1007/Materials/std_ffffff_r100_m0_tex_tf6735630e8.std_ffffff_r100_m0_tex_tf6735630e8": "82f7f3705cb5d03f342280a1ecc659681dca86a069bc8eacd60e00af2e6d4232",
+    "/InterchangeAssets/gltf/MaterialInstances/MI_Default_Opaque.MI_Default_Opaque": "cf3848eaa98a42f6ef1f804ada37dd5c76ad550a9f7ff632a54d818b11ac3ef8",
+    "/InterchangeAssets/gltf/M_Default.M_Default": "3635a3774bc649b5a66026aee66ba866c2ad11f4beba9983f3247019277387df"
+  },
+  "firstChain": {
+    "instances": [
+      {
+        "original": "/Game/Lunden/Generated/l1007/Materials/std_ffffff_r100_m0_tex_tf6735630e8.std_ffffff_r100_m0_tex_tf6735630e8",
+        "copy": "/Game/Lunden/Generated/SourceAmbientRugTrial/v2/Instances/14efa477f8906e89a1e0e52c/std_ffffff_r100_m0_tex_tf6735630e8.std_ffffff_r100_m0_tex_tf6735630e8",
+        "state": {
+          "class": "/Script/Engine.MaterialInstanceConstant",
+          "localOverrides": {
+            "scalar_parameter_values": [
+              "(AtlasData=(bIsUsedAsAtlasPosition=False,Curve=None,Atlas=None),ParameterInfo=(Name=\"MetallicFactor\",Association=GlobalParameter,Index=-1),ParameterValue=0.000000,ExpressionGUID=29EEEB0449E1B51BB331378FAF36D088)"
+            ],
+            "vector_parameter_values": [
+              "(ParameterInfo=(Name=\"BaseColorTexture_TilingMethod\",Association=GlobalParameter,Index=-1),ParameterValue=(R=1.000000,G=1.000000,B=0.000000,A=0.000000),ExpressionGUID=C7E1EE6748E6FBE639A673957C876116)"
+            ],
+            "texture_parameter_values": [
+              "(ParameterInfo=(Name=\"BaseColorTexture\",Association=GlobalParameter,Index=-1),ParameterValue=\"/Script/Engine.Texture2D'/Game/Lunden/Generated/l1007/Textures/T_canvas_tf6735630e8.T_canvas_tf6735630e8'\",ExpressionGUID=5E003165461D1072022146B04EF15617)"
+            ],
+            "base_property_overrides": "(bOverride_OpacityMaskClipValue=False,bOverride_BlendMode=False,bOverride_ShadingModel=False,bOverride_DitheredLODTransition=False,bOverride_CastDynamicShadowAsMasked=False,bOverride_TwoSided=False,bOverride_bIsThinSurface=False,bOverride_OutputTranslucentVelocity=False,bOverride_bHasPixelAnimation=False,bOverride_bEnableTessellation=False,bOverride_DisplacementScaling=False,bOverride_bEnableDisplacementFade=False,bOverride_DisplacementFadeRange=False,bOverride_MaxWorldPositionOffsetDisplacement=False,bOverride_CompatibleWithLumenCardSharing=False,bOverride_UsageFlags=262144,TwoSided=False,bIsThinSurface=False,DitheredLODTransition=False,bCastDynamicShadowAsMasked=False,bOutputTranslucentVelocity=False,bHasPixelAnimation=False,bEnableTessellation=False,bEnableDisplacementFade=False,bCompatibleWithLumenCardSharing=False,BlendMode=BLEND_Opaque,ShadingModel=MSM_DefaultLit,OpacityMaskClipValue=0.000000,DisplacementScaling=(Magnitude=4.000000,Center=0.500000),DisplacementFadeRange=(StartSizePixels=4.000000,EndSizePixels=1.000000),MaxWorldPositionOffsetDisplacement=0.000000,UsageFlags=38010881)"
+          },
+          "resolvedParameters": {
+            "scalar": {
+              "AlphaCutoff": "0.0",
+              "AnisotropyRotation": "0.0",
+              "AnisotropyStrength": "0.0",
+              "AnisotropyTexture_Rotation": "0.0",
+              "AnisotropyTexture_TexCoord": "0.0",
+              "BaseColorTexture_Rotation": "0.0",
+              "BaseColorTexture_TexCoord": "0.0",
+              "EmissiveStrength": "1.0",
+              "EmissiveTexture_Rotation": "0.0",
+              "EmissiveTexture_TexCoord": "0.0",
+              "IOR": "1.5",
+              "IridescenceFactor": "0.0",
+              "IridescenceIOR": "1.2999999523162842",
+              "IridescenceTexture_Rotation": "0.0",
+              "IridescenceTexture_TexCoord": "0.0",
+              "IridescenceThicknessMaximum": "400.0",
+              "IridescenceThicknessMinimum": "100.0",
+              "IridescenceThicknessTexture_Rotation": "0.0",
+              "IridescenceThicknessTexture_TexCoord": "0.0",
+              "MetallicFactor": "0.0",
+              "MetallicRoughnessTexture_Rotation": "0.0",
+              "MetallicRoughnessTexture_TexCoord": "0.0",
+              "NormalScale": "1.0",
+              "NormalTexture_Rotation": "0.0",
+              "NormalTexture_TexCoord": "0.0",
+              "OcclusionStrength": "1.0",
+              "OcclusionTexture_Rotation": "0.0",
+              "OcclusionTexture_TexCoord": "0.0",
+              "RoughnessFactor": "1.0",
+              "SpecularFactor": "1.0",
+              "SpecularTexture_Rotation": "0.0",
+              "SpecularTexture_TexCoord": "0.0"
+            },
+            "vector": {
+              "AnisotropyTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "AnisotropyTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "BaseColorFactor": "(R=1.000000,G=1.000000,B=1.000000,A=1.000000)",
+              "BaseColorTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "BaseColorTexture_TilingMethod": "(R=1.000000,G=1.000000,B=0.000000,A=0.000000)",
+              "EmissiveFactor": "(R=0.000000,G=0.000000,B=0.000000,A=1.000000)",
+              "EmissiveTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "EmissiveTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "IridescenceTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "IridescenceTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "IridescenceThicknessTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "IridescenceThicknessTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "MetallicRoughnessTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "MetallicRoughnessTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "NormalTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "NormalTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "OcclusionTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "OcclusionTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "SpecularTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "SpecularTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)"
+            },
+            "texture": {
+              "AnisotropyTexture": "/InterchangeAssets/gltf/Textures/T_Anisotropy_Direction_Linear.T_Anisotropy_Direction_Linear",
+              "BaseColorTexture": "/Game/Lunden/Generated/l1007/Textures/T_canvas_tf6735630e8.T_canvas_tf6735630e8",
+              "EmissiveTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb",
+              "IridescenceTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb",
+              "IridescenceThicknessTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb",
+              "MetallicRoughnessTexture": "/InterchangeAssets/gltf/Textures/T_White_Linear.T_White_Linear",
+              "NormalTexture": "/InterchangeAssets/gltf/Textures/T_Generic_N.T_Generic_N",
+              "OcclusionTexture": "/InterchangeAssets/gltf/Textures/T_White_Linear.T_White_Linear",
+              "SpecularTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb"
+            },
+            "static_switch": {
+              "DisableSwitchNaniteTransformUV": "True",
+              "bHasAnisotropyTextureAndOrRotation": "False",
+              "bHasBaseColorTexture": "True",
+              "bHasEmissiveTexture": "False",
+              "bHasIridescence": "False",
+              "bHasMetallicRoughnessTexture": "False",
+              "bHasNormalTexture": "False",
+              "bHasOcclusionTexture": "False",
+              "bHasSpecularTexture": "False"
+            }
+          }
+        },
+        "receipt": {
+          "dirty": false,
+          "packageSHA256": "9e4a9ae2550e5f90af629865b6ffe495eafc3cd4e0b6f0c2591b7aa9e8345383",
+          "stamp": "14efa477f8906e89a1e0e52cd9969a551055681874672563983a2ba392200ed4",
+          "provenanceSHA256": "8b6e919f9fd85121c82e7831a855e6282efc24fcc28925f79403751a92b21c36",
+          "receipt": {
+            "packageSHA256": "9e4a9ae2550e5f90af629865b6ffe495eafc3cd4e0b6f0c2591b7aa9e8345383",
+            "provenanceSHA256": "8b6e919f9fd85121c82e7831a855e6282efc24fcc28925f79403751a92b21c36",
+            "stamp": "14efa477f8906e89a1e0e52cd9969a551055681874672563983a2ba392200ed4"
+          }
+        }
+      },
+      {
+        "original": "/InterchangeAssets/gltf/MaterialInstances/MI_Default_Opaque.MI_Default_Opaque",
+        "copy": "/Game/Lunden/Generated/SourceAmbientRugTrial/v2/Instances/cbfeca0e735c5632cb18b766/MI_Default_Opaque.MI_Default_Opaque",
+        "state": {
+          "class": "/Script/Engine.MaterialInstanceConstant",
+          "localOverrides": {
+            "scalar_parameter_values": [
+              "(AtlasData=(bIsUsedAsAtlasPosition=False,Curve=None,Atlas=None),ParameterInfo=(Name=\"RefractionDepthBias\",Association=GlobalParameter,Index=-1),ParameterValue=0.000000,ExpressionGUID=00000000000000000000000000000000)"
+            ],
+            "vector_parameter_values": [],
+            "texture_parameter_values": [],
+            "base_property_overrides": "(bOverride_OpacityMaskClipValue=False,bOverride_BlendMode=False,bOverride_ShadingModel=False,bOverride_DitheredLODTransition=False,bOverride_CastDynamicShadowAsMasked=False,bOverride_TwoSided=False,bOverride_bIsThinSurface=False,bOverride_OutputTranslucentVelocity=False,bOverride_bHasPixelAnimation=False,bOverride_bEnableTessellation=False,bOverride_DisplacementScaling=False,bOverride_bEnableDisplacementFade=False,bOverride_DisplacementFadeRange=False,bOverride_MaxWorldPositionOffsetDisplacement=False,bOverride_CompatibleWithLumenCardSharing=False,bOverride_UsageFlags=0,TwoSided=False,bIsThinSurface=False,DitheredLODTransition=False,bCastDynamicShadowAsMasked=False,bOutputTranslucentVelocity=False,bHasPixelAnimation=False,bEnableTessellation=False,bEnableDisplacementFade=False,bCompatibleWithLumenCardSharing=False,BlendMode=BLEND_Opaque,ShadingModel=MSM_DefaultLit,OpacityMaskClipValue=0.000000,DisplacementScaling=(Magnitude=4.000000,Center=0.500000),DisplacementFadeRange=(StartSizePixels=4.000000,EndSizePixels=1.000000),MaxWorldPositionOffsetDisplacement=0.000000,UsageFlags=37748737)"
+          },
+          "resolvedParameters": {
+            "scalar": {
+              "AlphaCutoff": "0.0",
+              "AnisotropyRotation": "0.0",
+              "AnisotropyStrength": "0.0",
+              "AnisotropyTexture_Rotation": "0.0",
+              "AnisotropyTexture_TexCoord": "0.0",
+              "BaseColorTexture_Rotation": "0.0",
+              "BaseColorTexture_TexCoord": "0.0",
+              "EmissiveStrength": "1.0",
+              "EmissiveTexture_Rotation": "0.0",
+              "EmissiveTexture_TexCoord": "0.0",
+              "IOR": "1.5",
+              "IridescenceFactor": "0.0",
+              "IridescenceIOR": "1.2999999523162842",
+              "IridescenceTexture_Rotation": "0.0",
+              "IridescenceTexture_TexCoord": "0.0",
+              "IridescenceThicknessMaximum": "400.0",
+              "IridescenceThicknessMinimum": "100.0",
+              "IridescenceThicknessTexture_Rotation": "0.0",
+              "IridescenceThicknessTexture_TexCoord": "0.0",
+              "MetallicFactor": "1.0",
+              "MetallicRoughnessTexture_Rotation": "0.0",
+              "MetallicRoughnessTexture_TexCoord": "0.0",
+              "NormalScale": "1.0",
+              "NormalTexture_Rotation": "0.0",
+              "NormalTexture_TexCoord": "0.0",
+              "OcclusionStrength": "1.0",
+              "OcclusionTexture_Rotation": "0.0",
+              "OcclusionTexture_TexCoord": "0.0",
+              "RoughnessFactor": "1.0",
+              "SpecularFactor": "1.0",
+              "SpecularTexture_Rotation": "0.0",
+              "SpecularTexture_TexCoord": "0.0"
+            },
+            "vector": {
+              "AnisotropyTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "AnisotropyTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "BaseColorFactor": "(R=1.000000,G=1.000000,B=1.000000,A=1.000000)",
+              "BaseColorTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "BaseColorTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "EmissiveFactor": "(R=0.000000,G=0.000000,B=0.000000,A=1.000000)",
+              "EmissiveTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "EmissiveTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "IridescenceTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "IridescenceTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "IridescenceThicknessTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "IridescenceThicknessTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "MetallicRoughnessTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "MetallicRoughnessTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "NormalTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "NormalTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "OcclusionTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "OcclusionTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "SpecularTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "SpecularTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)"
+            },
+            "texture": {
+              "AnisotropyTexture": "/InterchangeAssets/gltf/Textures/T_Anisotropy_Direction_Linear.T_Anisotropy_Direction_Linear",
+              "BaseColorTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb",
+              "EmissiveTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb",
+              "IridescenceTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb",
+              "IridescenceThicknessTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb",
+              "MetallicRoughnessTexture": "/InterchangeAssets/gltf/Textures/T_White_Linear.T_White_Linear",
+              "NormalTexture": "/InterchangeAssets/gltf/Textures/T_Generic_N.T_Generic_N",
+              "OcclusionTexture": "/InterchangeAssets/gltf/Textures/T_White_Linear.T_White_Linear",
+              "SpecularTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb"
+            },
+            "static_switch": {
+              "DisableSwitchNaniteTransformUV": "True",
+              "bHasAnisotropyTextureAndOrRotation": "True",
+              "bHasBaseColorTexture": "True",
+              "bHasEmissiveTexture": "True",
+              "bHasIridescence": "True",
+              "bHasMetallicRoughnessTexture": "True",
+              "bHasNormalTexture": "True",
+              "bHasOcclusionTexture": "True",
+              "bHasSpecularTexture": "True"
+            }
+          }
+        },
+        "receipt": {
+          "dirty": false,
+          "packageSHA256": "d819bd4a363afb5fa453d9c2208b7f87a9dd6d36051e09fb67bd5c6505c71ddf",
+          "stamp": "cbfeca0e735c5632cb18b766aefe94f0d60a7743a86cd3152e09899608965bb4",
+          "provenanceSHA256": "93cca3291b58a6838d171a57f8ad4a9d6256657e4cdf5512d5fa853f896af667",
+          "receipt": {
+            "packageSHA256": "d819bd4a363afb5fa453d9c2208b7f87a9dd6d36051e09fb67bd5c6505c71ddf",
+            "provenanceSHA256": "93cca3291b58a6838d171a57f8ad4a9d6256657e4cdf5512d5fa853f896af667",
+            "stamp": "cbfeca0e735c5632cb18b766aefe94f0d60a7743a86cd3152e09899608965bb4"
+          }
+        }
+      }
+    ],
+    "originalOutputs": {
+      "BASE_COLOR": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "BaseColor"
+      },
+      "METALLIC": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Metallic"
+      },
+      "ROUGHNESS": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Roughness"
+      },
+      "SPECULAR": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Specular"
+      },
+      "OPACITY": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Opacity"
+      },
+      "OPACITY_MASK": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "OpacityMask"
+      },
+      "WORLD_POSITION_OFFSET": {
+        "class": null,
+        "name": null,
+        "pin": ""
+      },
+      "AMBIENT_OCCLUSION": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Occlusion"
+      },
+      "NORMAL": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Normal"
+      },
+      "EMISSIVE_COLOR": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "EmissiveColor"
+      }
+    },
+    "copiedOutputs": {
+      "BASE_COLOR": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "BaseColor"
+      },
+      "METALLIC": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Metallic"
+      },
+      "ROUGHNESS": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Roughness"
+      },
+      "SPECULAR": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Specular"
+      },
+      "OPACITY": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Opacity"
+      },
+      "OPACITY_MASK": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "OpacityMask"
+      },
+      "WORLD_POSITION_OFFSET": {
+        "class": null,
+        "name": null,
+        "pin": ""
+      },
+      "AMBIENT_OCCLUSION": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Occlusion"
+      },
+      "NORMAL": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Normal"
+      },
+      "EMISSIVE_COLOR": {
+        "class": "/Script/Engine.MaterialExpressionAdd",
+        "name": "MaterialExpressionAdd_0",
+        "pin": ""
+      }
+    },
+    "masterProperties": {
+      "material_domain": "<MaterialDomain.MD_SURFACE: 0>",
+      "shading_model": "<MaterialShadingModel.MSM_DEFAULT_LIT: 1>",
+      "blend_mode": "<BlendMode.BLEND_OPAQUE: 0>",
+      "two_sided": "False",
+      "tangent_space_normal": "True",
+      "use_material_attributes": "False",
+      "translucency_lighting_mode": "<TranslucencyLightingMode.TLM_SURFACE: 4>"
+    },
+    "master": "/Game/Lunden/Generated/SourceAmbientRugTrial/v2/Masters/M_f38bb17a9b8c9ac51d69c664.M_f38bb17a9b8c9ac51d69c664",
+    "masterReceipt": {
+      "dirty": false,
+      "packageSHA256": "30453834245c15fcd63072b79e481bbc32c098864957257048dc082a21e0f403",
+      "stamp": "f38bb17a9b8c9ac51d69c664aafc5afd73c487e8aba6aed12715f470bde473b4",
+      "provenanceSHA256": "005105974b73b5cc45f5274f3ce8eabcbd76a209b1840709a61c71cc67938328",
+      "receipt": {
+        "packageSHA256": "30453834245c15fcd63072b79e481bbc32c098864957257048dc082a21e0f403",
+        "provenanceSHA256": "005105974b73b5cc45f5274f3ce8eabcbd76a209b1840709a61c71cc67938328",
+        "stamp": "f38bb17a9b8c9ac51d69c664aafc5afd73c487e8aba6aed12715f470bde473b4"
+      }
+    }
+  },
+  "changedContextChain": {
+    "instances": [
+      {
+        "original": "/Game/Lunden/Generated/l1007/Materials/std_ffffff_r100_m0_tex_tf6735630e8.std_ffffff_r100_m0_tex_tf6735630e8",
+        "copy": "/Game/Lunden/Generated/SourceAmbientRugTrial/v2/Instances/26a673bc7d6f4b7fcddf1f67/std_ffffff_r100_m0_tex_tf6735630e8.std_ffffff_r100_m0_tex_tf6735630e8",
+        "state": {
+          "class": "/Script/Engine.MaterialInstanceConstant",
+          "localOverrides": {
+            "scalar_parameter_values": [
+              "(AtlasData=(bIsUsedAsAtlasPosition=False,Curve=None,Atlas=None),ParameterInfo=(Name=\"MetallicFactor\",Association=GlobalParameter,Index=-1),ParameterValue=0.000000,ExpressionGUID=29EEEB0449E1B51BB331378FAF36D088)"
+            ],
+            "vector_parameter_values": [
+              "(ParameterInfo=(Name=\"BaseColorTexture_TilingMethod\",Association=GlobalParameter,Index=-1),ParameterValue=(R=1.000000,G=1.000000,B=0.000000,A=0.000000),ExpressionGUID=C7E1EE6748E6FBE639A673957C876116)"
+            ],
+            "texture_parameter_values": [
+              "(ParameterInfo=(Name=\"BaseColorTexture\",Association=GlobalParameter,Index=-1),ParameterValue=\"/Script/Engine.Texture2D'/Game/Lunden/Generated/l1007/Textures/T_canvas_tf6735630e8.T_canvas_tf6735630e8'\",ExpressionGUID=5E003165461D1072022146B04EF15617)"
+            ],
+            "base_property_overrides": "(bOverride_OpacityMaskClipValue=False,bOverride_BlendMode=False,bOverride_ShadingModel=False,bOverride_DitheredLODTransition=False,bOverride_CastDynamicShadowAsMasked=False,bOverride_TwoSided=False,bOverride_bIsThinSurface=False,bOverride_OutputTranslucentVelocity=False,bOverride_bHasPixelAnimation=False,bOverride_bEnableTessellation=False,bOverride_DisplacementScaling=False,bOverride_bEnableDisplacementFade=False,bOverride_DisplacementFadeRange=False,bOverride_MaxWorldPositionOffsetDisplacement=False,bOverride_CompatibleWithLumenCardSharing=False,bOverride_UsageFlags=262144,TwoSided=False,bIsThinSurface=False,DitheredLODTransition=False,bCastDynamicShadowAsMasked=False,bOutputTranslucentVelocity=False,bHasPixelAnimation=False,bEnableTessellation=False,bEnableDisplacementFade=False,bCompatibleWithLumenCardSharing=False,BlendMode=BLEND_Opaque,ShadingModel=MSM_DefaultLit,OpacityMaskClipValue=0.000000,DisplacementScaling=(Magnitude=4.000000,Center=0.500000),DisplacementFadeRange=(StartSizePixels=4.000000,EndSizePixels=1.000000),MaxWorldPositionOffsetDisplacement=0.000000,UsageFlags=38010881)"
+          },
+          "resolvedParameters": {
+            "scalar": {
+              "AlphaCutoff": "0.0",
+              "AnisotropyRotation": "0.0",
+              "AnisotropyStrength": "0.0",
+              "AnisotropyTexture_Rotation": "0.0",
+              "AnisotropyTexture_TexCoord": "0.0",
+              "BaseColorTexture_Rotation": "0.0",
+              "BaseColorTexture_TexCoord": "0.0",
+              "EmissiveStrength": "1.0",
+              "EmissiveTexture_Rotation": "0.0",
+              "EmissiveTexture_TexCoord": "0.0",
+              "IOR": "1.5",
+              "IridescenceFactor": "0.0",
+              "IridescenceIOR": "1.2999999523162842",
+              "IridescenceTexture_Rotation": "0.0",
+              "IridescenceTexture_TexCoord": "0.0",
+              "IridescenceThicknessMaximum": "400.0",
+              "IridescenceThicknessMinimum": "100.0",
+              "IridescenceThicknessTexture_Rotation": "0.0",
+              "IridescenceThicknessTexture_TexCoord": "0.0",
+              "MetallicFactor": "0.0",
+              "MetallicRoughnessTexture_Rotation": "0.0",
+              "MetallicRoughnessTexture_TexCoord": "0.0",
+              "NormalScale": "1.0",
+              "NormalTexture_Rotation": "0.0",
+              "NormalTexture_TexCoord": "0.0",
+              "OcclusionStrength": "1.0",
+              "OcclusionTexture_Rotation": "0.0",
+              "OcclusionTexture_TexCoord": "0.0",
+              "RoughnessFactor": "1.0",
+              "SpecularFactor": "1.0",
+              "SpecularTexture_Rotation": "0.0",
+              "SpecularTexture_TexCoord": "0.0"
+            },
+            "vector": {
+              "AnisotropyTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "AnisotropyTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "BaseColorFactor": "(R=1.000000,G=1.000000,B=1.000000,A=1.000000)",
+              "BaseColorTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "BaseColorTexture_TilingMethod": "(R=1.000000,G=1.000000,B=0.000000,A=0.000000)",
+              "EmissiveFactor": "(R=0.000000,G=0.000000,B=0.000000,A=1.000000)",
+              "EmissiveTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "EmissiveTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "IridescenceTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "IridescenceTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "IridescenceThicknessTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "IridescenceThicknessTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "MetallicRoughnessTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "MetallicRoughnessTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "NormalTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "NormalTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "OcclusionTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "OcclusionTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "SpecularTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "SpecularTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)"
+            },
+            "texture": {
+              "AnisotropyTexture": "/InterchangeAssets/gltf/Textures/T_Anisotropy_Direction_Linear.T_Anisotropy_Direction_Linear",
+              "BaseColorTexture": "/Game/Lunden/Generated/l1007/Textures/T_canvas_tf6735630e8.T_canvas_tf6735630e8",
+              "EmissiveTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb",
+              "IridescenceTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb",
+              "IridescenceThicknessTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb",
+              "MetallicRoughnessTexture": "/InterchangeAssets/gltf/Textures/T_White_Linear.T_White_Linear",
+              "NormalTexture": "/InterchangeAssets/gltf/Textures/T_Generic_N.T_Generic_N",
+              "OcclusionTexture": "/InterchangeAssets/gltf/Textures/T_White_Linear.T_White_Linear",
+              "SpecularTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb"
+            },
+            "static_switch": {
+              "DisableSwitchNaniteTransformUV": "True",
+              "bHasAnisotropyTextureAndOrRotation": "False",
+              "bHasBaseColorTexture": "True",
+              "bHasEmissiveTexture": "False",
+              "bHasIridescence": "False",
+              "bHasMetallicRoughnessTexture": "False",
+              "bHasNormalTexture": "False",
+              "bHasOcclusionTexture": "False",
+              "bHasSpecularTexture": "False"
+            }
+          }
+        },
+        "receipt": {
+          "dirty": false,
+          "packageSHA256": "7c658e5ab40435c6c3808a8635e54eb23f1d2ee82f8dabb8fd59a47c4788e8e6",
+          "stamp": "26a673bc7d6f4b7fcddf1f67ae65b08d8b41a7a9c68ef5736f1cb1505b3ce848",
+          "provenanceSHA256": "279b9e9d2734303a0c47404b2dffd831a2429389b1afe636b0c8a80023b262d3",
+          "receipt": {
+            "packageSHA256": "7c658e5ab40435c6c3808a8635e54eb23f1d2ee82f8dabb8fd59a47c4788e8e6",
+            "provenanceSHA256": "279b9e9d2734303a0c47404b2dffd831a2429389b1afe636b0c8a80023b262d3",
+            "stamp": "26a673bc7d6f4b7fcddf1f67ae65b08d8b41a7a9c68ef5736f1cb1505b3ce848"
+          }
+        }
+      },
+      {
+        "original": "/InterchangeAssets/gltf/MaterialInstances/MI_Default_Opaque.MI_Default_Opaque",
+        "copy": "/Game/Lunden/Generated/SourceAmbientRugTrial/v2/Instances/74b9029167386b3e42dc2530/MI_Default_Opaque.MI_Default_Opaque",
+        "state": {
+          "class": "/Script/Engine.MaterialInstanceConstant",
+          "localOverrides": {
+            "scalar_parameter_values": [
+              "(AtlasData=(bIsUsedAsAtlasPosition=False,Curve=None,Atlas=None),ParameterInfo=(Name=\"RefractionDepthBias\",Association=GlobalParameter,Index=-1),ParameterValue=0.000000,ExpressionGUID=00000000000000000000000000000000)"
+            ],
+            "vector_parameter_values": [],
+            "texture_parameter_values": [],
+            "base_property_overrides": "(bOverride_OpacityMaskClipValue=False,bOverride_BlendMode=False,bOverride_ShadingModel=False,bOverride_DitheredLODTransition=False,bOverride_CastDynamicShadowAsMasked=False,bOverride_TwoSided=False,bOverride_bIsThinSurface=False,bOverride_OutputTranslucentVelocity=False,bOverride_bHasPixelAnimation=False,bOverride_bEnableTessellation=False,bOverride_DisplacementScaling=False,bOverride_bEnableDisplacementFade=False,bOverride_DisplacementFadeRange=False,bOverride_MaxWorldPositionOffsetDisplacement=False,bOverride_CompatibleWithLumenCardSharing=False,bOverride_UsageFlags=0,TwoSided=False,bIsThinSurface=False,DitheredLODTransition=False,bCastDynamicShadowAsMasked=False,bOutputTranslucentVelocity=False,bHasPixelAnimation=False,bEnableTessellation=False,bEnableDisplacementFade=False,bCompatibleWithLumenCardSharing=False,BlendMode=BLEND_Opaque,ShadingModel=MSM_DefaultLit,OpacityMaskClipValue=0.000000,DisplacementScaling=(Magnitude=4.000000,Center=0.500000),DisplacementFadeRange=(StartSizePixels=4.000000,EndSizePixels=1.000000),MaxWorldPositionOffsetDisplacement=0.000000,UsageFlags=37748737)"
+          },
+          "resolvedParameters": {
+            "scalar": {
+              "AlphaCutoff": "0.0",
+              "AnisotropyRotation": "0.0",
+              "AnisotropyStrength": "0.0",
+              "AnisotropyTexture_Rotation": "0.0",
+              "AnisotropyTexture_TexCoord": "0.0",
+              "BaseColorTexture_Rotation": "0.0",
+              "BaseColorTexture_TexCoord": "0.0",
+              "EmissiveStrength": "1.0",
+              "EmissiveTexture_Rotation": "0.0",
+              "EmissiveTexture_TexCoord": "0.0",
+              "IOR": "1.5",
+              "IridescenceFactor": "0.0",
+              "IridescenceIOR": "1.2999999523162842",
+              "IridescenceTexture_Rotation": "0.0",
+              "IridescenceTexture_TexCoord": "0.0",
+              "IridescenceThicknessMaximum": "400.0",
+              "IridescenceThicknessMinimum": "100.0",
+              "IridescenceThicknessTexture_Rotation": "0.0",
+              "IridescenceThicknessTexture_TexCoord": "0.0",
+              "MetallicFactor": "1.0",
+              "MetallicRoughnessTexture_Rotation": "0.0",
+              "MetallicRoughnessTexture_TexCoord": "0.0",
+              "NormalScale": "1.0",
+              "NormalTexture_Rotation": "0.0",
+              "NormalTexture_TexCoord": "0.0",
+              "OcclusionStrength": "1.0",
+              "OcclusionTexture_Rotation": "0.0",
+              "OcclusionTexture_TexCoord": "0.0",
+              "RoughnessFactor": "1.0",
+              "SpecularFactor": "1.0",
+              "SpecularTexture_Rotation": "0.0",
+              "SpecularTexture_TexCoord": "0.0"
+            },
+            "vector": {
+              "AnisotropyTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "AnisotropyTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "BaseColorFactor": "(R=1.000000,G=1.000000,B=1.000000,A=1.000000)",
+              "BaseColorTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "BaseColorTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "EmissiveFactor": "(R=0.000000,G=0.000000,B=0.000000,A=1.000000)",
+              "EmissiveTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "EmissiveTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "IridescenceTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "IridescenceTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "IridescenceThicknessTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "IridescenceThicknessTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "MetallicRoughnessTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "MetallicRoughnessTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "NormalTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "NormalTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "OcclusionTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "OcclusionTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "SpecularTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "SpecularTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)"
+            },
+            "texture": {
+              "AnisotropyTexture": "/InterchangeAssets/gltf/Textures/T_Anisotropy_Direction_Linear.T_Anisotropy_Direction_Linear",
+              "BaseColorTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb",
+              "EmissiveTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb",
+              "IridescenceTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb",
+              "IridescenceThicknessTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb",
+              "MetallicRoughnessTexture": "/InterchangeAssets/gltf/Textures/T_White_Linear.T_White_Linear",
+              "NormalTexture": "/InterchangeAssets/gltf/Textures/T_Generic_N.T_Generic_N",
+              "OcclusionTexture": "/InterchangeAssets/gltf/Textures/T_White_Linear.T_White_Linear",
+              "SpecularTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb"
+            },
+            "static_switch": {
+              "DisableSwitchNaniteTransformUV": "True",
+              "bHasAnisotropyTextureAndOrRotation": "True",
+              "bHasBaseColorTexture": "True",
+              "bHasEmissiveTexture": "True",
+              "bHasIridescence": "True",
+              "bHasMetallicRoughnessTexture": "True",
+              "bHasNormalTexture": "True",
+              "bHasOcclusionTexture": "True",
+              "bHasSpecularTexture": "True"
+            }
+          }
+        },
+        "receipt": {
+          "dirty": false,
+          "packageSHA256": "52184414ea0827d036c67ecfea3c051d3cf78a67a80a5ab313f097f5415b3abe",
+          "stamp": "74b9029167386b3e42dc25308bd07c54e9e57dca1950edba99c00c67d07088ea",
+          "provenanceSHA256": "5a083b02197df4b2e15caed5ff17dc92d895dc293ea7215622045cdc764b1c0b",
+          "receipt": {
+            "packageSHA256": "52184414ea0827d036c67ecfea3c051d3cf78a67a80a5ab313f097f5415b3abe",
+            "provenanceSHA256": "5a083b02197df4b2e15caed5ff17dc92d895dc293ea7215622045cdc764b1c0b",
+            "stamp": "74b9029167386b3e42dc25308bd07c54e9e57dca1950edba99c00c67d07088ea"
+          }
+        }
+      }
+    ],
+    "originalOutputs": {
+      "BASE_COLOR": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "BaseColor"
+      },
+      "METALLIC": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Metallic"
+      },
+      "ROUGHNESS": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Roughness"
+      },
+      "SPECULAR": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Specular"
+      },
+      "OPACITY": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Opacity"
+      },
+      "OPACITY_MASK": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "OpacityMask"
+      },
+      "WORLD_POSITION_OFFSET": {
+        "class": null,
+        "name": null,
+        "pin": ""
+      },
+      "AMBIENT_OCCLUSION": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Occlusion"
+      },
+      "NORMAL": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Normal"
+      },
+      "EMISSIVE_COLOR": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "EmissiveColor"
+      }
+    },
+    "copiedOutputs": {
+      "BASE_COLOR": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "BaseColor"
+      },
+      "METALLIC": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Metallic"
+      },
+      "ROUGHNESS": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Roughness"
+      },
+      "SPECULAR": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Specular"
+      },
+      "OPACITY": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Opacity"
+      },
+      "OPACITY_MASK": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "OpacityMask"
+      },
+      "WORLD_POSITION_OFFSET": {
+        "class": null,
+        "name": null,
+        "pin": ""
+      },
+      "AMBIENT_OCCLUSION": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Occlusion"
+      },
+      "NORMAL": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Normal"
+      },
+      "EMISSIVE_COLOR": {
+        "class": "/Script/Engine.MaterialExpressionAdd",
+        "name": "MaterialExpressionAdd_0",
+        "pin": ""
+      }
+    },
+    "masterProperties": {
+      "material_domain": "<MaterialDomain.MD_SURFACE: 0>",
+      "shading_model": "<MaterialShadingModel.MSM_DEFAULT_LIT: 1>",
+      "blend_mode": "<BlendMode.BLEND_OPAQUE: 0>",
+      "two_sided": "False",
+      "tangent_space_normal": "True",
+      "use_material_attributes": "False",
+      "translucency_lighting_mode": "<TranslucencyLightingMode.TLM_SURFACE: 4>"
+    },
+    "master": "/Game/Lunden/Generated/SourceAmbientRugTrial/v2/Masters/M_b5f6ab8cc3cbef51c517f100.M_b5f6ab8cc3cbef51c517f100",
+    "masterReceipt": {
+      "dirty": false,
+      "packageSHA256": "c517150431472c41b0367bc6bcd4901008f53cd76e3525e9901e6c98fd587f6b",
+      "stamp": "b5f6ab8cc3cbef51c517f10029ba35a754736d8c3458500b2c7acced891ce04b",
+      "provenanceSHA256": "e9c10125cbd354c92c134ea2890d4f2873e71c1556e0defe484ec70a24030d04",
+      "receipt": {
+        "packageSHA256": "c517150431472c41b0367bc6bcd4901008f53cd76e3525e9901e6c98fd587f6b",
+        "provenanceSHA256": "e9c10125cbd354c92c134ea2890d4f2873e71c1556e0defe484ec70a24030d04",
+        "stamp": "b5f6ab8cc3cbef51c517f10029ba35a754736d8c3458500b2c7acced891ce04b"
+      }
+    }
+  },
+  "contextChangeFromActualOriginal": true,
+  "savedAssets": [
+    "/Game/Lunden/Generated/SourceAmbientRugTrial/v2/MF_LundenAmbient",
+    "/Game/Lunden/Generated/SourceAmbientRugTrial/v2/MPC_SourceDay.MPC_SourceDay",
+    "/Game/Lunden/Generated/SourceAmbientRugTrial/v2/MPC_SourceNight.MPC_SourceNight",
+    "/Game/Lunden/Generated/SourceAmbientRugTrial/v2/Instances/14efa477f8906e89a1e0e52c/std_ffffff_r100_m0_tex_tf6735630e8.std_ffffff_r100_m0_tex_tf6735630e8",
+    "/Game/Lunden/Generated/SourceAmbientRugTrial/v2/Instances/cbfeca0e735c5632cb18b766/MI_Default_Opaque.MI_Default_Opaque",
+    "/Game/Lunden/Generated/SourceAmbientRugTrial/v2/Masters/M_f38bb17a9b8c9ac51d69c664.M_f38bb17a9b8c9ac51d69c664",
+    "/Game/Lunden/Generated/SourceAmbientRugTrial/v2/Instances/26a673bc7d6f4b7fcddf1f67/std_ffffff_r100_m0_tex_tf6735630e8.std_ffffff_r100_m0_tex_tf6735630e8",
+    "/Game/Lunden/Generated/SourceAmbientRugTrial/v2/Instances/74b9029167386b3e42dc2530/MI_Default_Opaque.MI_Default_Opaque",
+    "/Game/Lunden/Generated/SourceAmbientRugTrial/v2/Masters/M_b5f6ab8cc3cbef51c517f100.M_b5f6ab8cc3cbef51c517f100"
+  ],
+  "packageReloadReturn": "(True, Text(\"\"))",
+  "reloadedFirstChain": {
+    "instances": [
+      {
+        "original": "/Game/Lunden/Generated/l1007/Materials/std_ffffff_r100_m0_tex_tf6735630e8.std_ffffff_r100_m0_tex_tf6735630e8",
+        "copy": "/Game/Lunden/Generated/SourceAmbientRugTrial/v2/Instances/14efa477f8906e89a1e0e52c/std_ffffff_r100_m0_tex_tf6735630e8.std_ffffff_r100_m0_tex_tf6735630e8",
+        "state": {
+          "class": "/Script/Engine.MaterialInstanceConstant",
+          "localOverrides": {
+            "scalar_parameter_values": [
+              "(AtlasData=(bIsUsedAsAtlasPosition=False,Curve=None,Atlas=None),ParameterInfo=(Name=\"MetallicFactor\",Association=GlobalParameter,Index=-1),ParameterValue=0.000000,ExpressionGUID=29EEEB0449E1B51BB331378FAF36D088)"
+            ],
+            "vector_parameter_values": [
+              "(ParameterInfo=(Name=\"BaseColorTexture_TilingMethod\",Association=GlobalParameter,Index=-1),ParameterValue=(R=1.000000,G=1.000000,B=0.000000,A=0.000000),ExpressionGUID=C7E1EE6748E6FBE639A673957C876116)"
+            ],
+            "texture_parameter_values": [
+              "(ParameterInfo=(Name=\"BaseColorTexture\",Association=GlobalParameter,Index=-1),ParameterValue=\"/Script/Engine.Texture2D'/Game/Lunden/Generated/l1007/Textures/T_canvas_tf6735630e8.T_canvas_tf6735630e8'\",ExpressionGUID=5E003165461D1072022146B04EF15617)"
+            ],
+            "base_property_overrides": "(bOverride_OpacityMaskClipValue=False,bOverride_BlendMode=False,bOverride_ShadingModel=False,bOverride_DitheredLODTransition=False,bOverride_CastDynamicShadowAsMasked=False,bOverride_TwoSided=False,bOverride_bIsThinSurface=False,bOverride_OutputTranslucentVelocity=False,bOverride_bHasPixelAnimation=False,bOverride_bEnableTessellation=False,bOverride_DisplacementScaling=False,bOverride_bEnableDisplacementFade=False,bOverride_DisplacementFadeRange=False,bOverride_MaxWorldPositionOffsetDisplacement=False,bOverride_CompatibleWithLumenCardSharing=False,bOverride_UsageFlags=262144,TwoSided=False,bIsThinSurface=False,DitheredLODTransition=False,bCastDynamicShadowAsMasked=False,bOutputTranslucentVelocity=False,bHasPixelAnimation=False,bEnableTessellation=False,bEnableDisplacementFade=False,bCompatibleWithLumenCardSharing=False,BlendMode=BLEND_Opaque,ShadingModel=MSM_DefaultLit,OpacityMaskClipValue=0.000000,DisplacementScaling=(Magnitude=4.000000,Center=0.500000),DisplacementFadeRange=(StartSizePixels=4.000000,EndSizePixels=1.000000),MaxWorldPositionOffsetDisplacement=0.000000,UsageFlags=38010881)"
+          },
+          "resolvedParameters": {
+            "scalar": {
+              "AlphaCutoff": "0.0",
+              "AnisotropyRotation": "0.0",
+              "AnisotropyStrength": "0.0",
+              "AnisotropyTexture_Rotation": "0.0",
+              "AnisotropyTexture_TexCoord": "0.0",
+              "BaseColorTexture_Rotation": "0.0",
+              "BaseColorTexture_TexCoord": "0.0",
+              "EmissiveStrength": "1.0",
+              "EmissiveTexture_Rotation": "0.0",
+              "EmissiveTexture_TexCoord": "0.0",
+              "IOR": "1.5",
+              "IridescenceFactor": "0.0",
+              "IridescenceIOR": "1.2999999523162842",
+              "IridescenceTexture_Rotation": "0.0",
+              "IridescenceTexture_TexCoord": "0.0",
+              "IridescenceThicknessMaximum": "400.0",
+              "IridescenceThicknessMinimum": "100.0",
+              "IridescenceThicknessTexture_Rotation": "0.0",
+              "IridescenceThicknessTexture_TexCoord": "0.0",
+              "MetallicFactor": "0.0",
+              "MetallicRoughnessTexture_Rotation": "0.0",
+              "MetallicRoughnessTexture_TexCoord": "0.0",
+              "NormalScale": "1.0",
+              "NormalTexture_Rotation": "0.0",
+              "NormalTexture_TexCoord": "0.0",
+              "OcclusionStrength": "1.0",
+              "OcclusionTexture_Rotation": "0.0",
+              "OcclusionTexture_TexCoord": "0.0",
+              "RoughnessFactor": "1.0",
+              "SpecularFactor": "1.0",
+              "SpecularTexture_Rotation": "0.0",
+              "SpecularTexture_TexCoord": "0.0"
+            },
+            "vector": {
+              "AnisotropyTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "AnisotropyTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "BaseColorFactor": "(R=1.000000,G=1.000000,B=1.000000,A=1.000000)",
+              "BaseColorTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "BaseColorTexture_TilingMethod": "(R=1.000000,G=1.000000,B=0.000000,A=0.000000)",
+              "EmissiveFactor": "(R=0.000000,G=0.000000,B=0.000000,A=1.000000)",
+              "EmissiveTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "EmissiveTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "IridescenceTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "IridescenceTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "IridescenceThicknessTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "IridescenceThicknessTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "MetallicRoughnessTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "MetallicRoughnessTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "NormalTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "NormalTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "OcclusionTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "OcclusionTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "SpecularTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "SpecularTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)"
+            },
+            "texture": {
+              "AnisotropyTexture": "/InterchangeAssets/gltf/Textures/T_Anisotropy_Direction_Linear.T_Anisotropy_Direction_Linear",
+              "BaseColorTexture": "/Game/Lunden/Generated/l1007/Textures/T_canvas_tf6735630e8.T_canvas_tf6735630e8",
+              "EmissiveTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb",
+              "IridescenceTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb",
+              "IridescenceThicknessTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb",
+              "MetallicRoughnessTexture": "/InterchangeAssets/gltf/Textures/T_White_Linear.T_White_Linear",
+              "NormalTexture": "/InterchangeAssets/gltf/Textures/T_Generic_N.T_Generic_N",
+              "OcclusionTexture": "/InterchangeAssets/gltf/Textures/T_White_Linear.T_White_Linear",
+              "SpecularTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb"
+            },
+            "static_switch": {
+              "DisableSwitchNaniteTransformUV": "True",
+              "bHasAnisotropyTextureAndOrRotation": "False",
+              "bHasBaseColorTexture": "True",
+              "bHasEmissiveTexture": "False",
+              "bHasIridescence": "False",
+              "bHasMetallicRoughnessTexture": "False",
+              "bHasNormalTexture": "False",
+              "bHasOcclusionTexture": "False",
+              "bHasSpecularTexture": "False"
+            }
+          }
+        },
+        "receipt": {
+          "dirty": false,
+          "packageSHA256": "9e4a9ae2550e5f90af629865b6ffe495eafc3cd4e0b6f0c2591b7aa9e8345383",
+          "stamp": "14efa477f8906e89a1e0e52cd9969a551055681874672563983a2ba392200ed4",
+          "provenanceSHA256": "8b6e919f9fd85121c82e7831a855e6282efc24fcc28925f79403751a92b21c36",
+          "receipt": {
+            "packageSHA256": "9e4a9ae2550e5f90af629865b6ffe495eafc3cd4e0b6f0c2591b7aa9e8345383",
+            "provenanceSHA256": "8b6e919f9fd85121c82e7831a855e6282efc24fcc28925f79403751a92b21c36",
+            "stamp": "14efa477f8906e89a1e0e52cd9969a551055681874672563983a2ba392200ed4"
+          }
+        }
+      },
+      {
+        "original": "/InterchangeAssets/gltf/MaterialInstances/MI_Default_Opaque.MI_Default_Opaque",
+        "copy": "/Game/Lunden/Generated/SourceAmbientRugTrial/v2/Instances/cbfeca0e735c5632cb18b766/MI_Default_Opaque.MI_Default_Opaque",
+        "state": {
+          "class": "/Script/Engine.MaterialInstanceConstant",
+          "localOverrides": {
+            "scalar_parameter_values": [
+              "(AtlasData=(bIsUsedAsAtlasPosition=False,Curve=None,Atlas=None),ParameterInfo=(Name=\"RefractionDepthBias\",Association=GlobalParameter,Index=-1),ParameterValue=0.000000,ExpressionGUID=00000000000000000000000000000000)"
+            ],
+            "vector_parameter_values": [],
+            "texture_parameter_values": [],
+            "base_property_overrides": "(bOverride_OpacityMaskClipValue=False,bOverride_BlendMode=False,bOverride_ShadingModel=False,bOverride_DitheredLODTransition=False,bOverride_CastDynamicShadowAsMasked=False,bOverride_TwoSided=False,bOverride_bIsThinSurface=False,bOverride_OutputTranslucentVelocity=False,bOverride_bHasPixelAnimation=False,bOverride_bEnableTessellation=False,bOverride_DisplacementScaling=False,bOverride_bEnableDisplacementFade=False,bOverride_DisplacementFadeRange=False,bOverride_MaxWorldPositionOffsetDisplacement=False,bOverride_CompatibleWithLumenCardSharing=False,bOverride_UsageFlags=0,TwoSided=False,bIsThinSurface=False,DitheredLODTransition=False,bCastDynamicShadowAsMasked=False,bOutputTranslucentVelocity=False,bHasPixelAnimation=False,bEnableTessellation=False,bEnableDisplacementFade=False,bCompatibleWithLumenCardSharing=False,BlendMode=BLEND_Opaque,ShadingModel=MSM_DefaultLit,OpacityMaskClipValue=0.000000,DisplacementScaling=(Magnitude=4.000000,Center=0.500000),DisplacementFadeRange=(StartSizePixels=4.000000,EndSizePixels=1.000000),MaxWorldPositionOffsetDisplacement=0.000000,UsageFlags=37748737)"
+          },
+          "resolvedParameters": {
+            "scalar": {
+              "AlphaCutoff": "0.0",
+              "AnisotropyRotation": "0.0",
+              "AnisotropyStrength": "0.0",
+              "AnisotropyTexture_Rotation": "0.0",
+              "AnisotropyTexture_TexCoord": "0.0",
+              "BaseColorTexture_Rotation": "0.0",
+              "BaseColorTexture_TexCoord": "0.0",
+              "EmissiveStrength": "1.0",
+              "EmissiveTexture_Rotation": "0.0",
+              "EmissiveTexture_TexCoord": "0.0",
+              "IOR": "1.5",
+              "IridescenceFactor": "0.0",
+              "IridescenceIOR": "1.2999999523162842",
+              "IridescenceTexture_Rotation": "0.0",
+              "IridescenceTexture_TexCoord": "0.0",
+              "IridescenceThicknessMaximum": "400.0",
+              "IridescenceThicknessMinimum": "100.0",
+              "IridescenceThicknessTexture_Rotation": "0.0",
+              "IridescenceThicknessTexture_TexCoord": "0.0",
+              "MetallicFactor": "1.0",
+              "MetallicRoughnessTexture_Rotation": "0.0",
+              "MetallicRoughnessTexture_TexCoord": "0.0",
+              "NormalScale": "1.0",
+              "NormalTexture_Rotation": "0.0",
+              "NormalTexture_TexCoord": "0.0",
+              "OcclusionStrength": "1.0",
+              "OcclusionTexture_Rotation": "0.0",
+              "OcclusionTexture_TexCoord": "0.0",
+              "RoughnessFactor": "1.0",
+              "SpecularFactor": "1.0",
+              "SpecularTexture_Rotation": "0.0",
+              "SpecularTexture_TexCoord": "0.0"
+            },
+            "vector": {
+              "AnisotropyTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "AnisotropyTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "BaseColorFactor": "(R=1.000000,G=1.000000,B=1.000000,A=1.000000)",
+              "BaseColorTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "BaseColorTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "EmissiveFactor": "(R=0.000000,G=0.000000,B=0.000000,A=1.000000)",
+              "EmissiveTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "EmissiveTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "IridescenceTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "IridescenceTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "IridescenceThicknessTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "IridescenceThicknessTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "MetallicRoughnessTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "MetallicRoughnessTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "NormalTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "NormalTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "OcclusionTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "OcclusionTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "SpecularTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "SpecularTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)"
+            },
+            "texture": {
+              "AnisotropyTexture": "/InterchangeAssets/gltf/Textures/T_Anisotropy_Direction_Linear.T_Anisotropy_Direction_Linear",
+              "BaseColorTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb",
+              "EmissiveTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb",
+              "IridescenceTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb",
+              "IridescenceThicknessTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb",
+              "MetallicRoughnessTexture": "/InterchangeAssets/gltf/Textures/T_White_Linear.T_White_Linear",
+              "NormalTexture": "/InterchangeAssets/gltf/Textures/T_Generic_N.T_Generic_N",
+              "OcclusionTexture": "/InterchangeAssets/gltf/Textures/T_White_Linear.T_White_Linear",
+              "SpecularTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb"
+            },
+            "static_switch": {
+              "DisableSwitchNaniteTransformUV": "True",
+              "bHasAnisotropyTextureAndOrRotation": "True",
+              "bHasBaseColorTexture": "True",
+              "bHasEmissiveTexture": "True",
+              "bHasIridescence": "True",
+              "bHasMetallicRoughnessTexture": "True",
+              "bHasNormalTexture": "True",
+              "bHasOcclusionTexture": "True",
+              "bHasSpecularTexture": "True"
+            }
+          }
+        },
+        "receipt": {
+          "dirty": false,
+          "packageSHA256": "d819bd4a363afb5fa453d9c2208b7f87a9dd6d36051e09fb67bd5c6505c71ddf",
+          "stamp": "cbfeca0e735c5632cb18b766aefe94f0d60a7743a86cd3152e09899608965bb4",
+          "provenanceSHA256": "93cca3291b58a6838d171a57f8ad4a9d6256657e4cdf5512d5fa853f896af667",
+          "receipt": {
+            "packageSHA256": "d819bd4a363afb5fa453d9c2208b7f87a9dd6d36051e09fb67bd5c6505c71ddf",
+            "provenanceSHA256": "93cca3291b58a6838d171a57f8ad4a9d6256657e4cdf5512d5fa853f896af667",
+            "stamp": "cbfeca0e735c5632cb18b766aefe94f0d60a7743a86cd3152e09899608965bb4"
+          }
+        }
+      }
+    ],
+    "originalOutputs": {
+      "BASE_COLOR": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "BaseColor"
+      },
+      "METALLIC": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Metallic"
+      },
+      "ROUGHNESS": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Roughness"
+      },
+      "SPECULAR": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Specular"
+      },
+      "OPACITY": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Opacity"
+      },
+      "OPACITY_MASK": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "OpacityMask"
+      },
+      "WORLD_POSITION_OFFSET": {
+        "class": null,
+        "name": null,
+        "pin": ""
+      },
+      "AMBIENT_OCCLUSION": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Occlusion"
+      },
+      "NORMAL": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Normal"
+      },
+      "EMISSIVE_COLOR": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "EmissiveColor"
+      }
+    },
+    "copiedOutputs": {
+      "BASE_COLOR": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "BaseColor"
+      },
+      "METALLIC": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Metallic"
+      },
+      "ROUGHNESS": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Roughness"
+      },
+      "SPECULAR": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Specular"
+      },
+      "OPACITY": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Opacity"
+      },
+      "OPACITY_MASK": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "OpacityMask"
+      },
+      "WORLD_POSITION_OFFSET": {
+        "class": null,
+        "name": null,
+        "pin": ""
+      },
+      "AMBIENT_OCCLUSION": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Occlusion"
+      },
+      "NORMAL": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Normal"
+      },
+      "EMISSIVE_COLOR": {
+        "class": "/Script/Engine.MaterialExpressionAdd",
+        "name": "MaterialExpressionAdd_0",
+        "pin": ""
+      }
+    },
+    "masterProperties": {
+      "material_domain": "<MaterialDomain.MD_SURFACE: 0>",
+      "shading_model": "<MaterialShadingModel.MSM_DEFAULT_LIT: 1>",
+      "blend_mode": "<BlendMode.BLEND_OPAQUE: 0>",
+      "two_sided": "False",
+      "tangent_space_normal": "True",
+      "use_material_attributes": "False",
+      "translucency_lighting_mode": "<TranslucencyLightingMode.TLM_SURFACE: 4>"
+    },
+    "master": "/Game/Lunden/Generated/SourceAmbientRugTrial/v2/Masters/M_f38bb17a9b8c9ac51d69c664.M_f38bb17a9b8c9ac51d69c664",
+    "masterReceipt": {
+      "dirty": false,
+      "packageSHA256": "30453834245c15fcd63072b79e481bbc32c098864957257048dc082a21e0f403",
+      "stamp": "f38bb17a9b8c9ac51d69c664aafc5afd73c487e8aba6aed12715f470bde473b4",
+      "provenanceSHA256": "005105974b73b5cc45f5274f3ce8eabcbd76a209b1840709a61c71cc67938328",
+      "receipt": {
+        "packageSHA256": "30453834245c15fcd63072b79e481bbc32c098864957257048dc082a21e0f403",
+        "provenanceSHA256": "005105974b73b5cc45f5274f3ce8eabcbd76a209b1840709a61c71cc67938328",
+        "stamp": "f38bb17a9b8c9ac51d69c664aafc5afd73c487e8aba6aed12715f470bde473b4"
+      }
+    }
+  },
+  "reloadedChangedChain": {
+    "instances": [
+      {
+        "original": "/Game/Lunden/Generated/l1007/Materials/std_ffffff_r100_m0_tex_tf6735630e8.std_ffffff_r100_m0_tex_tf6735630e8",
+        "copy": "/Game/Lunden/Generated/SourceAmbientRugTrial/v2/Instances/26a673bc7d6f4b7fcddf1f67/std_ffffff_r100_m0_tex_tf6735630e8.std_ffffff_r100_m0_tex_tf6735630e8",
+        "state": {
+          "class": "/Script/Engine.MaterialInstanceConstant",
+          "localOverrides": {
+            "scalar_parameter_values": [
+              "(AtlasData=(bIsUsedAsAtlasPosition=False,Curve=None,Atlas=None),ParameterInfo=(Name=\"MetallicFactor\",Association=GlobalParameter,Index=-1),ParameterValue=0.000000,ExpressionGUID=29EEEB0449E1B51BB331378FAF36D088)"
+            ],
+            "vector_parameter_values": [
+              "(ParameterInfo=(Name=\"BaseColorTexture_TilingMethod\",Association=GlobalParameter,Index=-1),ParameterValue=(R=1.000000,G=1.000000,B=0.000000,A=0.000000),ExpressionGUID=C7E1EE6748E6FBE639A673957C876116)"
+            ],
+            "texture_parameter_values": [
+              "(ParameterInfo=(Name=\"BaseColorTexture\",Association=GlobalParameter,Index=-1),ParameterValue=\"/Script/Engine.Texture2D'/Game/Lunden/Generated/l1007/Textures/T_canvas_tf6735630e8.T_canvas_tf6735630e8'\",ExpressionGUID=5E003165461D1072022146B04EF15617)"
+            ],
+            "base_property_overrides": "(bOverride_OpacityMaskClipValue=False,bOverride_BlendMode=False,bOverride_ShadingModel=False,bOverride_DitheredLODTransition=False,bOverride_CastDynamicShadowAsMasked=False,bOverride_TwoSided=False,bOverride_bIsThinSurface=False,bOverride_OutputTranslucentVelocity=False,bOverride_bHasPixelAnimation=False,bOverride_bEnableTessellation=False,bOverride_DisplacementScaling=False,bOverride_bEnableDisplacementFade=False,bOverride_DisplacementFadeRange=False,bOverride_MaxWorldPositionOffsetDisplacement=False,bOverride_CompatibleWithLumenCardSharing=False,bOverride_UsageFlags=262144,TwoSided=False,bIsThinSurface=False,DitheredLODTransition=False,bCastDynamicShadowAsMasked=False,bOutputTranslucentVelocity=False,bHasPixelAnimation=False,bEnableTessellation=False,bEnableDisplacementFade=False,bCompatibleWithLumenCardSharing=False,BlendMode=BLEND_Opaque,ShadingModel=MSM_DefaultLit,OpacityMaskClipValue=0.000000,DisplacementScaling=(Magnitude=4.000000,Center=0.500000),DisplacementFadeRange=(StartSizePixels=4.000000,EndSizePixels=1.000000),MaxWorldPositionOffsetDisplacement=0.000000,UsageFlags=38010881)"
+          },
+          "resolvedParameters": {
+            "scalar": {
+              "AlphaCutoff": "0.0",
+              "AnisotropyRotation": "0.0",
+              "AnisotropyStrength": "0.0",
+              "AnisotropyTexture_Rotation": "0.0",
+              "AnisotropyTexture_TexCoord": "0.0",
+              "BaseColorTexture_Rotation": "0.0",
+              "BaseColorTexture_TexCoord": "0.0",
+              "EmissiveStrength": "1.0",
+              "EmissiveTexture_Rotation": "0.0",
+              "EmissiveTexture_TexCoord": "0.0",
+              "IOR": "1.5",
+              "IridescenceFactor": "0.0",
+              "IridescenceIOR": "1.2999999523162842",
+              "IridescenceTexture_Rotation": "0.0",
+              "IridescenceTexture_TexCoord": "0.0",
+              "IridescenceThicknessMaximum": "400.0",
+              "IridescenceThicknessMinimum": "100.0",
+              "IridescenceThicknessTexture_Rotation": "0.0",
+              "IridescenceThicknessTexture_TexCoord": "0.0",
+              "MetallicFactor": "0.0",
+              "MetallicRoughnessTexture_Rotation": "0.0",
+              "MetallicRoughnessTexture_TexCoord": "0.0",
+              "NormalScale": "1.0",
+              "NormalTexture_Rotation": "0.0",
+              "NormalTexture_TexCoord": "0.0",
+              "OcclusionStrength": "1.0",
+              "OcclusionTexture_Rotation": "0.0",
+              "OcclusionTexture_TexCoord": "0.0",
+              "RoughnessFactor": "1.0",
+              "SpecularFactor": "1.0",
+              "SpecularTexture_Rotation": "0.0",
+              "SpecularTexture_TexCoord": "0.0"
+            },
+            "vector": {
+              "AnisotropyTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "AnisotropyTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "BaseColorFactor": "(R=1.000000,G=1.000000,B=1.000000,A=1.000000)",
+              "BaseColorTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "BaseColorTexture_TilingMethod": "(R=1.000000,G=1.000000,B=0.000000,A=0.000000)",
+              "EmissiveFactor": "(R=0.000000,G=0.000000,B=0.000000,A=1.000000)",
+              "EmissiveTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "EmissiveTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "IridescenceTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "IridescenceTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "IridescenceThicknessTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "IridescenceThicknessTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "MetallicRoughnessTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "MetallicRoughnessTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "NormalTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "NormalTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "OcclusionTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "OcclusionTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "SpecularTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "SpecularTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)"
+            },
+            "texture": {
+              "AnisotropyTexture": "/InterchangeAssets/gltf/Textures/T_Anisotropy_Direction_Linear.T_Anisotropy_Direction_Linear",
+              "BaseColorTexture": "/Game/Lunden/Generated/l1007/Textures/T_canvas_tf6735630e8.T_canvas_tf6735630e8",
+              "EmissiveTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb",
+              "IridescenceTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb",
+              "IridescenceThicknessTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb",
+              "MetallicRoughnessTexture": "/InterchangeAssets/gltf/Textures/T_White_Linear.T_White_Linear",
+              "NormalTexture": "/InterchangeAssets/gltf/Textures/T_Generic_N.T_Generic_N",
+              "OcclusionTexture": "/InterchangeAssets/gltf/Textures/T_White_Linear.T_White_Linear",
+              "SpecularTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb"
+            },
+            "static_switch": {
+              "DisableSwitchNaniteTransformUV": "True",
+              "bHasAnisotropyTextureAndOrRotation": "False",
+              "bHasBaseColorTexture": "True",
+              "bHasEmissiveTexture": "False",
+              "bHasIridescence": "False",
+              "bHasMetallicRoughnessTexture": "False",
+              "bHasNormalTexture": "False",
+              "bHasOcclusionTexture": "False",
+              "bHasSpecularTexture": "False"
+            }
+          }
+        },
+        "receipt": {
+          "dirty": false,
+          "packageSHA256": "7c658e5ab40435c6c3808a8635e54eb23f1d2ee82f8dabb8fd59a47c4788e8e6",
+          "stamp": "26a673bc7d6f4b7fcddf1f67ae65b08d8b41a7a9c68ef5736f1cb1505b3ce848",
+          "provenanceSHA256": "279b9e9d2734303a0c47404b2dffd831a2429389b1afe636b0c8a80023b262d3",
+          "receipt": {
+            "packageSHA256": "7c658e5ab40435c6c3808a8635e54eb23f1d2ee82f8dabb8fd59a47c4788e8e6",
+            "provenanceSHA256": "279b9e9d2734303a0c47404b2dffd831a2429389b1afe636b0c8a80023b262d3",
+            "stamp": "26a673bc7d6f4b7fcddf1f67ae65b08d8b41a7a9c68ef5736f1cb1505b3ce848"
+          }
+        }
+      },
+      {
+        "original": "/InterchangeAssets/gltf/MaterialInstances/MI_Default_Opaque.MI_Default_Opaque",
+        "copy": "/Game/Lunden/Generated/SourceAmbientRugTrial/v2/Instances/74b9029167386b3e42dc2530/MI_Default_Opaque.MI_Default_Opaque",
+        "state": {
+          "class": "/Script/Engine.MaterialInstanceConstant",
+          "localOverrides": {
+            "scalar_parameter_values": [
+              "(AtlasData=(bIsUsedAsAtlasPosition=False,Curve=None,Atlas=None),ParameterInfo=(Name=\"RefractionDepthBias\",Association=GlobalParameter,Index=-1),ParameterValue=0.000000,ExpressionGUID=00000000000000000000000000000000)"
+            ],
+            "vector_parameter_values": [],
+            "texture_parameter_values": [],
+            "base_property_overrides": "(bOverride_OpacityMaskClipValue=False,bOverride_BlendMode=False,bOverride_ShadingModel=False,bOverride_DitheredLODTransition=False,bOverride_CastDynamicShadowAsMasked=False,bOverride_TwoSided=False,bOverride_bIsThinSurface=False,bOverride_OutputTranslucentVelocity=False,bOverride_bHasPixelAnimation=False,bOverride_bEnableTessellation=False,bOverride_DisplacementScaling=False,bOverride_bEnableDisplacementFade=False,bOverride_DisplacementFadeRange=False,bOverride_MaxWorldPositionOffsetDisplacement=False,bOverride_CompatibleWithLumenCardSharing=False,bOverride_UsageFlags=0,TwoSided=False,bIsThinSurface=False,DitheredLODTransition=False,bCastDynamicShadowAsMasked=False,bOutputTranslucentVelocity=False,bHasPixelAnimation=False,bEnableTessellation=False,bEnableDisplacementFade=False,bCompatibleWithLumenCardSharing=False,BlendMode=BLEND_Opaque,ShadingModel=MSM_DefaultLit,OpacityMaskClipValue=0.000000,DisplacementScaling=(Magnitude=4.000000,Center=0.500000),DisplacementFadeRange=(StartSizePixels=4.000000,EndSizePixels=1.000000),MaxWorldPositionOffsetDisplacement=0.000000,UsageFlags=37748737)"
+          },
+          "resolvedParameters": {
+            "scalar": {
+              "AlphaCutoff": "0.0",
+              "AnisotropyRotation": "0.0",
+              "AnisotropyStrength": "0.0",
+              "AnisotropyTexture_Rotation": "0.0",
+              "AnisotropyTexture_TexCoord": "0.0",
+              "BaseColorTexture_Rotation": "0.0",
+              "BaseColorTexture_TexCoord": "0.0",
+              "EmissiveStrength": "1.0",
+              "EmissiveTexture_Rotation": "0.0",
+              "EmissiveTexture_TexCoord": "0.0",
+              "IOR": "1.5",
+              "IridescenceFactor": "0.0",
+              "IridescenceIOR": "1.2999999523162842",
+              "IridescenceTexture_Rotation": "0.0",
+              "IridescenceTexture_TexCoord": "0.0",
+              "IridescenceThicknessMaximum": "400.0",
+              "IridescenceThicknessMinimum": "100.0",
+              "IridescenceThicknessTexture_Rotation": "0.0",
+              "IridescenceThicknessTexture_TexCoord": "0.0",
+              "MetallicFactor": "1.0",
+              "MetallicRoughnessTexture_Rotation": "0.0",
+              "MetallicRoughnessTexture_TexCoord": "0.0",
+              "NormalScale": "1.0",
+              "NormalTexture_Rotation": "0.0",
+              "NormalTexture_TexCoord": "0.0",
+              "OcclusionStrength": "1.0",
+              "OcclusionTexture_Rotation": "0.0",
+              "OcclusionTexture_TexCoord": "0.0",
+              "RoughnessFactor": "1.0",
+              "SpecularFactor": "1.0",
+              "SpecularTexture_Rotation": "0.0",
+              "SpecularTexture_TexCoord": "0.0"
+            },
+            "vector": {
+              "AnisotropyTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "AnisotropyTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "BaseColorFactor": "(R=1.000000,G=1.000000,B=1.000000,A=1.000000)",
+              "BaseColorTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "BaseColorTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "EmissiveFactor": "(R=0.000000,G=0.000000,B=0.000000,A=1.000000)",
+              "EmissiveTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "EmissiveTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "IridescenceTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "IridescenceTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "IridescenceThicknessTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "IridescenceThicknessTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "MetallicRoughnessTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "MetallicRoughnessTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "NormalTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "NormalTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "OcclusionTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "OcclusionTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)",
+              "SpecularTexture_OffsetScale": "(R=0.000000,G=0.000000,B=1.000000,A=1.000000)",
+              "SpecularTexture_TilingMethod": "(R=0.000000,G=0.000000,B=0.000000,A=0.000000)"
+            },
+            "texture": {
+              "AnisotropyTexture": "/InterchangeAssets/gltf/Textures/T_Anisotropy_Direction_Linear.T_Anisotropy_Direction_Linear",
+              "BaseColorTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb",
+              "EmissiveTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb",
+              "IridescenceTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb",
+              "IridescenceThicknessTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb",
+              "MetallicRoughnessTexture": "/InterchangeAssets/gltf/Textures/T_White_Linear.T_White_Linear",
+              "NormalTexture": "/InterchangeAssets/gltf/Textures/T_Generic_N.T_Generic_N",
+              "OcclusionTexture": "/InterchangeAssets/gltf/Textures/T_White_Linear.T_White_Linear",
+              "SpecularTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb"
+            },
+            "static_switch": {
+              "DisableSwitchNaniteTransformUV": "True",
+              "bHasAnisotropyTextureAndOrRotation": "True",
+              "bHasBaseColorTexture": "True",
+              "bHasEmissiveTexture": "True",
+              "bHasIridescence": "True",
+              "bHasMetallicRoughnessTexture": "True",
+              "bHasNormalTexture": "True",
+              "bHasOcclusionTexture": "True",
+              "bHasSpecularTexture": "True"
+            }
+          }
+        },
+        "receipt": {
+          "dirty": false,
+          "packageSHA256": "52184414ea0827d036c67ecfea3c051d3cf78a67a80a5ab313f097f5415b3abe",
+          "stamp": "74b9029167386b3e42dc25308bd07c54e9e57dca1950edba99c00c67d07088ea",
+          "provenanceSHA256": "5a083b02197df4b2e15caed5ff17dc92d895dc293ea7215622045cdc764b1c0b",
+          "receipt": {
+            "packageSHA256": "52184414ea0827d036c67ecfea3c051d3cf78a67a80a5ab313f097f5415b3abe",
+            "provenanceSHA256": "5a083b02197df4b2e15caed5ff17dc92d895dc293ea7215622045cdc764b1c0b",
+            "stamp": "74b9029167386b3e42dc25308bd07c54e9e57dca1950edba99c00c67d07088ea"
+          }
+        }
+      }
+    ],
+    "originalOutputs": {
+      "BASE_COLOR": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "BaseColor"
+      },
+      "METALLIC": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Metallic"
+      },
+      "ROUGHNESS": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Roughness"
+      },
+      "SPECULAR": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Specular"
+      },
+      "OPACITY": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Opacity"
+      },
+      "OPACITY_MASK": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "OpacityMask"
+      },
+      "WORLD_POSITION_OFFSET": {
+        "class": null,
+        "name": null,
+        "pin": ""
+      },
+      "AMBIENT_OCCLUSION": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Occlusion"
+      },
+      "NORMAL": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Normal"
+      },
+      "EMISSIVE_COLOR": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "EmissiveColor"
+      }
+    },
+    "copiedOutputs": {
+      "BASE_COLOR": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "BaseColor"
+      },
+      "METALLIC": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Metallic"
+      },
+      "ROUGHNESS": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Roughness"
+      },
+      "SPECULAR": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Specular"
+      },
+      "OPACITY": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Opacity"
+      },
+      "OPACITY_MASK": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "OpacityMask"
+      },
+      "WORLD_POSITION_OFFSET": {
+        "class": null,
+        "name": null,
+        "pin": ""
+      },
+      "AMBIENT_OCCLUSION": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Occlusion"
+      },
+      "NORMAL": {
+        "class": "/Script/Engine.MaterialExpressionMaterialFunctionCall",
+        "name": "MaterialExpressionMaterialFunctionCall_2",
+        "pin": "Normal"
+      },
+      "EMISSIVE_COLOR": {
+        "class": "/Script/Engine.MaterialExpressionAdd",
+        "name": "MaterialExpressionAdd_0",
+        "pin": ""
+      }
+    },
+    "masterProperties": {
+      "material_domain": "<MaterialDomain.MD_SURFACE: 0>",
+      "shading_model": "<MaterialShadingModel.MSM_DEFAULT_LIT: 1>",
+      "blend_mode": "<BlendMode.BLEND_OPAQUE: 0>",
+      "two_sided": "False",
+      "tangent_space_normal": "True",
+      "use_material_attributes": "False",
+      "translucency_lighting_mode": "<TranslucencyLightingMode.TLM_SURFACE: 4>"
+    },
+    "master": "/Game/Lunden/Generated/SourceAmbientRugTrial/v2/Masters/M_b5f6ab8cc3cbef51c517f100.M_b5f6ab8cc3cbef51c517f100",
+    "masterReceipt": {
+      "dirty": false,
+      "packageSHA256": "c517150431472c41b0367bc6bcd4901008f53cd76e3525e9901e6c98fd587f6b",
+      "stamp": "b5f6ab8cc3cbef51c517f10029ba35a754736d8c3458500b2c7acced891ce04b",
+      "provenanceSHA256": "e9c10125cbd354c92c134ea2890d4f2873e71c1556e0defe484ec70a24030d04",
+      "receipt": {
+        "packageSHA256": "c517150431472c41b0367bc6bcd4901008f53cd76e3525e9901e6c98fd587f6b",
+        "provenanceSHA256": "e9c10125cbd354c92c134ea2890d4f2873e71c1556e0defe484ec70a24030d04",
+        "stamp": "b5f6ab8cc3cbef51c517f10029ba35a754736d8c3458500b2c7acced891ce04b"
+      }
+    }
+  },
+  "reloadedFunctionReceipt": {
+    "dirty": false,
+    "packageSHA256": "48291914d995ac4a0a87ed8d236c044f299065f45d9c3f84a7252f530b65c48e",
+    "stamp": "9b161784536cf9b680c7fecc20891306408d9a2f569d5aa7182d9a88211689fa",
+    "provenanceSHA256": null,
+    "receipt": {
+      "packageSHA256": "48291914d995ac4a0a87ed8d236c044f299065f45d9c3f84a7252f530b65c48e",
+      "provenanceSHA256": null,
+      "stamp": "9b161784536cf9b680c7fecc20891306408d9a2f569d5aa7182d9a88211689fa"
+    }
+  },
+  "sameContextReuse": true,
+  "savedReloadedEquivalent": true,
+  "all247ExactReadonly": true,
+  "priorGeneratedUnchanged": true,
+  "sourceExportExact": true,
+  "worldUnchanged": "/Temp/Untitled_0.Untitled"
+}
