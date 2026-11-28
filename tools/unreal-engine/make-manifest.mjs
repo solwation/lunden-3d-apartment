@@ -176,6 +176,8 @@ function immutableAsset(value) {
 
 export function draft(files, launcher, settings, previous) {
   const { appVersion, contentVersion, published, channel, tag, minLauncher } = settings;
+  const platform = settings.platform ?? 'win-x64';
+  check(['win-x64', 'linux-x64'].includes(platform), 'Invalid release platform.');
   version(appVersion); version(minLauncher); version(launcher.version);
   check(['stable','test'].includes(channel) && Number.isInteger(contentVersion) && contentVersion >= 0 &&
     contentVersion <= 2147483647, 'Invalid release channel or content version.');
@@ -191,8 +193,10 @@ export function draft(files, launcher, settings, previous) {
   const manifest = { formatVersion: 1, channel, published,
     app: { version: appVersion, contentAbi: abi, minLauncher, files: [] },
     content: { version: contentVersion, requiresAbi: abi, packages: [] }, launcher };
+  if (platform === 'linux-x64') manifest.platform = platform;
   const previousUrls = new Map();
   if (previous) {
+    check((previous.platform ?? 'win-x64') === platform, 'Previous release targets another platform.');
     check(previous.channel === channel && Date.parse(previous.published) < Date.parse(published), 'Previous release must precede this release in the same channel.');
     const oldFiles = [...previous.app.files, ...previous.content.packages.flatMap(pkg => pkg.files)];
     for (const file of oldFiles) {
@@ -210,7 +214,8 @@ export function draft(files, launcher, settings, previous) {
     const asset = 'sha256-' + file.sha256 + '.blob', reuse = previousUrls.get(key);
     const url = reuse ?? download + tag + '/' + asset;
     const entry = { path: file.path, url, size: file.size, sha256: file.sha256 };
-    if (/\.(exe|dll)$/i.test(file.path)) entry.authenticode = true;
+    if (platform === 'win-x64' && /\.(exe|dll)$/i.test(file.path)) entry.authenticode = true;
+    if (platform === 'linux-x64' && file.executable) entry.executable = true;
     if (file.group === null) manifest.app.files.push(entry);
     else {
       if (!groups.has(file.group)) groups.set(file.group, []);
@@ -220,11 +225,11 @@ export function draft(files, launcher, settings, previous) {
     if (!reuse && !uploads.has(asset)) uploads.set(asset, { asset, source: file.path, size: file.size, sha256: file.sha256 });
   }
   manifest.content.packages = [...groups.keys()].sort(compare).map(id => ({ id, files: groups.get(id) }));
-  validateReleaseManifest(manifest, channel);
+  validateReleaseManifest(manifest, channel, platform);
   // app release also needs Lunden.exe, the setup, checksums, provenance and both channel manifest files.
   const signedArtifactsHere = launcher.url.startsWith(download + tag + '/') ? 4 : 0;
   check(uploads.size + signedArtifactsHere + 2 <= 1000, 'GitHub release exceeds the asset count limit.');
-  return { manifest, plan: { tag, launcher: { source: 'Lunden.exe', ...launcher },
+  return { manifest, plan: { tag, launcher: { source: platform === 'linux-x64' ? 'Lunden' : 'Lunden.exe', ...launcher },
     uploads: [...uploads.values()].sort((a,b) => compare(a.asset,b.asset)), mappings } };
 }
 

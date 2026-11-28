@@ -18,6 +18,12 @@ internal static class StockRuntime
 
     internal static void Validate(ReleaseManifest release)
     {
+        if (release.EffectivePlatform == "linux-x64") {
+            if (!release.Files.Any(file => file.Path.StartsWith("Lunden/Content/Paks/", StringComparison.Ordinal)
+                && file.Path.EndsWith(".pak", StringComparison.Ordinal)))
+                throw new InvalidDataException("Projektets Linux-pak saknas.");
+            return; // Linux uses the P-256 signed manifest and SHA256, not Windows publisher APIs.
+        }
         if (release.EntryPoint != ReleaseManifest.StockGameExe) return;
         var app = release.App.Files.ToDictionary(file => file.Path, StringComparer.Ordinal);
         foreach (var vendor in Inventory.Values) {

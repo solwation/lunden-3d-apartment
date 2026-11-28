@@ -8,7 +8,8 @@ import { readVerifiedManifest, verifyPublishedBytes } from './verify-published.m
 const repo = 'solwation/lunden-3d-apartment';
 const api = 'https://api.github.com/repos/' + repo + '/releases';
 const tags = /^(?:(?:app-)?v(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)|content-(?:0|[1-9]\d*))$/;
-const channels = { stable: 'lunden-manifest.json', test: 'lunden-manifest-test.json' };
+const channels = { stable: 'lunden-manifest.json', test: 'lunden-manifest-test.json',
+  'linux-stable': 'lunden-manifest-linux-x64.json', 'linux-test': 'lunden-manifest-linux-x64-test.json' };
 
 async function metadata(endpoint, optional = false) {
   const response = await fetch(api + endpoint, { headers: { Accept: 'application/vnd.github+json', 'Cache-Control': 'no-cache' }, redirect: 'error', credentials: 'omit' });
@@ -116,7 +117,9 @@ export async function checkRelease(tag, publicKey) {
     const name = channels[channel];
     const [manifest, signature] = await Promise.all([downloadAsset(tag, state.files.get(name), 4 * 1024 * 1024),
       downloadAsset(tag, state.files.get(name + '.sig'), 64)]);
-    const result = await verifyPublishedBytes(manifest, signature, publicKey, channel, { publicOnly: true });
+    const linux = channel.startsWith('linux-');
+    const result = await verifyPublishedBytes(manifest, signature, publicKey, linux ? channel.slice(6) : channel,
+      { publicOnly: true, platform: linux ? 'linux-x64' : 'win-x64' });
     console.log(`Verified ${tag} (${channel}): ${result.objects} objects, ${result.bytes} bytes.`);
   }
   return { id: state.id, digest: state.digest };

@@ -21,12 +21,13 @@ const uploads = 'https://uploads.github.com/repos/' + repo + '/releases';
 const tags = /^(?:(?:app-)?v(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)\.(?:0|[1-9]\d*)|content-(?:0|[1-9]\d*))$/;
 const maxManifest = 4 * 1024 * 1024;
 export const manifestAssets = { stable: 'lunden-manifest.json', test: 'lunden-manifest-test.json' };
+const linuxManifestAssets = { stable: 'lunden-manifest-linux-x64.json', test: 'lunden-manifest-linux-x64-test.json' };
 const publicPem = /^-----BEGIN PUBLIC KEY-----\r?\n[A-Za-z0-9+/=\r\n]+\r?\n-----END PUBLIC KEY-----$/;
 const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
 
 function channelOf(asset) {
-  const channel = Object.keys(manifestAssets).find(name => manifestAssets[name] === asset);
-  if (!channel) throw Error('Expected the manifest asset lunden-manifest.json or lunden-manifest-test.json.');
+  const channel = Object.keys(manifestAssets).find(name => manifestAssets[name] === asset || linuxManifestAssets[name] === asset);
+  if (!channel) throw Error('Expected a named Windows or linux-x64 channel manifest asset.');
   return channel;
 }
 
@@ -51,7 +52,7 @@ function privateKeyOf(pem) {
 }
 
 // Returns the 64-byte signature only after the verifier used by promotion accepts it.
-export function signManifest(bytes, privatePem, publicKeyPem, channel) {
+export function signManifest(bytes, privatePem, publicKeyPem, channel, platform = 'win-x64') {
   const publicKey = publicKeyOf(publicKeyPem);
   const privateKey = privateKeyOf(privatePem);
   const derived = createPublicKey(privateKey).export({ type: 'spki', format: 'der' });
@@ -59,7 +60,7 @@ export function signManifest(bytes, privatePem, publicKeyPem, channel) {
     throw Error('The manifest private key does not belong to LUNDEN_MANIFEST_PUBLIC_KEY.');
   const signature = sign('sha256', bytes, { key: privateKey, dsaEncoding: 'ieee-p1363' });
   if (signature.length !== 64) throw Error('Unexpected P-256 signature length.');
-  readVerifiedManifest(bytes, signature, publicKeyPem, channel);
+  readVerifiedManifest(bytes, signature, publicKeyPem, channel, platform);
   return signature;
 }
 
@@ -154,7 +155,9 @@ export async function fetchManifest({ tag, asset, token }) {
 
 export async function uploadSignature({ state, bytes, signature, publicKey, token }) {
   if (sha256(bytes) !== state.sha256) throw Error('The local manifest differs from the fetched asset.');
-  readVerifiedManifest(bytes, signature, publicKey, state.channel);
+  channelOf(state.asset);
+  readVerifiedManifest(bytes, signature, publicKey, state.channel,
+    Object.values(linuxManifestAssets).includes(state.asset) ? 'linux-x64' : 'win-x64');
   const current = await snapshot(state.tag, state.asset, token);
   if (current.id !== state.id || JSON.stringify(current.manifest) !== JSON.stringify(state.manifest))
     throw Error('The release or its manifest asset changed after it was fetched; sign again.');
@@ -180,7 +183,7 @@ async function readStdin() {
 async function main(mode, args) {
   const env = process.env;
   const options = {
-    manifest: { type: 'string' }, channel: { type: 'string' }, out: { type: 'string' },
+    manifest: { type: 'string' }, channel: { type: 'string' }, platform: { type: 'string' }, out: { type: 'string' },
     'private-key-stdin': { type: 'boolean' }, tag: { type: 'string' }, asset: { type: 'string' }, dir: { type: 'string' }
   };
   const { values } = parseArgs({ args, options, strict: true });
@@ -192,7 +195,7 @@ async function main(mode, args) {
       delete env.LUNDEN_MANIFEST_PRIVATE_KEY;
       const bytes = await readFile(values.manifest);
       if (bytes.length > maxManifest) throw Error('Manifest exceeds launcher size limit.');
-      const signature = signManifest(bytes, privatePem, env.LUNDEN_MANIFEST_PUBLIC_KEY, values.channel);
+      const signature = signManifest(bytes, privatePem, env.LUNDEN_MANIFEST_PUBLIC_KEY, values.channel, values.platform ?? 'win-x64');
       const out = values.out ?? values.manifest + '.sig';
       await writeFile(out, signature, { flag: 'wx' });
       console.log(`Signed ${basename(values.manifest)} (${values.channel}, sha256 ${sha256(bytes)}) -> ${basename(out)}.`);
@@ -204,7 +207,7 @@ async function main(mode, args) {
       await writeFile(join(values.dir, state.asset), bytes, { flag: 'wx' });
       await writeFile(join(values.dir, 'release.json'), JSON.stringify(state, null, 2) + '\n', { flag: 'wx' });
       console.log(`Fetched ${state.asset} from ${state.draft ? 'draft' : 'published'} release ${state.tag} (sha256 ${state.sha256}).`);
-      if (env.GITHUB_OUTPUT) await writeFile(env.GITHUB_OUTPUT, `channel=${state.channel}\nasset=${state.asset}\n`, { flag: 'a' });
+      if (env.GITHUB_OUTPUT) await writeFile(env.GITHUB_OUTPUT, `channel=${state.channel}\nasset=${state.asset}\nplatform=${Object.values(linuxManifestAssets).includes(state.asset) ? 'linux-x64' : 'win-x64'}\n`, { flag: 'a' });
       return;
     }
     case 'upload': {

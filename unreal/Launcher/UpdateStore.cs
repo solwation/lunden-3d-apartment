@@ -12,7 +12,8 @@ internal sealed record InstallState(string Channel, Installation? Active = null,
 
 // Each release is a complete Unreal installation. Both its app and its content
 // become visible with one state-file replacement. No updater path targets Saved/.
-internal sealed class UpdateStore(string root, HttpClient client, Action<string, ReleaseFile, bool> verifyPublisher)
+internal sealed class UpdateStore(string root, HttpClient client, Action<string, ReleaseFile, bool> verifyPublisher,
+    string platform = "win-x64")
 {
     string StatePath => Path.Combine(root, "state.json");
     /// <summary>#2420: (received, expected) bytes of the current download, for the progress dialog.</summary>
@@ -40,6 +41,7 @@ internal sealed class UpdateStore(string root, HttpClient client, Action<string,
     internal async Task<Installation> Apply(ReleaseManifest manifest, byte[] bytes, byte[] signature,
         InstallState state, bool dryRun, CancellationToken ct)
     {
+        manifest.RequirePlatform(platform);
         StockRuntime.Validate(manifest);
         bool stock = manifest.EntryPoint == ReleaseManifest.StockGameExe;
         string hash = Convert.ToHexString(SHA256.HashData(bytes));
@@ -65,6 +67,8 @@ internal sealed class UpdateStore(string root, HttpClient client, Action<string,
             if (await Matches(target, file, ct))
             {
                 if (ReleaseManifest.NeedsSigning(file)) verifyPublisher(target, file, stock);
+                if (platform == "linux-x64" && file.Executable) ReleasePlatform.VerifyLinuxExecutable(target);
+                if (!dryRun) ReleasePlatform.ApplyMode(target, file, platform);
                 continue; // Fully validated file from a prior attempt.
             }
             bool reuse = existing != null && await Matches(existing, file, ct);
@@ -82,6 +86,8 @@ internal sealed class UpdateStore(string root, HttpClient client, Action<string,
             }
             if (!await Matches(target, file, ct)) throw new InvalidDataException($"Fel kontrollsumma för {file.Path}.");
             if (ReleaseManifest.NeedsSigning(file)) verifyPublisher(target, file, stock);
+            if (platform == "linux-x64" && file.Executable) ReleasePlatform.VerifyLinuxExecutable(target);
+            ReleasePlatform.ApplyMode(target, file, platform);
         }
         Console.WriteLine(dryRun ? $"Filer som kräver hämtning: {missing} byte." : $"Hämtat: {downloaded} byte.");
         if (dryRun) return next;
@@ -108,13 +114,18 @@ internal sealed class UpdateStore(string root, HttpClient client, Action<string,
         byte[] bytes = await File.ReadAllBytesAsync(Path.Combine(version, "manifest.json"), ct);
         if (!Convert.ToHexString(SHA256.HashData(bytes)).Equals(install.ManifestHash, StringComparison.OrdinalIgnoreCase))
             throw new InvalidDataException("Installerat manifest stämmer inte med den aktiva versionen.");
-        var manifest = ReleaseManifest.Read(bytes, await File.ReadAllBytesAsync(Path.Combine(version, "manifest.sig"), ct), key, channel);
+        var manifest = ReleaseManifest.Read(bytes, await File.ReadAllBytesAsync(Path.Combine(version, "manifest.sig"), ct), key, channel, platform);
         StockRuntime.Validate(manifest);
         CheckTree(GameFile(install, ""), manifest.Files);
         foreach (var file in manifest.Files)
         {
             string path = GameFile(install, file.Path);
             if (!await Matches(path, file, ct)) throw new InvalidDataException($"Installerad fil stämmer inte: {file.Path}.");
+            if (platform == "linux-x64" && file.Executable) {
+                ReleasePlatform.VerifyLinuxExecutable(path);
+                if (!OperatingSystem.IsLinux() || !File.GetUnixFileMode(path).HasFlag(UnixFileMode.UserExecute))
+                    throw new InvalidDataException("Linux-programfilen saknar körrättighet.");
+            }
             // The bytes match the signed manifest and were publisher-checked before activation.
             // Starting offline must not depend on an online certificate revocation check.
         }

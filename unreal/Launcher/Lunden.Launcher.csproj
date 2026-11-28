@@ -2,7 +2,8 @@
   <PropertyGroup>
     <!-- #2420: a Windows program, so no console window opens from the Start menu (Ui.cs attaches to a terminal). -->
     <OutputType>WinExe</OutputType>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <OutputType Condition="'$(RuntimeIdentifier)' == 'linux-x64'">Exe</OutputType>
+    <ApplicationManifest Condition="'$(RuntimeIdentifier)' != 'linux-x64'">app.manifest</ApplicationManifest>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>

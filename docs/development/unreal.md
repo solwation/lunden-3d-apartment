@@ -3876,3 +3876,81 @@ Pure checks: `THREE_DIR=<pinned three package> node --test tools/unreal-engine/t
 DayCycle/WebGLLights inputs; `python3 tools/unreal-engine/tests/test_source_ambient.py` checks standalone parameter math,
 primitive/source identity, variant equivalence/rejection, saved-copy lifecycle and unconditional activation refusal.
 These original-only Unreal support changes require no public downstream transfer or new disabled-behaviour image.
+
+### Linux Shipping and platform-bound updates (#2422)
+
+The native Linux route uses Epic's installed Linux **5.8.4** engine. It does not
+require Linux support on the unavailable `solwation-w11` machine. The opt-in WSL
+editor runner (#2467) remains a development tool: its CPU Vulkan, SM5, low graphics
+and offscreen flags are **not** Shipping defaults or ordinary Linux-desktop proof.
+`Config/Linux/LinuxEngine.ini` adds Vulkan SM6 while retaining the engine's SM5
+fallback; Windows continues to use its DX12/SM6 settings.
+
+From a **clean, completely synced** Linux checkout, with Node and the installed
+Epic engine, first inspect the command without starting Unreal:
+
+```sh
+python3 tools/unreal-engine/release-linux.py \
+  --engine-root /mnt/d/UnrealEngine/5.8.4 --version 0.3.0 --content 20 \
+  --output /mnt/d/LundenBuilds/linux-0.3.0 --plan
+```
+
+The version/content/output above are examples, not an announced release. After
+Root reserves the engine, omit `--plan` to run the actual Linux `BuildCookRun`
+Shipping cook. It uses the normal import-freshness gate and shared editor slots;
+there is no skip-gate switch or forced reimport. Output must be a new directory
+outside the checkout/engine. `result.json` records the actual UAT exit and known
+shader-failure diagnostics. `archive/Linux/build-info.json` appears only after
+successful cooking, unchanged source/export, and a Shipping runtime byte match
+against the installed engine. Failure leaves logs, not a completion marker. The
+content-only cook uses the stock `Engine/Binaries/Linux/UnrealGame-Linux-Shipping`.
+No signing or network publication occurs here.
+
+Build the self-contained Linux launcher, embedding **only the public** P-256 key:
+
+```sh
+python3 tools/unreal-engine/publish-linux-launcher.py \
+  --public-key /secure/public/manifest-public.pem --version 0.3.0 \
+  --out /mnt/d/LundenBuilds/launcher-linux-0.3.0
+```
+
+This compiles a console Linux executable `Lunden` and writes
+`launcher-build-linux.json` binding its hash, clean source commit and public-key
+hash. This is a local build record, not a signature or evidence that Shipping
+started. Linux uses the manifest's P-256 signature and per-file SHA256; Windows
+continues its existing Authenticode/vendor checks. The Linux launcher is offered
+as `Lunden-linux-x64` at the version-pinned distribution URL in its manifest.
+Initial acquisition must be from the reviewed official release, just as the
+Windows setup is; a checksum alone is not a trust anchor.
+
+See [Linux manifest generation](../../tools/unreal-engine/manifests.md#linux-x86_64-2422)
+for the draft/upload plan and protected signing steps. Linux uses distinct
+`lunden-manifest-linux-x64.json` / `lunden-manifest-linux-x64-test.json` assets and
+requires explicit `platform: "linux-x64"` inside the signed bytes. Missing platform
+means the already published Windows v1 format only. New readers reject the other
+platform before payload downloads, activation or offline launch. Windows assets
+and Linux assets cannot be mixed by content-only manifest reuse. Release promotion
+must carry every previously published platform/channel pair, so introducing Linux
+cannot silently remove Windows (or a later Windows release remove Linux).
+
+Linux installs under the platform-specific `Programs/Lunden-linux-x64` (or test)
+subdirectory of .NET's local application-data directory. `Saved`/user data remains
+outside versioned game trees. The updater retains the existing atomic complete-tree
+activation, retries, SHA256 checks, pending-start rollback and previous version.
+ELF x86_64 executables get signed-manifest-declared Unix execute bits; offline
+verification checks hashes and those bits before launch. A release requiring a
+newer Linux launcher stops before game activation and requests the official new
+launcher; Windows' Authenticode self-update/helper path is never invoked on Linux.
+Linux setup dialogs, desktop registration and automatic launcher self-replacement
+are not supplied by this implementation.
+
+**Verification boundary:** local protocol/fixture tests cover signatures, wrong
+platforms, bad payloads, execute bits, rollback/saves, archive validation and the
+Node-to-C# signed Linux manifest. They do not establish Linux Shipping startup,
+GPU shader correctness, Lumen/VSM parity, performance or Windows-desktop release
+acceptance. #2422 remains open until an actual clean Linux Shipping package starts
+on a normal Vulkan Linux desktop, pilot-area images are reviewed, the signed
+Linux update flow is exercised, and Windows release regression checks pass.
+The prebuilt engine/runtime and required graphics/driver features must be present;
+WSL software Vulkan success is not a statement of minimum game requirements.
+This is original-only Unreal work; no public web/downstream port applies.
