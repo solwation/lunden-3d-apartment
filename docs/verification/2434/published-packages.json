@@ -1,0 +1,36 @@
+{
+  "sourceHead": "511dc7996c9d3a7668b65f6aac992dfd9d07ee39",
+  "configSha256": "b38973393aae4234fe30796e293685ae46f225c86482740245250f6f72d6a45f",
+  "packages": [
+    {
+      "path": "unreal/Lunden/Content/Lunden/Lighting/M_LundenPrecipitation.uasset",
+      "sha256": "5d40ce63290bca55bd7cff3efe81360c927e7bb3b767754d27cef34c01886021",
+      "bytes": 57827
+    },
+    {
+      "path": "unreal/Lunden/Content/Lunden/Lighting/BP_LundenSky.uasset",
+      "sha256": "1fca7141b1db0b7b371deeae2dd1c15aaad3921aa21bf4fcc4b8c665c381be50",
+      "bytes": 1448199
+    },
+    {
+      "path": "unreal/Lunden/Content/Lunden/Lighting/M_LundenWindowDaylight.uasset",
+      "sha256": "e822317848727b9a2462d1700000f6d9ff4ce32868841ba0d42fb95d7e07b0c6",
+      "bytes": 29202
+    },
+    {
+      "path": "unreal/Lunden/Content/Lunden/Lighting/BP_LundenLamp.uasset",
+      "sha256": "3c87c4338a402a50d2bb48d33d053eee5755b8b25c5a370f361a090d9a6f2ea7",
+      "bytes": 791269
+    },
+    {
+      "path": "unreal/Lunden/Content/Lunden/Lighting/T_LundenHemisphere.uasset",
+      "sha256": "87f0ef3336c548aa91fbf952a053f19d476ccef342335745140239b606c6a2b2",
+      "bytes": 10640
+    },
+    {
+      "path": "unreal/Lunden/Content/Lunden/Lighting/M_LundenNeutralTonemap.uasset",
+      "sha256": "b94aaa0c89f6b6dfe189f25bbf3eefef8a419511388334e24a18aa342bc28084",
+      "bytes": 9719
+    }
+  ]
+}

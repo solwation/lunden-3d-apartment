@@ -2,7 +2,7 @@
 
 The original facade-B view and a supplementary upward view now use the web's lavender horizon and blue zenith. The existing sky branch follows the exported DayCycle palette/glow/scatter and inverts the complete Neutral output curve instead of retaining atmosphere luminance. There is no fitted RGB gain, new exposure setting or depth-only final-tonemapper overlay.
 
-Tested source: `511dc7996c9d3a7668b65f6aac992dfd9d07ee39`, public base `23f58e800e51b51c44ddbc9d091eb57c6069bfcf`, source change `6d14dbb3e320fd7c3eb0d375322c22d5d18088fd`. The integration owner adds the actual saved Lighting packages when publishing. [Image hashes](image-manifest.json) bind all twelve unmodified originals below.
+Tested source: `511dc7996c9d3a7668b65f6aac992dfd9d07ee39`, public base `23f58e800e51b51c44ddbc9d091eb57c6069bfcf`, source change `6d14dbb3e320fd7c3eb0d375322c22d5d18088fd`. The six actually changed saved Lighting packages are included byte-for-byte; [published package hashes](published-packages.json) bind them to the accepted native build. [Image hashes](image-manifest.json) bind all twelve unmodified originals below.
 
 ## Conditions and results
 
@@ -24,7 +24,7 @@ Earlier attempts remain **failed**: V1 **1/1/1, 110.33 s**, before building beca
 
 All twelve whole originals were reviewed. Cloud positions differ. Existing brick/rail, mirror/glass, pendant and local-light gaps remain mapped in the [whole-image review](whole-image-review.json). No broad sky overwrite was observed on sampled foliage, buildings, windows or curtains. SceneDepth alone does not exclude every depth-unwritten BeforeDOF foreground: no universal transparency-preservation claim is made. Night/cloud paths are source-byte-preserved and Moon remains later; prior evidence was reused, with **no new night/Moon run**. The known #2421 night-luminance failure remains open. Pure source checks are recorded [separately](source-checks.json).
 
-Original-only Unreal change; no downstream/web transfer applies. The player changelog records the visible sky correction. Publication, pinned HTTP/SHA verification, embedded issue images and closure belong to Root.
+Original-only Unreal change; no downstream/web transfer applies. The player changelog records the visible sky correction. Publication is followed by pinned HTTP/SHA verification and embedded issue images before closure.
 
 ## Original images
 
