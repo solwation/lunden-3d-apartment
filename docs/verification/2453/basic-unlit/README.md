@@ -59,3 +59,11 @@ window saturation still fails its original criterion in `patio-original-meter.js
 
 This is original-only Unreal export/import work. It changes no web rendering and
 does not apply to the public web downstream.
+
+The remaining House A dusk window-room colours are registered as an additional
+house variant on the open [#2455 investigation](https://github.com/solwation/lunden-3d-apartment/issues/2455#issuecomment-7238999725),
+without claiming the same root cause as its original House C case. The specific
+House L portico glass remains in [#2454](https://github.com/solwation/lunden-3d-apartment/issues/2454#issuecomment-7238999863).
+The three byte-verified original images were embedded in the
+[#2453 completion comment](https://github.com/solwation/lunden-3d-apartment/issues/2453#issuecomment-7239000011)
+before the resolving commit. Full #2424 remains open.
