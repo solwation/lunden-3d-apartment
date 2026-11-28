@@ -3,7 +3,7 @@
 The issue remains **OPEN**. No material, texture or runtime change from these trials is promoted to main.
 The private source/asset checkpoint is `e958d4253e7506c041e707e5f7100c8455be7010` (source `f3cfe4e8`).
 `candidate-source.patch` contains the reviewable source change against delivered `b7fb6125`, including its exact Canvas PNG;
-it is an experiment, not a patch accepted for use. Candidate assets remain in the preserved private Native checkout/LFS store.
+it is an experiment, not a patch accepted for use. Source checkout `codex-2437-texture` retains the full checkpoint; actual candidate assets remain in private retained binary copies and the LFS store.
 
 | Trial | Actual Native/runner/outer | Seconds | Grass R/G/B native ÷ web | Crown left/middle/right saturation ÷ web |
 |---|---|---:|---|---|
