@@ -21,7 +21,7 @@ External postflight verifies Native9b and source79de, all250 authored assets0444
 5,227 Generated files,12 Import files and both189/558 dependency sets unchanged.
 All scratch assets were unsaved. No visual result exists for the unbound scratch
 collection, so screenshots do not apply to this technical check. See the separate
-[car images](../../../2405/ao-isolation/README.md) from the same process.
+[car images](../../2405/ao-isolation/README.md) from the same process.
 
 Full #2424 stays open and global activation stays OFF. Actual context producers,
 physical SourceFill, material/window/curtain integration and scene acceptance remain.

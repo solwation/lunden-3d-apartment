@@ -7,7 +7,7 @@ index ee639592..1d7c3a8d 100644
  import build_window_light
  import parasol_control
 +import build_source_ambient
- 
+
  DIR = "/Game/Lunden/Lighting"
  SKY = DIR + "/BP_LundenSky"
 @@ -213,7 +214,7 @@ def spec_of(m):
@@ -27,13 +27,13 @@ index ee639592..1d7c3a8d 100644
 +    if runtime is not None:
 +        result['sourceAmbientRuntime'] = runtime
 +    return result
- 
- 
+
+
  def spec_hash(spec):
 @@ -593,6 +598,10 @@ def build_mpc(spec):
              out.append(e)
          mpc.set_editor_property(prop, out)
- 
+
 +    if spec.get('sourceAmbientRuntime'):
 +        # Append only. OFF performs no writes; live raw uniforms never activate the material policy.
 +        scalars.update({name: 0.0 for name in build_source_ambient.source.MPC_SCALARS})
@@ -48,7 +48,7 @@ index ee639592..1d7c3a8d 100644
 +    if spec.get('sourceAmbientRuntime'):
 +        variables(bp, {name: ('real', 0.0) for name in build_source_ambient.CONTEXT_INPUTS})
      G = Graph(bp)
- 
+
      # UpdateSky: the web's sun and moon for Year/Month/Day/Hour, then lights, fog and the weather collection
 @@ -1324,7 +1335,13 @@ def build_sky(spec, mpc, precip, clouds, tonemap, window_material):
          s = G.place(G.g.add_set_member_variable_node(name))
@@ -62,7 +62,7 @@ index ee639592..1d7c3a8d 100644
 +        build_source_ambient.context_function(bp)
 +        BP.compile_blueprint(bp)
      update = bp.generated_class().get_path_name() + ":UpdateSky"
- 
+
      # #2439: explicit sky states, matching the existing manual rain/snow controls.
 diff --git a/tools/unreal-engine/python/build_source_ambient.py b/tools/unreal-engine/python/build_source_ambient.py
 index f652acc3..bbf66051 100644
@@ -70,8 +70,8 @@ index f652acc3..bbf66051 100644
 +++ b/tools/unreal-engine/python/build_source_ambient.py
 @@ -192,6 +192,33 @@ def copy_material(original, function, mpc, *, display_gain, source_physical=Fals
      return material
- 
- 
+
+
 +CONTEXT_INPUTS = ('SourceDim', 'SourceUnder', 'SourceGarageLit')
 +
 +
@@ -137,7 +137,7 @@ index bb1b3efc..8defa798 100644
 @@ -120,6 +122,33 @@ class SourceAmbient(unittest.TestCase):
              rotation=next(n for n in c.nodes if n['kind']=='SceneComponent:K2_SetWorldRotation')['NewRotation']['X']
              self.assertEqual([rotation[k] for k in ('X','Y','Z')],[-1,0,0])
- 
+
 +    def test_runtime_spec_off_never_requires_or_fabricates_context(self):
 +        with patch.object(builder, 'guard', return_value=False):
 +            self.assertIsNone(builder.runtime_spec('/unused', {}))
