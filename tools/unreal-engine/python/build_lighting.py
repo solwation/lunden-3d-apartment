@@ -616,9 +616,6 @@ if (depth >= 1e6) {
   float3 dw = float3(v.x, v.z, v.y), sw = float3(SunDir.x, SunDir.z, SunDir.y), mw = float3(MoonDir.x, MoonDir.z, MoonDir.y);
   WebClouds clouds;
   col = clouds.daylight(col, dw, sw, Cam*0.01, float2(CloudOffsetX,CloudOffsetY), SkyThreshold, Overcast, EAI);
-  // #2421: the exported web night gradient and procedural clouds, including the
-  // raw-output sky shader's bypass of Neutral. Daylight stays on #2371's path.
-  col = clouds.night(col, dw, sw, Cam*0.01, float2(CloudOffsetX,CloudOffsetY), SkyThreshold, Overcast, EAI);
   float clear = 1.0 - 0.85 * CloudCover, sR = sin(MoonRadius);
   float m = max(dot(dw, mw), 0.0);
   if (m > cos(MoonRadius * 1.6)) {
@@ -639,6 +636,11 @@ if (depth >= 1e6) {
   float3 q = floor(dw * 260.0);
   float star = step(0.9975, frac(sin(dot(q, float3(12.9898, 78.233, 37.719))) * 43758.5453)) * Night * smoothstep(0.02, 0.2, dw.y);
   col += star * (0.6 + 0.4 * frac(sin(dot(q + 1.0, float3(12.9898, 78.233, 37.719))) * 43758.5453)) * EAI * clear;
+  // #2421: full-night source composition includes celestial objects BEFORE
+  // clouds and the COMPLETE Neutral inverse. The retained day/twilight path
+  // above is the fallback and must not add the moon a second time afterwards.
+  col = clouds.night(col, dw, sw, Cam*0.01, float2(CloudOffsetX,CloudOffsetY), SkyThreshold, Overcast, EAI,
+                     mw, MoonPh.xyz, MoonRadius, Earthshine);
 }
 float hv = length(v.xy);
 float amt = max(Rain, Snow);

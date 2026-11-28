@@ -17,7 +17,7 @@ def shader(c):
     if "palette" not in c and set(c) == {"clearThr", "thr", "ramp"}:
         return """
 struct WebClouds {
-    float3 night(float3 color, float3 view, float3 sun, float3 eye, float2 offset, float threshold, float overcast, float inverseExposure) {
+    float3 night(float3 color, float3 view, float3 sun, float3 eye, float2 offset, float threshold, float overcast, float inverseExposure, float3 moon, float3 moonPhase, float moonRadius, float earthshine) {
         return color;
     }
     float3 daylight(float3 color, float3 view, float3 sun, float3 eye, float2 offset, float threshold, float overcast, float inverseExposure) {
@@ -114,7 +114,7 @@ struct WebClouds {{
         float blackOffset = x < 0.04 ? sqrt(x/6.25)-x : 0.04;
         return lerp(nativeSky,(preBlack+blackOffset)*inverseExposure,weight);
     }}
-    float3 night(float3 nativeSky, float3 d, float3 sun, float3 eye, float2 offset, float threshold, float oc, float inverseExposure) {{
+    float3 night(float3 nativeSky, float3 d, float3 sun, float3 eye, float2 offset, float threshold, float oc, float inverseExposure, float3 moon, float3 moonPhase, float moonRadius, float earthshine) {{
         // SKY_DUSK.sun's rising envelope: full source night below -0.17, native twilight
         // retained from -0.04 upwards. This does not port the source twilight colours.
         float weight = (1-smoothstep(-0.17,-0.04,sun.y))
@@ -124,6 +124,26 @@ struct WebClouds {{
         float3 zenith = lerp({vec(palette['nightZenith'])}, {vec(palette['overcast'])}*0.15, oc*0.85);
         float3 horizon = lerp({vec(palette['nightHorizon'])}, {vec(palette['overcast'])}*0.2, oc*0.7);
         float3 base = lerp(horizon,zenith,pow(max(0,d.y),0.55));
+        // Source skyFragmentShader: moon and stars are part of the RAW sky,
+        // before cloud occlusion and the final Neutral inverse. No exposure here.
+        float m = max(dot(d,moon),0.0);
+        if (m > cos(moonRadius*1.6)) {{
+            float3 pd = d-moon*m, su = sun-moon*dot(sun,moon);
+            float3 uu = su/max(length(su),1e-4), vv = cross(moon,uu);
+            float2 xy = float2(dot(pd,uu),dot(pd,vv))/sin(moonRadius);
+            float rr = length(xy), z = sqrt(max(1-rr*rr,0.0));
+            float lit = smoothstep(-0.04,0.08,xy.x*moonPhase.x+z*moonPhase.y);
+            float3 e1 = normalize(cross(float3(0,1,0),moon));
+            float2 mp = float2(dot(pd,e1),dot(pd,cross(moon,e1)))/sin(moonRadius);
+            float mare = 0.80+0.20*smoothstep(-0.5,0.6,sin(mp.x*2.6+1.1)*sin(mp.y*2.1-0.4)+0.5*sin(mp.x*5.0-mp.y*3.5));
+            float disc = (1-smoothstep(0.9,1.0,rr))*step(-0.05,moon.y);
+            base = lerp(base,float3(0.92,0.94,1.0)*mare*(0.85+0.15*z),disc*lit);
+            base = lerp(base,float3(0.92,0.94,1.0)*earthshine,disc*(1-lit)*0.9);
+        }}
+        base += float3(0.25,0.28,0.35)*pow(m,400.0)*moonPhase.z*moonPhase.z;
+        float3 q = floor(d*260.0);
+        float star = step(0.9975,frac(sin(dot(q,float3(12.9898,78.233,37.719)))*43758.5453))*smoothstep(0.02,0.2,d.y);
+        base += star*(0.6+0.4*frac(sin(dot(q+1,float3(12.9898,78.233,37.719)))*43758.5453));
         float3 shapeNight = shape(d,sun,eye.xy,offset,threshold,oc);
         float thick = shapeNight.y, shade = shapeNight.z;
         float3 cloud = lerp(float3(0.16,0.18,0.24),float3(0.08,0.09,0.11),oc*0.8);
@@ -131,12 +151,21 @@ struct WebClouds {{
         cloud = lerp(cloud*float3(0.9,0.95,1.04),cloud,thick)*(1+0.1*(1-thick)*(1-shade));
         float3 target = lerp(base,cloud,shapeNight.x*0.85);
         target = lerp(horizon,target,smoothstep(-0.02,0.02,d.y));
-        // skyFrag has colorspace_fragment but NO tonemapping_fragment. Invert the
-        // existing Neutral black offset, then EAI cancels exposure. Night RGB stays
-        // below Neutral's 0.76 compression knee, so this inverse is exact there.
-        float x = min(target.r,min(target.g,target.b));
+        // Invert the COMPLETE composed sky, including the bright moon. Targets
+        // outside Neutral's nonnegative finite inverse domain retain the native
+        // path; they are not clipped or assigned a fitted brightness.
+        float peak = max(target.r,max(target.g,target.b));
+        if (any(target < 0) || peak >= 1) return nativeSky;
+        float3 preBlack = target;
+        if (peak >= 0.76) {{
+            float inputPeak = 0.0576/(1-peak)+0.52;
+            float g = 1-1/(0.15*(inputPeak-peak)+1);
+            preBlack = (target-peak*g)/(1-g)*(inputPeak/peak);
+        }}
+        if (any(preBlack < 0) || any(!isfinite(preBlack))) return nativeSky;
+        float x = min(preBlack.r,min(preBlack.g,preBlack.b));
         float blackOffset = x < 0.04 ? sqrt(max(x,0)/6.25)-x : 0.04;
-        return lerp(nativeSky,(target+blackOffset)*inverseExposure,weight);
+        return lerp(nativeSky,(preBlack+blackOffset)*inverseExposure,weight);
     }}
 }};
 """
