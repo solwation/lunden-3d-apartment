@@ -1,0 +1,154 @@
+{
+  "issue": 2411,
+  "classification": "Original Unreal-only negative/partial diagnostic preservation; no source/material/product change",
+  "sourceNativeHead": "9b9abd58b4820334bdedb635889acad51f4ba15f",
+  "frozenConfigSHA256": "fe51e182cde06596e94f033e9756d29d200181ab237fcbd366193cc7a20e837c",
+  "capturedOn": "2026-11-28",
+  "nativeRunId": "20261128T142905992952-3131460",
+  "sourceReference": {
+    "date": [
+      2026,
+      6,
+      21
+    ],
+    "hour": 14,
+    "dayShare": 1,
+    "overcast": 0,
+    "dim": 0,
+    "under": 0,
+    "skyStrength": 1.5,
+    "sunIntensity": 3,
+    "ambientIntensityActual": 0.275,
+    "hemiIntensityActual": 1.55,
+    "fill": 0.35,
+    "skyRgb": [
+      0.8227857543924378,
+      0.8962693533719567,
+      1
+    ],
+    "hemiGroundRgb": [
+      0.6724431569510133,
+      0.6444796819634361,
+      0.5906188409113381
+    ],
+    "ambientRgb": [
+      1,
+      1,
+      1
+    ],
+    "fillRgb": [
+      0.9046611743890203,
+      0.9215818562755338,
+      1
+    ],
+    "sunRgb": [
+      1,
+      0.8796223968851662,
+      0.7156935005005721
+    ],
+    "sunDir": [
+      0.3290249069149738,
+      0.832794289174853,
+      0.44519241070277027
+    ],
+    "fillDir": [
+      0.7155417527999327,
+      0.5366563145999496,
+      -0.4472135954999579
+    ],
+    "exposure": 1.5,
+    "sunDirWeb": [
+      0.3290249069149738,
+      0.832794289174853,
+      0.44519241070277027
+    ]
+  },
+  "camera": {
+    "sourceView": {
+      "id": "patio-lawn",
+      "subject": "L1007 patio looking south (#2308): hedge, fence, A",
+      "x": 2.3,
+      "z": 16.1,
+      "feetY": 0.0,
+      "yawDeg": 180,
+      "pitchDeg": -10,
+      "lighting": "day"
+    },
+    "date": [
+      2026,
+      6,
+      21
+    ],
+    "hour": 14,
+    "lampsOn": false,
+    "webEye": [
+      2.3,
+      1.62,
+      16.1
+    ],
+    "nativeXYZ": [
+      229.99999999999997,
+      1610.0000000000002,
+      162
+    ],
+    "nativeYaw": 90,
+    "nativePitch": -10,
+    "verticalFov": 72,
+    "width": 640,
+    "height": 360,
+    "measurementContractSHA256": "fb90761f8e2c27090200ab2dc77622c3770635918439431e0e4eccdf6d775f6b",
+    "webReference": "../web-patio-lawn.jpg"
+  },
+  "sourceAOConstant": 1.0,
+  "nativeMaterialAO": 0.0,
+  "sourceFillIncluded": false,
+  "globalSourceAmbientEnabled": false,
+  "sharedHLSLSHA256": "61f95aa63cf236babc6d334c7ef14e006b4c97aef841500e11f1d1be8864fa5e",
+  "reusedMFGPUProof": {
+    "publishedCommit": "276bdfecd6501a2de83313b9bf0470d2df805e95",
+    "publishedPath": "docs/verification/2405/paint-source-trial/mf-gpu-values.json",
+    "sha256": "01119388ddc9a027ab50a2fb843b73c1f373eef27f6b79cc69b699121d4146ed",
+    "passed": true,
+    "executedHere": false,
+    "sameHLSL": true
+  },
+  "actualSlots": 16,
+  "sourceIdentities": 9,
+  "originalArtifacts": {
+    "unreal-patio-original-before.png": {
+      "originalArtifactSHA256": "dc5c0d94c215969e93eab4a32d73e05ad64c4b6826c3dd092acfdda6d0cbde9e",
+      "copy": "byte-exact",
+      "bytes": 609202
+    },
+    "unreal-patio-source-ambient.png": {
+      "originalArtifactSHA256": "cb0a59a4a398591d69d6f1db8f03b623661e8eeaadefb8b7f4ef01998e667820",
+      "copy": "byte-exact",
+      "bytes": 439995
+    },
+    "unreal-patio-original-after.png": {
+      "originalArtifactSHA256": "dc5c0d94c215969e93eab4a32d73e05ad64c4b6826c3dd092acfdda6d0cbde9e",
+      "copy": "byte-exact",
+      "bytes": 609202
+    },
+    "measurement.json": {
+      "originalArtifactSHA256": "8b95ecd1b2b21c53869a482e9cebdb9ad84faab56b9bc081f8c244603c452900",
+      "copy": "compact projection; full original retained privately",
+      "publishedSHA256": "89ad38c1a2f2e38459f7cabd524d1a01aa26846cd3f034627605e59bab871749"
+    },
+    "postflight.json": {
+      "originalArtifactSHA256": "9878fdc670b8a8f00ef3c1ce35f71b900218fef1863428ea6408cc36d9577334",
+      "copy": "compact projection; full original retained privately",
+      "publishedSHA256": "fb7b4b558c3df7add9420e066a89d956c9d82288a9144c349bfb9ce08c0ed878"
+    },
+    "window-bounds.json": {
+      "originalArtifactSHA256": "408479cc7b30ebbc4d975707591ea36d2595a7fa1db5a7ee5d4639d8798e07cf",
+      "copy": "compact projection; full original retained privately",
+      "publishedSHA256": "93bea304012350fa53c7b720c4e00d3f372e5d5ec628003802b7b22c591578bd"
+    }
+  },
+  "privateReportsRetained": true,
+  "workstationPathsRemoved": true,
+  "productAccepted": false,
+  "wholeImageAccepted": false,
+  "visualRegression": true
+}

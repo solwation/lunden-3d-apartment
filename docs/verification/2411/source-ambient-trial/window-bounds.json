@@ -1,0 +1,286 @@
+{
+  "classification": "Static sourcegeometry/WindowDaylight activation proof only; no Native run or darknesscause claim",
+  "measurementsSHA256": "2c8366f6a983fefe8cbd4dcfdd51cbc0f58a686dc1cd3defde8fdfbfe9d7a2fa",
+  "targetsSHA256": "7d3ebe63a34a7ebd1c8396bc263757de12475e38ec3ed5e3b6d5de680ff4f4d4",
+  "windowBox": {
+    "x0": 0,
+    "x1": 5.753,
+    "z0": 0.13,
+    "z1": 12.568600000000002,
+    "y0": -0.1,
+    "y1": 6.1499999999999995
+  },
+  "actualCameraWeb": [
+    2.3,
+    1.62,
+    16.1
+  ],
+  "cameraDistanceToBox": 3.5313999999999997,
+  "sourceNear": 25,
+  "cameraNearGatePassed": true,
+  "sourceDayShare": 1,
+  "activeFormula": "dayShare>.001 && distance(cameraWeb,box)<=near && all(pWeb>=boxmin) && all(pWeb<=boxmax); exact window_light.py hlsl",
+  "all9HedgeAABBsOutsideWindowBox": true,
+  "anyTargetCanActivateWindowDaylight": false,
+  "rows": [
+    {
+      "zone": "l1007-uteplats",
+      "sourceID": "mesh_l0_x338_z1720_y57",
+      "key": "std_78a64b_r95_m0_vc_tex",
+      "sourceGLBSHA256": "163ce0bc28191a075ec67161e77f2ccac3699d5f01666e7624899762d0fc3941",
+      "positionVertexCount": 1128,
+      "worldWebAABBMin": [
+        1.2615000009536743,
+        0.01903020776808262,
+        16.815044403076172
+      ],
+      "worldWebAABBMax": [
+        5.491300106048584,
+        1.1225587129592896,
+        17.592483520507812
+      ],
+      "windowBoxAABBIntersects": false,
+      "separatingAxes": {
+        "z": {
+          "side": "above",
+          "gapMetres": 4.24644440307617
+        }
+      },
+      "canActivateWindowDaylightConservative": false
+    },
+    {
+      "zone": "hus-l",
+      "sourceID": "mesh_l0_xm3810_z1720_y57",
+      "key": "std_78a64b_r95_m0_vc_tex",
+      "sourceGLBSHA256": "2c64c850897e96f5ee9f88c88bd8ee3b30918bc6c147342582ba223f8d467d96",
+      "positionVertexCount": 1128,
+      "worldWebAABBMin": [
+        -40.2135009765625,
+        0.01903115026652813,
+        16.821304321289062
+      ],
+      "worldWebAABBMax": [
+        -35.983699798583984,
+        1.1238166093826294,
+        17.58305549621582
+      ],
+      "windowBoxAABBIntersects": false,
+      "separatingAxes": {
+        "x": {
+          "side": "below",
+          "gapMetres": 35.983699798583984
+        },
+        "z": {
+          "side": "above",
+          "gapMetres": 4.252704321289061
+        }
+      },
+      "canActivateWindowDaylightConservative": false
+    },
+    {
+      "zone": "hus-l",
+      "sourceID": "mesh_l0_xm3255_z1720_y57",
+      "key": "std_78a64b_r95_m0_vc_tex",
+      "sourceGLBSHA256": "2c64c850897e96f5ee9f88c88bd8ee3b30918bc6c147342582ba223f8d467d96",
+      "positionVertexCount": 1128,
+      "worldWebAABBMin": [
+        -34.66350173950195,
+        0.0190291590988636,
+        16.81018829345703
+      ],
+      "worldWebAABBMax": [
+        -30.433700561523438,
+        1.1288892030715942,
+        17.584800720214844
+      ],
+      "windowBoxAABBIntersects": false,
+      "separatingAxes": {
+        "x": {
+          "side": "below",
+          "gapMetres": 30.433700561523438
+        },
+        "z": {
+          "side": "above",
+          "gapMetres": 4.2415882934570295
+        }
+      },
+      "canActivateWindowDaylightConservative": false
+    },
+    {
+      "zone": "hus-l",
+      "sourceID": "mesh_l0_xm2700_z1721_y57",
+      "key": "std_78a64b_r95_m0_vc_tex",
+      "sourceGLBSHA256": "2c64c850897e96f5ee9f88c88bd8ee3b30918bc6c147342582ba223f8d467d96",
+      "positionVertexCount": 1128,
+      "worldWebAABBMin": [
+        -29.113500595092773,
+        0.019031377509236336,
+        16.821683883666992
+      ],
+      "worldWebAABBMax": [
+        -24.883699417114258,
+        1.1181747913360596,
+        17.589746475219727
+      ],
+      "windowBoxAABBIntersects": false,
+      "separatingAxes": {
+        "x": {
+          "side": "below",
+          "gapMetres": 24.883699417114258
+        },
+        "z": {
+          "side": "above",
+          "gapMetres": 4.25308388366699
+        }
+      },
+      "canActivateWindowDaylightConservative": false
+    },
+    {
+      "zone": "hus-l",
+      "sourceID": "mesh_l0_xm2145_z1720_y57",
+      "key": "std_78a64b_r95_m0_vc_tex",
+      "sourceGLBSHA256": "2c64c850897e96f5ee9f88c88bd8ee3b30918bc6c147342582ba223f8d467d96",
+      "positionVertexCount": 1128,
+      "worldWebAABBMin": [
+        -23.563499450683594,
+        0.019031181931495667,
+        16.820396423339844
+      ],
+      "worldWebAABBMax": [
+        -19.33370018005371,
+        1.1237057447433472,
+        17.583127975463867
+      ],
+      "windowBoxAABBIntersects": false,
+      "separatingAxes": {
+        "x": {
+          "side": "below",
+          "gapMetres": 19.33370018005371
+        },
+        "z": {
+          "side": "above",
+          "gapMetres": 4.251796423339842
+        }
+      },
+      "canActivateWindowDaylightConservative": false
+    },
+    {
+      "zone": "hus-l",
+      "sourceID": "mesh_l0_xm772_z1720_y57",
+      "key": "std_78a64b_r95_m0_vc_tex",
+      "sourceGLBSHA256": "2c64c850897e96f5ee9f88c88bd8ee3b30918bc6c147342582ba223f8d467d96",
+      "positionVertexCount": 1128,
+      "worldWebAABBMin": [
+        -9.838500022888184,
+        0.019032398238778114,
+        16.816938400268555
+      ],
+      "worldWebAABBMax": [
+        -5.608699798583984,
+        1.1195465326309204,
+        17.581924438476562
+      ],
+      "windowBoxAABBIntersects": false,
+      "separatingAxes": {
+        "x": {
+          "side": "below",
+          "gapMetres": 5.608699798583984
+        },
+        "z": {
+          "side": "above",
+          "gapMetres": 4.248338400268553
+        }
+      },
+      "canActivateWindowDaylightConservative": false
+    },
+    {
+      "zone": "hus-l",
+      "sourceID": "mesh_l0_xm217_z1720_y57",
+      "key": "std_78a64b_r95_m0_vc_tex",
+      "sourceGLBSHA256": "2c64c850897e96f5ee9f88c88bd8ee3b30918bc6c147342582ba223f8d467d96",
+      "positionVertexCount": 1128,
+      "worldWebAABBMin": [
+        -4.28849983215332,
+        0.019029302522540092,
+        16.823740005493164
+      ],
+      "worldWebAABBMax": [
+        -0.05869999900460243,
+        1.1288511753082275,
+        17.580562591552734
+      ],
+      "windowBoxAABBIntersects": false,
+      "separatingAxes": {
+        "x": {
+          "side": "below",
+          "gapMetres": 0.05869999900460243
+        },
+        "z": {
+          "side": "above",
+          "gapMetres": 4.255140005493162
+        }
+      },
+      "canActivateWindowDaylightConservative": false
+    },
+    {
+      "zone": "hus-l",
+      "sourceID": "mesh_l0_x893_z1720_y57",
+      "key": "std_78a64b_r95_m0_vc_tex",
+      "sourceGLBSHA256": "2c64c850897e96f5ee9f88c88bd8ee3b30918bc6c147342582ba223f8d467d96",
+      "positionVertexCount": 1128,
+      "worldWebAABBMin": [
+        6.811500072479248,
+        0.019032441079616547,
+        16.818363189697266
+      ],
+      "worldWebAABBMax": [
+        11.041299819946289,
+        1.1194058656692505,
+        17.577085494995117
+      ],
+      "windowBoxAABBIntersects": false,
+      "separatingAxes": {
+        "x": {
+          "side": "above",
+          "gapMetres": 1.058500072479248
+        },
+        "z": {
+          "side": "above",
+          "gapMetres": 4.249763189697264
+        }
+      },
+      "canActivateWindowDaylightConservative": false
+    },
+    {
+      "zone": "vegetation",
+      "sourceID": "mesh_l0_xm2010_zm320_y33",
+      "key": "std_48733c_r92_m0_vc_tex",
+      "sourceGLBSHA256": "e01b8c3c721b54531468165e986a0223b5cb875080fb16e6003579c8a2c48433",
+      "positionVertexCount": 1890,
+      "worldWebAABBMin": [
+        -46.0,
+        0.08,
+        -3.412896156311035
+      ],
+      "worldWebAABBMax": [
+        5.800000190734863,
+        0.58,
+        -2.98884916305542
+      ],
+      "windowBoxAABBIntersects": false,
+      "separatingAxes": {
+        "z": {
+          "side": "below",
+          "gapMetres": 3.11884916305542
+        }
+      },
+      "canActivateWindowDaylightConservative": false
+    }
+  ],
+  "limits": [
+    "AABBs use actual floatPOSITION accessors and composed GLTF nodehierarchy/TRS, webmetres; conservative allvertices bounds.",
+    "Native unchanged objecttransform/meshbuffer parity is not re-rendered here; Generated/source exact guard proof remains separate.",
+    "Wholevisualfront nearlyblack is rejected; omittedFill alone is not provedcause. Explicit SourceAOConstant remains1."
+  ],
+  "projection": "Static source POSITION buffers with composed glTF hierarchy/TRS; compact projection, no new render or darkness attribution."
+}

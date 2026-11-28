@@ -1,0 +1,225 @@
+{
+  "projectionOfActualCapture": true,
+  "fullCaptureSHA256": "6d6b887b148df15fb4ddf0805ebdd2ae7f6d9659419d3139ca8ff798d12c1f99",
+  "sourceHead": "9b9abd58b4820334bdedb635889acad51f4ba15f",
+  "actualCaster": {
+    "actor": "/Game/Lunden/Generated/VegetationWorld/Level_vegetation_foliage.Level_vegetation_foliage:PersistentLevel.InstancedFoliageActor_0",
+    "component": "/Game/Lunden/Generated/VegetationWorld/Level_vegetation_foliage.Level_vegetation_foliage:PersistentLevel.InstancedFoliageActor_0.FoliageInstancedStaticMeshComponent_6",
+    "mesh": "/Game/Lunden/Generated/VegetationWorld/Meshes/SM_Veg_trunk_mesh_tree-trunks-1-1_l0_xm1939_zm1917_y206.SM_Veg_trunk_mesh_tree-trunks-1-1_l0_xm1939_zm1917_y206",
+    "flags": {
+      "cast_shadow": {
+        "known": true,
+        "value": true
+      },
+      "cast_dynamic_shadow": {
+        "known": true,
+        "value": true
+      },
+      "cast_static_shadow": {
+        "known": true,
+        "value": true
+      },
+      "cast_hidden_shadow": {
+        "known": true,
+        "value": false
+      },
+      "cast_shadow_as_two_sided": {
+        "known": true,
+        "value": false
+      },
+      "visible": {
+        "known": true,
+        "value": true
+      },
+      "hidden_in_game": {
+        "known": true,
+        "value": false
+      },
+      "render_in_main_pass": {
+        "known": true,
+        "value": true
+      },
+      "render_in_depth_pass": {
+        "known": true,
+        "value": true
+      }
+    },
+    "actorHidden": false,
+    "editorHidden": false,
+    "actualInstances": 812,
+    "selectedInstance": 83
+  },
+  "sourceCandidate": {
+    "sourceNode": "mesh_tree-trunks-0-0_l0_x776_z2034_y239",
+    "sourceGLBSHA256": "e01b8c3c721b54531468165e986a0223b5cb875080fb16e6003579c8a2c48433",
+    "sourceMeshIndex": 4,
+    "canonicalSharedNode": "mesh_tree-trunks-1-1_l0_xm1939_zm1917_y206",
+    "sourceCastShadowCounts": {
+      "true": 0,
+      "false": 0,
+      "unknown": 812,
+      "evidence": "Only explicitly serialized GLB extras.castShadow; all 812 actual nodes lack field; missing field is UNKNOWN, not source proof"
+    },
+    "actualSelectedInstanceWorldTranslationCm": [
+      780.0000190734863,
+      2029.9999237060547,
+      0.0
+    ],
+    "scope": "ALL bark-HISM instances sharing this exact mesh; NOT isolated one-tree proof"
+  },
+  "actualSun": {
+    "path": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.BP_LundenSky_C_0.Sun",
+    "properties": {
+      "cast_shadows": {
+        "known": true,
+        "value": "True"
+      },
+      "cast_dynamic_shadows": {
+        "known": true,
+        "value": "True"
+      },
+      "cast_static_shadows": {
+        "known": true,
+        "value": "True"
+      },
+      "intensity": {
+        "known": true,
+        "value": "19.449003219604492"
+      },
+      "dynamic_shadow_cascades": {
+        "known": true,
+        "value": "4"
+      },
+      "dynamic_shadow_distance_movable_light": {
+        "known": true,
+        "value": "40000.0"
+      },
+      "shadow_bias": {
+        "known": true,
+        "value": "0.5"
+      },
+      "light_source_angle": {
+        "known": true,
+        "value": "0.5357000231742859"
+      }
+    }
+  },
+  "winterGroupVisibility": {
+    "componentVisible": true,
+    "componentHiddenInGame": false,
+    "actorHiddenInGame": false,
+    "actorEditorHidden": false,
+    "nonzeroScaleInstances": {
+      "known": true,
+      "value": 812
+    },
+    "totalInstances": 812
+  },
+  "materials": [
+    {
+      "slot": 0,
+      "chain": [
+        {
+          "path": "/Game/Lunden/Generated/vegetation/Materials/std_8a735f_r100_m0_tex_bark.std_8a735f_r100_m0_tex_bark",
+          "class": "/Script/Engine.MaterialInstanceConstant"
+        },
+        {
+          "path": "/InterchangeAssets/gltf/MaterialInstances/MI_Default_Opaque.MI_Default_Opaque",
+          "class": "/Script/Engine.MaterialInstanceConstant"
+        },
+        {
+          "path": "/InterchangeAssets/gltf/M_Default.M_Default",
+          "class": "/Script/Engine.Material",
+          "blend_mode": {
+            "known": true,
+            "value": "<BlendMode.BLEND_OPAQUE: 0>"
+          },
+          "shading_model": {
+            "known": true,
+            "value": "<MaterialShadingModel.MSM_DEFAULT_LIT: 1>"
+          },
+          "two_sided": {
+            "known": true,
+            "value": "False"
+          }
+        }
+      ]
+    }
+  ],
+  "sourceReference": {
+    "date": [
+      2026,
+      12,
+      24
+    ],
+    "hour": 14,
+    "overcast": 0,
+    "under": 0,
+    "dim": 0,
+    "dayShare": 0.8966879377385932,
+    "sunDirWeb": [
+      0.5282331811850682,
+      0.12818656768664047,
+      0.8393675655872233
+    ],
+    "sunIntensity": 2.9173503501908744,
+    "skyStrength": 1.3913512466342408
+  },
+  "actualRuntime": {
+    "clock": {
+      "UseClock": false,
+      "TimeScale": 0.0,
+      "Year": 2026,
+      "Month": 12,
+      "Day": 24,
+      "Hour": 14.0,
+      "Rain": 0.0,
+      "Snow": 0.0,
+      "Wet": 0.0,
+      "Hail": false,
+      "Storm": false,
+      "FlashT": 9.0,
+      "FlashK": 0.0,
+      "Flash": 0.0
+    },
+    "weatherMPC": {
+      "CloudOffsetX": 0.0,
+      "CloudOffsetY": 0.0,
+      "Flash": 0.0
+    },
+    "calendarMonth": 12.0,
+    "lampsCount": 38,
+    "allLampsOff": true,
+    "CVars": {
+      "r.DeferUpdateRenderStates": 0,
+      "r.SeparateTranslucency": 1,
+      "r.CustomDepth": 3,
+      "r.Shadow.Virtual.Enable": 0,
+      "r.ShadowQuality": 3,
+      "r.Shadow.MaxResolution": 1024,
+      "r.Shadow.MaxCSMResolution": 1024,
+      "r.Shadow.CSM.MaxCascades": 3,
+      "r.Shadow.DistanceScale": 1
+    }
+  },
+  "seasonVisibility": {
+    "mode": "render-only-season-visibility",
+    "date": [
+      2026,
+      12,
+      24
+    ],
+    "hour": 14.0,
+    "calendar": "/Game/Lunden/Seasons/MPC_LundenVegetation",
+    "observedMonth": 12.0,
+    "seasonalActors": 219,
+    "hiddenActors": 35,
+    "collisionApplied": false,
+    "physicsOrCollisionApiInvoked": false,
+    "limitation": "Visibility/MPC only in static editor captures. Existing collision is not synchronized; no gameplay, PIE, interaction or Chaos acceptance. ApplySeason/ApplySeasonAt/ApplyClock are not called. Do not save these transient world changes."
+  },
+  "completed": true,
+  "restored": true,
+  "actorRosterRestored": true,
+  "productAccepted": false
+}

@@ -1,0 +1,112 @@
+{
+  "sourceHead": "9b9abd58b4820334bdedb635889acad51f4ba15f",
+  "classification": "Immutable original raw images and compact projections of actual private reports; source code and assets unchanged by this diagnostic",
+  "engine": "5.8.4",
+  "profile": "linux-low",
+  "runId": "20261128T143931850800-3355407",
+  "native": {
+    "exitCode": 0,
+    "timedOut": false,
+    "passed": true,
+    "completed": true,
+    "logErrors": [],
+    "signal": null,
+    "error": null,
+    "seconds": 212.26,
+    "engineIniSha256": "95332399ac3f08ed1e677ec66a42a28b4d72663e01f9d832cc9c6108e6318653",
+    "revision": "9b9abd58b4820334bdedb635889acad51f4ba15f"
+  },
+  "runnerExitCode": 0,
+  "toolExitCode": 0,
+  "toolStatusEvidence": "Root actual session1549 completed with tool0; native and runner results independently read",
+  "outerSeconds": 212.321,
+  "startedAt": "2026-11-28T14:39:31.804445+00:00",
+  "images": [
+    {
+      "file": "unreal-winter-original.png",
+      "sha256": "7231737ca10f282367ac68dbb843982a3c20904d41365891afcf3671d7f96069",
+      "bytes": 439995,
+      "width": 640,
+      "height": 360,
+      "groupCastShadow": true,
+      "camera": {
+        "xyz": [
+          230.0,
+          1610.0,
+          162.0
+        ],
+        "yaw": -82.0,
+        "pitch": 12.000000000000004,
+        "roll": 2.4387076237861243e-15,
+        "horizontalFov": 104.50486755371094,
+        "width": 640,
+        "height": 360,
+        "separateTranslucencyShowFlag": true,
+        "privateBlendableAttached": false
+      }
+    },
+    {
+      "file": "unreal-winter-bark-group-shadow-off.png",
+      "sha256": "3c20533eef3dd625ad9ff7bbbc191d9f448b1146270babc308c1564d4c98beb7",
+      "bytes": 439995,
+      "width": 640,
+      "height": 360,
+      "groupCastShadow": false,
+      "camera": {
+        "xyz": [
+          230.0,
+          1610.0,
+          162.0
+        ],
+        "yaw": -82.0,
+        "pitch": 12.000000000000004,
+        "roll": 2.4387076237861243e-15,
+        "horizontalFov": 104.50486755371094,
+        "width": 640,
+        "height": 360,
+        "separateTranslucencyShowFlag": true,
+        "privateBlendableAttached": false
+      }
+    },
+    {
+      "file": "unreal-winter-restored.png",
+      "sha256": "7231737ca10f282367ac68dbb843982a3c20904d41365891afcf3671d7f96069",
+      "bytes": 439995,
+      "width": 640,
+      "height": 360,
+      "groupCastShadow": true,
+      "camera": {
+        "xyz": [
+          230.0,
+          1610.0,
+          162.0
+        ],
+        "yaw": -82.0,
+        "pitch": 12.000000000000004,
+        "roll": 2.4387076237861243e-15,
+        "horizontalFov": 104.50486755371094,
+        "width": 640,
+        "height": 360,
+        "separateTranslucencyShowFlag": true,
+        "privateBlendableAttached": false
+      }
+    }
+  ],
+  "originalReportsSHA256": {
+    "capture.json": "6d6b887b148df15fb4ddf0805ebdd2ae7f6d9659419d3139ca8ff798d12c1f99",
+    "config-native-v1.json": "fd9c4b0dd9f147e58c6f49f5acbafa589c38ea0c0fb7f2787185db94c6f3578b",
+    "capture.py": "cb9f4e6fd902bfce39a75492066e9b1b637eb0e7d3b60706c2be25b40048c54f",
+    "prepare.py": "342dd5ad4d0caf855619d5e578cf61a517648fc4443f37bc4b8ffd5fd61d6778",
+    "postflight-root.json": "fa41f146d8c2529b07c1e38f531635108272595a37343cd7a1260a60471c304f",
+    "runner-result.json": "859a37520f9cd49fe97d1f545736cc4af7a2edd5f88aec52164d7d49ac067c45",
+    "outer.json": "d6516f113dc194800978d86b0b22ae38b24d38b71d34b5e43e957839f95c47d5"
+  },
+  "results": {
+    "groupOffChangedRGBPixels": 49611,
+    "originalRestoredChangedRGBPixels": 0,
+    "wholeImageReview": "Root inspected actual original and group-off images; bark/branch shadows contribute. No concrete source flag bug established.",
+    "acceptanceAssessed": false,
+    "productAccepted": false,
+    "formalIssueCriteria": "Original Dec24 and June lit-minus-shadow contrast within 20% of web remains unchanged and unassessed here. No single-tree attribution or Windows delivery claim."
+  }
+}

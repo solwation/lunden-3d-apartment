@@ -1,0 +1,193 @@
+{
+  "classification": "Existing locked #2411 hedge criteria applied to actualthree-frame Ambient/Hemi-only diagnostic; productAccepted false",
+  "method": "PillowPNG/JPEGdecode plus exact existing crop-stats.cjs rectangle/linearRec709/rounded1decimalRGB,4decimalY,3decimalR/B. No browser. Rounded web AND original pairedNative outputs reproduce original canonical outputs exactly; ratios/saturation follow original measure-two.py.",
+  "originalBeforeAfter": {
+    "changedRGBPixels": 0,
+    "maximumChannelDelta": [
+      0,
+      0,
+      0
+    ],
+    "allRGBPixelsExact": true
+  },
+  "candidateOriginalHedgeCriteriaPassed": true,
+  "productAccepted": false,
+  "wholeImageAccepted": false,
+  "visualRegression": true,
+  "contract": {
+    "path": "../measurement-contract.json",
+    "sha256": "fb90761f8e2c27090200ab2dc77622c3770635918439431e0e4eccdf6d775f6b",
+    "ROI": [
+      0.05,
+      0.72,
+      0.6,
+      0.95
+    ],
+    "criteria": {
+      "hedgeNativeOverWebRB": [
+        0.85,
+        1.15
+      ],
+      "hedgeNativeOverWebSaturation": [
+        0.85,
+        1.15
+      ]
+    },
+    "canonicalToolSHA256": "0a76bf7e7c43ad2e212f2d884806957030ec6dc08ce4c4d9901641f5f80bd1c6"
+  },
+  "web": {
+    "path": "../web-patio-lawn.jpg",
+    "sha256": "7477dd379e1ccf3901ed6042f3f8101e6d43212530eb71f459a52196051c43a3",
+    "score": {
+      "srgb": [
+        65.3,
+        96.2,
+        22.5
+      ],
+      "luminance": 0.1127,
+      "warmth": 2.9
+    },
+    "pixelRect": {
+      "size": [
+        640,
+        360
+      ],
+      "pixelRectXYWH": [
+        32,
+        259,
+        352,
+        83
+      ],
+      "count": 29216
+    }
+  },
+  "canonicalCompatibility": {
+    "webExact": true,
+    "oldPairedNativeExact": true,
+    "originalCanonicalStats": "../crop-stats.json",
+    "sha256": "3e9d9abc2d394b7f1b922b25bffb5c84cc1357f402e063531619fd75e95ae6e6"
+  },
+  "rows": [
+    {
+      "name": "patio-original-before",
+      "mode": "original",
+      "sha256": "dc5c0d94c215969e93eab4a32d73e05ad64c4b6826c3dd092acfdda6d0cbde9e",
+      "native": {
+        "srgb": [
+          69.6,
+          96.2,
+          43.3
+        ],
+        "luminance": 0.1162,
+        "warmth": 1.606
+      },
+      "pixelRect": {
+        "size": [
+          640,
+          360
+        ],
+        "pixelRectXYWH": [
+          32,
+          259,
+          352,
+          83
+        ],
+        "count": 29216
+      },
+      "relativeRB": 0.5537931034482759,
+      "relativeSaturation": 0.7177747625508819,
+      "luminanceRatioInformationalOnly": 1.031055900621118,
+      "checks": {
+        "R/B": false,
+        "saturation": false
+      },
+      "originalHedgeCriteriaPassed": false,
+      "image": "unreal-patio-original-before.png"
+    },
+    {
+      "name": "patio-source-ambient",
+      "mode": "source-ambient",
+      "sha256": "cb0a59a4a398591d69d6f1db8f03b623661e8eeaadefb8b7f4ef01998e667820",
+      "native": {
+        "srgb": [
+          34.5,
+          43.5,
+          12.1
+        ],
+        "luminance": 0.0406,
+        "warmth": 2.845
+      },
+      "pixelRect": {
+        "size": [
+          640,
+          360
+        ],
+        "pixelRectXYWH": [
+          32,
+          259,
+          352,
+          83
+        ],
+        "count": 29216
+      },
+      "relativeRB": 0.9810344827586208,
+      "relativeSaturation": 0.9422105772080038,
+      "luminanceRatioInformationalOnly": 0.36024844720496896,
+      "checks": {
+        "R/B": true,
+        "saturation": true
+      },
+      "originalHedgeCriteriaPassed": true,
+      "image": "unreal-patio-source-ambient.png"
+    },
+    {
+      "name": "patio-original-after",
+      "mode": "original",
+      "sha256": "dc5c0d94c215969e93eab4a32d73e05ad64c4b6826c3dd092acfdda6d0cbde9e",
+      "native": {
+        "srgb": [
+          69.6,
+          96.2,
+          43.3
+        ],
+        "luminance": 0.1162,
+        "warmth": 1.606
+      },
+      "pixelRect": {
+        "size": [
+          640,
+          360
+        ],
+        "pixelRectXYWH": [
+          32,
+          259,
+          352,
+          83
+        ],
+        "count": 29216
+      },
+      "relativeRB": 0.5537931034482759,
+      "relativeSaturation": 0.7177747625508819,
+      "luminanceRatioInformationalOnly": 1.031055900621118,
+      "checks": {
+        "R/B": false,
+        "saturation": false
+      },
+      "originalHedgeCriteriaPassed": false,
+      "image": "unreal-patio-original-after.png"
+    }
+  ],
+  "wholeImageReview": {
+    "reviewer": "Root viewed unmodified originals",
+    "finding": "Candidate entire hedge front nearly black; whole visual FAIL despite R/B and saturation ratio PASS.",
+    "darknessCause": "UNKNOWN; SourceFill omission alone is not established as cause.",
+    "sourceAOConstant": 1.0,
+    "windowBoundsProof": "window-bounds.json"
+  },
+  "limits": [
+    "No SourceFill added; partial indirect-term isolation only.",
+    "LinuxSM5 low profile, no WindowsLumen product proof.",
+    "No entrance sign frame rendered/retested here; previous sign baseline remains separately scoped.",
+    "No new ROI/tolerance/RGB/gain/exposure fit; wholeimage review remains separate."
+  ]
+}
