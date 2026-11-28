@@ -1,0 +1,25 @@
+{
+  "nativeExit": 0,
+  "nativePassed": true,
+  "runnerExit": 0,
+  "toolOuterExit": 0,
+  "seconds": 257.81,
+  "all250AuthoredExactReadonly": true,
+  "allGeneratedExportAnd500DependenciesExact": true,
+  "stateAnd35EffectiveBindingsRestored": true,
+  "originalBeforeAfterChangedRGBPixels": 0,
+  "aoZeroChangedRGBPixels": 0,
+  "aoZeroMaximumRGBDelta": [
+    0,
+    0,
+    0
+  ],
+  "aoZeroMeanAbsoluteRGBDelta": [
+    0.0,
+    0.0,
+    0.0
+  ],
+  "strongSameStateAttribution": true,
+  "observedAOResponse": false,
+  "isolationResponseOnlyNotProductAcceptance": true
+}

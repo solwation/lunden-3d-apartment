@@ -1,0 +1,5 @@
+{
+  "exit_code": 0,
+  "session_id": 54033,
+  "output": "{\"command\": [\"python3\", \"tools/unreal-engine/run-linux.py\", \"--engine-root\", \"/mnt/d/UnrealEngine/5.8.4\", \"--data-dir\", \"/mnt/d/LundenLinux\", \"--render\", \"--allow-cpu-device\", \"--timeout\", \"900\", \"--owner\", \"olw-win10-codex-20261127\", \"python\", \"/home/devcontainers/.local/state/lunden-codex-20261127/2388/forward-ao/capture.py\", \"--config\", \"/home/devcontainers/.local/state/lunden-codex-20261127/2388/forward-ao/native/config-v1.json\"], \"cwd\": \"/home/devcontainers/wt/codex-2434-native\", \"startedAt\": \"2026-11-28T10:01:35.789096+00:00\", \"completed\": true, \"actualChildExitCode\": 0, \"seconds\": 257.869, \"log\": \"/home/devcontainers/.local/state/lunden-codex-20261127/2388/forward-ao/native/outer-v1.log\"}\n"
+}

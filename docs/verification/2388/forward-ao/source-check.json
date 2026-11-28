@@ -1,0 +1,26 @@
+{
+  "issue": 2388,
+  "premise": "Official5.8.4 legacyDefaultLit SurfaceForward with noBentNormalOutput",
+  "source": {
+    "Engine/Shaders/Private/BasePassCommon.ush": "27011c26c4ae069f98ceec24894eed32ff2419239cb4a11d3c530146d0a31094",
+    "Engine/Shaders/Private/BasePassPixelShader.usf": "ba8b1c5efd4fba2e67bdc22b16820b004102f2123b8bbaf66dff87cc2d17e1ef",
+    "Engine/Shaders/Private/DeferredShadingCommon.ush": "589432a8fa90a6f365d3bba3b13c4387d80dd6018224abe68cd01d8aeda1c62f",
+    "Engine/Source/Runtime/Engine/Private/Materials/Material.cpp": "465dd13a01a111aead938021cb57038dd03fab0664d6c835504fd08baa24abca"
+  },
+  "threeChecks": {
+    "AOIsActiveForLitTranslucent": true,
+    "BothIndirectChannelsMultipliedByMaterialAO": true,
+    "ActualExtractedFloat32Kernel": "AO_ZERO_ALL_RGB_1001_PASS"
+  },
+  "directPath": "GetForwardDirectLightingSplit1480\u20131493 adds direct lighting separately; noAO multiplier",
+  "newOpportunity": "AO0 per-material native indirect suppression, exactsourcePMREM+ambient tobeadded separately without nativeIBLdoublecount",
+  "notClaimed": [
+    "GPUcompile",
+    "actualAOresponse",
+    "fullsourceDirectBRDFparity",
+    "sourcePMREMexport/parity",
+    "visualacceptance"
+  ],
+  "next": "One private sameworld canonicalpatio original\u2192AO0\u2192original with35slotreadbacks/restoration; no rebuild/save/globalpolicy; then actualPMREMexport+sourceambientbinding only if isolation works",
+  "helperSHA256": "e686dfceddc5bb5448265d4a2edf095be17a1c7492d4a6e9bac8ca18122dfbe4"
+}
