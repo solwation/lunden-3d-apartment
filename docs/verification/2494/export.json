@@ -1,0 +1,134 @@
+{
+  "baseline": "e711ca1388bbcc8adb74a9171883a47f05fd2688",
+  "result": "3216c92ea202bd09c3c031951a976cba4528aefc",
+  "trimNodes": 45,
+  "unchangedOtherMaterialsInOmgivning": 56,
+  "unchangedOmgivningAccessorPairs": 333,
+  "identicalOtherZoneGlbSha256": {
+    "l1007.glb": "118ef529be56ccbe36aaf7dff15314c5906b12a5a1307bf360c817f14abe8e75",
+    "vegetation.glb": "e01b8c3c721b54531468165e986a0223b5cb875080fb16e6003579c8a2c48433",
+    "fixture.glb": "4636b1948a94ae9ead1697597026fb784135703be441a97ddd400a0c1446e649",
+    "l1007-uteplats.glb": "163ce0bc28191a075ec67161e77f2ccac3699d5f01666e7624899762d0fc3941",
+    "kvarteret.glb": "4e93a9981f2a5ad6206e698b3982fdfb4cdf6de8ab6f34135f2c92930d27f95b",
+    "l1007-entre.glb": "4738e1b53b2c981cdb5e68f27da6eec734c5db294de770929e3dc15cc4b320c3",
+    "hus-l.glb": "df489d6ca499c5eccba334d113402f5ef6e5dfa53670f3f727b190192089ac22",
+    "gard.glb": "559a4bd2a880d6624a5dd5cb451e2ec256b2ae1ed415983c6a759cd3540e995b",
+    "fond.glb": "3296dac9ba0e5dd15a7838b56cdf1310ec6c4ed7d93f086684c091abfcaabde3"
+  },
+  "textureSize": [
+    9,
+    1
+  ],
+  "magFilter": 9728,
+  "minFilter": 9728,
+  "parts": [
+    {
+      "name": "black",
+      "u": 0.05555555555555555,
+      "rgba": [
+        255,
+        184,
+        0,
+        255
+      ],
+      "vertices": 39720
+    },
+    {
+      "name": "roof",
+      "u": 0.16666666666666666,
+      "rgba": [
+        255,
+        51,
+        13,
+        255
+      ],
+      "vertices": 4200
+    },
+    {
+      "name": "lens",
+      "u": 0.2777777777777778,
+      "rgba": [
+        255,
+        31,
+        51,
+        255
+      ],
+      "vertices": 6480
+    },
+    {
+      "name": "led",
+      "u": 0.3888888888888889,
+      "rgba": [
+        255,
+        77,
+        0,
+        255
+      ],
+      "vertices": 12960
+    },
+    {
+      "name": "blink",
+      "u": 0.5,
+      "rgba": [
+        255,
+        77,
+        0,
+        255
+      ],
+      "vertices": 6480
+    },
+    {
+      "name": "tail",
+      "u": 0.6111111111111112,
+      "rgba": [
+        255,
+        77,
+        0,
+        255
+      ],
+      "vertices": 9720
+    },
+    {
+      "name": "chrome",
+      "u": 0.7222222222222222,
+      "rgba": [
+        255,
+        64,
+        230,
+        255
+      ],
+      "vertices": 3240
+    },
+    {
+      "name": "rim",
+      "u": 0.8333333333333334,
+      "rgba": [
+        255,
+        107,
+        191,
+        255
+      ],
+      "vertices": 18720
+    },
+    {
+      "name": "tyre",
+      "u": 0.9444444444444444,
+      "rgba": [
+        255,
+        242,
+        0,
+        255
+      ],
+      "vertices": 20160
+    }
+  ],
+  "baselineManifestSha256": "61c655a1f69ead085806a8e731653e5e842a97ea159e199aedf841bb198ce79c",
+  "baselineSourceHash": "342c9dc012eaa4ecc5aaa996c1d3ed020965e16abc32d6809733e9767bdb1e20",
+  "actualManifestSha256": "769c532a5e348c5db86105dffd01b453f56da3bb0e9f7e4999573519aecb27fb",
+  "actualSourceHash": "39b9397aebbc51659bf81e07f7ab33a5b8b28137078f7356b6e04896b6910171",
+  "baselineOuterExit": 0,
+  "actualOuterExit": 143,
+  "actualWorkerExit": null,
+  "actualCheckExportExit": 0,
+  "nativeImportVerified": false
+}
