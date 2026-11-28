@@ -24,7 +24,7 @@ function viewUrl(base, view) {
 async function capture(page, view, base, out, axes) {
   const light = spec.lighting[view.lighting];
   console.log('Render ' + view.id + ': ' + viewUrl(base, view));
-  const {state, image} = await page.evaluate(({view, light, eyeHeight}) => {
+  const {state, image} = await page.evaluate(async ({view, light, eyeHeight}) => {
     const {camera, player, quality, day, lights, visitLights, patio, weather, snowState, renderer, scene, step, frame, testMode, isPhoneDevice} = window.__app;
     // Same player spawn and camera convention as ?at=. Keep the loaded geometry and texture cache between views.
     player.spawn(view.x, view.z, view.yawDeg * Math.PI / 180);
@@ -45,6 +45,11 @@ async function capture(page, view, base, out, axes) {
     step(0);
     renderer.shadowMap.needsUpdate = true;
     frame(1 / 60);
+    // Settle the point-light slots at the final pose without advancing the rest of the scene.
+    const {LIGHTING} = await import('/src/config.js');
+    const dir = camera.getWorldDirection(camera.position.clone());
+    const level = player.aloft ? -1 : Math.max(0, player.level);
+    for (let i = 0; i < 2; i++) lights.update(level, player.pos, LIGHTING.poolFade, dir);
     // Read immediately after a full render. The game HUD isn't part of the paired scene.
     renderer.render(scene, camera);
     const gl = renderer.getContext(), ext = gl.getExtension('WEBGL_debug_renderer_info');
@@ -53,6 +58,7 @@ async function capture(page, view, base, out, axes) {
       verticalFov: camera.fov, aspect: camera.aspect, quality: quality.level,
       day: [day.year, day.month, day.date, day.hour, day.paused], lights: lights.forced, weather: weather.force,
       snowCover: snowState.cover, snowSource: snowState.source,
+      pool: lights.slots.filter(slot => slot.lamp).map(({lamp, f}) => ({position: lamp.pos.toArray(), level: lamp.level, share: f})),
       desktop: !isPhoneDevice() && !testMode, contextLost: gl.isContextLost(), draws: renderer.info.render.calls};
     return {state, image: renderer.domElement.toDataURL('image/jpeg', 0.92).split(',')[1]};
   }, {view, light, eyeHeight: spec.standingEyeHeightM});
@@ -69,6 +75,7 @@ async function capture(page, view, base, out, axes) {
   }
   assert.equal(state.lights, light.lampsOn); assert.equal(state.weather, spec.weather);
   assert.equal(state.quality, 4); assert.ok(state.desktop && !state.contextLost && state.draws > 0);
+  assert.ok(state.pool.every(slot => slot.share >= 0.999), view.id + ': lamp pool still fading');
   await fs.writeFile(path.join(out, view.id + '.jpg'), Buffer.from(image, 'base64'));
   console.log(view.id, JSON.stringify({...state, unrealEyeCm: axes.webToUnrealRounded(state.eye),
     unrealYaw: axes.webYawToUnrealYaw(state.yaw), unrealPitch: axes.webPitchToUnrealPitch(state.pitch)}));
