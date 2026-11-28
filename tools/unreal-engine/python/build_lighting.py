@@ -621,7 +621,7 @@ if (Wet > 0.001 && depth < 1e6) {
 if (depth >= 1e6) {
   float3 dw = float3(v.x, v.z, v.y), sw = float3(SunDir.x, SunDir.z, SunDir.y), mw = float3(MoonDir.x, MoonDir.z, MoonDir.y);
   WebClouds clouds;
-  col = clouds.daylight(col, dw, sw, Cam*0.01, float2(CloudOffsetX,CloudOffsetY), SkyThreshold, Overcast, EAI);
+  col = clouds.daylight(col, dw, sw, Cam*0.01, float2(CloudOffsetX,CloudOffsetY), SkyThreshold, Overcast, EAI, Flash);
   float clear = 1.0 - 0.85 * CloudCover, sR = sin(MoonRadius);
   float m = max(dot(dw, mw), 0.0);
   if (m > cos(MoonRadius * 1.6)) {
@@ -645,9 +645,8 @@ if (depth >= 1e6) {
   // #2421: full-night source composition includes celestial objects BEFORE
   // clouds and the COMPLETE Neutral inverse. The retained day/twilight path
   // above is the fallback and must not add the moon a second time afterwards.
-  col = clouds.night(col, dw, sw, Cam*0.01, float2(CloudOffsetX,CloudOffsetY), SkyThreshold, Overcast, EAI,
+  col = clouds.night(col, dw, sw, Cam*0.01, float2(CloudOffsetX,CloudOffsetY), SkyThreshold, Overcast, EAI, Flash,
                      mw, MoonPh.xyz, MoonRadius, Earthshine);
-  col += float3(0.75, 0.78, 0.95) * Flash * EAI * smoothstep(-0.02, 0.02, dw.y);
 }
 float hv = length(v.xy);
 float amt = max(Rain, Snow);

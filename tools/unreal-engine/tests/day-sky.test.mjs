@@ -51,16 +51,19 @@ function inverse(target) {
   return pre.map(v => v+black);
 }
 
-let compared = 0, rejected = 0;
+// Pin the actual source addition AND its placement before cloud-deck/horizon output.
+assert(skyFragmentShader.includes('col += vec3(0.75, 0.78, 0.95) * uFlash;'));
+assert(skyFragmentShader.indexOf('col += vec3(0.75, 0.78, 0.95)') < skyFragmentShader.indexOf('col = mix(col, uCloudCol, uWhite)'));
+let compared = 0, rejected = 0, flashCompared = 0, flashRejected = 0;
 for (const [month, date, hour] of [[11,16,14], [6,21,14], [12,24,14], [11,16,18.25]]) {
   for (const oc of [0,.125,.4,.7,1]) {
     const scene = new T.Scene(); scene.fog = new T.Fog(0,1,1000);
     const camera = new T.PerspectiveCamera(); camera.position.set(0,1.62,0);
     const lights = { sun: new T.DirectionalLight(), hemi: new T.HemisphereLight(), ambient: new T.AmbientLight(), fill: new T.AmbientLight() };
     const day = new DayCycle({ scene, camera, lights, startHour: hour, month, date, year: 2026 });
-    day.paused = true; day.overcast = oc; day.update(0);
+    day.paused = true; day.hour = hour; day.overcast = oc; day.update(0);
     const y = day.sunDir.y, u = day.uniforms;
-    if (month === 11 && hour === 14) assert(Math.abs(y-.17784014567139098) < 1e-12);
+    if (month === 11 && hour === 14) assert(Math.abs(y-.17784014567139098) < 1e-12, JSON.stringify({y,oc,hour,month,date,actualHour:day.hour}));
     if (y < .17) continue; // explicitly preserved legacy twilight/night, not claimed source coverage
     assert.equal(u.uBandAmt.value, 0); assert.equal(u.uBodyAmt.value, 0);
     close(u.uHalo.value.toArray(), [0,0,0]); close(u.uRim.value.toArray(), [0,0,0]);
@@ -82,12 +85,50 @@ for (const [month, date, hour] of [[11,16,14], [6,21,14], [12,24,14], [11,16,18.
         const input = inverse(target);
         if (!input) { rejected++; continue; }
         close(map(input),target); compared++;
+        // Real DayCycle flash also damps haze scattering. Read actual uniforms
+        // after update, rather than assuming flash changes only an additive term.
+        for (const flash of [.1,.35,.675,1]) {
+          day.flash = flash; day.update(0);
+          close(u.uScatter.value.toArray(), HAZE.scatter.color.map(v=>v*.12*daylight*(1-oc)*smooth(-.05,.1,y)*(1-Math.min(1,flash*.5))));
+          const flashBase = lerp(horizon,zenith,h**.55).map((v,i)=>v+(u.uGlow.value.toArray()[i]*glowAmt+u.uScatter.value.toArray()[i])*s**6*(1-h));
+          const rawSky = lerp(flashBase,cloud,cover*.85).map((v,i)=>v+[.75,.78,.95][i]*u.uFlash.value);
+          const flashed = lerp(horizon,rawSky,smooth(-.02,.02,h));
+          const flashedInput = inverse(flashed);
+          if (!flashedInput) { flashRejected++; continue; }
+          close(map(flashedInput),flashed); flashCompared++;
+        }
+        day.flash = 0; day.update(0);
       }
     }
     assert(inverse(horizon)); assert(inverse(zenith));
   }
 }
 assert(compared > 3000 && rejected > 0);
+assert(flashCompared > 3000 && flashRejected > 0);
+// Actual full-night uniforms, excluding celestial discs/stars, across the same
+// source raw-flash operation. The inverse rejection policy is unchanged.
+for (const oc of [0,.4,1]) {
+  const scene = new T.Scene(); scene.fog = new T.Fog(0,1,1000);
+  const camera = new T.PerspectiveCamera(); camera.position.set(0,1.62,0);
+  const lights = {sun:new T.DirectionalLight(),hemi:new T.HemisphereLight(),ambient:new T.AmbientLight(),fill:new T.AmbientLight()};
+  const day = new DayCycle({scene,camera,lights,startHour:18.25,month:11,date:16,year:2026});
+  day.paused=true; day.hour=18.25; day.overcast=oc;
+  for (const flash of [0,.1,.35,.675,1]) {
+    day.flash=flash; day.update(0); const u=day.uniforms;
+    assert(day.sunDir.y < -.17); assert.equal(u.uWhite.value,0);
+    for(const name of ['uBandAmt','uBodyAmt','uGlowAmt']) assert.equal(u[name].value,0);
+    close(u.uScatter.value.toArray(),[0,0,0]); assert.equal(u.uFlash.value,flash);
+    for(const h of [0,.005,.02,.3,1]) for(const cover of [0,.5,1]) {
+      const base=lerp(u.uHorizon.value.toArray(),u.uZenith.value.toArray(),h**.55);
+      const cloud=lerp([.16,.18,.24],[.08,.09,.11],oc*.8).map((v,i)=>v*[.9,.95,1.04][i]*1.1);
+      const raw=lerp(base,cloud,cover*.85).map((v,i)=>v+[.75,.78,.95][i]*u.uFlash.value);
+      const target=lerp(u.uHorizon.value.toArray(),raw,smooth(-.02,.02,h));
+      const input=inverse(target);
+      if(!input) { flashRejected++; continue; }
+      close(map(input),target); flashCompared++;
+    }
+  }
+}
 assert.equal(inverse([1,.97,.88]), null, 'peak1 is not a finite invertible Neutral output');
 assert.equal(inverse([.99,0,0]), null, 'inverse desaturation may require unsupported negative scene colour');
 const c = { ...CLOUD_SHADOW, palette, top: SKYLAYER.top, fade: SKYLAYER.fade };
@@ -96,6 +137,13 @@ assert.equal(python.status,0,python.stderr);
 for (const literal of ['float inputPeak = 0.0576/(1-peak)+0.52;', 'preBlack = (target-peak*g)/(1-g)*(inputPeak/peak);', 'peak >= 1', 'any(preBlack < 0)', 'smoothstep(0.16,0.17,sun.y)']) assert(python.stdout.includes(literal));
 assert(!python.stdout.includes('dot(nativeSky,luma)'));
 const builder = readFileSync('tools/unreal-engine/python/build_lighting.py','utf8');
-assert(builder.includes('SkyThreshold, Overcast, EAI);'));
+assert(builder.includes('SkyThreshold, Overcast, EAI, Flash);'));
+assert(builder.includes('SkyThreshold, Overcast, EAI, Flash,'));
+assert(!builder.includes('float3(0.75, 0.78, 0.95) * Flash * EAI'));
+for(const branch of ['daylight','night']) {
+  const code=python.stdout.slice(python.stdout.indexOf(`float3 ${branch}(float3 nativeSky`));
+  assert(code.indexOf('target += float3(0.75,0.78,0.95)*flash;') < code.indexOf('target = lerp(horizon,target'));
+  assert(code.indexOf('target = lerp(horizon,target') < code.indexOf('float peak = max(target'));
+}
 assert(builder.includes('col = clouds.night(col, dw, sw, Cam*0.01'));
-console.log(`Day sky pure PASS: actual November/June uniforms, ${compared} actual-Three-Neutral roundtrips, ${rejected} explicit domain rejections; native compilation/translucency/capture pending.`);
+console.log(`Day sky pure PASS: actual November/June uniforms, ${compared} actual-Three-Neutral roundtrips, ${rejected} explicit domain rejections; flash ${flashCompared} roundtrips / ${flashRejected} domain rejections; native compilation/translucency/capture pending.`);

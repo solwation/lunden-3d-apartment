@@ -132,7 +132,7 @@ with tempfile.TemporaryDirectory() as temp:
     WebClouds clouds;
     float3 d=float3(a[b],a[b+1],a[b+2]), sun=SUN, eye=EYE, nativeSky=float3(.2,.4,.7);
     float oc=a[b+3];
-    float3 colour=clouds.daylight(nativeSky,d,sun,eye,0,a[b+4],oc,1);
+    float3 colour=clouds.daylight(nativeSky,d,sun,eye,0,a[b+4],oc,1,0);
     float3 horizon=lerp(HORIZON,OVERCAST,oc*0.7),zenith=lerp(ZENITH,OVERCAST,oc*0.85);
     float3 base=lerp(horizon,zenith,pow(max(0,d.y),0.55));
     base+=float3(1,0.86,0.66)*(0.12*(1-oc))*pow(max(dot(d,sun),0),6)*(1-max(0,d.y));
@@ -143,8 +143,8 @@ with tempfile.TemporaryDirectory() as temp:
     float eligible=(max(expected.r,max(expected.g,expected.b))<0.76 && dot(d,sun)<=0.99)?1:0;
     Curve curve;
     o[i*2]=float4(abs(curve.apply(colour)-expected),eligible);
-    float3 night=clouds.daylight(nativeSky,d,-sun,eye,0,a[b+4],oc,1);
-    float3 high=clouds.daylight(nativeSky,d,sun,eye+float3(0,0,10000),0,a[b+4],oc,1);
+    float3 night=clouds.daylight(nativeSky,d,-sun,eye,0,a[b+4],oc,1,0);
+    float3 high=clouds.daylight(nativeSky,d,sun,eye+float3(0,0,10000),0,a[b+4],oc,1,0);
     o[i*2+1]=float4(abs(night-nativeSky),length(high-nativeSky));
 }""".replace("SUN",xyz(web["sun"])).replace("EYE",xyz(web["eye"]))
     for key,name in (("dayHorizon","HORIZON"),("dayZenith","ZENITH"),("overcast","OVERCAST")):
@@ -172,7 +172,7 @@ with tempfile.TemporaryDirectory() as temp:
                 and isinstance(a.targets[0], ast.Name) and a.targets[0].id == "PRECIP_HLSL")
     tag = {"float4":"Scene N B0n B0x B1n B1x B2n B2x B3n B3x SunDir MoonDir MoonPh",
            "float3":"WPos Cam", "float2":"Wind",
-           "float":"Time Light Rain Snow Wet Soffit Radius Height Speed Length SlantPerMs SlantMax SnowSpeed Sway Size DriftPerMs DriftMax EAI Night CloudCover MoonRadius Earthshine SkyThreshold Overcast CloudOffsetX CloudOffsetY"}
+           "float":"Time Light Rain Snow Wet Soffit Radius Height Speed Length SlantPerMs SlantMax SnowSpeed Sway Size DriftPerMs DriftMax EAI Night CloudCover MoonRadius Earthshine Flash SkyThreshold Overcast CloudOffsetX CloudOffsetY"}
     params = ",".join(f"{t} {n}" for t,names in tag.items() for n in names.split())
     pixel.write_text(f"float4 precip({params}) {{\n"+sky_clouds.shader(spec)+body+"}\n"+
                      "float4 main(float4 p:SV_Position):SV_Target {return precip("+

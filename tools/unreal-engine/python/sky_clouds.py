@@ -17,10 +17,10 @@ def shader(c):
     if "palette" not in c and set(c) == {"clearThr", "thr", "ramp"}:
         return """
 struct WebClouds {
-    float3 night(float3 color, float3 view, float3 sun, float3 eye, float2 offset, float threshold, float overcast, float inverseExposure, float3 moon, float3 moonPhase, float moonRadius, float earthshine) {
+    float3 night(float3 color, float3 view, float3 sun, float3 eye, float2 offset, float threshold, float overcast, float inverseExposure, float flash, float3 moon, float3 moonPhase, float moonRadius, float earthshine) {
         return color;
     }
-    float3 daylight(float3 color, float3 view, float3 sun, float3 eye, float2 offset, float threshold, float overcast, float inverseExposure) {
+    float3 daylight(float3 color, float3 view, float3 sun, float3 eye, float2 offset, float threshold, float overcast, float inverseExposure, float flash) {
         return color;
     }
 };
@@ -66,7 +66,7 @@ struct WebClouds {{
         cloud = lerp(cloud*float3(0.9,0.95,1.04),cloud,thick)*(1+0.1*(1-thick)*(1-shade));
         return lerp(base, cloud, 0.85*sampleCloud.x);
     }}
-    float3 daylight(float3 nativeSky, float3 d, float3 sun, float3 eye, float2 offset, float threshold, float oc, float inverseExposure) {{
+    float3 daylight(float3 nativeSky, float3 d, float3 sun, float3 eye, float2 offset, float threshold, float oc, float inverseExposure, float flash) {{
         // #2434: SKY_DUSK.sun ends at 0.16 and its last halo at 0.17. Keep the
         // existing twilight/night, high-flight and atmospheric sun-disc paths.
         // November16 14:00 has sun.y=0.177840..., so the source gradient applies
@@ -87,7 +87,7 @@ struct WebClouds {{
         float3 base = lerp(horizon,zenith,pow(max(0,d.y),0.55));
         float s = max(dot(d,sun),0);
         // HAZE.scatter: the same linear low-sun halo that skyFragmentShader adds.
-        float3 scatter = float3(1,0.86,0.66)*(0.12*day*(1-oc)*smoothstep(-0.05,0.1,sun.y));
+        float3 scatter = float3(1,0.86,0.66)*(0.12*day*(1-oc)*smoothstep(-0.05,0.1,sun.y)*(1-min(1,flash*0.5)));
         base += (glow*glowAmt+scatter)*pow(s,6)*(1-max(d.y,0));
         float3 sampleCloud = shape(d,sun,eye.xy,offset,threshold,oc);
         float thick = sampleCloud.y, shade = sampleCloud.z;
@@ -96,6 +96,8 @@ struct WebClouds {{
         cloud *= 1-{num(sk['shade'])}*thick*(0.6+0.4*oc)-{num(sk['selfShade'])}*shade*(1-0.75*oc);
         cloud = lerp(cloud*float3(0.9,0.95,1.04),cloud,thick)*(1+0.1*(1-thick)*(1-shade));
         float3 target = lerp(base,cloud,sampleCloud.x*0.85);
+        // Raw source sky flash: BEFORE horizon fade and the COMPLETE Neutral inverse.
+        target += float3(0.75,0.78,0.95)*flash;
         target = lerp(horizon,target,smoothstep(-0.02,0.02,d.y));
         // Source sky has colorspace_fragment but NO tonemapping_fragment. Invert
         // the COMPLETE installed Neutral curve, including compression/desaturation,
@@ -114,7 +116,7 @@ struct WebClouds {{
         float blackOffset = x < 0.04 ? sqrt(x/6.25)-x : 0.04;
         return lerp(nativeSky,(preBlack+blackOffset)*inverseExposure,weight);
     }}
-    float3 night(float3 nativeSky, float3 d, float3 sun, float3 eye, float2 offset, float threshold, float oc, float inverseExposure, float3 moon, float3 moonPhase, float moonRadius, float earthshine) {{
+    float3 night(float3 nativeSky, float3 d, float3 sun, float3 eye, float2 offset, float threshold, float oc, float inverseExposure, float flash, float3 moon, float3 moonPhase, float moonRadius, float earthshine) {{
         // SKY_DUSK.sun's rising envelope: full source night below -0.17, native twilight
         // retained from -0.04 upwards. This does not port the source twilight colours.
         float weight = (1-smoothstep(-0.17,-0.04,sun.y))
@@ -150,6 +152,8 @@ struct WebClouds {{
         cloud *= 1 - {num(sk['shade'])}*thick*(0.6+0.4*oc) - {num(sk['selfShade'])}*shade*(1-0.75*oc);
         cloud = lerp(cloud*float3(0.9,0.95,1.04),cloud,thick)*(1+0.1*(1-thick)*(1-shade));
         float3 target = lerp(base,cloud,shapeNight.x*0.85);
+        // Same raw sky operation/order as skyFragmentShader, not pre-buffer radiance.
+        target += float3(0.75,0.78,0.95)*flash;
         target = lerp(horizon,target,smoothstep(-0.02,0.02,d.y));
         // Invert the COMPLETE composed sky, including the bright moon. Targets
         // outside Neutral's nonnegative finite inverse domain retain the native
