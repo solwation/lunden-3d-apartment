@@ -100,8 +100,9 @@ public sealed class StockRuntimeTests
     }
 
     [WindowsFact]
-    public void RemovalAndPruningWaitForEitherGameInTheirOwnInstallation()
+    public async Task RemovalAndPruningWaitForEitherGameInTheirOwnInstallation()
     {
+        const string readyMarker = "LUNDEN_PROCESS_READY";
         string root = Directory.CreateTempSubdirectory("Lunden process test ").FullName;
         try {
             string other = Path.Combine(root, "other-install");
@@ -115,17 +116,29 @@ public sealed class StockRuntimeTests
                 Directory.CreateDirectory(Path.GetDirectoryName(image)!);
                 File.Copy(Path.Combine(Environment.SystemDirectory, "cmd.exe"), image);
                 var start = new ProcessStartInfo(image) {
-                    UseShellExecute = false, RedirectStandardInput = true, CreateNoWindow = true,
-                    ArgumentList = { "/d", "/q", "/k" }
+                    UseShellExecute = false, CreateNoWindow = true,
+                    RedirectStandardInput = true, RedirectStandardOutput = true, RedirectStandardError = true,
+                    ArgumentList = { "/d", "/q", "/a", "/c", $"echo {readyMarker}&set /p LUNDEN_PROCESS_STOP=" }
                 };
-                using var game = Process.Start(start)!;
+                using var game = Process.Start(start) ?? throw new IOException($"Could not start Windows test process: {image}");
                 try {
+                    string? ready;
+                    try {
+                        ready = await game.StandardOutput.ReadLineAsync().WaitAsync(TimeSpan.FromSeconds(10));
+                    } catch (TimeoutException ex) {
+                        throw new IOException($"Windows test process did not signal readiness: {image} (PID {game.Id})", ex);
+                    }
+                    if (game.HasExited) {
+                        string error = await game.StandardError.ReadToEndAsync();
+                        Assert.Fail($"Windows test process exited before launcher assertions: {image} (exit {game.ExitCode}, stdout {ready}, stderr {error})");
+                    }
+                    Assert.Equal(readyMarker, ready);
                     Assert.Throws<IOException>(() => Setup.EnsureGameStopped(root));
                     Setup.EnsureGameStopped(other);
                     store.Prune(state);
                     Assert.True(Directory.Exists(obsolete));
                 } finally {
-                    game.StandardInput.WriteLine("exit");
+                    game.StandardInput.Close();
                     if (!game.WaitForExit(5000)) { game.Kill(); game.WaitForExit(); }
                 }
                 Setup.EnsureGameStopped(root);
