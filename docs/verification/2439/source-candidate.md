@@ -67,7 +67,7 @@ Bounded actual verification, Root owns all launches/builds/locks:
 1. One normal canonical sync, including the real `build_lighting.py` and
    `build_audio.py` builders, then their normal `--check` paths. No new web export.
    Lighting may save its existing eight authored outputs; Audio's normal builder
-   attempts its existing 24 assets (including BPC_LundenAudio), even though the
+   attempts its existing 23 assets (including BPC_LundenAudio), even though the
    source audio graphs other than that component are unchanged. Actual changed
    bytes and all other authored packages must be recorded, not presumed.
 2. Fresh NullRHI automation with the two canonical files copied unchanged from
