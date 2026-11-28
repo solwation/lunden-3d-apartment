@@ -45,6 +45,21 @@ activate or launch the game. Actual installation verification is recorded separa
 Historical checkpoints below retain their original pending/untested scope as of
 execution; they are superseded only by the explicitly recorded later results.
 
+The actual production updater installation also passed in40.60seconds with
+source-DLL/harness/outer exit0. The unchanged public84e updater read the official
+P256-signed test manifest, downloaded all13 real production file mappings
+(847641647 bytes, actualHTTPS200), activated the complete tree and passed
+`VerifyInstalled` plus independent size/hash/mode reads. Five declared ELF files
+had execute permission. The private harness explicitly called `Confirm`; this
+was not a game-start confirmation. Reapplying the same release requested no
+network, preserved its active version and retained a save sentinel outside
+the version tree. No game or engine ran during this updater check.
+See [actual installer proof](production-install/proof.json),
+[unaltered result](production-install/result.json), [log](production-install/run.log)
+and [reproducible harness](production-install/Program.cs).
+Changed-release rollback, corrupt-payload and foreign-platform rejection remain
+covered by the existing source-bound tests, not this same-release installation.
+
 ## Historical source checkpoint (before actual cook)
 
 This was an open implementation checkpoint, not a distributed game or issue closure.

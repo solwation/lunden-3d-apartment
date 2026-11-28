@@ -1,0 +1,244 @@
+{
+  "completed": true,
+  "passed": true,
+  "gameStarted": false,
+  "sourceCommit": "84e35c47e5b358cea4eedc4e37d77fbd0cd42948",
+  "sourceDllSHA256": "b20b8f556d7b339728096fde3661fa338c8b851700b8afdfbd87b4cff14e0758",
+  "harnessDllSHA256": "17a63c41c4dc54cd15d10c487dda3eeda112f6b84b1baa21c75ec20ec414b39b",
+  "officialPublicKeySHA256": "2d03f1dc6fb5c7365dab1a5ece1738dfca2a408d6cbbb5b82be22ae09b4271ba",
+  "manifestSHA256": "b2b2fe75b750acbdc28e82fb2313070317de6125a2469039d5f82add7e67cb1e",
+  "mappingCount": 13,
+  "mappedBytes": 847641647,
+  "saveSentinel": "/home/devcontainers/.local/state/lunden-codex-20261127/2422/production-install/install/Saved/production-install-preserve.sav",
+  "saveSentinelSHA256": "33abdc1eefb28daa8873bb564b5ebedaa8c6e34c271d873f679d02fe9346cf97",
+  "afterApply": {
+    "Channel": "test",
+    "Active": {
+      "Directory": "22ca47f3c33a490696088efa40ff5274",
+      "ManifestHash": "B2B2FE75B750ACBDC28E82FB2313070317DE6125A2469039D5F82ADD7E67CB1E",
+      "AppVersion": "0.3.0",
+      "ContentVersion": 20,
+      "Published": "2026-11-28T07:02:14+00:00"
+    },
+    "Previous": null,
+    "Rejected": null,
+    "Pending": true
+  },
+  "verifiedEntryPoint": "Engine/Binaries/Linux/UnrealGame-Linux-Shipping",
+  "installedFiles": [
+    {
+      "Path": "Engine/Binaries/Linux/UnrealGame-Linux-Shipping",
+      "size": 304914000,
+      "sha256": "ae5b2fff8fabced405515b5f905532525e1ceecfa2176c37bb13877c7c530f38",
+      "mode": "OtherExecute, OtherRead, GroupExecute, GroupRead, UserExecute, UserWrite, UserRead",
+      "manifestExecutable": true,
+      "actualUserExecute": true
+    },
+    {
+      "Path": "Engine/Binaries/ThirdParty/MsQuic/v220/linux/libmsquic.so",
+      "size": 23,
+      "sha256": "51aec15c714c5d96969f6a7608cdefc5c163e7fec0b2e0974ec1382380d11c5e",
+      "mode": "OtherRead, GroupRead, UserWrite, UserRead",
+      "manifestExecutable": false,
+      "actualUserExecute": false
+    },
+    {
+      "Path": "Engine/Binaries/ThirdParty/MsQuic/v220/linux/libmsquic.so.2",
+      "size": 9715408,
+      "sha256": "ed3698c20005885c61a20f04ba772e329f67855713f5fecb26152a8f949ad280",
+      "mode": "OtherExecute, OtherRead, GroupExecute, GroupRead, UserExecute, UserWrite, UserRead",
+      "manifestExecutable": true,
+      "actualUserExecute": true
+    },
+    {
+      "Path": "Engine/Binaries/ThirdParty/Vulkan/Linux/libvulkan.so",
+      "size": 4210872,
+      "sha256": "d59b6a2b184887fb6eddea3dd754bd2f5b59abc647577c3cd71bb530213ebbb0",
+      "mode": "OtherExecute, OtherRead, GroupExecute, GroupRead, UserExecute, UserWrite, UserRead",
+      "manifestExecutable": true,
+      "actualUserExecute": true
+    },
+    {
+      "Path": "Engine/Config/StagedBuild_Lunden.ini",
+      "size": 3,
+      "sha256": "f1945cd6c19e56b3c1c78943ef5ec18116907a4ca1efc40a57d48ab1db7adfc5",
+      "mode": "OtherRead, GroupRead, UserWrite, UserRead",
+      "manifestExecutable": false,
+      "actualUserExecute": false
+    },
+    {
+      "Path": "Engine/Content/Renderer/TessellationTable.bin",
+      "size": 259568,
+      "sha256": "edc4f3b628a139c5e185bbaeca661c95c1f427368d3b92892c5cff36c56dd941",
+      "mode": "OtherRead, GroupRead, UserWrite, UserRead",
+      "manifestExecutable": false,
+      "actualUserExecute": false
+    },
+    {
+      "Path": "Engine/Plugins/NNE/NNERuntimeORT/Binaries/ThirdParty/Onnxruntime/Linux/libonnxruntime.so",
+      "size": 22146944,
+      "sha256": "bc33abfd6154771fe4cb4268d8a8323ce86ab5ee3e110f87f36d26eb1126079c",
+      "mode": "OtherExecute, OtherRead, GroupExecute, GroupRead, UserExecute, UserWrite, UserRead",
+      "manifestExecutable": true,
+      "actualUserExecute": true
+    },
+    {
+      "Path": "Engine/Plugins/NNE/NNERuntimeORT/Binaries/ThirdParty/Onnxruntime/Linux/libonnxruntime.so.1.24",
+      "size": 22146944,
+      "sha256": "bc33abfd6154771fe4cb4268d8a8323ce86ab5ee3e110f87f36d26eb1126079c",
+      "mode": "OtherExecute, OtherRead, GroupExecute, GroupRead, UserExecute, UserWrite, UserRead",
+      "manifestExecutable": true,
+      "actualUserExecute": true
+    },
+    {
+      "Path": "Lunden/Content/Paks/Lunden-Linux.pak",
+      "size": 11278705,
+      "sha256": "024838abd1711edd352ce443925f1cd43fd1a720aed15560fa755a9b1e56574a",
+      "mode": "OtherRead, GroupRead, UserWrite, UserRead",
+      "manifestExecutable": false,
+      "actualUserExecute": false
+    },
+    {
+      "Path": "Lunden/Content/Paks/Lunden-Linux.ucas",
+      "size": 468282720,
+      "sha256": "e3d20a88a181d2590204d7f81bfec23bdeff707c688b445880770bdde18bfe38",
+      "mode": "OtherRead, GroupRead, UserWrite, UserRead",
+      "manifestExecutable": false,
+      "actualUserExecute": false
+    },
+    {
+      "Path": "Lunden/Content/Paks/Lunden-Linux.utoc",
+      "size": 1367270,
+      "sha256": "33b5634bdbddee86ad9dc03e9adabfc23fb88ccd863d5b202e8b9251fa15992b",
+      "mode": "OtherRead, GroupRead, UserWrite, UserRead",
+      "manifestExecutable": false,
+      "actualUserExecute": false
+    },
+    {
+      "Path": "Lunden/Content/Paks/global.ucas",
+      "size": 3318384,
+      "sha256": "117d70e349a1be6aafc1e8bc242539e7411f9f9b3a2de141ca1f7aa8bbd5cfcd",
+      "mode": "OtherRead, GroupRead, UserWrite, UserRead",
+      "manifestExecutable": false,
+      "actualUserExecute": false
+    },
+    {
+      "Path": "Lunden/Content/Paks/global.utoc",
+      "size": 806,
+      "sha256": "3332b661522555af510fa79e6de5b1149c8b9a735e43d6989fe60a774e22ce9a",
+      "mode": "OtherRead, GroupRead, UserWrite, UserRead",
+      "manifestExecutable": false,
+      "actualUserExecute": false
+    }
+  ],
+  "confirmedState": {
+    "Channel": "test",
+    "Active": {
+      "Directory": "22ca47f3c33a490696088efa40ff5274",
+      "ManifestHash": "B2B2FE75B750ACBDC28E82FB2313070317DE6125A2469039D5F82ADD7E67CB1E",
+      "AppVersion": "0.3.0",
+      "ContentVersion": 20,
+      "Published": "2026-11-28T07:02:14+00:00"
+    },
+    "Previous": null,
+    "Rejected": null,
+    "Pending": false
+  },
+  "reapplySameReleaseNetworkRequests": 0,
+  "sameReleasePreservesSavedSentinel": true,
+  "finalState": {
+    "Channel": "test",
+    "Active": {
+      "Directory": "22ca47f3c33a490696088efa40ff5274",
+      "ManifestHash": "B2B2FE75B750ACBDC28E82FB2313070317DE6125A2469039D5F82ADD7E67CB1E",
+      "AppVersion": "0.3.0",
+      "ContentVersion": 20,
+      "Published": "2026-11-28T07:02:14+00:00"
+    },
+    "Previous": null,
+    "Rejected": null,
+    "Pending": false
+  },
+  "httpRequests": [
+    {
+      "url": "https://release-assets.githubusercontent.com/github-production-release-asset/1400239126/9419177c-5e4d-47e4-a275-5368c0846954?sp=r\u0026sv=2018-11-09\u0026sr=b\u0026spr=https\u0026se=2026-11-28T08%3A29%3A28Z\u0026rscd=attachment%3B\u002Bfilename%3Dsha256-ae5b2fff8fabced405515b5f905532525e1ceecfa2176c37bb13877c7c530f38.blob\u0026rsct=application%2Foctet-stream\u0026skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0\u0026sktid=398a6654-997b-47e9-b12b-9515b896b4de\u0026skt=2026-11-28T07%3A29%3A07Z\u0026ske=2026-11-28T08%3A29%3A28Z\u0026sks=b\u0026skv=2018-11-09\u0026sig=1DWD0DdfuFFpuNBUvr8K6ntRFMBUZCcdEhgjNYYEl6E%3D\u0026jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc5NTg1NDgxNSwibmJmIjoxNzk1ODUxMjE1LCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.2_KrG0Ss3SJtFyNLfSgaeU_X9ZCqjl_dkaamqZTDcmo\u0026response-content-disposition=attachment%3B filename%3Dsha256-ae5b2fff8fabced405515b5f905532525e1ceecfa2176c37bb13877c7c530f38.blob\u0026response-content-type=application%2Foctet-stream",
+      "status": 200,
+      "range": null,
+      "contentLength": 304914000
+    },
+    {
+      "url": "https://release-assets.githubusercontent.com/github-production-release-asset/1400239126/acfa4c4a-6ee4-46ee-8439-b24ba5396f78?sp=r\u0026sv=2018-11-09\u0026sr=b\u0026spr=https\u0026se=2026-11-28T08%3A18%3A32Z\u0026rscd=attachment%3B\u002Bfilename%3Dsha256-51aec15c714c5d96969f6a7608cdefc5c163e7fec0b2e0974ec1382380d11c5e.blob\u0026rsct=application%2Foctet-stream\u0026skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0\u0026sktid=398a6654-997b-47e9-b12b-9515b896b4de\u0026skt=2026-11-28T07%3A18%3A00Z\u0026ske=2026-11-28T08%3A18%3A32Z\u0026sks=b\u0026skv=2018-11-09\u0026sig=X41dLp0cSI2cHdeAPNXvnkqZklfQ99RphDd%2BicBl2B4%3D\u0026jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc5NTg1MTUyNiwibmJmIjoxNzk1ODUxMjI2LCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.zoWiW6Z9lJMTw2TkayLtfYuorIAWa1VWzY8bm-JVqFQ\u0026response-content-disposition=attachment%3B filename%3Dsha256-51aec15c714c5d96969f6a7608cdefc5c163e7fec0b2e0974ec1382380d11c5e.blob\u0026response-content-type=application%2Foctet-stream",
+      "status": 200,
+      "range": null,
+      "contentLength": 23
+    },
+    {
+      "url": "https://release-assets.githubusercontent.com/github-production-release-asset/1400239126/1525d822-2b01-465f-8918-1475f352d14b?sp=r\u0026sv=2018-11-09\u0026sr=b\u0026spr=https\u0026se=2026-11-28T08%3A33%3A31Z\u0026rscd=attachment%3B\u002Bfilename%3Dsha256-ed3698c20005885c61a20f04ba772e329f67855713f5fecb26152a8f949ad280.blob\u0026rsct=application%2Foctet-stream\u0026skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0\u0026sktid=398a6654-997b-47e9-b12b-9515b896b4de\u0026skt=2026-11-28T07%3A32%3A40Z\u0026ske=2026-11-28T08%3A33%3A31Z\u0026sks=b\u0026skv=2018-11-09\u0026sig=W2A1zBPEwrAZWMcZxoRylDP2dAh8dxfx%2B8CF3fljl3M%3D\u0026jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc5NTg1MTUyNiwibmJmIjoxNzk1ODUxMjI2LCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.zoWiW6Z9lJMTw2TkayLtfYuorIAWa1VWzY8bm-JVqFQ\u0026response-content-disposition=attachment%3B filename%3Dsha256-ed3698c20005885c61a20f04ba772e329f67855713f5fecb26152a8f949ad280.blob\u0026response-content-type=application%2Foctet-stream",
+      "status": 200,
+      "range": null,
+      "contentLength": 9715408
+    },
+    {
+      "url": "https://release-assets.githubusercontent.com/github-production-release-asset/1400239126/7223a876-1f36-4745-ac8d-f2ca548d3da9?sp=r\u0026sv=2018-11-09\u0026sr=b\u0026spr=https\u0026se=2026-11-28T08%3A13%3A22Z\u0026rscd=attachment%3B\u002Bfilename%3Dsha256-d59b6a2b184887fb6eddea3dd754bd2f5b59abc647577c3cd71bb530213ebbb0.blob\u0026rsct=application%2Foctet-stream\u0026skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0\u0026sktid=398a6654-997b-47e9-b12b-9515b896b4de\u0026skt=2026-11-28T07%3A13%3A08Z\u0026ske=2026-11-28T08%3A13%3A22Z\u0026sks=b\u0026skv=2018-11-09\u0026sig=9W%2BUzuua82rQUtk8gEWSpMFby2vKERamTA32DseDL2w%3D\u0026jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc5NTg1MTUyNywibmJmIjoxNzk1ODUxMjI3LCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.5LcO9Zco9KBuLOqIeTicOyk5jXG6DYEqT80oFP8Zysk\u0026response-content-disposition=attachment%3B filename%3Dsha256-d59b6a2b184887fb6eddea3dd754bd2f5b59abc647577c3cd71bb530213ebbb0.blob\u0026response-content-type=application%2Foctet-stream",
+      "status": 200,
+      "range": null,
+      "contentLength": 4210872
+    },
+    {
+      "url": "https://release-assets.githubusercontent.com/github-production-release-asset/1400239126/99d2cede-f2b9-4e96-9efe-1a79bd0354f8?sp=r\u0026sv=2018-11-09\u0026sr=b\u0026spr=https\u0026se=2026-11-28T08%3A23%3A14Z\u0026rscd=attachment%3B\u002Bfilename%3Dsha256-f1945cd6c19e56b3c1c78943ef5ec18116907a4ca1efc40a57d48ab1db7adfc5.blob\u0026rsct=application%2Foctet-stream\u0026skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0\u0026sktid=398a6654-997b-47e9-b12b-9515b896b4de\u0026skt=2026-11-28T07%3A22%3A33Z\u0026ske=2026-11-28T08%3A23%3A14Z\u0026sks=b\u0026skv=2018-11-09\u0026sig=aReNIbLfWA%2BQXq8Zi%2Fz%2BS5YStWESBjEGsizjvhwCkV8%3D\u0026jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc5NTg1MTUyNywibmJmIjoxNzk1ODUxMjI3LCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.5LcO9Zco9KBuLOqIeTicOyk5jXG6DYEqT80oFP8Zysk\u0026response-content-disposition=attachment%3B filename%3Dsha256-f1945cd6c19e56b3c1c78943ef5ec18116907a4ca1efc40a57d48ab1db7adfc5.blob\u0026response-content-type=application%2Foctet-stream",
+      "status": 200,
+      "range": null,
+      "contentLength": 3
+    },
+    {
+      "url": "https://release-assets.githubusercontent.com/github-production-release-asset/1400239126/b66440e3-4467-4549-97fb-c30ca4cc3ad9?sp=r\u0026sv=2018-11-09\u0026sr=b\u0026spr=https\u0026se=2026-11-28T08%3A32%3A38Z\u0026rscd=attachment%3B\u002Bfilename%3Dsha256-edc4f3b628a139c5e185bbaeca661c95c1f427368d3b92892c5cff36c56dd941.blob\u0026rsct=application%2Foctet-stream\u0026skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0\u0026sktid=398a6654-997b-47e9-b12b-9515b896b4de\u0026skt=2026-11-28T07%3A32%3A15Z\u0026ske=2026-11-28T08%3A32%3A38Z\u0026sks=b\u0026skv=2018-11-09\u0026sig=uhOOmNgHn6jELMgILbch2Ge8%2BuRkzor4HpN5hGeMXW0%3D\u0026jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc5NTg1MTUyOCwibmJmIjoxNzk1ODUxMjI4LCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.8y-NHZxiEDW-ljOLOqK67nqByUlFehZuARK4fEN9P50\u0026response-content-disposition=attachment%3B filename%3Dsha256-edc4f3b628a139c5e185bbaeca661c95c1f427368d3b92892c5cff36c56dd941.blob\u0026response-content-type=application%2Foctet-stream",
+      "status": 200,
+      "range": null,
+      "contentLength": 259568
+    },
+    {
+      "url": "https://release-assets.githubusercontent.com/github-production-release-asset/1400239126/6a0813df-534f-41a8-8dc7-b043e20292cf?sp=r\u0026sv=2018-11-09\u0026sr=b\u0026spr=https\u0026se=2026-11-28T08%3A25%3A43Z\u0026rscd=attachment%3B\u002Bfilename%3Dsha256-bc33abfd6154771fe4cb4268d8a8323ce86ab5ee3e110f87f36d26eb1126079c.blob\u0026rsct=application%2Foctet-stream\u0026skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0\u0026sktid=398a6654-997b-47e9-b12b-9515b896b4de\u0026skt=2026-11-28T07%3A25%3A21Z\u0026ske=2026-11-28T08%3A25%3A43Z\u0026sks=b\u0026skv=2018-11-09\u0026sig=IcD6Izcpx12osen%2FgiPvBlLRweXUCZIH7EH8Q%2FCN424%3D\u0026jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc5NTg1MzAyOCwibmJmIjoxNzk1ODUxMjI4LCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.BbHK0LZtg9TYTkLhgj01KaBQUh8vJuv391e3c1snJKk\u0026response-content-disposition=attachment%3B filename%3Dsha256-bc33abfd6154771fe4cb4268d8a8323ce86ab5ee3e110f87f36d26eb1126079c.blob\u0026response-content-type=application%2Foctet-stream",
+      "status": 200,
+      "range": null,
+      "contentLength": 22146944
+    },
+    {
+      "url": "https://release-assets.githubusercontent.com/github-production-release-asset/1400239126/6a0813df-534f-41a8-8dc7-b043e20292cf?sp=r\u0026sv=2018-11-09\u0026sr=b\u0026spr=https\u0026se=2026-11-28T08%3A25%3A43Z\u0026rscd=attachment%3B\u002Bfilename%3Dsha256-bc33abfd6154771fe4cb4268d8a8323ce86ab5ee3e110f87f36d26eb1126079c.blob\u0026rsct=application%2Foctet-stream\u0026skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0\u0026sktid=398a6654-997b-47e9-b12b-9515b896b4de\u0026skt=2026-11-28T07%3A25%3A21Z\u0026ske=2026-11-28T08%3A25%3A43Z\u0026sks=b\u0026skv=2018-11-09\u0026sig=IcD6Izcpx12osen%2FgiPvBlLRweXUCZIH7EH8Q%2FCN424%3D\u0026jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc5NTg1MzAyOCwibmJmIjoxNzk1ODUxMjI4LCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.BbHK0LZtg9TYTkLhgj01KaBQUh8vJuv391e3c1snJKk\u0026response-content-disposition=attachment%3B filename%3Dsha256-bc33abfd6154771fe4cb4268d8a8323ce86ab5ee3e110f87f36d26eb1126079c.blob\u0026response-content-type=application%2Foctet-stream",
+      "status": 200,
+      "range": null,
+      "contentLength": 22146944
+    },
+    {
+      "url": "https://release-assets.githubusercontent.com/github-production-release-asset/1400239126/30b45ff4-579e-4753-bdff-77dc71c9c44a?sp=r\u0026sv=2018-11-09\u0026sr=b\u0026spr=https\u0026se=2026-11-28T08%3A26%3A05Z\u0026rscd=attachment%3B\u002Bfilename%3Dsha256-024838abd1711edd352ce443925f1cd43fd1a720aed15560fa755a9b1e56574a.blob\u0026rsct=application%2Foctet-stream\u0026skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0\u0026sktid=398a6654-997b-47e9-b12b-9515b896b4de\u0026skt=2026-11-28T07%3A25%3A56Z\u0026ske=2026-11-28T08%3A26%3A05Z\u0026sks=b\u0026skv=2018-11-09\u0026sig=xNP89FbrTMkjpBTjrKn8k4ZPkWme8O6g6k0H5so4u5Q%3D\u0026jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc5NTg1MzAzMCwibmJmIjoxNzk1ODUxMjMwLCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.9VpEgCo2jDhr0uPJZt-JmuqkJTuz18U1eiZIrrKsQx4\u0026response-content-disposition=attachment%3B filename%3Dsha256-024838abd1711edd352ce443925f1cd43fd1a720aed15560fa755a9b1e56574a.blob\u0026response-content-type=application%2Foctet-stream",
+      "status": 200,
+      "range": null,
+      "contentLength": 11278705
+    },
+    {
+      "url": "https://release-assets.githubusercontent.com/github-production-release-asset/1400239126/58b47362-20c9-458e-a826-669fc772856b?sp=r\u0026sv=2018-11-09\u0026sr=b\u0026spr=https\u0026se=2026-11-28T08%3A33%3A03Z\u0026rscd=attachment%3B\u002Bfilename%3Dsha256-e3d20a88a181d2590204d7f81bfec23bdeff707c688b445880770bdde18bfe38.blob\u0026rsct=application%2Foctet-stream\u0026skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0\u0026sktid=398a6654-997b-47e9-b12b-9515b896b4de\u0026skt=2026-11-28T07%3A32%3A23Z\u0026ske=2026-11-28T08%3A33%3A03Z\u0026sks=b\u0026skv=2018-11-09\u0026sig=EQmVz0yNimmjhuTAmiV7fLiJXfhMKnNV8sDZzO%2B0%2B5Y%3D\u0026jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc5NTg1NDgzMCwibmJmIjoxNzk1ODUxMjMwLCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.LQmTIi_drPzYXopP_Aj1oKpIbGV9wiwucPDLn7yUDP0\u0026response-content-disposition=attachment%3B filename%3Dsha256-e3d20a88a181d2590204d7f81bfec23bdeff707c688b445880770bdde18bfe38.blob\u0026response-content-type=application%2Foctet-stream",
+      "status": 200,
+      "range": null,
+      "contentLength": 468282720
+    },
+    {
+      "url": "https://release-assets.githubusercontent.com/github-production-release-asset/1400239126/e3474fc2-de0c-4d74-b441-fa8c93f1aa23?sp=r\u0026sv=2018-11-09\u0026sr=b\u0026spr=https\u0026se=2026-11-28T08%3A33%3A33Z\u0026rscd=attachment%3B\u002Bfilename%3Dsha256-33b5634bdbddee86ad9dc03e9adabfc23fb88ccd863d5b202e8b9251fa15992b.blob\u0026rsct=application%2Foctet-stream\u0026skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0\u0026sktid=398a6654-997b-47e9-b12b-9515b896b4de\u0026skt=2026-11-28T07%3A33%3A29Z\u0026ske=2026-11-28T08%3A33%3A33Z\u0026sks=b\u0026skv=2018-11-09\u0026sig=KF6zbt7PT4CS5Y6723XwQiCXAdKIS0FA95It0M8BvmU%3D\u0026jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc5NTg1MTU1MCwibmJmIjoxNzk1ODUxMjUwLCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.cO2yg8ZYfbaeCesuHTKTUZzH2LPbHeNh34WKX3mWJsk\u0026response-content-disposition=attachment%3B filename%3Dsha256-33b5634bdbddee86ad9dc03e9adabfc23fb88ccd863d5b202e8b9251fa15992b.blob\u0026response-content-type=application%2Foctet-stream",
+      "status": 200,
+      "range": null,
+      "contentLength": 1367270
+    },
+    {
+      "url": "https://release-assets.githubusercontent.com/github-production-release-asset/1400239126/e951c802-88e8-417d-b443-56a27ee72fd1?sp=r\u0026sv=2018-11-09\u0026sr=b\u0026spr=https\u0026se=2026-11-28T08%3A14%3A09Z\u0026rscd=attachment%3B\u002Bfilename%3Dsha256-117d70e349a1be6aafc1e8bc242539e7411f9f9b3a2de141ca1f7aa8bbd5cfcd.blob\u0026rsct=application%2Foctet-stream\u0026skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0\u0026sktid=398a6654-997b-47e9-b12b-9515b896b4de\u0026skt=2026-11-28T07%3A13%3A48Z\u0026ske=2026-11-28T08%3A14%3A09Z\u0026sks=b\u0026skv=2018-11-09\u0026sig=K858Pc1MMSATOJdsJ9u%2FvbpLTqp4%2BuP%2Bjbz04%2FiuHro%3D\u0026jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc5NTg1MTU1MCwibmJmIjoxNzk1ODUxMjUwLCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.cO2yg8ZYfbaeCesuHTKTUZzH2LPbHeNh34WKX3mWJsk\u0026response-content-disposition=attachment%3B filename%3Dsha256-117d70e349a1be6aafc1e8bc242539e7411f9f9b3a2de141ca1f7aa8bbd5cfcd.blob\u0026response-content-type=application%2Foctet-stream",
+      "status": 200,
+      "range": null,
+      "contentLength": 3318384
+    },
+    {
+      "url": "https://release-assets.githubusercontent.com/github-production-release-asset/1400239126/aa38a937-b2d4-4080-b68d-e32e84409545?sp=r\u0026sv=2018-11-09\u0026sr=b\u0026spr=https\u0026se=2026-11-28T08%3A32%3A35Z\u0026rscd=attachment%3B\u002Bfilename%3Dsha256-3332b661522555af510fa79e6de5b1149c8b9a735e43d6989fe60a774e22ce9a.blob\u0026rsct=application%2Foctet-stream\u0026skoid=96c2d410-5711-43a1-aedd-ab1947aa7ab0\u0026sktid=398a6654-997b-47e9-b12b-9515b896b4de\u0026skt=2026-11-28T07%3A32%3A30Z\u0026ske=2026-11-28T08%3A32%3A35Z\u0026sks=b\u0026skv=2018-11-09\u0026sig=aIC4vKBDkU2MwI7Ut5Z%2F8ipdHrlVRQfTpRDFWhTHt18%3D\u0026jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmVsZWFzZS1hc3NldHMuZ2l0aHVidXNlcmNvbnRlbnQuY29tIiwia2V5Ijoia2V5MSIsImV4cCI6MTc5NTg1MTU1MSwibmJmIjoxNzk1ODUxMjUxLCJwYXRoIjoicmVsZWFzZWFzc2V0cHJvZHVjdGlvbi5ibG9iLmNvcmUud2luZG93cy5uZXQifQ.gfg_4fqRz05xm84OBQmiN5LEPMNYazynR57qFqUTGPE\u0026response-content-disposition=attachment%3B filename%3Dsha256-3332b661522555af510fa79e6de5b1149c8b9a735e43d6989fe60a774e22ce9a.blob\u0026response-content-type=application%2Foctet-stream",
+      "status": 200,
+      "range": null,
+      "contentLength": 806
+    }
+  ],
+  "exitCode": 0,
+  "elapsedSeconds": 40.6038299
+}

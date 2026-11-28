@@ -3990,3 +3990,10 @@ size/hash before marking the release latest. The original Windows0.2.0 installer
 launcher and signed manifests remain unchanged. Actual reduced-graphics WSLg
 images and the official-key launcher dry-run are recorded in the verification
 directory; no ordinary physical-GPU or current Windows runtime pass is claimed.
+
+The actual public-production updater subsequently downloaded and activated all13
+Linux file mappings (847641647 bytes), verified every hash/mode and preserved a
+save sentinel when applying the same release again without network. Its private
+harness explicitly called Confirm; game-start confirmation and a second real
+release rollback were not simulated as successful. See the
+[actual installation evidence](../verification/2422/production-install/proof.json).

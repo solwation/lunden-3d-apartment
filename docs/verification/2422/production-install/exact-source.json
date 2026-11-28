@@ -1,0 +1,29 @@
+{
+  "publicSourceCommit": "84e35c47e5b358cea4eedc4e37d77fbd0cd42948",
+  "files": {
+    "unreal/Launcher/Program.cs": "a18a6de51e10f2762321fe66ba2df256025e99a9c27526fbb0c6017b87a52287",
+    "unreal/Launcher/PlayerRoom.cs": "03cc5e844a61b64936dd1ef8881e19b71a2b95a9a0a61fada3f31f0606e830de",
+    "unreal/Launcher/Authenticode.cs": "ce2cfe0f2509e253c6db7fc29ac1a1bb8814f8601245efff39731f7c8c3a85b0",
+    "unreal/Launcher/CatalogSignature.cs": "4b1390537fc8b4e36a8ac9d756efadd468cbc1795728cf08edfb72bc678d77f9",
+    "unreal/Launcher/UpdateStore.cs": "c369ff1ce45f773054211470237096db5fbe03c10ed74d268b466f7bb29607bc",
+    "unreal/Launcher/TaskDialog.cs": "e4ac0cc3bbd297e7ffd036c2ae0a8eaefd6b1dfff0998036f714b89840952882",
+    "unreal/Launcher/WindowsShellRegistration.cs": "aa010ae6acb378c7a4443064b0f7e5c4cd6f1fd007995a70f79984c7193574d0",
+    "unreal/Launcher/Ui.cs": "c2ef49e1a27d13864249c7d836a2b4f0dcaf86e301927eb7bf11b304fc8f3b55",
+    "unreal/Launcher/Lunden.Launcher.csproj": "cb05a0b6b69f0afe4177b27e2f69e454280cadbcc0e94ce1006793f69626e4ce",
+    "unreal/Launcher/GameProcess.cs": "fd1d102f9af1e3c0f4dbe940d3049a56cb96867fbfd70219aea592de6d85ec68",
+    "unreal/Launcher/SharedRoom.cs": "0f9695e6eb289182c01b714c9323898abab62ceb201e936fd27fb0fe4a374f1d",
+    "unreal/Launcher/Lunden.ico": "53ca759c29e97b7680b546287cfb70c2209b7927c71fab60e30b6d69f0087d58",
+    "unreal/Launcher/Unreal-5.8.4-win64.json": "ad788d68d40dc0637ae65f5215ed623d238914d09f5d9b33b7ffa7441f74b454",
+    "unreal/Launcher/ReleasePlatform.cs": "eb73f67db2d657397e43f3734bb149f6be2fa201fbfea8d0ca0480d1fea901f7",
+    "unreal/Launcher/SignerIdentity.cs": "f2e2e472a34dbe68b2e6e9916150d4958f10f5b04337dcc3e15735c2e36f479d",
+    "unreal/Launcher/.gitignore": "6c5082c7e6de3e350189c67a1aacf757485ecc26e0a3cf96683528565f3e5f12",
+    "unreal/Launcher/publisher-identity.json": "ec0e1d59d5a069af58051280f3ca74b805fe58f71d4b54fce5e2837a52057525",
+    "unreal/Launcher/app.manifest": "16f3ebd69dcd194e93340f90eb6ae18a5e725c2457b18741b6a8e1e693c24cf8",
+    "unreal/Launcher/SetupCommand.cs": "dcad687b539a5ad3c9c36255533c6fa58d5f965116432233353ecf3aee710183",
+    "unreal/Launcher/PlayerBridge.cs": "7d51d56402cfe0b067b1bc804f34b3ebb20c3bde2091fa2ee9145ce5503f7f3b",
+    "unreal/Launcher/StockRuntime.cs": "98e7ba0b118c3d1d6081220b5e1263f07c4b34506bd5de8448f8532df6066cf3",
+    "unreal/Launcher/Setup.cs": "754adec6f40a1db21f670510ecc335e402e145518c5ddd3a23896ae66f7b2600",
+    "unreal/Launcher/ReleaseManifest.cs": "55c1a43f30f37fc4f16b328e03ed2803b0e4c4c8e6052767c4339a1ebf8a8ef4",
+    "unreal/Launcher/SelfUpdate.cs": "bda053334a80928abdf5599d19d0e6f5040beb2f904fb1f5f671815d6a71e783"
+  }
+}
