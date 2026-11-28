@@ -1,0 +1,27 @@
+{
+  "releaseId": 461374525,
+  "tag": "app-v0.3.0",
+  "sourceCommit": "84e35c47e5b358cea4eedc4e37d77fbd0cd42948",
+  "tagSource": "v0.3.0",
+  "signingRuns": [
+    46120371458,
+    46120373175
+  ],
+  "signingConclusion": "success",
+  "promotionRun": 46121486570,
+  "promotionConclusion": "success",
+  "promotionSource": "2ccd0b5ac9394af6374bc156e2cc697acae0dcf1",
+  "promotionUrl": "https://github.com/solwation/lunden-3d-apartment/actions/runs/46121486570",
+  "latestIdVerified": 461374525,
+  "windowsRetained": "v0.2.0 binary/installer and signed Windows stable/test manifests unchanged",
+  "payloadObjects": 12,
+  "payloadBytes": 825494703,
+  "mappedFiles": 13,
+  "mappedFileBytes": 847641647,
+  "launcherBytes": 73853099,
+  "assetCount": 27,
+  "actualShippingCookPackages": 5807,
+  "actualShaderJobs": 6496,
+  "ordinaryLinuxGPU": "not tested; real WSLg softwareVulkan SM5 startup/image and actual20sync+Shipping cook passed",
+  "sourceBoundChecks": "Launcher58pass6skip64total; protocol33pass1WindowsSkip; actualLinuxCI140892617791success; separate unchangedWindowsprocessfixture2501"
+}

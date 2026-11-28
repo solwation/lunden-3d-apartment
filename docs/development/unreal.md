@@ -3944,13 +3944,49 @@ launcher; Windows' Authenticode self-update/helper path is never invoked on Linu
 Linux setup dialogs, desktop registration and automatic launcher self-replacement
 are not supplied by this implementation.
 
-**Verification boundary:** local protocol/fixture tests cover signatures, wrong
-platforms, bad payloads, execute bits, rollback/saves, archive validation and the
-Node-to-C# signed Linux manifest. They do not establish Linux Shipping startup,
-GPU shader correctness, Lumen/VSM parity, performance or Windows-desktop release
-acceptance. #2422 remains open until an actual clean Linux Shipping package starts
-on a normal Vulkan Linux desktop, pilot-area images are reviewed, the signed
-Linux update flow is exercised, and Windows release regression checks pass.
-The prebuilt engine/runtime and required graphics/driver features must be present;
-WSL software Vulkan success is not a statement of minimum game requirements.
+**Actual build and startup (2026-11-28):** clean published source
+`84e35c47e5b358cea4eedc4e37d77fbd0cd42948` produced app0.3.0/content20:
+5807 cooked packages,6496 shader jobs, successful Shipping archive and UAT/outer0.
+The content-only build required no separately installed native compiler SDK.
+The editor-only installation first needed43 exact original Epic ZIP
+`Engine/Intermediate/ScriptModules` records restored for UAT. During staging on
+DrvFS, one readonly supplier `TessellationTable.bin` temporarily needed owner-write;
+its original bytes and555 mode were restored after the same build completed.
+See the [build and raw client evidence](../verification/2422/README.md).
+
+The actual packaged client rendered the START pilot and Swedish welcome menu
+under WSLg with explicitly selected CPU Vulkan/SM5, then closed with game/outer0.
+A normal `GameUserSettings.ini` using `FullscreenMode=2` produced an actual640×360
+window; the existing borderless mode1 instead used2560×1440 even with `-nohighdpi`.
+The test profile also used `sg.ResolutionQuality=50`; this is an own-window size
+proof, not a full-resolution measurement of every internal rendering stage.
+Software Vulkan, SM5 and reduced graphics are diagnostic development settings;
+they do not establish ordinary-GPU performance or VulkanSM6/Lumen/VSM parity.
+A normal physical Linux GPU and the current Windows build remain untested here.
+The required graphics/driver features must be present; WSL software Vulkan success
+is not a statement of minimum game requirements.
+
+Local source-bound protocol/fixture checks cover official-format signatures,
+wrong platforms, bad payloads, execute bits, rollback/saves, archive validation
+and Node-to-C# manifests. Linux CI passed; an unchanged Windows process fixture
+failed after memory-resource errors, separately tracked in#2501, with no proven
+Linux-caused regression. The existing Windows installer and signed manifests are
+retained byte-exact fromv0.2.0 in the Linux release.
 This is original-only Unreal work; no public web/downstream port applies.
+
+**Published Linux beta0.3.0:** [official release](https://github.com/solwation/lunden-3d-apartment/releases/tag/app-v0.3.0).
+Download `Lunden-linux-x64`, make it executable and run it:
+
+```sh
+chmod +x Lunden-linux-x64
+./Lunden-linux-x64
+```
+
+The launcher installs the signed Linux game; players need neither Unreal Engine
+nor .NET installed. Linux stable/test manifests were signed in protected signing
+runs46120371458/46120373175. Promotion run46121486570 verified the complete
+Windows/Linux stable/test channel union and every declared downloadable object's
+size/hash before marking the release latest. The original Windows0.2.0 installer,
+launcher and signed manifests remain unchanged. Actual reduced-graphics WSLg
+images and the official-key launcher dry-run are recorded in the verification
+directory; no ordinary physical-GPU or current Windows runtime pass is claimed.

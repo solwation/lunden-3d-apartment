@@ -1,0 +1,14 @@
+{
+  "actualExecuted": true,
+  "actualExitCode": 0,
+  "sourceCommit": "84e35c47e5b358cea4eedc4e37d77fbd0cd42948",
+  "launcherSHA256": "9b2f0b68b8261209a9c06f92ee97674c6e5416d9ebb003863d7f31ca3a1a9c1a",
+  "manifest": "signed-release/lunden-manifest-linux-x64-test.json",
+  "channel": "test",
+  "appVersion": "0.3.0",
+  "contentVersion": 20,
+  "plannedFileBytes": 847641647,
+  "officialPublicKeyVerified": true,
+  "downloadOrInstallExecuted": false,
+  "gameStarted": false
+}

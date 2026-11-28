@@ -1,0 +1,197 @@
+{
+  "id": 461374525,
+  "tag": "app-v0.3.0",
+  "html_url": "https://github.com/solwation/lunden-3d-apartment/releases/tag/app-v0.3.0",
+  "verifiedAt": "2026-11-28T07:32:14Z",
+  "assets": [
+    {
+      "name": "build-info-linux.json",
+      "size": 730,
+      "digest": "sha256:7bd748bfb22e72a63ab3cd8290d577e6300ca7a1c6751dd36eeacd4cbb72ae90",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/solwation/lunden-3d-apartment/releases/download/app-v0.3.0/build-info-linux.json"
+    },
+    {
+      "name": "Kv-Lunden-Unreal-L1007-Setup-0.2.0-win-x64.exe",
+      "size": 73777472,
+      "digest": "sha256:66503c1666ad07a4456d6680eb0e186d5bba8694bcec04c68027f5ca6bc89f49",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/solwation/lunden-3d-apartment/releases/download/app-v0.3.0/Kv-Lunden-Unreal-L1007-Setup-0.2.0-win-x64.exe"
+    },
+    {
+      "name": "launcher-build-linux.json",
+      "size": 285,
+      "digest": "sha256:62d053a419e60b4b3706c4b5a1dfa8a99a9ffe6dd1658bef37876b0a3d39fba7",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/solwation/lunden-3d-apartment/releases/download/app-v0.3.0/launcher-build-linux.json"
+    },
+    {
+      "name": "launcher-build.json",
+      "size": 649,
+      "digest": "sha256:59326acfc3e1711ad2fcaa44bad1c2f7e130f5318b0d9fcf79ea244debd789be",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/solwation/lunden-3d-apartment/releases/download/app-v0.3.0/launcher-build.json"
+    },
+    {
+      "name": "Lunden-linux-x64",
+      "size": 73853099,
+      "digest": "sha256:9b2f0b68b8261209a9c06f92ee97674c6e5416d9ebb003863d7f31ca3a1a9c1a",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/solwation/lunden-3d-apartment/releases/download/app-v0.3.0/Lunden-linux-x64"
+    },
+    {
+      "name": "lunden-manifest-linux-x64-test.json",
+      "size": 5908,
+      "digest": "sha256:b2b2fe75b750acbdc28e82fb2313070317de6125a2469039d5f82add7e67cb1e",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/solwation/lunden-3d-apartment/releases/download/app-v0.3.0/lunden-manifest-linux-x64-test.json"
+    },
+    {
+      "name": "lunden-manifest-linux-x64-test.json.sig",
+      "size": 64,
+      "digest": "sha256:c3e0ff01f81cd2a9572b0bb23d704140cfe9416f1fea4979f47182b0c5c8e36e",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/solwation/lunden-3d-apartment/releases/download/app-v0.3.0/lunden-manifest-linux-x64-test.json.sig"
+    },
+    {
+      "name": "lunden-manifest-linux-x64.json",
+      "size": 5910,
+      "digest": "sha256:2de32f79628da129111c64e8c071a7ab425f305ab8a91de5e35bb1d55276b130",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/solwation/lunden-3d-apartment/releases/download/app-v0.3.0/lunden-manifest-linux-x64.json"
+    },
+    {
+      "name": "lunden-manifest-linux-x64.json.sig",
+      "size": 64,
+      "digest": "sha256:506728cd1aa58e616e3dbf1f0ba30324931644db05eb66e8e727280f0808e375",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/solwation/lunden-3d-apartment/releases/download/app-v0.3.0/lunden-manifest-linux-x64.json.sig"
+    },
+    {
+      "name": "lunden-manifest-test.json",
+      "size": 9685,
+      "digest": "sha256:a2cbc37dabf7ab42a82e6466d0c786e316472da0d97cc6bc28dee061dcf49993",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/solwation/lunden-3d-apartment/releases/download/app-v0.3.0/lunden-manifest-test.json"
+    },
+    {
+      "name": "lunden-manifest-test.json.sig",
+      "size": 64,
+      "digest": "sha256:a720861dca1441667fdcfd09326e293ab8854b4a0c88a3acc3b880875b43db99",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/solwation/lunden-3d-apartment/releases/download/app-v0.3.0/lunden-manifest-test.json.sig"
+    },
+    {
+      "name": "lunden-manifest.json",
+      "size": 9687,
+      "digest": "sha256:ead8229a2bb9cfc53fd7b6869ea0a2b7065cdc9dfcd8ef12665e970b276b2515",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/solwation/lunden-3d-apartment/releases/download/app-v0.3.0/lunden-manifest.json"
+    },
+    {
+      "name": "lunden-manifest.json.sig",
+      "size": 64,
+      "digest": "sha256:2f2a80737985ac1aead597db02fc5779024461e8fb803e663be0d57fae107913",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/solwation/lunden-3d-apartment/releases/download/app-v0.3.0/lunden-manifest.json.sig"
+    },
+    {
+      "name": "Lunden.exe",
+      "size": 73777472,
+      "digest": "sha256:66503c1666ad07a4456d6680eb0e186d5bba8694bcec04c68027f5ca6bc89f49",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/solwation/lunden-3d-apartment/releases/download/app-v0.3.0/Lunden.exe"
+    },
+    {
+      "name": "sha256-024838abd1711edd352ce443925f1cd43fd1a720aed15560fa755a9b1e56574a.blob",
+      "size": 11278705,
+      "digest": "sha256:024838abd1711edd352ce443925f1cd43fd1a720aed15560fa755a9b1e56574a",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/solwation/lunden-3d-apartment/releases/download/app-v0.3.0/sha256-024838abd1711edd352ce443925f1cd43fd1a720aed15560fa755a9b1e56574a.blob"
+    },
+    {
+      "name": "sha256-117d70e349a1be6aafc1e8bc242539e7411f9f9b3a2de141ca1f7aa8bbd5cfcd.blob",
+      "size": 3318384,
+      "digest": "sha256:117d70e349a1be6aafc1e8bc242539e7411f9f9b3a2de141ca1f7aa8bbd5cfcd",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/solwation/lunden-3d-apartment/releases/download/app-v0.3.0/sha256-117d70e349a1be6aafc1e8bc242539e7411f9f9b3a2de141ca1f7aa8bbd5cfcd.blob"
+    },
+    {
+      "name": "sha256-3332b661522555af510fa79e6de5b1149c8b9a735e43d6989fe60a774e22ce9a.blob",
+      "size": 806,
+      "digest": "sha256:3332b661522555af510fa79e6de5b1149c8b9a735e43d6989fe60a774e22ce9a",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/solwation/lunden-3d-apartment/releases/download/app-v0.3.0/sha256-3332b661522555af510fa79e6de5b1149c8b9a735e43d6989fe60a774e22ce9a.blob"
+    },
+    {
+      "name": "sha256-33b5634bdbddee86ad9dc03e9adabfc23fb88ccd863d5b202e8b9251fa15992b.blob",
+      "size": 1367270,
+      "digest": "sha256:33b5634bdbddee86ad9dc03e9adabfc23fb88ccd863d5b202e8b9251fa15992b",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/solwation/lunden-3d-apartment/releases/download/app-v0.3.0/sha256-33b5634bdbddee86ad9dc03e9adabfc23fb88ccd863d5b202e8b9251fa15992b.blob"
+    },
+    {
+      "name": "sha256-51aec15c714c5d96969f6a7608cdefc5c163e7fec0b2e0974ec1382380d11c5e.blob",
+      "size": 23,
+      "digest": "sha256:51aec15c714c5d96969f6a7608cdefc5c163e7fec0b2e0974ec1382380d11c5e",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/solwation/lunden-3d-apartment/releases/download/app-v0.3.0/sha256-51aec15c714c5d96969f6a7608cdefc5c163e7fec0b2e0974ec1382380d11c5e.blob"
+    },
+    {
+      "name": "sha256-ae5b2fff8fabced405515b5f905532525e1ceecfa2176c37bb13877c7c530f38.blob",
+      "size": 304914000,
+      "digest": "sha256:ae5b2fff8fabced405515b5f905532525e1ceecfa2176c37bb13877c7c530f38",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/solwation/lunden-3d-apartment/releases/download/app-v0.3.0/sha256-ae5b2fff8fabced405515b5f905532525e1ceecfa2176c37bb13877c7c530f38.blob"
+    },
+    {
+      "name": "sha256-bc33abfd6154771fe4cb4268d8a8323ce86ab5ee3e110f87f36d26eb1126079c.blob",
+      "size": 22146944,
+      "digest": "sha256:bc33abfd6154771fe4cb4268d8a8323ce86ab5ee3e110f87f36d26eb1126079c",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/solwation/lunden-3d-apartment/releases/download/app-v0.3.0/sha256-bc33abfd6154771fe4cb4268d8a8323ce86ab5ee3e110f87f36d26eb1126079c.blob"
+    },
+    {
+      "name": "sha256-d59b6a2b184887fb6eddea3dd754bd2f5b59abc647577c3cd71bb530213ebbb0.blob",
+      "size": 4210872,
+      "digest": "sha256:d59b6a2b184887fb6eddea3dd754bd2f5b59abc647577c3cd71bb530213ebbb0",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/solwation/lunden-3d-apartment/releases/download/app-v0.3.0/sha256-d59b6a2b184887fb6eddea3dd754bd2f5b59abc647577c3cd71bb530213ebbb0.blob"
+    },
+    {
+      "name": "sha256-e3d20a88a181d2590204d7f81bfec23bdeff707c688b445880770bdde18bfe38.blob",
+      "size": 468282720,
+      "digest": "sha256:e3d20a88a181d2590204d7f81bfec23bdeff707c688b445880770bdde18bfe38",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/solwation/lunden-3d-apartment/releases/download/app-v0.3.0/sha256-e3d20a88a181d2590204d7f81bfec23bdeff707c688b445880770bdde18bfe38.blob"
+    },
+    {
+      "name": "sha256-ed3698c20005885c61a20f04ba772e329f67855713f5fecb26152a8f949ad280.blob",
+      "size": 9715408,
+      "digest": "sha256:ed3698c20005885c61a20f04ba772e329f67855713f5fecb26152a8f949ad280",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/solwation/lunden-3d-apartment/releases/download/app-v0.3.0/sha256-ed3698c20005885c61a20f04ba772e329f67855713f5fecb26152a8f949ad280.blob"
+    },
+    {
+      "name": "sha256-edc4f3b628a139c5e185bbaeca661c95c1f427368d3b92892c5cff36c56dd941.blob",
+      "size": 259568,
+      "digest": "sha256:edc4f3b628a139c5e185bbaeca661c95c1f427368d3b92892c5cff36c56dd941",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/solwation/lunden-3d-apartment/releases/download/app-v0.3.0/sha256-edc4f3b628a139c5e185bbaeca661c95c1f427368d3b92892c5cff36c56dd941.blob"
+    },
+    {
+      "name": "sha256-f1945cd6c19e56b3c1c78943ef5ec18116907a4ca1efc40a57d48ab1db7adfc5.blob",
+      "size": 3,
+      "digest": "sha256:f1945cd6c19e56b3c1c78943ef5ec18116907a4ca1efc40a57d48ab1db7adfc5",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/solwation/lunden-3d-apartment/releases/download/app-v0.3.0/sha256-f1945cd6c19e56b3c1c78943ef5ec18116907a4ca1efc40a57d48ab1db7adfc5.blob"
+    },
+    {
+      "name": "SHA256SUMS",
+      "size": 3027,
+      "digest": "sha256:d61a9f16eef937de01bc1bd05390f03ebf35f1bb712b44c0d02766919aed986a",
+      "state": "uploaded",
+      "browser_download_url": "https://github.com/solwation/lunden-3d-apartment/releases/download/app-v0.3.0/SHA256SUMS"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+[
+  {
+    "channel": "test",
+    "platform": "linux-x64",
+    "app": "0.3.0",
+    "content": 20,
+    "officialP256Verified": true
+  },
+  {
+    "channel": "stable",
+    "platform": "linux-x64",
+    "app": "0.3.0",
+    "content": 20,
+    "officialP256Verified": true
+  }
+]

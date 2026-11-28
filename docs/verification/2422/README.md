@@ -31,9 +31,19 @@ claim that every internal rendering pass used full window resolution.
 
 These are software-Vulkan/SM5-requested Shipping smoke results, not ordinary GPU,
 Windows/Lumen, full gameplay or performance acceptance. The visible 8 FPS is an
-observation only. Official signed release app-v0.3.0 publication is being handled
-separately and is **not claimed complete here**. Historical checkpoints below
-retain their original pending/untested scope as of their execution.
+observation only. The official [Linux beta0.3.0 release](https://github.com/solwation/lunden-3d-apartment/releases/tag/app-v0.3.0)
+is now published and latest after protected P256 signing of both Linux channels
+and successful promotion run[46121486570](https://github.com/solwation/lunden-3d-apartment/actions/runs/46121486570).
+That gate anonymously verified all four Windows/Linux stable/test channels and
+every declared payload's size and SHA256, then rechecked release identity before
+promotion. Windows0.2.0 binaries and signed manifests are retained unchanged.
+See [official release proof](official-release-proof.json),
+[official-key signature checks](official-signature-verification.json),
+[real production-manifest launcher dry-run](official-launcher-production-dry-run.json)
+and [final asset checksums](SHA256SUMS). The dry-run exited0; it did not download,
+activate or launch the game. Actual installation verification is recorded separately.
+Historical checkpoints below retain their original pending/untested scope as of
+execution; they are superseded only by the explicitly recorded later results.
 
 ## Historical source checkpoint (before actual cook)
 
