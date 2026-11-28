@@ -39,7 +39,7 @@ The entrance/courtyard views visibly show the new house shadow on the walk/lawn;
 Whole frames were reviewed. The darker large-house/rail shadows are the intended #2438 difference. Existing colour/lighting
 limits remain open: grass/crowns#2437, hedge/sign#2411, distant facade/grout#2428, low-winter sun colour#2398,
 environment response#2424 and transparent lighting#2459. Railing raster#2483, walk stipple#2497 and distant window edge#2498
-remain open. C's diagonal shadow contrast is separately recorded during publication rather than silently accepted here.
+remain open. C's softer diagonal shadow contours are tracked in open #2502 rather than silently accepted here.
 No older failed colour criterion is changed or counted as passed. Future colour comparisons must distinguish sunlit/shaded
 receivers under this intentional architecture policy.
 
