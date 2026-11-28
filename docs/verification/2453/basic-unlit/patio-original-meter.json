@@ -1,0 +1,127 @@
+{
+  "classification": "Original three ROIs and original +/-15% Y/S; unchanged PNG metric, executed canonical JPEG stats reused",
+  "image": "/home/devcontainers/.local/state/lunden-codex-20261127/2424/native-basic-v1/unreal-patio-baseline.png",
+  "imageSHA256": "c5efdc9427a4d477d98fd594eeddaf8dedade425aef27ccdd38acdfeff43dab1",
+  "contractSHA256": "e8a737d787a132776c48fb8051ac7eeb9df115a7e5354e428ace1a8b7fd54131",
+  "canonicalCacheSHA256": "35e1767eb5c5a3605444907963322c1ddbd9120d34aa94ec963b8df398241b9e",
+  "allSixPreviousPNGCanonicalComparisonsPassed": [
+    {
+      "shot": "patio-forward",
+      "region": "door-interior",
+      "passed": true
+    },
+    {
+      "shot": "patio-forward",
+      "region": "window-interior",
+      "passed": true
+    },
+    {
+      "shot": "patio-forward",
+      "region": "upper-glass-interior",
+      "passed": true
+    },
+    {
+      "shot": "patio-clear-diagnostic",
+      "region": "door-interior",
+      "passed": true
+    },
+    {
+      "shot": "patio-clear-diagnostic",
+      "region": "window-interior",
+      "passed": true
+    },
+    {
+      "shot": "patio-clear-diagnostic",
+      "region": "upper-glass-interior",
+      "passed": true
+    }
+  ],
+  "rows": [
+    {
+      "region": "door-interior",
+      "native": {
+        "luminance": 0.3396,
+        "saturation": 0.15430252789803248,
+        "pixelRect": [
+          196,
+          237,
+          44,
+          87
+        ]
+      },
+      "web": {
+        "srgb": [
+          152.9,
+          143.8,
+          132.5
+        ],
+        "luminance": 0.3358,
+        "saturation": 0.17957105340328994,
+        "warmth": 1.154
+      },
+      "ratios": {
+        "luminance": 1.01131625967838,
+        "saturation": 0.8592839712951502
+      },
+      "passed": true
+    },
+    {
+      "region": "window-interior",
+      "native": {
+        "luminance": 0.4119,
+        "saturation": 0.1499748832281582,
+        "pixelRect": [
+          332,
+          218,
+          34,
+          73
+        ]
+      },
+      "web": {
+        "srgb": [
+          154.7,
+          151.6,
+          141.3
+        ],
+        "luminance": 0.4463,
+        "saturation": 0.14547484492705778,
+        "warmth": 1.094
+      },
+      "ratios": {
+        "luminance": 0.922921801478826,
+        "saturation": 1.0309334462831479
+      },
+      "passed": true
+    },
+    {
+      "region": "upper-glass-interior",
+      "native": {
+        "luminance": 0.7173,
+        "saturation": 0.11577099921519418,
+        "pixelRect": [
+          199,
+          20,
+          72,
+          43
+        ]
+      },
+      "web": {
+        "srgb": [
+          224.4,
+          217.5,
+          205.3
+        ],
+        "luminance": 0.7079,
+        "saturation": 0.08682905554594429,
+        "warmth": 1.093
+      },
+      "ratios": {
+        "luminance": 1.013278711682441,
+        "saturation": 1.3333209544578737
+      },
+      "passed": false
+    }
+  ],
+  "passed": false,
+  "limits": "Caller must separately verify actual capture/profile/postflight and review full images; metrics alone do not accept the issue."
+}

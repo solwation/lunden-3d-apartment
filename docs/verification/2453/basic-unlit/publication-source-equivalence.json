@@ -1,0 +1,16 @@
+{
+  "testedPrivateSourceCommit": "9b9abd58b4820334bdedb635889acad51f4ba15f",
+  "publicationParent": "1550b6242387135550c0be3978eb71fa8135c4a1",
+  "exactTestedSourceSHA256": {
+    "tools/unreal-engine/export-scene.js": "b8ad29c24cc5a12ea2f7837e7b767e026750aae10097511f4e8c2e330eb268b5",
+    "tools/unreal-engine/python/import_world.py": "0c090ebda57363894abd1daf5906f14da74d3905c6d47002360d5ac22e7ec202",
+    "tools/unreal-engine/tests/test_materials.py": "4c4816dfb3b83769a6f083a71a94ff1658872658263e35299f4530d4b4e3a82d",
+    "tools/unreal-engine/tests/basic-export.mjs": "2420eb0db6849d8eb29fea4bb82b4398e2d898e9c3389cb4af59464994045a95",
+    "tools/unreal-engine/tests/basic-import.py": "c6db91c33c46f53653c3978a989bf8d4a91678d26058194705d6b45fed23921c"
+  },
+  "allFiveSourceFilesByteIdentical": true,
+  "reuseReason": "The cherry-pick only adds already published docs from1550; tested source files and all export inputs remain exact. No repeated full export/import.",
+  "exportInputCount": 323,
+  "exportSourceHash": "7521f0221644f26469aa35f8fcd29c47efb1c1f5e58ec959000444cee04276ec",
+  "allExportInputsExact": true
+}

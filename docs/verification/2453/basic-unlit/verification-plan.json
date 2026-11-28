@@ -1,0 +1,99 @@
+{
+  "classification": "Root-only normal Basic import/readback +two original-pose dusk views +one original-glass patio day baseline; no full2424 acceptance",
+  "sourceCommit": "9b9abd58b4820334bdedb635889acad51f4ba15f",
+  "exportDir": "/mnt/d/LundenLinux/exports/issue2424-basic-unlit-v1",
+  "exportSourceHash": "7521f0221644f26469aa35f8fcd29c47efb1c1f5e58ec959000444cee04276ec",
+  "callable": "/home/devcontainers/.local/state/lunden-codex-20261127/2424/verify-basic-import.py",
+  "function": "verify_basic_import(root,out,world=None,*,run_import_check=True)",
+  "callableSHA256": "07a0d8c711cdef5c51ff89554b8368d9451333561fd7b18c7694597ab5ddfd18",
+  "normalOperations": [
+    "import_world.main([actualImportDir])",
+    "import_world.main([actualImportDir,\"--check\"]) before finalWorld load",
+    "load actual final L_Lunden without saves",
+    "verify_basic_import(actualRoot,freshBasicReadbackJSON,actualWorld,run_import_check=False)"
+  ],
+  "authoredGuard": "Root snapshots all250 actual authored bytes/modes; all remain readonly before/after every normal import/check step; no authored builder writes",
+  "generatedAllowance": "Only actual normal import zone outputs and Generated masters prepared by existing importer; derive exact prefixes from table and baseline; no fake sync stamp/full20/cook",
+  "shots": [
+    {
+      "name": "facade-a-dusk",
+      "camera": "facade-a",
+      "date": [
+        2026,
+        11,
+        16
+      ],
+      "hour": 18.25,
+      "weather": "clear",
+      "lamps": "dusk",
+      "eyeWeb": [
+        -1,
+        1.62,
+        19.1
+      ],
+      "yawWeb": 180,
+      "pitchWeb": 12,
+      "verticalFov": 72,
+      "width": 640,
+      "height": 360
+    },
+    {
+      "name": "portik-l-dusk",
+      "camera": "portik-l",
+      "date": [
+        2026,
+        11,
+        16
+      ],
+      "hour": 18.25,
+      "weather": "clear",
+      "lamps": "dusk",
+      "eyeWeb": [
+        -14.4,
+        1.62,
+        12.0
+      ],
+      "yawWeb": 30,
+      "pitchWeb": 2,
+      "verticalFov": 72,
+      "width": 640,
+      "height": 360
+    },
+    {
+      "name": "patio-baseline",
+      "camera": "patio",
+      "date": [
+        2026,
+        6,
+        21
+      ],
+      "hour": 14,
+      "lamps": "none",
+      "weather": "clear",
+      "eyeWeb": [
+        2.3,
+        1.62,
+        16.1
+      ],
+      "yawWeb": -8,
+      "pitchWeb": 12,
+      "verticalFov": 72,
+      "width": 640,
+      "height": 360
+    }
+  ],
+  "webReferences": {
+    "facade-a-dusk": "/home/devcontainers/wt/codex-2424-basic/docs/verification/2431/web-facade-a-dusk.jpg",
+    "portik-l-dusk": "/home/devcontainers/wt/codex-2424-basic/docs/verification/2431/web-portik-l-dusk.jpg"
+  },
+  "referenceLimits": "Existing historical web1440x810, new Native640x360 same aspect/pose/vFOV/state. Qualitative whole-image inspection, no new pixel thresholds and no WindowsGPU claim.",
+  "controls": [
+    "existing source stairwell baked-light paths/power kept by normal material/import checks",
+    "garage_materials.check via normal import check",
+    "patio_tone.depth_users(actualWorld) after current driver settle; existing bulb controller remains source authority"
+  ],
+  "runtimeRestoration": "Use existing Root capture wrapper snapshot/finally for clock/weather/lamps/RTC/calendar/visibility/offsets; do not save world",
+  "notExecuted": true,
+  "duskLampRule": "Reuse capture_lighting.py lines145\u2013148: dark = sky.DuskLight < (lamps[0].DuskOn + lamps[0].DuskOff)/2; TurnOn only if dark and tag auto:dusk, TurnOff otherwise. Do not treat dusk as all lamps on.",
+  "captureImplementation": "Use current Root Linux-low render helper and existing finally restore; canonical capture_lighting.render_game itself overrides Lumen and must not be invoked for this low-profile batch."
+}

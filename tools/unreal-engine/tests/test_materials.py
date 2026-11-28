@@ -324,7 +324,7 @@ def double_sided_check(export_dir, mats, rule_rx, errors):
 
 
 def unlit_label_check(export_dir, export_materials, table, rule_rx, errors):
-    """#2435: {key: power-cut share} of the web's unlit labels; appends an error for each one that would render lit."""
+    """#2424/#2435: generic Basic keys must be unlit; mapped labels must also retain their image."""
     section, mats = table.get("unlitLabel") or {}, table["materials"]
     master = mats.get((section.get("master") or "").split(".")[0])
     if (not master or master.get("graph") != GLTF_LABEL or master.get("from") != section.get("from")
@@ -332,14 +332,15 @@ def unlit_label_check(export_dir, export_materials, table, rule_rx, errors):
         errors.append(f"material-map.json unlitLabel must name a generated {GLTF_LABEL} material built from {GLTF_MASTERS[0][1].split('.')[0]}")
     labels = {}
     for key, info in sorted(export_materials.items()):
-        if info.get("type") != "bas" or not info.get("texture"):
+        if info.get("type") != "bas" or info.get("garageBake") or key.endswith("_patio_string_bulb"):
             continue
         cut = info.get("powerCut")
         if info.get("unlit") is not True or not isinstance(cut, (int, float)) or not 0 <= cut <= 1:
             errors.append(f"web unlit label {key} is exported lit (unlit {info.get('unlit')}, powerCut {cut}): re-export (#2435)")
             continue
         labels[key] = cut
-        hit = next((r for rx, mx, r in rule_rx if rx.search(key)), None)
+        hits = [r for rx, mx, r in rule_rx if rx.search(key)]
+        hit = next((r for r in hits if mats.get(r["material"].split(".")[0], {}).get("graph") != BAKED), None)
         if hit:
             errors.append(f"unlit label {key}: rule {hit['match']} replaces it with {hit['material']} (lit, without its image)")
     if not labels:
@@ -352,7 +353,9 @@ def unlit_label_check(export_dir, export_materials, table, rule_rx, errors):
             if m.get("name") not in labels:
                 continue
             seen.add(m["name"])
-            if "KHR_materials_unlit" not in m.get("extensions", {}) or "baseColorTexture" not in m.get("pbrMetallicRoughness", {}):
+            needs_texture = bool(export_materials[m["name"]].get("texture") or export_materials[m["name"]].get("map"))
+            if ("KHR_materials_unlit" not in m.get("extensions", {})
+                    or (needs_texture and "baseColorTexture" not in m.get("pbrMetallicRoughness", {}))):
                 errors.append(f"{name}: unlit label {m['name']} lacks KHR_materials_unlit or its base colour texture (it would import lit)")
     for key in sorted(set(labels) - seen):
         errors.append(f"unlit label {key} is in no GLB")

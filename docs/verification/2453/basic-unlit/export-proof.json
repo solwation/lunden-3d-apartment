@@ -1,0 +1,77 @@
+{
+  "classification": "actual full export and offline validation only; Native/render acceptance pending",
+  "sourceCommit": "9b9abd58b4820334bdedb635889acad51f4ba15f",
+  "sourceDirty": false,
+  "sourceHash": "7521f0221644f26469aa35f8fcd29c47efb1c1f5e58ec959000444cee04276ec",
+  "exportDir": "/mnt/d/LundenLinux/exports/issue2424-basic-unlit-v1",
+  "explicitBrowserExecutable": "/home/devcontainers/.cache/ms-playwright/chromium-1208/chrome-linux64/chrome",
+  "PLAYWRIGHT_MODULE": "/home/devcontainers/wt/codex-2438-shadows/node_modules/playwright",
+  "threePackage": "/home/devcontainers/kvarteret-lunden/node_modules/three",
+  "threeVersion": "0.170.0",
+  "actualExecutions": {
+    "basic-export-outer-v1.json": {
+      "command": [
+        "bash",
+        "tools/browsertest.sh",
+        "node",
+        "tools/unreal-engine/export-world.mjs",
+        "--out",
+        "/mnt/d/LundenLinux/exports/issue2424-basic-unlit-v1"
+      ],
+      "cwd": "/home/devcontainers/wt/codex-2424-basic",
+      "startedAt": "2026-11-28T11:17:26.115124+00:00",
+      "completed": true,
+      "actualChildExitCode": 0,
+      "seconds": 105.354,
+      "log": "/home/devcontainers/.local/state/lunden-codex-20261127/2424/basic-export-v1.log"
+    },
+    "basic-export-check-outer-v1.json": {
+      "command": [
+        "node",
+        "tools/unreal-engine/check-export.mjs",
+        "--dir",
+        "/mnt/d/LundenLinux/exports/issue2424-basic-unlit-v1"
+      ],
+      "cwd": "/home/devcontainers/wt/codex-2424-basic",
+      "startedAt": "2026-11-28T11:19:22.543918+00:00",
+      "completed": true,
+      "actualChildExitCode": 0,
+      "seconds": 2.88,
+      "log": "/home/devcontainers/.local/state/lunden-codex-20261127/2424/basic-export-check-v1.log"
+    },
+    "basic-material-coverage-outer-v1.json": {
+      "command": [
+        "python3",
+        "tools/unreal-engine/tests/test_materials.py",
+        "/mnt/d/LundenLinux/exports/issue2424-basic-unlit-v1"
+      ],
+      "cwd": "/home/devcontainers/wt/codex-2424-basic",
+      "startedAt": "2026-11-28T11:21:31.783463+00:00",
+      "completed": true,
+      "actualChildExitCode": 0,
+      "seconds": 1.875,
+      "log": "/home/devcontainers/.local/state/lunden-codex-20261127/2424/basic-material-coverage-v1.log"
+    }
+  },
+  "comparisonSHA256": "acf38814209a0edfdd479eba2c1f2630e4d79f18d56b7596d210f9c384c176c8",
+  "comparison": "/home/devcontainers/.local/state/lunden-codex-20261127/2424/basic-export-comparison-v2.json",
+  "firstStrictComparison": {
+    "script": "compare-basic-exports.py",
+    "actualExit": 1,
+    "reason": "strict equal-key assertion correctly found the known published #2494 key rename"
+  },
+  "actualGLBs": 10,
+  "geometryAndTransformsExact": true,
+  "newBasicMetadataKeys": 23,
+  "newBasicGLBMaterialOccurrences": 32,
+  "knownSeparatePublishedDelta": {
+    "issue": 2494,
+    "oldKey": "std_ffffff_r100_m100_vc_tex",
+    "newKey": "std_ffffff_r100_m100_vc_tex_car_trim_surface",
+    "reason": "current public exporter already preserves the packed trim roughness/metalness map; absent from 2442v2 baseline"
+  },
+  "note": "The existing canonical checker still calls these unlit labels in its human output; its actual checks now cover plain/VC Basic too. No image is required for source materials without a map.",
+  "noNativeMutation": true,
+  "noAuthoredAssetsMutation": true,
+  "globalSourceAmbientOFF": true
+}

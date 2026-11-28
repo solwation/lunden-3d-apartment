@@ -1757,6 +1757,15 @@ the export and the pictures section of `notices.mjs`.
   (the labels always show the lit level), and the web's `toneMapped: false` screens get the same gain as tone-mapped
   labels. `tests/capture_flat_signs.py` takes optional lighting rounds (`Saved/sign-shots.json`: hour and power);
   see [the #2435 pictures](../verification/2435/README.md).
+- **All source Basic materials (#2453; #2424 prerequisite).** The exporter now preserves `MeshBasicMaterial`
+  without requiring a texture. Plain colours, vertex colours and existing mapped labels retain
+  `KHR_materials_unlit`; Standard/Physical source materials stay lit. The normal importer routes plain and mapped
+  Basic instances through the existing unlit-label master, or the existing garage vertex-colour master for
+  untextured vertex colours. Source colours, maps, alpha and power shares are retained; the stairwell baked-light,
+  garage and patio-bulb routes remain separate. A missing or invented base-colour map fails import.
+  Normal all-zone import/check and loaded-world readback passed for 278 imported slots, 566 component slots and
+  113 effective unlit material chains. See [the actual Linux result](../verification/2453/basic-unlit/README.md).
+  This fixes the Basic export/import prerequisite; global source ambient remains disabled and #2424 stays open.
 - **Keys.** A furnishing material's key gets the texture id: `<key>_t<10 hex>` (a hash of the image file path, or a
   canvas's pixels at collection time, plus its repeat, offset, rotation, wrap and flip). Building and ground surfaces
   keep their plain keys, so #2282's rules are untouched; the rugs and the cleaning cupboard no longer fall under the
@@ -3325,8 +3334,8 @@ the hedges, `std_78a64b_…`) were unaffected, which is why they were green.
   with `VertexColorWeight` above 0), have a base colour texture in the GLB, or match `vertexColor.match` with the glTF
   master Interchange gives it (by the material's extensions: unlit, transmission, clearcoat, sheen, else `M_Default`)
   listed in `vertexColor.masters`. The export of `816b695d` has 56 such keys in 7 zones (64 zone instances, 6 of them
-  textured), all on `M_Default` (the web's untextured `MeshBasicMaterial` keys export without `KHR_materials_unlit` and
-  import lit; its textured signs and labels are unlit since #2435).
+  textured), all on `M_Default`. That historical export flattened untextured `MeshBasicMaterial` to lit Standard;
+  #2453 now preserves all source Basic keys as unlit, including untextured vertex colours (see above).
 - Hand-made materials of the rules ignore the vertex colour unless their master reads it; the lawns' grass master has
   `VertexColorWeight` 0 and no lawn key is vertex-coloured. The vegetation's leaf cards keep `MI_LundenLeaf` (#2281),
   which multiplies the vertex AO. Textured keys with vertex colours (`…_vc_tex_t…`: the sofas' upholstery, the garage
@@ -3843,10 +3852,11 @@ preparation. `source-ambient-policy.json` defaults to **off**; their activation 
 canonical integration even if a coverage file marks every prerequisite complete. This support slice is not a delivered
 visual correction. Full #2424 acceptance remains open, and no Windows result is claimed.
 
-Canonical lighting, material, import, vegetation and curtain builders and `check-lighting.py` remain byte-identical to
-the published base. They do not import or invoke this support. Saved Lighting signatures and assets therefore need no
+Canonical lighting, material, vegetation and curtain builders and `check-lighting.py` do not import or invoke this
+support. The separate Basic correction (#2453) changes the normal importer without enabling source ambient.
+Saved Lighting signatures and assets therefore need no
 rebuild for this slice. No engine shader, saved asset, brick SourceMap or sampler candidate is included. Global pipeline
-integration remains unpublished pending Basic handling (#2453), dynamic water, live fill/window/curtain integration and
+integration remains unpublished pending dynamic water, live fill/window/curtain integration and
 full-scene drawn acceptance.
 
 `sourceAmbientContract()` exports detached linear Ambient/Hemisphere colours, intensity endpoints, night/flash/garage

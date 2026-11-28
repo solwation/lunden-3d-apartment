@@ -1,0 +1,1068 @@
+{
+  "passed": true,
+  "classification": "export-only; no Native import/render claim",
+  "before": "/mnt/d/LundenLinux/exports/issue2442-standard-materials-v2",
+  "after": "/mnt/d/LundenLinux/exports/issue2424-basic-unlit-v1",
+  "sourceCommit": "9b9abd58b4820334bdedb635889acad51f4ba15f",
+  "sourceHash": "7521f0221644f26469aa35f8fcd29c47efb1c1f5e58ec959000444cee04276ec",
+  "materialKeys": 814,
+  "knownBaselineDifference": {
+    "issue": 2494,
+    "oldKey": "std_ffffff_r100_m100_vc_tex",
+    "newKey": "std_ffffff_r100_m100_vc_tex_car_trim_surface",
+    "reason": "current public exporter already preserves the packed trim roughness/metalness map; absent from 2442v2 baseline"
+  },
+  "firstComparisonRejected": {
+    "script": "compare-basic-exports.py",
+    "actualExit": 1,
+    "reason": "strict equal-key assertion correctly found the known published #2494 key rename"
+  },
+  "measurementOnlyUnlitPowerChangesAfterTrimKeyNormalization": [
+    {
+      "key": "bas_ffffff_r100_m0",
+      "changes": [
+        {
+          "path": "/powerCut",
+          "before": null,
+          "after": 1
+        },
+        {
+          "path": "/unlit",
+          "before": null,
+          "after": true
+        }
+      ]
+    },
+    {
+      "key": "bas_3a0c0c_r100_m0",
+      "changes": [
+        {
+          "path": "/powerCut",
+          "before": null,
+          "after": 1
+        },
+        {
+          "path": "/unlit",
+          "before": null,
+          "after": true
+        }
+      ]
+    },
+    {
+      "key": "bas_dcecff_r100_m0",
+      "changes": [
+        {
+          "path": "/powerCut",
+          "before": null,
+          "after": 1
+        },
+        {
+          "path": "/unlit",
+          "before": null,
+          "after": true
+        }
+      ]
+    },
+    {
+      "key": "bas_1a2a1a_r100_m0",
+      "changes": [
+        {
+          "path": "/powerCut",
+          "before": null,
+          "after": 1
+        },
+        {
+          "path": "/unlit",
+          "before": null,
+          "after": true
+        }
+      ]
+    },
+    {
+      "key": "bas_ff2a2a_r100_m0",
+      "changes": [
+        {
+          "path": "/powerCut",
+          "before": null,
+          "after": 1
+        },
+        {
+          "path": "/unlit",
+          "before": null,
+          "after": true
+        }
+      ]
+    },
+    {
+      "key": "bas_4a4a4a_r100_m0",
+      "changes": [
+        {
+          "path": "/powerCut",
+          "before": null,
+          "after": 1
+        },
+        {
+          "path": "/unlit",
+          "before": null,
+          "after": true
+        }
+      ]
+    },
+    {
+      "key": "bas_103018_r100_m0",
+      "changes": [
+        {
+          "path": "/powerCut",
+          "before": null,
+          "after": 1
+        },
+        {
+          "path": "/unlit",
+          "before": null,
+          "after": true
+        }
+      ]
+    },
+    {
+      "key": "bas_111111_r100_m0",
+      "changes": [
+        {
+          "path": "/powerCut",
+          "before": null,
+          "after": 1
+        },
+        {
+          "path": "/unlit",
+          "before": null,
+          "after": true
+        }
+      ]
+    },
+    {
+      "key": "bas_401010_r100_m0",
+      "changes": [
+        {
+          "path": "/powerCut",
+          "before": null,
+          "after": 1
+        },
+        {
+          "path": "/unlit",
+          "before": null,
+          "after": true
+        }
+      ]
+    },
+    {
+      "key": "bas_453621_r100_m0_patio_string_bulb",
+      "changes": [
+        {
+          "path": "/powerCut",
+          "before": null,
+          "after": 1
+        },
+        {
+          "path": "/unlit",
+          "before": null,
+          "after": true
+        }
+      ]
+    },
+    {
+      "key": "bas_d9d8d3_r100_m0",
+      "changes": [
+        {
+          "path": "/powerCut",
+          "before": null,
+          "after": 1
+        },
+        {
+          "path": "/unlit",
+          "before": null,
+          "after": true
+        }
+      ]
+    },
+    {
+      "key": "bas_55534d_r100_m0",
+      "changes": [
+        {
+          "path": "/powerCut",
+          "before": null,
+          "after": 1
+        },
+        {
+          "path": "/unlit",
+          "before": null,
+          "after": true
+        }
+      ]
+    },
+    {
+      "key": "bas_d9d5ca_r100_m0",
+      "changes": [
+        {
+          "path": "/powerCut",
+          "before": null,
+          "after": 1
+        },
+        {
+          "path": "/unlit",
+          "before": null,
+          "after": true
+        }
+      ]
+    },
+    {
+      "key": "bas_ffffff_r100_m0_vc_ds",
+      "changes": [
+        {
+          "path": "/powerCut",
+          "before": null,
+          "after": 1
+        },
+        {
+          "path": "/unlit",
+          "before": null,
+          "after": true
+        }
+      ]
+    },
+    {
+      "key": "bas_bfd3dc_r100_m0_a35_ds",
+      "changes": [
+        {
+          "path": "/powerCut",
+          "before": null,
+          "after": 1
+        },
+        {
+          "path": "/unlit",
+          "before": null,
+          "after": true
+        }
+      ]
+    },
+    {
+      "key": "bas_55585b_r100_m0",
+      "changes": [
+        {
+          "path": "/powerCut",
+          "before": null,
+          "after": 1
+        },
+        {
+          "path": "/unlit",
+          "before": null,
+          "after": true
+        }
+      ]
+    },
+    {
+      "key": "bas_d8d8d4_r100_m0",
+      "changes": [
+        {
+          "path": "/powerCut",
+          "before": null,
+          "after": 1
+        },
+        {
+          "path": "/unlit",
+          "before": null,
+          "after": true
+        }
+      ]
+    },
+    {
+      "key": "bas_fffcf0_r100_m0",
+      "changes": [
+        {
+          "path": "/powerCut",
+          "before": null,
+          "after": 1
+        },
+        {
+          "path": "/unlit",
+          "before": null,
+          "after": true
+        }
+      ]
+    },
+    {
+      "key": "bas_c9ccce_r100_m0",
+      "changes": [
+        {
+          "path": "/powerCut",
+          "before": null,
+          "after": 1
+        },
+        {
+          "path": "/unlit",
+          "before": null,
+          "after": true
+        }
+      ]
+    },
+    {
+      "key": "bas_9a9fa3_r100_m0",
+      "changes": [
+        {
+          "path": "/powerCut",
+          "before": null,
+          "after": 1
+        },
+        {
+          "path": "/unlit",
+          "before": null,
+          "after": true
+        }
+      ]
+    },
+    {
+      "key": "bas_8d8b84_r100_m0",
+      "changes": [
+        {
+          "path": "/powerCut",
+          "before": null,
+          "after": 1
+        },
+        {
+          "path": "/unlit",
+          "before": null,
+          "after": true
+        }
+      ]
+    },
+    {
+      "key": "bas_2a2620_r100_m0",
+      "changes": [
+        {
+          "path": "/powerCut",
+          "before": null,
+          "after": 1
+        },
+        {
+          "path": "/unlit",
+          "before": null,
+          "after": true
+        }
+      ]
+    },
+    {
+      "key": "bas_2b2b2b_r100_m0",
+      "changes": [
+        {
+          "path": "/powerCut",
+          "before": null,
+          "after": 1
+        },
+        {
+          "path": "/unlit",
+          "before": null,
+          "after": true
+        }
+      ]
+    }
+  ],
+  "allOtherMeasurementFieldsExactExceptSourceCommit": true,
+  "zones": [
+    {
+      "file": "fixture.glb",
+      "beforeSHA256": "4636b1948a94ae9ead1697597026fb784135703be441a97ddd400a0c1446e649",
+      "afterSHA256": "4636b1948a94ae9ead1697597026fb784135703be441a97ddd400a0c1446e649",
+      "binaryChunkExact": true,
+      "geometryAccessorMetadataAndBytesExact": true,
+      "allNodeTransformsAndMeshBindingsExactExceptDocumentedTrimKeyRename": true,
+      "allExistingImageBytesAndSamplingExact": true,
+      "basicMaterialChanges": [],
+      "previouslyPublished2494TrimChange": []
+    },
+    {
+      "file": "fond.glb",
+      "beforeSHA256": "3296dac9ba0e5dd15a7838b56cdf1310ec6c4ed7d93f086684c091abfcaabde3",
+      "afterSHA256": "89000e6a61e35444704d52b8c855222c0a31880639f3e8ff93b2cd6706903574",
+      "binaryChunkExact": true,
+      "geometryAccessorMetadataAndBytesExact": true,
+      "allNodeTransformsAndMeshBindingsExactExceptDocumentedTrimKeyRename": true,
+      "allExistingImageBytesAndSamplingExact": true,
+      "basicMaterialChanges": [
+        {
+          "key": "bas_2b2b2b_r100_m0",
+          "changes": [
+            {
+              "path": "/extensions",
+              "before": null,
+              "after": {
+                "KHR_materials_unlit": {}
+              }
+            },
+            {
+              "path": "/pbrMetallicRoughness/roughnessFactor",
+              "before": 1,
+              "after": 0.9
+            }
+          ]
+        }
+      ],
+      "previouslyPublished2494TrimChange": []
+    },
+    {
+      "file": "gard.glb",
+      "beforeSHA256": "559a4bd2a880d6624a5dd5cb451e2ec256b2ae1ed415983c6a759cd3540e995b",
+      "afterSHA256": "e9b926184c5114e52665df8bd592123226c77015405f56d5b80f95616c0b641c",
+      "binaryChunkExact": true,
+      "geometryAccessorMetadataAndBytesExact": true,
+      "allNodeTransformsAndMeshBindingsExactExceptDocumentedTrimKeyRename": true,
+      "allExistingImageBytesAndSamplingExact": true,
+      "basicMaterialChanges": [
+        {
+          "key": "bas_8d8b84_r100_m0",
+          "changes": [
+            {
+              "path": "/extensions",
+              "before": null,
+              "after": {
+                "KHR_materials_unlit": {}
+              }
+            },
+            {
+              "path": "/pbrMetallicRoughness/roughnessFactor",
+              "before": 1,
+              "after": 0.9
+            }
+          ]
+        },
+        {
+          "key": "bas_2a2620_r100_m0",
+          "changes": [
+            {
+              "path": "/extensions",
+              "before": null,
+              "after": {
+                "KHR_materials_unlit": {}
+              }
+            },
+            {
+              "path": "/pbrMetallicRoughness/roughnessFactor",
+              "before": 1,
+              "after": 0.9
+            }
+          ]
+        }
+      ],
+      "previouslyPublished2494TrimChange": []
+    },
+    {
+      "file": "hus-l.glb",
+      "beforeSHA256": "df489d6ca499c5eccba334d113402f5ef6e5dfa53670f3f727b190192089ac22",
+      "afterSHA256": "2c64c850897e96f5ee9f88c88bd8ee3b30918bc6c147342582ba223f8d467d96",
+      "binaryChunkExact": true,
+      "geometryAccessorMetadataAndBytesExact": true,
+      "allNodeTransformsAndMeshBindingsExactExceptDocumentedTrimKeyRename": true,
+      "allExistingImageBytesAndSamplingExact": true,
+      "basicMaterialChanges": [
+        {
+          "key": "bas_d9d8d3_r100_m0",
+          "changes": [
+            {
+              "path": "/extensions",
+              "before": null,
+              "after": {
+                "KHR_materials_unlit": {}
+              }
+            },
+            {
+              "path": "/pbrMetallicRoughness/roughnessFactor",
+              "before": 1,
+              "after": 0.9
+            }
+          ]
+        },
+        {
+          "key": "bas_55534d_r100_m0",
+          "changes": [
+            {
+              "path": "/extensions",
+              "before": null,
+              "after": {
+                "KHR_materials_unlit": {}
+              }
+            },
+            {
+              "path": "/pbrMetallicRoughness/roughnessFactor",
+              "before": 1,
+              "after": 0.9
+            }
+          ]
+        },
+        {
+          "key": "bas_d9d5ca_r100_m0",
+          "changes": [
+            {
+              "path": "/extensions",
+              "before": null,
+              "after": {
+                "KHR_materials_unlit": {}
+              }
+            },
+            {
+              "path": "/pbrMetallicRoughness/roughnessFactor",
+              "before": 1,
+              "after": 0.9
+            }
+          ]
+        },
+        {
+          "key": "bas_ffffff_r100_m0_vc_ds",
+          "changes": [
+            {
+              "path": "/extensions",
+              "before": null,
+              "after": {
+                "KHR_materials_unlit": {}
+              }
+            },
+            {
+              "path": "/pbrMetallicRoughness/roughnessFactor",
+              "before": 1,
+              "after": 0.9
+            }
+          ]
+        },
+        {
+          "key": "bas_ffffff_r100_m0",
+          "changes": [
+            {
+              "path": "/extensions",
+              "before": null,
+              "after": {
+                "KHR_materials_unlit": {}
+              }
+            },
+            {
+              "path": "/pbrMetallicRoughness/roughnessFactor",
+              "before": 1,
+              "after": 0.9
+            }
+          ]
+        },
+        {
+          "key": "bas_bfd3dc_r100_m0_a35_ds",
+          "changes": [
+            {
+              "path": "/extensions",
+              "before": null,
+              "after": {
+                "KHR_materials_unlit": {}
+              }
+            },
+            {
+              "path": "/pbrMetallicRoughness/roughnessFactor",
+              "before": 1,
+              "after": 0.9
+            }
+          ]
+        },
+        {
+          "key": "bas_55585b_r100_m0",
+          "changes": [
+            {
+              "path": "/extensions",
+              "before": null,
+              "after": {
+                "KHR_materials_unlit": {}
+              }
+            },
+            {
+              "path": "/pbrMetallicRoughness/roughnessFactor",
+              "before": 1,
+              "after": 0.9
+            }
+          ]
+        },
+        {
+          "key": "bas_d8d8d4_r100_m0",
+          "changes": [
+            {
+              "path": "/extensions",
+              "before": null,
+              "after": {
+                "KHR_materials_unlit": {}
+              }
+            },
+            {
+              "path": "/pbrMetallicRoughness/roughnessFactor",
+              "before": 1,
+              "after": 0.9
+            }
+          ]
+        },
+        {
+          "key": "bas_fffcf0_r100_m0",
+          "changes": [
+            {
+              "path": "/extensions",
+              "before": null,
+              "after": {
+                "KHR_materials_unlit": {}
+              }
+            },
+            {
+              "path": "/pbrMetallicRoughness/roughnessFactor",
+              "before": 1,
+              "after": 0.9
+            }
+          ]
+        },
+        {
+          "key": "bas_c9ccce_r100_m0",
+          "changes": [
+            {
+              "path": "/extensions",
+              "before": null,
+              "after": {
+                "KHR_materials_unlit": {}
+              }
+            },
+            {
+              "path": "/pbrMetallicRoughness/roughnessFactor",
+              "before": 1,
+              "after": 0.9
+            }
+          ]
+        },
+        {
+          "key": "bas_9a9fa3_r100_m0",
+          "changes": [
+            {
+              "path": "/extensions",
+              "before": null,
+              "after": {
+                "KHR_materials_unlit": {}
+              }
+            },
+            {
+              "path": "/pbrMetallicRoughness/roughnessFactor",
+              "before": 1,
+              "after": 0.9
+            }
+          ]
+        }
+      ],
+      "previouslyPublished2494TrimChange": []
+    },
+    {
+      "file": "kvarteret.glb",
+      "beforeSHA256": "4e93a9981f2a5ad6206e698b3982fdfb4cdf6de8ab6f34135f2c92930d27f95b",
+      "afterSHA256": "230776dcc452253270915392640afb85d38d0d09542141b8b0c78879a548d0c6",
+      "binaryChunkExact": true,
+      "geometryAccessorMetadataAndBytesExact": true,
+      "allNodeTransformsAndMeshBindingsExactExceptDocumentedTrimKeyRename": true,
+      "allExistingImageBytesAndSamplingExact": true,
+      "basicMaterialChanges": [
+        {
+          "key": "bas_8d8b84_r100_m0",
+          "changes": [
+            {
+              "path": "/extensions",
+              "before": null,
+              "after": {
+                "KHR_materials_unlit": {}
+              }
+            },
+            {
+              "path": "/pbrMetallicRoughness/roughnessFactor",
+              "before": 1,
+              "after": 0.9
+            }
+          ]
+        },
+        {
+          "key": "bas_ffffff_r100_m0_vc_ds",
+          "changes": [
+            {
+              "path": "/extensions",
+              "before": null,
+              "after": {
+                "KHR_materials_unlit": {}
+              }
+            },
+            {
+              "path": "/pbrMetallicRoughness/roughnessFactor",
+              "before": 1,
+              "after": 0.9
+            }
+          ]
+        },
+        {
+          "key": "bas_ffffff_r100_m0",
+          "changes": [
+            {
+              "path": "/extensions",
+              "before": null,
+              "after": {
+                "KHR_materials_unlit": {}
+              }
+            },
+            {
+              "path": "/pbrMetallicRoughness/roughnessFactor",
+              "before": 1,
+              "after": 0.9
+            }
+          ]
+        },
+        {
+          "key": "bas_55585b_r100_m0",
+          "changes": [
+            {
+              "path": "/extensions",
+              "before": null,
+              "after": {
+                "KHR_materials_unlit": {}
+              }
+            },
+            {
+              "path": "/pbrMetallicRoughness/roughnessFactor",
+              "before": 1,
+              "after": 0.9
+            }
+          ]
+        },
+        {
+          "key": "bas_d8d8d4_r100_m0",
+          "changes": [
+            {
+              "path": "/extensions",
+              "before": null,
+              "after": {
+                "KHR_materials_unlit": {}
+              }
+            },
+            {
+              "path": "/pbrMetallicRoughness/roughnessFactor",
+              "before": 1,
+              "after": 0.9
+            }
+          ]
+        },
+        {
+          "key": "bas_fffcf0_r100_m0",
+          "changes": [
+            {
+              "path": "/extensions",
+              "before": null,
+              "after": {
+                "KHR_materials_unlit": {}
+              }
+            },
+            {
+              "path": "/pbrMetallicRoughness/roughnessFactor",
+              "before": 1,
+              "after": 0.9
+            }
+          ]
+        },
+        {
+          "key": "bas_c9ccce_r100_m0",
+          "changes": [
+            {
+              "path": "/extensions",
+              "before": null,
+              "after": {
+                "KHR_materials_unlit": {}
+              }
+            },
+            {
+              "path": "/pbrMetallicRoughness/roughnessFactor",
+              "before": 1,
+              "after": 0.9
+            }
+          ]
+        },
+        {
+          "key": "bas_9a9fa3_r100_m0",
+          "changes": [
+            {
+              "path": "/extensions",
+              "before": null,
+              "after": {
+                "KHR_materials_unlit": {}
+              }
+            },
+            {
+              "path": "/pbrMetallicRoughness/roughnessFactor",
+              "before": 1,
+              "after": 0.9
+            }
+          ]
+        },
+        {
+          "key": "bas_bfd3dc_r100_m0_a35_ds",
+          "changes": [
+            {
+              "path": "/extensions",
+              "before": null,
+              "after": {
+                "KHR_materials_unlit": {}
+              }
+            },
+            {
+              "path": "/pbrMetallicRoughness/roughnessFactor",
+              "before": 1,
+              "after": 0.9
+            }
+          ]
+        }
+      ],
+      "previouslyPublished2494TrimChange": []
+    },
+    {
+      "file": "l1007-entre.glb",
+      "beforeSHA256": "4738e1b53b2c981cdb5e68f27da6eec734c5db294de770929e3dc15cc4b320c3",
+      "afterSHA256": "4738e1b53b2c981cdb5e68f27da6eec734c5db294de770929e3dc15cc4b320c3",
+      "binaryChunkExact": true,
+      "geometryAccessorMetadataAndBytesExact": true,
+      "allNodeTransformsAndMeshBindingsExactExceptDocumentedTrimKeyRename": true,
+      "allExistingImageBytesAndSamplingExact": true,
+      "basicMaterialChanges": [],
+      "previouslyPublished2494TrimChange": []
+    },
+    {
+      "file": "l1007-uteplats.glb",
+      "beforeSHA256": "163ce0bc28191a075ec67161e77f2ccac3699d5f01666e7624899762d0fc3941",
+      "afterSHA256": "163ce0bc28191a075ec67161e77f2ccac3699d5f01666e7624899762d0fc3941",
+      "binaryChunkExact": true,
+      "geometryAccessorMetadataAndBytesExact": true,
+      "allNodeTransformsAndMeshBindingsExactExceptDocumentedTrimKeyRename": true,
+      "allExistingImageBytesAndSamplingExact": true,
+      "basicMaterialChanges": [],
+      "previouslyPublished2494TrimChange": []
+    },
+    {
+      "file": "l1007.glb",
+      "beforeSHA256": "9b08d5770fdc54efcb6392be62711a8d3db56c9cf5f5ddc83c6db588251b6899",
+      "afterSHA256": "719915bee1ee944706a12daafac62af7eddaa3a77672a5fedebc1d9f2dd2a7c1",
+      "binaryChunkExact": true,
+      "geometryAccessorMetadataAndBytesExact": true,
+      "allNodeTransformsAndMeshBindingsExactExceptDocumentedTrimKeyRename": true,
+      "allExistingImageBytesAndSamplingExact": true,
+      "basicMaterialChanges": [
+        {
+          "key": "bas_ffffff_r100_m0",
+          "changes": [
+            {
+              "path": "/extensions",
+              "before": null,
+              "after": {
+                "KHR_materials_unlit": {}
+              }
+            },
+            {
+              "path": "/pbrMetallicRoughness/roughnessFactor",
+              "before": 1,
+              "after": 0.9
+            }
+          ]
+        },
+        {
+          "key": "bas_3a0c0c_r100_m0",
+          "changes": [
+            {
+              "path": "/extensions",
+              "before": null,
+              "after": {
+                "KHR_materials_unlit": {}
+              }
+            },
+            {
+              "path": "/pbrMetallicRoughness/roughnessFactor",
+              "before": 1,
+              "after": 0.9
+            }
+          ]
+        },
+        {
+          "key": "bas_dcecff_r100_m0",
+          "changes": [
+            {
+              "path": "/extensions",
+              "before": null,
+              "after": {
+                "KHR_materials_unlit": {}
+              }
+            },
+            {
+              "path": "/pbrMetallicRoughness/roughnessFactor",
+              "before": 1,
+              "after": 0.9
+            }
+          ]
+        },
+        {
+          "key": "bas_1a2a1a_r100_m0",
+          "changes": [
+            {
+              "path": "/extensions",
+              "before": null,
+              "after": {
+                "KHR_materials_unlit": {}
+              }
+            },
+            {
+              "path": "/pbrMetallicRoughness/roughnessFactor",
+              "before": 1,
+              "after": 0.9
+            }
+          ]
+        },
+        {
+          "key": "bas_ff2a2a_r100_m0",
+          "changes": [
+            {
+              "path": "/extensions",
+              "before": null,
+              "after": {
+                "KHR_materials_unlit": {}
+              }
+            },
+            {
+              "path": "/pbrMetallicRoughness/roughnessFactor",
+              "before": 1,
+              "after": 0.9
+            }
+          ]
+        },
+        {
+          "key": "bas_4a4a4a_r100_m0",
+          "changes": [
+            {
+              "path": "/extensions",
+              "before": null,
+              "after": {
+                "KHR_materials_unlit": {}
+              }
+            },
+            {
+              "path": "/pbrMetallicRoughness/roughnessFactor",
+              "before": 1,
+              "after": 0.9
+            }
+          ]
+        },
+        {
+          "key": "bas_103018_r100_m0",
+          "changes": [
+            {
+              "path": "/extensions",
+              "before": null,
+              "after": {
+                "KHR_materials_unlit": {}
+              }
+            },
+            {
+              "path": "/pbrMetallicRoughness/roughnessFactor",
+              "before": 1,
+              "after": 0.9
+            }
+          ]
+        },
+        {
+          "key": "bas_111111_r100_m0",
+          "changes": [
+            {
+              "path": "/extensions",
+              "before": null,
+              "after": {
+                "KHR_materials_unlit": {}
+              }
+            },
+            {
+              "path": "/pbrMetallicRoughness/roughnessFactor",
+              "before": 1,
+              "after": 0.9
+            }
+          ]
+        },
+        {
+          "key": "bas_401010_r100_m0",
+          "changes": [
+            {
+              "path": "/extensions",
+              "before": null,
+              "after": {
+                "KHR_materials_unlit": {}
+              }
+            },
+            {
+              "path": "/pbrMetallicRoughness/roughnessFactor",
+              "before": 1,
+              "after": 0.9
+            }
+          ]
+        }
+      ],
+      "previouslyPublished2494TrimChange": []
+    },
+    {
+      "file": "omgivning.glb",
+      "beforeSHA256": "92e00d3d4948282a469f186937e7bb6032969518bec387286b72fd954e7c615c",
+      "afterSHA256": "7c5274687f38e277a2a34a67e429551c1a8dc4c787c2bc039034088f73c04d67",
+      "binaryChunkExact": false,
+      "geometryAccessorMetadataAndBytesExact": true,
+      "allNodeTransformsAndMeshBindingsExactExceptDocumentedTrimKeyRename": true,
+      "allExistingImageBytesAndSamplingExact": true,
+      "basicMaterialChanges": [],
+      "previouslyPublished2494TrimChange": [
+        {
+          "key": "std_ffffff_r100_m100_vc_tex_car_trim_surface",
+          "changes": [
+            {
+              "path": "/pbrMetallicRoughness/metallicRoughnessTexture",
+              "before": null,
+              "after": {
+                "texCoord": 0,
+                "image": {
+                  "metadata": {
+                    "mimeType": "image/png"
+                  },
+                  "SHA256": "ff3e23032723bd58393310d3748e330ff55be510809a3d4599506706ce96c8d5"
+                },
+                "sampler": {
+                  "magFilter": 9728,
+                  "minFilter": 9728,
+                  "wrapS": 33071,
+                  "wrapT": 33071
+                }
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "file": "vegetation.glb",
+      "beforeSHA256": "e01b8c3c721b54531468165e986a0223b5cb875080fb16e6003579c8a2c48433",
+      "afterSHA256": "e01b8c3c721b54531468165e986a0223b5cb875080fb16e6003579c8a2c48433",
+      "binaryChunkExact": true,
+      "geometryAccessorMetadataAndBytesExact": true,
+      "allNodeTransformsAndMeshBindingsExactExceptDocumentedTrimKeyRename": true,
+      "allExistingImageBytesAndSamplingExact": true,
+      "basicMaterialChanges": [],
+      "previouslyPublished2494TrimChange": []
+    }
+  ],
+  "filesSHA256": {
+    "export-manifest.json": "983024c510e4e3aac2ec6114126934b3c15d822f4456e673f73807978d73f4ca",
+    "fixture.glb": "4636b1948a94ae9ead1697597026fb784135703be441a97ddd400a0c1446e649",
+    "fond.glb": "89000e6a61e35444704d52b8c855222c0a31880639f3e8ff93b2cd6706903574",
+    "gard.glb": "e9b926184c5114e52665df8bd592123226c77015405f56d5b80f95616c0b641c",
+    "hus-l.glb": "2c64c850897e96f5ee9f88c88bd8ee3b30918bc6c147342582ba223f8d467d96",
+    "kvarteret.glb": "230776dcc452253270915392640afb85d38d0d09542141b8b0c78879a548d0c6",
+    "l1007-entre.glb": "4738e1b53b2c981cdb5e68f27da6eec734c5db294de770929e3dc15cc4b320c3",
+    "l1007-uteplats.glb": "163ce0bc28191a075ec67161e77f2ccac3699d5f01666e7624899762d0fc3941",
+    "l1007.glb": "719915bee1ee944706a12daafac62af7eddaa3a77672a5fedebc1d9f2dd2a7c1",
+    "measurements.json": "2c8366f6a983fefe8cbd4dcfdd51cbc0f58a686dc1cd3defde8fdfbfe9d7a2fa",
+    "omgivning.glb": "7c5274687f38e277a2a34a67e429551c1a8dc4c787c2bc039034088f73c04d67",
+    "vegetation.glb": "e01b8c3c721b54531468165e986a0223b5cb875080fb16e6003579c8a2c48433"
+  }
+}

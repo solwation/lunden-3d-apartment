@@ -459,9 +459,9 @@ def check_vertex_color(zone, table, checked_garage=None):
 
 
 def unlit_labels(measurements):
-    """#2435: {material key: power-cut share} of every web unlit label the export keeps with its image."""
-    return {k: float(v.get("powerCut", 1)) for k, v in measurements.get("materials", {}).items()
-            if v.get("unlit") and not v.get("garageBake")}
+    """#2424/#2435: source descriptors for every exported Basic, including plain/vertex-coloured surfaces."""
+    return {k: v for k, v in measurements.get("materials", {}).items()
+            if v.get("unlit") and not v.get("garageBake") and not k.endswith("_patio_string_bulb")}
 
 
 def label_master(table):
@@ -478,63 +478,90 @@ def instance_scalar(mi, name):
     return None
 
 
+def baked_unlit(mi, table):
+    """Existing source stairwell rules own their power/display graph; never replace it with the generic Basic copy."""
+    base = mi.get_base_material()
+    spec = table["materials"].get(base.get_path_name().split(".")[0], {})
+    return (spec.get("graph") == "baked-light"
+            and base.get_editor_property("shading_model") == unreal.MaterialShadingModel.MSM_UNLIT)
+
+
+def unlit_target(mi, info, table):
+    """Same unlit/display/power graph for plain Basic and labels; only plain VC needs the VC copy."""
+    expected_texture = bool(info.get("texture") or info.get("map"))
+    if textured(mi) != expected_texture:
+        raise RuntimeError("Unlit source base-colour texture mismatch: " + mi.get_path_name())
+    return garage_materials.target_for(mi, info, table)
+
+
+def prepare_unlit_vertex_material(table, labels, check_only):
+    # The garage VC graph already has precisely the generic Basic inputs: COLOR_0, display gain and PowerCut.
+    if not any(v.get("vertexColors") and not (v.get("texture") or v.get("map")) for v in labels.values()):
+        return
+    from build_materials import build_entries, check
+    spec = {garage_materials.VC_PATH: garage_materials.vc_spec(table)}
+    if check_only:
+        check({"materials": spec})
+    else:
+        build_entries(spec)
+
+
 def apply_unlit_labels(zone, table, labels):
-    """#2435: the web draws its signs, number plates, floor numbers, pictograms and screens unlit (MeshBasicMaterial with
-    a map): the plate shows whiter than the wall beside it and reads as well in the dark. The export writes them with
+    """#2424/#2435: retain plain Basic colours, vertex colours and mapped labels as unlit. The export writes them with
     KHR_materials_unlit, so Interchange gives each an instance of its unlit master (M_Unlit, the base colour texture as
     EmissiveColor). Each is re-parented onto the project's copy that multiplies the display gain and the power supply in
     (material-map.json `unlitLabel`), and gets the export's power-cut share as its PowerCut parameter. Like the
     vertex-colour step the instance keeps its parameters, texture switch and the parent chain's overrides."""
     if not labels:
         return 0
-    source, target_path = label_master(table)
-    target, done = None, set()
+    source, _ = label_master(table)
+    targets, done = {}, set()
     for _, mesh in zone_meshes(zone):
         for slot in mesh.static_materials:
             mi = slot.material_interface
             if not isinstance(mi, unreal.MaterialInstanceConstant) or mi.get_name() not in labels or mi.get_path_name() in done:
                 continue
             if not mi.get_path_name().startswith(f"{GENERATED_ROOT}/{zone}/"):
+                if baked_unlit(mi, table):
+                    continue
                 raise RuntimeError(f"{mi.get_name()}: a material-map.json rule replaces an unlit label (its image would be lost)")
             done.add(mi.get_path_name())
+            target_path = unlit_target(mi, labels[mi.get_name()], table)
             base = mi.get_base_material().get_path_name()
             if base != target_path:
-                if base.split(".")[0] != source:
+                original_vc = table["vertexColor"]["masters"][source + "." + source.rsplit("/", 1)[-1]]
+                if base.split(".")[0] != source and base != original_vc:
                     raise RuntimeError(f"{mi.get_path_name()} (an unlit web label) has master {base}, not {source}: "
                                        "the export lost KHR_materials_unlit")
-                if not textured(mi):
-                    raise RuntimeError(f"{mi.get_path_name()} (an unlit web label) has no base colour texture")
-                if target is None:
-                    target = eal.load_asset(target_path)
-                    if target is None:
+                if target_path not in targets:
+                    targets[target_path] = eal.load_asset(target_path)
+                    if targets[target_path] is None:
                         raise RuntimeError(f"material-map.json names {target_path}, which does not exist (prepare_generated_materials)")
                 blend, overrides = mi.get_blend_mode(), effective_overrides(mi)
-                unreal.MaterialEditingLibrary.set_material_instance_parent(mi, target)
+                unreal.MaterialEditingLibrary.set_material_instance_parent(mi, targets[target_path])
                 mi.set_editor_property("base_property_overrides", overrides)
-                if mi.get_blend_mode() != blend or not textured(mi):
+                if mi.get_blend_mode() != blend or unlit_target(mi, labels[mi.get_name()], table) != target_path:
                     raise RuntimeError(f"{mi.get_path_name()}: blend mode or base colour texture changed on the unlit label master")
             # written as a struct: a master built in this commandlet does not yet expose its names to the setters
             info = unreal.MaterialParameterInfo()
             info.set_editor_property("name", "PowerCut")
             value = unreal.ScalarParameterValue()
             value.set_editor_property("parameter_info", info)
-            value.set_editor_property("parameter_value", labels[mi.get_name()])
+            value.set_editor_property("parameter_value", float(labels[mi.get_name()].get("powerCut", 1)))
             scalars = [v for v in mi.get_editor_property("scalar_parameter_values")
                        if str(v.get_editor_property("parameter_info").get_editor_property("name")) != "PowerCut"]
             mi.set_editor_property("scalar_parameter_values", scalars + [value])
             unreal.MaterialEditingLibrary.update_material_instance(mi)
-    dimmed = sum(1 for p in done if labels[p.rsplit(".", 1)[-1]] < 1)
-    unreal.log(f"LUNDEN_IMPORT_UNLIT_LABELS zone {zone}: {len(done)} unlit label instances on {target_path.rsplit('.', 1)[-1]}, "
+    dimmed = sum(1 for p in done if labels[p.rsplit(".", 1)[-1]].get("powerCut", 1) < 1)
+    unreal.log(f"LUNDEN_IMPORT_UNLIT_LABELS zone {zone}: {len(done)} unlit source instances, "
                f"{dimmed} dimmed by a power cut")
     return len(done)
 
 
 def check_unlit_labels(zone, table, labels):
-    """--check (#2435): every instance of a web unlit label in the zone is unlit on the label master, keeps its texture and
-    carries the export's power-cut share."""
+    """--check: every generic Basic keeps its unlit model, optional texture/vertex colour and power share."""
     if not labels:
         return
-    _, target_path = label_master(table)
     bad, seen = [], set()
     for _, mesh in zone_meshes(zone):
         for slot in mesh.static_materials:
@@ -542,14 +569,18 @@ def check_unlit_labels(zone, table, labels):
             if mi is None or mi.get_name() not in labels or mi.get_path_name() in seen:
                 continue
             seen.add(mi.get_path_name())
+            if baked_unlit(mi, table):
+                continue
+            target_path = unlit_target(mi, labels[mi.get_name()], table)
             base = mi.get_base_material()
             cut = instance_scalar(mi, "PowerCut") if isinstance(mi, unreal.MaterialInstanceConstant) else None
             if (base.get_path_name() != target_path or base.get_editor_property("shading_model") != unreal.MaterialShadingModel.MSM_UNLIT
-                    or not textured(mi) or cut is None or abs(cut - labels[mi.get_name()]) > 1e-4):
-                bad.append(f"{mi.get_name()} ({base.get_path_name()}, PowerCut {cut}, want {labels[mi.get_name()]})")
+                    or cut is None or abs(cut - labels[mi.get_name()].get("powerCut", 1)) > 1e-4):
+                bad.append(f"{mi.get_name()} ({base.get_path_name()}, PowerCut {cut}, want {labels[mi.get_name()].get('powerCut', 1)})")
     if bad:
         raise RuntimeError(f"{zone}: {len(bad)} web unlit labels are lit or lost their image or power share, e.g. {bad[:3]}: run import_world.py")
-    unreal.log(f"LUNDEN_IMPORT_UNLIT_LABELS zone {zone}: {len(seen)} unlit label keys, each unlit with its image and power share")
+    unreal.log(f"LUNDEN_IMPORT_UNLIT_LABELS zone {zone}: {len(seen)} unlit label keys, each unlit with its source map/vertex colour and power share")
+    return seen
 
 
 def instance_overrides(table, zone):
@@ -669,7 +700,7 @@ def import_zone(zone, glb_path, glb_entry, manifest, table, map_sha, labels, gar
     collisions = apply_collision(by_id, extras)
     materials = apply_materials(zone, table)
     apply_vertex_color(zone, table)  # after the rules: a key a rule maps keeps its hand-made material
-    apply_unlit_labels(zone, table, labels)  # #2435 (textured, so the vertex-colour step left them on Interchange's master)
+    apply_unlit_labels(zone, table, labels)  # #2424/#2435: plain, vertex-coloured and textured Basic
     garage_materials.apply(zone, table, garage_data or {})  # #2404: actual Basic bake, maps and cut-outs remain unlit
     apply_instance_overrides(zone, table)  # #2440: before prepare_zone, which reads the blend mode for Nanite
     double = apply_double_sided(zone)
@@ -850,6 +881,7 @@ def main(argv):
     garage_data = garage_materials.entries(measurements)
     if entries:  # #2431: the stairwells' baked-light masters and #2435's unlit label master, before the rules run
         prepare_generated_materials(table, check_only)
+        prepare_unlit_vertex_material(table, labels, check_only)
     if not check_only and any(e["zone"] == "kvarteret" for e in entries):
         garage_materials.prepare(table, garage_data)
     for entry in entries:
@@ -869,8 +901,8 @@ def main(argv):
         check_double_sided(zone)
         check_shadows(zone, glb_path)
         checked_garage = garage_materials.check(zone, table, garage_data)
-        check_vertex_color(zone, table, checked_garage)
-        check_unlit_labels(zone, table, labels)
+        checked_unlit = check_unlit_labels(zone, table, labels) or set()
+        check_vertex_color(zone, table, checked_garage | checked_unlit)
         check_instance_overrides(zone, table)
         if zone == "fixture":
             check_fixture(measurements)

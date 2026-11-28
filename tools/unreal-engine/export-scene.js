@@ -861,9 +861,9 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     // house paints its own atlas under the same plain key
     const label = !!(m.isMeshBasicMaterial && m.map);
     const tex = (furnish || label) && !hedge && !siteMap ? furnishingTexture(m.map, textures, textureOfMap) : null;
-    // #2435: ... and stays unlit (KHR_materials_unlit; import_world.py puts it on the display-gain master), with the share
-    // of its colour a power cut leaves (1 unless the web dims it: extra.labelPower)
-    const unlit = !!garageBake || !!(tex && m.isMeshBasicMaterial);
+    // #2424/#2435: every Basic material stays unlit, including plain colours and vertex colours without a map.
+    // Interchange receives KHR_materials_unlit; the importer retains display gain and the source power-cut share.
+    const unlit = !!garageBake || !!m.isMeshBasicMaterial;
     const powerCut = unlit ? r4(garageBake?.powerCut ?? extra.labelPower?.get(m) ?? 1) : null;
     const bulb = m === lightsInfo.patioBulb;
     const siteSuffix = siteMap ? m.map.name.replaceAll('-', '_') : null;
