@@ -1,0 +1,97 @@
+{
+  "source": "Exact5.8.4 SDK ZIP, source only; actual imported vertex buffer not yet read",
+  "sources": {
+    "gltf": {
+      "path": "Engine/Plugins/Interchange/Runtime/Source/Parsers/GLTFCore/Private/GLTFMeshFactory.cpp",
+      "sha256": "feef9044cd44389a399a54a6d3e8827047befcf25228b5d2956c74228db4327e",
+      "lineNumbers": [
+        [
+          718,
+          719,
+          720,
+          721,
+          722,
+          723,
+          724
+        ],
+        [
+          782,
+          783,
+          784,
+          785,
+          786,
+          787,
+          788
+        ]
+      ]
+    },
+    "builder": {
+      "path": "Engine/Source/Developer/MeshBuilder/Private/StaticMeshBuilder.cpp",
+      "sha256": "161a6cf0c98adf39c356e2a9d3ad25a00fd799de22cc279392f2d98b4b33d73f",
+      "lineNumbers": [
+        [
+          1703,
+          1704,
+          1705,
+          1706,
+          1707,
+          1708,
+          1709,
+          1710,
+          1711,
+          1712
+        ]
+      ]
+    },
+    "color": {
+      "path": "Engine/Source/Runtime/Core/Private/Math/Color.cpp",
+      "sha256": "21b9521f5e1d68f5cca5d47165c600fd2033ddacf66abba87e92d74fc9792e3f",
+      "lineNumbers": [
+        [
+          250,
+          251,
+          252,
+          253,
+          254,
+          255,
+          256,
+          257,
+          258,
+          259,
+          260,
+          261,
+          262,
+          263,
+          264
+        ]
+      ]
+    },
+    "staticMesh": {
+      "path": "Engine/Source/Runtime/Engine/Classes/Engine/StaticMesh.h",
+      "sha256": "0023736281ee502842c1e469be527aad13cbf73c9d4fad2623d6031303ba2ea9",
+      "lineNumbers": [
+        [
+          1820,
+          1821,
+          1822
+        ]
+      ]
+    },
+    "description": {
+      "path": "Engine/Source/Runtime/StaticMeshDescription/Public/StaticMeshDescription.h",
+      "sha256": "86ae535a09822a76b7e0edab83c0573ba46e807aef7c97af6e26931036404314",
+      "lineNumbers": [
+        [
+          74,
+          75,
+          76,
+          77,
+          78,
+          79
+        ]
+      ]
+    }
+  },
+  "conclusion": "GLTF float colors undergo deliberate SRGBToLinear compensation before static builder ToFColor(true). In-range source colors therefore retain intended numeric linear attribute up to 8-bit quantization. Above1 values cannot survive FColor normalized 8-bit; ToFColorSRGB documents positive out-of-range ->255. This is a real possible loss, not proof of primary current crop cause.",
+  "api": "StaticMesh.GetStaticMeshDescription(LODIndex) BlueprintCallable is proven. VertexInstanceColors getter on C++ FStaticMeshAttributes is not itself UFUNCTION; no Python direct-color getter proven in this bounded trace. Do not add guessed methods to frozen capture."
+}

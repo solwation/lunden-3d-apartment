@@ -1,0 +1,1454 @@
+{
+  "completed": true,
+  "restored": true,
+  "capturedImages": 2,
+  "sourceHead": "525bb4dc276ac0ab577d1619f4f1d67bbcae657a",
+  "contractSHA256": "fb90761f8e2c27090200ab2dc77622c3770635918439431e0e4eccdf6d775f6b",
+  "classification": "Actual current two-view baseline; no candidate or visual acceptance yet",
+  "patioControls": {
+    "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_ljusslingan_l0_x47_z1522",
+    "functions": [
+      "ApplyPatioBulbs",
+      "UpdatePatioParasol(2.0)"
+    ],
+    "K": 0.0,
+    "Supply": 1.0,
+    "BulbIdle": 0.06,
+    "BulbBoost": 1.4,
+    "BulbColour": [
+      1.0,
+      0.6239603757858276,
+      0.2541520893573761
+    ],
+    "BaseColorFactor": [
+      0.05999999865889549,
+      0.037437621504068375,
+      0.01524912565946579,
+      1.0
+    ],
+    "ParasolOpen": 1.0,
+    "StringMaterial": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+    "StringMaster": "/InterchangeAssets/gltf/M_Unlit.M_Unlit",
+    "StringMasterShadingModel": "<MaterialShadingModel.MSM_UNLIT: 0>",
+    "actualSharedBulbs": 82,
+    "pools": [
+      {
+        "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_ljusslingan_l0_x47_z1522",
+        "tags": [
+          "lamp:lamp_ljusslingan_l0_x47_z1522",
+          "kind:lamp",
+          "level:0",
+          "auto:dusk",
+          "patio:string-driver"
+        ],
+        "K": 0.0,
+        "Supply": 1.0,
+        "Candela": 8.198879897295502,
+        "Auto": true,
+        "PatioDusk": true,
+        "light_color_sRGB_bytes": [
+          255,
+          207,
+          138,
+          255
+        ],
+        "get_light_color_linear": [
+          1.0,
+          0.6239603757858276,
+          0.2541520893573761,
+          1.0
+        ],
+        "intensity": 0.0,
+        "attenuation_radius": 400.0,
+        "visible": false,
+        "positionNative": [
+          46.95,
+          1522.3,
+          158.0
+        ]
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_ljusslingan_l0_x528_z1522",
+        "tags": [
+          "lamp:lamp_ljusslingan_l0_x528_z1522",
+          "kind:lamp",
+          "level:0",
+          "auto:dusk"
+        ],
+        "K": 0.0,
+        "Supply": 1.0,
+        "Candela": 8.198879897295502,
+        "Auto": true,
+        "PatioDusk": true,
+        "light_color_sRGB_bytes": [
+          255,
+          207,
+          138,
+          255
+        ],
+        "get_light_color_linear": [
+          1.0,
+          0.6239603757858276,
+          0.2541520893573761,
+          1.0
+        ],
+        "intensity": 0.0,
+        "attenuation_radius": 400.0,
+        "visible": false,
+        "positionNative": [
+          527.87,
+          1522.3,
+          158.0
+        ]
+      }
+    ],
+    "MPC": {
+      "DuskLight": 1.0,
+      "PowerAvailable": 1.0
+    }
+  },
+  "materialReadback": {
+    "completed": true,
+    "slots": [
+      {
+        "sourceMeshIDs": [
+          "mesh_l0_xm3810_z1720_y57"
+        ],
+        "expectedSourceKeys": [
+          "std_78a64b_r95_m0_vc_tex"
+        ],
+        "actor": "/Game/Lunden/Generated/VegetationWorld/Level_vegetation_foliage.Level_vegetation_foliage:PersistentLevel.StaticMeshActor_0",
+        "component": "/Game/Lunden/Generated/VegetationWorld/Level_vegetation_foliage.Level_vegetation_foliage:PersistentLevel.StaticMeshActor_0.StaticMeshComponent0",
+        "mesh": "/Game/Lunden/Generated/hus-l/StaticMeshes/mesh_l0_xm3810_z1720_y57.mesh_l0_xm3810_z1720_y57",
+        "slot": 0,
+        "material": "/Game/Lunden/Generated/hus-l/Materials/std_78a64b_r95_m0_vc_tex.std_78a64b_r95_m0_vc_tex"
+      },
+      {
+        "sourceMeshIDs": [
+          "mesh_l0_xm3255_z1720_y57"
+        ],
+        "expectedSourceKeys": [
+          "std_78a64b_r95_m0_vc_tex"
+        ],
+        "actor": "/Game/Lunden/Generated/VegetationWorld/Level_vegetation_foliage.Level_vegetation_foliage:PersistentLevel.StaticMeshActor_1",
+        "component": "/Game/Lunden/Generated/VegetationWorld/Level_vegetation_foliage.Level_vegetation_foliage:PersistentLevel.StaticMeshActor_1.StaticMeshComponent0",
+        "mesh": "/Game/Lunden/Generated/hus-l/StaticMeshes/mesh_l0_xm3255_z1720_y57.mesh_l0_xm3255_z1720_y57",
+        "slot": 0,
+        "material": "/Game/Lunden/Generated/hus-l/Materials/std_78a64b_r95_m0_vc_tex.std_78a64b_r95_m0_vc_tex"
+      },
+      {
+        "sourceMeshIDs": [
+          "mesh_l0_xm2700_z1721_y57"
+        ],
+        "expectedSourceKeys": [
+          "std_78a64b_r95_m0_vc_tex"
+        ],
+        "actor": "/Game/Lunden/Generated/VegetationWorld/Level_vegetation_foliage.Level_vegetation_foliage:PersistentLevel.StaticMeshActor_2",
+        "component": "/Game/Lunden/Generated/VegetationWorld/Level_vegetation_foliage.Level_vegetation_foliage:PersistentLevel.StaticMeshActor_2.StaticMeshComponent0",
+        "mesh": "/Game/Lunden/Generated/hus-l/StaticMeshes/mesh_l0_xm2700_z1721_y57.mesh_l0_xm2700_z1721_y57",
+        "slot": 0,
+        "material": "/Game/Lunden/Generated/hus-l/Materials/std_78a64b_r95_m0_vc_tex.std_78a64b_r95_m0_vc_tex"
+      },
+      {
+        "sourceMeshIDs": [
+          "mesh_l0_xm2145_z1720_y57"
+        ],
+        "expectedSourceKeys": [
+          "std_78a64b_r95_m0_vc_tex"
+        ],
+        "actor": "/Game/Lunden/Generated/VegetationWorld/Level_vegetation_foliage.Level_vegetation_foliage:PersistentLevel.StaticMeshActor_3",
+        "component": "/Game/Lunden/Generated/VegetationWorld/Level_vegetation_foliage.Level_vegetation_foliage:PersistentLevel.StaticMeshActor_3.StaticMeshComponent0",
+        "mesh": "/Game/Lunden/Generated/hus-l/StaticMeshes/mesh_l0_xm2145_z1720_y57.mesh_l0_xm2145_z1720_y57",
+        "slot": 0,
+        "material": "/Game/Lunden/Generated/hus-l/Materials/std_78a64b_r95_m0_vc_tex.std_78a64b_r95_m0_vc_tex"
+      },
+      {
+        "sourceMeshIDs": [
+          "mesh_l0_xm772_z1720_y57"
+        ],
+        "expectedSourceKeys": [
+          "std_78a64b_r95_m0_vc_tex"
+        ],
+        "actor": "/Game/Lunden/Generated/VegetationWorld/Level_vegetation_foliage.Level_vegetation_foliage:PersistentLevel.StaticMeshActor_4",
+        "component": "/Game/Lunden/Generated/VegetationWorld/Level_vegetation_foliage.Level_vegetation_foliage:PersistentLevel.StaticMeshActor_4.StaticMeshComponent0",
+        "mesh": "/Game/Lunden/Generated/hus-l/StaticMeshes/mesh_l0_xm772_z1720_y57.mesh_l0_xm772_z1720_y57",
+        "slot": 0,
+        "material": "/Game/Lunden/Generated/hus-l/Materials/std_78a64b_r95_m0_vc_tex.std_78a64b_r95_m0_vc_tex"
+      },
+      {
+        "sourceMeshIDs": [
+          "mesh_l0_xm217_z1720_y57"
+        ],
+        "expectedSourceKeys": [
+          "std_78a64b_r95_m0_vc_tex"
+        ],
+        "actor": "/Game/Lunden/Generated/VegetationWorld/Level_vegetation_foliage.Level_vegetation_foliage:PersistentLevel.StaticMeshActor_5",
+        "component": "/Game/Lunden/Generated/VegetationWorld/Level_vegetation_foliage.Level_vegetation_foliage:PersistentLevel.StaticMeshActor_5.StaticMeshComponent0",
+        "mesh": "/Game/Lunden/Generated/hus-l/StaticMeshes/mesh_l0_xm217_z1720_y57.mesh_l0_xm217_z1720_y57",
+        "slot": 0,
+        "material": "/Game/Lunden/Generated/hus-l/Materials/std_78a64b_r95_m0_vc_tex.std_78a64b_r95_m0_vc_tex"
+      },
+      {
+        "sourceMeshIDs": [
+          "mesh_l0_x893_z1720_y57"
+        ],
+        "expectedSourceKeys": [
+          "std_78a64b_r95_m0_vc_tex"
+        ],
+        "actor": "/Game/Lunden/Generated/VegetationWorld/Level_vegetation_foliage.Level_vegetation_foliage:PersistentLevel.StaticMeshActor_6",
+        "component": "/Game/Lunden/Generated/VegetationWorld/Level_vegetation_foliage.Level_vegetation_foliage:PersistentLevel.StaticMeshActor_6.StaticMeshComponent0",
+        "mesh": "/Game/Lunden/Generated/hus-l/StaticMeshes/mesh_l0_x893_z1720_y57.mesh_l0_x893_z1720_y57",
+        "slot": 0,
+        "material": "/Game/Lunden/Generated/hus-l/Materials/std_78a64b_r95_m0_vc_tex.std_78a64b_r95_m0_vc_tex"
+      },
+      {
+        "sourceMeshIDs": [
+          "mesh_l0_xm2423_z3695_y80"
+        ],
+        "expectedSourceKeys": [
+          "std_ffffff_r60_m0_tex_site_house_letters"
+        ],
+        "actor": "/Game/Lunden/Generated/Interaction/Level_kvarteret_interaction.Level_kvarteret_interaction:PersistentLevel.mesh_l0_xm2423_z3695_y80",
+        "component": "/Game/Lunden/Generated/Interaction/Level_kvarteret_interaction.Level_kvarteret_interaction:PersistentLevel.mesh_l0_xm2423_z3695_y80.StaticMeshComponent0",
+        "mesh": "/Game/Lunden/Generated/kvarteret/StaticMeshes/mesh_l0_xm2423_z3695_y80.mesh_l0_xm2423_z3695_y80",
+        "slot": 0,
+        "material": "/Game/Lunden/Generated/kvarteret/Materials/std_ffffff_r60_m0_tex_site_house_letters.std_ffffff_r60_m0_tex_site_house_letters"
+      },
+      {
+        "sourceMeshIDs": [
+          "mesh_l0_xm3810_z1720_y57"
+        ],
+        "expectedSourceKeys": [
+          "std_78a64b_r95_m0_vc_tex"
+        ],
+        "actor": "/Game/Lunden/Generated/Interaction/Level_hus-l_interaction.Level_hus-l_interaction:PersistentLevel.mesh_l0_xm3810_z1720_y57",
+        "component": "/Game/Lunden/Generated/Interaction/Level_hus-l_interaction.Level_hus-l_interaction:PersistentLevel.mesh_l0_xm3810_z1720_y57.StaticMeshComponent0",
+        "mesh": "/Game/Lunden/Generated/hus-l/StaticMeshes/mesh_l0_xm3810_z1720_y57.mesh_l0_xm3810_z1720_y57",
+        "slot": 0,
+        "material": "/Game/Lunden/Generated/hus-l/Materials/std_78a64b_r95_m0_vc_tex.std_78a64b_r95_m0_vc_tex"
+      },
+      {
+        "sourceMeshIDs": [
+          "mesh_l0_xm3255_z1720_y57"
+        ],
+        "expectedSourceKeys": [
+          "std_78a64b_r95_m0_vc_tex"
+        ],
+        "actor": "/Game/Lunden/Generated/Interaction/Level_hus-l_interaction.Level_hus-l_interaction:PersistentLevel.mesh_l0_xm3255_z1720_y57",
+        "component": "/Game/Lunden/Generated/Interaction/Level_hus-l_interaction.Level_hus-l_interaction:PersistentLevel.mesh_l0_xm3255_z1720_y57.StaticMeshComponent0",
+        "mesh": "/Game/Lunden/Generated/hus-l/StaticMeshes/mesh_l0_xm3255_z1720_y57.mesh_l0_xm3255_z1720_y57",
+        "slot": 0,
+        "material": "/Game/Lunden/Generated/hus-l/Materials/std_78a64b_r95_m0_vc_tex.std_78a64b_r95_m0_vc_tex"
+      },
+      {
+        "sourceMeshIDs": [
+          "mesh_l0_xm2700_z1721_y57"
+        ],
+        "expectedSourceKeys": [
+          "std_78a64b_r95_m0_vc_tex"
+        ],
+        "actor": "/Game/Lunden/Generated/Interaction/Level_hus-l_interaction.Level_hus-l_interaction:PersistentLevel.mesh_l0_xm2700_z1721_y57",
+        "component": "/Game/Lunden/Generated/Interaction/Level_hus-l_interaction.Level_hus-l_interaction:PersistentLevel.mesh_l0_xm2700_z1721_y57.StaticMeshComponent0",
+        "mesh": "/Game/Lunden/Generated/hus-l/StaticMeshes/mesh_l0_xm2700_z1721_y57.mesh_l0_xm2700_z1721_y57",
+        "slot": 0,
+        "material": "/Game/Lunden/Generated/hus-l/Materials/std_78a64b_r95_m0_vc_tex.std_78a64b_r95_m0_vc_tex"
+      },
+      {
+        "sourceMeshIDs": [
+          "mesh_l0_xm2145_z1720_y57"
+        ],
+        "expectedSourceKeys": [
+          "std_78a64b_r95_m0_vc_tex"
+        ],
+        "actor": "/Game/Lunden/Generated/Interaction/Level_hus-l_interaction.Level_hus-l_interaction:PersistentLevel.mesh_l0_xm2145_z1720_y57",
+        "component": "/Game/Lunden/Generated/Interaction/Level_hus-l_interaction.Level_hus-l_interaction:PersistentLevel.mesh_l0_xm2145_z1720_y57.StaticMeshComponent0",
+        "mesh": "/Game/Lunden/Generated/hus-l/StaticMeshes/mesh_l0_xm2145_z1720_y57.mesh_l0_xm2145_z1720_y57",
+        "slot": 0,
+        "material": "/Game/Lunden/Generated/hus-l/Materials/std_78a64b_r95_m0_vc_tex.std_78a64b_r95_m0_vc_tex"
+      },
+      {
+        "sourceMeshIDs": [
+          "mesh_l0_xm772_z1720_y57"
+        ],
+        "expectedSourceKeys": [
+          "std_78a64b_r95_m0_vc_tex"
+        ],
+        "actor": "/Game/Lunden/Generated/Interaction/Level_hus-l_interaction.Level_hus-l_interaction:PersistentLevel.mesh_l0_xm772_z1720_y57",
+        "component": "/Game/Lunden/Generated/Interaction/Level_hus-l_interaction.Level_hus-l_interaction:PersistentLevel.mesh_l0_xm772_z1720_y57.StaticMeshComponent0",
+        "mesh": "/Game/Lunden/Generated/hus-l/StaticMeshes/mesh_l0_xm772_z1720_y57.mesh_l0_xm772_z1720_y57",
+        "slot": 0,
+        "material": "/Game/Lunden/Generated/hus-l/Materials/std_78a64b_r95_m0_vc_tex.std_78a64b_r95_m0_vc_tex"
+      },
+      {
+        "sourceMeshIDs": [
+          "mesh_l0_xm217_z1720_y57"
+        ],
+        "expectedSourceKeys": [
+          "std_78a64b_r95_m0_vc_tex"
+        ],
+        "actor": "/Game/Lunden/Generated/Interaction/Level_hus-l_interaction.Level_hus-l_interaction:PersistentLevel.mesh_l0_xm217_z1720_y57",
+        "component": "/Game/Lunden/Generated/Interaction/Level_hus-l_interaction.Level_hus-l_interaction:PersistentLevel.mesh_l0_xm217_z1720_y57.StaticMeshComponent0",
+        "mesh": "/Game/Lunden/Generated/hus-l/StaticMeshes/mesh_l0_xm217_z1720_y57.mesh_l0_xm217_z1720_y57",
+        "slot": 0,
+        "material": "/Game/Lunden/Generated/hus-l/Materials/std_78a64b_r95_m0_vc_tex.std_78a64b_r95_m0_vc_tex"
+      },
+      {
+        "sourceMeshIDs": [
+          "mesh_l0_x893_z1720_y57"
+        ],
+        "expectedSourceKeys": [
+          "std_78a64b_r95_m0_vc_tex"
+        ],
+        "actor": "/Game/Lunden/Generated/Interaction/Level_hus-l_interaction.Level_hus-l_interaction:PersistentLevel.mesh_l0_x893_z1720_y57",
+        "component": "/Game/Lunden/Generated/Interaction/Level_hus-l_interaction.Level_hus-l_interaction:PersistentLevel.mesh_l0_x893_z1720_y57.StaticMeshComponent0",
+        "mesh": "/Game/Lunden/Generated/hus-l/StaticMeshes/mesh_l0_x893_z1720_y57.mesh_l0_x893_z1720_y57",
+        "slot": 0,
+        "material": "/Game/Lunden/Generated/hus-l/Materials/std_78a64b_r95_m0_vc_tex.std_78a64b_r95_m0_vc_tex"
+      },
+      {
+        "sourceMeshIDs": [
+          "mesh_l0_x338_z1720_y57"
+        ],
+        "expectedSourceKeys": [
+          "std_78a64b_r95_m0_vc_tex"
+        ],
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.mesh_l0_x338_z1720_y57",
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.mesh_l0_x338_z1720_y57.StaticMeshComponent0",
+        "mesh": "/Game/Lunden/Generated/l1007-uteplats/StaticMeshes/mesh_l0_x338_z1720_y57.mesh_l0_x338_z1720_y57",
+        "slot": 0,
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Materials/std_78a64b_r95_m0_vc_tex.std_78a64b_r95_m0_vc_tex"
+      }
+    ],
+    "materials": {
+      "/Game/Lunden/Generated/hus-l/Materials/std_78a64b_r95_m0_vc_tex.std_78a64b_r95_m0_vc_tex": {
+        "leaf": "/Game/Lunden/Generated/hus-l/Materials/std_78a64b_r95_m0_vc_tex.std_78a64b_r95_m0_vc_tex",
+        "chain": [
+          {
+            "path": "/Game/Lunden/Generated/hus-l/Materials/std_78a64b_r95_m0_vc_tex.std_78a64b_r95_m0_vc_tex",
+            "class": "MaterialInstanceConstant"
+          },
+          {
+            "path": "/InterchangeAssets/gltf/MaterialInstances/MI_Default_Opaque.MI_Default_Opaque",
+            "class": "MaterialInstanceConstant"
+          },
+          {
+            "path": "/InterchangeAssets/gltf/M_Default.M_Default",
+            "class": "Material"
+          }
+        ],
+        "effective": {
+          "scalar": {
+            "BaseColorTexture_Rotation": 0.0,
+            "BaseColorTexture_TexCoord": 0.0,
+            "MetallicRoughnessTexture_Rotation": 0.0,
+            "MetallicRoughnessTexture_TexCoord": 0.0,
+            "MetallicFactor": 0.0,
+            "RoughnessFactor": 0.949999988079071,
+            "NormalTexture_Rotation": 0.0,
+            "NormalTexture_TexCoord": 0.0,
+            "NormalScale": 1.0,
+            "OcclusionTexture_Rotation": 0.0,
+            "OcclusionTexture_TexCoord": 0.0,
+            "OcclusionStrength": 1.0,
+            "IOR": 1.5,
+            "SpecularTexture_Rotation": 0.0,
+            "SpecularTexture_TexCoord": 0.0,
+            "SpecularFactor": 1.0,
+            "EmissiveTexture_Rotation": 0.0,
+            "EmissiveTexture_TexCoord": 0.0,
+            "EmissiveStrength": 1.0,
+            "AlphaCutoff": 0.0,
+            "IridescenceIOR": 1.2999999523162842,
+            "IridescenceFactor": 0.0,
+            "IridescenceThicknessMinimum": 100.0,
+            "IridescenceThicknessMaximum": 400.0,
+            "IridescenceTexture_Rotation": 0.0,
+            "IridescenceTexture_TexCoord": 0.0,
+            "IridescenceThicknessTexture_Rotation": 0.0,
+            "IridescenceThicknessTexture_TexCoord": 0.0,
+            "AnisotropyStrength": 0.0,
+            "AnisotropyRotation": 0.0,
+            "AnisotropyTexture_Rotation": 0.0,
+            "AnisotropyTexture_TexCoord": 0.0
+          },
+          "vector": {
+            "BaseColorFactor": [
+              0.18782077729701996,
+              0.38132601976394653,
+              0.07036009430885315,
+              1.0
+            ],
+            "MetallicRoughnessTexture_OffsetScale": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "BaseColorTexture_OffsetScale": [
+              0.0,
+              0.0,
+              0.5,
+              0.5
+            ],
+            "NormalTexture_OffsetScale": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "OcclusionTexture_OffsetScale": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "SpecularTexture_OffsetScale": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "EmissiveTexture_OffsetScale": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "EmissiveFactor": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "SpecularTexture_TilingMethod": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "OcclusionTexture_TilingMethod": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "NormalTexture_TilingMethod": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "EmissiveTexture_TilingMethod": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "MetallicRoughnessTexture_TilingMethod": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "BaseColorTexture_TilingMethod": [
+              2.0,
+              2.0,
+              0.0,
+              0.0
+            ],
+            "IridescenceTexture_TilingMethod": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "IridescenceThicknessTexture_TilingMethod": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "IridescenceTexture_OffsetScale": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "IridescenceThicknessTexture_OffsetScale": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "AnisotropyTexture_OffsetScale": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "AnisotropyTexture_TilingMethod": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "texture": {
+            "BaseColorTexture": "/Game/Lunden/Generated/hus-l/Textures/patio-hedge.patio-hedge",
+            "MetallicRoughnessTexture": "/InterchangeAssets/gltf/Textures/T_White_Linear.T_White_Linear",
+            "NormalTexture": "/InterchangeAssets/gltf/Textures/T_Generic_N.T_Generic_N",
+            "OcclusionTexture": "/InterchangeAssets/gltf/Textures/T_White_Linear.T_White_Linear",
+            "SpecularTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb",
+            "EmissiveTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb",
+            "IridescenceTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb",
+            "IridescenceThicknessTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb",
+            "AnisotropyTexture": "/InterchangeAssets/gltf/Textures/T_Anisotropy_Direction_Linear.T_Anisotropy_Direction_Linear"
+          },
+          "staticSwitch": {
+            "DisableSwitchNaniteTransformUV": true,
+            "bHasIridescence": false,
+            "bHasBaseColorTexture": true,
+            "bHasMetallicRoughnessTexture": false,
+            "bHasEmissiveTexture": false,
+            "bHasNormalTexture": false,
+            "bHasOcclusionTexture": false,
+            "bHasSpecularTexture": false,
+            "bHasAnisotropyTextureAndOrRotation": false
+          }
+        },
+        "graph": [
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_BaseColor.MF_BaseColor",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_BaseColor.MF_BaseColor:MaterialExpressionTextureSample_0",
+            "class": "MaterialExpressionTextureSample"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_BaseColor.MF_BaseColor",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_BaseColor.MF_BaseColor:MaterialExpressionVertexColor_1",
+            "class": "MaterialExpressionVertexColor"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_MetallicRoughness.MF_MetallicRoughness",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_MetallicRoughness.MF_MetallicRoughness:MaterialExpressionTextureSample_1",
+            "class": "MaterialExpressionTextureSample"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_Specular.MF_Specular",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_Specular.MF_Specular:MaterialExpressionTextureSample_5",
+            "class": "MaterialExpressionTextureSample"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_Occlusion.MF_Occlusion",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_Occlusion.MF_Occlusion:MaterialExpressionTextureSample_4",
+            "class": "MaterialExpressionTextureSample"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_Emissive.MF_Emissive",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_Emissive.MF_Emissive:MaterialExpressionTextureSample_0",
+            "class": "MaterialExpressionTextureSample"
+          },
+          {
+            "graph": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat3Components.BreakOutFloat3Components",
+            "node": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat3Components.BreakOutFloat3Components:MaterialExpressionComponentMask_42",
+            "class": "MaterialExpressionComponentMask"
+          },
+          {
+            "graph": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat3Components.BreakOutFloat3Components",
+            "node": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat3Components.BreakOutFloat3Components:MaterialExpressionComponentMask_43",
+            "class": "MaterialExpressionComponentMask"
+          },
+          {
+            "graph": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat3Components.BreakOutFloat3Components",
+            "node": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat3Components.BreakOutFloat3Components:MaterialExpressionComponentMask_44",
+            "class": "MaterialExpressionComponentMask"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_RotateNormals_TS.MF_RotateNormals_TS",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_RotateNormals_TS.MF_RotateNormals_TS:MaterialExpressionComponentMask_0",
+            "class": "MaterialExpressionComponentMask"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_RotateNormals_TS.MF_RotateNormals_TS",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_RotateNormals_TS.MF_RotateNormals_TS:MaterialExpressionComponentMask_1",
+            "class": "MaterialExpressionComponentMask"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_Normals.MF_Normals",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_Normals.MF_Normals:MaterialExpressionTextureSample_2",
+            "class": "MaterialExpressionTextureSample"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_RotateV2.MF_RotateV2",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_RotateV2.MF_RotateV2:MaterialExpressionComponentMask_0",
+            "class": "MaterialExpressionComponentMask"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_RotateV2.MF_RotateV2",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_RotateV2.MF_RotateV2:MaterialExpressionComponentMask_1",
+            "class": "MaterialExpressionComponentMask"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_TransformUVs.MF_TransformUVs",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_TransformUVs.MF_TransformUVs:MaterialExpressionTextureCoordinate_1",
+            "class": "MaterialExpressionTextureCoordinate"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_TransformUVs.MF_TransformUVs",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_TransformUVs.MF_TransformUVs:MaterialExpressionTextureCoordinate_0",
+            "class": "MaterialExpressionTextureCoordinate"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_TransformUVs.MF_TransformUVs",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_TransformUVs.MF_TransformUVs:MaterialExpressionTextureCoordinate_2",
+            "class": "MaterialExpressionTextureCoordinate"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_TransformUVs.MF_TransformUVs",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_TransformUVs.MF_TransformUVs:MaterialExpressionTextureCoordinate_3",
+            "class": "MaterialExpressionTextureCoordinate"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_TransformUVs.MF_TransformUVs",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_TransformUVs.MF_TransformUVs:MaterialExpressionStaticSwitchParameter_0",
+            "class": "MaterialExpressionStaticSwitchParameter",
+            "parameter": "DisableSwitchNaniteTransformUV"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_Iridescence.MF_Iridescence",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_Iridescence.MF_Iridescence:MaterialExpressionTextureSample_0",
+            "class": "MaterialExpressionTextureSample"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_Iridescence.MF_Iridescence",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_Iridescence.MF_Iridescence:MaterialExpressionTextureSample_1",
+            "class": "MaterialExpressionTextureSample"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialBodies/MF_Default_Body.MF_Default_Body",
+            "node": "/InterchangeAssets/gltf/MaterialBodies/MF_Default_Body.MF_Default_Body:MaterialExpressionStaticSwitchParameter_0",
+            "class": "MaterialExpressionStaticSwitchParameter",
+            "parameter": "bHasIridescence"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialBodies/MF_Default_Body.MF_Default_Body",
+            "node": "/InterchangeAssets/gltf/MaterialBodies/MF_Default_Body.MF_Default_Body:MaterialExpressionStaticSwitchParameter_1",
+            "class": "MaterialExpressionStaticSwitchParameter",
+            "parameter": "bHasEmissiveTexture"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialBodies/MF_Default_Body.MF_Default_Body",
+            "node": "/InterchangeAssets/gltf/MaterialBodies/MF_Default_Body.MF_Default_Body:MaterialExpressionStaticSwitchParameter_2",
+            "class": "MaterialExpressionStaticSwitchParameter",
+            "parameter": "bHasNormalTexture"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialBodies/MF_Default_Body.MF_Default_Body",
+            "node": "/InterchangeAssets/gltf/MaterialBodies/MF_Default_Body.MF_Default_Body:MaterialExpressionStaticSwitchParameter_3",
+            "class": "MaterialExpressionStaticSwitchParameter",
+            "parameter": "bHasOcclusionTexture"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialBodies/MF_Default_Body.MF_Default_Body",
+            "node": "/InterchangeAssets/gltf/MaterialBodies/MF_Default_Body.MF_Default_Body:MaterialExpressionStaticSwitchParameter_4",
+            "class": "MaterialExpressionStaticSwitchParameter",
+            "parameter": "bHasSpecularTexture"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_SpecularAnisotropy.MF_SpecularAnisotropy",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_SpecularAnisotropy.MF_SpecularAnisotropy:MaterialExpressionTextureSample_0",
+            "class": "MaterialExpressionTextureSample"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_SpecularAnisotropy.MF_SpecularAnisotropy",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_SpecularAnisotropy.MF_SpecularAnisotropy:MaterialExpressionComponentMask_0",
+            "class": "MaterialExpressionComponentMask"
+          }
+        ],
+        "masterShadingModel": "<MaterialShadingModel.MSM_DEFAULT_LIT: 1>",
+        "graphReflection": null
+      },
+      "/Game/Lunden/Generated/kvarteret/Materials/std_ffffff_r60_m0_tex_site_house_letters.std_ffffff_r60_m0_tex_site_house_letters": {
+        "leaf": "/Game/Lunden/Generated/kvarteret/Materials/std_ffffff_r60_m0_tex_site_house_letters.std_ffffff_r60_m0_tex_site_house_letters",
+        "chain": [
+          {
+            "path": "/Game/Lunden/Generated/kvarteret/Materials/std_ffffff_r60_m0_tex_site_house_letters.std_ffffff_r60_m0_tex_site_house_letters",
+            "class": "MaterialInstanceConstant"
+          },
+          {
+            "path": "/InterchangeAssets/gltf/MaterialInstances/MI_Default_Opaque.MI_Default_Opaque",
+            "class": "MaterialInstanceConstant"
+          },
+          {
+            "path": "/InterchangeAssets/gltf/M_Default.M_Default",
+            "class": "Material"
+          }
+        ],
+        "effective": {
+          "scalar": {
+            "BaseColorTexture_Rotation": 0.0,
+            "BaseColorTexture_TexCoord": 0.0,
+            "MetallicRoughnessTexture_Rotation": 0.0,
+            "MetallicRoughnessTexture_TexCoord": 0.0,
+            "MetallicFactor": 0.0,
+            "RoughnessFactor": 0.6000000238418579,
+            "NormalTexture_Rotation": 0.0,
+            "NormalTexture_TexCoord": 0.0,
+            "NormalScale": 1.0,
+            "OcclusionTexture_Rotation": 0.0,
+            "OcclusionTexture_TexCoord": 0.0,
+            "OcclusionStrength": 1.0,
+            "IOR": 1.5,
+            "SpecularTexture_Rotation": 0.0,
+            "SpecularTexture_TexCoord": 0.0,
+            "SpecularFactor": 1.0,
+            "EmissiveTexture_Rotation": 0.0,
+            "EmissiveTexture_TexCoord": 0.0,
+            "EmissiveStrength": 1.0,
+            "AlphaCutoff": 0.0,
+            "IridescenceIOR": 1.2999999523162842,
+            "IridescenceFactor": 0.0,
+            "IridescenceThicknessMinimum": 100.0,
+            "IridescenceThicknessMaximum": 400.0,
+            "IridescenceTexture_Rotation": 0.0,
+            "IridescenceTexture_TexCoord": 0.0,
+            "IridescenceThicknessTexture_Rotation": 0.0,
+            "IridescenceThicknessTexture_TexCoord": 0.0,
+            "AnisotropyStrength": 0.0,
+            "AnisotropyRotation": 0.0,
+            "AnisotropyTexture_Rotation": 0.0,
+            "AnisotropyTexture_TexCoord": 0.0
+          },
+          "vector": {
+            "BaseColorFactor": [
+              1.0,
+              1.0,
+              1.0,
+              1.0
+            ],
+            "MetallicRoughnessTexture_OffsetScale": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "BaseColorTexture_OffsetScale": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "NormalTexture_OffsetScale": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "OcclusionTexture_OffsetScale": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "SpecularTexture_OffsetScale": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "EmissiveTexture_OffsetScale": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "EmissiveFactor": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "SpecularTexture_TilingMethod": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "OcclusionTexture_TilingMethod": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "NormalTexture_TilingMethod": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "EmissiveTexture_TilingMethod": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "MetallicRoughnessTexture_TilingMethod": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "BaseColorTexture_TilingMethod": [
+              1.0,
+              1.0,
+              0.0,
+              0.0
+            ],
+            "IridescenceTexture_TilingMethod": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "IridescenceThicknessTexture_TilingMethod": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "IridescenceTexture_OffsetScale": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "IridescenceThicknessTexture_OffsetScale": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "AnisotropyTexture_OffsetScale": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "AnisotropyTexture_TilingMethod": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "texture": {
+            "BaseColorTexture": "/Game/Lunden/Generated/kvarteret/Textures/site-house-letters.site-house-letters",
+            "MetallicRoughnessTexture": "/InterchangeAssets/gltf/Textures/T_White_Linear.T_White_Linear",
+            "NormalTexture": "/InterchangeAssets/gltf/Textures/T_Generic_N.T_Generic_N",
+            "OcclusionTexture": "/InterchangeAssets/gltf/Textures/T_White_Linear.T_White_Linear",
+            "SpecularTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb",
+            "EmissiveTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb",
+            "IridescenceTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb",
+            "IridescenceThicknessTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb",
+            "AnisotropyTexture": "/InterchangeAssets/gltf/Textures/T_Anisotropy_Direction_Linear.T_Anisotropy_Direction_Linear"
+          },
+          "staticSwitch": {
+            "DisableSwitchNaniteTransformUV": true,
+            "bHasIridescence": false,
+            "bHasBaseColorTexture": true,
+            "bHasMetallicRoughnessTexture": false,
+            "bHasEmissiveTexture": false,
+            "bHasNormalTexture": false,
+            "bHasOcclusionTexture": false,
+            "bHasSpecularTexture": false,
+            "bHasAnisotropyTextureAndOrRotation": false
+          }
+        },
+        "graph": [
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_BaseColor.MF_BaseColor",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_BaseColor.MF_BaseColor:MaterialExpressionTextureSample_0",
+            "class": "MaterialExpressionTextureSample"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_BaseColor.MF_BaseColor",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_BaseColor.MF_BaseColor:MaterialExpressionVertexColor_1",
+            "class": "MaterialExpressionVertexColor"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_MetallicRoughness.MF_MetallicRoughness",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_MetallicRoughness.MF_MetallicRoughness:MaterialExpressionTextureSample_1",
+            "class": "MaterialExpressionTextureSample"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_Specular.MF_Specular",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_Specular.MF_Specular:MaterialExpressionTextureSample_5",
+            "class": "MaterialExpressionTextureSample"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_Occlusion.MF_Occlusion",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_Occlusion.MF_Occlusion:MaterialExpressionTextureSample_4",
+            "class": "MaterialExpressionTextureSample"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_Emissive.MF_Emissive",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_Emissive.MF_Emissive:MaterialExpressionTextureSample_0",
+            "class": "MaterialExpressionTextureSample"
+          },
+          {
+            "graph": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat3Components.BreakOutFloat3Components",
+            "node": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat3Components.BreakOutFloat3Components:MaterialExpressionComponentMask_42",
+            "class": "MaterialExpressionComponentMask"
+          },
+          {
+            "graph": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat3Components.BreakOutFloat3Components",
+            "node": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat3Components.BreakOutFloat3Components:MaterialExpressionComponentMask_43",
+            "class": "MaterialExpressionComponentMask"
+          },
+          {
+            "graph": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat3Components.BreakOutFloat3Components",
+            "node": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat3Components.BreakOutFloat3Components:MaterialExpressionComponentMask_44",
+            "class": "MaterialExpressionComponentMask"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_RotateNormals_TS.MF_RotateNormals_TS",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_RotateNormals_TS.MF_RotateNormals_TS:MaterialExpressionComponentMask_0",
+            "class": "MaterialExpressionComponentMask"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_RotateNormals_TS.MF_RotateNormals_TS",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_RotateNormals_TS.MF_RotateNormals_TS:MaterialExpressionComponentMask_1",
+            "class": "MaterialExpressionComponentMask"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_Normals.MF_Normals",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_Normals.MF_Normals:MaterialExpressionTextureSample_2",
+            "class": "MaterialExpressionTextureSample"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_RotateV2.MF_RotateV2",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_RotateV2.MF_RotateV2:MaterialExpressionComponentMask_0",
+            "class": "MaterialExpressionComponentMask"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_RotateV2.MF_RotateV2",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_RotateV2.MF_RotateV2:MaterialExpressionComponentMask_1",
+            "class": "MaterialExpressionComponentMask"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_TransformUVs.MF_TransformUVs",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_TransformUVs.MF_TransformUVs:MaterialExpressionTextureCoordinate_1",
+            "class": "MaterialExpressionTextureCoordinate"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_TransformUVs.MF_TransformUVs",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_TransformUVs.MF_TransformUVs:MaterialExpressionTextureCoordinate_0",
+            "class": "MaterialExpressionTextureCoordinate"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_TransformUVs.MF_TransformUVs",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_TransformUVs.MF_TransformUVs:MaterialExpressionTextureCoordinate_2",
+            "class": "MaterialExpressionTextureCoordinate"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_TransformUVs.MF_TransformUVs",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_TransformUVs.MF_TransformUVs:MaterialExpressionTextureCoordinate_3",
+            "class": "MaterialExpressionTextureCoordinate"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_TransformUVs.MF_TransformUVs",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_TransformUVs.MF_TransformUVs:MaterialExpressionStaticSwitchParameter_0",
+            "class": "MaterialExpressionStaticSwitchParameter",
+            "parameter": "DisableSwitchNaniteTransformUV"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_Iridescence.MF_Iridescence",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_Iridescence.MF_Iridescence:MaterialExpressionTextureSample_0",
+            "class": "MaterialExpressionTextureSample"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_Iridescence.MF_Iridescence",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_Iridescence.MF_Iridescence:MaterialExpressionTextureSample_1",
+            "class": "MaterialExpressionTextureSample"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialBodies/MF_Default_Body.MF_Default_Body",
+            "node": "/InterchangeAssets/gltf/MaterialBodies/MF_Default_Body.MF_Default_Body:MaterialExpressionStaticSwitchParameter_0",
+            "class": "MaterialExpressionStaticSwitchParameter",
+            "parameter": "bHasIridescence"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialBodies/MF_Default_Body.MF_Default_Body",
+            "node": "/InterchangeAssets/gltf/MaterialBodies/MF_Default_Body.MF_Default_Body:MaterialExpressionStaticSwitchParameter_1",
+            "class": "MaterialExpressionStaticSwitchParameter",
+            "parameter": "bHasEmissiveTexture"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialBodies/MF_Default_Body.MF_Default_Body",
+            "node": "/InterchangeAssets/gltf/MaterialBodies/MF_Default_Body.MF_Default_Body:MaterialExpressionStaticSwitchParameter_2",
+            "class": "MaterialExpressionStaticSwitchParameter",
+            "parameter": "bHasNormalTexture"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialBodies/MF_Default_Body.MF_Default_Body",
+            "node": "/InterchangeAssets/gltf/MaterialBodies/MF_Default_Body.MF_Default_Body:MaterialExpressionStaticSwitchParameter_3",
+            "class": "MaterialExpressionStaticSwitchParameter",
+            "parameter": "bHasOcclusionTexture"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialBodies/MF_Default_Body.MF_Default_Body",
+            "node": "/InterchangeAssets/gltf/MaterialBodies/MF_Default_Body.MF_Default_Body:MaterialExpressionStaticSwitchParameter_4",
+            "class": "MaterialExpressionStaticSwitchParameter",
+            "parameter": "bHasSpecularTexture"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_SpecularAnisotropy.MF_SpecularAnisotropy",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_SpecularAnisotropy.MF_SpecularAnisotropy:MaterialExpressionTextureSample_0",
+            "class": "MaterialExpressionTextureSample"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_SpecularAnisotropy.MF_SpecularAnisotropy",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_SpecularAnisotropy.MF_SpecularAnisotropy:MaterialExpressionComponentMask_0",
+            "class": "MaterialExpressionComponentMask"
+          }
+        ],
+        "masterShadingModel": "<MaterialShadingModel.MSM_DEFAULT_LIT: 1>",
+        "graphReflection": null
+      },
+      "/Game/Lunden/Generated/l1007-uteplats/Materials/std_78a64b_r95_m0_vc_tex.std_78a64b_r95_m0_vc_tex": {
+        "leaf": "/Game/Lunden/Generated/l1007-uteplats/Materials/std_78a64b_r95_m0_vc_tex.std_78a64b_r95_m0_vc_tex",
+        "chain": [
+          {
+            "path": "/Game/Lunden/Generated/l1007-uteplats/Materials/std_78a64b_r95_m0_vc_tex.std_78a64b_r95_m0_vc_tex",
+            "class": "MaterialInstanceConstant"
+          },
+          {
+            "path": "/InterchangeAssets/gltf/MaterialInstances/MI_Default_Opaque.MI_Default_Opaque",
+            "class": "MaterialInstanceConstant"
+          },
+          {
+            "path": "/InterchangeAssets/gltf/M_Default.M_Default",
+            "class": "Material"
+          }
+        ],
+        "effective": {
+          "scalar": {
+            "BaseColorTexture_Rotation": 0.0,
+            "BaseColorTexture_TexCoord": 0.0,
+            "MetallicRoughnessTexture_Rotation": 0.0,
+            "MetallicRoughnessTexture_TexCoord": 0.0,
+            "MetallicFactor": 0.0,
+            "RoughnessFactor": 0.949999988079071,
+            "NormalTexture_Rotation": 0.0,
+            "NormalTexture_TexCoord": 0.0,
+            "NormalScale": 1.0,
+            "OcclusionTexture_Rotation": 0.0,
+            "OcclusionTexture_TexCoord": 0.0,
+            "OcclusionStrength": 1.0,
+            "IOR": 1.5,
+            "SpecularTexture_Rotation": 0.0,
+            "SpecularTexture_TexCoord": 0.0,
+            "SpecularFactor": 1.0,
+            "EmissiveTexture_Rotation": 0.0,
+            "EmissiveTexture_TexCoord": 0.0,
+            "EmissiveStrength": 1.0,
+            "AlphaCutoff": 0.0,
+            "IridescenceIOR": 1.2999999523162842,
+            "IridescenceFactor": 0.0,
+            "IridescenceThicknessMinimum": 100.0,
+            "IridescenceThicknessMaximum": 400.0,
+            "IridescenceTexture_Rotation": 0.0,
+            "IridescenceTexture_TexCoord": 0.0,
+            "IridescenceThicknessTexture_Rotation": 0.0,
+            "IridescenceThicknessTexture_TexCoord": 0.0,
+            "AnisotropyStrength": 0.0,
+            "AnisotropyRotation": 0.0,
+            "AnisotropyTexture_Rotation": 0.0,
+            "AnisotropyTexture_TexCoord": 0.0
+          },
+          "vector": {
+            "BaseColorFactor": [
+              0.18782077729701996,
+              0.38132601976394653,
+              0.07036009430885315,
+              1.0
+            ],
+            "MetallicRoughnessTexture_OffsetScale": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "BaseColorTexture_OffsetScale": [
+              0.0,
+              0.0,
+              0.5,
+              0.5
+            ],
+            "NormalTexture_OffsetScale": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "OcclusionTexture_OffsetScale": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "SpecularTexture_OffsetScale": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "EmissiveTexture_OffsetScale": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "EmissiveFactor": [
+              0.0,
+              0.0,
+              0.0,
+              1.0
+            ],
+            "SpecularTexture_TilingMethod": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "OcclusionTexture_TilingMethod": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "NormalTexture_TilingMethod": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "EmissiveTexture_TilingMethod": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "MetallicRoughnessTexture_TilingMethod": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "BaseColorTexture_TilingMethod": [
+              2.0,
+              2.0,
+              0.0,
+              0.0
+            ],
+            "IridescenceTexture_TilingMethod": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "IridescenceThicknessTexture_TilingMethod": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ],
+            "IridescenceTexture_OffsetScale": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "IridescenceThicknessTexture_OffsetScale": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "AnisotropyTexture_OffsetScale": [
+              0.0,
+              0.0,
+              1.0,
+              1.0
+            ],
+            "AnisotropyTexture_TilingMethod": [
+              0.0,
+              0.0,
+              0.0,
+              0.0
+            ]
+          },
+          "texture": {
+            "BaseColorTexture": "/Game/Lunden/Generated/l1007-uteplats/Textures/patio-hedge.patio-hedge",
+            "MetallicRoughnessTexture": "/InterchangeAssets/gltf/Textures/T_White_Linear.T_White_Linear",
+            "NormalTexture": "/InterchangeAssets/gltf/Textures/T_Generic_N.T_Generic_N",
+            "OcclusionTexture": "/InterchangeAssets/gltf/Textures/T_White_Linear.T_White_Linear",
+            "SpecularTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb",
+            "EmissiveTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb",
+            "IridescenceTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb",
+            "IridescenceThicknessTexture": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb",
+            "AnisotropyTexture": "/InterchangeAssets/gltf/Textures/T_Anisotropy_Direction_Linear.T_Anisotropy_Direction_Linear"
+          },
+          "staticSwitch": {
+            "DisableSwitchNaniteTransformUV": true,
+            "bHasIridescence": false,
+            "bHasBaseColorTexture": true,
+            "bHasMetallicRoughnessTexture": false,
+            "bHasEmissiveTexture": false,
+            "bHasNormalTexture": false,
+            "bHasOcclusionTexture": false,
+            "bHasSpecularTexture": false,
+            "bHasAnisotropyTextureAndOrRotation": false
+          }
+        },
+        "graph": [
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_BaseColor.MF_BaseColor",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_BaseColor.MF_BaseColor:MaterialExpressionTextureSample_0",
+            "class": "MaterialExpressionTextureSample"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_BaseColor.MF_BaseColor",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_BaseColor.MF_BaseColor:MaterialExpressionVertexColor_1",
+            "class": "MaterialExpressionVertexColor"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_MetallicRoughness.MF_MetallicRoughness",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_MetallicRoughness.MF_MetallicRoughness:MaterialExpressionTextureSample_1",
+            "class": "MaterialExpressionTextureSample"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_Specular.MF_Specular",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_Specular.MF_Specular:MaterialExpressionTextureSample_5",
+            "class": "MaterialExpressionTextureSample"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_Occlusion.MF_Occlusion",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_Occlusion.MF_Occlusion:MaterialExpressionTextureSample_4",
+            "class": "MaterialExpressionTextureSample"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_Emissive.MF_Emissive",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_Emissive.MF_Emissive:MaterialExpressionTextureSample_0",
+            "class": "MaterialExpressionTextureSample"
+          },
+          {
+            "graph": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat3Components.BreakOutFloat3Components",
+            "node": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat3Components.BreakOutFloat3Components:MaterialExpressionComponentMask_42",
+            "class": "MaterialExpressionComponentMask"
+          },
+          {
+            "graph": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat3Components.BreakOutFloat3Components",
+            "node": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat3Components.BreakOutFloat3Components:MaterialExpressionComponentMask_43",
+            "class": "MaterialExpressionComponentMask"
+          },
+          {
+            "graph": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat3Components.BreakOutFloat3Components",
+            "node": "/Engine/Functions/Engine_MaterialFunctions02/Utility/BreakOutFloat3Components.BreakOutFloat3Components:MaterialExpressionComponentMask_44",
+            "class": "MaterialExpressionComponentMask"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_RotateNormals_TS.MF_RotateNormals_TS",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_RotateNormals_TS.MF_RotateNormals_TS:MaterialExpressionComponentMask_0",
+            "class": "MaterialExpressionComponentMask"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_RotateNormals_TS.MF_RotateNormals_TS",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_RotateNormals_TS.MF_RotateNormals_TS:MaterialExpressionComponentMask_1",
+            "class": "MaterialExpressionComponentMask"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_Normals.MF_Normals",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_Normals.MF_Normals:MaterialExpressionTextureSample_2",
+            "class": "MaterialExpressionTextureSample"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_RotateV2.MF_RotateV2",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_RotateV2.MF_RotateV2:MaterialExpressionComponentMask_0",
+            "class": "MaterialExpressionComponentMask"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_RotateV2.MF_RotateV2",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_RotateV2.MF_RotateV2:MaterialExpressionComponentMask_1",
+            "class": "MaterialExpressionComponentMask"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_TransformUVs.MF_TransformUVs",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_TransformUVs.MF_TransformUVs:MaterialExpressionTextureCoordinate_1",
+            "class": "MaterialExpressionTextureCoordinate"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_TransformUVs.MF_TransformUVs",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_TransformUVs.MF_TransformUVs:MaterialExpressionTextureCoordinate_0",
+            "class": "MaterialExpressionTextureCoordinate"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_TransformUVs.MF_TransformUVs",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_TransformUVs.MF_TransformUVs:MaterialExpressionTextureCoordinate_2",
+            "class": "MaterialExpressionTextureCoordinate"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_TransformUVs.MF_TransformUVs",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_TransformUVs.MF_TransformUVs:MaterialExpressionTextureCoordinate_3",
+            "class": "MaterialExpressionTextureCoordinate"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_TransformUVs.MF_TransformUVs",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_TransformUVs.MF_TransformUVs:MaterialExpressionStaticSwitchParameter_0",
+            "class": "MaterialExpressionStaticSwitchParameter",
+            "parameter": "DisableSwitchNaniteTransformUV"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_Iridescence.MF_Iridescence",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_Iridescence.MF_Iridescence:MaterialExpressionTextureSample_0",
+            "class": "MaterialExpressionTextureSample"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_Iridescence.MF_Iridescence",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_Iridescence.MF_Iridescence:MaterialExpressionTextureSample_1",
+            "class": "MaterialExpressionTextureSample"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialBodies/MF_Default_Body.MF_Default_Body",
+            "node": "/InterchangeAssets/gltf/MaterialBodies/MF_Default_Body.MF_Default_Body:MaterialExpressionStaticSwitchParameter_0",
+            "class": "MaterialExpressionStaticSwitchParameter",
+            "parameter": "bHasIridescence"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialBodies/MF_Default_Body.MF_Default_Body",
+            "node": "/InterchangeAssets/gltf/MaterialBodies/MF_Default_Body.MF_Default_Body:MaterialExpressionStaticSwitchParameter_1",
+            "class": "MaterialExpressionStaticSwitchParameter",
+            "parameter": "bHasEmissiveTexture"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialBodies/MF_Default_Body.MF_Default_Body",
+            "node": "/InterchangeAssets/gltf/MaterialBodies/MF_Default_Body.MF_Default_Body:MaterialExpressionStaticSwitchParameter_2",
+            "class": "MaterialExpressionStaticSwitchParameter",
+            "parameter": "bHasNormalTexture"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialBodies/MF_Default_Body.MF_Default_Body",
+            "node": "/InterchangeAssets/gltf/MaterialBodies/MF_Default_Body.MF_Default_Body:MaterialExpressionStaticSwitchParameter_3",
+            "class": "MaterialExpressionStaticSwitchParameter",
+            "parameter": "bHasOcclusionTexture"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialBodies/MF_Default_Body.MF_Default_Body",
+            "node": "/InterchangeAssets/gltf/MaterialBodies/MF_Default_Body.MF_Default_Body:MaterialExpressionStaticSwitchParameter_4",
+            "class": "MaterialExpressionStaticSwitchParameter",
+            "parameter": "bHasSpecularTexture"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_SpecularAnisotropy.MF_SpecularAnisotropy",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_SpecularAnisotropy.MF_SpecularAnisotropy:MaterialExpressionTextureSample_0",
+            "class": "MaterialExpressionTextureSample"
+          },
+          {
+            "graph": "/InterchangeAssets/gltf/MaterialFunctions/MF_SpecularAnisotropy.MF_SpecularAnisotropy",
+            "node": "/InterchangeAssets/gltf/MaterialFunctions/MF_SpecularAnisotropy.MF_SpecularAnisotropy:MaterialExpressionComponentMask_0",
+            "class": "MaterialExpressionComponentMask"
+          }
+        ],
+        "masterShadingModel": "<MaterialShadingModel.MSM_DEFAULT_LIT: 1>",
+        "graphReflection": null
+      }
+    },
+    "textures": {
+      "/Game/Lunden/Generated/hus-l/Textures/patio-hedge.patio-hedge": {
+        "path": "/Game/Lunden/Generated/hus-l/Textures/patio-hedge.patio-hedge",
+        "sRGB": true,
+        "addressX": "<TextureAddress.TA_MIRROR: 2>",
+        "addressY": "<TextureAddress.TA_MIRROR: 2>",
+        "dimensions": [
+          32,
+          32
+        ]
+      },
+      "/InterchangeAssets/gltf/Textures/T_White_Linear.T_White_Linear": {
+        "path": "/InterchangeAssets/gltf/Textures/T_White_Linear.T_White_Linear",
+        "sRGB": false,
+        "addressX": "<TextureAddress.TA_WRAP: 0>",
+        "addressY": "<TextureAddress.TA_WRAP: 0>",
+        "dimensions": [
+          32,
+          32
+        ]
+      },
+      "/InterchangeAssets/gltf/Textures/T_Generic_N.T_Generic_N": {
+        "path": "/InterchangeAssets/gltf/Textures/T_Generic_N.T_Generic_N",
+        "sRGB": false,
+        "addressX": "<TextureAddress.TA_WRAP: 0>",
+        "addressY": "<TextureAddress.TA_WRAP: 0>",
+        "dimensions": [
+          32,
+          32
+        ]
+      },
+      "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb": {
+        "path": "/InterchangeAssets/gltf/Textures/T_White_srgb.T_White_srgb",
+        "sRGB": true,
+        "addressX": "<TextureAddress.TA_WRAP: 0>",
+        "addressY": "<TextureAddress.TA_WRAP: 0>",
+        "dimensions": [
+          32,
+          32
+        ]
+      },
+      "/InterchangeAssets/gltf/Textures/T_Anisotropy_Direction_Linear.T_Anisotropy_Direction_Linear": {
+        "path": "/InterchangeAssets/gltf/Textures/T_Anisotropy_Direction_Linear.T_Anisotropy_Direction_Linear",
+        "sRGB": false,
+        "addressX": "<TextureAddress.TA_WRAP: 0>",
+        "addressY": "<TextureAddress.TA_WRAP: 0>",
+        "dimensions": [
+          32,
+          32
+        ]
+      },
+      "/Game/Lunden/Generated/kvarteret/Textures/site-house-letters.site-house-letters": {
+        "path": "/Game/Lunden/Generated/kvarteret/Textures/site-house-letters.site-house-letters",
+        "sRGB": true,
+        "addressX": "<TextureAddress.TA_CLAMP: 1>",
+        "addressY": "<TextureAddress.TA_CLAMP: 1>",
+        "dimensions": [
+          32,
+          32
+        ]
+      },
+      "/Game/Lunden/Generated/l1007-uteplats/Textures/patio-hedge.patio-hedge": {
+        "path": "/Game/Lunden/Generated/l1007-uteplats/Textures/patio-hedge.patio-hedge",
+        "sRGB": true,
+        "addressX": "<TextureAddress.TA_MIRROR: 2>",
+        "addressY": "<TextureAddress.TA_MIRROR: 2>",
+        "dimensions": [
+          32,
+          32
+        ]
+      }
+    },
+    "sourceAuditSHA256": "2bb12aef79d3399d6282de3e6ec77fdc84b16b49643615f2a22e0ecf6c612f7d",
+    "vertexEvidenceLimit": "GLB COLOR_0 proven by source audit; actual bound master/vertex-node path below. No GPU vertex-buffer readback or direct imported mesh vertex-colour API is asserted.",
+    "foundSourceMeshIDs": [
+      "mesh_l0_x338_z1720_y57",
+      "mesh_l0_x893_z1720_y57",
+      "mesh_l0_xm2145_z1720_y57",
+      "mesh_l0_xm217_z1720_y57",
+      "mesh_l0_xm2423_z3695_y80",
+      "mesh_l0_xm2700_z1721_y57",
+      "mesh_l0_xm3255_z1720_y57",
+      "mesh_l0_xm3810_z1720_y57",
+      "mesh_l0_xm772_z1720_y57"
+    ]
+  },
+  "all247ExactReadonly": true,
+  "generatedExact": true,
+  "sourceExportExact": true
+}

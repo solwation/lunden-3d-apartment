@@ -1,0 +1,23 @@
+{
+  "issue": 2411,
+  "sourceHead": "525bb4dc276ac0ab577d1619f4f1d67bbcae657a",
+  "classification": "Unmodified current baseline; hedge acceptance FAIL, no source fix",
+  "images": {
+    "web-patio-lawn.jpg": {
+      "sha256": "7477dd379e1ccf3901ed6042f3f8101e6d43212530eb71f459a52196051c43a3",
+      "bytes": 107443
+    },
+    "unreal-patio-lawn.png": {
+      "sha256": "a60a94fd023e9250846aff2a08f45224680a4a7c96842f88ccf42cf4563621e5",
+      "bytes": 609202
+    },
+    "web-entrance-a.jpg": {
+      "sha256": "20cb7a906c7a4fa7126e5ab60a7912da1700a6b6d00f14301c0ba7d62d44af9d",
+      "bytes": 96815
+    },
+    "unreal-entrance-a.png": {
+      "sha256": "4fdc0ed073b80876a07d9b31f33b89995c44bbb8748d1060b505a967412b713a",
+      "bytes": 439995
+    }
+  }
+}

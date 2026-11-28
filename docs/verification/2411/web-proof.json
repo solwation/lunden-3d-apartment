@@ -1,0 +1,183 @@
+{
+  "completed": true,
+  "actualNodeExit": 0,
+  "actualWrapperExit": 0,
+  "browserBatches": 1,
+  "root": "/home/devcontainers/wt/codex-2409-publication",
+  "head": "525bb4dc276ac0ab577d1619f4f1d67bbcae657a",
+  "cleanBeforeAndAfter": true,
+  "sourceHash": "97dab0bbfa3e7235257b8ca77a428e7437ca59e0f5d0f727a5da680b2285e20a",
+  "sourceCount": 322,
+  "sourcePinsUnchanged": true,
+  "contractSHA256": "fb90761f8e2c27090200ab2dc77622c3770635918439431e0e4eccdf6d775f6b",
+  "canonicalScriptSHA256": "6ea061f4a9197a0d73aed717969c8862cd892fe172df48b98069c7bc4b911294",
+  "privateAdapterSHA256": "b3d70cd6c35c225b0b5a1455251a9f833cd469e84298df11263a3356a3da0e95",
+  "webCaptureSHA256": "59b7002c0f31a5a687d89484ed442637869cecd25d5ff0216d15c8356afa5af4",
+  "chromiumExecutable": "/home/devcontainers/.cache/ms-playwright/chromium-1208/chrome-linux64/chrome",
+  "threeVersion": "0.170.0",
+  "actualSourceRuntimeIdenticalBothViews": true,
+  "views": {
+    "patio-lawn": {
+      "sourceReference": {
+        "date": [
+          2026,
+          6,
+          21
+        ],
+        "hour": 14,
+        "overcast": 0,
+        "under": 0,
+        "dim": 0,
+        "dayShare": 1,
+        "sunDirWeb": [
+          0.3290249069149738,
+          0.832794289174853,
+          0.44519241070277027
+        ],
+        "sunIntensity": 3,
+        "skyStrength": 1.5
+      },
+      "actualExposure": 1.5,
+      "actualLights": {
+        "sun": {
+          "intensity": 3,
+          "color": [
+            1,
+            0.8796223968851662,
+            0.7156935005005721
+          ]
+        },
+        "hemi": {
+          "intensity": 1.55,
+          "color": [
+            0.8227857543924378,
+            0.8962693533719567,
+            1
+          ],
+          "groundColor": [
+            0.6724431569510133,
+            0.6444796819634361,
+            0.5906188409113381
+          ]
+        },
+        "fill": {
+          "intensity": 0.35,
+          "color": [
+            0.9046611743890203,
+            0.9215818562755338,
+            1
+          ]
+        }
+      },
+      "actualWeather": {
+        "rain": 0
+      },
+      "camera": {
+        "eye": [
+          2.3,
+          1.62,
+          16.1
+        ],
+        "yaw": 180,
+        "pitch": -10
+      },
+      "profile": {
+        "quality": 4,
+        "contextLost": false,
+        "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "draws": 156,
+        "verticalFov": 72,
+        "aspect": 1.7777777777777777
+      }
+    },
+    "entrance-a": {
+      "sourceReference": {
+        "date": [
+          2026,
+          6,
+          21
+        ],
+        "hour": 14,
+        "overcast": 0,
+        "under": 0,
+        "dim": 0,
+        "dayShare": 1,
+        "sunDirWeb": [
+          0.3290249069149738,
+          0.832794289174853,
+          0.44519241070277027
+        ],
+        "sunIntensity": 3,
+        "skyStrength": 1.5
+      },
+      "actualExposure": 1.5,
+      "actualLights": {
+        "sun": {
+          "intensity": 3,
+          "color": [
+            1,
+            0.8796223968851662,
+            0.7156935005005721
+          ]
+        },
+        "hemi": {
+          "intensity": 1.55,
+          "color": [
+            0.8227857543924378,
+            0.8962693533719567,
+            1
+          ],
+          "groundColor": [
+            0.6724431569510133,
+            0.6444796819634361,
+            0.5906188409113381
+          ]
+        },
+        "fill": {
+          "intensity": 0.35,
+          "color": [
+            0.9046611743890203,
+            0.9215818562755338,
+            1
+          ]
+        }
+      },
+      "actualWeather": {
+        "rain": 0
+      },
+      "camera": {
+        "eye": [
+          6.5,
+          1.62,
+          27
+        ],
+        "yaw": 114.99999999999999,
+        "pitch": 5
+      },
+      "profile": {
+        "quality": 4,
+        "contextLost": false,
+        "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "draws": 334,
+        "verticalFov": 72,
+        "aspect": 1.7777777777777777
+      }
+    }
+  },
+  "images": {
+    "web-patio-lawn.jpg": {
+      "sha256": "7477dd379e1ccf3901ed6042f3f8101e6d43212530eb71f459a52196051c43a3",
+      "bytes": 107443
+    },
+    "web-entrance-a.jpg": {
+      "sha256": "20cb7a906c7a4fa7126e5ab60a7912da1700a6b6d00f14301c0ba7d62d44af9d",
+      "bytes": 96815
+    }
+  },
+  "lamps": "Actual none/forcedFalse/smallLampsOn[]/settledPool[]; normal power required by canonical settleFacade",
+  "quality": "Actual Ultra4, no render-quality reduction; explicit SwiftShader WebGL driver",
+  "limits": "weather.snow was undefined/unexposed and is not reported as measured zero; clear force/actual overcast0/rain0 recorded",
+  "cameraTolerance": "Unchanged canonical 1e-5 float tolerance; entrance yaw actual114.99999999999999",
+  "serverStopped": true,
+  "serverStopProof": "Owned server session72188 exited143; port8844 has no listener. A repeated read-only verification need not signal it again."
+}

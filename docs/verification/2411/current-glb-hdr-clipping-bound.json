@@ -1,0 +1,591 @@
+{
+  "source": "Actual current Import GLB float components, clipping-only; not projected screen weights, lighting, or actual GPU buffer readback",
+  "zones": {
+    "l1007-uteplats": {
+      "sha256": "163ce0bc28191a075ec67161e77f2ccac3699d5f01666e7624899762d0fc3941",
+      "matchesPreflight": true,
+      "matchesPriorAudit": true
+    },
+    "hus-l": {
+      "sha256": "df489d6ca499c5eccba334d113402f5ef6e5dfa53670f3f727b190192089ac22",
+      "matchesPreflight": true,
+      "matchesPriorAudit": true
+    },
+    "vegetation": {
+      "sha256": "e01b8c3c721b54531468165e986a0223b5cb875080fb16e6003579c8a2c48433",
+      "matchesPreflight": true,
+      "matchesPriorAudit": true
+    }
+  },
+  "nodes": [
+    {
+      "zone": "l1007-uteplats",
+      "node": "mesh_l0_x338_z1720_y57",
+      "materialKey": "std_78a64b_r95_m0_vc_tex",
+      "vertices": 1128,
+      "hdrVertices": 578,
+      "hdrComponentsByRGB": [
+        578,
+        542,
+        413
+      ],
+      "sourceRGBMin": [
+        0.3905704617500305,
+        0.3905704617500305,
+        0.3749476373195648
+      ],
+      "sourceRGBMax": [
+        1.364524006843567,
+        1.328649640083313,
+        1.2755036354064941
+      ],
+      "perVertexClippedOverSourceRBMin": 0.9230768657097652,
+      "perVertexClippedOverSourceRBMax": 1.0,
+      "perVertexDeltaRBMin": -0.08333340066007144,
+      "perVertexDeltaRBMax": 0.0,
+      "unweightedMeanSourceRGB": [
+        0.9862475716740104,
+        0.9716067629344497,
+        0.9327424864502664
+      ],
+      "unweightedMeanClippedRGB": [
+        0.9072125757258411,
+        0.9047818677698044,
+        0.8861380904807267
+      ],
+      "unweightedMeanClippedOverSourceRB": 0.9682410007698781,
+      "sourceBaseColorFactor": [
+        0.1878207722902346,
+        0.3813260114221238,
+        0.07036009568874305
+      ],
+      "unweightedBaseTimesSourceMean": [
+        0.18523778058118115,
+        0.3704989315805547,
+        0.06562785059959686
+      ],
+      "unweightedBaseTimesClippedMean": [
+        0.17039336660424043,
+        0.34501686084371896,
+        0.06234876083966397
+      ],
+      "baseMultiplicationCancelsRelativeRBExactly": true,
+      "conservativeAnyCommonNonnegativeWeightRelativeRBBound": [
+        0.9230768657097652,
+        1.040000120681514
+      ]
+    },
+    {
+      "zone": "hus-l",
+      "node": "mesh_l0_xm3810_z1720_y57",
+      "materialKey": "std_78a64b_r95_m0_vc_tex",
+      "vertices": 1128,
+      "hdrVertices": 636,
+      "hdrComponentsByRGB": [
+        636,
+        600,
+        462
+      ],
+      "sourceRGBMin": [
+        0.36203768849372864,
+        0.36203768849372864,
+        0.3475562036037445
+      ],
+      "sourceRGBMax": [
+        1.4145591259002686,
+        1.4145591259002686,
+        1.3579767942428589
+      ],
+      "perVertexClippedOverSourceRBMin": 0.9230768480567576,
+      "perVertexClippedOverSourceRBMax": 1.0,
+      "perVertexDeltaRBMin": -0.08333342137784028,
+      "perVertexDeltaRBMax": 0.0,
+      "unweightedMeanSourceRGB": [
+        0.9892353798322221,
+        0.9746408311663367,
+        0.9356552002594826
+      ],
+      "unweightedMeanClippedRGB": [
+        0.9165651039715778,
+        0.9157874852894469,
+        0.8979836101544664
+      ],
+      "unweightedMeanClippedOverSourceRB": 0.9654084675710481,
+      "sourceBaseColorFactor": [
+        0.1878207722902346,
+        0.3813260114221238,
+        0.07036009568874305
+      ],
+      "unweightedBaseTimesSourceMean": [
+        0.18579895301691152,
+        0.37165590071780275,
+        0.06583278942192723
+      ],
+      "unweightedBaseTimesClippedMean": [
+        0.1721499656822209,
+        0.34921358907572164,
+        0.06318221273739119
+      ],
+      "baseMultiplicationCancelsRelativeRBExactly": true,
+      "conservativeAnyCommonNonnegativeWeightRelativeRBBound": [
+        0.9230768480567576,
+        1.036274845295034
+      ]
+    },
+    {
+      "zone": "hus-l",
+      "node": "mesh_l0_xm3255_z1720_y57",
+      "materialKey": "std_78a64b_r95_m0_vc_tex",
+      "vertices": 1128,
+      "hdrVertices": 580,
+      "hdrComponentsByRGB": [
+        580,
+        538,
+        408
+      ],
+      "sourceRGBMin": [
+        0.37078148126602173,
+        0.37078148126602173,
+        0.3559502363204956
+      ],
+      "sourceRGBMax": [
+        1.359783411026001,
+        1.3074840307235718,
+        1.2551846504211426
+      ],
+      "perVertexClippedOverSourceRBMin": 0.9230768666697186,
+      "perVertexClippedOverSourceRBMax": 1.0,
+      "perVertexDeltaRBMin": -0.08333339953345931,
+      "perVertexDeltaRBMax": 0.0,
+      "unweightedMeanSourceRGB": [
+        0.9698652726274433,
+        0.9554253383572643,
+        0.9172083282882862
+      ],
+      "unweightedMeanClippedRGB": [
+        0.9039343863672821,
+        0.9013743546679087,
+        0.8822092145205812
+      ],
+      "unweightedMeanClippedOverSourceRB": 0.9689958083669254,
+      "sourceBaseColorFactor": [
+        0.1878207722902346,
+        0.3813260114221238,
+        0.07036009568874305
+      ],
+      "unweightedBaseTimesSourceMean": [
+        0.18216084452236533,
+        0.3643285334874087,
+        0.06453486574487587
+      ],
+      "unweightedBaseTimesClippedMean": [
+        0.16977765454720223,
+        0.34371748746370445,
+        0.06207232475115893
+      ],
+      "baseMultiplicationCancelsRelativeRBExactly": true,
+      "conservativeAnyCommonNonnegativeWeightRelativeRBBound": [
+        0.9230768666697186,
+        1.0400001359962476
+      ]
+    },
+    {
+      "zone": "hus-l",
+      "node": "mesh_l0_xm2700_z1721_y57",
+      "materialKey": "std_78a64b_r95_m0_vc_tex",
+      "vertices": 1128,
+      "hdrVertices": 602,
+      "hdrComponentsByRGB": [
+        602,
+        572,
+        458
+      ],
+      "sourceRGBMin": [
+        0.3658318817615509,
+        0.3658318817615509,
+        0.35119861364364624
+      ],
+      "sourceRGBMax": [
+        1.4726125001907349,
+        1.4159735441207886,
+        1.3593345880508423
+      ],
+      "perVertexClippedOverSourceRBMin": 0.9230768534309876,
+      "perVertexClippedOverSourceRBMax": 1.0,
+      "perVertexDeltaRBMin": -0.08333341507058334,
+      "perVertexDeltaRBMax": 0.0,
+      "unweightedMeanSourceRGB": [
+        0.9910951000473178,
+        0.9761173960270612,
+        0.937072698423203
+      ],
+      "unweightedMeanClippedRGB": [
+        0.9071402151850944,
+        0.9052558909599663,
+        0.8871397815697583
+      ],
+      "unweightedMeanClippedOverSourceRB": 0.966808192403342,
+      "sourceBaseColorFactor": [
+        0.1878207722902346,
+        0.3813260114221238,
+        0.07036009568874305
+      ],
+      "unweightedBaseTimesSourceMean": [
+        0.18614824710395458,
+        0.37221895330674887,
+        0.06593252472836522
+      ],
+      "unweightedBaseTimesClippedMean": [
+        0.17037977579159402,
+        0.345197618216145,
+        0.06241923992053879
+      ],
+      "baseMultiplicationCancelsRelativeRBExactly": true,
+      "conservativeAnyCommonNonnegativeWeightRelativeRBBound": [
+        0.9230768534309876,
+        1.0400001490607507
+      ]
+    },
+    {
+      "zone": "hus-l",
+      "node": "mesh_l0_xm2145_z1720_y57",
+      "materialKey": "std_78a64b_r95_m0_vc_tex",
+      "vertices": 1128,
+      "hdrVertices": 452,
+      "hdrComponentsByRGB": [
+        452,
+        428,
+        300
+      ],
+      "sourceRGBMin": [
+        0.4068136215209961,
+        0.4068136215209961,
+        0.39054107666015625
+      ],
+      "sourceRGBMax": [
+        1.321681022644043,
+        1.2708470821380615,
+        1.2200132608413696
+      ],
+      "perVertexClippedOverSourceRBMin": 0.9230768564057695,
+      "perVertexClippedOverSourceRBMax": 1.0,
+      "perVertexDeltaRBMin": -0.0833334115793456,
+      "perVertexDeltaRBMax": 0.0,
+      "unweightedMeanSourceRGB": [
+        0.9291259126988709,
+        0.915180927578439,
+        0.8785736923310774
+      ],
+      "unweightedMeanClippedRGB": [
+        0.8821465026930715,
+        0.8786704769582613,
+        0.8569683795068281
+      ],
+      "unweightedMeanClippedOverSourceRB": 0.9733735515662013,
+      "sourceBaseColorFactor": [
+        0.1878207722902346,
+        0.3813260114221238,
+        0.07036009568874305
+      ],
+      "unweightedBaseTimesSourceMean": [
+        0.17450914647797103,
+        0.3489822928430857,
+        0.0618165290620269
+      ],
+      "unweightedBaseTimesClippedMean": [
+        0.1656854374089422,
+        0.3350599083328689,
+        0.060296377184327496
+      ],
+      "baseMultiplicationCancelsRelativeRBExactly": true,
+      "conservativeAnyCommonNonnegativeWeightRelativeRBBound": [
+        0.9230768564057695,
+        1.040000109794216
+      ]
+    },
+    {
+      "zone": "hus-l",
+      "node": "mesh_l0_xm772_z1720_y57",
+      "materialKey": "std_78a64b_r95_m0_vc_tex",
+      "vertices": 1128,
+      "hdrVertices": 524,
+      "hdrComponentsByRGB": [
+        524,
+        478,
+        335
+      ],
+      "sourceRGBMin": [
+        0.3936092257499695,
+        0.3936092257499695,
+        0.37786486744880676
+      ],
+      "sourceRGBMax": [
+        1.3033357858657837,
+        1.2532075643539429,
+        1.2030792236328125
+      ],
+      "perVertexClippedOverSourceRBMin": 0.9230768262605402,
+      "perVertexClippedOverSourceRBMax": 1.0,
+      "perVertexDeltaRBMin": -0.08333344695812794,
+      "perVertexDeltaRBMax": 0.0,
+      "unweightedMeanSourceRGB": [
+        0.9429820346388411,
+        0.9287609865373754,
+        0.8916105473717899
+      ],
+      "unweightedMeanClippedRGB": [
+        0.8911970030014397,
+        0.8892280477898341,
+        0.8680717208495377
+      ],
+      "unweightedMeanClippedOverSourceRB": 0.970710857907591,
+      "sourceBaseColorFactor": [
+        0.1878207722902346,
+        0.3813260114221238,
+        0.07036009568874305
+      ],
+      "unweightedBaseTimesSourceMean": [
+        0.1771116140016839,
+        0.3541607225607742,
+        0.06273380343017171
+      ],
+      "unweightedBaseTimesClippedMean": [
+        0.16738530936647295,
+        0.33908578470837913,
+        0.06107760934366531
+      ],
+      "baseMultiplicationCancelsRelativeRBExactly": true,
+      "conservativeAnyCommonNonnegativeWeightRelativeRBBound": [
+        0.9230768262605402,
+        1.0400000828121228
+      ]
+    },
+    {
+      "zone": "hus-l",
+      "node": "mesh_l0_xm217_z1720_y57",
+      "materialKey": "std_78a64b_r95_m0_vc_tex",
+      "vertices": 1128,
+      "hdrVertices": 425,
+      "hdrComponentsByRGB": [
+        425,
+        389,
+        305
+      ],
+      "sourceRGBMin": [
+        0.38267478346824646,
+        0.38267478346824646,
+        0.36736780405044556
+      ],
+      "sourceRGBMax": [
+        1.4171571731567383,
+        1.3626511096954346,
+        1.3081450462341309
+      ],
+      "perVertexClippedOverSourceRBMin": 0.9230768627564762,
+      "perVertexClippedOverSourceRBMax": 1.0,
+      "perVertexDeltaRBMin": -0.0833334041260847,
+      "perVertexDeltaRBMax": 0.0,
+      "unweightedMeanSourceRGB": [
+        0.9330538276133807,
+        0.9187559286224927,
+        0.8820056908149668
+      ],
+      "unweightedMeanClippedRGB": [
+        0.8800509239659242,
+        0.8770320442445735,
+        0.8545954461268922
+      ],
+      "unweightedMeanClippedOverSourceRB": 0.9734461177813499,
+      "sourceBaseColorFactor": [
+        0.1878207722902346,
+        0.3813260114221238,
+        0.07036009568874305
+      ],
+      "unweightedBaseTimesSourceMean": [
+        0.1752468904907046,
+        0.3503455337320446,
+        0.06205800480375698
+      ],
+      "unweightedBaseTimesClippedMean": [
+        0.16529184419401444,
+        0.3344351313211748,
+        0.06012941736465219
+      ],
+      "baseMultiplicationCancelsRelativeRBExactly": true,
+      "conservativeAnyCommonNonnegativeWeightRelativeRBBound": [
+        0.9230768627564762,
+        1.0400001215167414
+      ]
+    },
+    {
+      "zone": "hus-l",
+      "node": "mesh_l0_x893_z1720_y57",
+      "materialKey": "std_78a64b_r95_m0_vc_tex",
+      "vertices": 1128,
+      "hdrVertices": 684,
+      "hdrComponentsByRGB": [
+        684,
+        660,
+        504
+      ],
+      "sourceRGBMin": [
+        0.393266499042511,
+        0.393266499042511,
+        0.3775358498096466
+      ],
+      "sourceRGBMax": [
+        1.4984023571014404,
+        1.4407715797424316,
+        1.3831406831741333
+      ],
+      "perVertexClippedOverSourceRBMin": 0.9230768387769586,
+      "perVertexClippedOverSourceRBMax": 1.0,
+      "perVertexDeltaRBMin": -0.08333343226871737,
+      "perVertexDeltaRBMax": 0.0,
+      "unweightedMeanSourceRGB": [
+        1.0019918468034437,
+        0.9873421931150534,
+        0.9478485104726985
+      ],
+      "unweightedMeanClippedRGB": [
+        0.9216040213532904,
+        0.9198480986375758,
+        0.9043293099929678
+      ],
+      "unweightedMeanClippedOverSourceRB": 0.9640343271521393,
+      "sourceBaseColorFactor": [
+        0.1878207722902346,
+        0.3813260114221238,
+        0.07036009568874305
+      ],
+      "unweightedBaseTimesSourceMean": [
+        0.18819488249514124,
+        0.3764992604093356,
+        0.06669071189529163
+      ],
+      "unweightedBaseTimesClippedMean": [
+        0.17309637903636088,
+        0.3507620065676911,
+        0.06362869678524019
+      ],
+      "baseMultiplicationCancelsRelativeRBExactly": true,
+      "conservativeAnyCommonNonnegativeWeightRelativeRBBound": [
+        0.9230768387769586,
+        1.0400001418373919
+      ]
+    },
+    {
+      "zone": "vegetation",
+      "node": "mesh_l0_xm2010_zm320_y33",
+      "materialKey": "std_48733c_r92_m0_vc_tex",
+      "vertices": 1890,
+      "hdrVertices": 794,
+      "hdrComponentsByRGB": [
+        794,
+        698,
+        569
+      ],
+      "sourceRGBMin": [
+        0.31165599822998047,
+        0.31165599822998047,
+        0.2991897463798523
+      ],
+      "sourceRGBMax": [
+        1.4471131563186646,
+        1.4004732370376587,
+        1.344454288482666
+      ],
+      "perVertexClippedOverSourceRBMin": 0.9230768402631804,
+      "perVertexClippedOverSourceRBMax": 1.0,
+      "perVertexDeltaRBMin": -0.08333343052447062,
+      "perVertexDeltaRBMax": 0.0,
+      "unweightedMeanSourceRGB": [
+        0.8381332445870001,
+        0.8236917615409881,
+        0.7907440921616933
+      ],
+      "unweightedMeanClippedRGB": [
+        0.7831443050393352,
+        0.7798128553010799,
+        0.7618330553095177
+      ],
+      "unweightedMeanClippedOverSourceRB": 0.9698506702958642,
+      "sourceBaseColorFactor": [
+        0.06480326668529614,
+        0.171441100722554,
+        0.04518620437910499
+      ],
+      "unweightedBaseTimesSourceMean": [
+        0.0543137721667839,
+        0.14121462225468648,
+        0.035730724159988105
+      ],
+      "unweightedBaseTimesClippedMean": [
+        0.050750309252534945,
+        0.13369197427041488,
+        0.03442434413997386
+      ],
+      "baseMultiplicationCancelsRelativeRBExactly": true,
+      "conservativeAnyCommonNonnegativeWeightRelativeRBBound": [
+        0.9230768402631804,
+        1.0400001503949383
+      ]
+    }
+  ],
+  "quantizationSeparate": "Clipping-only numbers exclude 8-bit rounding. FColor normalized step=1/255; exact current GPU buffer and imported quantized values not read.",
+  "aggregateVertexColours": {
+    "vertices": 10914,
+    "hdrVertices": 5275,
+    "hdrComponentsByRGB": [
+      5275,
+      4905,
+      3754
+    ],
+    "sourceRGBMin": [
+      0.31165599822998047,
+      0.31165599822998047,
+      0.2991897463798523
+    ],
+    "sourceRGBMax": [
+      1.4984023571014404,
+      1.4407715797424316,
+      1.3831406831741333
+    ],
+    "perVertexClippedOverSourceRBMin": 0.9230768262605402,
+    "perVertexClippedOverSourceRBMax": 1.0,
+    "perVertexDeltaRBMin": -0.08333344695812794,
+    "perVertexDeltaRBMax": 0.0,
+    "unweightedMeanSourceRGB": [
+      0.9454690477629383,
+      0.9310033058719319,
+      0.8937631743047533
+    ],
+    "unweightedMeanClippedRGB": [
+      0.8807819646800069,
+      0.8783578688771335,
+      0.8592717407500982
+    ],
+    "unweightedMeanClippedOverSourceRB": 0.9689760097876166,
+    "sourceBaseColorFactor": [
+      1,
+      1,
+      1
+    ],
+    "unweightedBaseTimesSourceMean": [
+      0.9454690477629383,
+      0.9310033058719319,
+      0.8937631743047533
+    ],
+    "unweightedBaseTimesClippedMean": [
+      0.8807819646800069,
+      0.8783578688771335,
+      0.8592717407500982
+    ],
+    "baseMultiplicationCancelsRelativeRBExactly": true,
+    "conservativeAnyCommonNonnegativeWeightRelativeRBBound": [
+      0.9230768262605402,
+      1.0400001655529256
+    ]
+  },
+  "limitation": "Equal vertex means are not pixel means. Conservative bound applies to same nonnegative sampling weights and channel-independent scalar weighting, excluding lighting/nonlinear tonemapping/occlusion/material pipeline differences."
+}

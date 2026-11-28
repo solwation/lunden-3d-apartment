@@ -1,0 +1,70 @@
+{
+ "crops": {
+  "patio-lawn": {
+   "hedge": [
+    0.05,
+    0.72,
+    0.6,
+    0.95
+   ]
+  },
+  "entrance-a": {
+   "letter-plate": [
+    0.489,
+    0.425,
+    0.504,
+    0.47
+   ]
+  }
+ },
+ "stats": {
+  "patio-lawn": {
+   "web": {
+    "hedge": {
+     "srgb": [
+      65.3,
+      96.2,
+      22.5
+     ],
+     "luminance": 0.1127,
+     "warmth": 2.9
+    }
+   },
+   "unreal": {
+    "hedge": {
+     "srgb": [
+      69.6,
+      96.2,
+      43.3
+     ],
+     "luminance": 0.1162,
+     "warmth": 1.606
+    }
+   }
+  },
+  "entrance-a": {
+   "web": {
+    "letter-plate": {
+     "srgb": [
+      165.4,
+      164.1,
+      164.2
+     ],
+     "luminance": 0.4539,
+     "warmth": 1.008
+    }
+   },
+   "unreal": {
+    "letter-plate": {
+     "srgb": [
+      174.2,
+      175.1,
+      174.5
+     ],
+     "luminance": 0.4907,
+     "warmth": 0.998
+    }
+   }
+  }
+ }
+}

@@ -1,0 +1,73 @@
+{
+  "source": "Existing2325/2390 canonical control; no new/adjusted ROI",
+  "date": {
+    "year": 2026,
+    "month": 6,
+    "day": 21
+  },
+  "hour": 14,
+  "weather": "clear",
+  "lampsOn": false,
+  "originalViewport": {
+    "width": 1440,
+    "height": 810
+  },
+  "verticalFovDeg": 72,
+  "standingEyeHeightM": 1.62,
+  "views": [
+    {
+      "id": "patio-lawn",
+      "subject": "L1007 patio looking south (#2308): hedge, fence, A",
+      "x": 2.3,
+      "z": 16.1,
+      "feetY": 0.0,
+      "yawDeg": 180,
+      "pitchDeg": -10,
+      "lighting": "day"
+    },
+    {
+      "id": "entrance-a",
+      "subject": "Hus A's east entrance letter, close",
+      "x": 6.5,
+      "z": 27.0,
+      "feetY": 0.0,
+      "yawDeg": 115,
+      "pitchDeg": 5,
+      "lighting": "day"
+    }
+  ],
+  "crops": {
+    "patio-lawn": {
+      "hedge": [
+        0.05,
+        0.72,
+        0.6,
+        0.95
+      ]
+    },
+    "entrance-a": {
+      "letter-plate": [
+        0.489,
+        0.425,
+        0.504,
+        0.47
+      ]
+    }
+  },
+  "criteria": {
+    "hedgeNativeOverWebRB": [
+      0.85,
+      1.15
+    ],
+    "hedgeNativeOverWebSaturation": [
+      0.85,
+      1.15
+    ],
+    "signNativeOverWebLuminance": [
+      0.8,
+      1.25
+    ]
+  },
+  "saturationDefinition": "(max(mean sRGB)-min(mean sRGB))/max(mean sRGB), from2390/score.py",
+  "limit": "Historical Windows2396 ratios are not current51e Linux measurements. Existing current browser/native sources need binding proof before reuse; no rendering here."
+}

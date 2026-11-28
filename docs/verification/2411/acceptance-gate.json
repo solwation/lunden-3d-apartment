@@ -1,0 +1,92 @@
+{
+  "classification": "Unchanged #2411 contract applied to fresh current paired baseline; whole-image review remains separate",
+  "canonicalToolSHA256": "0a76bf7e7c43ad2e212f2d884806957030ec6dc08ce4c4d9901641f5f80bd1c6",
+  "contractSHA256": "fb90761f8e2c27090200ab2dc77622c3770635918439431e0e4eccdf6d775f6b",
+  "browserBatches": 1,
+  "canonicalExitCode": 0,
+  "inputs": {
+    "patio-lawn": {
+      "web": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2411/web-v1/web-patio-lawn.jpg",
+        "sha256": "7477dd379e1ccf3901ed6042f3f8101e6d43212530eb71f459a52196051c43a3"
+      },
+      "unreal": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2411/native-v1/product/unreal-patio-lawn.png",
+        "sha256": "a60a94fd023e9250846aff2a08f45224680a4a7c96842f88ccf42cf4563621e5"
+      }
+    },
+    "entrance-a": {
+      "web": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2411/web-v1/web-entrance-a.jpg",
+        "sha256": "20cb7a906c7a4fa7126e5ab60a7912da1700a6b6d00f14301c0ba7d62d44af9d"
+      },
+      "unreal": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2411/native-v1/product/unreal-entrance-a.png",
+        "sha256": "4fdc0ed073b80876a07d9b31f33b89995c44bbb8748d1060b505a967412b713a"
+      }
+    }
+  },
+  "rows": [
+    {
+      "shot": "patio-lawn",
+      "region": "hedge",
+      "web": {
+        "srgb": [
+          65.3,
+          96.2,
+          22.5
+        ],
+        "luminance": 0.1127,
+        "warmth": 2.9
+      },
+      "native": {
+        "srgb": [
+          69.6,
+          96.2,
+          43.3
+        ],
+        "luminance": 0.1162,
+        "warmth": 1.606
+      },
+      "luminanceRatio": 1.031055900621118,
+      "relativeRB": 0.5537931034482759,
+      "relativeSaturation": 0.7177747625508819,
+      "checks": {
+        "R/B": false,
+        "saturation": false
+      },
+      "passed": false
+    },
+    {
+      "shot": "entrance-a",
+      "region": "letter-plate",
+      "web": {
+        "srgb": [
+          165.4,
+          164.1,
+          164.2
+        ],
+        "luminance": 0.4539,
+        "warmth": 1.008
+      },
+      "native": {
+        "srgb": [
+          174.2,
+          175.1,
+          174.5
+        ],
+        "luminance": 0.4907,
+        "warmth": 0.998
+      },
+      "luminanceRatio": 1.0810751266798855,
+      "relativeRB": 0.9900793650793651,
+      "relativeSaturation": 0.6539559811975558,
+      "checks": {
+        "luminance": true
+      },
+      "passed": true
+    }
+  ],
+  "passed": false,
+  "wholeImageReviewRequired": true
+}
