@@ -11,6 +11,7 @@ import { rugPoolProfile, rugPoolRow } from './export-rug-pool.js';
 import { displayPoolProfile, displayPoolRows } from './export-display-pools.js';
 import { parasolRows } from './export-parasols.js';
 import { garageLightingMaterials } from './export-garage-lighting.js';
+import { architectureShadow, copyArchitectureShadow, applyShadowExtras } from './export-shadow-policy.js';
 import * as THREE from 'three';
 import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
 import * as C from '../../src/config.js';
@@ -695,6 +696,7 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
       split.meshes.push({ name: a.object.name || null, group, triangles: r.total, cut: r.cut, pieces: Object.fromEntries(r.pieces.map((p) => [p.zone, p.triangles])) });
       for (const pc of r.pieces) {
         const m = new THREE.Mesh(pc.geometry, a.object.material);
+        copyArchitectureShadow(a.object, m);
         m.name = a.object.name; m.matrixAutoUpdate = false; m.matrix.copy(a.object.matrixWorld); m.matrixWorld.copy(a.object.matrixWorld);
         pc.geometry.computeBoundingBox();
         const piece = { object: m, kind: null, splitFrom: a.object, group };
@@ -916,13 +918,14 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     const originals = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
     const em = ms.map((m, i) => exportMaterial(m, cloth, trunk === 'bark' || trunk === 'birch' ? trunk : null, originals[i]));
     const n = new THREE.Mesh(g, Array.isArray(mesh.material) ? em : em[0]);
+    if (architectureShadow(mesh)) architectureShadows.add(n);
     if (!mesh.castShadow) noShadow.add(n); // #2426: written as extras.castShadow once the node's extras are final
     return n;
   };
   const stats = {};
   // #2426: the web mesh casts no sun shadow (three's castShadow false, its default). Unreal casts from every imported
-  // component unless told otherwise, so the node says so (absent = casts); import_world.py turns cast_shadow off.
-  const noShadow = new WeakSet();
+  // component unless told otherwise: preserve source evidence, with a separate explicit architecture exception (#2438).
+  const noShadow = new WeakSet(), architectureShadows = new WeakSet();
   // #2432: a crown lobe's or vine's season seeds (src/seasons.js r1…r4) by node id, for measurements.json vegetation.seeds
   const parasols = parasolProfiles(), parasolNodes = new Map(parasols.map(p => [p.canopy, null]));
   const lobeSeeds = new Map();
@@ -996,7 +999,7 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
       root.add(node);
       stats[a.kind] = (stats[a.kind] ?? 0) + 1;
     }
-    root.traverse((o) => { if (noShadow.has(o)) o.userData.castShadow = false; });
+    root.traverse((o) => applyShadowExtras(o, noShadow.has(o), architectureShadows.has(o)));
     const zone = ZONES.find((z) => z.id === zoneId);
     lookAtom = null;
     tris += parkedCollision(root, parked, zoneId);

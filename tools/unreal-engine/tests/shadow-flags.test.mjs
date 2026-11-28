@@ -21,6 +21,11 @@ const casts = (n) => n.extras?.castShadow !== false;
 // The flag sits only on mesh nodes, and only as false (the schema's const).
 for (const [zone, json] of Object.entries(zones)) {
   for (const n of json.nodes) {
+    if ('unrealArchitectureShadow' in (n.extras ?? {})) {
+      assert.equal(n.extras.unrealArchitectureShadow, true, `${zone}/${n.name}: invalid architecture override`);
+      assert.notEqual(n.mesh, undefined, `${zone}/${n.name}: architecture override without geometry`);
+      assert.notEqual(n.extras.kind, 'collision', `${zone}/${n.name}: collision must not opt in`);
+    }
     if (!('castShadow' in (n.extras ?? {}))) continue;
     assert.equal(n.extras.castShadow, false, `${zone}/${n.name}: castShadow is written only as false`);
     assert.notEqual(n.mesh, undefined, `${zone}/${n.name}: castShadow on a node without a mesh`);

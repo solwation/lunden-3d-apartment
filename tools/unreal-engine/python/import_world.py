@@ -25,7 +25,7 @@ Import (default):
      the web's unlit signs and labels (measurements.json materials[].unlit) go onto the unlit label master with their
      power-cut share (material-map.json `unlitLabel`, #2435);
      every mesh's complex collision is double-sided (Interchange leaves it single-sided, #2299);
-     a node whose extras say `castShadow: false` (the web mesh casts no sun shadow) gets Cast Shadow off (#2426);
+     a node with `castShadow: false` gets Cast Shadow off, except explicit architectural casters (#2426, #2438);
      prepare_nanite_materials.prepare_zone moves meshes with unsupported material slots to the raster path and
      rebuilds their render data at once (the fingerprint must equal what a fresh editor computes, #2297), and keeps
      every Nanite mesh's fallback (collision, traces, non-Nanite drawing) at all its triangles (#2298);
@@ -33,7 +33,7 @@ Import (default):
   5. checks (also run by --check without importing): fixture markers within 1 cm of measurements.json `fixture`,
      arrow tips (north -> Unreal -Y, east -> +X) within 1 cm, every door/window/light/furniture/interactive id present
      as an actor name, label and tag, every collision actor's single simple box, every mesh's double-sided complex
-     collision, every component's Cast Shadow against its node's `castShadow`, and (--check) the stamp's package
+     collision, every component's Cast Shadow against source plus architecture policy, and (--check) the stamp's package
      hashes and content fingerprint; logs LUNDEN_IMPORT_OK / LUNDEN_CHECK_OK.
 Any failure raises, so run-python.ps1 exits non-zero.
 """
@@ -258,24 +258,29 @@ def apply_collision(by_id, extras):
 
 
 def casts_shadow(ex):
-    """The node's web mesh casts a sun shadow unless its extras say `castShadow: false` (absent = casts, #2426)."""
+    """#2438: explicit architecture casts; otherwise preserve the web flag (#2426)."""
+    if "unrealArchitectureShadow" in ex:
+        if ex["unrealArchitectureShadow"] is not True:
+            raise RuntimeError("Invalid unrealArchitectureShadow: expected true")
+        return True
     return ex.get("castShadow", True) is not False
 
 
 def apply_shadows(by_id, extras):
-    """The web's sun shadow comes only from meshes with three's castShadow on; Unreal casts from every component by
-    default, so the Å-husen, their loggia rails and the courtyard's pergola bulbs shadowed the courtyard walks and lawn
-    (#2392, #2426). Each actor whose node casts nothing on the web gets Cast Shadow off. Unreal has no per-component
-    receive-shadow switch for opaque surfaces, so the web's receiveShadow does not travel."""
+    """Apply source off flags and explicitly turn architectural components ON, including reimports.
+    Only source-tagged structural batches override the web; collision and small objects keep their prior rules.
+    Unreal has no equivalent opaque receiveShadow switch. #2438 is a documented intentional difference.
+    """
     count = 0
     for node_id, actor in by_id.items():
-        if casts_shadow(extras[node_id]):
+        want = casts_shadow(extras[node_id])
+        if want and not extras[node_id].get("unrealArchitectureShadow"):
             continue
         comp = actor.get_component_by_class(unreal.StaticMeshComponent)
         if comp is None:
-            raise RuntimeError(f"{node_id}: castShadow false but the actor has no StaticMeshComponent")
-        comp.set_editor_property("cast_shadow", False)
-        count += 1
+            raise RuntimeError(f"{node_id}: shadow policy requires a StaticMeshComponent")
+        comp.set_editor_property("cast_shadow", want)
+        count += not want
     return count
 
 
@@ -771,7 +776,7 @@ def check_double_sided(zone):
 
 
 def check_shadows(zone, glb_path):
-    """Every mesh actor casts a shadow exactly when its web mesh does (`castShadow` extras, #2426)."""
+    """Every mesh actor follows source casting plus the explicit architecture exception (#2426, #2438)."""
     extras = node_extras(glb_path)
     bad, off, total = [], 0, 0
     for a in level_actors():
@@ -785,8 +790,8 @@ def check_shadows(zone, glb_path):
         if bool(comp.get_editor_property("cast_shadow")) != want:
             bad.append(f"{a.get_name()} (want {want})")
     if bad:
-        raise RuntimeError(f"{zone}: {len(bad)} of {total} mesh actors cast shadows unlike their web mesh, e.g. {bad[:5]}: run import_world.py")
-    unreal.log(f"LUNDEN_IMPORT_SHADOW zone {zone}: {total} mesh actors, {off} without cast shadow as on the web, {total - off} casting")
+        raise RuntimeError(f"{zone}: {len(bad)} of {total} mesh actors violate their source/architecture shadow policy, e.g. {bad[:5]}: run import_world.py")
+    unreal.log(f"LUNDEN_IMPORT_SHADOW zone {zone}: {total} mesh actors, {off} without cast shadow under source/architecture policy, {total - off} casting")
 
 
 def check_stamp(zone, glb_entry, map_sha):

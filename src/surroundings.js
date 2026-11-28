@@ -2035,17 +2035,19 @@ export function* surroundingsParts({ grass, husL = null }) {
     m.receiveShadow = true;
     group.add(m);return m;
   };
+  // #2438: original Unreal architecture policy only; never change the web castShadow flag.
+  const architecture = (m, role) => { if (m) m.userData.unrealShadowCaster = role; return m; };
   const lg = loggias(modern); // corner loggias and entrances (#145, #258, #266)
   const details=detailedSiteWindows(modern);group.userData.siteNeighborOpenings=details.list;
   const bodies = modern.map(aHouseParts), grid = bodies.flatMap((p) => p.grid); // #345: listed faces plain, the rest the old grid
-  if (grid.length) shadeMoss(mesh(grid, wetSurface(snowCap(new THREE.MeshStandardMaterial({ map: facadeTexture(), roughness: 0.95 })), 'brick')), groundY, 'map'); // #2122: moss low on the north faces
-  shadeMoss(mesh([...bodies.flatMap((p) => p.plain), ...lg.bricks.map((g) => g.index ? g.toNonIndexed() : g)], wetSurface(snowCap(new THREE.MeshStandardMaterial({ map: facadeTexture(true), roughness: 0.95 })), 'brick')), groundY, 'map'); // + piers, parapets (#266)
+  if (grid.length) shadeMoss(architecture(mesh(grid, wetSurface(snowCap(new THREE.MeshStandardMaterial({ map: facadeTexture(), roughness: 0.95 })), 'brick')), 'body'), groundY, 'map'); // #2122: moss low on the north faces
+  shadeMoss(architecture(mesh([...bodies.flatMap((p) => p.plain), ...lg.bricks.map((g) => g.index ? g.toNonIndexed() : g)], wetSurface(snowCap(new THREE.MeshStandardMaterial({ map: facadeTexture(true), roughness: 0.95 })), 'brick')), 'body'), groundY, 'map'); // + piers, parapets (#266)
   mesh(modern.flatMap(openingDecals), new THREE.MeshStandardMaterial({ map: openingTexture(), roughness: 0.6, polygonOffset: true, polygonOffsetFactor: -0.5, polygonOffsetUnits: -1 })); // the listed windows (#345)
   // #2095: the white render (walls, slabs) gets the fine render grain and its dirt strips; the window frames stay plain
   const white = wetSurface(snowCap(renderMaterial({ color: O.site.frameColor, roughness: 0.85, side: THREE.DoubleSide })), 'render'); // #2123: snow on slabs, parapets, sills
-  shadeMoss(mesh([...lg.slabs.map((g) => renderUV(g.toNonIndexed())), ...lg.walls.map((g) => renderUV(g.index ? g.toNonIndexed() : g)), ...details.frames.map(g=>plainUV(g.index?g.toNonIndexed():g))], white), groundY, 'bump');
+  shadeMoss(architecture(mesh([...lg.slabs.map((g) => renderUV(g.toNonIndexed())), ...lg.walls.map((g) => renderUV(g.index ? g.toNonIndexed() : g)), ...details.frames.map(g=>plainUV(g.index?g.toNonIndexed():g))], white), 'slab'), groundY, 'bump');
   const railMesh = new THREE.Mesh(mergeGeometries(lg.rails.map((g) => g.toNonIndexed())), wetSurface(snowCap(railMetal(new THREE.MeshStandardMaterial({ map: railTexture(), alphaTest: 0.5, side: THREE.DoubleSide }))), 'metal')); // #2089; #2123
-  railMesh.name = 'loggiaRails';
+  railMesh.name = 'loggiaRails'; architecture(railMesh, 'rail');
   group.add(railMesh);
   if (lg.plants.length) mesh(lg.plants.map((g) => { g = g.index ? g.toNonIndexed() : g; g.deleteAttribute('uv'); return g; }), new THREE.MeshStandardMaterial({ color: 0x4f7d3a, roughness: 0.9, flatShading: true }));
   const bare = (gs) => gs.map((g) => { g = g.index?g.toNonIndexed():g; g.deleteAttribute('uv'); return g; });
@@ -2090,7 +2092,7 @@ export function* surroundingsParts({ grass, husL = null }) {
   // #348: each house its own (roofSpec), with the roof box the roof plans draw (in the sheet metal below)
   const roofSteam = group.userData.roofSteam = []; // #2204: only the existing vent hoods emit
   const roofBoxes = [], walk = { surfaces: [...lg.canopies], walls: [] }; // walking up there (#360, src/roofs.js)
-  mesh(modern.flatMap((b) => {
+  architecture(mesh(modern.flatMap((b) => {
     const R = roofSpec(b), o = R.overhang, eave = R.eave, cx = (b.x0 + b.x1) / 2, cz = (b.z0 + b.z1) / 2, r = rng(Math.round(b.x0 * 7 + b.z0 * 13));
     const hx = (b.x1 - b.x0) / 2 + o, hz = (b.z1 - b.z0) / 2 + o, k = R.rise / Math.min(hx, hz);
     const roofY = (x, z) => eave + k * Math.min(hx - Math.abs(x - cx), hz - Math.abs(z - cz)); // on the hip roof
@@ -2112,7 +2114,7 @@ export function* surroundingsParts({ grass, husL = null }) {
       wallRect(walk.walls, x - s2 / 2, x + s2 / 2, z - d2 / 2, z + d2 / 2, eave, vy);
     }
     return geos.map((g) => roofUV(g, 'felt')); // #2088: roofing-felt strips down each hip's fall line (shared roof map)
-  }), frost(wetSurface(new THREE.MeshStandardMaterial({ map: roofMap(), color: roofColor(0x6d7175), roughness: 0.9, side: THREE.DoubleSide }), 'roof'), 'roof'), SEASON.snow.roof); // #2175
+  }), frost(wetSurface(new THREE.MeshStandardMaterial({ map: roofMap(), color: roofColor(0x6d7175), roughness: 0.9, side: THREE.DoubleSide }), 'roof'), 'roof'), SEASON.snow.roof), 'roof'); // #2175
   // details (#109, #146): a light grey metal edge round the flat roofs, grey downpipes at the corners and every ~12 m
   mesh(modern.map((b) => { // #348: as far out as the house's eaves, its top at the eave line
     const R = roofSpec(b), o = R.overhang, d = R.edge + 0.1;
