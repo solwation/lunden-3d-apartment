@@ -359,6 +359,24 @@ def unlit_label_check(export_dir, export_materials, table, rule_rx, errors):
     return labels
 
 
+def catch_all_check(by_node, rule_rx, errors):
+    """#2442: a mesh-split key's fallback must explicitly name each intended residual mesh."""
+    checked = set()
+    for zone, parts in by_node.values():
+        for name, keys in parts:
+            for key in keys:
+                if not any(mx is not None and rx.search(key) for rx, mx, _ in rule_rx):
+                    continue
+                hit = next((r for rx, mx, r in rule_rx if rx.search(key) and (mx is None or mx.search(name))), None)
+                if hit is None or hit.get("mesh"):
+                    continue
+                catches = hit.get("catches")
+                if not isinstance(catches, list) or name not in catches:
+                    errors.append(f"shared key {key} on {zone}/{name} reaches an undeclared catch-all {hit['material']}; add a source-specific selector or explicit catches")
+                checked.add((zone, name, key))
+    return len(checked)
+
+
 def main(argv):
     args = [a for a in argv if not a.startswith("--")]
     export_dir = args[0] if args else os.path.join(ROOT, "unreal", "Lunden", "Import")
@@ -536,6 +554,10 @@ def main(argv):
     # 7. #2321: vertex colours drawn in every zone
     vc_keys = vertex_color_check(export_dir, table, rule_rx, errors)
     print(f"vertex-coloured keys (all zones): {vc_keys}, each on a master that multiplies the vertex colour in")
+
+    # 13. Unknown siblings of a shared patterned key may not silently become wall tiles.
+    catches = catch_all_check(zone_meshes(export_dir), rule_rx, errors)
+    print(f"explicit shared-key catch-alls (#2442): {catches} mesh/key pairs")
 
     # 1. coverage, per (key, mesh) so mesh selectors count
     nodes = scope_nodes(export_dir, table["scope"])

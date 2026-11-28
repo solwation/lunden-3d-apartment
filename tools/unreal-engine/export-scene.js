@@ -432,7 +432,9 @@ function materialInfo(m) {
     // #2318: the web's own surface class (its weather layers tag it: src/wetsurface.js 'brick', 'roof', 'render' …,
     // src/wetground.js 'asphalt', 'paving' …, src/snowground.js's ground class), so test_materials.py finds the brick, roof,
     // asphalt and paving keys from the export
-    surface: m.userData?.wetSurface ?? m.userData?.wetGround ?? m.userData?.snowGround ?? null } };
+    surface: m.userData?.wetSurface ?? m.userData?.wetGround ?? m.userData?.snowGround
+      // #2442: sheltered portik paving has no weather tag, but keeps the same source paving packed map.
+      ?? (m.roughnessMap?.name === 'paving-height-roughness' ? 'paving' : null) } };
 }
 
 /** A plain float geometry with position / normal / uv / colour and the index (no custom or quantised attributes). */
