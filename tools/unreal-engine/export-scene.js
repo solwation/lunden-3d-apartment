@@ -867,10 +867,12 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
     const powerCut = unlit ? r4(garageBake?.powerCut ?? extra.labelPower?.get(m) ?? 1) : null;
     const bulb = m === lightsInfo.patioBulb;
     const siteSuffix = siteMap ? m.map.name.replaceAll('-', '_') : null;
-    // Keep the unlit bulbs, bark textures and three foliage types distinct from furnishing images.
+    const carTrim = m.roughnessMap?.name === 'car-trim-surface' && m.roughnessMap === m.metalnessMap;
+    // Keep the packed car trim map distinct from otherwise identical untextured material factors.
+    const trimSuffix = carTrim ? 'car_trim_surface' : null;
     const river = m.userData.riverSurface;
     const riverSuffix = river && (river.flow ? 'river_flow' : 'river_edge');
-    const originalSuffix = bulb ? 'patio_string_bulb' : riverSuffix || siteSuffix || bark || LEAF_VARIANTS.get(m.name) || tex?.id;
+    const originalSuffix = bulb ? 'patio_string_bulb' : riverSuffix || siteSuffix || bark || trimSuffix || LEAF_VARIANTS.get(m.name) || tex?.id;
     const suffix = [originalSuffix, garageBake ? `garage_baked_p${Math.round(powerCut * 1000000)}` : null].filter(Boolean).join('_');
     const key = suffix ? `${base}_${suffix}` : base;
     let em = materials.get(key);
@@ -886,6 +888,8 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
         em.map = m.map;
         em.roughnessMap = em.metalnessMap = m.roughnessMap;
       } else if (tex) { em.map = tex.out; em.userData.texture = tex.id; }
+      // The source already stores roughness in G and metalness in B, sampled at each trim part's constant UV.
+      if (carTrim) em.roughnessMap = em.metalnessMap = m.roughnessMap;
       const curtain = curtains.get(m);
       if (curtain) {
         em.emissiveMap = em.map; // same sRGB texels, sampler, UV channel and transform
