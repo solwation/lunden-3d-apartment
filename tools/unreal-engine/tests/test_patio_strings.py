@@ -10,6 +10,8 @@ import unreal as u
 project = Path(u.Paths.convert_relative_path_to_full(u.Paths.project_dir()))
 sys.path.insert(0, str(project.parents[1] / "tools/unreal-engine/tests"))
 import save_isolation  # noqa: E402
+sys.path.insert(0, str(project.parents[1] / "tools/unreal-engine/python"))
+import patio_tone  # noqa: E402
 
 with (project / "Import/l1007-uteplats.glb").open("rb") as glb:
     glb.seek(12)
@@ -20,6 +22,11 @@ bulb_ids = {n["extras"]["id"] for n in nodes if n.get("extras", {}).get("patioSt
 measurements = json.loads((project / "Import/measurements.json").read_text(encoding="utf-8"))
 lights = [row for row in measurements["lights"] if row.get("name") == "ljusslingan"]
 driver_spec, = [row for row in lights if row.get("patioBulbs")]
+patio_tone.validate_source(driver_spec["patioBulbs"])
+if u.SystemLibrary.get_console_variable_int_value("r.SceneColorFormat") != 4:
+    raise RuntimeError("Source bulb pristine-scene guard requires the actual RGBA16F scene format")
+if u.SystemLibrary.get_console_variable_int_value("r.CustomDepth") != 3:
+    raise RuntimeError("Source bulb tone-map exception requires actual CustomDepth/stencil mode3")
 if not bulb_ids or len(lights) != 2:
     raise RuntimeError("Expected the exported patio bulbs and both light pools")
 
@@ -81,12 +88,24 @@ def patio_strings():
             mid = driver.get_editor_property("StringMaterial")
             if not mid or any(a.get_component_by_class(u.StaticMeshComponent).get_material(0) != mid for a in bulbs):
                 raise RuntimeError(f"At {hour}, the {len(bulbs)} bulbs do not share the driver's dynamic material")
+            if len(patio_tone.depth_users(game)) != len(bulbs):
+                raise RuntimeError("Patio bulbs lost the source tone-map visibility/identity/MID contract")
             actual = mid.get_vector_parameter_value("BaseColorFactor")
+            expected_scene = u.MaterialLibrary.get_vector_parameter_value(game, mpc, patio_tone.EXPECTED_PARAMETER)
+            if any(a != b for a,b in zip((actual.r,actual.g,actual.b),
+                                         (expected_scene.r,expected_scene.g,expected_scene.b))):
+                raise RuntimeError("Patio pristine-scene expected colour differs from the actual shared MID")
             factor = glow["idle"] + glow["boost"] * on * supply
             if any(abs(a - b * factor) > 1e-4 for a, b in zip((actual.r, actual.g, actual.b), (base.r, base.g, base.b))):
                 raise RuntimeError(f"At {hour}, unexpected patio bulb colour {actual}")
-            for lamp in pools:
-                intensity = lamp.get_component_by_class(u.PointLightComponent).intensity
+            for lamp, row in zip(pools, lights):
+                light = lamp.get_component_by_class(u.PointLightComponent)
+                if (not light.get_editor_property("use_inverse_squared_falloff")
+                        or abs(light.get_editor_property("attenuation_radius") - row["distance"]*100) > 1e-3
+                        or light.get_editor_property("source_radius") != 0.0
+                        or light.get_editor_property("source_length") != 0.0):
+                    raise RuntimeError("Patio pool no longer matches a source point light/range")
+                intensity = light.intensity
                 if abs(intensity - lamp.get_editor_property("Candela") * on * supply) > 1e-3:
                     raise RuntimeError(f"At {hour}, unexpected pool intensity {intensity}")
         u.log(f"LUNDEN_PATIO_STRINGS_TEST_OK {len(bulbs)} bulbs and two pools across rain, dusk and a power cut")

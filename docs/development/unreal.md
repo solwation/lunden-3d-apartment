@@ -1269,6 +1269,15 @@ sky's brightness and the locked exposure.
   material. Actual UE compilation, 20 canonical steps and source/package guards passed. Night/cloud code
   preservation and prior evidence were reused; no new night/Moon capture was run. In particular, #2421's
   remaining night-luminance failure is not resolved here, and Windows full-profile testing is not claimed.
+- **Patio bulb source tone path (#2409, partial).** The opaque source bulbs keep their
+  `toneMapped:false` colour through the final Neutral pass, identified by their actual
+  exported IDs/shared MID and visible CustomDepth stencil239. The exact16F-or-R11
+  storage check accounts for the stock postprocess intermediate change. It retains a
+  documented format ambiguity; it is not universal transparent-composition parity.
+  [Actual Linux evidence](../verification/2409/README.md) passes the controller test,
+  five GPU checks and22 apartment rows. The original patio bulb-row/pool image gates
+  still FAIL (Y0.626/0.479); #2409 remains open. Native exit0 is recorded separately
+  from the supervising outer143 under #2473. No intensity/exposure/ROI was fitted.
 - **Clear night sky (#2366).** The two stored START exposure trials put the web's sky luminance between
   the game exposure and +1.76 EV. The sky material applies a fitted +1.53 EV (*guess*) to the atmospheric
   background at astronomical night. The correction fades out with cloud cover and between astronomical and

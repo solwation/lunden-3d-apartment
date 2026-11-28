@@ -1,4 +1,5 @@
 [
+  {"id":1765,"date":"2026-11-28","text":"Unreal-versionens ljusslinga har ljusare lampor som bättre följer webbens färger.","issues":[2409]},
   {"id": 1764, "date": "2026-11-28", "text": "Novemberhimlen i Unreal-versionen följer nu webbens ljusa lavendelton vid låg dagsol.", "issues": [2434]},
   {"id": 1763, "date": "2026-11-26", "text": "Spelet kraschar inte längre när ytterplagget tas på eller av, till exempel när du provar jacka i avatarpanelen.", "issues": [2463], "group": "avatars"},
   {"id": 1762, "date": "2026-11-22", "text": "Windows-betan installeras och laddas nu med riktiga fönster som visar hur långt hämtningen har kommit, utan konsolfönster.", "issues": [2420]},

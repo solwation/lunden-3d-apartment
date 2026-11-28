@@ -1,0 +1,242 @@
+{
+  "completed": true,
+  "launcherPID": 4040090,
+  "preflight": {
+    "headExact": true,
+    "all247ExactReadonly": true,
+    "generatedExact": true,
+    "exportExact": true,
+    "dependenciesExact": true,
+    "probePinsExact": true
+  },
+  "command": [
+    "/usr/bin/python3",
+    "/home/devcontainers/wt/codex-2434-native/tools/unreal-engine/run-linux.py",
+    "--engine-root",
+    "/mnt/d/UnrealEngine/5.8.4",
+    "--data-dir",
+    "/mnt/d/LundenLinux",
+    "--timeout",
+    "420",
+    "--owner",
+    "olw-win10-codex-20261127 #2409 fence read-only",
+    "python",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2409/resume-native/fence-null-v1/read-fence.py"
+  ],
+  "runnerPID": 4040711,
+  "runnerExitCode": 0,
+  "nativeRun": "/mnt/d/LundenLinux/runs/20261128T051050265400-4040711",
+  "nativeResult": {
+    "engine": "5.8.4",
+    "profile": "nullrhi",
+    "exitCode": 0,
+    "timedOut": false,
+    "passed": true,
+    "completed": true,
+    "log": "/mnt/d/LundenLinux/runs/20261128T051050265400-4040711/editor.log",
+    "logErrors": [],
+    "command": [
+      "/mnt/d/UnrealEngine/5.8.4/Engine/Binaries/Linux/UnrealEditor-Cmd",
+      "/home/devcontainers/wt/codex-2434-native/unreal/Lunden/Lunden.uproject",
+      "-DefEngineIni=/mnt/d/LundenLinux/runs/20261128T051050265400-4040711/LowEngine.ini",
+      "-LocalDataCachePath=/mnt/d/LundenLinux/DerivedDataCache",
+      "-ZenDataPath=/mnt/d/LundenLinux/Zen",
+      "-unattended",
+      "-nosplash",
+      "-nosound",
+      "-nop4",
+      "-stdout",
+      "-FullStdOutLogOutput",
+      "-NoCrashDialog",
+      "-abslog=/mnt/d/LundenLinux/runs/20261128T051050265400-4040711/editor.log",
+      "-nullrhi",
+      "-run=pythonscript",
+      "-script=/home/devcontainers/.local/state/lunden-codex-20261127/2409/resume-native/fence-null-v1/read-fence.py"
+    ],
+    "engineIniSha256": "95332399ac3f08ed1e677ec66a42a28b4d72663e01f9d832cc9c6108e6318653",
+    "vulkanIcd": null,
+    "revision": "2a01339854f7340b69ed585868504ea8b7075bbc",
+    "signal": null,
+    "error": null,
+    "seconds": 111.02
+  },
+  "readback": {
+    "completed": true,
+    "classification": "Actual saved fence chains in NullRHI; not image acceptance",
+    "slots": [
+      {
+        "sourceIDs": [
+          "mesh_l0_x4_z1522_y90"
+        ],
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.mesh_l0_x4_z1522_y90",
+        "tags": [
+          "mesh_l0_x4_z1522_y90",
+          "kind:structure",
+          "zone:l1007-uteplats",
+          "level:0"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.mesh_l0_x4_z1522_y90.StaticMeshComponent0",
+        "mesh": "/Game/Lunden/Generated/l1007-uteplats/StaticMeshes/mesh_l0_x4_z1522_y90.mesh_l0_x4_z1522_y90",
+        "slot": 0,
+        "material": "/Game/Lunden/Materials/MI_LundenScreenWall.MI_LundenScreenWall"
+      },
+      {
+        "sourceIDs": [
+          "mesh_l0_x571_z1522_y90"
+        ],
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.mesh_l0_x571_z1522_y90",
+        "tags": [
+          "mesh_l0_x571_z1522_y90",
+          "kind:structure",
+          "zone:l1007-uteplats",
+          "level:0"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.mesh_l0_x571_z1522_y90.StaticMeshComponent0",
+        "mesh": "/Game/Lunden/Generated/l1007-uteplats/StaticMeshes/mesh_l0_x571_z1522_y90.mesh_l0_x571_z1522_y90",
+        "slot": 0,
+        "material": "/Game/Lunden/Materials/MI_LundenScreenWall.MI_LundenScreenWall"
+      }
+    ],
+    "materials": {
+      "/Game/Lunden/Materials/MI_LundenScreenWall.MI_LundenScreenWall": {
+        "leaf": "/Game/Lunden/Materials/MI_LundenScreenWall.MI_LundenScreenWall",
+        "effectiveParameters": {
+          "scalars": {
+            "Joint": 0.004000000189989805,
+            "Bond": 0.0,
+            "Stagger": 0.0,
+            "Variation": 0.05999999865889549,
+            "Grain": 0.029999999329447746,
+            "Roughness": 0.8500000238418579,
+            "JointRoughness": 0.9599999785423279,
+            "FilterBrick": 0.0,
+            "BedJoint": 0.0,
+            "TexelBlur": 0.0,
+            "HueJitter": 0.0,
+            "SaturationJitter": 0.0,
+            "LightnessJitter": 0.0
+          },
+          "vectors": {
+            "Size": [
+              0.09000000357627869,
+              50.0,
+              0.0,
+              0.0
+            ],
+            "Color": [
+              0.34191441535949707,
+              0.30946892499923706,
+              0.18116424977779388,
+              1.0
+            ],
+            "JointColor": [
+              0.12213877588510513,
+              0.10702310502529144,
+              0.06480326503515244,
+              1.0
+            ]
+          },
+          "textures": {}
+        },
+        "chain": [
+          {
+            "path": "/Game/Lunden/Materials/MI_LundenScreenWall.MI_LundenScreenWall",
+            "class": "MaterialInstanceConstant",
+            "effectiveParametersAtThisLink": {
+              "scalars": {
+                "Joint": 0.004000000189989805,
+                "Bond": 0.0,
+                "Stagger": 0.0,
+                "Variation": 0.05999999865889549,
+                "Grain": 0.029999999329447746,
+                "Roughness": 0.8500000238418579,
+                "JointRoughness": 0.9599999785423279,
+                "FilterBrick": 0.0,
+                "BedJoint": 0.0,
+                "TexelBlur": 0.0,
+                "HueJitter": 0.0,
+                "SaturationJitter": 0.0,
+                "LightnessJitter": 0.0
+              },
+              "vectors": {
+                "Size": [
+                  0.09000000357627869,
+                  50.0,
+                  0.0,
+                  0.0
+                ],
+                "Color": [
+                  0.34191441535949707,
+                  0.30946892499923706,
+                  0.18116424977779388,
+                  1.0
+                ],
+                "JointColor": [
+                  0.12213877588510513,
+                  0.10702310502529144,
+                  0.06480326503515244,
+                  1.0
+                ]
+              },
+              "textures": {}
+            }
+          },
+          {
+            "path": "/Game/Lunden/Materials/M_LundenTiled.M_LundenTiled",
+            "class": "Material",
+            "shadingModel": "<MaterialShadingModel.MSM_DEFAULT_LIT: 1>"
+          }
+        ],
+        "graph": [
+          {
+            "class": "MaterialExpressionCustom",
+            "path": "/Game/Lunden/Materials/M_LundenTiled.M_LundenTiled:MaterialExpressionCustom_0",
+            "codeSHA256": "ed739b597270316824dc80c63957ca308adf15de1e3e66a1845be6cde29d0eef",
+            "code": "float2 S = max(Size.xy, float2(0.001, 0.001));\nfloat2 p = UV / S;\nfloat col = floor(p.x);\np.y += Stagger * frac(sin(col * 12.9898 + 1.7) * 43758.5453);\nfloat row = floor(p.y);\np.x += Bond * row;\nfloat2 cell = floor(p);\nfloat2 f = frac(p);\nfloat2 d = min(f, 1.0 - f) * S;\nfloat edge = min(d.x, d.y);\nfloat hj = Joint * 0.5;\nfloat joint = Joint > 0.0 ? 1.0 - smoothstep(hj, hj + max(hj, 0.0006), edge) : 0.0;\n\nif (FilterBrick > 0.5) {\n    float2 footprint = max(fwidth(UV), TexelBlur) / S;\n    float2 gap = saturate(float2(Joint, BedJoint > 0.0 ? BedJoint : Joint) / S);\n    float4 span = max(float4(footprint.xx, 0.5 * footprint.yy), 0.0001);\n    float4 faceWidth = float4(1.0 - gap.xx, 0.5 * (1.0 - gap.yy));\n    float x = frac(UV.x / S.x);\n    float y = frac(0.5 * UV.y / S.y);\n    float4 center = float4(x, frac(x + Bond), y, frac(y + 0.5))\n                  - float4(0.5 * gap.xx, 0.25 * gap.yy);\n    float4 lo = center - 0.5 * span;\n    float4 hi = center + 0.5 * span;\n    float4 area = (floor(hi) - floor(lo)) * faceWidth\n                + min(frac(hi), faceWidth) - min(frac(lo), faceWidth);\n    float4 coverage = saturate(area / span);\n    joint = saturate(1.0 - dot(coverage.xy, coverage.zw));\n    float2 cells = fwidth(UV) / S;\n    float detail = 1.0 - smoothstep(0.5, 2.0, max(cells.x, cells.y));\n    Variation *= detail;\n    Grain *= detail;\n    HueJitter *= detail;\n    SaturationJitter *= detail;\n    LightnessJitter *= detail;\n}\nfloat h = frac(sin(dot(cell, float2(127.1, 311.7))) * 43758.5453);\nfloat3 face = Color.rgb * saturate(1.0 + Variation * (h * 2.0 - 1.0));\nif (HueJitter + SaturationJitter + LightnessJitter > 0.0) {\n    float mx = max(face.r, max(face.g, face.b));\n    float mn = min(face.r, min(face.g, face.b));\n    float dc = mx - mn;\n    float hl = 0.5 * (mx + mn);\n    float hs = dc > 0.0 ? (hl <= 0.5 ? dc / (mx + mn) : dc / (2.0 - mx - mn)) : 0.0;\n    float hh = 0.0;\n    if (dc > 0.0) {\n        if (mx == face.r) hh = (face.g - face.b) / dc + (face.g < face.b ? 6.0 : 0.0);\n        else if (mx == face.g) hh = (face.b - face.r) / dc + 2.0;\n        else hh = (face.r - face.g) / dc + 4.0;\n        hh /= 6.0;\n    }\n    float3 jit = frac(sin(float3(dot(cell, float2(269.5, 183.3)), dot(cell, float2(419.2, 371.9)), dot(cell, float2(61.7, 97.3)))) * 43758.5453) - 0.5;\n    hh = frac(hh + HueJitter * jit.x);\n    hs = saturate(hs + SaturationJitter * jit.y);\n    hl = saturate(hl + LightnessJitter * jit.z);\n    float hi = hl <= 0.5 ? hl * (1.0 + hs) : hl + hs - hl * hs;\n    float lo = 2.0 * hl - hi;\n    float3 t = frac(hh + float3(1.0 / 3.0, 0.0, -1.0 / 3.0));\n    float3 rise = lo + (hi - lo) * 6.0 * t;\n    float3 fall = lo + (hi - lo) * 6.0 * (2.0 / 3.0 - t);\n    face = lerp(lerp(lerp(rise, hi, step(1.0 / 6.0, t)), fall, step(0.5, t)), lo, step(2.0 / 3.0, t));\n}\nfloat g = sin(UV.x * 210.0 + sin(UV.y * 6.0 + h * 40.0) * 2.0 + h * 17.0);\nface *= 1.0 + Grain * g;\nreturn float4(lerp(face, JointColor.rgb, joint), lerp(Roughness, JointRoughness, joint));"
+          },
+          {
+            "class": "MaterialExpressionTextureCoordinate",
+            "path": "/Game/Lunden/Materials/M_LundenTiled.M_LundenTiled:MaterialExpressionTextureCoordinate_1",
+            "coordinateIndex": "0",
+            "uTiling": "1.0",
+            "vTiling": "1.0"
+          }
+        ]
+      }
+    },
+    "pools": [
+      {
+        "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_ljusslingan_l0_x47_z1522",
+        "component": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_ljusslingan_l0_x47_z1522.Light",
+        "inverseSquared": true,
+        "intensityUnits": "<LightUnits.CANDELAS: 1>",
+        "intensity": 3.9200000762939453,
+        "radius": 400.0
+      },
+      {
+        "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_ljusslingan_l0_x528_z1522",
+        "component": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_lamp_ljusslingan_l0_x528_z1522.Light",
+        "inverseSquared": true,
+        "intensityUnits": "<LightUnits.CANDELAS: 1>",
+        "intensity": 3.9200000762939453,
+        "radius": 400.0
+      }
+    ],
+    "foundExactSourceIDs": [
+      "mesh_l0_x4_z1522_y90",
+      "mesh_l0_x571_z1522_y90"
+    ]
+  },
+  "seconds": 113.26713797799312,
+  "postflight": {
+    "headExact": true,
+    "all247ExactReadonly": true,
+    "generatedExact": true,
+    "exportExact": true,
+    "dependenciesExact": true,
+    "probePinsExact": true
+  },
+  "passed": true,
+  "actualOuterExitCode": 0,
+  "outerEvidence": "exec session79726 write_stdin returned exit_code0 after actual process completion"
+}

@@ -1,15 +1,15 @@
 {
   "completed": true,
-  "sourceHead": "f4df951c7db0c5e6be6702744c469515b98f0160",
-  "measurementsSHA256": "cfd94bade4a6e26f2d0837c1d571c7f39c7c5cf4042a08835e0d2d72f959901b",
+  "sourceHead": "2a01339854f7340b69ed585868504ea8b7075bbc",
+  "measurementsSHA256": "5e22a09c5b9787c6387daac3614370ba460dd08367cc9690cb704f6fc42eacd6",
   "contractSHA256": "d3c89d4b9a50404ed629c5c54ce863ad1eca9b804249748a1b39abef1514abe8",
   "runtimeEnvSHA256": "c755eebf80b80cf331f9f0a9a1fdfafc1f5671f125dec393da6c0bd051e82e62",
   "correctedFurnishingContractSHA256": "1f559812415bdc9a6bbfcd5030957bae510b208833318c45021d3a89545d47b6",
   "sourceSHA256": {
-    "/home/devcontainers/.local/state/lunden-codex-20261127/2409/native-source/capture-four.py": "160104b7b41bed214b495e5760e4b09a1f44cccaaf1c9ba6bbed7e74accb9786",
-    "/home/devcontainers/lunden-linux/tools/unreal-engine/python/build_lighting.py": "ca48ad5de1a5e6f28914f0bc13fcac5a0e8cc4789c438ea42da3b892bc2dda0d",
-    "/home/devcontainers/lunden-linux/tools/unreal-engine/tests/capture_light.py": "cccd11fe7dc9a4a4d999a512cfb6694e53a8f31b918018b771ecf0e9899b41b2",
-    "/home/devcontainers/lunden-linux/tools/unreal-engine/python/screenshot_level.py": "1c25fc83235b83a64b3c9c89bfbef2665d1376975f272e3462ce135f1972f70f",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2409/resume-native/native-source/capture-four-2409.py": "4d715b9cb0f142aee2b51cb67f0e4d458af366792733aacfd389a6531b9da51b",
+    "/home/devcontainers/wt/codex-2434-native/tools/unreal-engine/python/build_lighting.py": "4781305a2e9c6327ee3e16cb93ce60299176831adbc566c44e415c76c6f46190",
+    "/home/devcontainers/wt/codex-2434-native/tools/unreal-engine/tests/capture_light.py": "cccd11fe7dc9a4a4d999a512cfb6694e53a8f31b918018b771ecf0e9899b41b2",
+    "/home/devcontainers/wt/codex-2434-native/tools/unreal-engine/python/screenshot_level.py": "1c25fc83235b83a64b3c9c89bfbef2665d1376975f272e3462ce135f1972f70f",
     "/home/devcontainers/.local/state/lunden-codex-20261127/2394/verify-production.py": "1d4a19a4c360e7f79f3970e23e5e55a691711a47b07d7c62e6953879eb24c6f2",
     "/home/devcontainers/.local/state/lunden-codex-20261127/2394/season-visibility-only.py": "fa844d50bc9ac15225058ac1a1b0c95afdbaa87d8f44cdf1e78603fbbc486a88",
     "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/probe-after-production-v2.py": "40bb40cd992556d91ee03dc7f1c455bdda73452325c526a0f326fd8343a78f3b",
@@ -33,7 +33,7 @@
         "separateTranslucencyShowFlag": true,
         "privateBlendableAttached": false
       },
-      "imageSHA256": "789090a36c49a7e71a87edd60719a3675ead96d4bd91e5204d97da1efeae0293",
+      "imageSHA256": "ade742489c28431b72611f7b78d096ccebc95683fc668ada23d785c4b18aef11",
       "actualRuntime": {
         "WindowSkyStrength": 0.24129019677639008,
         "WindowSunStrength": 0.1486421674489975,
@@ -206,34 +206,10 @@
         "limitation": "Visibility/MPC only in static editor captures. Existing collision is not synchronized; no gameplay, PIE, interaction or Chaos acceptance. ApplySeason/ApplySeasonAt/ApplyClock are not called. Do not save these transient world changes.",
         "sourceFileSha256": {
           "/home/devcontainers/.local/state/lunden-codex-20261127/2394/season-visibility-only.py": "fa844d50bc9ac15225058ac1a1b0c95afdbaa87d8f44cdf1e78603fbbc486a88",
-          "/home/devcontainers/lunden-linux/tools/unreal-engine/tests/capture_world.py": "380545105f0ff30e6cca3095ff44c7bbf138491f731ecd6dd6a7564606f9d553",
-          "/home/devcontainers/lunden-linux/tools/unreal-engine/python/build_seasons.py": "33ab2c0759b6a54cd465f6a3ec7e72cdede9e366e96a59b0dfd80b812c3d3e9c"
+          "/home/devcontainers/wt/codex-2434-native/tools/unreal-engine/tests/capture_world.py": "380545105f0ff30e6cca3095ff44c7bbf138491f731ecd6dd6a7564606f9d553",
+          "/home/devcontainers/wt/codex-2434-native/tools/unreal-engine/python/build_seasons.py": "33ab2c0759b6a54cd465f6a3ec7e72cdede9e366e96a59b0dfd80b812c3d3e9c"
         },
         "actors": [
-          {
-            "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_floorlamp_l0_x39_z882",
-            "dateWindowReadable": true,
-            "window": [
-              107,
-              1130
-            ],
-            "hourWindow": null,
-            "nativeInSeason": true,
-            "nativeInHours": false,
-            "gameHidden": false
-          },
-          {
-            "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_xmastree_l0_x82_z846",
-            "dateWindowReadable": true,
-            "window": [
-              1201,
-              106
-            ],
-            "hourWindow": null,
-            "nativeInSeason": false,
-            "nativeInHours": false,
-            "gameHidden": true
-          },
           {
             "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_armchair_l0_x79_z839",
             "dateWindowReadable": true,
@@ -2870,6 +2846,30 @@
             "nativeInSeason": true,
             "nativeInHours": true,
             "gameHidden": false
+          },
+          {
+            "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_floorlamp_l0_x39_z882",
+            "dateWindowReadable": true,
+            "window": [
+              107,
+              1130
+            ],
+            "hourWindow": null,
+            "nativeInSeason": true,
+            "nativeInHours": false,
+            "gameHidden": false
+          },
+          {
+            "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_xmastree_l0_x82_z846",
+            "dateWindowReadable": true,
+            "window": [
+              1201,
+              106
+            ],
+            "hourWindow": null,
+            "nativeInSeason": false,
+            "nativeInHours": false,
+            "gameHidden": true
           }
         ]
       },
@@ -2978,7 +2978,7 @@
         "separateTranslucencyShowFlag": true,
         "privateBlendableAttached": false
       },
-      "imageSHA256": "91278f4972e8d61c358ea59eb024d3ae5c3b9e01e095e425ef078d4f68aa0775",
+      "imageSHA256": "4e532063795e1dc04401575d4fce744bb4d7e8af4d3cc5fa40b7f06fdc699004",
       "actualRuntime": {
         "WindowSkyStrength": 1.5,
         "WindowSunStrength": 3.0,
@@ -3151,34 +3151,10 @@
         "limitation": "Visibility/MPC only in static editor captures. Existing collision is not synchronized; no gameplay, PIE, interaction or Chaos acceptance. ApplySeason/ApplySeasonAt/ApplyClock are not called. Do not save these transient world changes.",
         "sourceFileSha256": {
           "/home/devcontainers/.local/state/lunden-codex-20261127/2394/season-visibility-only.py": "fa844d50bc9ac15225058ac1a1b0c95afdbaa87d8f44cdf1e78603fbbc486a88",
-          "/home/devcontainers/lunden-linux/tools/unreal-engine/tests/capture_world.py": "380545105f0ff30e6cca3095ff44c7bbf138491f731ecd6dd6a7564606f9d553",
-          "/home/devcontainers/lunden-linux/tools/unreal-engine/python/build_seasons.py": "33ab2c0759b6a54cd465f6a3ec7e72cdede9e366e96a59b0dfd80b812c3d3e9c"
+          "/home/devcontainers/wt/codex-2434-native/tools/unreal-engine/tests/capture_world.py": "380545105f0ff30e6cca3095ff44c7bbf138491f731ecd6dd6a7564606f9d553",
+          "/home/devcontainers/wt/codex-2434-native/tools/unreal-engine/python/build_seasons.py": "33ab2c0759b6a54cd465f6a3ec7e72cdede9e366e96a59b0dfd80b812c3d3e9c"
         },
         "actors": [
-          {
-            "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_floorlamp_l0_x39_z882",
-            "dateWindowReadable": true,
-            "window": [
-              107,
-              1130
-            ],
-            "hourWindow": null,
-            "nativeInSeason": true,
-            "nativeInHours": false,
-            "gameHidden": false
-          },
-          {
-            "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_xmastree_l0_x82_z846",
-            "dateWindowReadable": true,
-            "window": [
-              1201,
-              106
-            ],
-            "hourWindow": null,
-            "nativeInSeason": false,
-            "nativeInHours": false,
-            "gameHidden": true
-          },
           {
             "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_armchair_l0_x79_z839",
             "dateWindowReadable": true,
@@ -5815,6 +5791,30 @@
             "nativeInSeason": true,
             "nativeInHours": true,
             "gameHidden": false
+          },
+          {
+            "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_floorlamp_l0_x39_z882",
+            "dateWindowReadable": true,
+            "window": [
+              107,
+              1130
+            ],
+            "hourWindow": null,
+            "nativeInSeason": true,
+            "nativeInHours": false,
+            "gameHidden": false
+          },
+          {
+            "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_xmastree_l0_x82_z846",
+            "dateWindowReadable": true,
+            "window": [
+              1201,
+              106
+            ],
+            "hourWindow": null,
+            "nativeInSeason": false,
+            "nativeInHours": false,
+            "gameHidden": true
           }
         ]
       },
@@ -5923,7 +5923,7 @@
         "separateTranslucencyShowFlag": true,
         "privateBlendableAttached": false
       },
-      "imageSHA256": "2ba6a2e7b8e90f530148f3cc92ae13f7ab1285b3ed6e1c4c0a4416732274ff31",
+      "imageSHA256": "b1f56ae874fe349e02788e3b9e20fb7d5dbc9b0f5dbe279d41f1c99ab8e97284",
       "actualRuntime": {
         "WindowSkyStrength": 0.24129019677639008,
         "WindowSunStrength": 0.1486421674489975,
@@ -6096,34 +6096,10 @@
         "limitation": "Visibility/MPC only in static editor captures. Existing collision is not synchronized; no gameplay, PIE, interaction or Chaos acceptance. ApplySeason/ApplySeasonAt/ApplyClock are not called. Do not save these transient world changes.",
         "sourceFileSha256": {
           "/home/devcontainers/.local/state/lunden-codex-20261127/2394/season-visibility-only.py": "fa844d50bc9ac15225058ac1a1b0c95afdbaa87d8f44cdf1e78603fbbc486a88",
-          "/home/devcontainers/lunden-linux/tools/unreal-engine/tests/capture_world.py": "380545105f0ff30e6cca3095ff44c7bbf138491f731ecd6dd6a7564606f9d553",
-          "/home/devcontainers/lunden-linux/tools/unreal-engine/python/build_seasons.py": "33ab2c0759b6a54cd465f6a3ec7e72cdede9e366e96a59b0dfd80b812c3d3e9c"
+          "/home/devcontainers/wt/codex-2434-native/tools/unreal-engine/tests/capture_world.py": "380545105f0ff30e6cca3095ff44c7bbf138491f731ecd6dd6a7564606f9d553",
+          "/home/devcontainers/wt/codex-2434-native/tools/unreal-engine/python/build_seasons.py": "33ab2c0759b6a54cd465f6a3ec7e72cdede9e366e96a59b0dfd80b812c3d3e9c"
         },
         "actors": [
-          {
-            "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_floorlamp_l0_x39_z882",
-            "dateWindowReadable": true,
-            "window": [
-              107,
-              1130
-            ],
-            "hourWindow": null,
-            "nativeInSeason": true,
-            "nativeInHours": false,
-            "gameHidden": false
-          },
-          {
-            "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_xmastree_l0_x82_z846",
-            "dateWindowReadable": true,
-            "window": [
-              1201,
-              106
-            ],
-            "hourWindow": null,
-            "nativeInSeason": false,
-            "nativeInHours": false,
-            "gameHidden": true
-          },
           {
             "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_armchair_l0_x79_z839",
             "dateWindowReadable": true,
@@ -8760,6 +8736,30 @@
             "nativeInSeason": true,
             "nativeInHours": true,
             "gameHidden": false
+          },
+          {
+            "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_floorlamp_l0_x39_z882",
+            "dateWindowReadable": true,
+            "window": [
+              107,
+              1130
+            ],
+            "hourWindow": null,
+            "nativeInSeason": true,
+            "nativeInHours": false,
+            "gameHidden": false
+          },
+          {
+            "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_xmastree_l0_x82_z846",
+            "dateWindowReadable": true,
+            "window": [
+              1201,
+              106
+            ],
+            "hourWindow": null,
+            "nativeInSeason": false,
+            "nativeInHours": false,
+            "gameHidden": true
           }
         ]
       },
@@ -8868,7 +8868,7 @@
         "separateTranslucencyShowFlag": true,
         "privateBlendableAttached": false
       },
-      "imageSHA256": "a722cf7f6fe625b48b20e5f193644e8c410a8ad20df9faea5821e65192ce3d5a",
+      "imageSHA256": "f70900a6ea2e698ae90b057aa941398babb7e3d363d0a42f246bd120012ee37e",
       "actualRuntime": {
         "WindowSkyStrength": 0.24129019677639008,
         "WindowSunStrength": 0.1486421674489975,
@@ -9041,34 +9041,10 @@
         "limitation": "Visibility/MPC only in static editor captures. Existing collision is not synchronized; no gameplay, PIE, interaction or Chaos acceptance. ApplySeason/ApplySeasonAt/ApplyClock are not called. Do not save these transient world changes.",
         "sourceFileSha256": {
           "/home/devcontainers/.local/state/lunden-codex-20261127/2394/season-visibility-only.py": "fa844d50bc9ac15225058ac1a1b0c95afdbaa87d8f44cdf1e78603fbbc486a88",
-          "/home/devcontainers/lunden-linux/tools/unreal-engine/tests/capture_world.py": "380545105f0ff30e6cca3095ff44c7bbf138491f731ecd6dd6a7564606f9d553",
-          "/home/devcontainers/lunden-linux/tools/unreal-engine/python/build_seasons.py": "33ab2c0759b6a54cd465f6a3ec7e72cdede9e366e96a59b0dfd80b812c3d3e9c"
+          "/home/devcontainers/wt/codex-2434-native/tools/unreal-engine/tests/capture_world.py": "380545105f0ff30e6cca3095ff44c7bbf138491f731ecd6dd6a7564606f9d553",
+          "/home/devcontainers/wt/codex-2434-native/tools/unreal-engine/python/build_seasons.py": "33ab2c0759b6a54cd465f6a3ec7e72cdede9e366e96a59b0dfd80b812c3d3e9c"
         },
         "actors": [
-          {
-            "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_floorlamp_l0_x39_z882",
-            "dateWindowReadable": true,
-            "window": [
-              107,
-              1130
-            ],
-            "hourWindow": null,
-            "nativeInSeason": true,
-            "nativeInHours": false,
-            "gameHidden": false
-          },
-          {
-            "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_xmastree_l0_x82_z846",
-            "dateWindowReadable": true,
-            "window": [
-              1201,
-              106
-            ],
-            "hourWindow": null,
-            "nativeInSeason": false,
-            "nativeInHours": false,
-            "gameHidden": true
-          },
           {
             "actor": "/Game/Lunden/Generated/Interaction/Level_l1007_interaction.Level_l1007_interaction:PersistentLevel.furn_armchair_l0_x79_z839",
             "dateWindowReadable": true,
@@ -11705,6 +11681,30 @@
             "nativeInSeason": true,
             "nativeInHours": true,
             "gameHidden": false
+          },
+          {
+            "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_floorlamp_l0_x39_z882",
+            "dateWindowReadable": true,
+            "window": [
+              107,
+              1130
+            ],
+            "hourWindow": null,
+            "nativeInSeason": true,
+            "nativeInHours": false,
+            "gameHidden": false
+          },
+          {
+            "actor": "/Game/Lunden/Generated/Lighting/Level_lighting.Level_lighting:PersistentLevel.Lamp_furn_xmastree_l0_x82_z846",
+            "dateWindowReadable": true,
+            "window": [
+              1201,
+              106
+            ],
+            "hourWindow": null,
+            "nativeInSeason": false,
+            "nativeInHours": false,
+            "gameHidden": true
           }
         ]
       },
@@ -11798,21 +11798,13 @@
     }
   ],
   "lightingCheckExecutedHere": false,
-  "classification": "Capture-only baseline; prior canonical prefix historical, no build or PBR/Automation execution here",
+  "classification": "Current actual controlled Lighting/full20 prefix and PBR passed before this same-world capture; no fresh Automation claim",
   "nativePBRContract": {
-    "executedHere": false,
-    "actualMainPassed": false,
-    "classification": "Capture-only baseline; no PBR/Automation/full20 executed here. Prior full20 is historical evidence from overall FAILED V4 and is not upgraded to runPASS.",
-    "priorEvidence": {
-      "steps": "/home/devcontainers/.local/state/lunden-codex-20261127/2404/native-product-v4/canonical/sync-capture-steps.json",
-      "stepsSHA256": "ed932d909189fb21ed90c958acca67d6733b099c066da481d069a32c1cc67997",
-      "all20ActualPassed": true,
-      "overallOutcome": "/home/devcontainers/.local/state/lunden-codex-20261127/2404/native-v4-outcome.json",
-      "overallOutcomeSHA256": "e069b396641818ab992d615dbf98913a0a0a33603f7780b31d60fb06ea914ea1",
-      "overallPassed": false,
-      "executedHere": false,
-      "classification": "Historical actual prefix only; previous overall native255/runner1 preserved"
-    }
+    "source": "/home/devcontainers/wt/codex-2434-native/tools/unreal-engine/tests/test_rug_floor_pool.py",
+    "sha256": "909bae44d60d0e0caf6951391ba9533c13303e6dfb4ad99ed921d29adecd319f",
+    "actualMainPassed": true,
+    "scope": "existing source/PBR/controller contract; rendered fourteen-crop acceptance is separate",
+    "executedHere": true
   },
   "actualCVars": {
     "r.AntiAliasingMethod": 1,

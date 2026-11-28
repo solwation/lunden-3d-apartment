@@ -1,0 +1,21 @@
+{
+  "actuallyTestedSource": "2e8547db2a996fcfc5206aca3777aca5e4be7d20",
+  "currentNativeSource": "2a01339854f7340b69ed585868504ea8b7075bbc",
+  "actualExits": [
+    0,
+    0,
+    0
+  ],
+  "actualSeconds": 172.016,
+  "unchangedFilesSHA256": {
+    "tools/unreal-engine/tests/test_patio_strings.py": "abdec7b9fb21019bba920dc0e64558c29eed0aa8e1774ed3037271600b6f0f04",
+    "tools/unreal-engine/python/build_lighting.py": "4781305a2e9c6327ee3e16cb93ce60299176831adbc566c44e415c76c6f46190",
+    "tools/unreal-engine/tests/save_isolation.py": "9802dc89eb191048e8e8404e1dc4fb07dcfdb93af6db7843604cbce660b450c3"
+  },
+  "unchangedPatioFunctions": {
+    "validate_source": "AST byte-identical",
+    "source_ids": "AST byte-identical",
+    "depth_users": "AST byte-identical"
+  },
+  "scope": "Controller/source ID/MID/CustomDepth behavior reused across shader-only change; changed shader compiled and tested in actual V5 GPU, never a fresh functional test claim"
+}

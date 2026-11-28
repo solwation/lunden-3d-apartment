@@ -1,0 +1,2161 @@
+{
+  "completed": true,
+  "sourceHead": "2a01339854f7340b69ed585868504ea8b7075bbc",
+  "classification": "Actual cached canonical and source bulb candidate; no Windows full-profile claim",
+  "reusedCanonicalProduct": "/home/devcontainers/.local/state/lunden-codex-20261127/2409/resume-native/native-v2/product",
+  "canonicalStepsExecutedHere": 0,
+  "verificationScope": "Only changed Lighting rebuilt+actual --check; prior unchanged import/geometry/canonical proof reused explicitly. Current PBR and5images actual.",
+  "immediateRenderStates": {
+    "before": 1,
+    "during": 0,
+    "after": 1
+  },
+  "gpuProbe": {
+    "completed": true,
+    "restored": true,
+    "classification": "PRIVATE GPU selector diagnostics; original acceptance unchanged",
+    "scriptSHA256": "cb3bd91199f5be83be4b300c0ec0f8070a2a9c002179d2fc8703aab99914fd5c",
+    "selectorSHA256": "ae7126a80ee84c5b174a3ea104460110d19701c70e67614482238dc32591478e",
+    "actualCVars": {
+      "r.SceneColorFormat": 4,
+      "r.CustomDepth": 3
+    },
+    "actualShowFlags": [
+      [
+        "SeparateTranslucency",
+        true
+      ]
+    ],
+    "sceneFormatEvidence": "5.8.4 deferred SceneTexturesConfig.cpp GetSceneColorFormat:4/default PF_FloatRGBA, fallback same; no independent RHI texture descriptor API",
+    "sourceBulbPaths": [
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__10.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__11.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__12.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__13.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__14.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__15.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__16.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__17.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__18.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__19.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__2.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__20.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__21.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__22.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__23.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__24.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__25.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__26.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__27.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__28.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__29.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__3.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__30.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__31.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__32.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__33.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__34.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__35.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__36.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__37.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__38.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__39.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__4.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__40.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__41.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__42.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__43.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__44.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__45.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__46.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__47.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__48.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__49.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__5.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__50.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__51.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__52.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__53.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__54.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__55.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__56.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__57.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__58.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__59.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__6.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__60.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__61.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__62.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__63.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__64.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__65.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__66.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__67.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__68.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__69.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__7.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__70.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__71.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__72.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__73.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__74.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__75.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__76.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__77.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__78.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__79.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__8.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__80.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__81.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__82.StaticMeshComponent0",
+      "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__9.StaticMeshComponent0"
+    ],
+    "sourceMID": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+    "sourceRGB": [
+      1.4600000381469727,
+      0.9109821319580078,
+      0.3710620403289795
+    ],
+    "actualBindings": [
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__1",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__2",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__2",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__2.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__3",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__3",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__3.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__4",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__4",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__4.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__5",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__5",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__5.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__6",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__6",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__6.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__7",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__7",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__7.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__8",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__8",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__8.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__9",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__9",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__9.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__10",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__10",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__10.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__11",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__11",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__11.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__12",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__12",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__12.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__13",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__13",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__13.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__14",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__14",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__14.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__15",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__15",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__15.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__16",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__16",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__16.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__17",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__17",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__17.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__18",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__18",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__18.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__19",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__19",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__19.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__20",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__20",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__20.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__21",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__21",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__21.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__22",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__22",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__22.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__23",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__23",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__23.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__24",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__24",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__24.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__25",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__25",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__25.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__26",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__26",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__26.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__27",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__27",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__27.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__28",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__28",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__28.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__29",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__29",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__29.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__30",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__30",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__30.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__31",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__31",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__31.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__32",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__32",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__32.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__33",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__33",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__33.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__34",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__34",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__34.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__35",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__35",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__35.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__36",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__36",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__36.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__37",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__37",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__37.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__38",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__38",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__38.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__39",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__39",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__39.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__40",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__40",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__40.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__41",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__41",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__41.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__42",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__42",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__42.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__43",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__43",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__43.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__44",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__44",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__44.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__45",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__45",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__45.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__46",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__46",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__46.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__47",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__47",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__47.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__48",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__48",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__48.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__49",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__49",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__49.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__50",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__50",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__50.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__51",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__51",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__51.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__52",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__52",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__52.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__53",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__53",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__53.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__54",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__54",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__54.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__55",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__55",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__55.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__56",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__56",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__56.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__57",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__57",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__57.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__58",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__58",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__58.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__59",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__59",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__59.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__60",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__60",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__60.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__61",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__61",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__61.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__62",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__62",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__62.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__63",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__63",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__63.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__64",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__64",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__64.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__65",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__65",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__65.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__66",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__66",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__66.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__67",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__67",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__67.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__68",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__68",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__68.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__69",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__69",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__69.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__70",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__70",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__70.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__71",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__71",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__71.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__72",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__72",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__72.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__73",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__73",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__73.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__74",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__74",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__74.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__75",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__75",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__75.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__76",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__76",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__76.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__77",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__77",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__77.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__78",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__78",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__78.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__79",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__79",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__79.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__80",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__80",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__80.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__81",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__81",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__81.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      },
+      {
+        "actor": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__82",
+        "tags": [
+          "furn_patiostringlights_l0_x287_z1522__82",
+          "kind:part",
+          "parent:furn_patiostringlights_l0_x287_z1522",
+          "patio:string-bulb"
+        ],
+        "component": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__82.StaticMeshComponent0",
+        "material": "/Game/Lunden/Generated/l1007-uteplats/Level_l1007-uteplats.Level_l1007-uteplats:PersistentLevel.furn_patiostringlights_l0_x287_z1522__1.StaticMeshComponent0.MID_bas_453621_r100_m0_patio_string_bulb_0",
+        "renderCustomDepth": true,
+        "stencil": 239,
+        "writeMask": "<RendererStencilMask.ERSM_DEFAULT: 0>",
+        "mainPass": true,
+        "depthPass": true
+      }
+    ],
+    "states": [
+      {
+        "state": "originalPatioCenter_observationOnly",
+        "modes": {
+          "floatTransportSentinel": [
+            0.125,
+            1.0,
+            4.0
+          ],
+          "preExposure_inverse_eyeAdaptation": [
+            0.1707550436258316,
+            5.856342315673828,
+            0.1707550436258316
+          ],
+          "depreexposedScene": [
+            0.09079046547412872,
+            0.10294351726770401,
+            0.05576107278466225
+          ],
+          "expectedMPC": [
+            1.4600000381469727,
+            0.9109821319580078,
+            0.3710620403289795
+          ],
+          "sceneDepth_customDepth_stencil": [
+            528.2457275390625,
+            9999999827968.0,
+            0.0
+          ],
+          "pristine_frontmost_selected": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "selector": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "fullFrameSceneRGB": {
+          "pixels": 230400,
+          "channels": [
+            {
+              "min": 0.0003071773680858314,
+              "max": 20.31418800354004,
+              "ieeeFloat32ExponentHistogram": {
+                "115": 3,
+                "116": 2,
+                "117": 1,
+                "118": 648,
+                "119": 15145,
+                "120": 17820,
+                "121": 19812,
+                "122": 25359,
+                "123": 51691,
+                "124": 40502,
+                "125": 33668,
+                "126": 17023,
+                "127": 4089,
+                "128": 2599,
+                "129": 1893,
+                "130": 143,
+                "131": 2
+              }
+            },
+            {
+              "min": 0.00043004832696169615,
+              "max": 13.542791366577148,
+              "ieeeFloat32ExponentHistogram": {
+                "115": 2,
+                "116": 3,
+                "117": 1,
+                "118": 82,
+                "119": 7050,
+                "120": 26866,
+                "121": 29395,
+                "122": 25830,
+                "123": 39014,
+                "124": 61720,
+                "125": 26421,
+                "126": 8294,
+                "127": 2041,
+                "128": 2760,
+                "129": 917,
+                "130": 4
+              }
+            },
+            {
+              "min": 0.0007819060701876879,
+              "max": 6.222363471984863,
+              "ieeeFloat32ExponentHistogram": {
+                "116": 3,
+                "117": 2,
+                "118": 1549,
+                "119": 29258,
+                "120": 26093,
+                "121": 24251,
+                "122": 24371,
+                "123": 35088,
+                "124": 73437,
+                "125": 10672,
+                "126": 1855,
+                "127": 2125,
+                "128": 1408,
+                "129": 288
+              }
+            }
+          ]
+        },
+        "fullFrameStencil": {
+          "pixels": 230400,
+          "exactValueHistogram": {
+            "0.0": 230222,
+            "239.0": 178
+          }
+        },
+        "fullFrameSelector": {
+          "selectedPixelCount": 172,
+          "firstSelectedPixels": [
+            [
+              104,
+              150
+            ],
+            [
+              103,
+              151
+            ],
+            [
+              104,
+              151
+            ],
+            [
+              105,
+              151
+            ],
+            [
+              106,
+              151
+            ],
+            [
+              189,
+              151
+            ],
+            [
+              196,
+              151
+            ],
+            [
+              197,
+              151
+            ],
+            [
+              198,
+              151
+            ],
+            [
+              263,
+              151
+            ],
+            [
+              103,
+              152
+            ],
+            [
+              104,
+              152
+            ],
+            [
+              105,
+              152
+            ],
+            [
+              106,
+              152
+            ],
+            [
+              114,
+              152
+            ],
+            [
+              115,
+              152
+            ]
+          ],
+          "exactFlagTripletHistogram": {
+            "0.0,0.0,0.0": 194657,
+            "0.0,1.0,0.0": 35571,
+            "1.0,1.0,1.0": 172
+          },
+          "sampling": "full original frame, no acceptance ROI selection"
+        },
+        "actualStencil239Pixels": {
+          "pixelCount": 178,
+          "selection": "up to16 evenly indexed exact stencil239 pixels over full frame; unchanged coordinates across existing modes",
+          "samples": [
+            {
+              "pixel": [
+                104,
+                150
+              ],
+              "rawDepreexposedRGB": [
+                1.4526474475860596,
+                0.9036152958869934,
+                0.36602139472961426
+              ],
+              "sceneDepth_customDepth_stencil": [
+                352.3761291503906,
+                352.3761291503906,
+                239.0
+              ],
+              "gpuPristine_frontmost_selected": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "pixel": [
+                104,
+                152
+              ],
+              "rawDepreexposedRGB": [
+                1.4526474475860596,
+                0.9036152958869934,
+                0.36602139472961426
+              ],
+              "sceneDepth_customDepth_stencil": [
+                351.6513366699219,
+                351.6513366699219,
+                239.0
+              ],
+              "gpuPristine_frontmost_selected": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "pixel": [
+                198,
+                152
+              ],
+              "rawDepreexposedRGB": [
+                1.4526474475860596,
+                0.9036152958869934,
+                0.36602139472961426
+              ],
+              "sceneDepth_customDepth_stencil": [
+                424.03955078125,
+                424.03955078125,
+                239.0
+              ],
+              "gpuPristine_frontmost_selected": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "pixel": [
+                352,
+                152
+              ],
+              "rawDepreexposedRGB": [
+                1.4526474475860596,
+                0.9036152958869934,
+                0.36602139472961426
+              ],
+              "sceneDepth_customDepth_stencil": [
+                633.0972900390625,
+                633.0972900390625,
+                239.0
+              ],
+              "gpuPristine_frontmost_selected": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "pixel": [
+                181,
+                153
+              ],
+              "rawDepreexposedRGB": [
+                1.4526474475860596,
+                0.9036152958869934,
+                0.36602139472961426
+              ],
+              "sceneDepth_customDepth_stencil": [
+                407.8095703125,
+                407.8095703125,
+                239.0
+              ],
+              "gpuPristine_frontmost_selected": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "pixel": [
+                252,
+                153
+              ],
+              "rawDepreexposedRGB": [
+                1.4526474475860596,
+                0.9036152958869934,
+                0.36602139472961426
+              ],
+              "sceneDepth_customDepth_stencil": [
+                478.70849609375,
+                478.70849609375,
+                239.0
+              ],
+              "gpuPristine_frontmost_selected": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "pixel": [
+                313,
+                153
+              ],
+              "rawDepreexposedRGB": [
+                0.1401175707578659,
+                0.13153894245624542,
+                0.11438168585300446
+              ],
+              "sceneDepth_customDepth_stencil": [
+                415.2242736816406,
+                563.58251953125,
+                239.0
+              ],
+              "gpuPristine_frontmost_selected": [
+                0.0,
+                0.0,
+                0.0
+              ]
+            },
+            {
+              "pixel": [
+                126,
+                154
+              ],
+              "rawDepreexposedRGB": [
+                1.4526474475860596,
+                0.9036152958869934,
+                0.36602139472961426
+              ],
+              "sceneDepth_customDepth_stencil": [
+                366.125,
+                366.125,
+                239.0
+              ],
+              "gpuPristine_frontmost_selected": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "pixel": [
+                164,
+                154
+              ],
+              "rawDepreexposedRGB": [
+                1.4526474475860596,
+                0.9036152958869934,
+                0.36602139472961426
+              ],
+              "sceneDepth_customDepth_stencil": [
+                394.087890625,
+                394.087890625,
+                239.0
+              ],
+              "gpuPristine_frontmost_selected": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "pixel": [
+                219,
+                154
+              ],
+              "rawDepreexposedRGB": [
+                1.4526474475860596,
+                0.9036152958869934,
+                0.36602139472961426
+              ],
+              "sceneDepth_customDepth_stencil": [
+                442.9847717285156,
+                442.9847717285156,
+                239.0
+              ],
+              "gpuPristine_frontmost_selected": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "pixel": [
+                252,
+                154
+              ],
+              "rawDepreexposedRGB": [
+                1.4526474475860596,
+                0.9036152958869934,
+                0.36602139472961426
+              ],
+              "sceneDepth_customDepth_stencil": [
+                478.95928955078125,
+                478.95928955078125,
+                239.0
+              ],
+              "gpuPristine_frontmost_selected": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "pixel": [
+                300,
+                154
+              ],
+              "rawDepreexposedRGB": [
+                1.4526474475860596,
+                0.9036152958869934,
+                0.36602139472961426
+              ],
+              "sceneDepth_customDepth_stencil": [
+                542.3417358398438,
+                542.3417358398438,
+                239.0
+              ],
+              "gpuPristine_frontmost_selected": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "pixel": [
+                344,
+                154
+              ],
+              "rawDepreexposedRGB": [
+                1.4526474475860596,
+                0.9036152958869934,
+                0.36602139472961426
+              ],
+              "sceneDepth_customDepth_stencil": [
+                618.6819458007812,
+                618.6819458007812,
+                239.0
+              ],
+              "gpuPristine_frontmost_selected": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "pixel": [
+                156,
+                155
+              ],
+              "rawDepreexposedRGB": [
+                1.4526474475860596,
+                0.9036152958869934,
+                0.36602139472961426
+              ],
+              "sceneDepth_customDepth_stencil": [
+                388.29547119140625,
+                388.29547119140625,
+                239.0
+              ],
+              "gpuPristine_frontmost_selected": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "pixel": [
+                240,
+                155
+              ],
+              "rawDepreexposedRGB": [
+                1.4526474475860596,
+                0.9036152958869934,
+                0.36602139472961426
+              ],
+              "sceneDepth_customDepth_stencil": [
+                466.4002380371094,
+                466.4002380371094,
+                239.0
+              ],
+              "gpuPristine_frontmost_selected": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            },
+            {
+              "pixel": [
+                155,
+                156
+              ],
+              "rawDepreexposedRGB": [
+                1.4526474475860596,
+                0.9036152958869934,
+                0.36602139472961426
+              ],
+              "sceneDepth_customDepth_stencil": [
+                388.3435974121094,
+                388.3435974121094,
+                239.0
+              ],
+              "gpuPristine_frontmost_selected": [
+                1.0,
+                1.0,
+                1.0
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "state": "pristineOpaque",
+        "modes": {
+          "floatTransportSentinel": [
+            0.125,
+            1.0,
+            4.0
+          ],
+          "preExposure_inverse_eyeAdaptation": [
+            0.1707550436258316,
+            5.856342315673828,
+            0.1707550436258316
+          ],
+          "depreexposedScene": [
+            1.4597963094711304,
+            0.9107641577720642,
+            0.37102559208869934
+          ],
+          "expectedMPC": [
+            1.4600000381469727,
+            0.9109821319580078,
+            0.3710620403289795
+          ],
+          "sceneDepth_customDepth_stencil": [
+            999.9999389648438,
+            999.9999389648438,
+            239.0
+          ],
+          "pristine_frontmost_selected": [
+            1.0,
+            1.0,
+            1.0
+          ],
+          "selector": [
+            1.4600000381469727,
+            0.9109821319580078,
+            0.3710620403289795
+          ]
+        }
+      },
+      {
+        "state": "foregroundTranslucent",
+        "modes": {
+          "floatTransportSentinel": [
+            0.125,
+            1.0,
+            4.0
+          ],
+          "preExposure_inverse_eyeAdaptation": [
+            0.1707550436258316,
+            5.856342315673828,
+            0.1707550436258316
+          ],
+          "depreexposedScene": [
+            0.7263237237930298,
+            0.4518076479434967,
+            0.18301069736480713
+          ],
+          "expectedMPC": [
+            1.4600000381469727,
+            0.9109821319580078,
+            0.3710620403289795
+          ],
+          "sceneDepth_customDepth_stencil": [
+            999.9999389648438,
+            999.9999389648438,
+            239.0
+          ],
+          "pristine_frontmost_selected": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "selector": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        }
+      },
+      {
+        "state": "foregroundOpaque",
+        "modes": {
+          "floatTransportSentinel": [
+            0.125,
+            1.0,
+            4.0
+          ],
+          "preExposure_inverse_eyeAdaptation": [
+            0.1707550436258316,
+            5.856342315673828,
+            0.1707550436258316
+          ],
+          "depreexposedScene": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "expectedMPC": [
+            1.4600000381469727,
+            0.9109821319580078,
+            0.3710620403289795
+          ],
+          "sceneDepth_customDepth_stencil": [
+            500.0000305175781,
+            999.9999389648438,
+            239.0
+          ],
+          "pristine_frontmost_selected": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "selector": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        }
+      },
+      {
+        "state": "actualExponentialFog",
+        "modes": {
+          "floatTransportSentinel": [
+            0.125,
+            1.0,
+            4.0
+          ],
+          "preExposure_inverse_eyeAdaptation": [
+            0.1707550436258316,
+            5.856342315673828,
+            0.1707550436258316
+          ],
+          "depreexposedScene": [
+            1.4569367170333862,
+            0.9086195230484009,
+            0.3703106939792633
+          ],
+          "expectedMPC": [
+            1.4600000381469727,
+            0.9109821319580078,
+            0.3710620403289795
+          ],
+          "sceneDepth_customDepth_stencil": [
+            999.9999389648438,
+            999.9999389648438,
+            239.0
+          ],
+          "pristine_frontmost_selected": [
+            0.0,
+            1.0,
+            0.0
+          ],
+          "selector": [
+            0.0,
+            0.0,
+            0.0
+          ]
+        }
+      }
+    ],
+    "checks": {
+      "actualOriginalFrameHasSelectedBulbPixels": true,
+      "pristineSelfDepthAccepted": true,
+      "transparentCompositeRejected": true,
+      "opaqueForegroundRejected": true,
+      "actualFogCompositeRejected": true
+    },
+    "freshCaptureContract": {
+      "callerAttested": true,
+      "canonicalSource": "/home/devcontainers/wt/codex-2434-native/tools/unreal-engine/python/screenshot_level.py",
+      "canonicalSHA256": "1c25fc83235b83a64b3c9c89bfbef2665d1376975f272e3462ce135f1972f70f",
+      "showOnlyActorCount": 0,
+      "showOnlyComponents": "not Python exposed; initial empty by exact native new-capture lifecycle",
+      "scope": "no arbitrary/pre-existing capture support; discard capture after callback"
+    },
+    "observationCodeSHA256": "617fc94f65e03b544134018a3adff23c73d564fb039ff1393e6133601a38d01f",
+    "temporaryFog": {
+      "component": "/Game/Lunden/Maps/L_Lunden.L_Lunden:PersistentLevel.ExponentialHeightFog_0.HeightFogComponent0",
+      "visible": true,
+      "density": 0.10000000149011612,
+      "heightFalloff": 0.0,
+      "role": "negative intervention only; no production parameter fit"
+    },
+    "allDiagnosticsPassed": true
+  },
+  "restored": true,
+  "capturedImages": 5,
+  "all247ExactReadonly": true,
+  "generatedExactAfterBuild": true,
+  "sourceExportExact": true,
+  "noLateWorldReload": true
+}

@@ -1,0 +1,3419 @@
+{
+  "completed": true,
+  "passed": true,
+  "actualOuterExitCode": 0,
+  "outerStatusPolicy": "Root must record the actual shell/tool exit separately; never inferred from runner",
+  "filter": "Editor.Python.Lunden.test_patio_strings",
+  "command": [
+    "/usr/bin/python3",
+    "/home/devcontainers/wt/codex-2434-native/tools/unreal-engine/run-linux.py",
+    "--engine-root",
+    "/mnt/d/UnrealEngine/5.8.4",
+    "--data-dir",
+    "/mnt/d/LundenLinux",
+    "--timeout",
+    "600",
+    "--owner",
+    "olw-win10-codex-20261127 #2409",
+    "tests",
+    "Editor.Python.Lunden.test_patio_strings"
+  ],
+  "classification": "Actual latent NullRHI Automation, not visual acceptance",
+  "preflight": {
+    "all247ExactReadonly": true,
+    "generatedExactV2": true,
+    "exportExact": true,
+    "sourceDependenciesExact": true,
+    "sourceHead": "2e8547db2a996fcfc5206aca3777aca5e4be7d20",
+    "shimByteIdentical": true
+  },
+  "runnerExitCode": 0,
+  "nativeRun": "/mnt/d/LundenLinux/runs/20261128T044309442254-3454917",
+  "nativeResult": {
+    "engine": "5.8.4",
+    "profile": "nullrhi",
+    "exitCode": 0,
+    "timedOut": false,
+    "passed": true,
+    "completed": true,
+    "log": "/mnt/d/LundenLinux/runs/20261128T044309442254-3454917/editor.log",
+    "logErrors": [],
+    "command": [
+      "/mnt/d/UnrealEngine/5.8.4/Engine/Binaries/Linux/UnrealEditor-Cmd",
+      "/home/devcontainers/wt/codex-2434-native/unreal/Lunden/Lunden.uproject",
+      "-DefEngineIni=/mnt/d/LundenLinux/runs/20261128T044309442254-3454917/LowEngine.ini",
+      "-LocalDataCachePath=/mnt/d/LundenLinux/DerivedDataCache",
+      "-ZenDataPath=/mnt/d/LundenLinux/Zen",
+      "-unattended",
+      "-nosplash",
+      "-nosound",
+      "-nop4",
+      "-stdout",
+      "-FullStdOutLogOutput",
+      "-NoCrashDialog",
+      "-abslog=/mnt/d/LundenLinux/runs/20261128T044309442254-3454917/editor.log",
+      "-nullrhi",
+      "-EnablePlugins=PythonAutomationTest",
+      "-ExecCmds=Automation RunTests Editor.Python.Lunden.test_patio_strings; Quit",
+      "-TestExit=Automation Test Queue Empty",
+      "-ReportExportPath=/mnt/d/LundenLinux/runs/20261128T044309442254-3454917/automation"
+    ],
+    "engineIniSha256": "95332399ac3f08ed1e677ec66a42a28b4d72663e01f9d832cc9c6108e6318653",
+    "vulkanIcd": null,
+    "revision": "2e8547db2a996fcfc5206aca3777aca5e4be7d20",
+    "signal": null,
+    "error": null,
+    "seconds": 167.43
+  },
+  "matchedActualTests": [
+    {
+      "testDisplayName": "test_patio_strings",
+      "fullTestPath": "Editor.Python.Lunden.test_patio_strings",
+      "tags": [],
+      "state": "Success",
+      "deviceInstance": [
+        "01A22076E10F7F6588D07FAF3C5B1287"
+      ],
+      "duration": 15.423489570617676,
+      "dateTime": "2026.11.28-04.45.40",
+      "entries": [
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogHttp: HTTP request timed out after 3.00 seconds URL=https://www.google.com/generate_204",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.43"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.44"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogHttp: HTTP request timed out after 3.00 seconds URL=https://www.google.com/generate_204",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.51"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.52"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.52"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.52"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.52"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.52"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.52"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.52"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.52"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.52"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.52"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.52"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.52"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.53"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.54"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.55"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.56"
+        },
+        {
+          "event": {
+            "type": "Warning",
+            "message": "LogInit: Querying IsUsingWayland before SDL is initialized",
+            "context": "log",
+            "artifact": "00000000000000000000000000000000"
+          },
+          "filename": "",
+          "lineNumber": -1,
+          "timestamp": "2026.11.28-04.45.56"
+        }
+      ],
+      "warnings": 302,
+      "errors": 0,
+      "artifacts": []
+    }
+  ],
+  "actualTestSentinel": true,
+  "postflight": {
+    "all247ExactReadonly": true,
+    "generatedExactV2": true,
+    "exportExact": true,
+    "sourceDependenciesExact": true,
+    "sourceHead": "2e8547db2a996fcfc5206aca3777aca5e4be7d20",
+    "shimByteIdentical": true
+  },
+  "elapsedSeconds": 172.016,
+  "actualOuterConsumedBy": "Root tools.write_stdin session79590 actual exit0"
+}

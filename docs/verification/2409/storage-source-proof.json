@@ -1,0 +1,58 @@
+{
+  "classification": "PRIVATE causal storage proof, no product acceptance",
+  "gpuObservation": "/home/devcontainers/.local/state/lunden-codex-20261127/2409/resume-native/native-v4/product/gpu-observation.json",
+  "gpuObservationSHA256": "a8f289c0a9aed0ea38ac8b4bd923cdba0e5ca05ea176d175cce1d8a77db42536",
+  "gpuChecks": {
+    "actualOriginalFrameHasSelectedBulbPixels": false,
+    "pristineSelfDepthAccepted": true,
+    "transparentCompositeRejected": true,
+    "opaqueForegroundRejected": true,
+    "actualFogCompositeRejected": true
+  },
+  "gpuRestored": true,
+  "preExposure": 0.1707550436258316,
+  "sourceRGB": [
+    1.4600000381469727,
+    0.9109821319580078,
+    0.3710620403289795
+  ],
+  "channels": [
+    {
+      "channel": "R",
+      "expectedPreFloat32": 0.24930237233638763,
+      "halfWord": "0x33fa",
+      "retainedMask": "0x7ff0",
+      "enginePackedUnpacked": 0.248046875,
+      "actualRePreExposed": 0.248046875,
+      "bitExactFloat32Match": true
+    },
+    {
+      "channel": "G",
+      "expectedPreFloat32": 0.15555478632450104,
+      "halfWord": "0x30fa",
+      "retainedMask": "0x7ff0",
+      "enginePackedUnpacked": 0.154296875,
+      "actualRePreExposed": 0.154296875,
+      "bitExactFloat32Match": true
+    },
+    {
+      "channel": "B",
+      "expectedPreFloat32": 0.06336071342229843,
+      "halfWord": "0x2c0e",
+      "retainedMask": "0x7fe0",
+      "enginePackedUnpacked": 0.0625,
+      "actualRePreExposed": 0.0625,
+      "bitExactFloat32Match": true
+    }
+  ],
+  "cppSourceSHA256": {
+    "Engine/Source/Runtime/Renderer/Private/PostProcess/PostProcessing.cpp": "f56600784d9485423b9d2ef5ace82cbed2349faa287f2e2ec85fbe326984b480",
+    "Engine/Source/Runtime/Renderer/Private/TranslucentRendering.cpp": "0979555244054d50fecbbbb7d19d8468baa82e44f1796342f59b651973acfbe1",
+    "Engine/Source/Runtime/Renderer/Private/ScreenPass.cpp": "877afc97805e1027fd794f3341206acbee82dddadd2036ed4f544623c2c33d4f",
+    "Engine/Source/Runtime/Renderer/Private/PostProcess/PostProcessMaterial.cpp": "6338e52bd4c6070c5316a7379e6d175126067a27ba95642ef298081d5549b3dd"
+  },
+  "packUnpackPath": "/mnt/d/UnrealEngine/5.8.4/Engine/Shaders/Private/PackUnpack.ush",
+  "packUnpackSHA256": "9bd794cede44edadf6b1e7f86656faf49cfd39211cbd0b7225189ea520f03e17",
+  "observerDifferentFormat": false,
+  "formatAmbiguity": "Stock material lacks format descriptor: exact union can also accept an RGBA16F composite equal to expected R11 storage; not perfect foreground detection."
+}

@@ -47,6 +47,7 @@ import player_parts as pp
 import stair_lamp
 import sky_clouds
 import collection_ids  # noqa: E402
+import patio_tone
 import neutral_tonemap  # #2396: the web's NeutralToneMapping in place of Unreal's tonemapper
 import window_light
 import build_window_light
@@ -189,6 +190,8 @@ def indoor_boxes(m):
 def lamp_rows(m):
     rows = []
     for l in m["lights"]:
+        if l.get("patioBulbs"):
+            patio_tone.validate_source(l["patioBulbs"])
         rows.append({"id": l["id"], "kind": l["kind"], "level": l["level"], "room": l.get("room"), "name": l.get("name"),
                      "stairVisibility": l.get("stairVisibility"), "seasonTags": season_tags({}, l), "patioBulbs": l.get("patioBulbs"), "patioDusk": l.get("patioDusk"),
                      "xyz": l["position"]["unreal"], "candela": CANDELA_PER_WEB * (l.get("intensity") or 0.0),
@@ -209,6 +212,7 @@ def spec_of(m):
     parasol_control.validate(parasols)
     return {"sky": sky, "boxes": boxes, "soffit": soffit, "lamps": lamp_rows(m), "sunLux": SUN_LUX,
             "windowDaylight": daylight, "parasols": parasols,
+            "patioTone": hashlib.sha256(Path(patio_tone.__file__).read_bytes().replace(b"\r\n", b"\n")).hexdigest(),
             "parasolController": hashlib.sha256(Path(parasol_control.__file__).read_bytes().replace(b"\r\n", b"\n")).hexdigest(),
             "windowShader": hashlib.sha256(Path(window_light.__file__).read_bytes().replace(b"\r\n", b"\n")).hexdigest(),
             "windowBuilder": hashlib.sha256(Path(build_window_light.__file__).read_bytes().replace(b"\r\n", b"\n")).hexdigest(),
@@ -565,6 +569,8 @@ def build_mpc(spec):
     for i, box in enumerate(spec["boxes"]):
         vectors[f"Box{i}Min"] = u.LinearColor(*box["min"], 1)
         vectors[f"Box{i}Max"] = u.LinearColor(*box["max"], 1)
+    # Append only: existing vector packed indices/GUIDs remain unchanged.
+    vectors[patio_tone.EXPECTED_PARAMETER] = u.LinearColor(0, 0, 0, 1)
     def entries(prop, kind, values):
         # #2381: keep each existing parameter struct (and so its GUID) by name; materials that read the collection
         # (M_LundenClouds, M_LundenFoliage, the facade) resolve their parameters by that GUID, so new structs on every
@@ -878,7 +884,7 @@ def hemisphere_cube(spec):
     return cube
 
 
-def patio_string_function(bp):
+def patio_string_function(bp, mpc):
     """Share one glTF unlit MID across the tagged bulbs. Only the designated lamp writes its fade."""
     if BP.find_graph(bp, "ApplyPatioBulbs"):
         # An earlier build has event nodes calling this function. Clear them before recompiling.
@@ -903,6 +909,10 @@ def patio_string_function(bp):
     actor, _, done = g.loop(bulbs)
     mesh = bulb_component(g, actor)
     g.run("PrimitiveComponent:SetMaterial", target=mesh, ElementIndex=0, Material=g.get("StringMaterial"))
+    # Source MeshBasicMaterial toneMapped:false; preserve exact source colour in the tonemapper.
+    g.run("PrimitiveComponent:SetCustomDepthStencilWriteMask", target=mesh, WriteMaskBit="ERSM_Default")
+    g.run("PrimitiveComponent:SetCustomDepthStencilValue", target=mesh, Value=patio_tone.STENCIL)
+    g.run("PrimitiveComponent:SetRenderCustomDepth", target=mesh, bValue=True)
     tail = g.fork(done, 650)
     live = tail.op("Multiply_DoubleDouble", A=tail.get("K"), B=tail.get("Supply"))
     amount = tail.op("Add_DoubleDouble", A=tail.get("BulbIdle"),
@@ -912,6 +922,8 @@ def patio_string_function(bp):
     update = tail.run("MaterialInstanceDynamic:SetVectorParameterValue", target=tail.get("StringMaterial"),
                       ParameterName="BaseColorFactor", Value=color)
     pp.link(existing, pp.inp(update, "execute"))
+    tail.run("KismetMaterialLibrary:SetVectorParameterValue", Collection=mpc.get_path_name(),
+             ParameterName=patio_tone.EXPECTED_PARAMETER, ParameterValue=color)
     BP.compile_blueprint(bp)
 
 
@@ -939,7 +951,7 @@ def build_lamp(spec, mpc):
                    "LampColour": ("vector", u.Vector(1, 1, 1)),
                    "BulbIdle": ("real", 0.0),
                    "BulbBoost": ("real", 0.0), "BulbColour": ("vector", u.Vector(0, 0, 0))})
-    patio_string_function(bp)
+    patio_string_function(bp, mpc)
     parasol_control.build(bp, spec["parasols"], mpc, LAMP)
     G = Graph(bp)
 

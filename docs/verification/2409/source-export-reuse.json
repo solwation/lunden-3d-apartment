@@ -1,0 +1,16 @@
+{
+  "oldHead": "2e8547db2a996fcfc5206aca3777aca5e4be7d20",
+  "newHead": "2a01339854f7340b69ed585868504ea8b7075bbc",
+  "changedPaths": [
+    "docs/verification/2409/source-tone-candidate.md",
+    "tools/unreal-engine/python/patio_tone.py",
+    "tools/unreal-engine/tests/test_patio_tone.py"
+  ],
+  "all247ByteAndModeExactAfterAdvance": true,
+  "all322ActualExportSourcesExact": true,
+  "realExportReused": "/home/devcontainers/wt/codex-2434-native/unreal/Lunden/Import",
+  "manifestSourceCommitRetainedTruthfully": "2e8547db2a996fcfc5206aca3777aca5e4be7d20",
+  "manifestSHA256": "b14010007ec38cee8d09b896a87fe64678cd80db5dba24a9d5069ff52fcfd1cd",
+  "all8OwnLocksStillHeld": true,
+  "sourceWebRenderCodeChanged": false
+}

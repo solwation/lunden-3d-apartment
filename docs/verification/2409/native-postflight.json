@@ -1,0 +1,21 @@
+{
+  "actualOuterExitCode": 143,
+  "runnerExitCode": null,
+  "runnerOutcome": "Wrapper terminated before recording subprocess return; never inferred from native",
+  "nativeExitCode": 0,
+  "nativePassed": true,
+  "nativeSeconds": 351.48,
+  "nativeLogErrors": [],
+  "outerStatusIssue": 2473,
+  "all247ExactPostPrefixReadonly": true,
+  "generatedExactAfterBuild": true,
+  "exportExact": true,
+  "dependenciesExact": true,
+  "headExact": true,
+  "verificationCompleted": true,
+  "sceneRestored": true,
+  "gpuDiagnosticsPassed": true,
+  "allProcessGatesPassed": false,
+  "productAccepted": false,
+  "classification": "Manual scoped native/image evidence; external143 retained, no all-process success claim"
+}

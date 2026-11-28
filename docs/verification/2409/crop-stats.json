@@ -245,7 +245,7 @@
       48.5
      ],
      "luminance": 0.0463,
-     "warmth": 1.442
+     "warmth": 1.441
     },
     "hall-door": {
      "srgb": [
@@ -566,9 +566,9 @@
      "srgb": [
       107.1,
       96.3,
-      82.2
+      82.3
      ],
-     "luminance": 0.1499,
+     "luminance": 0.15,
      "warmth": 1.302
     },
     "curtain": {
@@ -578,7 +578,7 @@
       26.5
      ],
      "luminance": 0.0132,
-     "warmth": 1.597
+     "warmth": 1.598
     }
    }
   },
@@ -615,12 +615,12 @@
    "unreal": {
     "bulb-row": {
      "srgb": [
-      61.8,
-      45.3,
-      9
+      73.6,
+      55.8,
+      17.5
      ],
-     "luminance": 0.043,
-     "warmth": 6.903
+     "luminance": 0.0854,
+     "warmth": 4.206
     },
     "fence-pool": {
      "srgb": [
@@ -629,7 +629,7 @@
       7.1
      ],
      "luminance": 0.0474,
-     "warmth": 10.041
+     "warmth": 10.042
     },
     "paving": {
      "srgb": [

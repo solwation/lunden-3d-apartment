@@ -36,6 +36,7 @@ near(child.scale, canopy.scale.toArray());
 near(child.rotation, canopy.quaternion.toArray());
 const strings = buildStringLights(site.fences, (site.patio.x0 + site.patio.x1) / 2);
 const bulbs = strings.object.children.find(o => o.isInstancedMesh);
+assert.equal(strings.mat.toneMapped, false);
 const fixture = nodes.find(n => n.extras?.source === 'src/config.js#PATIO.stringLights');
 assert.ok(fixture, 'Missing patio string light group');
 const parts = fixture.children.map(i => nodes[i]);
@@ -55,6 +56,7 @@ assert.equal(lights.length, strings.lamps.length);
 assert.equal(lights.filter(l => l.patioBulbs).length, 1, 'a single dusk actor drives the shared bulb material');
 for (const [i, lamp] of strings.lamps.entries()) {
   const row = lights[i];
+  if (row.patioBulbs) assert.equal(row.patioBulbs.toneMapped, strings.mat.toneMapped);
   near(row.position.web, lamp.pos.toArray(), 0.01);
   assert.equal(row.color, '#' + lamp.color.toString(16).padStart(6, '0'));
   assert.equal(row.intensity, lamp.intensity);
