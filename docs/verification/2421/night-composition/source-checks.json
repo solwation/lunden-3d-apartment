@@ -1,0 +1,24 @@
+{
+  "ASTPassed": true,
+  "staticWiringPassed": true,
+  "nativeRun": false,
+  "filesSHA256": {
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2421/resumed-night-source/build-prefix.py": "b4a8319fcac76cefa53ecb720f147539f2aa4a619d34c1a5e6bca1a2729fc0f5",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2421/resumed-night-source/build-capture.py": "853c7f864a318b7fb5ba1bb725f568e9320069f22d7f8a940d9b677ca7085271",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2421/resumed-night-source/capture-four.py": "d33dea81bf7ce9789ec88ede268bae1b0412e0d3f97e7c4edbb8d16188d2106b",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2421/resumed-night-source/runtime-controls.py": "e9198b18ab7398b78580132c4961060ca25a69c5450fe26c56ea11bb8dcedc6c",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2394/verify-production.py": "1d4a19a4c360e7f79f3970e23e5e55a691711a47b07d7c62e6953879eb24c6f2",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2394/season-visibility-only.py": "fa844d50bc9ac15225058ac1a1b0c95afdbaa87d8f44cdf1e78603fbbc486a88",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/probe-after-production-v2.py": "40bb40cd992556d91ee03dc7f1c455bdda73452325c526a0f326fd8343a78f3b",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2384/audit-lamp-colours.py": "630e7838fbc4ee99d5a05e8624ecd673a7d686ca28147472b625480cd5ccae9f",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2369/locked-capture-contract.json": "d3c89d4b9a50404ed629c5c54ce863ad1eca9b804249748a1b39abef1514abe8",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2394/runtime-web-env.json": "c755eebf80b80cf331f9f0a9a1fdfafc1f5671f125dec393da6c0bd051e82e62",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2322-final/corrected-reference-contract.json": "1f559812415bdc9a6bbfcd5030957bae510b208833318c45021d3a89545d47b6",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2421/web/web-capture.json": "e2156a9973377c34d10b15ed1198b00a38ac13e22d51922d0e5d60b06b45cc0c"
+  },
+  "additionalConfigKeys": [
+    "reuseCanonicalProduct"
+  ],
+  "requiredRuntimeSourcePins": "Root current tools/unreal-engine/python/*.py and tests/*.py, Config, helper transitive JSON; current export all12 files; prior canonical proof tree/source-binding and source-web-reuse proof",
+  "canonicalReuse": "Require actual completed20 successful old steps; no steps executed, stamp or releasegate claimed here"
+}

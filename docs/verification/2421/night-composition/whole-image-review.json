@@ -1,0 +1,14 @@
+{
+  "source": "27a3eb11c5131634aa5c26f3a0e67ec2098be3cf",
+  "reviewedOriginals": 10,
+  "sky": "Brightness and blue colour now visually close; unchanged sky ROI Y0.962025 passes original0.8\u20131.25. Moon/cloud composition now follows source order. Twilight/high altitude not accepted by this view.",
+  "remainingOriginalPoints": [
+    "Upper facade remains pale/brighter than source",
+    "Foreground remains gray/green instead of blue",
+    "Entrance light pools remain more yellow",
+    "Left neighbor window remains dark instead of lit"
+  ],
+  "apartment": "22 existing numeric rows PASS. Original pairs reviewed: retain existing differences in exterior/window views, curtain/sofa and lamp geometry, stair-wall tone, floor raster/shadows and upper-floor objects. No new whole-image or Windows acceptance.",
+  "issueClosed": false,
+  "kernelObserver": "Independent observer died with143 before exit observation; authoritative runner completed with native0, outer0. No independent kernel-exit proof."
+}

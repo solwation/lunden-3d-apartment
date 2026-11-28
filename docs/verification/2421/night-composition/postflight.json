@@ -1,0 +1,97 @@
+{
+  "checkedUtc": "2026-11-28T06:26:14.755047+00:00",
+  "sourceHead": "27a3eb11c5131634aa5c26f3a0e67ec2098be3cf",
+  "configSHA256": "85aab7fd98342751a523a99f2e979a0961a6d471dae564979d1b7478032bd6d5",
+  "nativeRun": "/mnt/d/LundenLinux/runs/20261128T061926872723-1264221",
+  "nativeResultSHA256": "af79cdcdd54a37913f8ea4102dd4a875d8426db56db98aacd1c703b568ceb368",
+  "nativeExitCode": 0,
+  "runnerExitCode": 0,
+  "actualOuterExitCode": 0,
+  "outerAndRunnerProvenance": "Root actual consumed launcher/runner exits supplied in task, not inferred from image/completion/native result",
+  "nativeCompleted": true,
+  "nativePassed": true,
+  "nativeLogErrors": [],
+  "nativeSeconds": 243.73,
+  "kernelObserver": {
+    "observationFile": "/home/devcontainers/.local/state/lunden-codex-20261127/2421/resumed-night-v1/kernel-exit-observation.json",
+    "observationSHA256": "df971309871ea1ab67ca7296b46ff18e0a36b6d4f1a8cc1dd727faea32edb95a",
+    "observedZombieExit": false,
+    "observedNativeExitCode": null,
+    "observerSessionExitCode": 143,
+    "availability": "UNAVAILABLE: observer session died143 without observing exit; does not contradict or independently confirm Root actual process results"
+  },
+  "authoredCount": 247,
+  "all247ExactPostBuildReadonly": true,
+  "generatedCount": 5225,
+  "generatedExactAfterLighting": true,
+  "exportCount": 12,
+  "exportExact": true,
+  "dependencyCount": 166,
+  "dependenciesExact": true,
+  "headExact": true,
+  "buildPrefixCompleted": true,
+  "actualLightingSaveAttempts": [
+    "unreal/Lunden/Content/Lunden/Lighting/MPC_LundenWeather.uasset",
+    "unreal/Lunden/Content/Lunden/Lighting/M_LundenPrecipitation.uasset",
+    "unreal/Lunden/Content/Lunden/Lighting/M_LundenNeutralTonemap.uasset",
+    "unreal/Lunden/Content/Lunden/Lighting/M_LundenWindowDaylight.uasset",
+    "unreal/Lunden/Content/Lunden/Lighting/BP_LundenLamp.uasset",
+    "unreal/Lunden/Content/Lunden/Lighting/BP_LundenSky.uasset",
+    "unreal/Lunden/Content/Lunden/Lighting/T_LundenHemisphere.uasset"
+  ],
+  "unexpectedProtected": [],
+  "verificationCompleted": true,
+  "sceneRestored": true,
+  "capturedImages": 5,
+  "targetCompleted": true,
+  "fourCompleted": true,
+  "fourShots": 4,
+  "actualNativePBRPassed": true,
+  "canonicalStepsExecutedHere": 0,
+  "freshSyncStampWrittenHere": false,
+  "releaseGateExecutedHere": false,
+  "changedLightingAgainstPublicRef": "8afc03f1",
+  "changedLightingAgainstPublic": [
+    {
+      "path": "unreal/Lunden/Content/Lunden/Lighting/BP_LundenLamp.uasset",
+      "publicLfsOID": "44683069a4f9a7850f66cfa2cebc72017218a9009126c83363509623e555e8a7",
+      "actualSHA256": "b639352c7c1ff38b9e25b9436e2f9b7f51828f69a07ce729c9ff25677625ee65",
+      "mode": "0o444"
+    },
+    {
+      "path": "unreal/Lunden/Content/Lunden/Lighting/BP_LundenSky.uasset",
+      "publicLfsOID": "32036c6381a8cc3ce85e756194285f0221880bc36627735158025a4d2fd935b3",
+      "actualSHA256": "a8c8454d87c351defb341c84efeacfc5d10801733c0308ea6363e6cf81ce6d6b",
+      "mode": "0o444"
+    },
+    {
+      "path": "unreal/Lunden/Content/Lunden/Lighting/M_LundenNeutralTonemap.uasset",
+      "publicLfsOID": "e0da25bff4161016dc60a92d90c1a9a97f85f9084e56f4888935dea564db88a6",
+      "actualSHA256": "3ed09c4aec5daba5058fec56728d064cc44a203366b2aedf1d7b072b854e1c6c",
+      "mode": "0o444"
+    },
+    {
+      "path": "unreal/Lunden/Content/Lunden/Lighting/M_LundenPrecipitation.uasset",
+      "publicLfsOID": "5b6d722252e9574e77597fc4ff8d5ee84f4a7ba616bcd257258b870d2674ded1",
+      "actualSHA256": "4483926c2e1af13ebaa72a8ca946139ee5171ccfe15e7aa2ad15938729615676",
+      "mode": "0o444"
+    },
+    {
+      "path": "unreal/Lunden/Content/Lunden/Lighting/M_LundenWindowDaylight.uasset",
+      "publicLfsOID": "21c318431080afd0d504f992a8e7561c193f2147725a261576aa1b3bec35236f",
+      "actualSHA256": "3b0d3ce2b665f16a308d8bc7d1a0ae673cb02b88db9b4f01424217a1fbb4cfbf",
+      "mode": "0o444"
+    },
+    {
+      "path": "unreal/Lunden/Content/Lunden/Lighting/T_LundenHemisphere.uasset",
+      "publicLfsOID": "deb04b7b5d4a7d9a7f22438d0daf953943820f030e30371f75bae709ebeb238a",
+      "actualSHA256": "146939a85a286fd94589395e94ae6c90ecbac00b517ad0281fa09871d6009753",
+      "mode": "0o444"
+    }
+  ],
+  "visualAcceptancePassed": false,
+  "classification": "Lighting build+check, actual PBR and five captures; canonical20 explicitly reused; numeric and whole-image acceptance remain separate",
+  "fileAndCaptureGatesPassed": true,
+  "allProcessGatesPassed": true,
+  "postflightPassed": true
+}

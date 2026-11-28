@@ -85,3 +85,42 @@ and the existing daytime check pass (4,364 roundtrips/116 explicit domain
 rejections). These checks do not execute HLSL, compile a material or demonstrate
 native pixel acceptance. Root must perform the next controlled material build
 and same-view comparison before this candidate can be accepted.
+
+
+## Verified night composition (2026-11-28)
+
+Actual source `27a3eb11c5131634aa5c26f3a0e67ec2098be3cf` was built and
+captured once in run `20261128T061926872723-1264221` (243.73 seconds).
+The completed runner reports Native exit0, no timeout and no log errors; the
+outer command exited0. The independent kernel observer was interrupted143
+before recording exit, so it supplies no independent exit proof.
+
+The same unchanged sky ROI now has Y **0.962025 PASS** (original0.8–1.25),
+compared with the previous0.746835 failure. Relative R/B **1.024155** passes
+the explicitly local ±15% guess, which is not original acceptance. Whole-frame
+Y0.849057 is diagnostic only. One canonical Chromium measurement batch also
+passes all22 existing apartment numeric rows and hue guards. All ten original
+images were reviewed; no ROI, exposure, gain or source RGB was adjusted.
+
+The source correction composes moon, halo and stars before cloud occlusion,
+then inverts Neutral over the whole composed sky. Bright lunar pixels use the
+real compression/desaturation inverse. Previous text about all night pixels
+remaining below the compression knee describes only the earlier dim-gradient
+implementation, not this complete composition. Daytime remains byte-identical.
+
+Seven normal Lighting saves were attempted in the controlled locked window.
+The changed Lighting was rebuilt and checked; current PBR and allfive images
+actually ran. Unchanged prior full20/import/geometry evidence was reused
+explicitly; there was no new full20, Automation or release-gate invocation.
+Capture verification reports scene restoration,247 readonly authored packages,
+exact post-build Generated and exact source/export. Independent postflight is
+saved alongside the measurements.
+
+**#2421 remains open.** The sky point now passes this original view, while the
+pale upper facade, gray foreground, yellow entrance pools and dark left neighbor
+window remain unresolved. Apartment numeric success does not imply identical
+whole images. Current originals and truthful source/process evidence are in
+[`night-composition/`](night-composition/), including
+[`whole-image-review.json`](night-composition/whole-image-review.json).
+
+Original-only Unreal change; no public downstream or additional web port applies.

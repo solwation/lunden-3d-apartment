@@ -1,0 +1,33 @@
+{
+  "from": "525bb4dc276ac0ab577d1619f4f1d67bbcae657a",
+  "to": "27a3eb11c5131634aa5c26f3a0e67ec2098be3cf",
+  "all247BytesModesPreserved": true,
+  "changedSourceOnly": [
+    "docs/verification/2411/README.md",
+    "docs/verification/2411/acceptance-gate.json",
+    "docs/verification/2411/crop-stats.json",
+    "docs/verification/2411/crops.json",
+    "docs/verification/2411/current-export-reuse-proof.json",
+    "docs/verification/2411/current-glb-hdr-clipping-bound.json",
+    "docs/verification/2411/image-manifest.json",
+    "docs/verification/2411/kernel-exit-observation.json",
+    "docs/verification/2411/material-readback.json",
+    "docs/verification/2411/measurement-contract.json",
+    "docs/verification/2411/native-capture.json",
+    "docs/verification/2411/native-postflight.json",
+    "docs/verification/2411/native-verification.json",
+    "docs/verification/2411/runner-result.json",
+    "docs/verification/2411/unreal-entrance-a.png",
+    "docs/verification/2411/unreal-patio-lawn.png",
+    "docs/verification/2411/vertex-color-sdk-trace.json",
+    "docs/verification/2411/web-capture.json",
+    "docs/verification/2411/web-entrance-a.jpg",
+    "docs/verification/2411/web-patio-lawn.jpg",
+    "docs/verification/2411/web-proof.json",
+    "docs/verification/2421/README.md",
+    "tools/unreal-engine/python/build_lighting.py",
+    "tools/unreal-engine/python/sky_clouds.py",
+    "tools/unreal-engine/tests/night-sky.test.mjs"
+  ],
+  "noImportOrGeneratedWrites": true
+}

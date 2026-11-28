@@ -1,0 +1,76 @@
+{
+  "classification": "Existing2366 skyROI/Y acceptance; R/B tolerance is explicit NEW LOCAL GUESS, not originalissue requirement. Frame diagnostic only. ROI including moon unchanged.",
+  "contractSHA256": "c884278d37f96a8df4563eca5315e3b46fa4717971338fafbf54efd150c80897",
+  "configSHA256": "85aab7fd98342751a523a99f2e979a0961a6d471dae564979d1b7478032bd6d5",
+  "canonicalToolSHA256": "0a76bf7e7c43ad2e212f2d884806957030ec6dc08ce4c4d9901641f5f80bd1c6",
+  "nativeCaptureMetadataSHA256": "e2aedb9d8a0d5e4557be6db5adedc2995d66c187ae4a52b26607f9327404fc3a",
+  "browserBatches": 1,
+  "inputs": {
+    "start-night": {
+      "web": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2421/web/web-start-night.jpg",
+        "sha256": "da0ad0c16e5e568118710fac9d7e3b2b2ed8b4cb64a0df09f56a3d9beea9dca1"
+      },
+      "native": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2421/resumed-night-v1/product/target/unreal-start-night.png",
+        "sha256": "ad24b488e5efa787bcaada490c136bb9d71463718c6b2a96a8b4a1f4c6b67081"
+      }
+    }
+  },
+  "rows": [
+    {
+      "shot": "start-night",
+      "region": "sky",
+      "target": true,
+      "passed": true,
+      "luminanceRatio": 0.9620253164556963,
+      "warmthRatio": 1.0241545893719808,
+      "web": {
+        "srgb": [
+          23.2,
+          26.7,
+          37.3
+        ],
+        "luminance": 0.0237,
+        "warmth": 0.621
+      },
+      "native": {
+        "srgb": [
+          22.8,
+          26.1,
+          35.9
+        ],
+        "luminance": 0.0228,
+        "warmth": 0.636
+      }
+    },
+    {
+      "shot": "start-night",
+      "region": "frame",
+      "target": false,
+      "passed": null,
+      "luminanceRatio": 0.8490566037735848,
+      "warmthRatio": 1.2440604751619868,
+      "web": {
+        "srgb": [
+          8.7,
+          7.1,
+          9.4
+        ],
+        "luminance": 0.0053,
+        "warmth": 0.926
+      },
+      "native": {
+        "srgb": [
+          9.7,
+          7.7,
+          8.4
+        ],
+        "luminance": 0.0045,
+        "warmth": 1.152
+      }
+    }
+  ],
+  "numericPassed": true,
+  "wholeImageReviewRequired": true
+}

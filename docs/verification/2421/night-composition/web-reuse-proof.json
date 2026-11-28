@@ -1,0 +1,17 @@
+{
+  "actualWebSource": "9fda9c62647c3c123f493ff8def80c753914f844",
+  "currentNativeSource": "27a3eb11c5131634aa5c26f3a0e67ec2098be3cf",
+  "comparedActualFiles": 718,
+  "exactFiles": 716,
+  "reviewedDifferences": [
+    "data/changelog.json",
+    "src/daycycle.js"
+  ],
+  "existingDayCycleByteExactAfterInertExportRemoval": true,
+  "onlyWebReferenceToNewFunction": [
+    "src/daycycle.js"
+  ],
+  "changelogOnlyPlayerText": true,
+  "freshWebRenderExecutedHere": false,
+  "referenceImagesRetainOriginalSHA256": true
+}
