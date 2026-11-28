@@ -1,0 +1,46 @@
+{
+  "base": "1f6a3a5ece0791b2d35357eeff11b53eae460a28",
+  "checks": [
+    {
+      "name": "day-source",
+      "exit": 0,
+      "stdout": "Day sky pure PASS: actual November/June uniforms, 4364 actual-Three-Neutral roundtrips, 116 explicit domain rejections; native compilation/translucency/capture pending."
+    },
+    {
+      "name": "night-source",
+      "exit": 0,
+      "stdout": "Night source OK: actual START DayCycle uniforms, 5 overcast states, 6615 Neutral roundtrips; native material/capture pending."
+    },
+    {
+      "name": "syntax",
+      "exit": 0,
+      "stdout": ""
+    },
+    {
+      "name": "diff",
+      "exit": 0,
+      "stdout": ""
+    },
+    {
+      "name": "preserved-source-paths",
+      "passed": true,
+      "nightMethodByteExact": true,
+      "cloudShapeAndLegacySkyMethodsByteExact": true,
+      "builderOnlyDelta": "one explicit inverse-exposure call argument"
+    },
+    {
+      "name": "actual-prior-lighting",
+      "exit": 1,
+      "expected": "STALE: exact current native saved Sky predates these source changes; Root rebuild/freshness/nativecompile required"
+    }
+  ],
+  "nativeOrBrowserOrExportExecuted": false,
+  "files": {
+    "tools/unreal-engine/python/sky_clouds.py": "de597cdd45750eefcb6d7eee7f954e8e47a9539e51e651b3ac787a40440c2210",
+    "tools/unreal-engine/python/build_lighting.py": "cb57f1dfc2770ca6a77f1be352c2cdb47a8cf088a10929b9691ba9a442449fae",
+    "tools/unreal-engine/tests/day-sky.test.mjs": "412584b129c7875a0fbd9aa24d59f4052b41b129774092291e2b2883af17767e",
+    "tools/unreal-engine/tests/sky-cloud-shaders.py": "f7ec480badcf027e3ed356ffd27668acba84470e9ccbba27adc18a85f241d10e",
+    "tools/unreal-engine/tests/night-sky.test.mjs": "12ea02f296385d971db1ad3913886f105347042b768808465d526b2914ba10a9",
+    "docs/development/unreal.md": "3bd2be44aa42d84660f64441656c1d9b9d5ef7c89c48fbfc64bda873631e39cb"
+  }
+}

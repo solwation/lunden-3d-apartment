@@ -1,0 +1,12 @@
+{
+  "completed": true,
+  "sourceHead": "511dc7996c9d3a7668b65f6aac992dfd9d07ee39",
+  "classification": "Actual public-baseline import/build, no Windows full-profile claim",
+  "restored": true,
+  "canonicalStepsExecutedHere": 20,
+  "capturedImages": 6,
+  "all247ExactReadonly": true,
+  "generatedExactAfterBuild": true,
+  "sourceExportExact": true,
+  "noLateWorldReload": true
+}

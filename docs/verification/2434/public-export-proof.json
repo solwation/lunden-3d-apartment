@@ -1,0 +1,17 @@
+{
+  "completed": true,
+  "exportExit": 0,
+  "checkExportExit": 0,
+  "root": "/home/devcontainers/wt/codex-2434-native",
+  "head": "511dc7996c9d3a7668b65f6aac992dfd9d07ee39",
+  "manifestSHA256": "394ca73e446792d63ccae4832dcd67ce7e10d663ecb2b342f0cd3ab94814b0be",
+  "sourceHash": "01a386aef268c79f7fce3e7b3cbe5875e1aa9b185fe4891a0fb81c84df49fd14",
+  "sourceCommit": "511dc7996c9d3a7668b65f6aac992dfd9d07ee39",
+  "sourceDirty": false,
+  "changedGLBZonesVsC4": [
+    "fond",
+    "hus-l",
+    "kvarteret",
+    "omgivning"
+  ]
+}

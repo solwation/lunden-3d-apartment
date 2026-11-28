@@ -1,4 +1,5 @@
 [
+  {"id": 1764, "date": "2026-11-28", "text": "Novemberhimlen i Unreal-versionen följer nu webbens ljusa lavendelton vid låg dagsol.", "issues": [2434]},
   {"id": 1763, "date": "2026-11-26", "text": "Spelet kraschar inte längre när ytterplagget tas på eller av, till exempel när du provar jacka i avatarpanelen.", "issues": [2463], "group": "avatars"},
   {"id": 1762, "date": "2026-11-22", "text": "Windows-betan installeras och laddas nu med riktiga fönster som visar hur långt hämtningen har kommit, utan konsolfönster.", "issues": [2420]},
   {"id": 1761, "date": "2026-11-22", "text": "Windows-betan startar nu i Kvarteret Lunden i stället för i en tom värld.", "issues": [2419]},

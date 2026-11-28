@@ -1,0 +1,19 @@
+{
+  "configSHA256": "b38973393aae4234fe30796e293685ae46f225c86482740245250f6f72d6a45f",
+  "nativeResult": "/mnt/d/LundenLinux/runs/20261128T034322795330-2159724/result.json",
+  "actualNativeExit": 0,
+  "actualRunnerExit": 0,
+  "actualOuterExit": 0,
+  "actualSeconds": 659.33,
+  "nativePassed": true,
+  "logErrors": [],
+  "all247ExactReadonly": true,
+  "generatedExactAfterCanonicalBuild": true,
+  "exportExact": true,
+  "dependenciesExact": true,
+  "headExact": true,
+  "sceneRestored": true,
+  "completedSixFrames": true,
+  "productAccepted": false,
+  "nativeExecutionAndGuardsPassed": true
+}

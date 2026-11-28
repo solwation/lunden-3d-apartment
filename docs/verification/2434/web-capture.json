@@ -1,0 +1,442 @@
+{
+  "viewport": {
+    "width": 640,
+    "height": 360
+  },
+  "shots": [
+    {
+      "name": "facade-b-day",
+      "sourceReference": {
+        "date": [
+          2026,
+          11,
+          16
+        ],
+        "hour": 14,
+        "overcast": 0,
+        "under": 0,
+        "dim": 0,
+        "dayShare": 0.9997941211966418,
+        "sunDirWeb": [
+          0.45676721111792457,
+          0.177840145671391,
+          0.8716287038843614
+        ],
+        "sunIntensity": 2.9998352969573134,
+        "skyStrength": 1.499794100003601
+      },
+      "actualExposure": 1.4998970605983208,
+      "actualUniforms": {
+        "uSun": [
+          0.45676721111792457,
+          0.177840145671391,
+          0.8716287038843614
+        ],
+        "uZenith": [
+          0.07817157462327208,
+          0.27462119924166056,
+          0.630628260287803
+        ],
+        "uHorizon": [
+          0.6774315310810102,
+          0.6300117949698066,
+          0.6405915192465912
+        ],
+        "uGlow": [
+          1,
+          0.2541520943200296,
+          0.04518620437910499
+        ],
+        "uScatter": [
+          0.11997529454359701,
+          0.10317875330749343,
+          0.07918369439877403
+        ],
+        "uNight": 0.00020587880335820596,
+        "uGlowAmt": 0.4878290158026781,
+        "uClouds": {
+          "isTexture": true,
+          "uuid": "966d4c62-d1fb-4ef8-8f7a-997d34fd9be1",
+          "name": "",
+          "source": {
+            "isSource": true,
+            "uuid": "bd96ba44-6f0b-451b-ade6-627dc2a77782",
+            "data": "ref: <Node>",
+            "dataReady": true,
+            "version": 1
+          },
+          "mipmaps": [],
+          "mapping": 300,
+          "channel": 0,
+          "wrapS": 1000,
+          "wrapT": 1001,
+          "magFilter": 1006,
+          "minFilter": 1006,
+          "anisotropy": 1,
+          "format": 1023,
+          "internalFormat": null,
+          "type": 1009,
+          "offset": {
+            "x": 0,
+            "y": 0
+          },
+          "repeat": {
+            "x": 1,
+            "y": 1
+          },
+          "center": {
+            "x": 0,
+            "y": 0
+          },
+          "rotation": 0,
+          "matrixAutoUpdate": true,
+          "matrix": {
+            "elements": [
+              1,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "generateMipmaps": false,
+          "premultiplyAlpha": false,
+          "flipY": false,
+          "unpackAlignment": 4,
+          "colorSpace": "",
+          "userData": {},
+          "version": 1,
+          "onUpdate": null,
+          "isRenderTargetTexture": false,
+          "pmremVersion": 0,
+          "isCanvasTexture": true,
+          "_listeners": {
+            "dispose": [
+              null
+            ]
+          }
+        },
+        "uCloudCol": [
+          0.9298276794415892,
+          0.9398258265323588,
+          0.9598221207138984
+        ],
+        "uSkyCl": [
+          1,
+          0.92,
+          0.16
+        ]
+      },
+      "profile": {
+        "quality": 4,
+        "contextLost": false,
+        "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "draws": 201,
+        "verticalFov": 72,
+        "aspect": 1.7777777777777777
+      },
+      "facade": {
+        "wallLight": {
+          "doorLampWash": 0,
+          "doorLampPools": 0,
+          "loggiaLampWash": 0,
+          "loggiaLampPools": 0
+        },
+        "husLEmission": 0,
+        "schedule": {
+          "A": {
+            "on": 0,
+            "total": 252
+          },
+          "B": {
+            "on": 0,
+            "total": 197
+          },
+          "C": {
+            "on": 0,
+            "total": 200
+          }
+        }
+      },
+      "eye": [
+        -33.2,
+        1.62,
+        23.6
+      ],
+      "yaw": 180,
+      "pitch": 12,
+      "day": [
+        2026,
+        11,
+        16,
+        14,
+        true
+      ],
+      "daylight": 0.9997941211966418,
+      "overcast": 0,
+      "weather": "clear",
+      "sky": {
+        "procedural": [
+          1,
+          0.92,
+          0.16
+        ],
+        "deck": [
+          0,
+          0,
+          1200,
+          0
+        ],
+        "zenith": [
+          0.07817157462327208,
+          0.27462119924166056,
+          0.630628260287803
+        ],
+        "horizon": [
+          0.6774315310810102,
+          0.6300117949698066,
+          0.6405915192465912
+        ]
+      },
+      "pool": [],
+      "dark": false,
+      "smallLampsOn": [],
+      "forced": false,
+      "moon": {
+        "illum": 0.40904402213449076,
+        "elong": 1.3878658255466771,
+        "dir": [
+          0.9512179678468319,
+          0.07555397053534463,
+          -0.2991253502825995
+        ]
+      },
+      "sun": [
+        0.45676721111792457,
+        0.177840145671391,
+        0.8716287038843614
+      ]
+    },
+    {
+      "name": "facade-b-zenith-day",
+      "sourceReference": {
+        "date": [
+          2026,
+          11,
+          16
+        ],
+        "hour": 14,
+        "overcast": 0,
+        "under": 0,
+        "dim": 0,
+        "dayShare": 0.9997941211966418,
+        "sunDirWeb": [
+          0.45676721111792457,
+          0.177840145671391,
+          0.8716287038843614
+        ],
+        "sunIntensity": 2.9998352969573134,
+        "skyStrength": 1.499794100003601
+      },
+      "actualExposure": 1.4998970605983208,
+      "actualUniforms": {
+        "uSun": [
+          0.45676721111792457,
+          0.177840145671391,
+          0.8716287038843614
+        ],
+        "uZenith": [
+          0.07817157462327208,
+          0.27462119924166056,
+          0.630628260287803
+        ],
+        "uHorizon": [
+          0.6774315310810102,
+          0.6300117949698066,
+          0.6405915192465912
+        ],
+        "uGlow": [
+          1,
+          0.2541520943200296,
+          0.04518620437910499
+        ],
+        "uScatter": [
+          0.11997529454359701,
+          0.10317875330749343,
+          0.07918369439877403
+        ],
+        "uNight": 0.00020587880335820596,
+        "uGlowAmt": 0.4878290158026781,
+        "uClouds": {
+          "isTexture": true,
+          "uuid": "966d4c62-d1fb-4ef8-8f7a-997d34fd9be1",
+          "name": "",
+          "source": {
+            "isSource": true,
+            "uuid": "bd96ba44-6f0b-451b-ade6-627dc2a77782",
+            "data": "ref: <Node>",
+            "dataReady": true,
+            "version": 1
+          },
+          "mipmaps": [],
+          "mapping": 300,
+          "channel": 0,
+          "wrapS": 1000,
+          "wrapT": 1001,
+          "magFilter": 1006,
+          "minFilter": 1006,
+          "anisotropy": 1,
+          "format": 1023,
+          "internalFormat": null,
+          "type": 1009,
+          "offset": {
+            "x": 0,
+            "y": 0
+          },
+          "repeat": {
+            "x": 1,
+            "y": 1
+          },
+          "center": {
+            "x": 0,
+            "y": 0
+          },
+          "rotation": 0,
+          "matrixAutoUpdate": true,
+          "matrix": {
+            "elements": [
+              1,
+              0,
+              0,
+              0,
+              1,
+              0,
+              0,
+              0,
+              1
+            ]
+          },
+          "generateMipmaps": false,
+          "premultiplyAlpha": false,
+          "flipY": false,
+          "unpackAlignment": 4,
+          "colorSpace": "",
+          "userData": {},
+          "version": 1,
+          "onUpdate": null,
+          "isRenderTargetTexture": false,
+          "pmremVersion": 0,
+          "isCanvasTexture": true,
+          "_listeners": {
+            "dispose": [
+              null
+            ]
+          }
+        },
+        "uCloudCol": [
+          0.9298276794415892,
+          0.9398258265323588,
+          0.9598221207138984
+        ],
+        "uSkyCl": [
+          1,
+          0.92,
+          0.16
+        ]
+      },
+      "profile": {
+        "quality": 4,
+        "contextLost": false,
+        "gpu": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+        "draws": 74,
+        "verticalFov": 72,
+        "aspect": 1.7777777777777777
+      },
+      "facade": {
+        "wallLight": {
+          "doorLampWash": 0,
+          "doorLampPools": 0,
+          "loggiaLampWash": 0,
+          "loggiaLampPools": 0
+        },
+        "husLEmission": 0,
+        "schedule": {
+          "A": {
+            "on": 0,
+            "total": 252
+          },
+          "B": {
+            "on": 0,
+            "total": 197
+          },
+          "C": {
+            "on": 0,
+            "total": 200
+          }
+        }
+      },
+      "eye": [
+        -33.2,
+        1.62,
+        23.6
+      ],
+      "yaw": 180,
+      "pitch": 80,
+      "day": [
+        2026,
+        11,
+        16,
+        14,
+        true
+      ],
+      "daylight": 0.9997941211966418,
+      "overcast": 0,
+      "weather": "clear",
+      "sky": {
+        "procedural": [
+          1,
+          0.92,
+          0.16
+        ],
+        "deck": [
+          0,
+          0,
+          1200,
+          0
+        ],
+        "zenith": [
+          0.07817157462327208,
+          0.27462119924166056,
+          0.630628260287803
+        ],
+        "horizon": [
+          0.6774315310810102,
+          0.6300117949698066,
+          0.6405915192465912
+        ]
+      },
+      "pool": [],
+      "dark": false,
+      "smallLampsOn": [],
+      "forced": false,
+      "moon": {
+        "illum": 0.40904402213449076,
+        "elong": 1.3878658255466771,
+        "dir": [
+          0.9512179678468319,
+          0.07555397053534463,
+          -0.2991253502825995
+        ]
+      },
+      "sun": [
+        0.45676721111792457,
+        0.177840145671391,
+        0.8716287038843614
+      ]
+    }
+  ]
+}

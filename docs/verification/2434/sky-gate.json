@@ -1,0 +1,150 @@
+{
+  "issue": 2434,
+  "contractSHA256": "56c405df67f5a10a6e83a732965ba57c32539e6b735dd2cadce09b1134de10fc",
+  "statsSHA256": "d6035a2dd81d07b86929aa293f796c4ae6be83302fe354a25f130434161326b9",
+  "meterSHA256": "510b4cd95f7409a90efbc901d8f90dc9cd5f7d643cd80663c0658ac4d2a9b972",
+  "rows": [
+    {
+      "shot": "facade-b-day",
+      "crop": "near-horizon",
+      "rect": [
+        0.977,
+        0.475,
+        0.992,
+        0.51
+      ],
+      "web": {
+        "srgb": [
+          183.5,
+          189.5,
+          209.1
+        ],
+        "luminance": 0.5138,
+        "warmth": 0.877
+      },
+      "native": {
+        "srgb": [
+          181.9,
+          187.6,
+          207
+        ],
+        "luminance": 0.5022,
+        "warmth": 0.879
+      },
+      "ratios": {
+        "Y": 0.9774231218372906,
+        "RG": 1.0013202767788152,
+        "BG": 0.9999831749226811
+      },
+      "checks": {
+        "Y": true,
+        "RG": true,
+        "BG": true
+      },
+      "passed": true
+    },
+    {
+      "shot": "facade-b-day",
+      "crop": "upper-gradient",
+      "rect": [
+        0.12,
+        0.02,
+        0.8,
+        0.1
+      ],
+      "web": {
+        "srgb": [
+          138.1,
+          163.6,
+          209.5
+        ],
+        "luminance": 0.3655,
+        "warmth": 0.659
+      },
+      "native": {
+        "srgb": [
+          136.5,
+          161.8,
+          207
+        ],
+        "luminance": 0.3565,
+        "warmth": 0.659
+      },
+      "ratios": {
+        "Y": 0.9753761969904241,
+        "RG": 0.9994101477852794,
+        "BG": 0.9990589165444831
+      },
+      "checks": {
+        "Y": true,
+        "RG": true,
+        "BG": true
+      },
+      "passed": true
+    },
+    {
+      "shot": "facade-b-zenith-day",
+      "crop": "zenith",
+      "rect": [
+        0.45,
+        0.33,
+        0.55,
+        0.43
+      ],
+      "web": {
+        "srgb": [
+          79.5,
+          143.5,
+          207.5
+        ],
+        "luminance": 0.26,
+        "warmth": 0.383
+      },
+      "native": {
+        "srgb": [
+          79.2,
+          141,
+          203
+        ],
+        "luminance": 0.2503,
+        "warmth": 0.39
+      },
+      "ratios": {
+        "Y": 0.9626923076923077,
+        "RG": 1.013890004014452,
+        "BG": 0.9956592326753823
+      },
+      "checks": {
+        "Y": true,
+        "RG": true,
+        "BG": true
+      },
+      "passed": true
+    }
+  ],
+  "inputs": {
+    "facade-b-day": {
+      "web": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2434/paired-public-v3/web-facade-b-day.jpg",
+        "sha256": "d0ba47d1cf6714049a3a2012e5f253c294f387685934bd75cf0185c55e217046"
+      },
+      "unreal": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2434/paired-public-v3/unreal-facade-b-day.png",
+        "sha256": "1e86c2de749ad2b926dce90a1266c9be2bd54f4206af4300cd98b40968e8d50e"
+      }
+    },
+    "facade-b-zenith-day": {
+      "web": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2434/paired-public-v3/web-facade-b-zenith-day.jpg",
+        "sha256": "8e6617cb7a049bc4e596a672d59b7a2b7212407f6bcb349d9661e12b07827ab1"
+      },
+      "unreal": {
+        "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2434/paired-public-v3/unreal-facade-b-zenith-day.png",
+        "sha256": "e44d59679da079232ed27fda184527d2d653a1f0bdd07d5d572e12ceae13f4a4"
+      }
+    }
+  },
+  "allThreeSkyPatchesNumericallyPassed": true,
+  "productAccepted": false,
+  "remaining": "Root must verify actual pair environment/camera/phase, original full images and transparent foreground, APT22 and representative cloud/night/Moon evidence. Numerical patches alone do not accept the product."
+}

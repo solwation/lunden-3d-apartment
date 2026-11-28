@@ -1,0 +1,98 @@
+{
+  "issue": 2434,
+  "lockedBeforeNativeRender": true,
+  "viewport": [
+    640,
+    360
+  ],
+  "verticalFOV": 72,
+  "camera": {
+    "eyeWeb": [
+      -33.2,
+      1.62,
+      23.6
+    ],
+    "yawWeb": 180,
+    "pitchByShot": {
+      "facade-b-day": 12,
+      "facade-b-zenith-day": 80
+    }
+  },
+  "crops": {
+    "facade-b-day": {
+      "near-horizon": [
+        0.977,
+        0.475,
+        0.992,
+        0.51
+      ],
+      "upper-gradient": [
+        0.12,
+        0.02,
+        0.8,
+        0.1
+      ]
+    },
+    "facade-b-zenith-day": {
+      "zenith": [
+        0.45,
+        0.33,
+        0.55,
+        0.43
+      ]
+    }
+  },
+  "linearLuminanceRatio": [
+    0.85,
+    1.15
+  ],
+  "hueRatios": {
+    "RG": [
+      0.9,
+      1.1
+    ],
+    "BG": [
+      0.9,
+      1.1
+    ]
+  },
+  "hueBoundsProvenance": "Existing project crop-stats hue convention; issue itself requires web hue without numerical limit. Whole-image visual hue review additionally required.",
+  "referenceBeforeSelection": "Existing be384771/docs/verification/2397/web-facade-b-day.jpg wholeimage inspected. Near-horizon patch is source-visible sky at far right, selected before native; neither side pixels viewed to tune rects.",
+  "canonicalMeter": "tools/unreal-engine/tests/crop-stats.cjs",
+  "additionalGates": [
+    "paired camera/date/hour/weather/lamps/cloud phase actual readback",
+    "whole original paired frames visually reviewed including transparent foreground",
+    "original APT22 unchanged",
+    "representative existing clouds/night/Moon controls"
+  ],
+  "implementationAccepted": false,
+  "angularRangesDegrees": {
+    "facade-b-day": {
+      "near-horizon": [
+        8.822028917497287,
+        8.655696462965185,
+        7.010613242179241,
+        6.878754101943057
+      ],
+      "upper-gradient": [
+        34.658605748616615,
+        38.0364077029302,
+        30.784535066484768,
+        33.89557386008399
+      ]
+    },
+    "facade-b-zenith-day": {
+      "zenith": [
+        81.8743707471781,
+        81.8743707471781,
+        81.56821185578251,
+        81.56821185578251
+      ]
+    }
+  },
+  "supersedes": "sky-acceptance-contract.json; pre-render angular geometry corrected to include actual90-degree zenith, not just80-degree camera axis; no image result used.",
+  "trueZenithImageUV": [
+    0.5,
+    0.3786533658307997
+  ]
+}

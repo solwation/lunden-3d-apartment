@@ -1246,7 +1246,7 @@ sky's brightness and the locked exposure.
   `ExponentialHeightFog` (denser and greyer under rain or snow, as the web greys sky and fog) and Epic's
   `VolumetricCloud` material (since #2307 with weather-driven coverage). Sky-light scale 2 and fog grey are *guesses*
   by eye against the web pictures.
-- **Day-sky source candidate (#2434; native acceptance pending).** `sky_clouds.daylight` uses the exported
+- **Day-sky source mapping (#2434).** `sky_clouds.daylight` uses the exported
   linear palette and actual DayCycle low-sun glow/scatter, instead of preserving atmosphere luminance or
   fading the correction out at the horizon. At 16 November 14:00 the source Sun height is 0.1778401,
   daylight 0.9997941 and glow 0.4878290; ignoring that glow gives the wrong horizon even in clear weather.
@@ -1263,9 +1263,12 @@ sky's brightness and the locked exposure.
   Scope remains the existing far-SceneDepth sky branch, **before** AfterDOF translucency. This is not a
   depth-only replacement at ReplacingTonemapper: in 5.8.4 its Input1 is CombinedBloom, not a proved separate
   translucency buffer. SceneDepth alone does not exclude depth-unwritten BeforeDOF translucent foregrounds.
-  Their native coverage must be checked before promotion; no general preservation claim is made for those
-  pixels. Native clear November sky, known cloud/night/Moon controls and unchanged apartment acceptance
-  remain integration gates. In particular, #2421's remaining night-luminance failure is not resolved here.
+  The [public-baseline Linux capture](../verification/2434/README.md) passed three frozen sky Y/hue patches
+  and all 22 unchanged apartment rows. All six whole views were reviewed without observed sky overdraw
+  across sampled foliage, buildings, windows or curtains; this does not prove every BeforeDOF translucent
+  material. Actual UE compilation, 20 canonical steps and source/package guards passed. Night/cloud code
+  preservation and prior evidence were reused; no new night/Moon capture was run. In particular, #2421's
+  remaining night-luminance failure is not resolved here, and Windows full-profile testing is not claimed.
 - **Clear night sky (#2366).** The two stored START exposure trials put the web's sky luminance between
   the game exposure and +1.76 EV. The sky material applies a fitted +1.53 EV (*guess*) to the atmospheric
   background at astronomical night. The correction fades out with cloud cover and between astronomical and
