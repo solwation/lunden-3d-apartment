@@ -1,0 +1,72 @@
+{
+  "sourceBase": "4917d85a2bd0167e5305d9fd482fb85b2784b10f",
+  "newMaterials": {
+    "/Game/Lunden/Materials/MI_LundenStandardTileSplash": {
+      "parent": "/Game/Lunden/Materials/M_LundenTiled",
+      "params": {
+        "Size": [
+          0.2,
+          0.1
+        ],
+        "Joint": 0.003,
+        "Bond": 0.5,
+        "Stagger": 0,
+        "Variation": 0.01,
+        "Grain": 0,
+        "Color": "#f4f4f2",
+        "JointColor": "#d3d5d4",
+        "Roughness": 0.6,
+        "JointRoughness": 0.96
+      },
+      "source": "src/standardinterior.js splash tileMaterial: STANDARD.splash, 20x10 cm half bond; TILE_SURFACE.groutRoughness (#2442)",
+      "assumption": "Source colour, dimensions, joint, half-range tile variation and face/grout roughness; existing procedural master approximates the canvas, without tile bump/bevel or wet-floor speckles; no colour/gain fit"
+    },
+    "/Game/Lunden/Materials/MI_LundenStandardTileWetFloor": {
+      "parent": "/Game/Lunden/Materials/M_LundenTiled",
+      "params": {
+        "Size": [
+          0.1,
+          0.1
+        ],
+        "Joint": 0.003,
+        "Bond": 0,
+        "Stagger": 0,
+        "Variation": 0.03,
+        "Grain": 0,
+        "Color": "#9c9fa1",
+        "JointColor": "#75787a",
+        "Roughness": 0.75,
+        "JointRoughness": 0.96
+      },
+      "source": "src/standardinterior.js wet tileMaterial: STANDARD.wetFloor, 10x10 cm; TILE_SURFACE.groutRoughness (#2442)",
+      "assumption": "Source colour, dimensions, joint, half-range tile variation and face/grout roughness; existing procedural master approximates the canvas, without tile bump/bevel or wet-floor speckles; no colour/gain fit"
+    },
+    "/Game/Lunden/Materials/MI_LundenStandardTileWall": {
+      "parent": "/Game/Lunden/Materials/M_LundenTiled",
+      "params": {
+        "Size": [
+          0.2,
+          0.2
+        ],
+        "Joint": 0.003,
+        "Bond": 0,
+        "Stagger": 0,
+        "Variation": 0.01,
+        "Grain": 0,
+        "Color": "#f5f5f3",
+        "JointColor": "#cfd1d0",
+        "Roughness": 0.55,
+        "JointRoughness": 0.96
+      },
+      "source": "src/standardinterior.js wetWall tileMaterial: STANDARD.wetWall, 20x20 cm; TILE_SURFACE.groutRoughness (#2442)",
+      "assumption": "Source colour, dimensions, joint, half-range tile variation and face/grout roughness; existing procedural master approximates the canvas, without tile bump/bevel or wet-floor speckles; no colour/gain fit"
+    }
+  },
+  "sourceScope": {
+    "hus-l": "11 corrections:1portik,2splash,4wetfloor,4wetwall; L1004/L1201",
+    "l1007": "existing hall/splash/wetfloor/two wall meshes preserved",
+    "kvarteretABC": "no matching source std_ffffff_r100_m0_tex siblings in actual export; original classes/rules preserved"
+  },
+  "nativeImportScope": "all10 zones due normal whole material-map SHA stamp; no check weakening",
+  "sourceContractSHA256": "f697424a84f6339e814c4bc0d3e453a223bf0ead3f3e5451b8876c4c11964149"
+}

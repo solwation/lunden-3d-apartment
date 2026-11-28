@@ -1,0 +1,32 @@
+{
+  "sourceHead": "d9684a51e06c93eec89bcfb988127cc65e4040bf",
+  "actualNativeRunnerOuter": [
+    0,
+    null,
+    143
+  ],
+  "seconds": 640.88,
+  "outerLimitation": "Native durable result is0/passed; runner final JSON printed but runnerexit unknown; toolouter143 and no run-recorded outer JSON. No triple0 claim.",
+  "all250AuthoredReadonly": true,
+  "original247ExactReadonly": true,
+  "exactly3NewAuthoredAssets": [
+    "unreal/Lunden/Content/Lunden/Materials/MI_LundenStandardTileSplash.uasset",
+    "unreal/Lunden/Content/Lunden/Materials/MI_LundenStandardTileWall.uasset",
+    "unreal/Lunden/Content/Lunden/Materials/MI_LundenStandardTileWetFloor.uasset"
+  ],
+  "allSourceDependenciesAndExportExact": true,
+  "allGeneratedExactAfterImportInteraction": true,
+  "changedGeneratedFiles": 4733,
+  "normalOperations": [
+    "build_materials.build_entries exactly3 new instances",
+    "build_materials --check",
+    "import_world all10 zones",
+    "import_world --check all10",
+    "build_interaction.build_entrances only hus-l; existing classes reused"
+  ],
+  "savedInteractionSlotsPassed": 11,
+  "composedSlotsIncluding2L1007ControlsPassed": 13,
+  "actualImages": 3,
+  "stateRestored": true,
+  "global20OrFreshSyncStampOrShipping": false
+}

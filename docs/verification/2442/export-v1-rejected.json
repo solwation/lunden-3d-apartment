@@ -1,0 +1,7 @@
+{
+  "accepted": false,
+  "reason": "Launcher auto-selected newer Chromium1248 rather than frozen1208;3unrelatedGLBs differ including float geometry and embedded PNG buffers. Native staging exactness guard failed before locks/build/engine; old2metadatafiles restored and all12oldexporthashes verified.",
+  "actualExportExit": 0,
+  "seconds": 106.665,
+  "retry": "fixed supplier Chromium1208"
+}

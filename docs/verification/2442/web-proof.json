@@ -1,0 +1,60 @@
+{
+  "issue": 2442,
+  "completed": true,
+  "actualNodeExit": 0,
+  "actualWrapperExit": 0,
+  "sourceHead": "1669c2a60b88856a4be75ed50d7cba4ab91e5643",
+  "sourceTreeCleanBeforeAfter": true,
+  "exportSourceCount": 323,
+  "exportSourceHash": "58fbe255f6eb9033c63b18d626efbab0a5e000b9d83d94af3520109a9de6da92",
+  "exportSourceBeforeAfterExact": true,
+  "bootstrapClosurePlusIndexBeforeAfterExact": true,
+  "contract": {
+    "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2442/locked-cameras.json",
+    "sha256": "fdc4948092c652c5d10416b43992e9b796b7f449111ba0f07493e79897db4ccb"
+  },
+  "images": [
+    {
+      "name": "portik",
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2442/web-v1/web-portik.jpg",
+      "sha256": "37d7e2295184ca5b9a6bc89c8ac0ef2e0bc4b2f108d7c09f942b9fbf3f9c47c2",
+      "originalViewed": true,
+      "validTargetVisible": true,
+      "actualExposure": 1.5
+    },
+    {
+      "name": "standard-wetroom",
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2442/web-v1/web-standard-wetroom.jpg",
+      "sha256": "04953e17b8668ed23fd3390416012d4cc9f71801385ba2aa3c9df90aed52050c",
+      "originalViewed": true,
+      "validTargetVisible": true,
+      "actualExposure": 1.5750000000000002
+    },
+    {
+      "name": "standard-splash",
+      "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2442/web-v1/web-standard-splash.jpg",
+      "sha256": "01554dc27ffbbc0ddb65c96ff15052d7ff5a8340bdba23b96d858b295941674b",
+      "originalViewed": true,
+      "validTargetVisible": true,
+      "actualExposure": 1.5750000000000002
+    }
+  ],
+  "metadata": {
+    "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2442/web-v1/web-capture.json",
+    "sha256": "f3ed23b2125ef8c9760d04a4df3b87916d4771900be50c78756f65ec567f7f04"
+  },
+  "privateHarness": {
+    "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2442/web-v1/capture-web.cjs",
+    "sha256": "26261620ec08b07c0529bb8a86539c71e57fb96f4268e176f87b52ca49ec6818"
+  },
+  "chromium": "/home/devcontainers/.cache/ms-playwright/chromium-1208/chrome-linux64/chrome",
+  "ownedBrowserClosed": true,
+  "ownedServerPort": 8848,
+  "ownedServerExit": 0,
+  "completedUTC": "2026-11-28T09:22:42.206321+00:00",
+  "limits": [
+    "Three prelocked source-only views; no Native images consulted",
+    "No visual pixel equality claim or tile bump/bevel/speckle parity; residual surface details tracked by open2362",
+    "Web renderer source actual exposure interior1.575 versus portik1.5 recorded, no fitted parameters"
+  ]
+}

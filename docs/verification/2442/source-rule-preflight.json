@@ -1,0 +1,156 @@
+{
+  "actualNativePreflightLoopExecutedOffline": true,
+  "rows": [
+    {
+      "id": "mesh_portikpaving_l0_xm1375_z635_y1",
+      "key": "std_ffffff_r100_m0_tex",
+      "selectedObjectPath": "/Game/Lunden/Materials/MI_LundenPatioPaving.MI_LundenPatioPaving",
+      "selectedPackage": "/Game/Lunden/Materials/MI_LundenPatioPaving",
+      "expectedPackage": "/Game/Lunden/Materials/MI_LundenPatioPaving"
+    },
+    {
+      "id": "mesh_l0_xm1973_z329_y127",
+      "key": "std_ffffff_r100_m0_tex",
+      "selectedObjectPath": "/Game/Lunden/Materials/MI_LundenStandardTileSplash.MI_LundenStandardTileSplash",
+      "selectedPackage": "/Game/Lunden/Materials/MI_LundenStandardTileSplash",
+      "expectedPackage": "/Game/Lunden/Materials/MI_LundenStandardTileSplash"
+    },
+    {
+      "id": "mesh_l1_xm3611_z609_y766",
+      "key": "std_ffffff_r100_m0_tex",
+      "selectedObjectPath": "/Game/Lunden/Materials/MI_LundenStandardTileSplash.MI_LundenStandardTileSplash",
+      "selectedPackage": "/Game/Lunden/Materials/MI_LundenStandardTileSplash",
+      "expectedPackage": "/Game/Lunden/Materials/MI_LundenStandardTileSplash"
+    },
+    {
+      "id": "mesh_l0_xm2366_z534_y0",
+      "key": "std_ffffff_r100_m0_tex",
+      "selectedObjectPath": "/Game/Lunden/Materials/MI_LundenStandardTileWetFloor.MI_LundenStandardTileWetFloor",
+      "selectedPackage": "/Game/Lunden/Materials/MI_LundenStandardTileWetFloor",
+      "expectedPackage": "/Game/Lunden/Materials/MI_LundenStandardTileWetFloor"
+    },
+    {
+      "id": "mesh_l1_xm2397_z637_y325",
+      "key": "std_ffffff_r100_m0_tex",
+      "selectedObjectPath": "/Game/Lunden/Materials/MI_LundenStandardTileWetFloor.MI_LundenStandardTileWetFloor",
+      "selectedPackage": "/Game/Lunden/Materials/MI_LundenStandardTileWetFloor",
+      "expectedPackage": "/Game/Lunden/Materials/MI_LundenStandardTileWetFloor"
+    },
+    {
+      "id": "mesh_l1_xm3658_z655_y940",
+      "key": "std_ffffff_r100_m0_tex",
+      "selectedObjectPath": "/Game/Lunden/Materials/MI_LundenStandardTileWetFloor.MI_LundenStandardTileWetFloor",
+      "selectedPackage": "/Game/Lunden/Materials/MI_LundenStandardTileWetFloor",
+      "expectedPackage": "/Game/Lunden/Materials/MI_LundenStandardTileWetFloor"
+    },
+    {
+      "id": "mesh_l1_xm4004_z625_y640",
+      "key": "std_ffffff_r100_m0_tex",
+      "selectedObjectPath": "/Game/Lunden/Materials/MI_LundenStandardTileWetFloor.MI_LundenStandardTileWetFloor",
+      "selectedPackage": "/Game/Lunden/Materials/MI_LundenStandardTileWetFloor",
+      "expectedPackage": "/Game/Lunden/Materials/MI_LundenStandardTileWetFloor"
+    },
+    {
+      "id": "mesh_l0_xm2369_z624_y125",
+      "key": "std_ffffff_r100_m0_tex",
+      "selectedObjectPath": "/Game/Lunden/Materials/MI_LundenStandardTileWall.MI_LundenStandardTileWall",
+      "selectedPackage": "/Game/Lunden/Materials/MI_LundenStandardTileWall",
+      "expectedPackage": "/Game/Lunden/Materials/MI_LundenStandardTileWall"
+    },
+    {
+      "id": "mesh_l1_xm2398_z637_y450",
+      "key": "std_ffffff_r100_m0_tex",
+      "selectedObjectPath": "/Game/Lunden/Materials/MI_LundenStandardTileWall.MI_LundenStandardTileWall",
+      "selectedPackage": "/Game/Lunden/Materials/MI_LundenStandardTileWall",
+      "expectedPackage": "/Game/Lunden/Materials/MI_LundenStandardTileWall"
+    },
+    {
+      "id": "mesh_l1_xm3653_z655_y1065",
+      "key": "std_ffffff_r100_m0_tex",
+      "selectedObjectPath": "/Game/Lunden/Materials/MI_LundenStandardTileWall.MI_LundenStandardTileWall",
+      "selectedPackage": "/Game/Lunden/Materials/MI_LundenStandardTileWall",
+      "expectedPackage": "/Game/Lunden/Materials/MI_LundenStandardTileWall"
+    },
+    {
+      "id": "mesh_l1_xm4004_z628_y765",
+      "key": "std_ffffff_r100_m0_tex",
+      "selectedObjectPath": "/Game/Lunden/Materials/MI_LundenStandardTileWall.MI_LundenStandardTileWall",
+      "selectedPackage": "/Game/Lunden/Materials/MI_LundenStandardTileWall",
+      "expectedPackage": "/Game/Lunden/Materials/MI_LundenStandardTileWall"
+    },
+    {
+      "id": "mesh_l0_x113_z624_y125",
+      "key": "std_ffffff_r100_m0_tex",
+      "selectedObjectPath": "/Game/Lunden/Materials/MI_LundenTileWall.MI_LundenTileWall",
+      "selectedPackage": "/Game/Lunden/Materials/MI_LundenTileWall",
+      "expectedPackage": "/Game/Lunden/Materials/MI_LundenTileWall"
+    },
+    {
+      "id": "mesh_l1_x84_z637_y450",
+      "key": "std_ffffff_r100_m0_tex",
+      "selectedObjectPath": "/Game/Lunden/Materials/MI_LundenTileWall.MI_LundenTileWall",
+      "selectedPackage": "/Game/Lunden/Materials/MI_LundenTileWall",
+      "expectedPackage": "/Game/Lunden/Materials/MI_LundenTileWall"
+    }
+  ],
+  "passed": true,
+  "harnessSHA256": "eae9b9c37aeebcb41721b13a441f1d0d3df77e58f9fae5e63c78f6ed94004c9a",
+  "materialMapSHA256": "11f468b277998aad8175ad31ae5d514411810e91a7dd43fb704b6a0a9881aed0",
+  "legacyWrongWhiteWallCatchallRejected": true,
+  "exactConfigViews": [
+    {
+      "name": "portik",
+      "eyeWeb": [
+        -13.745,
+        1.62,
+        3.0
+      ],
+      "yaw": 180,
+      "pitch": -24,
+      "verticalFov": 72,
+      "date": [
+        2026,
+        6,
+        21
+      ],
+      "hour": 14,
+      "lampsOn": false
+    },
+    {
+      "name": "standard-wetroom",
+      "eyeWeb": [
+        -23.625,
+        1.62,
+        5.35
+      ],
+      "yaw": 180,
+      "pitch": -30,
+      "verticalFov": 72,
+      "date": [
+        2026,
+        6,
+        21
+      ],
+      "hour": 14,
+      "lampsOn": true
+    },
+    {
+      "name": "standard-splash",
+      "eyeWeb": [
+        -20.625,
+        1.62,
+        2.7
+      ],
+      "yaw": 270,
+      "pitch": -12,
+      "verticalFov": 72,
+      "date": [
+        2026,
+        6,
+        21
+      ],
+      "hour": 14,
+      "lampsOn": true
+    }
+  ]
+}

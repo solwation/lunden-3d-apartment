@@ -1,0 +1,16 @@
+{
+  "command": [
+    "bash",
+    "tools/browsertest.sh",
+    "node",
+    "tools/unreal-engine/export-world.mjs",
+    "--out",
+    "/mnt/d/LundenLinux/exports/issue2442-standard-materials-v1"
+  ],
+  "cwd": "/home/devcontainers/wt/codex-2409-publication",
+  "startedAt": "2026-11-28T09:17:00.210981+00:00",
+  "completed": true,
+  "actualChildExitCode": 0,
+  "seconds": 106.665,
+  "log": "/home/devcontainers/.local/state/lunden-codex-20261127/2442/export-v1.log"
+}

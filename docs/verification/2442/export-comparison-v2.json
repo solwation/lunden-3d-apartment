@@ -1,0 +1,53 @@
+{
+  "outer": {
+    "command": [
+      "bash",
+      "tools/browsertest.sh",
+      "node",
+      "tools/unreal-engine/export-world.mjs",
+      "--out",
+      "/mnt/d/LundenLinux/exports/issue2442-standard-materials-v2"
+    ],
+    "cwd": "/home/devcontainers/wt/codex-2409-publication",
+    "startedAt": "2026-11-28T09:21:15.751471+00:00",
+    "completed": true,
+    "actualChildExitCode": 0,
+    "seconds": 114.739,
+    "log": "/home/devcontainers/.local/state/lunden-codex-20261127/2442/export-v2.log"
+  },
+  "frozen2438BaselineExact": true,
+  "all10GLBsByteExact": {
+    "fixture.glb": true,
+    "fond.glb": true,
+    "gard.glb": true,
+    "hus-l.glb": true,
+    "kvarteret.glb": true,
+    "l1007-entre.glb": true,
+    "l1007-uteplats.glb": true,
+    "l1007.glb": true,
+    "omgivning.glb": true,
+    "vegetation.glb": true
+  },
+  "measurementComparison": "Every other JSON field exact; shared-key grouped looks compared as exact per-node descriptors, preserving map/mapIndex and all other fields. Only portik surface null\u2192paving; the equivalent look group split/reorder is allowed.",
+  "sourceCommitBefore": "31c6a8ecc1de46a882f5d645156666073506c245",
+  "sourceCommitAfter": "d9684a51e06c93eec89bcfb988127cc65e4040bf",
+  "onlyNodeChange": {
+    "id": "mesh_portikpaving_l0_xm1375_z635_y1",
+    "surfaceBefore": null,
+    "surfaceAfter": "paving"
+  },
+  "newFiles": {
+    "export-manifest.json": "26e5d0d29c6d8a6ecc39bd866d442a5809f98dd1c1d4febd9079d3883e77c837",
+    "fixture.glb": "4636b1948a94ae9ead1697597026fb784135703be441a97ddd400a0c1446e649",
+    "fond.glb": "3296dac9ba0e5dd15a7838b56cdf1310ec6c4ed7d93f086684c091abfcaabde3",
+    "gard.glb": "559a4bd2a880d6624a5dd5cb451e2ec256b2ae1ed415983c6a759cd3540e995b",
+    "hus-l.glb": "df489d6ca499c5eccba334d113402f5ef6e5dfa53670f3f727b190192089ac22",
+    "kvarteret.glb": "4e93a9981f2a5ad6206e698b3982fdfb4cdf6de8ab6f34135f2c92930d27f95b",
+    "l1007-entre.glb": "4738e1b53b2c981cdb5e68f27da6eec734c5db294de770929e3dc15cc4b320c3",
+    "l1007-uteplats.glb": "163ce0bc28191a075ec67161e77f2ccac3699d5f01666e7624899762d0fc3941",
+    "l1007.glb": "9b08d5770fdc54efcb6392be62711a8d3db56c9cf5f5ddc83c6db588251b6899",
+    "measurements.json": "d10c0b83c7a6a8475be7afb33456f1d01a2d34365607509f88b282d4d3e34233",
+    "omgivning.glb": "92e00d3d4948282a469f186937e7bb6032969518bec387286b72fd954e7c615c",
+    "vegetation.glb": "e01b8c3c721b54531468165e986a0223b5cb875080fb16e6003579c8a2c48433"
+  }
+}

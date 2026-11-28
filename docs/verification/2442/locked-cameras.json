@@ -1,0 +1,118 @@
+{
+  "issue": 2442,
+  "lockedAtUTC": "2026-11-28T09:17:46.754316+00:00",
+  "sourceCommit": "1669c2a60b88856a4be75ed50d7cba4ab91e5643",
+  "nativeImagesViewed": false,
+  "width": 640,
+  "height": 360,
+  "verticalFovDeg": 72,
+  "standingEyeHeightM": 1.62,
+  "sourceOnlyCameraBasis": "Actual unmodified GLB geometry accessor bounds +STANDARD sourceplan/visit-unit translation; no Native fitting",
+  "views": [
+    {
+      "name": "portik",
+      "camera": "portik",
+      "x": -13.745,
+      "z": 3.0,
+      "feetY": 0,
+      "yawDeg": 180,
+      "pitchDeg": -24,
+      "lighting": "day",
+      "lamps": "none",
+      "targets": [
+        "mesh_portikpaving_l0_xm1375_z635_y1"
+      ],
+      "basis": "Centre of actual source paving X[-16.12,-11.37], within portik Z[0,12.699], standing eye and downward view along passage",
+      "date": [
+        2026,
+        6,
+        21
+      ],
+      "hour": 14,
+      "weather": "clear"
+    },
+    {
+      "name": "standard-wetroom",
+      "camera": "standard-wetroom",
+      "x": -23.625,
+      "z": 5.35,
+      "feetY": 0,
+      "yawDeg": 180,
+      "pitchDeg": -30,
+      "lighting": "day",
+      "lamps": "all",
+      "targets": [
+        "mesh_l0_xm2366_z534_y0",
+        "mesh_l0_xm2369_z624_y125"
+      ],
+      "basis": "L1004 offset\u221224.825 +localx1.2; source STANDARD.tiled Badrum x[.2,2.06],z[4.88,7.6]. From room interior toward back tiledwall+floor; above bare floor, no Native image selection",
+      "date": [
+        2026,
+        6,
+        21
+      ],
+      "hour": 14,
+      "weather": "clear"
+    },
+    {
+      "name": "standard-splash",
+      "camera": "standard-splash",
+      "x": -20.625,
+      "z": 2.7,
+      "feetY": 0,
+      "yawDeg": 270,
+      "pitchDeg": -12,
+      "lighting": "day",
+      "lamps": "all",
+      "targets": [
+        "mesh_l0_xm1973_z329_y127"
+      ],
+      "basis": "L1004 offset\u221224.825 +localx4.2,z2.7; face kitchenwall/between-cabinet splash localx~5.55,y[.93,1.6], current GLB boundsfromsource, standingeye aimed near1.34m",
+      "date": [
+        2026,
+        6,
+        21
+      ],
+      "hour": 14,
+      "weather": "clear"
+    }
+  ],
+  "shots": [
+    {
+      "name": "portik",
+      "camera": "portik",
+      "date": [
+        2026,
+        6,
+        21
+      ],
+      "hour": 14,
+      "weather": "clear",
+      "lamps": "none"
+    },
+    {
+      "name": "standard-wetroom",
+      "camera": "standard-wetroom",
+      "date": [
+        2026,
+        6,
+        21
+      ],
+      "hour": 14,
+      "weather": "clear",
+      "lamps": "all"
+    },
+    {
+      "name": "standard-splash",
+      "camera": "standard-splash",
+      "date": [
+        2026,
+        6,
+        21
+      ],
+      "hour": 14,
+      "weather": "clear",
+      "lamps": "all"
+    }
+  ]
+}
