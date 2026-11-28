@@ -23,11 +23,12 @@ ID_LINE = re.compile(r'^([+-])\s*\{?\s*"id"\s*:\s*(\d+)')
 
 def id_times():
     """id → committer time of the commit that added the entry, or {} without git history.
-    One pass over the file's history, oldest first: a commit that adds a line with `"id": N` while N was not in
-    the file before sets N's time; a commit that only rewords an entry (its line removed and added again) or
-    reformats the file keeps it, so a typo fix never brings an old entry back to the top as "Nytt"."""
+    Follow the published branch, oldest first, and diff each merge against its first parent.
+    A commit that introduces an ID sets its time. Rewording an entry keeps the existing time,
+    so a typo fix never brings an old entry back to the top as "Nytt"."""
     try:
-        txt = subprocess.run(['git', 'log', '--reverse', '--no-merges', '--format=@@C %ct', '-p', '--unified=0',
+        txt = subprocess.run(['git', 'log', '--reverse', '--first-parent', '--diff-merges=first-parent',
+                              '--format=@@C %ct', '-p', '--unified=0',
                               '--', SRC], capture_output=True, text=True, check=True).stdout
     except (OSError, subprocess.CalledProcessError) as e:
         print(f'::warning::changelog: no git history ({e}), entries get no t', file=sys.stderr)
