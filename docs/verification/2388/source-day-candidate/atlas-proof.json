@@ -1,0 +1,35 @@
+{
+  "nativeRGBA16FTexelsExact": true,
+  "sourceRawHalfSHA256": "389f5a8779beeeb8fdd47ef95520d98eb5008904cc9308900c6a7a290bed9915",
+  "sourceEXRSHA256": "4d6f43fd7cc919198b35870e3b8c1c5449e7d4b77122385d0891630a356208c7",
+  "method": "Exact integer Texture2D.Load half bits at336x256 texels, separateRGB/Alpha-as-R passes; bypass sampler interpolation, no8bit/tone/gamma proof",
+  "nativeTexturePath": "/Game/Lunden/Generated/Private2388SourceDay_20261128_v3/T_SourceGlassAtlas.T_SourceGlassAtlas",
+  "mismatches": [],
+  "nativeProperties": {
+    "compression_settings": "<TextureCompressionSettings.TC_HDR: 6>",
+    "srgb": "False",
+    "mip_gen_settings": "<TextureMipGenSettings.TMGS_NO_MIPMAPS: 13>",
+    "filter": "<TextureFilter.TF_BILINEAR: 1>",
+    "address_x": "<TextureAddress.TA_CLAMP: 1>",
+    "address_y": "<TextureAddress.TA_CLAMP: 1>"
+  },
+  "nativeDimensions": [
+    336,
+    256
+  ],
+  "compilerErrors": [],
+  "passes": [
+    {
+      "mode": 0.0,
+      "actualReadPixels": 86016,
+      "rawReturnType": "Array"
+    },
+    {
+      "mode": 1.0,
+      "actualReadPixels": 86016,
+      "rawReturnType": "Array"
+    }
+  ],
+  "mismatchCount": 0,
+  "nativeSampledHalfSHA256": "389f5a8779beeeb8fdd47ef95520d98eb5008904cc9308900c6a7a290bed9915"
+}

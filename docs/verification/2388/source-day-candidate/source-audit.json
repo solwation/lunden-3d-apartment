@@ -1,0 +1,21 @@
+{
+  "classification": "bounded read-only candidate-v3 source audit; no renderer or source changes",
+  "candidate": "/home/devcontainers/.local/state/lunden-codex-20261127/2388/forward-ao/native/source-candidate-v3/capture.json",
+  "exposure": {
+    "baseBias": -2.55,
+    "actualGameBias": -1.96503746509552,
+    "sourceRadianceToNative": 5.856342783782501,
+    "netAfterEyeAdaptation": 1.500000035541112,
+    "expectedCanonicalSourceExposure": 1.5,
+    "doubleCompensationProven": false,
+    "explanation": "MaterialTemplate GetMaterialEmissive only clamps nonnegative; BasePass pre-exposes entire translucent RGB; replacement Neutral consumes de-pre-exposed Scene times EyeAdaptation. Inverse actual game bias would remove source exposure rather than correct a duplicate."
+  },
+  "AO": {
+    "ordinarySurfaceForward": "MaterialAO1033 -> ApplyBentNormal1301 -> diffuse1377 and reflection1503-1505; AO0 suppresses these native indirect branches",
+    "exception": "SurfaceForward TLV1433-1446 adds volume diffuse/specular without that AO multiplier. TranslucentLighting.cpp1243-1245 and1408 enable this only when MegaLights::IsEnabled(ViewFamily) && MegaLights::UseTranslucencyVolume().",
+    "actualExceptionState": "not collected; cannot claim active",
+    "zeroPixelResponse": "does not prove bypass, also compatible with zero/subpixel native indirect in this scene. Copied opacity and route sentinel eliminate inert-copy and AO-editor-restore explanations."
+  },
+  "nextActualLever": "In a future already-needed candidate, separate source PMREM response from source Ambient/Hemi/window response with literal zero term gates, preserving gain/alpha/all other state; record actual MegaLights flags before attributing surviving native energy. This is term attribution, not acceptance or a gain fit. No new harness prepared.",
+  "remaining": "No source evidence establishes which candidate added term causes the door milkiness; do not activate or publish product candidate. Actual observer reference profile exposure1.575 belongs to atlas capture camera and is distinct from canonical source1.5; atlas is linear untonemapped so neither belongs in atlas texels."
+}

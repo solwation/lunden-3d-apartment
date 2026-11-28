@@ -1,0 +1,1358 @@
+{
+  "completed": true,
+  "classification": "Actual source-PMREM GPU export only; no native import/material acceptance",
+  "sourceHead": "98cc6bdc1df3ed1c8a9a5a9765ede0be69735fc8",
+  "sourceHash": "58cf0ae433ae57f767608dae0a1cc980bbdfa664ceb77f4f764c80965a64739f",
+  "sourceFiles": [
+    {
+      "path": "data/elevation.json",
+      "sha256": "4dcd25df84de6cb4ce55ad3cb094462d992124d67370a3aebb68d3dfc3f49ceb"
+    },
+    {
+      "path": "data/plan.json",
+      "sha256": "5b0b4a73b71dde6c3d2e00ed8de92c512ee01a8402eaa67a788d3eb4ce620de9"
+    },
+    {
+      "path": "models/avatar-rigged.glb",
+      "sha256": "c20e4d08018079095c38089db329bfb2c450c78b3a8ca59ba5783cede99dfd37"
+    },
+    {
+      "path": "models/bicycle.glb",
+      "sha256": "fcc1310e19dfda860bbf2ad5e246f37ec3a14972f882c9b935b697f0c8986b49"
+    },
+    {
+      "path": "models/car-megane.glb",
+      "sha256": "310edb693455a3feff19a2d938bee8e795855a94e35bba243e383c9991eed541"
+    },
+    {
+      "path": "models/car-parked.glb",
+      "sha256": "8044f007d0c8841ada9fdcdf86b86af7560107702f3fedbcb82f6a07d81bc17f"
+    },
+    {
+      "path": "models/cat-rigged.glb",
+      "sha256": "03a21faba65a120cdb2cac4fbaeaec6647122c27ac79b83ebbea7e931cfbac44"
+    },
+    {
+      "path": "models/duck-rigged.glb",
+      "sha256": "4601e326ac23319d148c6181c5b10ed1bdfad2c3c036bdcfaaa84dd109ec1bd4"
+    },
+    {
+      "path": "models/fish-generic.glb",
+      "sha256": "e722f6008e937a2390b1760a1c32a5d7d6a38acd410616c326b1339d8d238e68"
+    },
+    {
+      "path": "models/pingping.glb",
+      "sha256": "efd4aad1b5192241876affe722a1af99f232773848a4c3915f3eec92d2de1446"
+    },
+    {
+      "path": "models/pony-rigged.glb",
+      "sha256": "fe78b087845573e95592292fe06dff2f935e78e6a807d7dd8422f8ba2f4a123d"
+    },
+    {
+      "path": "models/santa.glb",
+      "sha256": "e3e758ce09d8ed21d518fdec0a47b4fe0ad4e70b4c7572de287ee57ca79d322f"
+    },
+    {
+      "path": "models/shark.glb",
+      "sha256": "649061a972726cc55e7c26b8bd10a7edc2d372c23f7593ac019ac6d1615a4e47"
+    },
+    {
+      "path": "models/squirrel-rigged.glb",
+      "sha256": "ad864c66c7e11405033c2a7d1a74e26c78f26f7b27f707d8a25aeb29c1524b2b"
+    },
+    {
+      "path": "src/aborg.js",
+      "sha256": "d6765663e779b04fe8ff77e3c251faa606f6f262d3e3cfafbcd1d5a0c433f0da"
+    },
+    {
+      "path": "src/actions.js",
+      "sha256": "f3267bfa671220f78d77092ad15ed72e1901ef6a09c039153660f2079184ec28"
+    },
+    {
+      "path": "src/aerialhaze.js",
+      "sha256": "a29a80bef599b94771c4877a7006185d275653fc55520d4ede68e4270a421dac"
+    },
+    {
+      "path": "src/ao.js",
+      "sha256": "8ac49374f3f2a5319941dd19660068e7c4509e4d4935cdb402f9da95a8dabb14"
+    },
+    {
+      "path": "src/architectureedges.js",
+      "sha256": "50c54d0bc6922947b549c50572c6d263813097c7e526739d9e90ffc997856f49"
+    },
+    {
+      "path": "src/asphaltsurface.js",
+      "sha256": "84dec6f67031a3744bd7425043df3035f34b22a6491909f8c9021e348893a72f"
+    },
+    {
+      "path": "src/audio.js",
+      "sha256": "68c7835eba80198313cb294863548111903b96bdb65c3e094116e1aee1f8e9ae"
+    },
+    {
+      "path": "src/avatarbreath.js",
+      "sha256": "cdff6abfe3bd245c08371cc694063f70a7068754b2393125be8f229f7e08b49c"
+    },
+    {
+      "path": "src/avatarlight.js",
+      "sha256": "9e3c9d94e2be807daa67f5aa1aa4eb892316dd942aef7e46b39cc1eb0dd5945e"
+    },
+    {
+      "path": "src/avataroutwear.js",
+      "sha256": "c1ff49540a7f1b1770657f47599482123d8d0c136937f8549e034e1d4466cd70"
+    },
+    {
+      "path": "src/avatarskirt.js",
+      "sha256": "b8e8bb66fcdeb019e0e2d5cdf81e436909c33c838f29d25e757ea31c5336002c"
+    },
+    {
+      "path": "src/avatarstairs.js",
+      "sha256": "50f4496ac3acccfd93177d8523c1e30b05c3a7a7ef896049ea0798248ca6fa37"
+    },
+    {
+      "path": "src/avatarweather.js",
+      "sha256": "7f56c73e40207a1d3cb2369a3bba7f3b60d2cdf529dcf4ef49be01af85588004"
+    },
+    {
+      "path": "src/balloongeo.js",
+      "sha256": "0ea6bbb62798cac5fcd5a712f63bc613e3893d87dcb8df32a81f89a600336752"
+    },
+    {
+      "path": "src/barksurface.js",
+      "sha256": "337ff840bc8dc86a0f886a168e58fff0dfb89e5a81612d4297d795a62f9f0fe7"
+    },
+    {
+      "path": "src/basket.js",
+      "sha256": "5382145e1fbe0a7e8fbe2c8942eea8c5ff5c0c55b465f091b7d1ee0acd109d3f"
+    },
+    {
+      "path": "src/bedding.js",
+      "sha256": "a26b00a7aa5b758c92dab44602ec32b980975dd32c41255c71e27586f7ca26ae"
+    },
+    {
+      "path": "src/beercan.js",
+      "sha256": "e93ae154aae90801809d30c0da760a627c50f20a203df2de91a2373f68f8f196"
+    },
+    {
+      "path": "src/benchwood.js",
+      "sha256": "4424ca82d7e16861185817268433e2510b68e36f11bca2067776e483f0f74f28"
+    },
+    {
+      "path": "src/berdi.js",
+      "sha256": "cfc99bdc947e4c3814153b10f204a4222c3423916e921d811deca12ce3a545a3"
+    },
+    {
+      "path": "src/bestiary.js",
+      "sha256": "3062af7edab063ce7422960d62d38f1309e93ca6771753942bf25b1cdd3018f7"
+    },
+    {
+      "path": "src/bestiaryevents.js",
+      "sha256": "65efbce39a94e97c6315e1caa18acb4a821c2dbf27297217bc6d22b49d7f8903"
+    },
+    {
+      "path": "src/bestiarymetadata.js",
+      "sha256": "ff318d64ffdd0ff2f6d4ef47503dfd24f15187b655caee7ebb1699bf7f2012d9"
+    },
+    {
+      "path": "src/bikemotion.js",
+      "sha256": "cfcd97b1e59162b6b9bca6a96558a5a41a8b3db54579acae8aacb6d5f93fa000"
+    },
+    {
+      "path": "src/bikeride.js",
+      "sha256": "c19b3d042e9cfb92d097a1e2898cff0d929f165f63376a3d66d8060464042045"
+    },
+    {
+      "path": "src/bikeshader.js",
+      "sha256": "ab803e5ca4c7da07fdc25a12aad8d0cd66a695f7d5e8fe008d777753e69237cf"
+    },
+    {
+      "path": "src/blinds.js",
+      "sha256": "d7c4c719e551b8779a78946791bacb88b7bb7d85784ae53a4e5d9806535914bc"
+    },
+    {
+      "path": "src/bottles.js",
+      "sha256": "b7a27a4234cfbf84065e504d4d341550a9d6de43248434de3470dfd2089eed10"
+    },
+    {
+      "path": "src/boule.js",
+      "sha256": "820a06f368b8240f0a1773fc8eec08e8a14d8aaf4d8c18dd886e264999595dc0"
+    },
+    {
+      "path": "src/boulephysics.js",
+      "sha256": "0e5e7d68f6315dbcf33847c3221aff5c65d1688e5dc948e0adaa645ecde6f6f1"
+    },
+    {
+      "path": "src/boulerules.js",
+      "sha256": "bdb528c50847460548aaa142887a0be6c91b942ff74b5d6a85746c0a73a4c732"
+    },
+    {
+      "path": "src/boxwood.js",
+      "sha256": "6075300c2d00000de9ad4f7c4c1f41e8ccf36769760caeaf3c47be6452b35c7f"
+    },
+    {
+      "path": "src/brickstyle.js",
+      "sha256": "87797954a8a2972303f7abaa0cce7e7018d9d596bd8d78427a96274de679ae47"
+    },
+    {
+      "path": "src/bricksurface.js",
+      "sha256": "da4f59365733e84122a7be9e29d3fad29176b3ee57d189b2d9c2fb2ead95ca3e"
+    },
+    {
+      "path": "src/bridgeconcrete.js",
+      "sha256": "d0d939e319bd861e0c30a36b7b81cfd845caa25331436ebf4000ff71471cf548"
+    },
+    {
+      "path": "src/buildingroofs.js",
+      "sha256": "9faa6b4bb0bdc51086c533ebafbfbdf6ec012e0d70031fa4ed710935793668cd"
+    },
+    {
+      "path": "src/busstop.js",
+      "sha256": "3e7732741058e2d2c22571dc07d37988c3c8a7c93c5c588226a46f030d6160ff"
+    },
+    {
+      "path": "src/busstopgeo.js",
+      "sha256": "955bc2fb683f2553c8f8e21eff0fb35c426431fc3ef47d5e9f749772d4557cb2"
+    },
+    {
+      "path": "src/cabinets.js",
+      "sha256": "4a6db5f96ca20a0562b9a95814b2c6251cc750451a7211794a6191a8b885a2a3"
+    },
+    {
+      "path": "src/campusfacades.js",
+      "sha256": "7d2bd09e273ad63088877d6aa3326b0c8077ba682798608c3894ecf10bcb7232"
+    },
+    {
+      "path": "src/carfinish.js",
+      "sha256": "54d08921231f924e70b37ebf35f9a5e94fa73383aaa955faaa6826c97681c07c"
+    },
+    {
+      "path": "src/carmodel.js",
+      "sha256": "aab895bf013cb6cc8fc0ae9e8ac37e780e221ee12b6cf11638234bff95f6ccae"
+    },
+    {
+      "path": "src/carvariants.js",
+      "sha256": "ff4caa69216e7dbd873ed779766330df50ea7c8b93fb6d27e0857cb3cfcecd8e"
+    },
+    {
+      "path": "src/catbinderprop.js",
+      "sha256": "cd576ac2f84e3d94e46253efcb9003584db959bb013331a29118af5aa941287f"
+    },
+    {
+      "path": "src/catrest.js",
+      "sha256": "3e793fc858833626a54f436a9f7a2e8b538d1cdb340d7a550a8c12d4fff39cb5"
+    },
+    {
+      "path": "src/ceilingbatchgate.js",
+      "sha256": "255a94497599a2d26752a892d05a364c10bc4178912797fa8c6bf863fbf62420"
+    },
+    {
+      "path": "src/christmas.js",
+      "sha256": "e1511ceec8c063f2534165c07e0171d058db6f8b675766725420e92db904c926"
+    },
+    {
+      "path": "src/cleaning.js",
+      "sha256": "c99df329b4be1be5db011406c58fe0dfae02710a7a33b279554be41e844bc7a6"
+    },
+    {
+      "path": "src/closet.js",
+      "sha256": "2bed9538731856cc4621bd0ab0c269df11752dac903c682d34caf413a24434c4"
+    },
+    {
+      "path": "src/cloudshadow.js",
+      "sha256": "803910ae6674fe6a5318a3f338b470df0fc3123094fb31662b9cba79ace9f838"
+    },
+    {
+      "path": "src/coffee.js",
+      "sha256": "bdb1f14e429d493c9483a89ff5f738fa72c09a919412a301eb63c4d364556ce1"
+    },
+    {
+      "path": "src/config.js",
+      "sha256": "a36e730774ee48527ae9b1ac7e2f444ca0fe6e8cbf02e15d1da56cfcdc3f94e0"
+    },
+    {
+      "path": "src/contactshadow.js",
+      "sha256": "bd8743340eb09f1f2b6be91a2713500cf8eb0c4450ff38320708c76485fbc6c3"
+    },
+    {
+      "path": "src/contents.js",
+      "sha256": "87012736b364959c978a6767dd1d001893c97efce5d17c7334d9dcd595e104cf"
+    },
+    {
+      "path": "src/core.js",
+      "sha256": "4d26247a994bfda3827d872ec8994d329c1f6f893d07cd06b47248598d027179"
+    },
+    {
+      "path": "src/corehouse.js",
+      "sha256": "e9ef73d2f67631a629fcb277bad324cb5e863c302a07696d501110e1f776ceee"
+    },
+    {
+      "path": "src/courtyard.js",
+      "sha256": "801e0002cd65f2799fb842685c5f319253de27d2f9b4dbbdb25d739294820082"
+    },
+    {
+      "path": "src/curtains.js",
+      "sha256": "bb1d3b853bcd90a269803613c9157bf2c14387296a5a4a4fa138c09c1850eb49"
+    },
+    {
+      "path": "src/curtainwind.js",
+      "sha256": "46d6a73d216bbdd8b75fa3e3894e2b17ba507766b5d85c961575c0a54e1d2537"
+    },
+    {
+      "path": "src/cushions.js",
+      "sha256": "d42fdf4cbd264e33776a7b6a60e292ee64592c08b35fde630089675b61f009f7"
+    },
+    {
+      "path": "src/customizer.js",
+      "sha256": "11787df6110e86d18019f4d10d9ef1bb6893dd6b45067ce62d89d4ed61fbaaf8"
+    },
+    {
+      "path": "src/dancescore.js",
+      "sha256": "66914c4d3213a62e927888c7bac7cea44ca79ded7ff44b54bfbab9868bcd4626"
+    },
+    {
+      "path": "src/daycycle.js",
+      "sha256": "a1bab8007b2fafc6defebf3d09bb9188bd2183c07b6c9cbdb841db0210d6e51b"
+    },
+    {
+      "path": "src/dishwasher.js",
+      "sha256": "b4e9b957fa6f54d37e6e7948879b65d00fa61cf13c5b972924f3efcf6d58d4b2"
+    },
+    {
+      "path": "src/doorfittings.js",
+      "sha256": "0fbb57627eb018c472ad443c5df17a507843c1aa27abeba72cd41da7259430b2"
+    },
+    {
+      "path": "src/doors.js",
+      "sha256": "57dd2c61550826d0bb402813d8fd63d76aac02f94a5c3478e02bff499f7d3f77"
+    },
+    {
+      "path": "src/drains.js",
+      "sha256": "f01cf31839b994d659ff08e9c7119a141021c4ecbd690e5fe86fddfe978e82d7"
+    },
+    {
+      "path": "src/drinks.js",
+      "sha256": "ee3b28628a78385b44472326382f9b97532f15ea4ac0f447bb046b9183ca842e"
+    },
+    {
+      "path": "src/ducklife.js",
+      "sha256": "2560922324f295a640ff5be3d304e5502dcd316919a6d16ef5b233c013a21ac5"
+    },
+    {
+      "path": "src/duckscore.js",
+      "sha256": "be8dc54023135c3f69a669bd53066cad3c4d33dd86fee156807acbbe56eff2da"
+    },
+    {
+      "path": "src/eastlot.js",
+      "sha256": "50f07a6e5f271b401b52db089a743cb95450155f2aaf7f58c0bb8c6f7726ce53"
+    },
+    {
+      "path": "src/edgebackdrop.js",
+      "sha256": "00d38e340a10f6db24ae4fcaeac508942583d7a370aa7b5d206c2ea5743f21d3"
+    },
+    {
+      "path": "src/elcabinetbody.js",
+      "sha256": "301f6a18082edb2aed173fcd98b129e015c9d4862789f92548dfd6c3101e17ec"
+    },
+    {
+      "path": "src/elevation.js",
+      "sha256": "c9d6d49019da4c953e84f43448a2d0ace6e3fb8e1de506d34e6c2e79dc6b5a81"
+    },
+    {
+      "path": "src/elevationgrid.js",
+      "sha256": "edc1d34df6a663535ec98ef7d47eeee9c512fb8609c8691fe55e5b9144ba5db6"
+    },
+    {
+      "path": "src/entrancedoor.js",
+      "sha256": "d448421f98f51bf9d2c6bc26b10a5f16507e73110314078311493ec8cdf0e797"
+    },
+    {
+      "path": "src/entranceplants.js",
+      "sha256": "6c2954e430acf1552311a275ff9e30a6249a43a4adeed9cb6bc1f06ea26066a7"
+    },
+    {
+      "path": "src/escape.js",
+      "sha256": "9e712680370a8dd1d86ef8ab47b176f188a31d39a7ae687dc4c1ba705e23ae45"
+    },
+    {
+      "path": "src/exterior.js",
+      "sha256": "7fcd176541e246c8dcc0e9e3601fe7e78107de2e3b21fe5d1ecf6180dad26a27"
+    },
+    {
+      "path": "src/falldamage.js",
+      "sha256": "29d1d94dbfe653dd2e8db45f30c59b6c8b9078167db6503241807fdbe2565d71"
+    },
+    {
+      "path": "src/farwalk.js",
+      "sha256": "38ce8c76f09a1e09c84c8dd853972a73d9386a86f707cbceb41ca8ce705da3f4"
+    },
+    {
+      "path": "src/foliage.js",
+      "sha256": "0b6aa67f1b05f4a0bffa27ca4555700937471dc8421594c6a8ff739be488ae8d"
+    },
+    {
+      "path": "src/footballcredit.js",
+      "sha256": "73abfe0487a53b8fc63e9ed5b8d34027c5fa6ef3faf86fcd02dfba01c812c316"
+    },
+    {
+      "path": "src/footballgeo.js",
+      "sha256": "d5e566bae085252b925d75d548c5d091cba85cd079e16a4605cf7de6a8d1b9d8"
+    },
+    {
+      "path": "src/footballmodel.js",
+      "sha256": "737f18fd27dc16d7c63feb863a93d04104784151a279bcb3f2a1bf34455e8f6a"
+    },
+    {
+      "path": "src/footballphysics.js",
+      "sha256": "cc74c91c1262863b4cb2d56b9f644c49d6007b6d0e18e5771472565e3bfc2cb3"
+    },
+    {
+      "path": "src/footsteps.js",
+      "sha256": "20098c315d78425649607f9d136f2560d2f40a61d7b3e8fb0eda2af311099b57"
+    },
+    {
+      "path": "src/fridge.js",
+      "sha256": "dd8f661f47dbd0986edd9ef4d5a5fcfca8f460925c2b0ebf77c70aab2d6e704a"
+    },
+    {
+      "path": "src/frost.js",
+      "sha256": "d1055025f9a680719fb28751bb945bbcab28b2e3efbe6952a632ffc33f1c657a"
+    },
+    {
+      "path": "src/fruit.js",
+      "sha256": "08eef6fcd2b4f266da8465821a03c2683315b1116b21fc47af34d6085ff5b142"
+    },
+    {
+      "path": "src/furniture.js",
+      "sha256": "8b0ca16f72e183870cb3b8298ae79067356640e4e76ac1448011174ab91bab3c"
+    },
+    {
+      "path": "src/furnituregroups.js",
+      "sha256": "eb9898840f06cabd2141621ab518cb50b15d66c679baf09faff5a275e1872a93"
+    },
+    {
+      "path": "src/garage.js",
+      "sha256": "6db6dadd429b7890e11bfa3e4caecb09998c6b0ca679e881d65db45505f01904"
+    },
+    {
+      "path": "src/garagelods.js",
+      "sha256": "20cbd673080ae5cbae400cf3a195c40946f48018b9719124e6f7d345d77c30b5"
+    },
+    {
+      "path": "src/glasspanes.js",
+      "sha256": "56978d75ccb87be8970901f6495ecc4d3364bcf374a0e7edaf2fba5bf7aa6e81"
+    },
+    {
+      "path": "src/grass.js",
+      "sha256": "fe1e672ee1b94345006e070ccf8ef65befe8001cb4e53f11c12bb910d526d0d1"
+    },
+    {
+      "path": "src/grassdetail.js",
+      "sha256": "b8b6b908e08ad6018516947a3a7c00be232bc372a6ec4e77bbaf33fae52c6f51"
+    },
+    {
+      "path": "src/gravelsurface.js",
+      "sha256": "4afc3613abc55fade52865bf5cb74cfccac66863a2844f5578aa4c7276040851"
+    },
+    {
+      "path": "src/grill.js",
+      "sha256": "181cec03cf28112c6e08f14a18151203e18e6945394eb9fdb6249b9359e7ef56"
+    },
+    {
+      "path": "src/groundao.js",
+      "sha256": "252bec04243652b8b575ee0763142075f4e85fdf3f8b5879d23a1606eac80d80"
+    },
+    {
+      "path": "src/groundglow.js",
+      "sha256": "d1ab978350f50dfb7bace3602eb7c5d57a12c8f6429a6716b533017e5b5402d2"
+    },
+    {
+      "path": "src/gympump.js",
+      "sha256": "e669e741c7d584b0692b00aeb48ba544deac761ff94f47ca9d09a14e8ead54e5"
+    },
+    {
+      "path": "src/gymscore.js",
+      "sha256": "bb2a226df9230a75dca4c644a3cdeac0f0581434cf03ecb876feca7b543d1f32"
+    },
+    {
+      "path": "src/hedgeclump.js",
+      "sha256": "8c831e8c643ef146b6f42011e8ba73adfd394a43cc2191ae8ae69108435b2f06"
+    },
+    {
+      "path": "src/hedgeform.js",
+      "sha256": "78bfc06142294de47e9260cca0af9e18bfd7592ce140745c5400f725a95abbf0"
+    },
+    {
+      "path": "src/hepcat.js",
+      "sha256": "08372de17381406d33d1e62d98e9202cc3e9bdc9219205707ebc4ff7b30f4f40"
+    },
+    {
+      "path": "src/hob.js",
+      "sha256": "51ad88243e53d2fe8cffd40616dbc28bf090476dbbe94dd74ea6b7ac3c8e9bb4"
+    },
+    {
+      "path": "src/holdable.js",
+      "sha256": "6af29d0cce0e0aab8a38af6bf5123009bf50610105a0444b3a3a82414728ae51"
+    },
+    {
+      "path": "src/hood.js",
+      "sha256": "ab15b84122ade63071b71bfe158943a92adedc4b6fd4bcb5752257e848701cb6"
+    },
+    {
+      "path": "src/hooks.js",
+      "sha256": "96f9f968db507f56bb63a5c221249f91f99fcca3207479729258e8c11d83c570"
+    },
+    {
+      "path": "src/hudicons.js",
+      "sha256": "81a4296d685d00f9a5a1e4241c9daf7be9a52c4572d532832c43ba79153aa6be"
+    },
+    {
+      "path": "src/huego.js",
+      "sha256": "61b81ac122e416aa0bd95e2c6d4c9411a8b08c666a6ff86917773adf4fa3d6d1"
+    },
+    {
+      "path": "src/indoorhalo.js",
+      "sha256": "18f09d6bc3debe9294d3b01b13a5e9c189dae679694f83537e657426f30fbc2b"
+    },
+    {
+      "path": "src/interactionoutline.js",
+      "sha256": "b5756c23bee1014bf3414d81b0590109a1016197e38772e99879f1751fe6ea95"
+    },
+    {
+      "path": "src/interior.js",
+      "sha256": "c2010aed344d1df11688d07e16301c273e051e5cc30a658e4ed8cbe2275491c4"
+    },
+    {
+      "path": "src/interiormap.js",
+      "sha256": "ef6bb5c752360719f54117c12767600757588bf716cab12286dbfaa221beac95"
+    },
+    {
+      "path": "src/karpfacade.js",
+      "sha256": "4eed8b494216ad56ab9636ff9b35eed374c68ce8eb59ea0bf2af0042d302759b"
+    },
+    {
+      "path": "src/keep.js",
+      "sha256": "b34912eb232efdf85257fd37c8a9fc8f3bc2e7e06a90a582e2beba2fb344274d"
+    },
+    {
+      "path": "src/keycabinet.js",
+      "sha256": "d6e88612a99e8ee8928a2a2e210e26edadcc2391cc99de65ba302797df990d5b"
+    },
+    {
+      "path": "src/kitchenstuff.js",
+      "sha256": "d347c75b0f24c22b9e8e45823515dea51475b4799f8262c97e1621daa56a0a81"
+    },
+    {
+      "path": "src/l1201plan.js",
+      "sha256": "a1157a7d3e1630939a6ff5a32d095b469f0e32d9f07ca6a708bf6dbf45be31ea"
+    },
+    {
+      "path": "src/lamphalo.js",
+      "sha256": "7d7802d9c860c7b8e2f202edc11269432fd13a28d8bedb437386689c37bf3e18"
+    },
+    {
+      "path": "src/lampshade.js",
+      "sha256": "ba8d05fa7a0b139613e727137438cae193208ce96e4d1bc2c0ce1a610ce13671"
+    },
+    {
+      "path": "src/lampwash.js",
+      "sha256": "e0c7ccf15b3e7655e8adcefb82d1088554fdeef72eacbc651dbe9b012a03209e"
+    },
+    {
+      "path": "src/laptop.js",
+      "sha256": "c5cedb0a42c8979600f9e2966e6f549d5eec763ae4ac8716e25938ee9fd19518"
+    },
+    {
+      "path": "src/leaflitter.js",
+      "sha256": "0773cf2049a90159d987a07c6cf84151587d156c89420e0401fbc7a96f7ddf73"
+    },
+    {
+      "path": "src/leafrgb.js",
+      "sha256": "03b84020b4859039e2971c34f1d434449e7a6b545f9724202fa07ae9ccd85823"
+    },
+    {
+      "path": "src/liftpanel.js",
+      "sha256": "468feb5324ca116716063556d51b6612254e9e22cc51a846f47b738851d93ae5"
+    },
+    {
+      "path": "src/lights.js",
+      "sha256": "d6d849368edc24a528d95430e9ceb6f869375867a277b4ebcd2c032cbb572611"
+    },
+    {
+      "path": "src/lod.js",
+      "sha256": "191ed05a2ab1ec2ea5aa9f456518b9512b793921dcaf74803109eb42f8b0814b"
+    },
+    {
+      "path": "src/lowmemory.js",
+      "sha256": "7c9c9ccacd99abb8b011bbe77b6f1cd00ea5e580fe29f68975bdb02c94707b38"
+    },
+    {
+      "path": "src/mailboxbody.js",
+      "sha256": "1b414ff54025b50ddd8bf7226c9d732ef88f82ecc5f9a624ae1c8505c8d96d14"
+    },
+    {
+      "path": "src/materialcatalog.js",
+      "sha256": "cf8ce6179de5be15960e778d94387d8cd944968cf32b50666114d20998714a58"
+    },
+    {
+      "path": "src/merge.js",
+      "sha256": "f9c01799dbb3b9ebcd2e0408933f62a08a93059d3406d8b082eac9878b7b2819"
+    },
+    {
+      "path": "src/mirror.js",
+      "sha256": "0c19bc9696a951f1437271c59941e105d2913816b7b8bcffffa5e60476c3be59"
+    },
+    {
+      "path": "src/modelurl.js",
+      "sha256": "7782cb377402b140465aeb627c65492630028c4506029f22ce026e0b905bae36"
+    },
+    {
+      "path": "src/moon.js",
+      "sha256": "fb289cd59ce9db1580f585f62bb64b33a6dae59fa2c147d487e0a74a11b3879b"
+    },
+    {
+      "path": "src/movementstats.js",
+      "sha256": "a8d99a5fbffb83e464411aeb85562d84a2864d0666a5a9c4b5151bf4d1a971cf"
+    },
+    {
+      "path": "src/music.js",
+      "sha256": "257081db51de5369d761bd2725f1f833f554044fb2648ee2d9621f35d908e007"
+    },
+    {
+      "path": "src/neighborglass.js",
+      "sha256": "75b2b3639fbe1cbfea09376463f4ce8d958f491879271571eb24a15a97fff700"
+    },
+    {
+      "path": "src/nest.js",
+      "sha256": "789a2200cef202e1caa6c713781e148a8f726f9a70ca985504fd5ff9f6dc110a"
+    },
+    {
+      "path": "src/nordicground.js",
+      "sha256": "24f60f47fb9702546e3562157c68563e1a7d5212e4d824c4098324a5017f57bf"
+    },
+    {
+      "path": "src/nordicgym.js",
+      "sha256": "51834f7e17a5ca9355b12af98760d715d0e931a68178a407a0d65b1e6eb9c6ef"
+    },
+    {
+      "path": "src/nordicgymsign.js",
+      "sha256": "26f6b6ca78c647ff53e2ae19554cc0256f8bb7af72637a1d72c086b408ef5f15"
+    },
+    {
+      "path": "src/occlusion.js",
+      "sha256": "11b236e177a3537bcb87a8e90fd21b9503520a71c679ec7bf614241e61bc8681"
+    },
+    {
+      "path": "src/openables.js",
+      "sha256": "8d85899c716be5be02f1215aaa21066788b0c48a2158c0a1f28bc738bb961608"
+    },
+    {
+      "path": "src/outdoorcathunt.js",
+      "sha256": "31a62b0d1cbeb25acaf71e8b92769147f702c6d9ad727b26c0981b38041177df"
+    },
+    {
+      "path": "src/outdoorseats.js",
+      "sha256": "9c733e2f203ef64eb98151739dbc0b3128eda0c1228ebd6e3db3ab6707a13667"
+    },
+    {
+      "path": "src/ovens.js",
+      "sha256": "27c361004dfa0f5529eb6268512239c19b08e88646c2b1604f73e14fd1613e97"
+    },
+    {
+      "path": "src/paddock.js",
+      "sha256": "cc756cf4615e2bdda38e51c9b724505a611fd46abd5be59ce957b1fd539c5fde"
+    },
+    {
+      "path": "src/paddockfeed.js",
+      "sha256": "65ab234b3b7edafe2d315fd9a4efc4f3dc73307671e1f8617bac5827c7a1fb0d"
+    },
+    {
+      "path": "src/paddockgeo.js",
+      "sha256": "f1e4e708c969399fb098d5e5702d4ae3bc8145d9f693576daa8568d276d1e323"
+    },
+    {
+      "path": "src/paddockshelter.js",
+      "sha256": "acebae6a4ebacd32a3e3aee7f967b6c5d8df159548a545d5a81f1fd7be1144bc"
+    },
+    {
+      "path": "src/paintsurface.js",
+      "sha256": "5edac8e7ac5e0645606650b03291eda35c9f3f6b253e732af7aa280a910cb9a6"
+    },
+    {
+      "path": "src/parkinglayout.js",
+      "sha256": "d7f4c573c35de1008f762f72a7fb61bc1b769efcdfa5fce6a0c68a7a887d4430"
+    },
+    {
+      "path": "src/parkinglot1442.js",
+      "sha256": "376f85de50f15a8f4a79999716fd2a452c42d446bcca853b27a562d7ed898333"
+    },
+    {
+      "path": "src/parquet.js",
+      "sha256": "c84d64fbb12ba635bc3836cd291ff56e241751c044b80f96a83a6d5b459f8c50"
+    },
+    {
+      "path": "src/pathlamps.js",
+      "sha256": "50065539d88a30bd0758cc2bc1a18d087911d219f78140c22ea08fcbeb55a809"
+    },
+    {
+      "path": "src/patio.js",
+      "sha256": "021da4ada519ffa2980a7749e2f26279cbfd72ae78d5fa3f1e2f74054ddcb991"
+    },
+    {
+      "path": "src/patiodecor.js",
+      "sha256": "8abac15cc702f411e22885002c0f4f391f50c1ecb587905ca1995f164d794e04"
+    },
+    {
+      "path": "src/patiohedge.js",
+      "sha256": "1368bd053df8ab9113195b16b1c0c944a215ef73809c8b9ebab85e5d8ffba2fb"
+    },
+    {
+      "path": "src/pavilionroof.js",
+      "sha256": "c7656371931163ef62435f2b6f75f0c6741fd77033e8f4ced9c95a4b331fd7ed"
+    },
+    {
+      "path": "src/pavingsurface.js",
+      "sha256": "33b97955616aec517e5127eb013ec727007b86e7d19dd97849bea63773416b7e"
+    },
+    {
+      "path": "src/pendants.js",
+      "sha256": "f451d3bd80c313bccbd3c56018dbf09eb0f82b92001da089544911704f3fc3d7"
+    },
+    {
+      "path": "src/pineapple.js",
+      "sha256": "1cbec6633358b3c979a9403cd3190219f15c9b8986570705bc2f85191903d56e"
+    },
+    {
+      "path": "src/pingping.js",
+      "sha256": "34d188168dc1d7be7c49f0c43c7439b08c07c00ee51acb7eb25f371fee0979ed"
+    },
+    {
+      "path": "src/pingpingsurface.js",
+      "sha256": "95f55c0cf74ccc20c46d1f3fd4b6703bd91fb92b6a51e328b0ad36209ded2419"
+    },
+    {
+      "path": "src/plantpots.js",
+      "sha256": "891d8a1afd25e629cfa6ce5b284a3890c308f244188687633f87cd0628827609"
+    },
+    {
+      "path": "src/plantwind.js",
+      "sha256": "e60780026e0e6de6a5f105dc399ed0b889138f0e2cbe47db6c324810ba1ff99f"
+    },
+    {
+      "path": "src/player.js",
+      "sha256": "5e4bfed5341e1e203680ac5d69089275c74fc8147ab752b46927ae4186695756"
+    },
+    {
+      "path": "src/playerprofiles.js",
+      "sha256": "ddb4b8aadd10286baf56ea8212af3d18ba20c453af23671a93bdd7fc596ccab7"
+    },
+    {
+      "path": "src/polygoncut.js",
+      "sha256": "baaea7bce6e95d23fc43cf0c7b08ac2289d521ba354b42bc5eed48d2b6242d41"
+    },
+    {
+      "path": "src/ponyblanket.js",
+      "sha256": "05cea45e5170d82269e96cf99a8d6c7c2ae57442aaa4d13bc798691b70159bca"
+    },
+    {
+      "path": "src/ponymotion.js",
+      "sha256": "af7c899425ab2f7fd313dcca2359a39cd0b5f6567350476d45764e837e902eb1"
+    },
+    {
+      "path": "src/ponysound.js",
+      "sha256": "04b1f86593c2c133c7ad7b5b3460d4b88e5bfc9f5344eff18870bcc64a2b216e"
+    },
+    {
+      "path": "src/portik.js",
+      "sha256": "d9f95da961e9b057f492f5850eaba3febcd481de7acc980d9bbd9c846d288283"
+    },
+    {
+      "path": "src/posterlayout.js",
+      "sha256": "81bb267f8ab6cd4d4cd54525b4cefd84db6c621fe432383bd864e13af3f3ba94"
+    },
+    {
+      "path": "src/railmetal.js",
+      "sha256": "eb0bb6e59fb3b81ef3a275597278005d6611daa79d7c90620d9f9e9f3bb06d42"
+    },
+    {
+      "path": "src/randers.js",
+      "sha256": "480994669678c5d2cefe482d01a8a01a91d0bf792b35681e53d3e445c484820c"
+    },
+    {
+      "path": "src/realgym20.js",
+      "sha256": "ea8a6e16bc244867bb72baec05990ada102baf9d6e02ccf950759391dd6cdb77"
+    },
+    {
+      "path": "src/reflections.js",
+      "sha256": "abc5523f4d7c3e7603ddf4caf958205f5f5537ca76b357f3be05e788c0b6e761"
+    },
+    {
+      "path": "src/remote.js",
+      "sha256": "15eba3393202f06b01cb8d5e8167249baa1fea27502e3923a18efa4ae3e7c6f0"
+    },
+    {
+      "path": "src/rendersurface.js",
+      "sha256": "6a313d082fdcd35ccb9418ce183f31b4ab261a92d1ccff617f8cb16177594227"
+    },
+    {
+      "path": "src/resourceprofile.js",
+      "sha256": "513e0cf9a1e8b26297ec11eab4001cae80242ea67cd09eedecbe8e1c6b5fa930"
+    },
+    {
+      "path": "src/respawn.js",
+      "sha256": "c31439c3d107446565a4626d9961b6171b3380162a386f0ea76ec7dc5f571c19"
+    },
+    {
+      "path": "src/rest.js",
+      "sha256": "ba3e1643b1f51d6a558b6474f1abbe91e4055b30cae60048b032aa1f7af00d01"
+    },
+    {
+      "path": "src/rifle.js",
+      "sha256": "adb3dcfc4723cf2f0c836bfe2867f51344e28f5fc5e938ed22b59eaf6488dfcc"
+    },
+    {
+      "path": "src/riverbridge.js",
+      "sha256": "901ff5a3cf503a0c42f20983187f9e5eded428299bf3150d86a1edbfe9bb95f9"
+    },
+    {
+      "path": "src/riveredge.js",
+      "sha256": "dee3ab8de02116cfc48c9046e68e76048694c6af072a4a36dd5c1399d559b726"
+    },
+    {
+      "path": "src/riverpark.js",
+      "sha256": "e1e8fb053ca404e1bcff9d899325eb9c5217f8b307afaa2187aea93b9e1311b9"
+    },
+    {
+      "path": "src/riversurface.js",
+      "sha256": "7ba3feb15e30e3d490fc98ed8400f508683ab2c5003c52f5b9466bc331d6eafc"
+    },
+    {
+      "path": "src/roadends.js",
+      "sha256": "a92d94976e200967523dc439a10f0435732e4513e42e34e86c7061fe25f7e297"
+    },
+    {
+      "path": "src/roadlamps.js",
+      "sha256": "3585bf54bfadf12a22dac32b07a704b6c34941ae202467b27522acca5efa9959"
+    },
+    {
+      "path": "src/roads.js",
+      "sha256": "570cfd4d9714218f9470947d5746ab0fe192a30936b0d2aeed69527b50c6dbe2"
+    },
+    {
+      "path": "src/roofs.js",
+      "sha256": "9381e1538ce3603f11d346bc1efbbcedb40d37166d6c82a5b9710e7070ca9bf4"
+    },
+    {
+      "path": "src/roofsurface.js",
+      "sha256": "9552de612eb6d5b48c3db403ddf079d372bb348e376230062f2590c7288fff98"
+    },
+    {
+      "path": "src/roomprobe.js",
+      "sha256": "7eb2297eca18b6a86662cadcf8b1dad86b7c829181f49dcbd6856b35cd3a838e"
+    },
+    {
+      "path": "src/roomreverb.js",
+      "sha256": "78ca65aec7a4333e7f4add786361495a86b8acae252bf3436ad367f99482a010"
+    },
+    {
+      "path": "src/rooms.js",
+      "sha256": "12fa716706d036ee468dc6bdf8457ab21f0d50c8eeb6353dbf4e0fa2e221bbb4"
+    },
+    {
+      "path": "src/rugs.js",
+      "sha256": "8162a6d2c5e2fde8d501bb91f97f082771d8d92622dc1baf1147324b0a66a8bb"
+    },
+    {
+      "path": "src/santaconfig.js",
+      "sha256": "21b0908ee6d40153ca8900d6e117e4dd69c91c59de24481d4fb879c7eb052768"
+    },
+    {
+      "path": "src/santagiftconfig.js",
+      "sha256": "fddbc3b88451bee8e6fa4d40714c049354dd981c08879b4810d398d979e8e57c"
+    },
+    {
+      "path": "src/santatvconfig.js",
+      "sha256": "0389031dcd7a67562488a38b6eaff87ce26e241fc938adf5a350b1f1cb596ab1"
+    },
+    {
+      "path": "src/schoolfacade.js",
+      "sha256": "e47c0af787a8e6509cec37d6264f818335f899d43fdef995bfaa56f92f6d0f52"
+    },
+    {
+      "path": "src/schoolwall.js",
+      "sha256": "74a240e385c91288fea3b2f3b345d42adb7fb071cfb1c1b19c723d2f7b642ef1"
+    },
+    {
+      "path": "src/schoolyard.js",
+      "sha256": "6894b5469b9661dbc129868162d3ef693d0747586c8540cbce13ffa99e07223b"
+    },
+    {
+      "path": "src/screens.js",
+      "sha256": "177c374688eeb93ded1745909f017b90c5a1e7f2b44cc99f64a72f0dca90abc2"
+    },
+    {
+      "path": "src/screenspill.js",
+      "sha256": "cffe49ad0ad6c10db22bf33540a2c3f98530c71285e88723980471d262e9cfcf"
+    },
+    {
+      "path": "src/screenwall.js",
+      "sha256": "2622d2c3bc736f31900350891d17014b9e3051502d5e36a7c9db1a634c4295af"
+    },
+    {
+      "path": "src/screenwallsurface.js",
+      "sha256": "0ac17c55d9e0e8a796b0f89b49a07938fc6cb1d9c9985e5fd55348bc491a64b0"
+    },
+    {
+      "path": "src/seasons.js",
+      "sha256": "019450bde8643c291f48caa310c10ae4918fff9bbf7498df7ed83b5fec1eefc7"
+    },
+    {
+      "path": "src/segmentopenings.js",
+      "sha256": "84a0d172e53af1ddc7c201f4a364ee5fc49e193e5cd076416c88536a118e53c0"
+    },
+    {
+      "path": "src/shademoss.js",
+      "sha256": "3fe54d05d301d69f66f003a571b0c498b2b7c9f46e1156e63961896f6b16b642"
+    },
+    {
+      "path": "src/shadepools.js",
+      "sha256": "f5f5e47a08653fb3ff9d078413b3e7aab13861fa9623766591966e1747fe4f19"
+    },
+    {
+      "path": "src/shelterwinter.js",
+      "sha256": "70cc521c0d511faac062189afcb497446b2a4b88cd0d2248cee0ddfa8bdc7e45"
+    },
+    {
+      "path": "src/shelves.js",
+      "sha256": "ed33d020fe38fa0a2ea917c1299fa1a82659603299002fce18d0353234c67d02"
+    },
+    {
+      "path": "src/showermoisture.js",
+      "sha256": "a4c1477f4fcdda55644913b6a0a2b65e308779b90705b298d40f50e237f5ed5f"
+    },
+    {
+      "path": "src/signs.js",
+      "sha256": "6bd77eba963a7ac9c00d125aa2b80eaac67efddc53862e5632c84969c2147b7c"
+    },
+    {
+      "path": "src/sillplants.js",
+      "sha256": "a64b0de89cbba26825ee79bbd92ba5b3a28496625081b146e084f72037039ddc"
+    },
+    {
+      "path": "src/sitebackdrop.js",
+      "sha256": "9cef6d1520a8788accf743ac4a6e54c101e850a6833a8fa42d90ad12f2d48a7f"
+    },
+    {
+      "path": "src/sitewind.js",
+      "sha256": "382e29bb9d6622b6bfb005309e8fa9ec1ccf07eaf7a74aa5b97ffb47e06b8615"
+    },
+    {
+      "path": "src/smallfigures.js",
+      "sha256": "d9c1330b7b090d6ffcf92a6e9ddcd4db0f8a104d072e49d27c1fbd5af0c34e1c"
+    },
+    {
+      "path": "src/snowcap.js",
+      "sha256": "3595047deafffdc69ecb22e5b8a374f23f1255e29429bdd481dbb01542d39744"
+    },
+    {
+      "path": "src/snowcover.js",
+      "sha256": "3cd84cd9900eec591a2efcffd3dc905b2e575145571a2793a967055883543063"
+    },
+    {
+      "path": "src/snowground.js",
+      "sha256": "032ee59ba6e22ead9ab6409f41b755331bfa7e856e20941339c1b798fe3fbdee"
+    },
+    {
+      "path": "src/sockets.js",
+      "sha256": "a81e099ad5134570162b8e6f12df5b4eda7f925b59ae4a0484005f022c60a4ad"
+    },
+    {
+      "path": "src/solarsurface.js",
+      "sha256": "8de38cd89bb0ba047628be7c40add1415f02879bc8234d7ccb7f885efaeb66c1"
+    },
+    {
+      "path": "src/soundocclusion.js",
+      "sha256": "7c4da703efb08de263a65814a246bda6dd20a8a12c6c25e7d514d2443fb4b198"
+    },
+    {
+      "path": "src/southannex.js",
+      "sha256": "001240631f3644d051c42cc21732ceb555ec4bb3c4b9b1097a08ee058aaa568a"
+    },
+    {
+      "path": "src/southbackdrop.js",
+      "sha256": "d2140d2959201364777e6ec4451f44a2c37d65c27db8aedcaa2d2ff3f68664bd"
+    },
+    {
+      "path": "src/southbank.js",
+      "sha256": "784b92d13a248359abc391889e411d431b7b9e41a4ce31b5e10c053cc063ddae"
+    },
+    {
+      "path": "src/southgardens.js",
+      "sha256": "f4d1dedb5e8993c94f214d6d1bd2c18f58e5dbce0f4a1fae253f9aa27811a72e"
+    },
+    {
+      "path": "src/southwindows.js",
+      "sha256": "3f82b13aec1076fd682ef4d14f48c18fdbbe4b44cbb4c502f3b82cd3f686a386"
+    },
+    {
+      "path": "src/spatialsound.js",
+      "sha256": "59e14630e5f92a19a528ac6b5827f41fa17f37bc4249c838ea96fc4d041f7287"
+    },
+    {
+      "path": "src/sponge.js",
+      "sha256": "1dec960b9bab7c19c192c251f561190cdcf57681a245937055fd491ca188b298"
+    },
+    {
+      "path": "src/stairdaylight.js",
+      "sha256": "5041f4def8e47eb3a5f33867ef335e84d8c40be76caa22fccf304e37f7eec7e2"
+    },
+    {
+      "path": "src/stairs.js",
+      "sha256": "fa3e51f778ff0ea47ee796b5747236a7e736e50a8d186951d89a658c99bd2138"
+    },
+    {
+      "path": "src/standardinterior.js",
+      "sha256": "dbc7b46ec6fd5bc20cff5e9e6c711b3cb4726f72884d2fe98d37edf3156ee961"
+    },
+    {
+      "path": "src/startupcache.js",
+      "sha256": "4c2e3cae8c6ab0b27673e99ad66214b0a80d6440415f6241f49668272e65ffaf"
+    },
+    {
+      "path": "src/statcount.js",
+      "sha256": "8e7a4a374e88d6652673ef5a3231d1b945512cc3e87cc396afa5682ce7127776"
+    },
+    {
+      "path": "src/stats.js",
+      "sha256": "a268b8067ca8eb3f41f9767b5dcedf20b1ebde6bcdcd30020028880de9dcf44b"
+    },
+    {
+      "path": "src/stepsurface.js",
+      "sha256": "51c56b409909ee05ba2a90050f7cb24c0fd04ea51de2c8365708eeba7c88252e"
+    },
+    {
+      "path": "src/stlars41.js",
+      "sha256": "9e0ba6d285be96c3942a6be586100554d082eb52844300b938c293b391c9de4f"
+    },
+    {
+      "path": "src/street.js",
+      "sha256": "7045c95ee83b9310952546c824801d1f38a727ee84c37fd0c7713f76736a742e"
+    },
+    {
+      "path": "src/streetlife.js",
+      "sha256": "befc856b0407430ff57d070cce88c2f3c99b4f0565b044239692635340d7c63c"
+    },
+    {
+      "path": "src/streetsigns.js",
+      "sha256": "7d5621f2232329ee2e952bbc2e8478f739a3395c632c861e4b6629da9891d751"
+    },
+    {
+      "path": "src/streetwear.js",
+      "sha256": "1d4cb65fb59d92ba2de4076780f0dea5230ed247132942f588ca84856be6f2b2"
+    },
+    {
+      "path": "src/stuff.js",
+      "sha256": "72d8fdcbf6630a1fbe2d0561b5688df2d65a1bd17ebef707d0f484bdb5dd5c1c"
+    },
+    {
+      "path": "src/sunbounce.js",
+      "sha256": "fb79a5dd10889874a41a970592f9dc0b5acee7c3269c425df4d06c6dd7ae110c"
+    },
+    {
+      "path": "src/surroundings.js",
+      "sha256": "6b024714fc898910e83ba74d0b6e82ac83a392bd1b0137ff1755f8055528561b"
+    },
+    {
+      "path": "src/swim.js",
+      "sha256": "ebaf68ef051b4a4af419a5e564f91a48f392be69853841ea6b9de54db3c19309"
+    },
+    {
+      "path": "src/targetscore.js",
+      "sha256": "413458bb1172673184d60d513a3d936a0709f417ab24a8ae7fbb0ed814a41c50"
+    },
+    {
+      "path": "src/terracedecor.js",
+      "sha256": "a594e0c8ffd19c430b76e06b9d2becfcd20dfe59d6e55d597eb2fa5f28bd8fcf"
+    },
+    {
+      "path": "src/terraincells.js",
+      "sha256": "881db192112335dc9d2e4d5b77ea6fbf44f9e650008001daeae9551c2fbc9b26"
+    },
+    {
+      "path": "src/things.js",
+      "sha256": "8ed2fdffb64cfba47af5b23e2d81219f54183bbda2fa86d8395027a00965ea71"
+    },
+    {
+      "path": "src/tilesurface.js",
+      "sha256": "201612a37234ea8906766848b455fbe73805973c2f83bfe619f2f6ee86b5cb59"
+    },
+    {
+      "path": "src/tillydesk.js",
+      "sha256": "834fb69f55a739873ed633f09c49a5b4c061389c216ddd8f606ce473cdb0e36d"
+    },
+    {
+      "path": "src/toilet.js",
+      "sha256": "a99df96616f83ab99de98aa10ed254c42ecf005476ca6e470428a2f3ea47c3b0"
+    },
+    {
+      "path": "src/towerclock.js",
+      "sha256": "c544b2787917fc2ba8b70486ab4e4ed6b21fb33415f019905a3ad445ae679ef1"
+    },
+    {
+      "path": "src/treeform.js",
+      "sha256": "36efefe26266c7c829ccf69bb72647b4cda451f4f699c19817420cdd711e1e29"
+    },
+    {
+      "path": "src/upholstery.js",
+      "sha256": "122f08808aec407eaddd30c01dc5504c6f107f0285226c05bbb1aae0d364a124"
+    },
+    {
+      "path": "src/valleymist.js",
+      "sha256": "f4287d2f94245ad79e0404d31ef43e81ac62478687258f80fb9b014b1ff5c0f0"
+    },
+    {
+      "path": "src/vehicleshadow.js",
+      "sha256": "65100fdb1609f166719a3d5b272213758e252878dcdfae12e9fef8fb42660ee9"
+    },
+    {
+      "path": "src/vendor/three/EdgesGeometry.js",
+      "sha256": "5ceb412068a13801d782e9b66f06a978a4930c479060375314d0f96b30704d93"
+    },
+    {
+      "path": "src/version.js",
+      "sha256": "3495b43f0710ac8bdeb304c36eeb16584b1a067cec352e314537b00e3ce6d620"
+    },
+    {
+      "path": "src/vertexcompile.js",
+      "sha256": "47d28e079de552863adaffea7c821c91120e83f5bbc9bca721c0d292cb10f869"
+    },
+    {
+      "path": "src/viewport.js",
+      "sha256": "5180d2284f5e8b551e7f8754bab23b754a3d2351c6b684f620e182a79aa5207f"
+    },
+    {
+      "path": "src/visitunit.js",
+      "sha256": "50f6834475bc26051d3e19ceadda95d5e5874b8b4f1b9cf35c66b730d4862a83"
+    },
+    {
+      "path": "src/wetground.js",
+      "sha256": "3ae16d67554802a3a2ae13bf15bf201c49a517b79fad1a650a1649e4a9991c59"
+    },
+    {
+      "path": "src/wetsurface.js",
+      "sha256": "068c04ace4bfd934c711a96235d02a86f3f268f05edd1f158603228d93478ee8"
+    },
+    {
+      "path": "src/windowlight.js",
+      "sha256": "4b44591fa5c6cb1c68d5c25cf4e9e99c4adfce30ee3eb4efc6c952e5efc5600c"
+    },
+    {
+      "path": "src/windowschedule.js",
+      "sha256": "f69394ebc959898fa7d7fc6d1107301f3bb9ecdd2d97dedf3c78f8798356fbf6"
+    },
+    {
+      "path": "src/windsim.js",
+      "sha256": "038dff576f1401eb6355f84c2788aaf06a633ef671755ba7d25a7b2125384f04"
+    },
+    {
+      "path": "src/windsound.js",
+      "sha256": "aa582d5536058eb071ea24b1e20ad632bad3d43c248128905c2b90f54224f309"
+    },
+    {
+      "path": "src/woodgrain.js",
+      "sha256": "0b3d16b9f63219b7bc08a8b377315c4867a1cf3373f1f6b4e206c5c5203d0243"
+    },
+    {
+      "path": "src/world.js",
+      "sha256": "6ecc618d754666e6f3fb9e60ced3c899ea62f55c6dce2adcf14cbb512f469310"
+    },
+    {
+      "path": "src/xmastree.js",
+      "sha256": "c7b28db5e3b414c6da20b4869abab706400cc72b5d5422be16c239d40c55d950"
+    },
+    {
+      "path": "src/zzplant.js",
+      "sha256": "380dc2a8b67e7eadf56e1759f98530562506a9eabc86f99c2e053f5389c6a131"
+    },
+    {
+      "path": "textures/angsgras-sovrum1.jpg",
+      "sha256": "2b4c62dc01ab64b9a9b5b1cc6e99162a8398ca2c295ed5459f1a07ab8faa6452"
+    },
+    {
+      "path": "textures/eat-sleep-game-repeat-sovrum2.jpg",
+      "sha256": "c39bf798bcc7de74a1889b08b5b293cf639a1ecf8b317dfbf7c89ee5568cf278"
+    },
+    {
+      "path": "textures/linjeteckning-sovrum1.jpg",
+      "sha256": "3a853eb402759a15280c2a2c5b37fa69a70a527e56bd6b8080ed0bea6721adf6"
+    },
+    {
+      "path": "textures/miele.jpg",
+      "sha256": "f0553666db6fff19cf3cdfbbefb9046840878b86072ec8234d1c404e18725656"
+    },
+    {
+      "path": "textures/stair-pictures.jpg",
+      "sha256": "9247aa12b947b268e703922a0557e2236e6cb616967dbf0992021bb03d8f3c5d"
+    },
+    {
+      "path": "textures/tavla-akvarell-schaslong.jpg",
+      "sha256": "ae8028ee4c08100c742af3bd747788ae1ed16bdc430bbdd97831ef18c0293328"
+    },
+    {
+      "path": "textures/tavla-guld-lila-vardagsrum.jpg",
+      "sha256": "441494b03d45325cfae2e08877ce5fe2767720d2d60d42a058e8d23c5437967f"
+    },
+    {
+      "path": "textures/tavla-svartvit-trappan.jpg",
+      "sha256": "c62adac2ffa4345a61c5156384ee3bf8f6188f7725b37f0b1f0d4e3b12b330a0"
+    },
+    {
+      "path": "textures/teckning-till-mamma.jpg",
+      "sha256": "41a1edc71193355bd8805d70eba1ed2de5807793bbeadde035de09e8a8e90ba6"
+    },
+    {
+      "path": "textures/the-gulag-sovrum2.jpg",
+      "sha256": "ba028c1c94e2427ba9ae6e6835dbe7bc9163235e1f7bd0b444c80becf28b44f3"
+    },
+    {
+      "path": "tools/unreal-engine/coordinates.mjs",
+      "sha256": "d59d8b3a3af1ff3688e3723fcfd13cd9cc634f69a5297fff2bd65608e2c889d0"
+    },
+    {
+      "path": "tools/unreal-engine/export-curtains.js",
+      "sha256": "98c4910268a402bc9a1ae0441fab7d14eadba720d0edf1b344da724cae0c9501"
+    },
+    {
+      "path": "tools/unreal-engine/export-display-pools.js",
+      "sha256": "d3692c1292ca5f31319c4661956d3704017e0b8cdfac9c1c0ca2455f65c8553a"
+    },
+    {
+      "path": "tools/unreal-engine/export-facade-lighting.js",
+      "sha256": "e31530bef0b7c72dbe5d92e30cde9f039be2906ee07e732f81446b3053215ddb"
+    },
+    {
+      "path": "tools/unreal-engine/export-garage-lighting.js",
+      "sha256": "ae9effe2408bc8c64b19a262229b253c744c301d616426298aefbd2160539d1d"
+    },
+    {
+      "path": "tools/unreal-engine/export-living-wall-ao.js",
+      "sha256": "37219975398073937ec387e30d76a5d981eb9b2997c961f89144a3e35d32fde9"
+    },
+    {
+      "path": "tools/unreal-engine/export-living-wall.js",
+      "sha256": "91f763e0c2e9884ddcd78c035c2e6fb4945b7ce95ab1e7c0441da0a23d8102a2"
+    },
+    {
+      "path": "tools/unreal-engine/export-parasols.js",
+      "sha256": "36be652e5c6dc1b435d063c90ab848dd2e3ac0943a22ec93848d96f7401a1d7f"
+    },
+    {
+      "path": "tools/unreal-engine/export-parked-vehicles.js",
+      "sha256": "9596150a30dddcb9b410c71d18169c4ba44e0e722e700b3bd50280b6cdaa2489"
+    },
+    {
+      "path": "tools/unreal-engine/export-player.js",
+      "sha256": "ae75a6b6c3d86e1423917c1b5e96db2e666463bac82b22249e90adaa464b1ed8"
+    },
+    {
+      "path": "tools/unreal-engine/export-river.js",
+      "sha256": "afc39a5bfc748aa7d7dee8b0cc3d5d00fb4a1831785fed776d4deb3f4fbdc4a8"
+    },
+    {
+      "path": "tools/unreal-engine/export-rug-pool.js",
+      "sha256": "b6aa9fbece4dc47c19b086da4379cccd2b4acc226fb004866b8d8bb37b56b50b"
+    },
+    {
+      "path": "tools/unreal-engine/export-scene.js",
+      "sha256": "301312dfd7d242baa5cb480b784b9bb923546b8d3d2525bf2ea0792ce8c35ec2"
+    },
+    {
+      "path": "tools/unreal-engine/export-shadow-policy.js",
+      "sha256": "616a6fd7606540ea89785b9ba725e9903b0b149cb6443a798a29bd92d576ea15"
+    },
+    {
+      "path": "tools/unreal-engine/export-source-ambient.js",
+      "sha256": "374aa96a831d8b5943c2916d57483e0d11e14b40301538d31c2dcc52bf043e6e"
+    },
+    {
+      "path": "tools/unreal-engine/export-stair-light.js",
+      "sha256": "e704d88d1943669ac1bbb210753390a0d7a6b7f3c556a991f177c395ea34be08"
+    },
+    {
+      "path": "tools/unreal-engine/export-window-light.js",
+      "sha256": "3cda466bc304c47cbf4a44106e34b5bd8a9a09d14cd17e75edd4901cb891d071"
+    },
+    {
+      "path": "tools/unreal-engine/export-world.mjs",
+      "sha256": "68be7e46b6fbd649669f3f1c2df71b8354f723eea2a630278f3efc64a189dfd9"
+    },
+    {
+      "path": "tools/unreal-engine/export.html",
+      "sha256": "4ffd4fcbd05c9a667fec55f35883f9a7dbefbd308f7f53816b398158928a435c"
+    },
+    {
+      "path": "tools/unreal-engine/hedge-texture.js",
+      "sha256": "f9547c07a4c32b82c984982be6fd0da29cc53c8c798c9f58d5d33074c3984607"
+    },
+    {
+      "path": "tools/unreal-engine/sources.mjs",
+      "sha256": "3042b18ac91476488d4902672a72a381af0b644f339b55f3330cc78aaeef59bb"
+    }
+  ],
+  "beforeAfterExact": true,
+  "actual35StableBindings": [
+    "door_l0_x95_z1270__1:0:phys_a9cce3_r2_m0_a10",
+    "mesh_l0_x131_z3_y235:0:phys_a9cce3_r2_m0_a10",
+    "mesh_l0_x146_z1267_y235:0:phys_a9cce3_r2_m0_a10",
+    "mesh_l0_x385_z10_y238:0:phys_a9cce3_r2_m0_a10",
+    "mesh_l0_x385_z1260_y238:0:phys_a9cce3_r2_m0_a10",
+    "mesh_l0_x420_z1260_y139:0:phys_a9cce3_r2_m0_a10",
+    "mesh_l0_xm2062_z1260_y139:0:phys_a9cce3_r2_m0_a10",
+    "mesh_l0_xm2097_z10_y238:0:phys_a9cce3_r2_m0_a10",
+    "mesh_l0_xm2097_z7_y149_2:0:phys_a9cce3_r2_m0_a10",
+    "mesh_l0_xm2098_z1260_y238:0:phys_a9cce3_r2_m0_a10",
+    "mesh_l0_xm2165_z1263_y139_2:0:phys_a9cce3_r2_m0_a10",
+    "mesh_l0_xm2337_z1267_y235:0:phys_a9cce3_r2_m0_a10",
+    "mesh_l0_xm2337_z1270_y106:0:phys_a9cce3_r2_m0_a10",
+    "mesh_l0_xm2352_z3_y235:0:phys_a9cce3_r2_m0_a10",
+    "mesh_l1_x146_z1260_y545:0:phys_a9cce3_r2_m0_a10",
+    "mesh_l1_xm2097_z7_y472:0:phys_a9cce3_r2_m0_a10",
+    "mesh_l1_xm2098_z1263_y472:0:phys_a9cce3_r2_m0_a10",
+    "mesh_l1_xm2303_z7_y483:0:phys_a9cce3_r2_m0_a10",
+    "mesh_l1_xm2337_z1260_y545:0:phys_a9cce3_r2_m0_a10",
+    "mesh_l1_xm2337_z1263_y462:0:phys_a9cce3_r2_m0_a10",
+    "mesh_l1_xm3752_z164_y1090_2:0:phys_a9cce3_r2_m0_a10",
+    "mesh_l1_xm3762_z164_y790_2:0:phys_a9cce3_r2_m0_a10",
+    "mesh_l1_xm3763_z1260_y785_2:0:phys_a9cce3_r2_m0_a10",
+    "mesh_l1_xm3792_z1054_y1160:0:phys_a9cce3_r2_m0_a10",
+    "mesh_l1_xm3792_z1057_y1046:0:phys_a9cce3_r2_m0_a10",
+    "mesh_l1_xm3986_z164_y1090_2:0:phys_a9cce3_r2_m0_a10",
+    "mesh_l1_xm4002_z1260_y795_2:0:phys_a9cce3_r2_m0_a10",
+    "mesh_l1_xm4017_z172_y860:0:phys_a9cce3_r2_m0_a10",
+    "mesh_l1_xm4031_z1070_y1115_2:0:phys_a9cce3_r2_m0_a10",
+    "window_l0_x318_z1263__2:0:phys_a9cce3_r2_m0_a10",
+    "window_l0_x385_z7__2:0:phys_a9cce3_r2_m0_a10",
+    "window_l1_x146_z1263__2:0:phys_a9cce3_r2_m0_a10",
+    "window_l1_x179_z7__2:0:phys_a9cce3_r2_m0_a10",
+    "window_l1_x385_z1263__2:0:phys_a9cce3_r2_m0_a10",
+    "window_l1_x385_z7__2:0:phys_a9cce3_r2_m0_a10"
+  ],
+  "normalBaselineManifestSHA256": "26e5d0d29c6d8a6ecc39bd866d442a5809f98dd1c1d4febd9079d3883e77c837",
+  "normalClock": "2026-06-15T12:00:00Z",
+  "normalSeed": 2245,
+  "mergeWrapperSHA256": "137ae7391f25b555415bb5d7299002e24b6bd8b3743be1e2538c15e0b75ca91f",
+  "glErrorAfter": 0,
+  "contextLost": false,
+  "errors": [],
+  "rawHalfSHA256": "389f5a8779beeeb8fdd47ef95520d98eb5008904cc9308900c6a7a290bed9915",
+  "paintedPngSHA256": "dc9934cf1f603fc636c78ef5111d514380c4ad870eb73db39dadbb85f34fa1e6",
+  "rawHalfBytes": 688128,
+  "dependenciesSHA256": {
+    "/home/devcontainers/wt/codex-2388-forward-ao/tools/unreal-engine/export-world.mjs": "68be7e46b6fbd649669f3f1c2df71b8354f723eea2a630278f3efc64a189dfd9",
+    "/home/devcontainers/wt/codex-2388-forward-ao/tools/unreal-engine/export-scene.js": "301312dfd7d242baa5cb480b784b9bb923546b8d3d2525bf2ea0792ce8c35ec2",
+    "/home/devcontainers/wt/codex-2388-forward-ao/tools/unreal-engine/export-glass-environment.js": "a2846fceb3c0d690369affe7e3b4b7ced0be8d9b0bf7400c632c665839e83518",
+    "/home/devcontainers/wt/codex-2388-forward-ao/tools/unreal-engine/glass-environment.hlsl": "9e858f2843636eb49d2e1772b2310b393e67408fb26e1937da432434c454ab90",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2388/forward-ao/export-painted-atlas.mjs": "9bc3050d0b2dffc2373f0b82a8a3c777c8a337e3bb7b65eef3aec41a3068447d",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2388/forward-ao/config-atlas-v1.json": "51bc4c9b1d40a12e835054207a2185ea5afed73be5cfcf755ce0578990a662ed"
+  },
+  "browserClosed": true,
+  "ownedServerClosed": true
+}

@@ -1,0 +1,26 @@
+{
+  "command": [
+    "python3",
+    "tools/unreal-engine/run-linux.py",
+    "--engine-root",
+    "/mnt/d/UnrealEngine/5.8.4",
+    "--data-dir",
+    "/mnt/d/LundenLinux",
+    "--render",
+    "--allow-cpu-device",
+    "--timeout",
+    "1200",
+    "--owner",
+    "olw-win10-codex-20261127",
+    "python",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2388/forward-ao/capture-source-candidate.py",
+    "--config",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2388/forward-ao/native/config-source-candidate-v3.json"
+  ],
+  "cwd": "/home/devcontainers/wt/codex-2434-native",
+  "startedAt": "2026-11-28T11:24:50.043323+00:00",
+  "completed": true,
+  "actualChildExitCode": 0,
+  "seconds": 281.325,
+  "log": "/home/devcontainers/.local/state/lunden-codex-20261127/2388/forward-ao/native/outer-source-candidate-v3.log"
+}

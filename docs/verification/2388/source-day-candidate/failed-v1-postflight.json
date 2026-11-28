@@ -1,0 +1,19 @@
+{
+  "nativeExit": 255,
+  "runnerExit": 1,
+  "toolExit": 1,
+  "seconds": 234.36,
+  "actualError": "AttributeError TextureRenderTargetFormat.RTF_RGBA16f; correct actual project enum RTF_RGBA16F",
+  "capturedImages": 0,
+  "all250AuthoredExactReadonly": true,
+  "allPreexistingGeneratedExact": true,
+  "newGeneratedFiles": 0,
+  "allExportAnd520DependenciesExact": true,
+  "runtimeRestored": true,
+  "actualAtlasImportedDimensions": [
+    336,
+    256
+  ],
+  "atlasProofMaterialCompilerErrors": [],
+  "nativePixelProofOrCandidateAcceptance": false
+}

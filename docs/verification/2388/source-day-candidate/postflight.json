@@ -1,0 +1,37 @@
+{
+  "nativeExit": 0,
+  "runnerExit": 0,
+  "toolExit": 0,
+  "seconds": 281.26,
+  "all250AuthoredExactReadonly": true,
+  "allPreexistingGeneratedExact": true,
+  "onlyNewGenerated": {
+    "Private2388SourceDay_20261128_v3/T_SourceGlassAtlas.uasset": "578aa960c1269dc422e1f810742d1835245bd36336f8aad7c1c7b43f80058f13"
+  },
+  "allExportAnd523DependenciesExact": true,
+  "stateAnd35EffectiveBindingsRestored": true,
+  "originalBeforeAfterChangedRGBPixels": 0,
+  "originalVsPriorCopyOpacityRunChangedRGBPixels": 0,
+  "candidateChangedRGBPixels": 39547,
+  "routingSentinelChangedRGBPixels": 39704,
+  "all344064NativeLoadedHalfComponentsExact": true,
+  "filteredSamplingParityAsserted": false,
+  "privateMPCSentinel": {
+    "expected": [
+      1.55,
+      0.275,
+      1.5
+    ],
+    "actual": [
+      1.5498046875,
+      0.27490234375,
+      1.5
+    ],
+    "halfBitsExact": true
+  },
+  "shaderCompilerErrors": [],
+  "all4ImagesViewedByRoot": true,
+  "productAccepted": false,
+  "originalROIMeter": "/home/devcontainers/.local/state/lunden-codex-20261127/2388/forward-ao/source-candidate-v3-meter.json",
+  "guardSeconds": null
+}

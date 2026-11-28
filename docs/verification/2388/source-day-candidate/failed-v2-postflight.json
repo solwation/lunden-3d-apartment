@@ -1,0 +1,19 @@
+{
+  "nativeExit": 255,
+  "runnerExit": 1,
+  "toolExit": 1,
+  "seconds": 204.87,
+  "actualError": "Strict filtered half sampler mismatch:1428texels; source-upload equality not yet isolated from bilinear centre roundoff",
+  "capturedImages": 0,
+  "all250AuthoredExactReadonly": true,
+  "allPreexistingGeneratedExportAnd522DependenciesExact": true,
+  "newGeneratedFiles": 0,
+  "runtimeRestored": true,
+  "actualAtlasImportedDimensions": [
+    336,
+    256
+  ],
+  "atlasProofCompilerErrors": [],
+  "pixelReadbackBothPasses": 86016,
+  "candidateAccepted": false
+}
