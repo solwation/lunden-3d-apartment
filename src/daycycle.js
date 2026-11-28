@@ -224,6 +224,22 @@ export function dayCycleLightColors() {
     sunHigh: SUN_HIGH.toArray(), moon: MOON.toArray() };
 }
 
+/** Source-only lighting contract for the original Unreal material route (#2424).
+ * Detached linear data; reading it changes neither lights nor rendering. */
+export function sourceAmbientContract() {
+  const colors = dayCycleLightColors(), sky = LIGHTING.sky;
+  const direction = new THREE.Vector3(...sky.fill.pos).normalize().toArray(); // target is (0,0,0), main.js
+  return { version: 1, space: colors.space,
+    colors: { ambient: new THREE.Color(0xffffff).toArray(), skyDay: colors.skyDay,
+      skyNight: colors.skyNight, ground: new THREE.Color(sky.hemi.ground).toArray(),
+      fill: new THREE.Color(sky.fill.color).toArray() },
+    clear: { ambient: sky.clear.ambient, hemi: sky.clear.hemi, fill: sky.clear.fill },
+    overcast: { ambient: sky.overcast.ambient, hemi: sky.overcast.hemi, fill: sky.overcast.fill },
+    nightAmbient: DAY.nightAmbient, flashLight: WEATHER.flash.light, garageCarLight: GARAGE.lights.carLight,
+    hemiDirection: [0, 1, 0], fillDirection: direction,
+    source: 'src/main.js hemi/ambient/fill; src/daycycle.js update; three WebGLLights and RE_IndirectDiffuse_Physical' };
+}
+
 /** Dawn / dusk colour depth (#2124, SKY_DUSK; pure, for tests too): sky-shader colours (linear) for the sun height `sunY`, overcast
  * `oc` 0…1 and `off` 0…1 (inside the cloud deck / lightning). All zero when the sun is high (day) or deep below the horizon (night).
  * `out` (#2136, optional): a result to overwrite instead of allocating (the per-frame caller keeps one).

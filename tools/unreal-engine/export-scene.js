@@ -22,7 +22,8 @@ import { buildStringLights, updateStringLights, updateParasols } from '../../src
 import { groundY, renderedTerrainY, treeFeet, aoTrees } from '../../src/surroundings.js';
 import { gridGround } from '../../src/elevation.js';
 import { leafAtlas, leafMaterial, windLeafMaterial } from '../../src/foliage.js';
-import { skyGradientPalette } from '../../src/daycycle.js';
+import { skyGradientPalette, sourceAmbientContract } from '../../src/daycycle.js';
+import { sourceAmbientMaterial, recordSourceAmbientVariant } from './export-source-ambient.js';
 import { crownSeeds } from '../../src/seasons.js';
 import { bakeLitterDensity, litterRoads, leafShare } from '../../src/leaflitter.js';
 import { samples as roadSamples } from '../../src/roads.js';
@@ -886,12 +887,13 @@ export async function exportWorld({ zones: wanted = DEFAULT_ZONES, commit = null
         em.emissiveMap = em.map; // same sRGB texels, sampler, UV channel and transform
         em.emissive.fromArray(curtain.daylight); // daylight fallback for an imported mesh without a running controller
       }
-      materials.set(key, em); materialTable[key] = { ...info, ...(tex ? { texture: tex.id } : {}),
+      materials.set(key, em); materialTable[key] = { ...info, sourceAmbient: sourceAmbientMaterial(source), ...(tex ? { texture: tex.id } : {}),
         ...(unlit ? { unlit: true, powerCut } : {}),
         ...(garageBake ? { garageBake: true, garageAlphaCutoff: m.alphaTest } : {}) };
     } else if (unlit && materialTable[key].powerCut !== powerCut) {
       throw new Error(`${key}: unlit labels with power-cut shares ${materialTable[key].powerCut} and ${powerCut} share one key`);
     }
+    recordSourceAmbientVariant(materialTable[key], source);
     if (tex) tex.keys.add(key);
     cache.set(m, em);
     noteLook(m, key);
@@ -1564,7 +1566,7 @@ function measurementData({ world, planCopy, W, D, byZone, lightsInfo, seasons, m
     doors, windows, lights,
     interaction: interactionExtras({ world, atomOf, lightsInfo, lights, lifts, P }),
     terrain: null, // filled in by tools/unreal-engine/export-world.mjs (a reference to data/elevation.json, not a copy)
-    site: { geo: C.SITE.geo, planNorthDeg: C.DAY?.planNorth ?? null, source: 'src/config.js#SITE.geo, DAY.planNorth',
+    site: { sourceAmbient: sourceAmbientContract(), geo: C.SITE.geo, planNorthDeg: C.DAY?.planNorth ?? null, source: 'src/config.js#SITE.geo, DAY.planNorth',
       // #2283: the observer src/daycycle.js puts the sun and moon over (not the OSM anchor above), for Unreal's sun
       // and the web's own light and weather numbers it scales (relative web units; Unreal calibrates them, #2283)
       sky: { lat: C.DAY.lat, lon: C.DAY.lon, planNorthDeg: C.DAY.planNorth,

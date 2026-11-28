@@ -1,0 +1,8 @@
+{
+  "version": 1,
+  "enabled": false,
+  "issue": 2424,
+  "scope": "Project materials; source Ambient/Hemisphere, no native environment IBL",
+  "coverageFile": "unreal/Lunden/Saved/source-ambient-coverage.json",
+  "reason": "Source vertical slice only. Physical layer binding, live context, fill/window integration, curtain compensation and native reload are required before activation."
+}

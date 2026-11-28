@@ -3790,3 +3790,53 @@ packaging (#2248) ships it next to the executable. Add a section to `notices.mjs
 
 The split of the merged exterior meshes exists since #2279 ([Buildings](#buildings-hus-l-hus-abc-and-the-garage-2279)); `gard` and
 `omgivning` use it since #2280 ([Ground](#ground-terrain-streets-courtyard-and-höje-å-2280)).
+
+### Standalone source ambient preparation (#2424, disabled)
+
+`source_ambient.py` and `build_source_ambient.py` provide standalone source contracts and Generated-only material
+preparation. `source-ambient-policy.json` defaults to **off**; their activation guard unconditionally refuses incomplete
+canonical integration even if a coverage file marks every prerequisite complete. This support slice is not a delivered
+visual correction. Full #2424 acceptance remains open, and no Windows result is claimed.
+
+Canonical lighting, material, import, vegetation and curtain builders and `check-lighting.py` remain byte-identical to
+the published base. They do not import or invoke this support. Saved Lighting signatures and assets therefore need no
+rebuild for this slice. No engine shader, saved asset, brick SourceMap or sampler candidate is included. Global pipeline
+integration remains unpublished pending Basic handling (#2453), dynamic water, live fill/window/curtain integration and
+full-scene drawn acceptance.
+
+`sourceAmbientContract()` exports detached linear Ambient/Hemisphere colours, intensity endpoints, night/flash/garage
+terms and fill direction. Optional `sourceAmbient` material descriptors retain actual source model/layer data before
+GLB Standard flattening; every distinct raw variant is retained. These getters and metadata additions do not change web
+lights or the exported GLB materials. Existing exports need no regeneration to use the disabled standalone support.
+
+The pure source module reproduces DayCycle's live inputs and Three's indirect Lambert term:
+`(Ambient + lerp(Ground,Sky,.5+.5*N·Up)) * BaseColor * (1-metalness) * sourceAO / pi`.
+The Generated material function uses each original material's BaseColor, Metalness and final PixelNormalWS; its window
+branch uses that surface's position and normal instead of an opaque GBuffer background. Constant clearcoat/sheen use
+Three's attenuation. Missing AO/layer textures, a distinct clearcoat normal, nonzero transmission and unsupported models
+are rejected. Source Basic bypasses injection only when its native master is actually unlit.
+
+Standalone preparation copies the original master/MIC chain and adds to its existing emissive graph, preserving native
+parameters, static switches and overrides. Dirty source packages and runtime MIDs are rejected. Original/plugin masters
+and authored Tile instances are not modified. Owned assets are saved under the support's Generated prefix, and
+`saved-copies.json` records their post-save package SHA and provenance. Reuse rejects dirty copies, missing receipts and
+changed saved bytes; this does not prove arbitrary unmarked in-memory edits. Slot/controller assignment is separate.
+The standalone BP parameter helper is not connected to the canonical sky; its source fill/window/curtain prerequisites
+remain integration work rather than an enabled rendering route.
+
+Every supported lit descriptor uses a validated, versioned ambient projection as its binding context. All variants must
+support the adapter and agree on model, facing, own-environment identity, texture-presence requirements, AO eligibility
+and constant attenuation. The four recorded tile/paving/screen/asphalt variants differ only in a bump-map name unused by
+this function and share that context. Raw variants remain intact. Native normal preservation and coefficient equivalence
+do not establish parity of omitted source bump normals.
+
+The isolated [rug graph/override/save/reload trial](../verification/2424/rug-function-drawn/README.md) and
+[day-only immediate MPC-upload diagnostic](../verification/2424/rug-day-upload/README.md) provide scoped native evidence.
+The first day response failed; the later unchanged source math responds with immediate uploads. These private-prefix,
+single-component Linux controls prove neither full-scene integration nor source-colour acceptance. Emitted HLSL is
+byte-identical to the recorded `2c7d1efe` source. Full coverage and locked whole-image criteria remain unsatisfied.
+
+Pure checks: `THREE_DIR=<pinned three package> node --test tools/unreal-engine/tests/test_source_ambient.mjs` compares real
+DayCycle/WebGLLights inputs; `python3 tools/unreal-engine/tests/test_source_ambient.py` checks standalone parameter math,
+primitive/source identity, variant equivalence/rejection, saved-copy lifecycle and unconditional activation refusal.
+These original-only Unreal support changes require no public downstream transfer or new disabled-behaviour image.

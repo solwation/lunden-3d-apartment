@@ -1,0 +1,171 @@
+{
+  "materialKey": "std_ffffff_r100_m0_tex",
+  "proofSHA256": "432e5b449548bba214132a71c72c2a95f74f363c416f3a4309546e270d2998b4",
+  "measurementsSHA256": "011d16615400d4da214f7d8039d985eecd90ab2e767243a8d568861eca74cc29",
+  "variants": [
+    {
+      "version": 1,
+      "model": "MeshStandardMaterial",
+      "unlit": false,
+      "physical": false,
+      "textures": {
+        "aoMap": {
+          "present": false
+        },
+        "normalMap": {
+          "present": false
+        },
+        "bumpMap": {
+          "present": true,
+          "name": "tile-height-roughness"
+        },
+        "clearcoatMap": {
+          "present": false
+        },
+        "clearcoatNormalMap": {
+          "present": false
+        },
+        "sheenColorMap": {
+          "present": false
+        },
+        "transmissionMap": {
+          "present": false
+        }
+      },
+      "aoMapIntensity": 1,
+      "clearcoat": 0,
+      "transmission": 0,
+      "sheenColor": [
+        0,
+        0,
+        0
+      ],
+      "normalFacing": "front-sided",
+      "ownEnvironmentMap": false,
+      "source": "actual THREE material before export-scene Standard flattening; linear-srgb layer colours"
+    },
+    {
+      "version": 1,
+      "model": "MeshStandardMaterial",
+      "unlit": false,
+      "physical": false,
+      "textures": {
+        "aoMap": {
+          "present": false
+        },
+        "normalMap": {
+          "present": false
+        },
+        "bumpMap": {
+          "present": true,
+          "name": "paving-height-roughness"
+        },
+        "clearcoatMap": {
+          "present": false
+        },
+        "clearcoatNormalMap": {
+          "present": false
+        },
+        "sheenColorMap": {
+          "present": false
+        },
+        "transmissionMap": {
+          "present": false
+        }
+      },
+      "aoMapIntensity": 1,
+      "clearcoat": 0,
+      "transmission": 0,
+      "sheenColor": [
+        0,
+        0,
+        0
+      ],
+      "normalFacing": "front-sided",
+      "ownEnvironmentMap": false,
+      "source": "actual THREE material before export-scene Standard flattening; linear-srgb layer colours"
+    },
+    {
+      "version": 1,
+      "model": "MeshStandardMaterial",
+      "unlit": false,
+      "physical": false,
+      "textures": {
+        "aoMap": {
+          "present": false
+        },
+        "normalMap": {
+          "present": false
+        },
+        "bumpMap": {
+          "present": true,
+          "name": "painted-screen-height-roughness"
+        },
+        "clearcoatMap": {
+          "present": false
+        },
+        "clearcoatNormalMap": {
+          "present": false
+        },
+        "sheenColorMap": {
+          "present": false
+        },
+        "transmissionMap": {
+          "present": false
+        }
+      },
+      "aoMapIntensity": 1,
+      "clearcoat": 0,
+      "transmission": 0,
+      "sheenColor": [
+        0,
+        0,
+        0
+      ],
+      "normalFacing": "front-sided",
+      "ownEnvironmentMap": false,
+      "source": "actual THREE material before export-scene Standard flattening; linear-srgb layer colours"
+    },
+    {
+      "version": 1,
+      "model": "MeshStandardMaterial",
+      "unlit": false,
+      "physical": false,
+      "textures": {
+        "aoMap": {
+          "present": false
+        },
+        "normalMap": {
+          "present": false
+        },
+        "bumpMap": {
+          "present": true,
+          "name": "asphalt-height-roughness"
+        },
+        "clearcoatMap": {
+          "present": false
+        },
+        "clearcoatNormalMap": {
+          "present": false
+        },
+        "sheenColorMap": {
+          "present": false
+        },
+        "transmissionMap": {
+          "present": false
+        }
+      },
+      "aoMapIntensity": 1,
+      "clearcoat": 0,
+      "transmission": 0,
+      "sheenColor": [
+        0,
+        0,
+        0
+      ],
+      "normalFacing": "front-sided",
+      "ownEnvironmentMap": false,
+      "source": "actual THREE material before export-scene Standard flattening; linear-srgb layer colours"
+    }
+  ]
+}
