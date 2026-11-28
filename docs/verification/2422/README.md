@@ -1,6 +1,43 @@
-# #2422 Linux source checkpoint
+# #2422 Linux Shipping verification
 
-This is an open implementation checkpoint, not a distributed game or issue closure.
+## Current verified result (2026-11-28)
+
+The real Linux Shipping cook completed **5807 packages and 6496 shader jobs**;
+UAT and its outer command returned **0**. The same archived runtime then rendered
+the packaged START scene and welcome UI in an actual **640×360** own-process
+window in v3, accepted `WM_DELETE_WINDOW` and exited **0**; its outer smoke also
+returned **0**. See [raw v3 image](packaged-client-v3.png),
+[unaltered smoke outcome](packaged-client-v3-outcome.json),
+[preseeded normal user profile](packaged-client-v3-preseed-profile.json) and
+[source/observation proof](packaged-client-v3-review.json).
+
+![Actual packaged Linux Shipping client, 640×360](packaged-client-v3.png)
+
+V1 and v2 actually opened **2560×1440** despite `-ResX=640 -ResY=360`.
+Adding `-nohighdpi` in v2 did not reduce it, so the former DPI explanation is
+withdrawn. The saved v2 GameUserSettings already contained 640×360 but used
+`FullscreenMode=1` (borderless desktop). The existing UI calls `ApplySettings(false)`
+on startup, applying that persistent mode without command-line overrides.
+V3 kept the same archive and command flags and used a fresh private UserDir with
+normal GUS current/confirmed mode **2** (Windowed), 640×360 and Version5. It also
+set PreferredFullscreenMode2; that preference getter maps every nonzero value to
+borderless, while current FullscreenMode2 controls this windowed request. The
+[exact preseed](packaged-client-v3-preseed-profile.json) and
+[post-run GUS](packaged-client-v3-GameUserSettings.ini) are retained. No SaveGame,
+product source, exposure, authored asset or game binary was changed for this mode.
+The actual X11 drawable dimensions are the window-size authority. The retained
+profile requests `sg.ResolutionQuality=50`; 640×360 is the drawable size, not a
+claim that every internal rendering pass used full window resolution.
+
+These are software-Vulkan/SM5-requested Shipping smoke results, not ordinary GPU,
+Windows/Lumen, full gameplay or performance acceptance. The visible 8 FPS is an
+observation only. Official signed release app-v0.3.0 publication is being handled
+separately and is **not claimed complete here**. Historical checkpoints below
+retain their original pending/untested scope as of their execution.
+
+## Historical source checkpoint (before actual cook)
+
+This was an open implementation checkpoint, not a distributed game or issue closure.
 Linux source `e78af5a8a1af59d30ec85d6b23633eebfed34a45` was reapplied as
 `12f5d1963af29c5a4ad331a8b708dddde1b6e63a` on public `8afc03f1`, then
 integrated with the verified night-sky correction as `d78eb3abcab4c40e8cc091bfa1ae56c21e8b70b9`.
@@ -41,7 +78,7 @@ Nothing here publishes an official binary release or claims whole-issue acceptan
 This Unreal-only implementation has no public web downstream transfer.
 
 
-## Actual sync and first UAT invocation
+## Historical actual sync and first UAT invocation
 
 On the published clean84e35c47, one normal NullRHI invocation actually executed
 all20 canonical steps, including source-bound cached builders, import checks,
@@ -103,11 +140,15 @@ Swedish welcome menu, remained alive over60seconds, then accepted WM_DELETE
 and exited0; the external smoke exited0. Root reviewed the raw own-windowPNG.
 Only that exact process's drawable was captured. This is a real Shipping image,
 not an editor frame, fixture or mocked ELF. Actual window2560×1440 despite
-requested640×360; a WSLgDPI expansion is observed, not a claimed low-resolution
-pass. EightFPS shown in this software-rendered frame is not hardwareperformance
+requested640×360; the initial DPI explanation was not established. V2 with
+`-nohighdpi` retained that size; observed borderless GUS mode1 and the successful
+normal mode2 v3 are documented above. V1 is not a low-resolution pass. EightFPS
+shown in this software-rendered frame is not hardwareperformance
 acceptance. Full GPU/Lumen/Windows parity is untested; existing lighting issues
 remain recorded separately.
 
 The actual manifest generator accepted the finished archive and official-key
 launcher, producing a Linux-bound draft with13 mappings/12 content-addressed
-payloads (825494703 bytes). It has not yet been signed, uploaded or promoted.
+payloads (825494703 bytes). At this checkpoint it had not been signed, uploaded
+or promoted; this document
+does not establish the separately ongoing release publication.

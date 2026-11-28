@@ -1,0 +1,32 @@
+{
+  "v3": "/home/devcontainers/.local/state/lunden-codex-20261127/2422/packaged-smoke/smoke-windowed-v3.py",
+  "sha256": "c603702edb65f7aca1e6ce941517929f994c1698ed673b8b943c72e34a50fb29",
+  "v2Preserved": {
+    "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2422/packaged-smoke/smoke-lowdpi-v2.py",
+    "sha256": "5e9a2e64f98dd65e4f4073c91a69e423a4884b9bbdcfd1ac1044d0bbda1bf79a"
+  },
+  "observedV2Profile": {
+    "path": "/home/devcontainers/.local/state/lunden-codex-20261127/2422/packaged-client-v2/UserData/Saved/Config/Linux/GameUserSettings.ini",
+    "sha256": "a0a93d74d8e2c56dd834a21f419039f19a9d9760af07c958747ec17e7f372c66",
+    "ResolutionSizeX": 640,
+    "ResolutionSizeY": 360,
+    "FullscreenMode": 1,
+    "LastConfirmedFullscreenMode": 1,
+    "PreferredFullscreenMode": 1
+  },
+  "preseedINI_SHA256": "be762e449015d99e810cc29c7675928edee89172ba8bb17549ea190007478bd8",
+  "preseedPolicy": "Fresh owned UserDir only; observed v2 profile copied with only FullscreenMode/LastConfirmedFullscreenMode/PreferredFullscreenMode changed 1 to2; no SaveGame/source/Native changes",
+  "sdk": "/mnt/d/UnrealDownloads/Linux_Unreal_Engine_5.8.4.zip",
+  "exactSources": {
+    "GameUserSettings.cpp": "122-142 Windowed stored2;149-151 Preferred==0 Fullscreen otherwise WindowedFullscreen;563-600 ApplySettings applies saved mode and saves;656-669 false skips commandline override;831-834 default WindowedFullscreen",
+    "LinuxWindow.cpp": "956-978 Fullscreen and WindowedFullscreen use desktop fullscreen",
+    "build_ui.py": "513-543 ApplyGraphics ApplySettings(false);1245 BeginPlay calls ApplyGraphics"
+  },
+  "validation": "AST parse only; no launch, no X11 capture, no Native writes",
+  "limits": [
+    "Physical640x360 unproven until real own-window observation",
+    "nohighdpi did not reduce V2 physical2560x1440; DPI cause unproven",
+    "PreferredFullscreenMode2 is not an independent Windowed preference; current FullscreenMode2 controls this request",
+    "CPU Vulkan request, no Windows/Lumen/performance parity"
+  ]
+}

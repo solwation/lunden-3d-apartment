@@ -1,0 +1,98 @@
+{
+  "classification": "Actual Shipping v3 own-window 640x360; source-backed persistent mode correction, no product source change",
+  "sourceHead": "84e35c47e5b358cea4eedc4e37d77fbd0cd42948",
+  "runtimeSHA256": "ae5b2fff8fabced405515b5f905532525e1ceecfa2176c37bb13877c7c530f38",
+  "smokeScriptSHA256": "c603702edb65f7aca1e6ce941517929f994c1698ed673b8b943c72e34a50fb29",
+  "imageSHA256": "460b9e6b0e5d14074152181934c6da039434f7aa6d3234faa009178749a57ecc",
+  "actualGameExitCode": 0,
+  "actualOuterExitCode": 0,
+  "outerProvenance": "Root explicitly observed actual v3 game0/outer0; smoke raw outcome retains null external status because child cannot infer parent exit",
+  "smokeRawOutcomeSHA256": "01b3d5cf76c9d202116289b13fb369ca0d27681311880cab2660aea0be54b9da",
+  "observedV2": {
+    "gameExitCode": 0,
+    "actualOuterExitCode": 0,
+    "physicalWindow": [
+      2560,
+      1440
+    ],
+    "nohighdpi": true,
+    "persistentMode": 1
+  },
+  "observedV3": {
+    "physicalWindow": [
+      640,
+      360
+    ],
+    "persistentMode": 2,
+    "sameNoHighDPIFlag": true,
+    "preseedSHA256": "be762e449015d99e810cc29c7675928edee89172ba8bb17549ea190007478bd8",
+    "gameExitCode": 0,
+    "actualOuterExitCode": 0
+  },
+  "sdkArchive": "/mnt/d/UnrealDownloads/Linux_Unreal_Engine_5.8.4.zip",
+  "sdkSourceProof": [
+    {
+      "path": "Engine/Source/Runtime/Engine/Private/GameUserSettings.cpp",
+      "sha256": "c4520a0ade3969ead90ae900957d5830b06a2aedbbcedd464908c85f387e801f",
+      "excerpts": [
+        {
+          "firstLine": 133,
+          "lastLine": 142,
+          "text": "\t\tcase EWindowMode::Fullscreen:\n\t\t\tFullscreenMode = 0;\n\t\t\tbreak;\n\t\tcase EWindowMode::WindowedFullscreen:\n\t\t\tFullscreenMode = 1;\n\t\t\tbreak;\n\t\tcase EWindowMode::Windowed:\n\t\tdefault:\n\t\t\tFullscreenMode = 2;\n\t\t\tbreak;"
+        },
+        {
+          "firstLine": 149,
+          "lastLine": 151,
+          "text": "EWindowMode::Type UGameUserSettings::GetPreferredFullscreenMode() const\n{\n\treturn PreferredFullscreenMode == 0 ? EWindowMode::Fullscreen : EWindowMode::WindowedFullscreen;"
+        },
+        {
+          "firstLine": 573,
+          "lastLine": 579,
+          "text": "\tValidateSettings();\n\n\tEWindowMode::Type NewFullscreenMode = GetFullscreenMode();\n\n\t// Request a resolution change\n\tconst int32 MonitorIndex = GetClosestMonitorIndex();\n\tRequestResolutionChange(ResolutionSizeX, ResolutionSizeY, NewFullscreenMode, bCheckForCommandLineOverrides, MonitorIndex);"
+        },
+        {
+          "firstLine": 590,
+          "lastLine": 600,
+          "text": "void UGameUserSettings::ApplySettings(bool bCheckForCommandLineOverrides)\n{\n\t{\n\t\t// Push recreate render state context to force single recreate instead of multiple recreates for each changed cvar\n\t\tFGlobalComponentRecreateRenderStateContext Context;\n\t\tApplyResolutionSettings(bCheckForCommandLineOverrides);\n\t\tApplyNonResolutionSettings();\n\t}\n\tRequestUIUpdate();\n\n\tSaveSettings();"
+        },
+        {
+          "firstLine": 663,
+          "lastLine": 669,
+          "text": "\tif (bInDoOverrides)\n\t{\n\t\tUGameEngine::ConditionallyOverrideSettings(InResolutionX, InResolutionY, InWindowMode, MonitorIndex);\n\t}\n\n\tFSystemResolution::SetMonitorIndex(MonitorIndex);\n\tFSystemResolution::RequestResolutionChange(InResolutionX, InResolutionY, InWindowMode);"
+        },
+        {
+          "firstLine": 831,
+          "lastLine": 834,
+          "text": "EWindowMode::Type UGameUserSettings::GetDefaultWindowMode()\n{\n\t// WindowedFullscreen should be the general default for games\n\treturn EWindowMode::WindowedFullscreen;"
+        }
+      ]
+    },
+    {
+      "path": "Engine/Source/Runtime/ApplicationCore/Private/Linux/LinuxWindow.cpp",
+      "sha256": "8b878b9bf818b13a17baec5ec26e9eb673c93eece700d2973d5b3a37140426b3",
+      "excerpts": [
+        {
+          "firstLine": 962,
+          "lastLine": 968,
+          "text": "\t\t\t// Fullscreen and WindowedFullscreen both use SDL_WINDOW_FULLSCREEN_DESKTOP now\n\t\t\t//  and code elsewhere handles the backbufer blit properly. This solves several\n\t\t\t//  problems that actual mode switches cause, and a GPU scales better than LCD display.\n\t\t\t// If this is changed, change ReshapeWindow() and FSystemResolution::RequestResolutionChange() as well.\n\t\t\tcase EWindowMode::Fullscreen:\n\t\t\tcase EWindowMode::WindowedFullscreen:\n\t\t\t{"
+        }
+      ]
+    }
+  ],
+  "build_ui": {
+    "path": "tools/unreal-engine/python/build_ui.py",
+    "sha256": "edf7596c59c06e1cb347f83278f09b0833278c645f473c23faee5cafcde2f57c",
+    "actualNativeByteIdentical": true,
+    "observations": [
+      "ApplyGraphics calls ApplySettings(false) in both saved-resolution branches at540/543",
+      "BeginPlay calls ApplyGraphics at1245"
+    ]
+  },
+  "limits": [
+    "DPI expansion was not established; nohighdpi alone left v2 at2560x1440",
+    "V3 changed three persistent mode fields together; current mode2 is actual SDK Windowed, Preferred getter treats every nonzero as WindowedFullscreen",
+    "CPU Vulkan SM5 requested; Shipping logs do not establish actual Lumen/hardware/GPU parity or full gameplay acceptance",
+    "Official signed release publication is not established by these files",
+    "GUS sg.ResolutionQuality=50 retained; actual640x360 is own drawable size, not full-resolution proof for every internal rendering pass"
+  ]
+}

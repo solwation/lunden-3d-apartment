@@ -1,0 +1,92 @@
+{
+  "completed": true,
+  "passed": true,
+  "command": [
+    "/mnt/d/LundenLinux/Builds/issue2422-linux-shipping-v2/archive/Linux/Engine/Binaries/Linux/UnrealGame-Linux-Shipping",
+    "../../../Lunden/Lunden.uproject",
+    "-UserDir=/home/devcontainers/.local/state/lunden-codex-20261127/2422/packaged-client-v3/UserData",
+    "-vulkan",
+    "-sm5",
+    "-AllowCPUDevices",
+    "-windowed",
+    "-nohighdpi",
+    "-ResX=640",
+    "-ResY=360",
+    "-nosplash",
+    "-stdout",
+    "-FullStdOutLogOutput",
+    "-abslog=/home/devcontainers/.local/state/lunden-codex-20261127/2422/packaged-client-v3/game.log"
+  ],
+  "cwd": "/mnt/d/LundenLinux/Builds/issue2422-linux-shipping-v2/archive/Linux/Engine/Binaries/Linux",
+  "requestedProfile": "640x360 normal GUS Windowed mode2 preseed, nohighdpi CPU Vulkan SM5; actual own drawable dimensions control claim; no DPI cause claim",
+  "preseedProfileSHA256": "be762e449015d99e810cc29c7675928edee89172ba8bb17549ea190007478bd8",
+  "actualOuterExitCode": null,
+  "outerProvenance": "Root records actual tool/shell outer status; never inferred",
+  "shaderAndSceneAcceptance": "Not established by process/window smoke; Root reviews raw own-window image and actual Shipping logs",
+  "binarySHA256": "ae5b2fff8fabced405515b5f905532525e1ceecfa2176c37bb13877c7c530f38",
+  "buildInfo": {
+    "path": "/mnt/d/LundenLinux/Builds/issue2422-linux-shipping-v2/archive/Linux/build-info.json",
+    "sha256": "7bd748bfb22e72a63ab3cd8290d577e6300ca7a1c6751dd36eeacd4cbb72ae90",
+    "platform": "linux-x64",
+    "commit": "84e35c47e5b358cea4eedc4e37d77fbd0cd42948",
+    "builtUtc": "2026-11-28T07:01:05.805349+00:00",
+    "runtimeSHA256Matched": true,
+    "looseUprojectExists": false,
+    "descriptorPolicy": "May reside inside cooked containers"
+  },
+  "cookedContainers": {
+    ".pak": [
+      {
+        "path": "Lunden/Content/Paks/Lunden-Linux.pak",
+        "size": 11278705
+      }
+    ],
+    ".utoc": [
+      {
+        "path": "Lunden/Content/Paks/Lunden-Linux.utoc",
+        "size": 1367270
+      },
+      {
+        "path": "Lunden/Content/Paks/global.utoc",
+        "size": 806
+      }
+    ],
+    ".ucas": [
+      {
+        "path": "Lunden/Content/Paks/Lunden-Linux.ucas",
+        "size": 468282720
+      },
+      {
+        "path": "Lunden/Content/Paks/global.ucas",
+        "size": 3318384
+      }
+    ]
+  },
+  "requestedChildEnvironment": {
+    "SDL_VIDEODRIVER": "x11",
+    "SDL_VIDEO_DRIVER": "x11",
+    "VK_DRIVER_FILES": "/usr/share/vulkan/icd.d/lvp_icd.json",
+    "VK_ICD_FILENAMES": "/usr/share/vulkan/icd.d/lvp_icd.json"
+  },
+  "vulkanICD": {
+    "path": "/usr/share/vulkan/icd.d/lvp_icd.json",
+    "sha256": "70d49f7fd41a7593a4e283543ed4855c139c700e5c1b31792f56e9576ede2398",
+    "libraryPathPrefix": null,
+    "policy": "Explicit per-process software ICD; actual selected device remains a log/runtime observation"
+  },
+  "pid": 2389497,
+  "image": {
+    "window": 8388699,
+    "ownerPID": 2389497,
+    "width": 640,
+    "height": 360,
+    "sha256": "460b9e6b0e5d14074152181934c6da039434f7aa6d3234faa009178749a57ecc",
+    "distinctRGB": 2481,
+    "privacy": "Only exact child PID window drawable captured; no desktop/window-title capture"
+  },
+  "aliveSecondsAfterWindow": 30.53,
+  "wmDeleteSent": true,
+  "gameExitCode": 0,
+  "elapsedSeconds": 33.993,
+  "x11Errors": []
+}

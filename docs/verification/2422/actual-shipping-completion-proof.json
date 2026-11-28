@@ -1,0 +1,28 @@
+{
+  "path": "/mnt/d/LundenLinux/Builds/issue2422-linux-shipping-v2/BuildCookRun.log",
+  "sha256": "48e795ee058980a225bf37d7fed58625bef03836508ad4023a466ce251871bcc",
+  "lines": [
+    {
+      "line": 6555,
+      "text": "LogCookStats: Display:     NumPackagesSaved=5807"
+    },
+    {
+      "line": 6657,
+      "text": "LogCookStats: Display: Shader                                       1071.08                   0.00          6496         56.94"
+    },
+    {
+      "line": 7488,
+      "text": "BuildCookRun time: 1376.07 s"
+    },
+    {
+      "line": 7489,
+      "text": "BUILD SUCCESSFUL"
+    },
+    {
+      "line": 7491,
+      "text": "AutomationTool exiting with ExitCode=0 (Success)"
+    }
+  ],
+  "existingActualResult": "actual-shipping-result.json",
+  "sourceHead": "84e35c47e5b358cea4eedc4e37d77fbd0cd42948"
+}

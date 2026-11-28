@@ -10,6 +10,7 @@
     360
   ],
   "observed": "Real packaged Linux Shipping window rendered START pilot brick facade/windows/doors/railings and Swedish welcome menu; Root reviewed rawimage. No obvious default-grid/magenta shaderfallback in this view.",
-  "limits": "CPU Vulkan SM5 requested with explicitllvmpipeICD; Shipping lacks detailedRHIlogs, so no claimedLumen/ordinaryGPU/Windows/fullsceneparity or performanceacceptance. Existing lightingissues remain separate. WSLgDPIexpanded actualwindow to2560x1440; not a640x360pixelproof.",
-  "imageSHA256": "082599795fd761fa1a96f188ead71a043ff5c6b60648e4d9525edc132ba82dec"
+  "limits": "CPU Vulkan SM5 requested with explicitllvmpipeICD; Shipping lacks detailedRHIlogs, so no claimedLumen/ordinaryGPU/Windows/fullsceneparity or performanceacceptance. Existing lightingissues remain separate. Actual own window was2560x1440, not a640x360pixelproof. The initial DPI attribution was unsupported: v2 -nohighdpi also remained2560x1440. Actual saved GUS used borderless FullscreenMode1; v3 normal Windowed mode2 preseed produced640x360.",
+  "imageSHA256": "082599795fd761fa1a96f188ead71a043ff5c6b60648e4d9525edc132ba82dec",
+  "correction": "2026-11-28: persistent borderless mode is source-backed; DPI cause is not established. See packaged-client-v3-review.json."
 }
