@@ -1,0 +1,27 @@
+{
+  "configSHA256": "fdd4a2ceba36db41d89d241db5fcb29dbeafd0f474a43b7a6db6ad50947210ad",
+  "nativeRun": "/mnt/d/LundenLinux/runs/20261128T025649500128-1104318",
+  "headExact": true,
+  "all247ExactReadonly": true,
+  "allGeneratedExact": true,
+  "exportExact": true,
+  "sourceAndDependenciesExact": true,
+  "originalEngineFilesExact": true,
+  "originalEngineFilesChecked": [
+    "/mnt/d/UnrealEngine/5.8.4/Engine/Shaders/Private/ReflectionEnvironmentComposite.ush",
+    "/mnt/d/UnrealEngine/5.8.4/Engine/Shaders/Private/AmbientCubemapComposite.usf",
+    "/mnt/d/UnrealEngine/5.8.4/Engine/Shaders/Private/SceneCapturePixelShader.usf"
+  ],
+  "actualNativeExit": 0,
+  "actualRunnerExit": 0,
+  "actualOuterExit": 0,
+  "actualSeconds": 273.14,
+  "wholeNativeRunPassed": true,
+  "diagnosticCompleted": true,
+  "sceneClockRestored": true,
+  "effectiveMaterialRestored": true,
+  "internalOverrideArrayExact": false,
+  "frames": 4,
+  "productAccepted": false,
+  "fileGuardsPassed": true
+}

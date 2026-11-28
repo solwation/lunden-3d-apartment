@@ -1,0 +1,163 @@
+{
+  "issue": 2398,
+  "classification": "PRIVATE causal target-chain trial, NOT published1f fullscene/acceptance",
+  "sourceHEAD": "c4fb2986edccda814d97fa1d950e990074f28d0e",
+  "productAccepted": false,
+  "formalAcceptanceClaim": false,
+  "allFourWholeLDRNativeOriginalsViewed": true,
+  "collectorCompletedBothChains": true,
+  "outerCapturedCompleted": true,
+  "outerRestored": true,
+  "outerFileGuardsAfter": true,
+  "rootOwnsActualNativeRunnerOuterEOFPostflight": true,
+  "effectiveOriginalMaterialRestored": true,
+  "internalOverrideArrayExact": false,
+  "overrideArrayBefore": [],
+  "overrideArrayAfter": [
+    null
+  ],
+  "inputProofSHA256": {
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2398/native-sun-chain-v2/product/capture.json": "d0c68f82ca38fa80033ed982adc64129b1ccb0ca452ace161a7296769a61369d",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2398/native-sun-chain-v2/product/target-chains/chain-comparison.json": "17b94cf003b7ae9b617308b485da5f173cd02680bde5d2b2361dec11884b6a3e",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2398/native-sun-chain-v2/product/target-chains/current-chain/sun-toggle.json": "bf2408b068a8b5afb645ef6504750a486d737a154931e430292b0f33e64e6385",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2398/native-sun-chain-v2/product/target-chains/published-target-chain/sun-toggle.json": "f9b9e89415a9723e3154553d31ce1a9db5932dd2e999d57748ca728f943c925f",
+    "/home/devcontainers/.local/state/lunden-codex-20261127/2398/native-sun-chain-v2-raw-readback-analysis.json": "d4ddf4ca3bab49f7c6f47623ff45e6a8e1ede1e67c7ab603230822b93637a5fa"
+  },
+  "rawRows": [
+    {
+      "chain": "current-chain",
+      "region": "sunlit-brick",
+      "sunRGB": [
+        1.0,
+        0.4910208582878113,
+        0.2307400405406952
+      ],
+      "baseColorMeanRGB": [
+        0.33010213012878714,
+        0.1363865874077265,
+        0.10559477878018067
+      ],
+      "baseColorRB": 3.126121707361773,
+      "rawSunOnMinusOffMeanRGB": [
+        1.8807799353966346,
+        0.4295747962364784,
+        0.16493171105018029
+      ],
+      "rawDirectRB": 11.403385822053403,
+      "rawDirectRBOverSunRB": 2.6312177068817912,
+      "rawSunOffMeanRGB": [
+        0.26680945763221153,
+        0.1290398935171274,
+        0.10940206674429087
+      ],
+      "rawSunOffRB": 2.4387972327418113,
+      "rawChangedPixels": 1300,
+      "negativeDeltaChannels": 0
+    },
+    {
+      "chain": "current-chain",
+      "region": "sunlit-frame",
+      "sunRGB": [
+        1.0,
+        0.4910208582878113,
+        0.2307400405406952
+      ],
+      "baseColorMeanRGB": [
+        0.9124928712844849,
+        0.9124928712844849,
+        0.9124928712844849
+      ],
+      "baseColorRB": 1.0,
+      "rawSunOnMinusOffMeanRGB": [
+        4.947086588541667,
+        2.429443359375,
+        1.141650390625
+      ],
+      "rawDirectRB": 4.333276306972898,
+      "rawDirectRBOverSunRB": 0.9998603507449606,
+      "rawSunOffMeanRGB": [
+        0.562548828125,
+        0.5775227864583333,
+        0.5953938802083333
+      ],
+      "rawSunOffRB": 0.9448347502802001,
+      "rawChangedPixels": 30,
+      "negativeDeltaChannels": 0
+    },
+    {
+      "chain": "published-target-chain",
+      "region": "sunlit-brick",
+      "sunRGB": [
+        1.0,
+        0.4910208582878113,
+        0.2307400405406952
+      ],
+      "baseColorMeanRGB": [
+        0.3245419852435589,
+        0.1364151616093631,
+        0.10363634925335646
+      ],
+      "baseColorRB": 3.131545906254971,
+      "rawSunOnMinusOffMeanRGB": [
+        1.7694859900841347,
+        0.38919468806340146,
+        0.14361453716571515
+      ],
+      "rawDirectRB": 12.321078527324469,
+      "rawDirectRBOverSunRB": 2.842966158899937,
+      "rawSunOffMeanRGB": [
+        0.2501113656850962,
+        0.1160052255483774,
+        0.0942874262883113
+      ],
+      "rawSunOffRB": 2.6526481369881467,
+      "rawChangedPixels": 1300,
+      "negativeDeltaChannels": 0
+    },
+    {
+      "chain": "published-target-chain",
+      "region": "sunlit-frame",
+      "sunRGB": [
+        1.0,
+        0.4910208582878113,
+        0.2307400405406952
+      ],
+      "baseColorMeanRGB": [
+        0.9124928712844849,
+        0.9124928712844849,
+        0.9124928712844849
+      ],
+      "baseColorRB": 1.0,
+      "rawSunOnMinusOffMeanRGB": [
+        4.947086588541667,
+        2.429443359375,
+        1.141650390625
+      ],
+      "rawDirectRB": 4.333276306972898,
+      "rawDirectRBOverSunRB": 0.9998603507449606,
+      "rawSunOffMeanRGB": [
+        0.562548828125,
+        0.5775227864583333,
+        0.5953938802083333
+      ],
+      "rawSunOffRB": 0.9448347502802001,
+      "rawChangedPixels": 30,
+      "negativeDeltaChannels": 0
+    }
+  ],
+  "actualFindings": [
+    "All1300 brick and30 frame pixels respond to real Sun intensity19.4490032196 ->0 in BOTH chains. Float32 transport sentinel exactly[.125,1,4]. No negative raw on-off channels. Source-coloured physical Sun reaches actual GPU.",
+    "Control frame raw on-off and off RGB are exactly equal between the two target material chains. Its directR/B4.333276307 versus observed SunR/B4.333881530 differs by-0.013965%; this small difference does not indicate a lost source solar tint.",
+    "Changing only target component to published authoredMI restores old winter brick LDRR/B diagnostic ratio .88350227. Current sourceCanvas/M_Default is .69053242. The current source-map chain does not solve2398 and has a stronger causal bleaching effect in this held private scene.",
+    "BaseColor meanR/B is near-equal(3.12612 current vs3.13155 legacy), while direct-responseR/B changes11.40339 vs12.32108 and nonSunR/B2.4388 vs2.6526. Mean albedo alone does not explain the displayed response; distributions/roughness/BRDF/indirect response are not fully isolated.",
+    "Exact saved Interchange MF_IOR graph computes saturate((((1-IOR)/(1+IOR))^2)/.08); IOR1.5 therefore yields UE Specular.5. MF_Specular multiplies texture alpha by SpecularFactor. The scalar name SpecularFactor1 is NOT proof of F0.08; no demonstrated doubled-F0 bug or per-material fix."
+  ],
+  "remainingUnknown": "Source web Sun-off/linear reference absent. Native raw HDR PP-disabled pipeline cannot decompose canonicalLDR, and Sun-off alone cannot prove the nonsun radiance is incorrect or isolate2424. No safe additional2398 product correction identified.",
+  "nextAction": "Preserve actual successful causal probe and failedV1. No RGB/exposure/intensity/material gain fit. Root may publish scoped diagnostic and release2398 rather than claim completion or fabricate2424 dependency.",
+  "wholeImageCaveat": "Same PRIVATE scene in both chains; parasol visible in winter because bootstrap does not invoke editor-only parasol controller update. No source/parasol regression is asserted. Locked upper brick/frame areas remain unchanged; the full scene is not a canonical public winter view.",
+  "frameSolarRatioReadback": {
+    "actualSolarLinearRoverB": 4.333881530300034,
+    "actualDirectFrameRoverB": 4.333276306972898,
+    "relativeDifferencePercent": -0.013964925503939796
+  }
+}

@@ -1,0 +1,111 @@
+{
+  "classification": "Private preliminary readback; Root owns actual EOF/file postflight",
+  "wholeFourNativeOriginalsViewed": true,
+  "formalAcceptance": false,
+  "rows": [
+    {
+      "chain": "current-chain",
+      "sunOn": true,
+      "region": "sunlit-brick",
+      "meanRGB": [
+        213.93692307692308,
+        118.05,
+        88.04923076923077
+      ],
+      "RoverB": 2.4297421023203802,
+      "ratioToSourceSunOn": 0.6905324217211796,
+      "classification": "Private PIL decoded same locked pixels only; no canonical/formal acceptance"
+    },
+    {
+      "chain": "current-chain",
+      "sunOn": true,
+      "region": "sunlit-frame",
+      "meanRGB": [
+        248.6,
+        210.0,
+        186.46666666666667
+      ],
+      "RoverB": 1.333214158026457,
+      "ratioToSourceSunOn": 1.0812726738000604,
+      "classification": "Private PIL decoded same locked pixels only; no canonical/formal acceptance"
+    },
+    {
+      "chain": "current-chain",
+      "sunOn": false,
+      "region": "sunlit-brick",
+      "meanRGB": [
+        129.04615384615386,
+        80.97076923076924,
+        69.42923076923077
+      ],
+      "RoverB": 1.858671807485209,
+      "ratioToSourceSunOn": 0.5282343106216659,
+      "classification": "Private PIL decoded same locked pixels only; no canonical/formal acceptance"
+    },
+    {
+      "chain": "current-chain",
+      "sunOn": false,
+      "region": "sunlit-frame",
+      "meanRGB": [
+        188.93333333333334,
+        191.13333333333333,
+        192.33333333333334
+      ],
+      "RoverB": 0.9823223570190641,
+      "ratioToSourceSunOn": 0.7966899504576841,
+      "classification": "Private PIL decoded same locked pixels only; no canonical/formal acceptance"
+    },
+    {
+      "chain": "published-target-chain",
+      "sunOn": true,
+      "region": "sunlit-brick",
+      "meanRGB": [
+        204.68153846153845,
+        100.97307692307692,
+        65.84076923076923
+      ],
+      "RoverB": 3.1087355274379913,
+      "ratioToSourceSunOn": 0.8835022738431224,
+      "classification": "Private PIL decoded same locked pixels only; no canonical/formal acceptance"
+    },
+    {
+      "chain": "published-target-chain",
+      "sunOn": true,
+      "region": "sunlit-frame",
+      "meanRGB": [
+        248.6,
+        209.93333333333334,
+        186.46666666666667
+      ],
+      "RoverB": 1.333214158026457,
+      "ratioToSourceSunOn": 1.0812726738000604,
+      "classification": "Private PIL decoded same locked pixels only; no canonical/formal acceptance"
+    },
+    {
+      "chain": "published-target-chain",
+      "sunOn": false,
+      "region": "sunlit-brick",
+      "meanRGB": [
+        125.75461538461539,
+        69.22461538461539,
+        52.20384615384615
+      ],
+      "RoverB": 2.408914757238636,
+      "ratioToSourceSunOn": 0.6846132926812765,
+      "classification": "Private PIL decoded same locked pixels only; no canonical/formal acceptance"
+    },
+    {
+      "chain": "published-target-chain",
+      "sunOn": false,
+      "region": "sunlit-frame",
+      "meanRGB": [
+        188.93333333333334,
+        191.06666666666666,
+        192.2
+      ],
+      "RoverB": 0.9830038154699966,
+      "ratioToSourceSunOn": 0.7972426316581404,
+      "classification": "Private PIL decoded same locked pixels only; no canonical/formal acceptance"
+    }
+  ]
+}

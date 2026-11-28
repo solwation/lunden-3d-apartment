@@ -1,0 +1,112 @@
+{
+  "classification": "Private causal observation; no product acceptance",
+  "publishedBase": "1f6a3a5ece0791b2d35357eeff11b53eae460a28",
+  "wholeFourOriginalsViewed": true,
+  "files": [
+    {
+      "file": "postflight.json",
+      "sha256": "95aa3688fa7819d8041e6aa05ed6b6a8913d74819caea15e36e6d6c1fbee0405",
+      "original": "/home/devcontainers/.local/state/lunden-codex-20261127/2398/native-sun-chain-v2/postflight.json",
+      "bytes": 977
+    },
+    {
+      "file": "capture.json",
+      "original": "/home/devcontainers/.local/state/lunden-codex-20261127/2398/native-sun-chain-v2/product/capture.json",
+      "originalSHA256": "d0c68f82ca38fa80033ed982adc64129b1ccb0ca452ace161a7296769a61369d",
+      "originalBytes": 2375655,
+      "sha256": "bbc184a90f03908dfa65f1824ba41afc0657b503134262f1bfeb74190390f154",
+      "bytes": 88985,
+      "classification": "Compact outer metadata; embedded experiment replaced by separately retained original reports"
+    },
+    {
+      "file": "conclusion.json",
+      "sha256": "692b2d3a67171dd0b17c6440ae2cc52e65af2b97de6eada3a6c492e7bd827ee2",
+      "original": "/home/devcontainers/.local/state/lunden-codex-20261127/2398/sun-chain-v2-conclusion.json",
+      "bytes": 7084
+    },
+    {
+      "file": "decoded-ldr-diagnostic.json",
+      "sha256": "d4ddf4ca3bab49f7c6f47623ff45e6a8e1ede1e67c7ab603230822b93637a5fa",
+      "original": "/home/devcontainers/.local/state/lunden-codex-20261127/2398/native-sun-chain-v2-raw-readback-analysis.json",
+      "bytes": 3306
+    },
+    {
+      "file": "current-chain-readback.json",
+      "sha256": "bf2408b068a8b5afb645ef6504750a486d737a154931e430292b0f33e64e6385",
+      "original": "/home/devcontainers/.local/state/lunden-codex-20261127/2398/native-sun-chain-v2/product/target-chains/current-chain/sun-toggle.json",
+      "bytes": 973675
+    },
+    {
+      "file": "unreal-winter-current-sun-on.png",
+      "sha256": "7a9470df50912b43d0e4c3bdfec60eff2fc033baf48e985febc9045e80c4c6c1",
+      "original": "/home/devcontainers/.local/state/lunden-codex-20261127/2398/native-sun-chain-v2/product/target-chains/current-chain/unreal-winter-sun-on.png",
+      "bytes": 439995
+    },
+    {
+      "file": "unreal-winter-current-sun-off.png",
+      "sha256": "28edf9493e1714b9ef5f4e82eb244f173fd8e904c7e59514aab90e371ec9f8d2",
+      "original": "/home/devcontainers/.local/state/lunden-codex-20261127/2398/native-sun-chain-v2/product/target-chains/current-chain/unreal-winter-sun-off.png",
+      "bytes": 439995
+    },
+    {
+      "file": "legacy-chain-readback.json",
+      "sha256": "f9b9e89415a9723e3154553d31ce1a9db5932dd2e999d57748ca728f943c925f",
+      "original": "/home/devcontainers/.local/state/lunden-codex-20261127/2398/native-sun-chain-v2/product/target-chains/published-target-chain/sun-toggle.json",
+      "bytes": 976398
+    },
+    {
+      "file": "unreal-winter-legacy-sun-on.png",
+      "sha256": "1594ea2e3e92730682bc26fae8b5252539ea3570562667a4eb2f294cdae67840",
+      "original": "/home/devcontainers/.local/state/lunden-codex-20261127/2398/native-sun-chain-v2/product/target-chains/published-target-chain/unreal-winter-sun-on.png",
+      "bytes": 439995
+    },
+    {
+      "file": "unreal-winter-legacy-sun-off.png",
+      "sha256": "c8c6110a10ac4e9b6c7aceafa0723ca89b16abc671d26ca71432164fdd7bc332",
+      "original": "/home/devcontainers/.local/state/lunden-codex-20261127/2398/native-sun-chain-v2/product/target-chains/published-target-chain/unreal-winter-sun-off.png",
+      "bytes": 439995
+    }
+  ],
+  "originalPNGContainers": [
+    {
+      "file": "unreal-winter-current-sun-off.png",
+      "pngStreamCRCValid": true,
+      "decodedSize": [
+        640,
+        360
+      ],
+      "pngStreamBytes": 381552,
+      "originalTrailingBytesPreserved": 58443
+    },
+    {
+      "file": "unreal-winter-current-sun-on.png",
+      "pngStreamCRCValid": true,
+      "decodedSize": [
+        640,
+        360
+      ],
+      "pngStreamBytes": 390926,
+      "originalTrailingBytesPreserved": 49069
+    },
+    {
+      "file": "unreal-winter-legacy-sun-off.png",
+      "pngStreamCRCValid": true,
+      "decodedSize": [
+        640,
+        360
+      ],
+      "pngStreamBytes": 399427,
+      "originalTrailingBytesPreserved": 40568
+    },
+    {
+      "file": "unreal-winter-legacy-sun-on.png",
+      "pngStreamCRCValid": true,
+      "decodedSize": [
+        640,
+        360
+      ],
+      "pngStreamBytes": 408997,
+      "originalTrailingBytesPreserved": 30998
+    }
+  ]
+}

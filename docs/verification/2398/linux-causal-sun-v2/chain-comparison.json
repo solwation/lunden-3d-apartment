@@ -1,0 +1,56 @@
+{
+  "completed": true,
+  "effectiveMaterialRestored": true,
+  "classification": "PRIVATE target-chain causality probe; full scene stays private C4/sourceCanvas, NOT published1f acceptance",
+  "scriptSHA256": "1c7d9d5d692da641935cf912de120617ce768b5a7d5d5bf7a8b31699f68828fd",
+  "component": "/Game/Lunden/Generated/Interaction/Level_hus-l_interaction.Level_hus-l_interaction:PersistentLevel.mesh_l0_xm1668_z455_y665.StaticMeshComponent0",
+  "slot": 0,
+  "original": {
+    "instances": [
+      {
+        "path": "/Game/Lunden/Generated/hus-l/Materials/std_ffffff_r100_m0_tex_ds_te2f33fd972.std_ffffff_r100_m0_tex_ds_te2f33fd972",
+        "class": "MaterialInstanceConstant"
+      },
+      {
+        "path": "/InterchangeAssets/gltf/MaterialInstances/MI_Default_Opaque_DS.MI_Default_Opaque_DS",
+        "class": "MaterialInstanceConstant"
+      }
+    ],
+    "master": "/InterchangeAssets/gltf/M_Default.M_Default"
+  },
+  "stock": {
+    "instances": [
+      {
+        "path": "/Game/Lunden/Materials/MI_LundenFacadeBrick.MI_LundenFacadeBrick",
+        "class": "MaterialInstanceConstant"
+      }
+    ],
+    "master": "/Game/Lunden/Materials/M_LundenTiled.M_LundenTiled"
+  },
+  "overrideArrayBefore": [],
+  "changedOnly": "one component material slot, then physical Sun intensity in each pair",
+  "limits": "Sun-off remaining signal includes sky/ambient and material response. A changed target chain can change BOTH direct and non-Sun responses. No sole-cause/2424 dependency from Sun-off alone.",
+  "bothChainsCaptured": true,
+  "overrideArrayAfter": [
+    null
+  ],
+  "internalOverrideArrayExact": false,
+  "originalChainAfter": {
+    "instances": [
+      {
+        "path": "/Game/Lunden/Generated/hus-l/Materials/std_ffffff_r100_m0_tex_ds_te2f33fd972.std_ffffff_r100_m0_tex_ds_te2f33fd972",
+        "class": "MaterialInstanceConstant"
+      },
+      {
+        "path": "/InterchangeAssets/gltf/MaterialInstances/MI_Default_Opaque_DS.MI_Default_Opaque_DS",
+        "class": "MaterialInstanceConstant"
+      }
+    ],
+    "master": "/InterchangeAssets/gltf/M_Default.M_Default"
+  },
+  "originalFullReportSHA256": "17b94cf003b7ae9b617308b485da5f173cd02680bde5d2b2361dec11884b6a3e",
+  "chainReports": [
+    "current-chain-readback.json",
+    "legacy-chain-readback.json"
+  ]
+}

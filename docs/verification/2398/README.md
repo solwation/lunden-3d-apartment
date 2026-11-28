@@ -1,3 +1,6 @@
+Latest evidence: [private winter Sun/material causal observation](linux-causal-sun-v2/README.md).
+The diagnostic completed; it supplies no product fix and #2398 remains open.
+
 # #2398: source-owned low-sun colour
 
 Verified partial delivery; #2398 stays open. The fresh saved-rig image process and
