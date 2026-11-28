@@ -318,16 +318,47 @@ def sun_and_weather(game, sky):
                                   "rain": sky.get_editor_property("Rain"), "snow": sky.get_editor_property("Snow")})
     sky.call_method("ToggleSnow")
     result["flash"] = []
-    for age, fraction in ((0.0, 1.0), (0.07, 0.25), (0.14, 0.8), (0.22, 0.8), (1.50001, 0.0)):
-        sky.set_editor_property("FlashT", age, u.PropertyAccessChangeNotifyMode.NEVER)
-        sky.set_editor_property("FlashK", 0.675, u.PropertyAccessChangeNotifyMode.NEVER)
+    post = {c.get_name(): c for c in sky.get_components_by_class(u.PostProcessComponent)}["Ambient"]
+    sky_light = sky.get_components_by_class(u.SkyLightComponent)[0]
+    flash_light = M["site"]["sourceAmbient"]["flashLight"]
+    raw_hemi = M["site"]["sky"]["light"]["hemiClear"]
+    ratio = M["site"]["sky"]["light"]["exposureClear"] / M["site"]["sky"]["light"]["exposureOvercast"]
+    # SourceAmbient policy OFF does not disable these legacy components.
+    # MPC-only success cannot hide an inert or clamped light flash.
+    if sky.get_editor_property("Rain") != 0 or sky.get_editor_property("Snow") != 0:
+        raise RuntimeError("Weather toggle sequence did not return to dry before the flash control")
+    for date in ((2026, 6, 21, 14.0), (2026, 11, 16, 18.25)):
+        for key, value in zip(("Year", "Month", "Day", "Hour"), date):
+            sky.set_editor_property(key, value, u.PropertyAccessChangeNotifyMode.NEVER)
+        sky.set_editor_property("FlashT", 9.0, u.PropertyAccessChangeNotifyMode.NEVER)
         sky.call_method("UpdateSky")
-        actual = sky.get_editor_property("Flash")
-        stored = u.MaterialLibrary.get_scalar_parameter_value(game, mpc, "Flash")
-        expected = 0.675 * fraction
-        result["flash"].append({"age": age, "flash": actual, "mpc": stored, "expected": expected})
-        if max(abs(actual - expected), abs(stored - expected)) > 1e-6:
-            raise RuntimeError(f"Sky flash envelope/MPC differs from weather.js: {result['flash'][-1]}")
+        base_sky = sky_light.get_editor_property("intensity")
+        settings = post.get_editor_property("settings")
+        intensity = settings.get_editor_property("ambient_cubemap_intensity")
+        base_fill = intensity * post.get_editor_property("blend_weight")
+        day = sky.get_editor_property("Daylight")
+        expo = (1 + (ratio - 1) * day) / ratio
+        factor = 0.4 + sky.get_editor_property("HemiShare") * (1 + (sky.get_editor_property("HemiNight") - 1) * (1 - day))
+        for age, fraction in ((0.0, 1.0), (0.07, 0.25), (0.14, 0.8), (0.22, 0.8), (1.50001, 0.0)):
+            sky.set_editor_property("FlashT", age, u.PropertyAccessChangeNotifyMode.NEVER)
+            sky.set_editor_property("FlashK", 0.675, u.PropertyAccessChangeNotifyMode.NEVER)
+            sky.call_method("UpdateSky")
+            actual = sky.get_editor_property("Flash")
+            stored = u.MaterialLibrary.get_scalar_parameter_value(game, mpc, "Flash")
+            expected = 0.675 * fraction
+            weight = post.get_editor_property("blend_weight")
+            actual_fill = intensity * weight
+            expected_fill = base_fill + flash_light * factor * expo * expected
+            actual_sky = sky_light.get_editor_property("intensity")
+            expected_sky = base_sky + sky.get_editor_property("SkyScale") * flash_light * expected / raw_hemi
+            row = {"date": date, "age": age, "flash": actual, "mpc": stored, "expected": expected,
+                   "ambientWeight": weight, "ambientIntensity": intensity, "ambientFill": actual_fill,
+                   "expectedFill": expected_fill, "skyLightIntensity": actual_sky, "expectedSkyLightIntensity": expected_sky}
+            result["flash"].append(row)
+            if max(abs(actual - expected), abs(stored - expected), abs(actual_fill - expected_fill), abs(actual_sky - expected_sky)) > 1e-4:
+                raise RuntimeError(f"Actual sky flash envelope/MPC/legacy lights differ: {row}")
+            if not 0 <= weight <= 1 or (expected > 0 and (actual_fill <= base_fill or actual_sky <= base_sky)):
+                raise RuntimeError(f"Flash light peak is clamped or inert: {row}")
 
 
 # 4. The clock in PIE (then 2./3.) ---------------------------------------------------------------------------------------------

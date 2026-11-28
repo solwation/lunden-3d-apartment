@@ -86,6 +86,27 @@ console.log(JSON.stringify([.35,.675,1].flatMap(k=>times.map(t=>({t,k,flash:eval
             self.assertAlmostEqual(actual, row["flash"], places=14, msg=str(row))
         self.assertEqual(len(rows), 36)
 
+    def test_flash_reaches_legacy_lights_and_fits_cubemap_weight(self):
+        fixture = json.loads((Path(__file__).with_name("fixtures") / "sky-weather-no-flash.json").read_text())
+        Expr = emitter()
+        code = SOURCE.read_text()
+        bound_node = next(n for n in ast.parse(code).body if isinstance(n, ast.FunctionDef) and n.name == "ambient_ref")
+        for row in fixture["cases"]:
+            params = row["inputs"]
+            env = {"HEMI_SHARE": params["HemiShare"], "hemi_night": lambda spec: params["HemiNight"]}
+            exec(compile(ast.Module(body=[bound_node], type_ignores=[]), str(SOURCE), "exec"), env)
+            light = {key[0].lower()+key[1:]: params[key] for key in ("AmbientOvercast", "AmbientClear", "NightAmbient", "HemiOvercast", "HemiClear")}
+            bound = env["ambient_ref"]({"sky": {"light": light}, "flashLight": params["FlashLight"]})
+            base = Expr(Graph(), params).run(constant_source(code, "LIGHT"))
+            for strength in (.35, .675, 1.0):
+                values = Expr(Graph(), {**params, "flash": strength}).run(constant_source(code, "LIGHT"))
+                fill, sky = resolve(values["fill"]), resolve(values["skyI"])
+                self.assertGreater(fill, resolve(base["fill"]))
+                self.assertGreater(sky, resolve(base["skyI"]))
+                self.assertLessEqual(fill / bound, 1.0)
+                # Changing normalization preserves actual no-flash light energy.
+                self.assertAlmostEqual(bound * (resolve(base["fill"]) / bound), resolve(base["fill"]))
+
     def test_no_flash_preserves_every_existing_light_output(self):
         fixture = json.loads((Path(__file__).with_name("fixtures") / "sky-weather-no-flash.json").read_text())
         Expr = emitter()

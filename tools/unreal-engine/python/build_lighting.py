@@ -854,7 +854,12 @@ def ambient_ref(spec):
     """The ambient cubemap's full intensity: an upper bound of the unshadowed fill UpdateSky asks for (the larger web
     ambient and hemisphere values at full exposure), so the post process's blend weight, fill / AmbientRef, stays within 0 ... 1."""
     l = spec["sky"]["light"]
-    return max(l["ambientOvercast"], l["ambientClear"]) + l["nightAmbient"] * 0.5 + HEMI_SHARE * (max(l["hemiOvercast"], l["hemiClear"]) + l["nightAmbient"])
+    base = max(l["ambientOvercast"], l["ambientClear"]) + l["nightAmbient"] * 0.5 + HEMI_SHARE * (max(l["hemiOvercast"], l["hemiClear"]) + l["nightAmbient"])
+    # #2439: FlashK <= 1. Reserve its source ambient/hemi contribution so
+    # PostProcess BlendWeight does not clamp the peak. Intensity * weight still
+    # equals the same fill (including zero flash); this is normalization, not gain.
+    flash = spec["flashLight"] * (0.4 + HEMI_SHARE * max(1.0, hemi_night(spec)))
+    return base + flash
 
 
 def hemi_night(spec):

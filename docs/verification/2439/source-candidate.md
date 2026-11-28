@@ -35,21 +35,59 @@ The clear daytime haze scatter is also damped by the actual `hazeState` factor
 `1 - min(1, flash * 0.5)`. Exposure cancellation remains at the end of the inverse;
 there is no new exposure, RGB gain, clamp or second clock.
 
-This is still a **partial candidate unsuitable for full weather acceptance**.
+This remains a **functional candidate, not a claim of exact sky-colour parity**.
 The existing pre-tonemap route cannot reproduce all source targets: a raw target
 with peak >= 1 has no finite Neutral inverse, and inverse desaturation can require
 negative scene colour. Those cases explicitly retain the old native sky; a strong
 source flash can therefore be absent there. The corrected arithmetic does not
 solve that boundary. Existing twilight/sun-disc/high-flight transition coverage,
 cloud-deck whitening and old exports without a source palette also retain their
-old paths. No complete storm/flash delivery or known-correct all-weather native
-baseline is proposed from this checkpoint. Full delivery needs a separately
-reviewed source output path that represents those targets while preserving
-translucent foreground, fog and the same strike/flash clock.
+old paths. The original acceptance asks for the hail sound and simultaneous flash/thunder,
+plus green test_audio/test_lighting; it does not require a new all-weather RGB gate.
+The inverse fallback loses the extra sky colour, not the entire light flash:
+legacy Ambient and SkyLight still receive the same Flash at its peak. Exact sky
+colour outside this domain remains a disclosed limitation, subject to real visual
+review of the functional flash rather than assumed failure of that acceptance.
+
+## Legacy light path and native checks
+
+`source-ambient-policy.json` is OFF. That disables the experimental injected
+SourceAmbient policy; `build_lighting` does not branch on it and still builds the
+legacy SkyLight and Ambient cubemap. `linux-low.ini` does not disable either path.
+These source facts do not prove rendered brightness: the actual component reads
+and the two on/off originals below must establish that in Native.
+
+The ambient normalization now reserves the maximum source flash contribution
+`flashLight * (0.4 + HemiShare * max(1, HemiNight))`. This keeps the post-process
+blend weight within 0..1 at the peak. Cubemap intensity times weight remains the
+same requested fill at zero flash; no material colour or new light gain changes.
+
+Bounded actual verification, Root owns all launches/builds/locks:
+
+1. One normal canonical sync, including the real `build_lighting.py` and
+   `build_audio.py` builders, then their normal `--check` paths. No new web export.
+   Lighting may save its existing eight authored outputs; Audio's normal builder
+   attempts its existing 24 assets (including BPC_LundenAudio), even though the
+   source audio graphs other than that component are unchanged. Actual changed
+   bytes and all other authored packages must be recorded, not presumed.
+2. Fresh NullRHI automation with the two canonical files copied unchanged from
+   this source to Content/Python: `run-linux.py --engine-root
+   /mnt/d/UnrealEngine/5.8.4 --data-dir /mnt/d/LundenLinux --timeout 600 tests
+   'Editor.Python.Lunden.test_lighting+Editor.Python.Lunden.test_audio'`.
+   AutomationCommandline.cpp:135 parses `+` into test filters in exact 5.8.4.
+   Existing assertions remain; the added cases read actual Hail/Storm→audio,
+   Strike→FlashT/FlashK and distance/343 delay, plus actual Ambient intensity×weight
+   and SkyLight intensity at peak/decay/end at both day and full night. No sound
+   device means parameter/MetaSound proof, not an audible listening test.
+3. One normal rendered batch: the same canonical outdoor patio camera at
+   November16 18:15, lamps unchanged, storm/rain on, first FlashT=9 then FlashT=0
+   with the same FlashK=0.675. Save two raw originals and actual clock/weather/
+   Flash/component metadata; inspect a visible light blink and preserved foreground.
+   This is functional visual acceptance, not an invented source RGB threshold.
 
 ## Source checks
 
-- `test_sky_weather_source.py` executes the actual web flash fragment and compares
+- `test_sky_weather_source.py` now has three passing tests. It executes the actual web flash fragment and compares
   36 strength/boundary cases with the arithmetic nodes emitted by the real `Expr`.
 - Four pre-change lighting fixtures preserve every existing output exactly with
   zero flash. Fixtures retain their source commit/hash and require no Git history
@@ -81,7 +119,7 @@ the relevant LFS locks only at that time, and run real `test_lighting` and
 Sound graphs/parameters are unchanged; any reuse of their saved assets must be
 bound to actual unchanged source and bytes, not assumed from a component rebuild.
 
-A real rendered flash/hail capture and whole-image review remain necessary. In
+A real rendered flash capture and whole-image review remain necessary. In
 particular, the inverse-domain/coverage boundary above remains unsolved, and
 transparent foreground and the existing native ambient calibration are **not**
 proved by the arithmetic tests. No pixel
