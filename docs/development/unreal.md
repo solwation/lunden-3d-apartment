@@ -2882,7 +2882,7 @@ SmartScreen help. Nothing in the marked areas is shown before that run.
 
 Every published Windows release carries Swedish notes as its GitHub release body. The release owner writes
 `tools/unreal-engine/release-notes/<tag>.md` with a `## Nytt` and a `## Kända begränsningar` section (plain player
-language, as the changelog). `tools/unreal-engine/release-notes.mjs` fills `release-notes/mall.md` with the version,
+language, as the changelog). `tools/unreal-engine/release-notes.mjs` fills `release-notes/mall.md.tmpl` with the version,
 the setup file and its download URL under the tag, the setup's SHA-256 from the protected artifact's `SHA256SUMS`
 (it must equal `launcherSha256` in `launcher-build.json`), the publisher (the artifact's signer must equal
 `publisher-identity.json`), the source commit, the channel, installation and removal steps, and the SmartScreen help

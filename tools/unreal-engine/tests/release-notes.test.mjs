@@ -11,7 +11,7 @@ const hash = 'e6477a6a73e6ad67a0dd3d27821580b9510017e4cc971669c23e2a689e95dac2';
 const build = { tag: 'v0.1.1', commit: '85b80563209722c2af562850947c17a580379d21', launcherSha256: hash,
   signer: { commonName: publisher.commonName, organization: publisher.organization } };
 const sums = `${hash}  Lunden.exe\n${hash}  Kv-Lunden-Unreal-L1007-Setup-0.1.1-win-x64.exe\n`;
-const input = { tag: 'v0.1.1', channel: 'stable', template: read('tools/unreal-engine/release-notes/mall.md'),
+const input = { tag: 'v0.1.1', channel: 'stable', template: read('tools/unreal-engine/release-notes/mall.md.tmpl'),
   news: read('tools/unreal-engine/release-notes/v0.1.1.md'), build, sums, publisher };
 
 test('renders the Swedish notes with the signed setup, its hash, the publisher and the SmartScreen help', () => {

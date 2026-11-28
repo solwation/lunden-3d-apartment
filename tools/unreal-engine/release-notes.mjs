@@ -2,7 +2,7 @@
 // artifact. The release owner passes the output to `gh release create … --notes-file` or `gh release edit … --notes-file`.
 //   node tools/unreal-engine/release-notes.mjs --tag v0.2.0 --signed-launcher <signed-launcher dir> --channel stable --out notes.md
 // Inputs: tools/unreal-engine/release-notes/<tag>.md (sections "## Nytt" and "## Kända begränsningar", written in
-// Swedish by the release owner), tools/unreal-engine/release-notes/mall.md, the artifact's launcher-build.json and
+// Swedish by the release owner), tools/unreal-engine/release-notes/mall.md.tmpl, the artifact's launcher-build.json and
 // SHA256SUMS, and unreal/Launcher/publisher-identity.json. Writes nothing else and publishes nothing.
 import { readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -44,7 +44,7 @@ export function renderNotes({ tag, channel, template, news, build, sums, publish
 
 export async function notesFor({ tag, signedLauncher, channel, notesDir = NOTES }) {
   const read = file => readFile(file, 'utf8');
-  return renderNotes({ tag, channel, template: await read(path.join(notesDir, 'mall.md')),
+  return renderNotes({ tag, channel, template: await read(path.join(notesDir, 'mall.md.tmpl')),
     news: await read(path.join(notesDir, tag + '.md')).catch(() => { throw Error(`Write the Swedish notes first: ${path.join(notesDir, tag + '.md')}`); }),
     build: JSON.parse(await read(path.join(signedLauncher, 'launcher-build.json'))), sums: await read(path.join(signedLauncher, 'SHA256SUMS')),
     publisher: JSON.parse(await read(path.join(ROOT, 'unreal/Launcher/publisher-identity.json'))) });
